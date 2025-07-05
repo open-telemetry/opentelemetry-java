@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
@@ -16,13 +16,22 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -36,6 +45,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +55,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -679,6 +691,275 @@ class BatchSpanProcessorTest {
     // Continue to export after the exception.
     createEndedSpan(SPAN_NAME_2);
     await().untilAsserted(() -> assertThat(batchSpanProcessor.getQueue()).isEmpty());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void verifyMeterProviderTouchedLazily() {
+    Supplier<MeterProvider> mockSupplier = Mockito.mock(Supplier.class);
+
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.builder(mockSpanExporter)
+            .setScheduleDelay(
+                1, TimeUnit.HOURS) // don't use scheduled exporting to not mess with the test
+            .setMaxExportBatchSize(3)
+            .setMaxQueueSize(4)
+            .setMeterProvider(mockSupplier)
+            .build();
+
+    verifyNoInteractions(mockSupplier);
+
+    batchSpanProcessor.shutdown();
+  }
+
+  @Test
+  void verifySemConvMetrics() {
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+
+    try (SdkMeterProvider meterProvider =
+            SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+        BatchSpanProcessor batchSpanProcessor =
+            BatchSpanProcessor.builder(mockSpanExporter)
+                .setScheduleDelay(
+                    1, TimeUnit.HOURS) // don't use scheduled exporting to not mess with the test
+                .setMaxExportBatchSize(3)
+                .setMaxQueueSize(4)
+                .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+                .setMeterProvider(meterProvider)
+                .build()) {
+
+      sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+
+      CompletableResultCode blockedResultCode = new CompletableResultCode();
+      when(mockSpanExporter.export(any())).thenReturn(blockedResultCode);
+
+      createEndedSpan("span1");
+      createEndedSpan("span2");
+
+      AtomicReference<String> componentNameHolder = new AtomicReference<>();
+
+      Collection<MetricData> metricData = metricReader.collectAllMetrics();
+      assertThat(metricData)
+          .hasSize(2)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.queue.size")
+                      .hasLongSumSatisfying(
+                          size ->
+                              size.hasPointsSatisfying(
+                                  point ->
+                                      point
+                                          .hasValue(2)
+                                          .hasAttributesSatisfying(
+                                              attribs -> {
+                                                assertThat(attribs.size()).isEqualTo(2);
+                                                assertThat(
+                                                        attribs.get(
+                                                            SemConvAttributes.OTEL_COMPONENT_TYPE))
+                                                    .isEqualTo("batching_span_processor");
+                                                String componentName =
+                                                    attribs.get(
+                                                        SemConvAttributes.OTEL_COMPONENT_NAME);
+                                                assertThat(componentName)
+                                                    .matches("batching_span_processor/\\d+");
+                                                componentNameHolder.set(componentName);
+                                              }))));
+
+      Attributes expectedAttribs =
+          Attributes.builder()
+              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "batching_span_processor")
+              .put(SemConvAttributes.OTEL_COMPONENT_NAME, componentNameHolder.get())
+              .build();
+
+      assertThat(metricData)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.queue.capacity")
+                      .hasLongSumSatisfying(
+                          capacity ->
+                              capacity.hasPointsSatisfying(
+                                  point -> point.hasValue(4).hasAttributes(expectedAttribs))));
+
+      createEndedSpan("span3"); // triggers export, queue is empty afterwards
+      createEndedSpan("span4");
+      createEndedSpan("span5");
+      createEndedSpan("span6");
+      createEndedSpan("span7");
+      createEndedSpan("span8"); // dropped due to full queue
+
+      assertThat(metricReader.collectAllMetrics())
+          .hasSize(3)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.queue.capacity")
+                      .hasLongSumSatisfying(
+                          capacity ->
+                              capacity.hasPointsSatisfying(
+                                  point -> point.hasValue(4).hasAttributes(expectedAttribs))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.queue.size")
+                      .hasLongSumSatisfying(
+                          capacity ->
+                              capacity.hasPointsSatisfying(
+                                  point -> point.hasValue(4).hasAttributes(expectedAttribs))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.processed")
+                      .hasLongSumSatisfying(
+                          processed ->
+                              processed.hasPointsSatisfying(
+                                  point -> point.hasValue(3).hasAttributes(expectedAttribs),
+                                  point ->
+                                      point
+                                          .hasValue(1)
+                                          .hasAttributes(
+                                              expectedAttribs.toBuilder()
+                                                  .put(SemConvAttributes.ERROR_TYPE, "queue_full")
+                                                  .build()))));
+
+      // Stop blocking to allow a fast termination of the test case
+      blockedResultCode.succeed();
+    }
+  }
+
+  @Test
+  void verifyLegacyMetrics() {
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+
+    try (SdkMeterProvider meterProvider =
+            SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+        BatchSpanProcessor batchSpanProcessor =
+            BatchSpanProcessor.builder(mockSpanExporter)
+                .setScheduleDelay(
+                    1, TimeUnit.HOURS) // don't use scheduled exporting to not mess with the test
+                .setMaxExportBatchSize(3)
+                .setMaxQueueSize(4)
+                .setMeterProvider(meterProvider)
+                .build()) {
+
+      // Create tracer provider with our processor
+      sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+
+      // Create and end spans to trigger metrics recording
+      createEndedSpan("span1");
+      createEndedSpan("span2");
+
+      // Collect metrics and verify them
+      Attributes typeAttributes =
+          Attributes.of(
+              AttributeKey.stringKey("processorType"), BatchSpanProcessor.class.getSimpleName());
+      assertThat(metricReader.collectAllMetrics())
+          .hasSize(1)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("queueSize")
+                      .hasLongGaugeSatisfying(
+                          size ->
+                              size.hasPointsSatisfying(
+                                  point -> point.hasValue(2).hasAttributes(typeAttributes))));
+
+      when(mockSpanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
+
+      // Supply one more span to trigger an export
+      createEndedSpan("span3");
+
+      // We have to wait until after the export is finished for the metrics to be published
+      await()
+          .atMost(Duration.ofSeconds(5))
+          .untilAsserted(
+              () ->
+                  assertThat(metricReader.collectAllMetrics())
+                      .hasSize(2)
+                      .anySatisfy(
+                          metric ->
+                              assertThat(metric)
+                                  .hasName("queueSize")
+                                  .hasLongGaugeSatisfying(
+                                      size ->
+                                          size.hasPointsSatisfying(
+                                              point ->
+                                                  point.hasValue(0).hasAttributes(typeAttributes))))
+                      .anySatisfy(
+                          metric ->
+                              assertThat(metric)
+                                  .hasName("processedSpans")
+                                  .hasLongSumSatisfying(
+                                      count ->
+                                          count.hasPointsSatisfying(
+                                              point ->
+                                                  point
+                                                      .hasValue(3)
+                                                      .hasAttributes(
+                                                          typeAttributes.toBuilder()
+                                                              .put(
+                                                                  AttributeKey.booleanKey(
+                                                                      "dropped"),
+                                                                  false)
+                                                              .build())))));
+
+      // Now we fill trigger another export and then have the exporter block,
+      // to in turn cause a full queue and spans to be dropped
+
+      CompletableResultCode blockedResultCode = new CompletableResultCode();
+      when(mockSpanExporter.export(any())).thenReturn(blockedResultCode);
+
+      createEndedSpan("span4");
+      createEndedSpan("span5");
+      createEndedSpan("span6");
+
+      await()
+          .atMost(Duration.ofSeconds(5))
+          .untilAsserted(() -> verify(mockSpanExporter, times(2)).export(any()));
+
+      // Now fill up the queue and have a span dropped
+      createEndedSpan("span6");
+      createEndedSpan("span7");
+      createEndedSpan("span8");
+      createEndedSpan("span9");
+      createEndedSpan("span10");
+
+      assertThat(metricReader.collectAllMetrics())
+          .hasSize(2)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("queueSize")
+                      .hasLongGaugeSatisfying(
+                          size ->
+                              size.hasPointsSatisfying(
+                                  point -> point.hasValue(4).hasAttributes(typeAttributes))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("processedSpans")
+                      .hasLongSumSatisfying(
+                          count ->
+                              count.hasPointsSatisfying(
+                                  point ->
+                                      point
+                                          .hasValue(3)
+                                          .hasAttributes(
+                                              typeAttributes.toBuilder()
+                                                  .put(AttributeKey.booleanKey("dropped"), false)
+                                                  .build()),
+                                  point ->
+                                      point
+                                          .hasValue(1)
+                                          .hasAttributes(
+                                              typeAttributes.toBuilder()
+                                                  .put(AttributeKey.booleanKey("dropped"), true)
+                                                  .build()))));
+
+      // Stop blocking to allow a fast termination of the test case
+      blockedResultCode.succeed();
+    }
   }
 
   private static final class BlockingSpanExporter implements SpanExporter {
