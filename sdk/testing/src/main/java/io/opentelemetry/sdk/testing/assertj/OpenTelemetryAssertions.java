@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.AbstractMap;
@@ -49,6 +50,11 @@ public final class OpenTelemetryAssertions extends Assertions {
    */
   public static MetricAssert assertThat(@Nullable MetricData metricData) {
     return new MetricAssert(metricData);
+  }
+
+  /** Returns an assertion for {@link Entity}. */
+  public static EntityAssert assertThat(@Nullable Entity entity) {
+    return new EntityAssert(entity);
   }
 
   /** Returns an assertion for {@link EventDataAssert}. */
