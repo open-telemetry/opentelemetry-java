@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.extension.incubator.entities.detectors.TelemetrySdkD
 import java.util.ArrayList;
 import java.util.List;
 
-/** A builder for {@link SdResourceProvider}. */
+/** A builder for {@link SdkResourceProvider}. */
 public final class SdkResourceProviderBuilder {
   private final List<ResourceDetector> detectors = new ArrayList<>();
   private boolean includeDefaults = true;
