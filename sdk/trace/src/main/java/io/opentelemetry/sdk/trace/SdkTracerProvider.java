@@ -49,7 +49,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   SdkTracerProvider(
       Clock clock,
       IdGenerator idsGenerator,
-      Resource resource,
+      Supplier<Resource> resourceSupplier,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
@@ -59,7 +59,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
         new TracerSharedState(
             clock,
             idsGenerator,
-            resource,
+            resourceSupplier,
             spanLimitsSupplier,
             sampler,
             spanProcessors,

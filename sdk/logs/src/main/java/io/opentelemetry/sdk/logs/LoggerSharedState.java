@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  */
 final class LoggerSharedState {
   private final Object lock = new Object();
-  private final Resource resource;
+  private final Supplier<Resource> resourceSupplier;
   private final Supplier<LogLimits> logLimitsSupplier;
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
@@ -26,20 +26,21 @@ final class LoggerSharedState {
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
-      Resource resource,
+      Supplier<Resource> resourceSupplier,
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
       Clock clock,
       ExceptionAttributeResolver exceptionAttributeResolver) {
-    this.resource = resource;
+    this.resourceSupplier = resourceSupplier;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
     this.exceptionAttributeResolver = exceptionAttributeResolver;
   }
 
-  Resource getResource() {
-    return resource;
+  // This is used in a test, and must be public for it.
+  public Resource getResource() {
+    return resourceSupplier.get();
   }
 
   LogLimits getLogLimits() {
