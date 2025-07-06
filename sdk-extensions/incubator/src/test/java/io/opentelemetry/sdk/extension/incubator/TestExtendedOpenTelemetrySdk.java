@@ -42,9 +42,7 @@ class TestExtendedOpenTelemetrySdk {
                     .hasResourceSatisfying(
                         resource ->
                             resource.hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsEntry("test.id", 1))));
+                                attributes -> assertThat(attributes).containsEntry("test.id", 1))));
 
     // Now update the resource and check the point.
     otel.getResourceProvider()
