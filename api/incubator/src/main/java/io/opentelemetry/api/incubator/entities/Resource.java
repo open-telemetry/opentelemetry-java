@@ -8,7 +8,7 @@ package io.opentelemetry.api.incubator.entities;
 /** The active resource for which Telemetry is being generated. */
 public interface Resource {
   /**
-   * Removes an {@link Entity} from this resource.
+   * Removes an entity from this resource.
    *
    * @param entityType the type of entity to remove.
    * @return true if entity was found and removed.
@@ -19,7 +19,7 @@ public interface Resource {
    * Attaches an entity to the current {@link Resource}.
    *
    * @param entityType The type of the entity.
-   * @return A builder that can construct an {@link Entity}.
+   * @return A builder that can construct an entity.
    */
   public EntityBuilder attachEntity(String entityType);
 }
