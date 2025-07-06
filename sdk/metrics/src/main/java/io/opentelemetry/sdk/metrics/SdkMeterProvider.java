@@ -35,6 +35,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
@@ -65,7 +66,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders,
       List<MetricProducer> metricProducers,
       Clock clock,
-      Resource resource,
+      Supplier<Resource> resource,
       ExemplarFilter exemplarFilter,
       ScopeConfigurator<MeterConfig> meterConfigurator) {
     long startEpochNanos = clock.now();

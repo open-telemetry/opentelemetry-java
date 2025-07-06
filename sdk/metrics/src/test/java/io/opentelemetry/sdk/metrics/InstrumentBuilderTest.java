@@ -21,7 +21,7 @@ class InstrumentBuilderTest {
 
   public static final MeterProviderSharedState PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(
-          TestClock.create(), Resource.getDefault(), ExemplarFilter.alwaysOff(), 0);
+          TestClock.create(), () -> Resource.getDefault(), ExemplarFilter.alwaysOff(), 0);
   static final InstrumentationScopeInfo SCOPE = InstrumentationScopeInfo.create("scope-name");
   public static final SdkMeter SDK_METER =
       new SdkMeter(

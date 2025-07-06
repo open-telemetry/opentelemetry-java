@@ -53,7 +53,7 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
   }
 
   SdkLoggerProvider(
-      Resource resource,
+      Supplier<Resource> resource,
       Supplier<LogLimits> logLimitsSupplier,
       List<LogRecordProcessor> processors,
       Clock clock,
