@@ -24,8 +24,26 @@ public class SdkLoggerProviderBuilderTest {
     SdkLoggerProvider sdkLoggerProvider =
         SdkLoggerProvider.builder().addResource(customResource).build();
 
+    // We should find a less invasive way to verify this.
     assertThat(sdkLoggerProvider)
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("resource", Resource.getDefault().merge(customResource));
+  }
+
+  @Test
+  void setResourceSupplier() {
+    Resource customResource =
+        Resource.create(
+            Attributes.of(
+                AttributeKey.stringKey("custom_attribute_key"), "custom_attribute_value"));
+
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder().setResourceSupplier(() -> customResource).build();
+
+    // We should find a less invasive way to verify this.
+    assertThat(sdkLoggerProvider)
+        .extracting("sharedState")
+        // Validate the default resource values are NO Longer here when a supplier takes over.
+        .hasFieldOrPropertyWithValue("resource", customResource);
   }
 }

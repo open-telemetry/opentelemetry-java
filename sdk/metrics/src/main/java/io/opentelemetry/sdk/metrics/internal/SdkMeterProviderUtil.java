@@ -13,9 +13,11 @@ import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
+import io.opentelemetry.sdk.resources.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * A collection of methods that allow use of experimental features prior to availability in public
@@ -45,6 +47,26 @@ public final class SdkMeterProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling setExemplarFilter on SdkMeterProviderBuilder", e);
+    }
+    return sdkMeterProviderBuilder;
+  }
+
+  /**
+   * Reflectively assign the {@link Supplier} of {@link Resource} to the {@link
+   * SdkMeterProviderBuilder}.
+   *
+   * @param sdkMeterProviderBuilder the builder
+   */
+  public static SdkMeterProviderBuilder setResourceSupplier(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder, Supplier<Resource> supplier) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod("setResourceSupplier", Supplier.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, supplier);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setResourceSupplier on SdkMeterProviderBuilder", e);
     }
     return sdkMeterProviderBuilder;
   }

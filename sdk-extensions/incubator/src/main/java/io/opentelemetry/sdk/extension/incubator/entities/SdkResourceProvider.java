@@ -24,4 +24,9 @@ public final class SdkResourceProvider implements ResourceProvider {
   public static SdkResourceProviderBuilder builder() {
     return new SdkResourceProviderBuilder();
   }
+
+  @Override
+  public String toString() {
+    return "SdkResourceProvider{}";
+  }
 }

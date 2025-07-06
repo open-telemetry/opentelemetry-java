@@ -23,6 +23,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /**
  * Builder class for the {@link SdkMeterProvider}.
@@ -39,6 +41,7 @@ public final class SdkMeterProviderBuilder {
   private static final ExemplarFilter DEFAULT_EXEMPLAR_FILTER = ExemplarFilter.traceBased();
 
   private Clock clock = Clock.getDefault();
+  @Nullable private Supplier<Resource> resourceSupplier = null;
   private Resource resource = Resource.getDefault();
   private final IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders =
       new IdentityHashMap<>();
@@ -77,6 +80,23 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = this.resource.merge(resource);
+    return this;
+  }
+
+  /**
+   * Registers a supplier of {@link Resource}.
+   *
+   * <p>This will override any {@link #addResource(Resource)} or {@link #setResource(Resource)}
+   * calls with the current supplier.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#setResourceSupplier(SdkMeterProviderBuilder, Supplier)}.
+   *
+   * @param supplier The supplier of {@link Resource}.
+   * @since 1.X.0
+   */
+  SdkMeterProviderBuilder setResourceSupplier(Supplier<Resource> supplier) {
+    this.resourceSupplier = supplier;
     return this;
   }
 
@@ -200,12 +220,16 @@ public final class SdkMeterProviderBuilder {
 
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
+    Supplier<Resource> resolvedSupplier = () -> this.resource;
+    if (resourceSupplier != null) {
+      resolvedSupplier = this.resourceSupplier;
+    }
     return new SdkMeterProvider(
         registeredViews,
         metricReaders,
         metricProducers,
         clock,
-        resource,
+        resolvedSupplier,
         exemplarFilter,
         meterConfiguratorBuilder.build());
   }
