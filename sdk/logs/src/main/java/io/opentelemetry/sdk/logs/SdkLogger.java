@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 
@@ -69,7 +71,8 @@ class SdkLogger implements Logger {
     return instrumentationScopeInfo;
   }
 
-  public boolean isEnabled() {
+  // Visible for testing
+  public boolean isEnabled(Severity severity, Context context) {
     return loggerEnabled;
   }
 
