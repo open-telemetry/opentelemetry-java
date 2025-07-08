@@ -17,6 +17,7 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -95,21 +96,34 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       return context;
     }
 
-    String baggageHeader = getter.get(carrier, FIELD);
-    if (baggageHeader == null) {
-      return context;
-    }
-    if (baggageHeader.isEmpty()) {
+    return extractMulti(context, carrier, getter);
+  }
+
+  private static <C> Context extractMulti(
+      Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+    Iterator<String> baggageHeaders = getter.getAll(carrier, FIELD);
+    if (baggageHeaders == null) {
       return context;
     }
 
+    boolean extracted = false;
     BaggageBuilder baggageBuilder = Baggage.builder();
-    try {
-      extractEntries(baggageHeader, baggageBuilder);
-    } catch (RuntimeException e) {
-      return context;
+
+    while (baggageHeaders.hasNext()) {
+      String header = baggageHeaders.next();
+      if (header.isEmpty()) {
+        continue;
+      }
+
+      try {
+        extractEntries(header, baggageBuilder);
+        extracted = true;
+      } catch (RuntimeException expected) {
+        // invalid baggage header, continue
+      }
     }
-    return context.with(baggageBuilder.build());
+
+    return extracted ? context.with(baggageBuilder.build()) : context;
   }
 
   private static void extractEntries(String baggageHeader, BaggageBuilder baggageBuilder) {

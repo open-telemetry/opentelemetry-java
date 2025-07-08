@@ -8,16 +8,14 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
-import java.io.Closeable;
 import java.util.List;
 import javax.annotation.Nullable;
 
-final class AttributeListFactory
-    implements Factory<List<AttributeNameValueModel>, io.opentelemetry.api.common.Attributes> {
+final class AttributeListFactory implements Factory<List<AttributeNameValueModel>, Attributes> {
 
   private static final AttributeListFactory INSTANCE = new AttributeListFactory();
 
@@ -28,9 +26,8 @@ final class AttributeListFactory
   }
 
   @Override
-  public io.opentelemetry.api.common.Attributes create(
-      List<AttributeNameValueModel> model, SpiHelper spiHelper, List<Closeable> closeables) {
-    AttributesBuilder builder = io.opentelemetry.api.common.Attributes.builder();
+  public Attributes create(List<AttributeNameValueModel> model, DeclarativeConfigContext context) {
+    AttributesBuilder builder = Attributes.builder();
 
     for (AttributeNameValueModel nameValueModel : model) {
       addToBuilder(nameValueModel, builder);
@@ -43,9 +40,9 @@ final class AttributeListFactory
       AttributeNameValueModel nameValueModel, AttributesBuilder builder) {
     String name = FileConfigUtil.requireNonNull(nameValueModel.getName(), "attribute name");
     Object value = FileConfigUtil.requireNonNull(nameValueModel.getValue(), "attribute value");
-    AttributeNameValueModel.Type type = nameValueModel.getType();
+    AttributeNameValueModel.AttributeType type = nameValueModel.getType();
     if (type == null) {
-      type = AttributeNameValueModel.Type.STRING;
+      type = AttributeNameValueModel.AttributeType.STRING;
     }
     switch (type) {
       case STRING:
@@ -115,7 +112,7 @@ final class AttributeListFactory
         }
         break;
     }
-    throw new ConfigurationException(
+    throw new DeclarativeConfigException(
         "Error processing attribute with name \""
             + name
             + "\": value did not match type "

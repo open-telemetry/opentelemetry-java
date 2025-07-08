@@ -10,7 +10,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.propagation.ExtendedContextPropagators;
 import io.opentelemetry.api.internal.ApiUsageLogger;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
@@ -33,7 +32,12 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
   }
 
   @Override
-  public SpanBuilder spanBuilder(String spanName) {
+  public boolean isEnabled() {
+    return false;
+  }
+
+  @Override
+  public ExtendedSpanBuilder spanBuilder(String spanName) {
     return NoopSpanBuilder.create();
   }
 

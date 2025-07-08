@@ -246,19 +246,21 @@ class SdkSpanBuilderTest {
             .setAttribute("long", 12345L)
             .setAttribute("double", .12345)
             .setAttribute("boolean", true)
-            .setAttribute(stringKey("stringAttribute"), "attrvalue");
+            .setAttribute(stringKey("stringAttribute"), "attrvalue")
+            .setAttribute(longKey("longAttribute"), 123);
 
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
     try {
       SpanData spanData = span.toSpanData();
       Attributes attrs = spanData.getAttributes();
-      assertThat(attrs.size()).isEqualTo(5);
+      assertThat(attrs.size()).isEqualTo(6);
       assertThat(attrs.get(stringKey("string"))).isEqualTo("value");
       assertThat(attrs.get(longKey("long"))).isEqualTo(12345L);
       assertThat(attrs.get(doubleKey("double"))).isEqualTo(0.12345);
       assertThat(attrs.get(booleanKey("boolean"))).isEqualTo(true);
       assertThat(attrs.get(stringKey("stringAttribute"))).isEqualTo("attrvalue");
-      assertThat(spanData.getTotalAttributeCount()).isEqualTo(5);
+      assertThat(attrs.get(longKey("longAttribute"))).isEqualTo(123);
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(6);
     } finally {
       span.end();
     }

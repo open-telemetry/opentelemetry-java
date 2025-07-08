@@ -1,16 +1,16 @@
 name: Gradle wrapper validation
+
 on:
-  pull_request:
-    paths:
-      - '**/gradle/wrapper/**'
   push:
-    paths:
-      - '**/gradle/wrapper/**'
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-  validation:
+  gradle-wrapper-validation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: gradle/actions/wrapper-validation@v4.1.0
+      - uses: gradle/actions/wrapper-validation@ac638b010cf58a27ee6c972d7336334ccaf61c96 # v4.4.1

@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
+import com.google.protobuf.TextFormat;
 import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.client.retry.RetryRule;
 import com.linecorp.armeria.client.retry.RetryingClient;
@@ -21,6 +22,9 @@ import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
+import com.sun.net.httpserver.Authenticator;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpPrincipal;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
@@ -42,9 +46,8 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
-import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_4_28_2.Metrics;
+import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_4_31_0.Metrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
-import io.prometheus.metrics.shaded.com_google_protobuf_4_28_2.TextFormat;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -345,6 +348,7 @@ class PrometheusHttpServerTest {
 
   @Test
   @SuppressLogger(PrometheusHttpServer.class)
+  @SuppressLogger(Otel2PrometheusConverter.class)
   void fetch_DuplicateMetrics() {
     Resource resource = Resource.create(Attributes.of(stringKey("kr"), "vr"));
     metricData.set(
@@ -535,6 +539,15 @@ class PrometheusHttpServerTest {
     PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
     builder.setPrometheusRegistry(prometheusRegistry);
 
+    Authenticator authenticator =
+        new Authenticator() {
+          @Override
+          public Result authenticate(HttpExchange exchange) {
+            return new Success(new HttpPrincipal("anonymous", "public"));
+          }
+        };
+    builder.setAuthenticator(authenticator);
+
     PrometheusHttpServer httpServer = builder.build();
     PrometheusHttpServerBuilder fromOriginalBuilder = httpServer.toBuilder();
     httpServer.close();
@@ -545,7 +558,8 @@ class PrometheusHttpServerTest {
         .hasFieldOrPropertyWithValue("otelScopeEnabled", false)
         .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
         .hasFieldOrPropertyWithValue("executor", executor)
-        .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry);
+        .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry)
+        .hasFieldOrPropertyWithValue("authenticator", authenticator);
   }
 
   /**
@@ -616,6 +630,47 @@ class PrometheusHttpServerTest {
       }
     } finally {
       prometheusServer.shutdown();
+    }
+  }
+
+  @Test
+  void authenticator() {
+    // given
+    try (PrometheusHttpServer prometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setAuthenticator(
+                new Authenticator() {
+                  @Override
+                  public Result authenticate(HttpExchange exchange) {
+                    if ("/metrics".equals(exchange.getRequestURI().getPath())) {
+                      return new Failure(401);
+                    } else {
+                      return new Success(new HttpPrincipal("anonymous", "public"));
+                    }
+                  }
+                })
+            .build()) {
+      prometheusServer.register(
+          new CollectionRegistration() {
+            @Override
+            public Collection<MetricData> collectAllMetrics() {
+              return metricData.get();
+            }
+          });
+      WebClient client =
+          WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              .build();
+
+      // when
+      AggregatedHttpResponse metricsResponse = client.get("/metrics").aggregate().join();
+      AggregatedHttpResponse defaultResponse = client.get("/").aggregate().join();
+
+      // then
+      assertThat(metricsResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED);
+      assertThat(defaultResponse.status()).isEqualTo(HttpStatus.OK);
     }
   }
 }

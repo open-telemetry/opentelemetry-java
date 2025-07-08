@@ -135,7 +135,7 @@ class SpanShimTest {
     IntStream.range(0, baggageItemsCount)
         .forEach(i -> executor.execute(() -> spanShim.setBaggageItem("key-" + i, "value-" + i)));
     executor.shutdown();
-    executor.awaitTermination(5, TimeUnit.SECONDS);
+    executor.awaitTermination(10, TimeUnit.SECONDS);
 
     for (int i = 0; i < baggageItemsCount; i++) {
       assertThat(spanShim.getBaggageItem("key-" + i)).isEqualTo("value-" + i);

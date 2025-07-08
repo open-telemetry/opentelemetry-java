@@ -47,7 +47,8 @@ public final class DefaultConfigProperties implements ConfigProperties {
    * priority over environment variables.
    */
   public static DefaultConfigProperties create(Map<String, String> defaultProperties) {
-    return new DefaultConfigProperties(System.getProperties(), System.getenv(), defaultProperties);
+    return new DefaultConfigProperties(
+        ConfigUtil.safeSystemProperties(), System.getenv(), defaultProperties);
   }
 
   /**

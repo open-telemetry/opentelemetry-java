@@ -11,8 +11,6 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.Collections;
@@ -23,8 +21,7 @@ import java.util.function.Consumer;
 final class InstrumentBuilder {
 
   private final String name;
-  private final MeterProviderSharedState meterProviderSharedState;
-  private final MeterSharedState meterSharedState;
+  private final SdkMeter sdkMeter;
   private final InstrumentValueType valueType;
   private InstrumentType type;
   private Advice.AdviceBuilder adviceBuilder = Advice.builder();
@@ -32,16 +29,11 @@ final class InstrumentBuilder {
   private String unit = "";
 
   InstrumentBuilder(
-      String name,
-      InstrumentType type,
-      InstrumentValueType valueType,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
+      String name, InstrumentType type, InstrumentValueType valueType, SdkMeter sdkMeter) {
     this.name = name;
     this.type = type;
     this.valueType = valueType;
-    this.meterProviderSharedState = meterProviderSharedState;
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
   }
 
   InstrumentBuilder setUnit(String unit) {
@@ -60,8 +52,7 @@ final class InstrumentBuilder {
   }
 
   <T> T swapBuilder(SwapBuilder<T> swapper) {
-    return swapper.newBuilder(
-        meterProviderSharedState, meterSharedState, name, description, unit, adviceBuilder);
+    return swapper.newBuilder(sdkMeter, name, description, unit, adviceBuilder);
   }
 
   @FunctionalInterface
@@ -69,16 +60,15 @@ final class InstrumentBuilder {
 
     I createInstrument(
         InstrumentDescriptor instrumentDescriptor,
-        MeterSharedState meterSharedState,
+        SdkMeter sdkMeter,
         WriteableMetricStorage storage);
   }
 
   <I extends AbstractInstrument> I buildSynchronousInstrument(
       SynchronousInstrumentConstructor<I> instrumentFactory) {
     InstrumentDescriptor descriptor = newDescriptor();
-    WriteableMetricStorage storage =
-        meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
-    return instrumentFactory.createInstrument(descriptor, meterSharedState, storage);
+    WriteableMetricStorage storage = sdkMeter.registerSynchronousMetricStorage(descriptor);
+    return instrumentFactory.createInstrument(descriptor, sdkMeter, storage);
   }
 
   SdkObservableInstrument buildDoubleAsynchronousInstrument(
@@ -87,8 +77,8 @@ final class InstrumentBuilder {
     Runnable runnable = () -> updater.accept(sdkObservableMeasurement);
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Collections.singletonList(sdkObservableMeasurement), runnable);
-    meterSharedState.registerCallback(callbackRegistration);
-    return new SdkObservableInstrument(meterSharedState, callbackRegistration);
+    sdkMeter.registerCallback(callbackRegistration);
+    return new SdkObservableInstrument(sdkMeter, callbackRegistration);
   }
 
   SdkObservableInstrument buildLongAsynchronousInstrument(
@@ -97,14 +87,14 @@ final class InstrumentBuilder {
     Runnable runnable = () -> updater.accept(sdkObservableMeasurement);
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Collections.singletonList(sdkObservableMeasurement), runnable);
-    meterSharedState.registerCallback(callbackRegistration);
-    return new SdkObservableInstrument(meterSharedState, callbackRegistration);
+    sdkMeter.registerCallback(callbackRegistration);
+    return new SdkObservableInstrument(sdkMeter, callbackRegistration);
   }
 
   SdkObservableMeasurement buildObservableMeasurement(InstrumentType type) {
     this.type = type;
     InstrumentDescriptor descriptor = newDescriptor();
-    return meterSharedState.registerObservableMeasurement(descriptor);
+    return sdkMeter.registerObservableMeasurement(descriptor);
   }
 
   private InstrumentDescriptor newDescriptor() {
@@ -122,10 +112,9 @@ final class InstrumentBuilder {
   }
 
   @FunctionalInterface
-  protected interface SwapBuilder<T> {
+  interface SwapBuilder<T> {
     T newBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
+        SdkMeter sdkMeter,
         String name,
         String description,
         String unit,

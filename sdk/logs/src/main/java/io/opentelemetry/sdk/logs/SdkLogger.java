@@ -5,21 +5,37 @@
 
 package io.opentelemetry.sdk.logs;
 
-import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 
 /** SDK implementation of {@link Logger}. */
-final class SdkLogger implements ExtendedLogger {
+class SdkLogger implements Logger {
 
   private static final Logger NOOP_LOGGER = LoggerProvider.noop().get("noop");
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.logs.ExtendedDefaultLoggerProvider");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
 
   private final LoggerSharedState loggerSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-  private final boolean loggerEnabled;
+
+  // deliberately not volatile because of performance concerns
+  // - which means its eventually consistent
+  protected boolean loggerEnabled;
 
   SdkLogger(
       LoggerSharedState loggerSharedState,
@@ -30,10 +46,22 @@ final class SdkLogger implements ExtendedLogger {
     this.loggerEnabled = loggerConfig.isEnabled();
   }
 
+  static SdkLogger create(
+      LoggerSharedState sharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      LoggerConfig loggerConfig) {
+    return INCUBATOR_AVAILABLE
+        ? IncubatingUtil.createExtendedLogger(sharedState, instrumentationScopeInfo, loggerConfig)
+        : new SdkLogger(sharedState, instrumentationScopeInfo, loggerConfig);
+  }
+
   @Override
   public LogRecordBuilder logRecordBuilder() {
     if (loggerEnabled) {
-      return new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
+      return INCUBATOR_AVAILABLE
+          ? IncubatingUtil.createExtendedLogRecordBuilder(
+              loggerSharedState, instrumentationScopeInfo)
+          : new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
     }
     return NOOP_LOGGER.logRecordBuilder();
   }
@@ -43,8 +71,12 @@ final class SdkLogger implements ExtendedLogger {
     return instrumentationScopeInfo;
   }
 
-  @Override
-  public boolean isEnabled() {
+  // Visible for testing
+  public boolean isEnabled(Severity severity, Context context) {
     return loggerEnabled;
+  }
+
+  void updateLoggerConfig(LoggerConfig loggerConfig) {
+    loggerEnabled = loggerConfig.isEnabled();
   }
 }

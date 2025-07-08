@@ -5,16 +5,14 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
-import java.io.Closeable;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramAggregationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import java.util.List;
 
-final class AggregationFactory
-    implements Factory<AggregationModel, io.opentelemetry.sdk.metrics.Aggregation> {
+final class AggregationFactory implements Factory<AggregationModel, Aggregation> {
 
   private static final AggregationFactory INSTANCE = new AggregationFactory();
 
@@ -25,18 +23,17 @@ final class AggregationFactory
   }
 
   @Override
-  public io.opentelemetry.sdk.metrics.Aggregation create(
-      AggregationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public Aggregation create(AggregationModel model, DeclarativeConfigContext context) {
     if (model.getDrop() != null) {
-      return io.opentelemetry.sdk.metrics.Aggregation.drop();
+      return Aggregation.drop();
     }
     if (model.getSum() != null) {
-      return io.opentelemetry.sdk.metrics.Aggregation.sum();
+      return Aggregation.sum();
     }
     if (model.getLastValue() != null) {
-      return io.opentelemetry.sdk.metrics.Aggregation.lastValue();
+      return Aggregation.lastValue();
     }
-    Base2ExponentialBucketHistogramModel exponentialBucketHistogram =
+    Base2ExponentialBucketHistogramAggregationModel exponentialBucketHistogram =
         model.getBase2ExponentialBucketHistogram();
     if (exponentialBucketHistogram != null) {
       Integer maxScale = exponentialBucketHistogram.getMaxScale();
@@ -48,25 +45,25 @@ final class AggregationFactory
         maxSize = 160;
       }
       try {
-        return io.opentelemetry.sdk.metrics.Aggregation.base2ExponentialBucketHistogram(
-            maxSize, maxScale);
+        return Aggregation.base2ExponentialBucketHistogram(maxSize, maxScale);
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException("Invalid exponential bucket histogram", e);
+        throw new DeclarativeConfigException("Invalid exponential bucket histogram", e);
       }
     }
-    ExplicitBucketHistogramModel explicitBucketHistogram = model.getExplicitBucketHistogram();
+    ExplicitBucketHistogramAggregationModel explicitBucketHistogram =
+        model.getExplicitBucketHistogram();
     if (explicitBucketHistogram != null) {
       List<Double> boundaries = explicitBucketHistogram.getBoundaries();
       if (boundaries == null) {
-        return io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram();
+        return Aggregation.explicitBucketHistogram();
       }
       try {
-        return io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram(boundaries);
+        return Aggregation.explicitBucketHistogram(boundaries);
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException("Invalid explicit bucket histogram", e);
+        throw new DeclarativeConfigException("Invalid explicit bucket histogram", e);
       }
     }
 
-    return io.opentelemetry.sdk.metrics.Aggregation.defaultAggregation();
+    return Aggregation.defaultAggregation();
   }
 }

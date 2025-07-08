@@ -14,6 +14,9 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  // To use parsed config file as input for InstrumentationConfigUtilTest
+  testImplementation(project(":sdk-extensions:incubator"))
+
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":api:testing-internal"))
 

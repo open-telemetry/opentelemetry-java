@@ -8,15 +8,12 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Arrays;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
-final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPropagator> {
+final class TextMapPropagatorFactory
+    implements Factory<TextMapPropagatorModel, TextMapPropagatorAndName> {
 
   private static final TextMapPropagatorFactory INSTANCE = new TextMapPropagatorFactory();
 
@@ -27,37 +24,44 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
   }
 
   @Override
-  public TextMapPropagator create(
-      List<String> model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model.isEmpty()) {
-      model = Arrays.asList("tracecontext", "baggage");
+  public TextMapPropagatorAndName create(
+      TextMapPropagatorModel model, DeclarativeConfigContext context) {
+    if (model.getTracecontext() != null) {
+      return getPropagator(context, "tracecontext");
+    }
+    if (model.getBaggage() != null) {
+      return getPropagator(context, "baggage");
+    }
+    if (model.getB3() != null) {
+      return getPropagator(context, "b3");
+    }
+    if (model.getB3multi() != null) {
+      return getPropagator(context, "b3multi");
+    }
+    if (model.getJaeger() != null) {
+      return getPropagator(context, "jaeger");
+    }
+    if (model.getOttrace() != null) {
+      return getPropagator(context, "ottrace");
     }
 
-    if (model.contains("none")) {
-      if (model.size() > 1) {
-        throw new ConfigurationException(
-            "propagators contains \"none\" along with other propagators");
-      }
-      return TextMapPropagator.noop();
-    }
-
-    List<TextMapPropagator> propagators = new ArrayList<>();
-    for (String propagator : model) {
-      propagators.add(getPropagator(spiHelper, propagator));
-    }
-
-    return TextMapPropagator.composite(propagators);
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "propagator");
+    TextMapPropagator propagator =
+        context.loadComponent(TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());
+    return TextMapPropagatorAndName.create(propagator, keyValue.getKey());
   }
 
-  private static TextMapPropagator getPropagator(SpiHelper spiHelper, String name) {
+  static TextMapPropagatorAndName getPropagator(DeclarativeConfigContext context, String name) {
+    TextMapPropagator textMapPropagator;
     if (name.equals("tracecontext")) {
-      return W3CTraceContextPropagator.getInstance();
+      textMapPropagator = W3CTraceContextPropagator.getInstance();
+    } else if (name.equals("baggage")) {
+      textMapPropagator = W3CBaggagePropagator.getInstance();
+    } else {
+      textMapPropagator =
+          context.loadComponent(TextMapPropagator.class, name, Collections.emptyMap());
     }
-    if (name.equals("baggage")) {
-      return W3CBaggagePropagator.getInstance();
-    }
-
-    return FileConfigUtil.loadComponent(
-        spiHelper, TextMapPropagator.class, name, Collections.emptyMap());
+    return TextMapPropagatorAndName.create(textMapPropagator, name);
   }
 }

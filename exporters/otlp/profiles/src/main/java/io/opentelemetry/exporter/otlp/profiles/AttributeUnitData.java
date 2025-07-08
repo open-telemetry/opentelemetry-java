@@ -10,14 +10,14 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Represents a mapping between Attribute Keys and Units.
  *
- * @see "pprofextended.proto::AttributeUnit"
+ * @see "profiles.proto::AttributeUnit"
  */
 @Immutable
 public interface AttributeUnitData {
 
   /** Index into string table. */
-  long getAttributeKey();
+  int getAttributeKeyStringIndex();
 
   /** Index into string table. */
-  long getUnitIndex();
+  int getUnitIndexStringIndex();
 }

@@ -5,18 +5,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogramBuilder;
+import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.Objects;
@@ -24,19 +20,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongHistogram {
+class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   private static final Logger logger = Logger.getLogger(SdkLongHistogram.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final MeterSharedState meterSharedState;
-  private final WriteableMetricStorage storage;
+  final SdkMeter sdkMeter;
+  final WriteableMetricStorage storage;
 
-  private SdkLongHistogram(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+  SdkLongHistogram(
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -63,29 +57,18 @@ final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongH
     record(value, Attributes.empty());
   }
 
-  @Override
-  public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
-  }
+  static class SdkLongHistogramBuilder implements LongHistogramBuilder {
 
-  static final class SdkLongHistogramBuilder implements ExtendedLongHistogramBuilder {
-
-    private final InstrumentBuilder builder;
+    final InstrumentBuilder builder;
 
     SdkLongHistogramBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState sharedState,
+        SdkMeter sdkMeter,
         String name,
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
       builder =
-          new InstrumentBuilder(
-                  name,
-                  InstrumentType.HISTOGRAM,
-                  InstrumentValueType.LONG,
-                  meterProviderSharedState,
-                  sharedState)
+          new InstrumentBuilder(name, InstrumentType.HISTOGRAM, InstrumentValueType.LONG, sdkMeter)
               .setDescription(description)
               .setUnit(unit)
               .setAdviceBuilder(adviceBuilder);
@@ -109,8 +92,7 @@ final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongH
     }
 
     @Override
-    public ExtendedLongHistogramBuilder setExplicitBucketBoundariesAdvice(
-        List<Long> bucketBoundaries) {
+    public LongHistogramBuilder setExplicitBucketBoundariesAdvice(List<Long> bucketBoundaries) {
       List<Double> boundaries;
       try {
         Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
@@ -121,12 +103,6 @@ final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongH
         return this;
       }
       builder.setExplicitBucketBoundaries(boundaries);
-      return this;
-    }
-
-    @Override
-    public ExtendedLongHistogramBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      builder.setAdviceAttributes(attributes);
       return this;
     }
 

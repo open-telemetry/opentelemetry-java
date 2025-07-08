@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import static io.opentelemetry.sdk.internal.GlobUtil.toGlobPatternPredicate;
+import static io.opentelemetry.sdk.internal.GlobUtil.createGlobPatternPredicate;
 import static java.util.stream.Collectors.joining;
 
 import java.util.Collection;
@@ -99,7 +99,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
     Predicate<String> result = attributeKey -> false;
     for (String include : included) {
       if (globMatchingEnabled) {
-        result = result.or(toGlobPatternPredicate(include));
+        result = result.or(createGlobPatternPredicate(include));
       } else {
         result = result.or(include::equalsIgnoreCase);
       }
@@ -112,7 +112,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
     Predicate<String> result = attributeKey -> true;
     for (String exclude : excluded) {
       if (globMatchingEnabled) {
-        result = result.and(toGlobPatternPredicate(exclude).negate());
+        result = result.and(createGlobPatternPredicate(exclude).negate());
       } else {
         result = result.and(s -> !exclude.equalsIgnoreCase(s));
       }

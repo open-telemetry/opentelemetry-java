@@ -20,10 +20,13 @@ dependencies {
   implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
+  compileOnly(project(":api:incubator"))
+
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
+  testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("io.grpc:grpc-stub")
 
   jmhImplementation(project(":sdk:testing"))

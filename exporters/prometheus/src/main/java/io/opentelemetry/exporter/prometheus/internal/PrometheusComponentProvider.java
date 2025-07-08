@@ -5,10 +5,10 @@
 
 package io.opentelemetry.exporter.prometheus.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.List;
@@ -32,7 +32,7 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
   }
 
   @Override
-  public MetricReader create(StructuredConfigProperties config) {
+  public MetricReader create(DeclarativeConfigProperties config) {
     PrometheusHttpServerBuilder prometheusBuilder = PrometheusHttpServer.builder();
 
     Integer port = config.getInt("port");
@@ -50,7 +50,7 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
       prometheusBuilder.setOtelScopeEnabled(!withoutScopeInfo);
     }
 
-    StructuredConfigProperties withResourceConstantLabels =
+    DeclarativeConfigProperties withResourceConstantLabels =
         config.getStructured("with_resource_constant_labels");
     if (withResourceConstantLabels != null) {
       List<String> included = withResourceConstantLabels.getScalarList("included", String.class);

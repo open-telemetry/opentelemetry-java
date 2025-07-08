@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.exporter.internal.otlp.ResourceMarshaler;
-import io.opentelemetry.proto.profiles.v1experimental.internal.ResourceProfiles;
+import io.opentelemetry.proto.profiles.v1development.internal.ResourceProfiles;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
@@ -26,20 +26,20 @@ final class ResourceProfilesMarshaler extends MarshalerWithSize {
 
   /** Returns Marshalers of ResourceProfiles created by grouping the provided Profiles. */
   @SuppressWarnings("AvoidObjectArrays")
-  static ResourceProfilesMarshaler[] create(Collection<ProfileContainerData> profiles) {
-    Map<Resource, Map<InstrumentationScopeInfo, List<ProfileContainerMarshaler>>>
-        resourceAndScopeMap = groupByResourceAndScope(profiles);
+  static ResourceProfilesMarshaler[] create(Collection<ProfileData> profiles) {
+    Map<Resource, Map<InstrumentationScopeInfo, List<ProfileMarshaler>>> resourceAndScopeMap =
+        groupByResourceAndScope(profiles);
 
     ResourceProfilesMarshaler[] resourceProfilesMarshalers =
         new ResourceProfilesMarshaler[resourceAndScopeMap.size()];
     int posResource = 0;
-    for (Map.Entry<Resource, Map<InstrumentationScopeInfo, List<ProfileContainerMarshaler>>> entry :
+    for (Map.Entry<Resource, Map<InstrumentationScopeInfo, List<ProfileMarshaler>>> entry :
         resourceAndScopeMap.entrySet()) {
       InstrumentationScopeProfilesMarshaler[] instrumentationLibrarySpansMarshalers =
           new InstrumentationScopeProfilesMarshaler[entry.getValue().size()];
       int posInstrumentation = 0;
 
-      for (Map.Entry<InstrumentationScopeInfo, List<ProfileContainerMarshaler>> entryIs :
+      for (Map.Entry<InstrumentationScopeInfo, List<ProfileMarshaler>> entryIs :
           entry.getValue().entrySet()) {
         instrumentationLibrarySpansMarshalers[posInstrumentation++] =
             new InstrumentationScopeProfilesMarshaler(
@@ -89,12 +89,12 @@ final class ResourceProfilesMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  private static Map<Resource, Map<InstrumentationScopeInfo, List<ProfileContainerMarshaler>>>
-      groupByResourceAndScope(Collection<ProfileContainerData> profiles) {
+  private static Map<Resource, Map<InstrumentationScopeInfo, List<ProfileMarshaler>>>
+      groupByResourceAndScope(Collection<ProfileData> profiles) {
     return MarshalerUtil.groupByResourceAndScope(
         profiles,
-        ProfileContainerData::getResource,
-        ProfileContainerData::getInstrumentationScopeInfo,
-        ProfileContainerMarshaler::create);
+        ProfileData::getResource,
+        ProfileData::getInstrumentationScopeInfo,
+        ProfileMarshaler::create);
   }
 }

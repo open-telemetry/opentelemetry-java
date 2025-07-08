@@ -10,6 +10,7 @@ plugins {
 dependencies {
   errorprone("com.google.errorprone:error_prone_core")
   errorprone("com.uber.nullaway:nullaway")
+  errorprone(project(":custom-checks"))
 }
 
 val disableErrorProne = properties["disableErrorProne"]?.toString()?.toBoolean() ?: false
@@ -49,7 +50,6 @@ tasks {
         disable("UnnecessarilyFullyQualified")
 
         // We use animal sniffer
-        disable("Java7ApiChecker")
         disable("Java8ApiChecker")
         disable("AndroidJdkLibsChecker")
 
@@ -86,9 +86,15 @@ tasks {
         // cognitive load is dubious.
         disable("YodaCondition")
 
-        if (name.contains("Jmh") || name.contains("Test")) {
+        // We annotate packages with @ParametersAreNonnullByDefault from com.google.code.findbugs:jsr305.
+        // @NullMarked is the equivalent from jspecify.
+        disable("AddNullMarkedToPackageInfo")
+
+        if ((name.contains("Jmh") || name.contains("Test") || project.name.contains("testing-internal")) && !project.name.equals("custom-checks")) {
           // Allow underscore in test-type method names
           disable("MemberName")
+          // Internal javadoc not needed for test or jmh classes
+          disable("OtelInternalJavadoc")
         }
 
         option("NullAway:CustomContractAnnotations", "io.opentelemetry.api.internal.Contract")

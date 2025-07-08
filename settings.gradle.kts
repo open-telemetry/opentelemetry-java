@@ -1,11 +1,11 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "8.3.4"
-    id("com.gradle.develocity") version "3.18.1"
+    id("com.gradleup.shadow") version "8.3.8"
+    id("com.gradle.develocity") version "4.0.2"
     id("de.undercouch.download") version "5.6.0"
     id("org.jsonschema2pojo") version "1.2.2"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("org.graalvm.buildtools.native") version "0.10.3"
+    id("org.graalvm.buildtools.native") version "0.10.6"
   }
 }
 
@@ -29,6 +29,7 @@ include(":api:testing-internal")
 include(":bom")
 include(":bom-alpha")
 include(":context")
+include(":custom-checks")
 include(":dependencyManagement")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")
@@ -50,6 +51,7 @@ include(":integration-tests:otlp")
 include(":integration-tests:tracecontext")
 include(":integration-tests:graal")
 include(":integration-tests:graal-incubating")
+include(":javadoc-crawler")
 include(":opencensus-shim")
 include(":opentracing-shim")
 include(":perf-harness")
@@ -67,41 +69,10 @@ include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")
 include(":animal-sniffer-signature")
 
-val gradleEnterpriseServer = "https://ge.opentelemetry.io"
-val isCI = System.getenv("CI") != null
-val geAccessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY") ?: ""
-
-// if GE access key is not given and we are in CI, then we publish to scans.gradle.com
-val useScansGradleCom = isCI && geAccessKey.isEmpty()
-
-if (useScansGradleCom) {
-  develocity {
-    buildScan {
-      termsOfUseUrl.set("https://gradle.com/terms-of-service")
-      termsOfUseAgree.set("yes")
-      uploadInBackground.set(!isCI)
-      publishing.onlyIf { true }
-
-      capture {
-        fileFingerprints.set(true)
-      }
-    }
-  }
-} else {
-  develocity {
-    server = gradleEnterpriseServer
-    buildScan {
-      uploadInBackground.set(!isCI)
-      publishing.onlyIf {
-        it.isAuthenticated
-      }
-
-      capture {
-        fileFingerprints.set(true)
-      }
-
-      gradle.startParameter.projectProperties["testJavaVersion"]?.let { tag(it) }
-      gradle.startParameter.projectProperties["testJavaVM"]?.let { tag(it) }
-    }
+develocity {
+  buildScan {
+    publishing.onlyIf { System.getenv("CI") != null }
+    termsOfUseUrl.set("https://gradle.com/help/legal-terms-of-use")
+    termsOfUseAgree.set("yes")
   }
 }

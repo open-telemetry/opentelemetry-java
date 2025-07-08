@@ -687,7 +687,8 @@ class TraceAssertionsTest {
                     .hasTracesSatisfyingExactly(
                         trace -> trace.hasSpansSatisfyingExactly(span -> span.hasSpanId(SPAN_ID1))))
         .isInstanceOf(AssertionError.class)
-        .hasMessageStartingWith("[Trace 0] \n" + "Expected size: 1 but was: 2");
+        .hasMessageStartingWith(
+            "[Trace 0] " + System.lineSeparator() + "Expected size: 1 but was: 2");
 
     // test asserting spans in wrong oder
     assertThatThrownBy(

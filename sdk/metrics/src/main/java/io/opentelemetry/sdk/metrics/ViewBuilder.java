@@ -113,6 +113,7 @@ public final class ViewBuilder {
    * limit.
    *
    * @param cardinalityLimit the maximum number of series for a metric
+   * @since 1.44.0
    */
   public ViewBuilder setCardinalityLimit(int cardinalityLimit) {
     if (cardinalityLimit <= 0) {

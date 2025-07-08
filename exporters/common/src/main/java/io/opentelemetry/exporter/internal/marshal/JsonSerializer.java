@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -122,8 +123,31 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
+  public void writeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+    for (byte[] value : utf8Bytes) {
+      // Marshalers encoded String into UTF-8 bytes to optimize for binary serialization where
+      // we are able to avoid the encoding process happening twice, one for size computation and one
+      // for actual writing. JsonGenerator actually has a writeUTF8String that would be able to
+      // accept
+      // this, but it only works when writing to an OutputStream, but not to a String like we do for
+      // writing to logs. It's wasteful to take a String, convert it to bytes, and convert back to
+      // the same String but we can see if this can be improved in the future.
+      generator.writeString(new String(value, StandardCharsets.UTF_8));
+    }
+    generator.writeEndArray();
+  }
+
+  @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     generator.writeBinaryField(field.getJsonName(), value);
+  }
+
+  @Override
+  public void writeByteBuffer(ProtoFieldInfo field, ByteBuffer value) throws IOException {
+    byte[] data = new byte[value.capacity()];
+    ((ByteBuffer) value.duplicate().clear()).get(data);
+    generator.writeBinaryField(field.getJsonName(), data);
   }
 
   @Override
@@ -196,23 +220,23 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
-  protected void writeStartRepeated(ProtoFieldInfo field) throws IOException {
+  public void writeStartRepeated(ProtoFieldInfo field) throws IOException {
     generator.writeArrayFieldStart(field.getJsonName());
   }
 
   @Override
-  protected void writeEndRepeated() throws IOException {
+  public void writeEndRepeated() throws IOException {
     generator.writeEndArray();
   }
 
   @Override
-  protected void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+  public void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
       throws IOException {
     generator.writeStartObject();
   }
 
   @Override
-  protected void writeEndRepeatedElement() throws IOException {
+  public void writeEndRepeatedElement() throws IOException {
     generator.writeEndObject();
   }
 

@@ -27,7 +27,8 @@ val latestReleasedVersion: String by lazy {
 
 class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
-    val allowableAutovalueChanges = setOf(JApiCompatibilityChangeType.METHOD_ABSTRACT_ADDED_TO_CLASS, JApiCompatibilityChangeType.METHOD_ADDED_TO_PUBLIC_CLASS)
+    val allowableAutovalueChanges = setOf(JApiCompatibilityChangeType.METHOD_ABSTRACT_ADDED_TO_CLASS,
+      JApiCompatibilityChangeType.METHOD_ADDED_TO_PUBLIC_CLASS, JApiCompatibilityChangeType.ANNOTATION_ADDED)
     if (member.compatibilityChanges.filter { !allowableAutovalueChanges.contains(it.type) }.isEmpty() &&
       member is JApiMethod && isAutoValueClass(member.getjApiClass()))
     {
@@ -47,55 +48,8 @@ class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() 
 }
 
 class SourceIncompatibleRule : AbstractRecordingSeenMembers() {
-
-  fun ignoreAddLogRecordProcessorCustomizerReturnTypeChange(member: JApiCompatibility): Violation? {
-    if (member is JApiClass &&
-      member.newClass.get().name.equals("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder") &&
-      member.isChangeCausedByClassElement
-    ) {
-      // member.isChangeCausedByClassElement check above
-      // limits source of changes to fields, methods and constructors
-
-      for (method in member.methods) {
-        if (!method.isSourceCompatible()) {
-          // addLogRecordProcessorCustomizer method had a return type change from base to impl class,
-          // japicmp (correctly) doesn't consider it as a METHOD_RETURN_TYPE_CHANGED
-          // compatibility issue. But still thinks that something wrong.
-          // Since it thinks that method did not change, it reports it as class-level violation,
-          // and we need to suppress it, but keep other checks on.
-          if (method.name.equals("addLogRecordProcessorCustomizer") &&
-            method.compatibilityChanges.isEmpty() &&
-            method.changeStatus == JApiChangeStatus.UNCHANGED) {
-            return null;
-          }
-          return Violation.error(method, "Method is not source compatible: $method")
-        }
-      }
-
-      for (field in member.fields) {
-        if (!field.isSourceCompatible()) {
-          return Violation.error(field, "Field is not source compatible: $field")
-        }
-      }
-
-      for (constructor in member.constructors) {
-        if (!constructor.isSourceCompatible()) {
-          return Violation.error(constructor, "Constructor is not source compatible: $constructor")
-        }
-      }
-    }
-
-    return Violation.error(member, "Not source compatible: $member")
-  }
-
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
     if (!member.isSourceCompatible()) {
-      // TODO: remove after 1.36.0 is released, see https://github.com/open-telemetry/opentelemetry-java/pull/6248
-      if (member.compatibilityChanges.isEmpty()) {
-        return ignoreAddLogRecordProcessorCustomizerReturnTypeChange(member)
-      }
-      // end of suppression
-
       return Violation.error(member, "Not source compatible: $member")
     }
     return null
@@ -181,7 +135,13 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
 
         // this is needed so that we only consider the current artifact, and not dependencies
         ignoreMissingClasses.set(true)
-        packageExcludes.addAll("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
+        packageExcludes.addAll(
+          "*.internal",
+          "*.internal.*",
+          "io.opentelemetry.internal.shaded.jctools.*",
+          // Temporarily suppress warnings from public generated classes from :sdk-extensions:jaeger-remote-sampler
+          "io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2"
+        )
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
         txtOutputFile.set(
           apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_$baselineVersion/${base.archivesName.get()}.txt") }

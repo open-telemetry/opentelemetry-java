@@ -11,7 +11,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.proto.profiles.v1experimental.internal.Link;
+import io.opentelemetry.proto.profiles.v1development.internal.Link;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,15 +39,14 @@ final class LinkMarshaler extends MarshalerWithSize {
 
     LinkMarshaler[] linkMarshalers = new LinkMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<LinkData>() {
-              int index = 0;
+        new Consumer<LinkData>() {
+          int index = 0;
 
-              @Override
-              public void accept(LinkData linkData) {
-                linkMarshalers[index++] = LinkMarshaler.create(linkData);
-              }
-            });
+          @Override
+          public void accept(LinkData linkData) {
+            linkMarshalers[index++] = LinkMarshaler.create(linkData);
+          }
+        });
     return linkMarshalers;
   }
 

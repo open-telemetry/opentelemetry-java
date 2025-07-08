@@ -434,6 +434,7 @@ class ViewRegistryTest {
   }
 
   @Test
+  @SuppressLogger(ViewRegistry.class)
   void findViews_ApplyAdvice() {
     // use incompatible aggregation for histogram
     DefaultAggregationSelector aggregationSelector =

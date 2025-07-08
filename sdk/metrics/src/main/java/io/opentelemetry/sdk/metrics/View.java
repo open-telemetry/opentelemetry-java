@@ -60,7 +60,11 @@ public abstract class View {
   /** Returns the attribute processor used for this view. */
   abstract AttributesProcessor getAttributesProcessor();
 
-  /** Returns the cardinality limit for this view. */
+  /**
+   * Returns the cardinality limit for this view.
+   *
+   * @since 1.44.0
+   */
   public abstract int getCardinalityLimit();
 
   @Override

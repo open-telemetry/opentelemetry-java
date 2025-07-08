@@ -5,18 +5,31 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.resources.Resource;
+import java.nio.ByteBuffer;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * Represents a complete profile, including sample types, samples, mappings to binaries, locations,
- * functions, string table, and additional metadata.
+ * and additional metadata.
  *
- * @see "pprofextended.proto::Profile"
+ * @see "profiles.proto::Profile"
  */
 @Immutable
 public interface ProfileData {
+
+  /** Returns the resource of this profile. */
+  Resource getResource();
+
+  /** Returns the instrumentation scope that generated this profile. */
+  InstrumentationScopeInfo getInstrumentationScopeInfo();
+
+  /** Returns the dictionary data of this profile. */
+  ProfileDictionaryData getProfileDictionaryData();
 
   /** A description of the samples associated with each Sample.value. */
   List<ValueTypeData> getSampleTypes();
@@ -24,46 +37,8 @@ public interface ProfileData {
   /** The set of samples recorded in this profile. */
   List<SampleData> getSamples();
 
-  /**
-   * Mapping from address ranges to the image/binary/library mapped into that address range.
-   * mapping[0] will be the main binary.
-   */
-  List<MappingData> getMappings();
-
-  /** Locations referenced by samples via location_indices. */
-  List<LocationData> getLocations();
-
   /** Array of locations referenced by samples. */
-  List<Long> getLocationIndices();
-
-  /** Functions referenced by locations. */
-  List<FunctionData> getFunctions();
-
-  /** Lookup table for attributes. */
-  Attributes getAttributes();
-
-  /** Represents a mapping between Attribute Keys and Units. */
-  List<AttributeUnitData> getAttributeUnits();
-
-  /** Lookup table for links. */
-  List<LinkData> getLinks();
-
-  /**
-   * A common table for strings referenced by various messages. string_table[0] must always be "".
-   */
-  List<String> getStringTable();
-
-  /**
-   * Frames with Function.function_name fully matching the following regexp will be dropped from the
-   * samples, along with their successors. Index into string table.
-   */
-  long getDropFrames();
-
-  /**
-   * Frames with Function.function_name fully matching the following regexp will be kept, even if
-   * matching drop_frames pattern. Index into string table.
-   */
-  long getKeepFrames();
+  List<Integer> getLocationIndices();
 
   /** Time of collection (UTC) represented as nanoseconds past the epoch. */
   long getTimeNanos();
@@ -80,8 +55,53 @@ public interface ProfileData {
   long getPeriod();
 
   /** Free-form text associated with the profile. Indices into string table. */
-  List<Long> getComment();
+  List<Integer> getCommentStrIndices();
 
   /** Type of the preferred sample. Index into the string table. */
-  long getDefaultSampleType();
+  int getDefaultSampleTypeStringIndex();
+
+  /**
+   * Returns a globally unique identifier for a profile, as 32 character lowercase hex String. An ID
+   * with all zeroes is considered invalid. This field is required.
+   */
+  String getProfileId();
+
+  /**
+   * Returns a globally unique identifier for a profile, as a 16 bytes array. An ID with all zeroes
+   * is considered invalid. This field is required.
+   */
+  default byte[] getProfileIdBytes() {
+    return OtelEncodingUtils.bytesFromBase16(getProfileId(), 32);
+  }
+
+  /**
+   * Returns indexes of profile-wide attributes, referencing to Profile.attribute_table. Attribute
+   * keys MUST be unique (it is not allowed to have more than one attribute with the same key).
+   *
+   * @see
+   *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#attribute"
+   */
+  List<Integer> getAttributeIndices();
+
+  /**
+   * Returns the total number of attributes that were recorded on this profile.
+   *
+   * <p>This number may be larger than the number of attributes that are attached to this profile,
+   * if the total number recorded was greater than the configured maximum value.
+   */
+  int getTotalAttributeCount();
+
+  /**
+   * Returns the format of the original payload. Common values are defined in semantic conventions.
+   * [required if original_payload is present]
+   */
+  @Nullable
+  String getOriginalPayloadFormat();
+
+  /**
+   * Returns the original payload, in a profiler-native format e.g. JFR. Optional. Default behavior
+   * should be to not include the original payload. If the original payload is in pprof format, it
+   * SHOULD not be included in this field.
+   */
+  ByteBuffer getOriginalPayload();
 }

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -23,6 +25,43 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface ExponentialHistogramPointData extends PointData {
+
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
+  @SuppressWarnings("TooManyParameters")
+  static ExponentialHistogramPointData create(
+      int scale,
+      double sum,
+      long zeroCount,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
+      ExponentialHistogramBuckets positiveBuckets,
+      ExponentialHistogramBuckets negativeBuckets,
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      List<DoubleExemplarData> exemplars) {
+
+    return ImmutableExponentialHistogramPointData.create(
+        scale,
+        sum,
+        zeroCount,
+        hasMin,
+        min,
+        hasMax,
+        max,
+        positiveBuckets,
+        negativeBuckets,
+        startEpochNanos,
+        epochNanos,
+        attributes,
+        exemplars);
+  }
 
   /**
    * Scale characterises the resolution of the histogram, with larger values of scale offering

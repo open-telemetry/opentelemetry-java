@@ -26,7 +26,7 @@ class ReadWriteLogRecordTest {
 
     logRecord.setAllAttributes(newAttributes);
 
-    Attributes result = logRecord.toLogRecordData().getAttributes();
+    Attributes result = logRecord.getAttributes();
     assertThat(result.get(stringKey("foo"))).isEqualTo("bar");
     assertThat(result.get(stringKey("bar"))).isEqualTo("buzz");
     assertThat(result.get(stringKey("untouched"))).isEqualTo("yes");
@@ -35,17 +35,17 @@ class ReadWriteLogRecordTest {
   @Test
   void addAllHandlesNull() {
     SdkReadWriteLogRecord logRecord = buildLogRecord();
-    Attributes originalAttributes = logRecord.toLogRecordData().getAttributes();
+    Attributes originalAttributes = logRecord.getAttributes();
     ReadWriteLogRecord result = logRecord.setAllAttributes(null);
-    assertThat(result.toLogRecordData().getAttributes()).isEqualTo(originalAttributes);
+    assertThat(result.getAttributes()).isEqualTo(originalAttributes);
   }
 
   @Test
   void allHandlesEmpty() {
     SdkReadWriteLogRecord logRecord = buildLogRecord();
-    Attributes originalAttributes = logRecord.toLogRecordData().getAttributes();
+    Attributes originalAttributes = logRecord.getAttributes();
     ReadWriteLogRecord result = logRecord.setAllAttributes(Attributes.empty());
-    assertThat(result.toLogRecordData().getAttributes()).isEqualTo(originalAttributes);
+    assertThat(result.getAttributes()).isEqualTo(originalAttributes);
   }
 
   SdkReadWriteLogRecord buildLogRecord() {
@@ -68,6 +68,7 @@ class ReadWriteLogRecordTest {
         Severity.DEBUG,
         "buggin",
         body,
-        initialAttributes);
+        initialAttributes,
+        "my.event.name");
   }
 }

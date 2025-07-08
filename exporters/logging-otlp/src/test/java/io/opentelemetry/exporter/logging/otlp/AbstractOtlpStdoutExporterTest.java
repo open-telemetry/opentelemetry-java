@@ -15,10 +15,10 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +56,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   private static final PrintStream SYSTEM_OUT_PRINT_STREAM = new PrintStream(SYSTEM_OUT_STREAM);
 
   @RegisterExtension LogCapturer logs;
+  private int skipLogs;
   private final String defaultConfigString;
   private final TestDataExporter<? super T> testDataExporter;
   protected final Class<?> exporterClass;
@@ -87,6 +87,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   private String output(@Nullable OutputStream outputStream, @Nullable Path file) {
     if (outputStream == null) {
       return logs.getEvents().stream()
+          .skip(skipLogs)
           .map(LoggingEvent::getMessage)
           .reduce("", (a, b) -> a + b + "\n")
           .trim();
@@ -94,14 +95,14 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
     if (file != null) {
       try {
-        return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(file), StandardCharsets.UTF_8).trim();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
 
     try {
-      return SYSTEM_OUT_STREAM.toString(StandardCharsets.UTF_8.name());
+      return SYSTEM_OUT_STREAM.toString(StandardCharsets.UTF_8.name()).trim();
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
@@ -204,8 +205,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   @SuppressWarnings("SystemOut")
   @ParameterizedTest(name = "{0}")
   @MethodSource("exportTestCases")
-  void exportWithProgrammaticConfig(String name, TestCase testCase)
-      throws JSONException, IOException {
+  void exportWithProgrammaticConfig(String name, TestCase testCase) throws Exception {
     OutputStream outputStream;
     Path file = null;
     switch (testCase.getOutputType()) {
@@ -247,6 +247,26 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     if (testCase.isWrapperJsonObject()) {
       assertThat(output).doesNotContain("\n");
     }
+
+    if (file == null) {
+      // no need to test again for file - and it's not working with files
+      assertDoubleOutput(exporter, expectedJson, outputStream);
+    }
+  }
+
+  private void assertDoubleOutput(
+      Supplier<T> exporter, String expectedJson, @Nullable OutputStream outputStream)
+      throws Exception {
+    SYSTEM_OUT_STREAM.reset();
+    skipLogs = logs.getEvents().size();
+    testDataExporter.export(exporter.get());
+    testDataExporter.export(exporter.get());
+
+    String[] lines = output(outputStream, null).split("\n");
+    assertThat(lines).hasSize(2);
+    for (String line : lines) {
+      JSONAssert.assertEquals("Got \n" + line, expectedJson, line, false);
+    }
   }
 
   @Test
@@ -273,20 +293,20 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     assertThat(
             exporterFromProvider(
                 DefaultConfigProperties.createFromMap(
-                    singletonMap("otel.java.experimental.exporter.memory_mode", "immutable_data"))))
+                    singletonMap("otel.java.exporter.memory_mode", "immutable_data"))))
         .extracting("memoryMode")
         .isEqualTo(MemoryMode.IMMUTABLE_DATA);
     assertThat(
             exporterFromProvider(
                 DefaultConfigProperties.createFromMap(
-                    singletonMap("otel.java.experimental.exporter.memory_mode", "reusable_data"))))
+                    singletonMap("otel.java.exporter.memory_mode", "reusable_data"))))
         .extracting("memoryMode")
         .isEqualTo(MemoryMode.REUSABLE_DATA);
   }
 
   @Test
   void componentProviderConfig() {
-    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
+    DeclarativeConfigProperties properties = mock(DeclarativeConfigProperties.class);
     T exporter = exporterFromComponentProvider(properties);
 
     assertThat(exporter).extracting("wrapperJsonObject").isEqualTo(true);
@@ -308,14 +328,14 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   }
 
   @SuppressWarnings("unchecked")
-  protected T exporterFromComponentProvider(StructuredConfigProperties properties) {
+  protected T exporterFromComponentProvider(DeclarativeConfigProperties properties) {
     return (T)
         ((ComponentProvider<?>)
                 loadSpi(ComponentProvider.class)
                     .filter(
                         p -> {
                           ComponentProvider<?> c = (ComponentProvider<?>) p;
-                          return "experimental-otlp/stdout".equals(c.getName())
+                          return "otlp_file/development".equals(c.getName())
                               && c.getType().equals(componentProviderType);
                         })
                     .findFirst()

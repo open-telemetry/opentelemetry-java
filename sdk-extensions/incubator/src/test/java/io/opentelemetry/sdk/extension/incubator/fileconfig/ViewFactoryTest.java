@@ -8,11 +8,10 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.View;
 import java.util.Arrays;
@@ -28,9 +27,8 @@ class ViewFactoryTest {
     View view =
         ViewFactory.getInstance()
             .create(
-                new StreamModel().withAttributeKeys(null),
-                mock(SpiHelper.class),
-                Collections.emptyList());
+                new ViewStreamModel().withAttributeKeys(null),
+                mock(DeclarativeConfigContext.class));
 
     assertThat(view.toString()).isEqualTo(expectedView.toString());
   }
@@ -52,7 +50,7 @@ class ViewFactoryTest {
     View view =
         ViewFactory.getInstance()
             .create(
-                new StreamModel()
+                new ViewStreamModel()
                     .withName("name")
                     .withDescription("description")
                     .withAttributeKeys(
@@ -62,10 +60,9 @@ class ViewFactoryTest {
                     .withAggregation(
                         new AggregationModel()
                             .withExplicitBucketHistogram(
-                                new ExplicitBucketHistogramModel()
+                                new ExplicitBucketHistogramAggregationModel()
                                     .withBoundaries(Arrays.asList(1.0, 2.0)))),
-                mock(SpiHelper.class),
-                Collections.emptyList());
+                mock(DeclarativeConfigContext.class));
 
     assertThat(view.toString()).isEqualTo(expectedView.toString());
   }

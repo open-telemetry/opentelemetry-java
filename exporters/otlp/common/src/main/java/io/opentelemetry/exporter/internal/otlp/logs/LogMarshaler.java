@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
+import io.opentelemetry.exporter.internal.otlp.IncubatingUtil;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
@@ -36,10 +37,18 @@ final class LogMarshaler extends MarshalerWithSize {
   private final TraceFlags traceFlags;
   @Nullable private final String traceId;
   @Nullable private final String spanId;
+  private final byte[] eventName;
 
   static LogMarshaler create(LogRecordData logRecordData) {
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
+        IncubatingUtil.isExtendedLogRecordData(logRecordData)
+            ? IncubatingUtil.createdExtendedAttributesMarhsalers(logRecordData)
+            : KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
+
+    int attributeSize =
+        IncubatingUtil.isExtendedLogRecordData(logRecordData)
+            ? IncubatingUtil.extendedAttributesSize(logRecordData)
+            : logRecordData.getAttributes().size();
 
     MarshalerWithSize bodyMarshaler =
         logRecordData.getBodyValue() == null
@@ -54,10 +63,11 @@ final class LogMarshaler extends MarshalerWithSize {
         MarshalerUtil.toBytes(logRecordData.getSeverityText()),
         bodyMarshaler,
         attributeMarshalers,
-        logRecordData.getTotalAttributeCount() - logRecordData.getAttributes().size(),
+        logRecordData.getTotalAttributeCount() - attributeSize,
         spanContext.getTraceFlags(),
         spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
-        spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId());
+        spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId(),
+        MarshalerUtil.toBytes(logRecordData.getEventName()));
   }
 
   private LogMarshaler(
@@ -70,7 +80,8 @@ final class LogMarshaler extends MarshalerWithSize {
       int droppedAttributesCount,
       TraceFlags traceFlags,
       @Nullable String traceId,
-      @Nullable String spanId) {
+      @Nullable String spanId,
+      byte[] eventName) {
     super(
         calculateSize(
             timeUnixNano,
@@ -82,7 +93,8 @@ final class LogMarshaler extends MarshalerWithSize {
             droppedAttributesCount,
             traceFlags,
             traceId,
-            spanId));
+            spanId,
+            eventName));
     this.timeUnixNano = timeUnixNano;
     this.observedTimeUnixNano = observedTimeUnixNano;
     this.traceId = traceId;
@@ -93,6 +105,7 @@ final class LogMarshaler extends MarshalerWithSize {
     this.anyValueMarshaler = anyValueMarshaler;
     this.attributeMarshalers = attributeMarshalers;
     this.droppedAttributesCount = droppedAttributesCount;
+    this.eventName = eventName;
   }
 
   @Override
@@ -115,6 +128,8 @@ final class LogMarshaler extends MarshalerWithSize {
     output.serializeByteAsFixed32(LogRecord.FLAGS, traceFlags.asByte());
     output.serializeTraceId(LogRecord.TRACE_ID, traceId);
     output.serializeSpanId(LogRecord.SPAN_ID, spanId);
+
+    output.serializeString(LogRecord.EVENT_NAME, eventName);
   }
 
   private static int calculateSize(
@@ -127,7 +142,8 @@ final class LogMarshaler extends MarshalerWithSize {
       int droppedAttributesCount,
       TraceFlags traceFlags,
       @Nullable String traceId,
-      @Nullable String spanId) {
+      @Nullable String spanId,
+      byte[] eventName) {
     int size = 0;
     size += MarshalerUtil.sizeFixed64(LogRecord.TIME_UNIX_NANO, timeUnixNano);
 
@@ -147,6 +163,8 @@ final class LogMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeByteAsFixed32(LogRecord.FLAGS, traceFlags.asByte());
     size += MarshalerUtil.sizeTraceId(LogRecord.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(LogRecord.SPAN_ID, spanId);
+
+    size += MarshalerUtil.sizeBytes(LogRecord.EVENT_NAME, eventName);
     return size;
   }
 

@@ -5,15 +5,12 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
-import java.io.Closeable;
-import java.util.List;
 
-final class SpanLimitsFactory
-    implements Factory<SpanLimitsAndAttributeLimits, io.opentelemetry.sdk.trace.SpanLimits> {
+final class SpanLimitsFactory implements Factory<SpanLimitsAndAttributeLimits, SpanLimits> {
 
   private static final SpanLimitsFactory INSTANCE = new SpanLimitsFactory();
 
@@ -24,9 +21,8 @@ final class SpanLimitsFactory
   }
 
   @Override
-  public io.opentelemetry.sdk.trace.SpanLimits create(
-      SpanLimitsAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
-    SpanLimitsBuilder builder = io.opentelemetry.sdk.trace.SpanLimits.builder();
+  public SpanLimits create(SpanLimitsAndAttributeLimits model, DeclarativeConfigContext context) {
+    SpanLimitsBuilder builder = SpanLimits.builder();
 
     AttributeLimitsModel attributeLimitsModel = model.getAttributeLimits();
     if (attributeLimitsModel != null) {

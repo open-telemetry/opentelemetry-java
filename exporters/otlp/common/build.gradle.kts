@@ -15,12 +15,14 @@ val versions: Map<String, String> by project
 dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   api(project(":exporters:common"))
-  implementation(project(":api:incubator"))
 
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:logs"))
+  compileOnly(project(":api:incubator"))
 
   testImplementation(project(":sdk:metrics"))
   testImplementation(project(":sdk:trace"))
@@ -29,12 +31,30 @@ dependencies {
 
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("com.google.guava:guava")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
+  jmhImplementation(project(":api:incubator"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
   jmhImplementation("io.grpc:grpc-netty")
+}
+
+testing {
+  suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":api:incubator"))
+        implementation(project(":sdk:testing"))
+
+        implementation("com.fasterxml.jackson.core:jackson-databind")
+        implementation("com.google.protobuf:protobuf-java-util")
+        implementation("com.google.guava:guava")
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+      }
+    }
+  }
 }
 
 wire {
@@ -42,7 +62,7 @@ wire {
     "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
     "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
     "opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest",
-    "opentelemetry.proto.collector.profiles.v1experimental.ExportProfilesServiceRequest"
+    "opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceRequest"
   )
 
   custom {

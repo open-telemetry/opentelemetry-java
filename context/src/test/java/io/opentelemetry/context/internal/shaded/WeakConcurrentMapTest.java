@@ -25,6 +25,7 @@
 
 package io.opentelemetry.context.internal.shaded;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -75,8 +76,7 @@ class WeakConcurrentMapTest {
     assertThat(map.getCleanerThread(), not(nullValue(Thread.class)));
     new MapTestCase(map).doTest();
     map.getCleanerThread().interrupt();
-    Thread.sleep(200L);
-    assertThat(map.getCleanerThread().isAlive(), is(false));
+    await().untilAsserted(() -> assertThat(map.getCleanerThread().isAlive(), is(false)));
   }
 
   static class KeyEqualToWeakRefOfItself {
@@ -152,8 +152,12 @@ class WeakConcurrentMapTest {
       assertThat(values.isEmpty(), is(true));
       key1 = key2 = null; // Make eligible for GC
       System.gc();
-      Thread.sleep(200L);
-      triggerClean();
+      await()
+          .untilAsserted(
+              () -> {
+                triggerClean();
+                assertThat(map.approximateSize(), is(2));
+              });
       assertThat(map.get(key3), is(value3));
       assertThat(map.getIfPresent(key3), is(value3));
       assertThat(map.get(key4), is(value4));

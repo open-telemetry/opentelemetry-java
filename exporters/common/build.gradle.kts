@@ -13,6 +13,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
+  compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk:common"))
   compileOnly(project(":exporters:common:compile-stub"))
 
@@ -28,6 +29,7 @@ dependencies {
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:common"))
+  testImplementation(project(":sdk:testing"))
 
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.linecorp.armeria:armeria-junit5")
@@ -66,6 +68,9 @@ testing {
         implementation("io.grpc:grpc-netty")
       }
     }
+  }
+  suites {
+    register<JvmTestSuite>("testWithoutUnsafe") {}
   }
 }
 

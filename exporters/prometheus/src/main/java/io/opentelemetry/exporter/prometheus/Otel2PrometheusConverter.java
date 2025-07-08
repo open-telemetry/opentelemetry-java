@@ -10,6 +10,7 @@ import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMet
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -33,7 +34,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.model.snapshots.ClassicHistogramBuckets;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot.CounterDataPointSnapshot;
-import io.prometheus.metrics.model.snapshots.DataPointSnapshot;
 import io.prometheus.metrics.model.snapshots.Exemplar;
 import io.prometheus.metrics.model.snapshots.Exemplars;
 import io.prometheus.metrics.model.snapshots.GaugeSnapshot;
@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -110,11 +111,11 @@ final class Otel2PrometheusConverter {
     if (metricDataCollection == null || metricDataCollection.isEmpty()) {
       return MetricSnapshots.of();
     }
-    Map<String, MetricSnapshot<?>> snapshotsByName = new HashMap<>(metricDataCollection.size());
+    Map<String, MetricSnapshot> snapshotsByName = new HashMap<>(metricDataCollection.size());
     Resource resource = null;
     Set<InstrumentationScopeInfo> scopes = new LinkedHashSet<>();
     for (MetricData metricData : metricDataCollection) {
-      MetricSnapshot<?> snapshot = convert(metricData);
+      MetricSnapshot snapshot = convert(metricData);
       if (snapshot == null) {
         continue;
       }
@@ -136,7 +137,7 @@ final class Otel2PrometheusConverter {
   }
 
   @Nullable
-  private MetricSnapshot<?> convert(MetricData metricData) {
+  private MetricSnapshot convert(MetricData metricData) {
 
     // Note that AggregationTemporality.DELTA should never happen
     // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
@@ -473,7 +474,9 @@ final class Otel2PrometheusConverter {
 
     Map<String, String> labelNameToValue = new HashMap<>();
     attributes.forEach(
-        (key, value) -> labelNameToValue.put(sanitizeLabelName(key.getKey()), value.toString()));
+        (key, value) ->
+            labelNameToValue.put(
+                sanitizeLabelName(key.getKey()), toLabelValue(key.getType(), value)));
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
@@ -549,10 +552,10 @@ final class Otel2PrometheusConverter {
   }
 
   private static void putOrMerge(
-      Map<String, MetricSnapshot<?>> snapshotsByName, MetricSnapshot<?> snapshot) {
+      Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
     String name = snapshot.getMetadata().getPrometheusName();
     if (snapshotsByName.containsKey(name)) {
-      MetricSnapshot<?> merged = merge(snapshotsByName.get(name), snapshot);
+      MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {
         snapshotsByName.put(name, merged);
       }
@@ -568,9 +571,7 @@ final class Otel2PrometheusConverter {
    * type. If the type differs, we log a message and drop one of them.
    */
   @Nullable
-  @SuppressWarnings("unchecked")
-  private static <T extends DataPointSnapshot> MetricSnapshot<T> merge(
-      MetricSnapshot<?> a, MetricSnapshot<?> b) {
+  private static MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
     MetricMetadata metadata = mergeMetadata(a.getMetadata(), b.getMetadata());
     if (metadata == null) {
       return null;
@@ -580,27 +581,27 @@ final class Otel2PrometheusConverter {
       List<GaugeDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((GaugeSnapshot) a).getDataPoints());
       dataPoints.addAll(((GaugeSnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new GaugeSnapshot(metadata, dataPoints);
+      return new GaugeSnapshot(metadata, dataPoints);
     } else if (a instanceof CounterSnapshot && b instanceof CounterSnapshot) {
       List<CounterDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((CounterSnapshot) a).getDataPoints());
       dataPoints.addAll(((CounterSnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new CounterSnapshot(metadata, dataPoints);
+      return new CounterSnapshot(metadata, dataPoints);
     } else if (a instanceof HistogramSnapshot && b instanceof HistogramSnapshot) {
       List<HistogramDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((HistogramSnapshot) a).getDataPoints());
       dataPoints.addAll(((HistogramSnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new HistogramSnapshot(metadata, dataPoints);
+      return new HistogramSnapshot(metadata, dataPoints);
     } else if (a instanceof SummarySnapshot && b instanceof SummarySnapshot) {
       List<SummaryDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((SummarySnapshot) a).getDataPoints());
       dataPoints.addAll(((SummarySnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new SummarySnapshot(metadata, dataPoints);
+      return new SummarySnapshot(metadata, dataPoints);
     } else if (a instanceof InfoSnapshot && b instanceof InfoSnapshot) {
       List<InfoDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((InfoSnapshot) a).getDataPoints());
       dataPoints.addAll(((InfoSnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new InfoSnapshot(metadata, dataPoints);
+      return new InfoSnapshot(metadata, dataPoints);
     } else {
       THROTTLING_LOGGER.log(
           Level.WARNING,
@@ -641,8 +642,80 @@ final class Otel2PrometheusConverter {
     return new MetricMetadata(name, help, unit);
   }
 
-  private static String typeString(MetricSnapshot<?> snapshot) {
+  private static String typeString(MetricSnapshot snapshot) {
     // Simple helper for a log message.
     return snapshot.getClass().getSimpleName().replace("Snapshot", "").toLowerCase(Locale.ENGLISH);
+  }
+
+  private static String toLabelValue(AttributeType type, Object attributeValue) {
+    switch (type) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return attributeValue.toString();
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+      case STRING_ARRAY:
+        if (attributeValue instanceof List) {
+          return toJsonStr((List<?>) attributeValue);
+        } else {
+          throw new IllegalStateException(
+              String.format(
+                  "Unexpected label value of %s for %s",
+                  attributeValue.getClass().getName(), type.name()));
+        }
+    }
+    throw new IllegalStateException("Unrecognized AttributeType: " + type);
+  }
+
+  public static String toJsonStr(List<?> attributeValue) {
+    StringJoiner joiner = new StringJoiner(",", "[", "]");
+    for (int i = 0; i < attributeValue.size(); i++) {
+      Object value = attributeValue.get(i);
+      joiner.add(value instanceof String ? toJsonValidStr((String) value) : String.valueOf(value));
+    }
+    return joiner.toString();
+  }
+
+  public static String toJsonValidStr(String str) {
+    StringBuilder sb = new StringBuilder();
+    sb.append('"');
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+
+      switch (c) {
+        case '"':
+          sb.append("\\\"");
+          break;
+        case '\\':
+          sb.append("\\\\");
+          break;
+        case '\b':
+          sb.append("\\b");
+          break;
+        case '\f':
+          sb.append("\\f");
+          break;
+        case '\n':
+          sb.append("\\n");
+          break;
+        case '\r':
+          sb.append("\\r");
+          break;
+        case '\t':
+          sb.append("\\t");
+          break;
+        default:
+          if (c <= 0x1F) {
+            sb.append(String.format(Locale.ROOT, "\\u%04X", (int) c));
+          } else {
+            sb.append(c);
+          }
+      }
+    }
+    sb.append('"');
+    return sb.toString();
   }
 }

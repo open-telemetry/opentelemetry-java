@@ -5,16 +5,21 @@
 
 package io.opentelemetry.exporter.internal.http;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -45,8 +51,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
-  private final String exporterName;
-  private final String type;
+  private StandardComponentId.ExporterType exporterType;
 
   private String endpoint;
 
@@ -61,22 +66,24 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  @Nullable private Authenticator authenticator;
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
+  private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
+  @Nullable private ExecutorService executorService;
 
-  public HttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
-    this.exporterName = exporterName;
-    this.type = type;
+  public HttpExporterBuilder(
+      StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
+    this.exporterType = exporterType;
 
     endpoint = defaultEndpoint;
   }
 
   public HttpExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
-    timeoutNanos = unit.toNanos(timeout);
+    timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
   public HttpExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
-    connectTimeoutNanos = unit.toNanos(timeout);
+    connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
@@ -91,6 +98,18 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  /**
+   * Sets the method used to compress payloads. If unset, compression is disabled. Compression
+   * method "gzip" and "none" are supported out of the box. Support for additional compression
+   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   */
+  public HttpExporterBuilder<T> setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, serviceClassLoader);
+    return setCompression(compressor);
+  }
+
   public HttpExporterBuilder<T> addConstantHeaders(String key, String value) {
     constantHeaders.put(key, value);
     return this;
@@ -98,11 +117,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   public HttpExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
     this.headerSupplier = headerSupplier;
-    return this;
-  }
-
-  public HttpExporterBuilder<T> setAuthenticator(Authenticator authenticator) {
-    this.authenticator = authenticator;
     return this;
   }
 
@@ -128,6 +142,12 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public HttpExporterBuilder<T> setInternalTelemetryVersion(
+      InternalTelemetryVersion internalTelemetryVersion) {
+    this.internalTelemetryVersion = internalTelemetryVersion;
+    return this;
+  }
+
   public HttpExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
@@ -138,14 +158,39 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public HttpExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader) {
+    this.serviceClassLoader = serviceClassLoader;
+    return this;
+  }
+
+  public HttpExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+    this.executorService = executorService;
+    return this;
+  }
+
   public HttpExporterBuilder<T> exportAsJson() {
     this.exportAsJson = true;
+    exporterType = mapToJsonTypeIfPossible(exporterType);
     return this;
+  }
+
+  private static StandardComponentId.ExporterType mapToJsonTypeIfPossible(
+      StandardComponentId.ExporterType componentType) {
+    switch (componentType) {
+      case OTLP_HTTP_SPAN_EXPORTER:
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_SPAN_EXPORTER;
+      case OTLP_HTTP_LOG_EXPORTER:
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_LOG_EXPORTER;
+      case OTLP_HTTP_METRIC_EXPORTER:
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_METRIC_EXPORTER;
+      default:
+        return componentType;
+    }
   }
 
   @SuppressWarnings("BuilderReturnThis")
   public HttpExporterBuilder<T> copy() {
-    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterName, type, endpoint);
+    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterType, endpoint);
     copy.endpoint = endpoint;
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
@@ -158,7 +203,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
       copy.retryPolicy = retryPolicy.toBuilder().build();
     }
     copy.meterProviderSupplier = meterProviderSupplier;
-    copy.authenticator = authenticator;
+    copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
     return copy;
   }
@@ -189,21 +234,27 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
         httpSenderProvider.createSender(
-            endpoint,
-            compressor,
-            exportAsJson,
-            exportAsJson ? "application/json" : "application/x-protobuf",
-            timeoutNanos,
-            connectTimeoutNanos,
-            headerSupplier,
-            proxyOptions,
-            authenticator,
-            retryPolicy,
-            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
-            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
+            HttpSenderConfig.create(
+                endpoint,
+                compressor,
+                exportAsJson,
+                exportAsJson ? "application/json" : "application/x-protobuf",
+                timeoutNanos,
+                connectTimeoutNanos,
+                headerSupplier,
+                proxyOptions,
+                retryPolicy,
+                isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+                isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
+                executorService));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
-    return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
+    return new HttpExporter<>(
+        ComponentId.generateLazy(exporterType),
+        httpSender,
+        meterProviderSupplier,
+        internalTelemetryVersion,
+        endpoint);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -211,8 +262,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
         includePrefixAndSuffix
             ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
-    joiner.add("exporterName=" + exporterName);
-    joiner.add("type=" + type);
     joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("proxyOptions=" + proxyOptions);
@@ -231,9 +280,14 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }
+    joiner.add("serviceClassLoader=" + serviceClassLoader);
+    if (executorService != null) {
+      joiner.add("executorService=" + executorService);
+    }
+    joiner.add("exporterType=" + exporterType);
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
-    // Note: omit authenticator because we can't log the configuration in any readable way
     return joiner.toString();
   }
 
@@ -258,10 +312,10 @@ public final class HttpExporterBuilder<T extends Marshaler> {
    *       matching provider. If none match, throw {@link IllegalStateException}.
    * </ul>
    */
-  private static HttpSenderProvider resolveHttpSenderProvider() {
+  private HttpSenderProvider resolveHttpSenderProvider() {
     Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
     for (HttpSenderProvider spi :
-        ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
+        ServiceLoader.load(HttpSenderProvider.class, serviceClassLoader)) {
       httpSenderProviders.put(spi.getClass().getName(), spi);
     }
 

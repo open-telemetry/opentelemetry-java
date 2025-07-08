@@ -34,7 +34,7 @@ public final class SpanLimitsBuilder {
    * @throws IllegalArgumentException if {@code maxNumberOfAttributes} is not positive.
    */
   public SpanLimitsBuilder setMaxNumberOfAttributes(int maxNumberOfAttributes) {
-    Utils.checkArgument(maxNumberOfAttributes > 0, "maxNumberOfAttributes must be greater than 0");
+    Utils.checkArgument(maxNumberOfAttributes >= 0, "maxNumberOfAttributes must be non-negative");
     this.maxNumAttributes = maxNumberOfAttributes;
     return this;
   }
@@ -47,7 +47,7 @@ public final class SpanLimitsBuilder {
    * @throws IllegalArgumentException if {@code maxNumberOfEvents} is not positive.
    */
   public SpanLimitsBuilder setMaxNumberOfEvents(int maxNumberOfEvents) {
-    Utils.checkArgument(maxNumberOfEvents > 0, "maxNumberOfEvents must be greater than 0");
+    Utils.checkArgument(maxNumberOfEvents >= 0, "maxNumberOfEvents must be non-negative");
     this.maxNumEvents = maxNumberOfEvents;
     return this;
   }
@@ -60,7 +60,7 @@ public final class SpanLimitsBuilder {
    * @throws IllegalArgumentException if {@code maxNumberOfLinks} is not positive.
    */
   public SpanLimitsBuilder setMaxNumberOfLinks(int maxNumberOfLinks) {
-    Utils.checkArgument(maxNumberOfLinks > 0, "maxNumberOfLinks must be greater than 0");
+    Utils.checkArgument(maxNumberOfLinks >= 0, "maxNumberOfLinks must be non-negative");
     this.maxNumLinks = maxNumberOfLinks;
     return this;
   }
@@ -74,7 +74,7 @@ public final class SpanLimitsBuilder {
    */
   public SpanLimitsBuilder setMaxNumberOfAttributesPerEvent(int maxNumberOfAttributesPerEvent) {
     Utils.checkArgument(
-        maxNumberOfAttributesPerEvent > 0, "maxNumberOfAttributesPerEvent must be greater than 0");
+        maxNumberOfAttributesPerEvent >= 0, "maxNumberOfAttributesPerEvent must be non-negative");
     this.maxNumAttributesPerEvent = maxNumberOfAttributesPerEvent;
     return this;
   }
@@ -88,7 +88,7 @@ public final class SpanLimitsBuilder {
    */
   public SpanLimitsBuilder setMaxNumberOfAttributesPerLink(int maxNumberOfAttributesPerLink) {
     Utils.checkArgument(
-        maxNumberOfAttributesPerLink > 0, "maxNumberOfAttributesPerLink must be greater than 0");
+        maxNumberOfAttributesPerLink >= 0, "maxNumberOfAttributesPerLink must be non-negative");
     this.maxNumAttributesPerLink = maxNumberOfAttributesPerLink;
     return this;
   }
@@ -104,7 +104,7 @@ public final class SpanLimitsBuilder {
    */
   public SpanLimitsBuilder setMaxAttributeValueLength(int maxAttributeValueLength) {
     Utils.checkArgument(
-        maxAttributeValueLength > -1, "maxAttributeValueLength must be non-negative");
+        maxAttributeValueLength >= 0, "maxAttributeValueLength must be non-negative");
     this.maxAttributeValueLength = maxAttributeValueLength;
     return this;
   }

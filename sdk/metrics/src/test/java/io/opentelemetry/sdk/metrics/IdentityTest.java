@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
@@ -222,13 +221,17 @@ class IdentityTest {
 
     // Register histogram1, with and without advice. First registration without advice wins.
     meterProvider.get("meter1").histogramBuilder("histogram1").build().record(8);
-    ((ExtendedDoubleHistogramBuilder) meterProvider.get("meter1").histogramBuilder("histogram1"))
+    meterProvider
+        .get("meter1")
+        .histogramBuilder("histogram1")
         .setExplicitBucketBoundariesAdvice(Arrays.asList(10.0, 20.0, 30.0))
         .build()
         .record(8);
 
     // Register histogram2, with and without advice. First registration with advice wins.
-    ((ExtendedDoubleHistogramBuilder) meterProvider.get("meter1").histogramBuilder("histogram2"))
+    meterProvider
+        .get("meter1")
+        .histogramBuilder("histogram2")
         .setExplicitBucketBoundariesAdvice(Arrays.asList(10.0, 20.0, 30.0))
         .build()
         .record(8);

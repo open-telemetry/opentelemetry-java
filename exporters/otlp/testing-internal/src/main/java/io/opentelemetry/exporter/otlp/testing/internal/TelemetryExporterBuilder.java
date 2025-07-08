@@ -5,10 +5,13 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
-import io.opentelemetry.exporter.internal.auth.Authenticator;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
+import io.opentelemetry.exporter.otlp.profiles.ProfileData;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -16,6 +19,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -36,6 +40,10 @@ public interface TelemetryExporterBuilder<T> {
     return new GrpcLogRecordExporterBuilderWrapper(builder);
   }
 
+  static TelemetryExporterBuilder<ProfileData> wrap(OtlpGrpcProfilesExporterBuilder builder) {
+    return new GrpcProfilesExporterBuilderWrapper(builder);
+  }
+
   TelemetryExporterBuilder<T> setEndpoint(String endpoint);
 
   TelemetryExporterBuilder<T> setTimeout(long timeout, TimeUnit unit);
@@ -52,8 +60,6 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setHeaders(Supplier<Map<String, String>> headerSupplier);
 
-  TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator);
-
   TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates);
 
   TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem);
@@ -65,6 +71,14 @@ public interface TelemetryExporterBuilder<T> {
   TelemetryExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions);
 
   TelemetryExporterBuilder<T> setChannel(Object channel);
+
+  TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader);
+
+  TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService);
+
+  TelemetryExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier);
+
+  TelemetryExporterBuilder<T> setInternalTelemetryVersion(InternalTelemetryVersion schemaVersion);
 
   TelemetryExporter<T> build();
 }

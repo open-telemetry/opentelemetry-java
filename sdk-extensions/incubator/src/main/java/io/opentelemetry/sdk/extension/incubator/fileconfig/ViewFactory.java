@@ -5,16 +5,14 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
-import java.io.Closeable;
 import java.util.List;
 
-final class ViewFactory implements Factory<StreamModel, View> {
+final class ViewFactory implements Factory<ViewStreamModel, View> {
 
   private static final ViewFactory INSTANCE = new ViewFactory();
 
@@ -25,7 +23,7 @@ final class ViewFactory implements Factory<StreamModel, View> {
   }
 
   @Override
-  public View create(StreamModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public View create(ViewStreamModel model, DeclarativeConfigContext context) {
     ViewBuilder builder = View.builder();
     if (model.getName() != null) {
       builder.setName(model.getName());
@@ -43,7 +41,10 @@ final class ViewFactory implements Factory<StreamModel, View> {
     }
     if (model.getAggregation() != null) {
       builder.setAggregation(
-          AggregationFactory.getInstance().create(model.getAggregation(), spiHelper, closeables));
+          AggregationFactory.getInstance().create(model.getAggregation(), context));
+    }
+    if (model.getAggregationCardinalityLimit() != null) {
+      builder.setCardinalityLimit(model.getAggregationCardinalityLimit());
     }
     return builder.build();
   }

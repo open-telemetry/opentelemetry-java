@@ -21,8 +21,9 @@ import java.util.function.Predicate;
  * A collection of methods that allow use of experimental features prior to availability in public
  * APIs.
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
+ * APIs (or a version of them) may be promoted to the public stable API in the future, but no
+ * guarantees are made.
  */
 public final class SdkMeterProviderUtil {
 
@@ -33,7 +34,7 @@ public final class SdkMeterProviderUtil {
    *
    * @param sdkMeterProviderBuilder the builder
    */
-  public static void setExemplarFilter(
+  public static SdkMeterProviderBuilder setExemplarFilter(
       SdkMeterProviderBuilder sdkMeterProviderBuilder, ExemplarFilter exemplarFilter) {
     try {
       Method method =
@@ -45,10 +46,11 @@ public final class SdkMeterProviderUtil {
       throw new IllegalStateException(
           "Error calling setExemplarFilter on SdkMeterProviderBuilder", e);
     }
+    return sdkMeterProviderBuilder;
   }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProviderBuilder}. */
-  public static void setMeterConfigurator(
+  public static SdkMeterProviderBuilder setMeterConfigurator(
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       ScopeConfigurator<MeterConfig> meterConfigurator) {
     try {
@@ -61,10 +63,11 @@ public final class SdkMeterProviderUtil {
       throw new IllegalStateException(
           "Error calling setMeterConfigurator on SdkMeterProviderBuilder", e);
     }
+    return sdkMeterProviderBuilder;
   }
 
   /** Reflectively add a tracer configurator condition to the {@link SdkMeterProviderBuilder}. */
-  public static void addMeterConfiguratorCondition(
+  public static SdkMeterProviderBuilder addMeterConfiguratorCondition(
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       Predicate<InstrumentationScopeInfo> scopeMatcher,
       MeterConfig meterConfig) {
@@ -78,6 +81,7 @@ public final class SdkMeterProviderUtil {
       throw new IllegalStateException(
           "Error calling addMeterConfiguratorCondition on SdkMeterProviderBuilder", e);
     }
+    return sdkMeterProviderBuilder;
   }
 
   /**
@@ -116,21 +120,6 @@ public final class SdkMeterProviderUtil {
       method.invoke(viewBuilder, attributesProcessor);
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException("Error adding AttributesProcessor to ViewBuilder", e);
-    }
-  }
-
-  /**
-   * Reflectively set the {@code cardinalityLimit} on the {@link ViewBuilder}.
-   *
-   * @param viewBuilder the builder
-   */
-  public static void setCardinalityLimit(ViewBuilder viewBuilder, int cardinalityLimit) {
-    try {
-      Method method = ViewBuilder.class.getDeclaredMethod("setCardinalityLimit", int.class);
-      method.setAccessible(true);
-      method.invoke(viewBuilder, cardinalityLimit);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-      throw new IllegalStateException("Error setting cardinalityLimit on ViewBuilder", e);
     }
   }
 

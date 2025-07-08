@@ -616,7 +616,7 @@ class PrometheusMetricReaderTest {
             + "        value: 7.0\n"
             + "        timestamp {\n"
             + "          seconds: <timestamp>\n"
-            + "          nanos: <timestamp>\n"
+            + "          <maybeNanos>\n"
             + "        }\n"
             + "      }\n"
             + "    }\n"
@@ -661,7 +661,7 @@ class PrometheusMetricReaderTest {
             + "        value: 3.0\n"
             + "        timestamp {\n"
             + "          seconds: <timestamp>\n"
-            + "          nanos: <timestamp>\n"
+            + "          <maybeNanos>\n"
             + "        }\n"
             + "      }\n"
             + "    }\n"
@@ -1115,7 +1115,9 @@ class PrometheusMetricReaderTest {
    */
   private static String toPattern(String expected) {
     Map<String, String> replacePatterns = new HashMap<>();
-    replacePatterns.put("timestamp", "[0-9]+(\\.[0-9]+)?");
+    String timestampPattern = "[0-9]+(\\.[0-9]+)?";
+    replacePatterns.put("timestamp", timestampPattern);
+    replacePatterns.put("maybeNanos", String.format("(nanos: %s)?", timestampPattern));
     replacePatterns.put("spanId", "[a-z0-9]*");
     replacePatterns.put("traceId", "[a-z0-9]*");
     replacePatterns.put("measurement", "[0-9\\.]*");

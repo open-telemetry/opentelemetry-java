@@ -21,22 +21,23 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
-  private final LogLimits logLimits;
-  private final Resource resource;
-  private final InstrumentationScopeInfo instrumentationScopeInfo;
-  private final long timestampEpochNanos;
-  private final long observedTimestampEpochNanos;
-  private final SpanContext spanContext;
-  private final Severity severity;
-  @Nullable private final String severityText;
-  @Nullable private final Value<?> body;
+  protected final LogLimits logLimits;
+  protected final Resource resource;
+  protected final InstrumentationScopeInfo instrumentationScopeInfo;
+  protected final long timestampEpochNanos;
+  protected final long observedTimestampEpochNanos;
+  protected final SpanContext spanContext;
+  protected final Severity severity;
+  @Nullable protected final String severityText;
+  @Nullable protected final Value<?> body;
+  @Nullable protected String eventName;
   private final Object lock = new Object();
 
   @GuardedBy("lock")
   @Nullable
   private AttributesMap attributes;
 
-  private SdkReadWriteLogRecord(
+  protected SdkReadWriteLogRecord(
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
@@ -46,7 +47,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable AttributesMap attributes) {
+      @Nullable AttributesMap attributes,
+      @Nullable String eventName) {
     this.logLimits = logLimits;
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
@@ -56,6 +58,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.severity = severity;
     this.severityText = severityText;
     this.body = body;
+    this.eventName = eventName;
     this.attributes = attributes;
   }
 
@@ -70,7 +73,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable AttributesMap attributes) {
+      @Nullable AttributesMap attributes,
+      @Nullable String eventName) {
     return new SdkReadWriteLogRecord(
         logLimits,
         resource,
@@ -81,7 +85,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         severity,
         severityText,
         body,
-        attributes);
+        attributes,
+        eventName);
   }
 
   @Override
@@ -122,7 +127,67 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           severityText,
           body,
           getImmutableAttributes(),
-          attributes == null ? 0 : attributes.getTotalAddedValues());
+          attributes == null ? 0 : attributes.getTotalAddedValues(),
+          eventName);
+    }
+  }
+
+  @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
+  }
+
+  @Override
+  public long getTimestampEpochNanos() {
+    return timestampEpochNanos;
+  }
+
+  @Override
+  public long getObservedTimestampEpochNanos() {
+    return observedTimestampEpochNanos;
+  }
+
+  @Override
+  public SpanContext getSpanContext() {
+    return spanContext;
+  }
+
+  @Override
+  public Severity getSeverity() {
+    return severity;
+  }
+
+  @Nullable
+  @Override
+  public String getSeverityText() {
+    return severityText;
+  }
+
+  @Nullable
+  @Override
+  public Value<?> getBodyValue() {
+    return body;
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    return getImmutableAttributes();
+  }
+
+  @Override
+  @Nullable
+  public String getEventName() {
+    return eventName;
+  }
+
+  @Nullable
+  @Override
+  public <T> T getAttribute(AttributeKey<T> key) {
+    synchronized (lock) {
+      if (attributes == null || attributes.isEmpty()) {
+        return null;
+      }
+      return attributes.get(key);
     }
   }
 }

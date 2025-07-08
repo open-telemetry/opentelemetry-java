@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -15,6 +17,23 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface SummaryPointData extends PointData {
+
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
+  static SummaryPointData create(
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      long count,
+      double sum,
+      List<ValueAtQuantile> percentileValues) {
+    return ImmutableSummaryPointData.create(
+        startEpochNanos, epochNanos, attributes, count, sum, percentileValues);
+  }
+
   /** Returns the count of measurements. */
   long getCount();
 

@@ -28,7 +28,10 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
+import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -124,10 +127,12 @@ class SdkLoggerProviderTest {
 
   @Test
   void builder_multipleProcessors() {
+    LogRecordProcessor firstProcessor = mock(LogRecordProcessor.class);
     assertThat(
             SdkLoggerProvider.builder()
                 .addLogRecordProcessor(logRecordProcessor)
                 .addLogRecordProcessor(logRecordProcessor)
+                .addLogRecordProcessorFirst(firstProcessor)
                 .build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
         .extracting(LoggerSharedState::getLogRecordProcessor)
@@ -138,7 +143,9 @@ class SdkLoggerProviderTest {
                   .extracting(
                       "logRecordProcessors",
                       as(InstanceOfAssertFactories.list(LogRecordProcessor.class)))
-                  .hasSize(2);
+                  .hasSize(3)
+                  .first()
+                  .isEqualTo(firstProcessor);
             });
   }
 
@@ -246,6 +253,7 @@ class SdkLoggerProviderTest {
     sdkLoggerProvider
         .get("test")
         .logRecordBuilder()
+        .setEventName("my.event.name")
         .setTimestamp(100, TimeUnit.NANOSECONDS)
         .setContext(Span.wrap(spanContext).storeInContext(Context.root()))
         .setSeverity(Severity.DEBUG)
@@ -258,6 +266,7 @@ class SdkLoggerProviderTest {
     assertThat(logRecordData.get())
         .hasResource(resource)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test"))
+        .hasEventName("my.event.name")
         .hasTimestamp(100)
         .hasSpanContext(spanContext)
         .hasSeverity(Severity.DEBUG)
@@ -340,7 +349,34 @@ class SdkLoggerProviderTest {
                 + "clock=SystemClock{}, "
                 + "resource=Resource{schemaUrl=null, attributes={key=\"value\"}}, "
                 + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
-                + "logRecordProcessor=MockLogRecordProcessor"
+                + "logRecordProcessor=MockLogRecordProcessor, "
+                + "loggerConfigurator=ScopeConfiguratorImpl{conditions=[]}"
                 + "}");
+  }
+
+  private static ScopeConfigurator<LoggerConfig> flipConfigurator(boolean enabled) {
+    return scopeInfo -> enabled ? LoggerConfig.disabled() : LoggerConfig.enabled();
+  }
+
+  @Test
+  void propagatesEnablementToLoggerDirectly() {
+    SdkLogger logger = (SdkLogger) sdkLoggerProvider.get("test");
+    boolean isEnabled = logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current());
+
+    sdkLoggerProvider.setLoggerConfigurator(flipConfigurator(isEnabled));
+
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current()))
+        .isEqualTo(!isEnabled);
+  }
+
+  @Test
+  void propagatesEnablementToLoggerByUtil() {
+    SdkLogger logger = (SdkLogger) sdkLoggerProvider.get("test");
+    boolean isEnabled = logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current());
+
+    SdkLoggerProviderUtil.setLoggerConfigurator(sdkLoggerProvider, flipConfigurator(isEnabled));
+
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current()))
+        .isEqualTo(!isEnabled);
   }
 }

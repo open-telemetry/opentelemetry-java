@@ -5,10 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
@@ -16,23 +13,18 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
-import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedLongUpDownCounter {
+class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCounter {
 
-  private final MeterSharedState meterSharedState;
-  private final WriteableMetricStorage storage;
+  final SdkMeter sdkMeter;
+  final WriteableMetricStorage storage;
 
-  private SdkLongUpDownCounter(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+  SdkLongUpDownCounter(
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -51,26 +43,14 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedL
     add(increment, Attributes.empty());
   }
 
-  @Override
-  public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
-  }
+  static class SdkLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
 
-  static final class SdkLongUpDownCounterBuilder implements ExtendedLongUpDownCounterBuilder {
+    final InstrumentBuilder builder;
 
-    private final InstrumentBuilder builder;
-
-    SdkLongUpDownCounterBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        String name) {
+    SdkLongUpDownCounterBuilder(SdkMeter sdkMeter, String name) {
       this.builder =
           new InstrumentBuilder(
-              name,
-              InstrumentType.UP_DOWN_COUNTER,
-              InstrumentValueType.LONG,
-              meterProviderSharedState,
-              meterSharedState);
+              name, InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG, sdkMeter);
     }
 
     @Override
@@ -105,12 +85,6 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedL
     @Override
     public ObservableLongMeasurement buildObserver() {
       return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
-    }
-
-    @Override
-    public ExtendedLongUpDownCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      builder.setAdviceAttributes(attributes);
-      return this;
     }
 
     @Override

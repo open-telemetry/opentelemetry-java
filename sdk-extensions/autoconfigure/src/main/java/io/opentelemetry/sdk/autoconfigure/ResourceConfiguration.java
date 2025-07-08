@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -41,9 +42,14 @@ public final class ResourceConfiguration {
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
-  static final String EXPERIMENTAL_DISABLED_ATTRIBUTE_KEYS =
-      "otel.experimental.resource.disabled.keys";
   static final String DISABLED_ATTRIBUTE_KEYS = "otel.resource.disabled.keys";
+  static final String ENABLED_RESOURCE_PROVIDERS = "otel.java.enabled.resource.providers";
+  static final String DISABLED_RESOURCE_PROVIDERS = "otel.java.disabled.resource.providers";
+
+  private static final String OLD_ENVIRONMENT_DETECTOR_FQCN =
+      "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider";
+  private static final String NEW_ENVIRONMENT_DETECT_FQCN =
+      EnvironmentResourceProvider.class.getName();
 
   /**
    * Create a {@link Resource} from the environment. The resource contains attributes parsed from
@@ -93,10 +99,34 @@ public final class ResourceConfiguration {
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
 
-    Set<String> enabledProviders =
-        new HashSet<>(config.getList("otel.java.enabled.resource.providers"));
-    Set<String> disabledProviders =
-        new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
+    Set<String> enabledProviders = new HashSet<>(config.getList(ENABLED_RESOURCE_PROVIDERS));
+    if (enabledProviders.remove(OLD_ENVIRONMENT_DETECTOR_FQCN)) {
+      logger.log(
+          Level.WARNING,
+          "Found reference to "
+              + OLD_ENVIRONMENT_DETECTOR_FQCN
+              + " in "
+              + ENABLED_RESOURCE_PROVIDERS
+              + ". Please update to "
+              + NEW_ENVIRONMENT_DETECT_FQCN
+              + ". Support for the old provider name will be removed after 1.49.0.");
+      enabledProviders.add(NEW_ENVIRONMENT_DETECT_FQCN);
+    }
+
+    Set<String> disabledProviders = new HashSet<>(config.getList(DISABLED_RESOURCE_PROVIDERS));
+    if (disabledProviders.remove(OLD_ENVIRONMENT_DETECTOR_FQCN)) {
+      logger.log(
+          Level.WARNING,
+          "Found reference to "
+              + OLD_ENVIRONMENT_DETECTOR_FQCN
+              + " in "
+              + DISABLED_RESOURCE_PROVIDERS
+              + ". Please update to "
+              + NEW_ENVIRONMENT_DETECT_FQCN
+              + ". Support for the old provider name will be removed after 1.49.0.");
+      disabledProviders.add(NEW_ENVIRONMENT_DETECT_FQCN);
+    }
+
     for (ResourceProvider resourceProvider : spiHelper.loadOrdered(ResourceProvider.class)) {
       if (!enabledProviders.isEmpty()
           && !enabledProviders.contains(resourceProvider.getClass().getName())) {
@@ -120,14 +150,6 @@ public final class ResourceConfiguration {
   // visible for testing
   static Resource filterAttributes(Resource resource, ConfigProperties configProperties) {
     List<String> disabledAttibuteKeys = configProperties.getList(DISABLED_ATTRIBUTE_KEYS);
-    // TODO: Remove this once the deprecated property is removed.
-    if (disabledAttibuteKeys.isEmpty()) {
-      disabledAttibuteKeys = configProperties.getList(EXPERIMENTAL_DISABLED_ATTRIBUTE_KEYS);
-      if (!disabledAttibuteKeys.isEmpty()) {
-        logger.warning(
-            "otel.experimental.resource.disabled.keys is deprecated and will be removed after 1.45.0 release. Please use otel.resource.disabled.keys instead.");
-      }
-    }
     Set<String> disabledKeys = new HashSet<>(disabledAttibuteKeys);
 
     ResourceBuilder builder =

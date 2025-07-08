@@ -24,11 +24,6 @@ class OtlpHttpLogRecordExporterJdkSenderTest
   }
 
   @Override
-  protected boolean hasAuthenticatorSupport() {
-    return false;
-  }
-
-  @Override
   protected TelemetryExporterBuilder<LogRecordData> exporterBuilder() {
     return new HttpLogRecordExporterBuilderWrapper(OtlpHttpLogRecordExporter.builder());
   }
