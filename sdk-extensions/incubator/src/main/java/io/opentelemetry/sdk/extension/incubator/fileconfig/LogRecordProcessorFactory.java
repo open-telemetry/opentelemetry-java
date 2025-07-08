@@ -52,6 +52,7 @@ final class LogRecordProcessorFactory
       if (batchModel.getScheduleDelay() != null) {
         builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
       }
+      builder.setMeterProvider(context.getMeterProvider());
 
       return context.addCloseable(builder.build());
     }
