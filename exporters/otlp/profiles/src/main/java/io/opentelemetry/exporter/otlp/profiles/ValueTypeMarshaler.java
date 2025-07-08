@@ -49,15 +49,14 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
 
     ValueTypeMarshaler[] valueTypeMarshalers = new ValueTypeMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<ValueTypeData>() {
-              int index = 0;
+        new Consumer<ValueTypeData>() {
+          int index = 0;
 
-              @Override
-              public void accept(ValueTypeData valueTypeData) {
-                valueTypeMarshalers[index++] = ValueTypeMarshaler.create(valueTypeData);
-              }
-            });
+          @Override
+          public void accept(ValueTypeData valueTypeData) {
+            valueTypeMarshalers[index++] = ValueTypeMarshaler.create(valueTypeData);
+          }
+        });
     return valueTypeMarshalers;
   }
 

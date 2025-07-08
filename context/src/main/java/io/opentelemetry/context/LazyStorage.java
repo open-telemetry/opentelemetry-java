@@ -104,7 +104,8 @@ final class LazyStorage {
     }
 
     List<ContextStorageProvider> providers = new ArrayList<>();
-    for (ContextStorageProvider provider : ServiceLoader.load(ContextStorageProvider.class)) {
+    for (ContextStorageProvider provider :
+        ServiceLoader.load(ContextStorageProvider.class, LazyStorage.class.getClassLoader())) {
       if (provider
           .getClass()
           .getName()
@@ -127,7 +128,8 @@ final class LazyStorage {
       deferredStorageFailure.set(
           new IllegalStateException(
               "Found multiple ContextStorageProvider. Set the "
-                  + "io.opentelemetry.context.ContextStorageProvider property to the fully "
+                  + CONTEXT_STORAGE_PROVIDER_PROPERTY
+                  + " property to the fully "
                   + "qualified class name of the provider to use. Falling back to default "
                   + "ContextStorage. Found providers: "
                   + providers));
@@ -142,7 +144,8 @@ final class LazyStorage {
 
     deferredStorageFailure.set(
         new IllegalStateException(
-            "io.opentelemetry.context.ContextStorageProvider property set but no matching class "
+            CONTEXT_STORAGE_PROVIDER_PROPERTY
+                + " property set but no matching class "
                 + "could be found, requested: "
                 + providerClassName
                 + " but found providers: "

@@ -32,15 +32,14 @@ final class LineMarshaler extends MarshalerWithSize {
 
     LineMarshaler[] lineMarshalers = new LineMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<LineData>() {
-              int index = 0;
+        new Consumer<LineData>() {
+          int index = 0;
 
-              @Override
-              public void accept(LineData lineData) {
-                lineMarshalers[index++] = LineMarshaler.create(lineData);
-              }
-            });
+          @Override
+          public void accept(LineData lineData) {
+            lineMarshalers[index++] = LineMarshaler.create(lineData);
+          }
+        });
     return lineMarshalers;
   }
 

@@ -40,15 +40,14 @@ final class LocationMarshaler extends MarshalerWithSize {
 
     LocationMarshaler[] locationMarshalers = new LocationMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<LocationData>() {
-              int index = 0;
+        new Consumer<LocationData>() {
+          int index = 0;
 
-              @Override
-              public void accept(LocationData locationData) {
-                locationMarshalers[index++] = LocationMarshaler.create(locationData);
-              }
-            });
+          @Override
+          public void accept(LocationData locationData) {
+            locationMarshalers[index++] = LocationMarshaler.create(locationData);
+          }
+        });
     return locationMarshalers;
   }
 

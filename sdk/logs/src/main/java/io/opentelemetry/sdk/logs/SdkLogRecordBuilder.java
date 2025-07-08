@@ -12,7 +12,6 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -21,17 +20,17 @@ import javax.annotation.Nullable;
 /** SDK implementation of {@link LogRecordBuilder}. */
 class SdkLogRecordBuilder implements LogRecordBuilder {
 
-  private final LoggerSharedState loggerSharedState;
-  private final LogLimits logLimits;
+  protected final LoggerSharedState loggerSharedState;
+  protected final LogLimits logLimits;
 
-  private final InstrumentationScopeInfo instrumentationScopeInfo;
-  @Nullable private String eventName;
-  private long timestampEpochNanos;
-  private long observedTimestampEpochNanos;
-  @Nullable private Context context;
-  private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
-  @Nullable private String severityText;
-  @Nullable private Value<?> body;
+  protected final InstrumentationScopeInfo instrumentationScopeInfo;
+  protected long timestampEpochNanos;
+  protected long observedTimestampEpochNanos;
+  @Nullable protected Context context;
+  protected Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
+  @Nullable protected String severityText;
+  @Nullable protected Value<?> body;
+  @Nullable protected String eventName;
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
@@ -41,20 +40,9 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
   }
 
-  // accessible via ExtendedSdkLogRecordBuilder
-  SdkLogRecordBuilder setEventName(String eventName) {
+  @Override
+  public SdkLogRecordBuilder setEventName(String eventName) {
     this.eventName = eventName;
-    return this;
-  }
-
-  // accessible via ExtendedSdkLogRecordBuilder
-  SdkLogRecordBuilder setException(Throwable throwable) {
-    if (throwable == null) {
-      return this;
-    }
-
-    AttributeUtil.addExceptionAttributes(throwable, this::setAttribute);
-
     return this;
   }
 
@@ -114,7 +102,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   }
 
   @Override
-  public <T> SdkLogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
+  public <T> SdkLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -145,13 +133,13 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
-                eventName,
                 timestampEpochNanos,
                 observedTimestampEpochNanos,
                 Span.fromContext(context).getSpanContext(),
                 severity,
                 severityText,
                 body,
-                attributes));
+                attributes,
+                eventName));
   }
 }

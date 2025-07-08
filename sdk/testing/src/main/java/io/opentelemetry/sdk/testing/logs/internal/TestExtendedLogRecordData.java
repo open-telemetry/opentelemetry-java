@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.testing.logs.internal;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -28,7 +29,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * @since 1.27.0
  */
-// TODO (trask) delete this class once event name stabilizes
 @Immutable
 @AutoValue
 @AutoValue.CopyAnnotations
@@ -66,6 +66,10 @@ public abstract class TestExtendedLogRecordData implements ExtendedLogRecordData
   @Nullable
   public abstract Value<?> getBodyValue();
 
+  @Override
+  @Nullable
+  public abstract String getEventName();
+
   TestExtendedLogRecordData() {}
 
   /**
@@ -92,6 +96,7 @@ public abstract class TestExtendedLogRecordData implements ExtendedLogRecordData
     public abstract Builder setInstrumentationScopeInfo(
         InstrumentationScopeInfo instrumentationScopeInfo);
 
+    /** Sets the event name. */
     public abstract Builder setEventName(String eventName);
 
     /**
@@ -183,9 +188,14 @@ public abstract class TestExtendedLogRecordData implements ExtendedLogRecordData
     public abstract Builder setBodyValue(@Nullable Value<?> body);
 
     /** Set the attributes. */
-    public abstract Builder setAttributes(Attributes attributes);
+    public Builder setAttributes(Attributes attributes) {
+      return setExtendedAttributes(ExtendedAttributes.builder().putAll(attributes).build());
+    }
 
     /** Set the total attribute count. */
     public abstract Builder setTotalAttributeCount(int totalAttributeCount);
+
+    /** Set extended attributes. * */
+    public abstract Builder setExtendedAttributes(ExtendedAttributes extendedAttributes);
   }
 }

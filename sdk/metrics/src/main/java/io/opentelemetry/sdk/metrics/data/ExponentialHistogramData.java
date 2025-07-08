@@ -25,6 +25,11 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface ExponentialHistogramData extends Data<ExponentialHistogramPointData> {
 
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   static ExponentialHistogramData create(
       AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
     return ImmutableExponentialHistogramData.create(temporality, points);

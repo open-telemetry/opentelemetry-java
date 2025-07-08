@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
@@ -80,25 +79,6 @@ public final class DoubleSumAggregator
             currentPoint.getAttributes(),
             currentPoint.getValue() - previousReusablePoint.getValue(),
             currentPoint.getExemplars());
-  }
-
-  @Override
-  public DoublePointData toPoint(Measurement measurement) {
-    return ImmutableDoublePointData.create(
-        measurement.startEpochNanos(),
-        measurement.epochNanos(),
-        measurement.attributes(),
-        measurement.doubleValue());
-  }
-
-  @Override
-  public void toPoint(Measurement measurement, DoublePointData reusablePoint) {
-    ((MutableDoublePointData) reusablePoint)
-        .set(
-            measurement.startEpochNanos(),
-            measurement.epochNanos(),
-            measurement.attributes(),
-            measurement.doubleValue());
   }
 
   @Override

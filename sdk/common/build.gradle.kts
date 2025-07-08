@@ -12,6 +12,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.common")
 
 dependencies {
   api(project(":api:all"))
+  compileOnly(project(":api:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -19,6 +20,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava-testlib")
+  testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 }
 
 tasks {

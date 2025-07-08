@@ -33,7 +33,7 @@ public interface ExtendedLogger extends Logger {
    * Overload of {@link #isEnabled(Severity, Context)} assuming {@link
    * Severity#UNDEFINED_SEVERITY_NUMBER} and {@link Context#current()}.
    *
-   * @deprecated for removal after 1.52.0. Use {@link #isEnabled(Severity, Context)} or {@link
+   * @deprecated for removal after 1.55.0. Use {@link #isEnabled(Severity, Context)} or {@link
    *     #isEnabled(Severity)} instead.
    */
   @Deprecated

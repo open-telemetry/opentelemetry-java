@@ -65,7 +65,7 @@ class SdkLogRecordBuilderTest {
     Instant timestamp = Instant.now();
     Instant observedTimestamp = Instant.now().plusNanos(100);
 
-    String eventName = "event name";
+    String eventName = "my.event.name";
     String bodyStr = "body";
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
@@ -92,8 +92,7 @@ class SdkLogRecordBuilderTest {
     assertThat(emittedLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
-        // TODO (trask) once event name stabilizes
-        //  .hasEventName(eventName)
+        .hasEventName(eventName)
         .hasBody(bodyStr)
         .hasTimestamp(TimeUnit.SECONDS.toNanos(timestamp.getEpochSecond()) + timestamp.getNano())
         .hasObservedTimestamp(

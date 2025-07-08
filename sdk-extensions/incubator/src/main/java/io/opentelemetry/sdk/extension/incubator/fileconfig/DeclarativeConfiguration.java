@@ -21,24 +21,26 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
+import org.snakeyaml.engine.v2.api.YamlUnicodeReader;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
-import org.snakeyaml.engine.v2.constructor.StandardConstructor;
-import org.snakeyaml.engine.v2.exceptions.ConstructorException;
-import org.snakeyaml.engine.v2.exceptions.YamlEngineException;
+import org.snakeyaml.engine.v2.composer.Composer;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
-import org.snakeyaml.engine.v2.nodes.NodeTuple;
 import org.snakeyaml.engine.v2.nodes.ScalarNode;
+import org.snakeyaml.engine.v2.nodes.Tag;
+import org.snakeyaml.engine.v2.parser.ParserImpl;
+import org.snakeyaml.engine.v2.resolver.ScalarResolver;
+import org.snakeyaml.engine.v2.scanner.StreamReader;
 import org.snakeyaml.engine.v2.schema.CoreSchema;
 
 /**
@@ -126,8 +128,9 @@ public final class DeclarativeConfiguration {
   /**
    * Parse the {@code configuration} YAML and return the {@link OpenTelemetryConfigurationModel}.
    *
-   * <p>Before parsing, environment variable substitution is performed as described in {@link
-   * EnvSubstitutionConstructor}.
+   * <p>During parsing, environment variable substitution is performed as defined in the <a
+   * href="https://opentelemetry.io/docs/specs/otel/configuration/data-model/#environment-variable-substitution">
+   * OpenTelemetry Configuration Data Model specification</a>.
    *
    * @throws DeclarativeConfigException if unable to parse
    */
@@ -149,7 +152,7 @@ public final class DeclarativeConfiguration {
   // Visible for testing
   static Object loadYaml(InputStream inputStream, Map<String, String> environmentVariables) {
     LoadSettings settings = LoadSettings.builder().setSchema(new CoreSchema()).build();
-    Load yaml = new Load(settings, new EnvSubstitutionConstructor(settings, environmentVariables));
+    Load yaml = new EnvLoad(settings, environmentVariables);
     return yaml.loadFromInputStream(inputStream);
   }
 
@@ -220,12 +223,12 @@ public final class DeclarativeConfiguration {
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
-    List<Closeable> closeables = new ArrayList<>();
+    DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
     try {
-      return factory.create(model, spiHelper, closeables);
+      return factory.create(model, context);
     } catch (RuntimeException e) {
       logger.info("Error encountered interpreting model. Closing partially configured components.");
-      for (Closeable closeable : closeables) {
+      for (Closeable closeable : context.getCloseables()) {
         try {
           logger.fine("Closing " + closeable.getClass().getName());
           closeable.close();
@@ -241,91 +244,149 @@ public final class DeclarativeConfiguration {
     }
   }
 
-  /**
-   * {@link StandardConstructor} which substitutes environment variables.
-   *
-   * <p>Environment variables follow the syntax {@code ${VARIABLE}}, where {@code VARIABLE} is an
-   * environment variable matching the regular expression {@code [a-zA-Z_]+[a-zA-Z0-9_]*}.
-   *
-   * <p>Environment variable substitution only takes place on scalar values of maps. References to
-   * environment variables in keys or sets are ignored.
-   *
-   * <p>If a referenced environment variable is not defined, it is replaced with {@code ""}.
-   */
-  private static final class EnvSubstitutionConstructor extends StandardConstructor {
+  private static final class EnvLoad extends Load {
 
-    // Load is not thread safe but this instance is always used on the same thread
-    private final Load load;
+    private final LoadSettings settings;
     private final Map<String, String> environmentVariables;
 
-    private EnvSubstitutionConstructor(
-        LoadSettings loadSettings, Map<String, String> environmentVariables) {
-      super(loadSettings);
-      load = new Load(loadSettings);
+    public EnvLoad(LoadSettings settings, Map<String, String> environmentVariables) {
+      super(settings);
+      this.settings = settings;
       this.environmentVariables = environmentVariables;
     }
 
-    /**
-     * Implementation is same as {@link
-     * org.snakeyaml.engine.v2.constructor.BaseConstructor#constructMapping(MappingNode)} except we
-     * override the resolution of values with our custom {@link #constructValueObject(Node)}, which
-     * performs environment variable substitution.
-     */
     @Override
-    @SuppressWarnings({"ReturnValueIgnored", "CatchingUnchecked"})
-    protected Map<Object, Object> constructMapping(MappingNode node) {
-      Map<Object, Object> mapping = settings.getDefaultMap().apply(node.getValue().size());
-      List<NodeTuple> nodeValue = node.getValue();
-      for (NodeTuple tuple : nodeValue) {
-        Node keyNode = tuple.getKeyNode();
-        Object key = constructObject(keyNode);
-        if (key != null) {
-          try {
-            key.hashCode(); // check circular dependencies
-          } catch (Exception e) {
-            throw new ConstructorException(
-                "while constructing a mapping",
-                node.getStartMark(),
-                "found unacceptable key " + key,
-                tuple.getKeyNode().getStartMark(),
-                e);
-          }
-        }
-        Node valueNode = tuple.getValueNode();
-        Object value = constructValueObject(valueNode);
-        if (keyNode.isRecursive()) {
-          if (settings.getAllowRecursiveKeys()) {
-            postponeMapFilling(mapping, key, value);
-          } else {
-            throw new YamlEngineException(
-                "Recursive key for mapping is detected but it is not configured to be allowed.");
-          }
-        } else {
-          mapping.put(key, value);
-        }
-      }
+    public Object loadFromInputStream(InputStream yamlStream) {
+      Objects.requireNonNull(yamlStream, "InputStream cannot be null");
+      return loadOne(
+          new EnvComposer(
+              settings,
+              new ParserImpl(
+                  settings, new StreamReader(settings, new YamlUnicodeReader(yamlStream))),
+              environmentVariables));
+    }
+  }
 
-      return mapping;
+  /**
+   * A YAML Composer that performs environment variable substitution according to the <a
+   * href="https://opentelemetry.io/docs/specs/otel/configuration/data-model/#environment-variable-substitution">
+   * OpenTelemetry Configuration Data Model specification</a>.
+   *
+   * <p>This composer supports:
+   *
+   * <ul>
+   *   <li>Environment variable references: {@code ${ENV_VAR}} or {@code ${env:ENV_VAR}}
+   *   <li>Default values: {@code ${ENV_VAR:-default_value}}
+   *   <li>Escape sequences: {@code $$} is replaced with a single {@code $}
+   * </ul>
+   *
+   * <p>Environment variable substitution only applies to scalar values. Mapping keys are not
+   * candidates for substitution. Referenced environment variables that are undefined, null, or
+   * empty are replaced with empty values unless a default value is provided.
+   *
+   * <p>The {@code $} character serves as an escape sequence where {@code $$} in the input is
+   * translated to a single {@code $} in the output. This prevents environment variable substitution
+   * for the escaped content.
+   */
+  private static final class EnvComposer extends Composer {
+
+    private final Load load;
+    private final Map<String, String> environmentVariables;
+    private final ScalarResolver scalarResolver;
+
+    private static final String ESCAPE_SEQUENCE = "$$";
+    private static final int ESCAPE_SEQUENCE_LENGTH = ESCAPE_SEQUENCE.length();
+    private static final char ESCAPE_SEQUENCE_REPLACEMENT = '$';
+
+    public EnvComposer(
+        LoadSettings settings, ParserImpl parser, Map<String, String> environmentVariables) {
+      super(settings, parser);
+      this.load = new Load(settings);
+      this.environmentVariables = environmentVariables;
+      this.scalarResolver = settings.getSchema().getScalarResolver();
     }
 
-    private Object constructValueObject(Node node) {
-      Object value = constructObject(node);
-      if (!(node instanceof ScalarNode)) {
-        return value;
+    @Override
+    protected Node composeValueNode(MappingNode node) {
+      Node itemValue = super.composeValueNode(node);
+      if (!(itemValue instanceof ScalarNode)) {
+        // Only apply environment variable substitution to ScalarNodes
+        return itemValue;
       }
-      if (!(value instanceof String)) {
-        return value;
+      ScalarNode scalarNode = (ScalarNode) itemValue;
+      String envSubstitution = envSubstitution(scalarNode.getValue());
+
+      // If the environment variable substitution does not change the value, do not modify the node
+      if (envSubstitution.equals(scalarNode.getValue())) {
+        return itemValue;
       }
 
-      String val = (String) value;
+      Object envSubstitutionObj = load.loadFromString(envSubstitution);
+      Tag tag = itemValue.getTag();
+      ScalarStyle scalarStyle = scalarNode.getScalarStyle();
+
+      Tag resolvedTag =
+          envSubstitutionObj == null
+              ? Tag.NULL
+              : scalarResolver.resolve(envSubstitutionObj.toString(), true);
+
+      // Only non-quoted substituted scalars can have their tag changed
+      if (!itemValue.getTag().equals(resolvedTag)
+          && scalarStyle != ScalarStyle.SINGLE_QUOTED
+          && scalarStyle != ScalarStyle.DOUBLE_QUOTED) {
+        tag = resolvedTag;
+      }
+
+      boolean resolved = true;
+      return new ScalarNode(
+          tag,
+          resolved,
+          envSubstitution,
+          scalarStyle,
+          itemValue.getStartMark(),
+          itemValue.getEndMark());
+    }
+
+    private String envSubstitution(String val) {
+      // Iterate through val left to right, search for escape sequence "$$"
+      // For the substring of val between the last escape sequence and the next found, perform
+      // environment variable substitution
+      // Add the escape replacement character '$' in place of each escape sequence found
+
+      int lastEscapeIndexEnd = 0;
+      StringBuilder newVal = null;
+      while (true) {
+        int escapeIndex = val.indexOf(ESCAPE_SEQUENCE, lastEscapeIndexEnd);
+        int substitutionEndIndex = escapeIndex == -1 ? val.length() : escapeIndex;
+        newVal = envVarSubstitution(newVal, val, lastEscapeIndexEnd, substitutionEndIndex);
+        if (escapeIndex == -1) {
+          break;
+        } else {
+          newVal.append(ESCAPE_SEQUENCE_REPLACEMENT);
+        }
+        lastEscapeIndexEnd = escapeIndex + ESCAPE_SEQUENCE_LENGTH;
+        if (lastEscapeIndexEnd >= val.length()) {
+          break;
+        }
+      }
+
+      return newVal.toString();
+    }
+
+    private StringBuilder envVarSubstitution(
+        @Nullable StringBuilder newVal, String source, int startIndex, int endIndex) {
+      String val = source.substring(startIndex, endIndex);
       Matcher matcher = ENV_VARIABLE_REFERENCE.matcher(val);
+
       if (!matcher.find()) {
-        return value;
+        return newVal == null ? new StringBuilder(val) : newVal.append(val);
+      }
+
+      if (newVal == null) {
+        newVal = new StringBuilder();
       }
 
       int offset = 0;
-      StringBuilder newVal = new StringBuilder();
-      ScalarStyle scalarStyle = ((ScalarNode) node).getScalarStyle();
       do {
         MatchResult matchResult = matcher.toMatchResult();
         String envVarKey = matcher.group(1);
@@ -340,13 +401,8 @@ public final class DeclarativeConfiguration {
       if (offset != val.length()) {
         newVal.append(val, offset, val.length());
       }
-      // If the value was double quoted, retain the double quotes so we don't change a value
-      // intended to be a string to a different type after environment variable substitution
-      if (scalarStyle == ScalarStyle.DOUBLE_QUOTED) {
-        newVal.insert(0, "\"");
-        newVal.append("\"");
-      }
-      return load.loadFromString(newVal.toString());
+
+      return newVal;
     }
   }
 }

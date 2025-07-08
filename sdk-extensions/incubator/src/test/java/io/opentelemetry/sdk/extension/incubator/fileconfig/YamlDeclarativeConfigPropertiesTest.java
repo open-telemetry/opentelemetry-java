@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 class YamlDeclarativeConfigPropertiesTest {
 
   private static final String extendedSchema =
-      "file_format: \"0.3\"\n"
+      "file_format: \"1.0-rc.1\"\n"
           + "disabled: false\n"
           + "\n"
           + "resource:\n"
@@ -69,7 +69,7 @@ class YamlDeclarativeConfigPropertiesTest {
   @Test
   void configurationSchema() {
     // Validate can read declarative configuration schema properties
-    assertThat(structuredConfigProps.getString("file_format")).isEqualTo("0.3");
+    assertThat(structuredConfigProps.getString("file_format")).isEqualTo("1.0-rc.1");
     DeclarativeConfigProperties resourceProps = structuredConfigProps.getStructured("resource");
     assertThat(resourceProps).isNotNull();
     List<DeclarativeConfigProperties> resourceAttributesList =

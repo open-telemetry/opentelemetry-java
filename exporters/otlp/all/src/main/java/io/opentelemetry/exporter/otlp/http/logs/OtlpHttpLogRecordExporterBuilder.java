@@ -11,14 +11,14 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
-import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +48,10 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   OtlpHttpLogRecordExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
+    this(
+        new HttpExporterBuilder<>(
+            StandardComponentId.ExporterType.OTLP_HTTP_LOG_EXPORTER, DEFAULT_ENDPOINT),
+        DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -107,13 +110,11 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
-   * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * method "gzip" and "none" are supported out of the box. Additional compression methods can be
+   * supported by providing custom {@link Compressor} implementations via the service loader.
    */
   public OtlpHttpLogRecordExporterBuilder setCompression(String compressionMethod) {
-    requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
-    delegate.setCompression(compressor);
+    delegate.setCompression(compressionMethod);
     return this;
   }
 
@@ -209,6 +210,19 @@ public final class OtlpHttpLogRecordExporterBuilder {
       Supplier<MeterProvider> meterProviderSupplier) {
     requireNonNull(meterProviderSupplier, "meterProviderSupplier");
     delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   *
+   * @since 1.51.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetryVersion(schemaVersion);
     return this;
   }
 

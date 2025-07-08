@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
@@ -37,7 +38,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   }
 
   @Override
-  public <T> AttributesBuilder put(AttributeKey<T> key, T value) {
+  public <T> AttributesBuilder put(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }

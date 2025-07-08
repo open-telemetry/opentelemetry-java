@@ -9,15 +9,16 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
-import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -56,29 +57,32 @@ public final class OtlpGrpcMetricExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<Marshaler> delegate;
 
-  private AggregationTemporalitySelector aggregationTemporalitySelector =
-      DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
-
-  private DefaultAggregationSelector defaultAggregationSelector =
-      DefaultAggregationSelector.getDefault();
+  private AggregationTemporalitySelector aggregationTemporalitySelector;
+  private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
-  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpGrpcMetricExporterBuilder(
+      GrpcExporterBuilder<Marshaler> delegate,
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
     this.memoryMode = memoryMode;
-    delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
   OtlpGrpcMetricExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            "otlp",
-            "metric",
+            StandardComponentId.ExporterType.OTLP_GRPC_METRIC_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
             GRPC_ENDPOINT_PATH),
+        DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
+        DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -158,13 +162,12 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
-   * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * method "gzip" and "none" are supported out of the box. Additional compression methods can be
+   * supported by providing custom {@link Compressor} implementations via the service loader.
    */
   public OtlpGrpcMetricExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
-    delegate.setCompression(compressor);
+    delegate.setCompression(compressionMethod);
     return this;
   }
 
@@ -265,6 +268,44 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   *
+   * @since 1.51.0
+   */
+  public OtlpGrpcMetricExporterBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetryVersion(schemaVersion);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
+   * {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.50.0
+   */
+  public OtlpGrpcMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    delegate.setMeterProvider(() -> meterProvider);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} supplier to use to collect metrics related to export. If not
+   * set, uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.50.0
+   */
+  public OtlpGrpcMetricExporterBuilder setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProvider");
+    delegate.setMeterProvider(meterProviderSupplier);
     return this;
   }
 
