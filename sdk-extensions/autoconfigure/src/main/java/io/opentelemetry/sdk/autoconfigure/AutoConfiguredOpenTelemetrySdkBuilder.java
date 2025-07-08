@@ -446,15 +446,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private AutoConfiguredOpenTelemetrySdk buildImpl() {
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
-    if (!customized) {
-      customized = true;
-      mergeSdkTracerProviderConfigurer();
-      for (AutoConfigurationCustomizerProvider customizer :
-          spiHelper.loadOrdered(AutoConfigurationCustomizerProvider.class)) {
-        customizer.customize(this);
-      }
-    }
-
     ConfigProperties config = getConfig();
 
     AutoConfiguredOpenTelemetrySdk fromFileConfiguration =
@@ -466,6 +457,15 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         IncubatingUtil.setGlobalConfigProvider(configProvider);
       }
       return fromFileConfiguration;
+    }
+
+    if (!customized) {
+      customized = true;
+      mergeSdkTracerProviderConfigurer();
+      for (AutoConfigurationCustomizerProvider customizer :
+          spiHelper.loadOrdered(AutoConfigurationCustomizerProvider.class)) {
+        customizer.customize(this);
+      }
     }
 
     Resource resource =
