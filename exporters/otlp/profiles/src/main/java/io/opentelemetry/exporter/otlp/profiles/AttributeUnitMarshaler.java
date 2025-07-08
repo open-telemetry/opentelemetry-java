@@ -33,15 +33,14 @@ final class AttributeUnitMarshaler extends MarshalerWithSize {
 
     AttributeUnitMarshaler[] attributeUnitMarshalers = new AttributeUnitMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<AttributeUnitData>() {
-              int index = 0;
+        new Consumer<AttributeUnitData>() {
+          int index = 0;
 
-              @Override
-              public void accept(AttributeUnitData attributeUnitData) {
-                attributeUnitMarshalers[index++] = AttributeUnitMarshaler.create(attributeUnitData);
-              }
-            });
+          @Override
+          public void accept(AttributeUnitData attributeUnitData) {
+            attributeUnitMarshalers[index++] = AttributeUnitMarshaler.create(attributeUnitData);
+          }
+        });
     return attributeUnitMarshalers;
   }
 

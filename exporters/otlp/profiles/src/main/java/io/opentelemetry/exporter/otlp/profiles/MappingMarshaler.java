@@ -47,15 +47,14 @@ final class MappingMarshaler extends MarshalerWithSize {
 
     MappingMarshaler[] mappingMarshalers = new MappingMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<MappingData>() {
-              int index = 0;
+        new Consumer<MappingData>() {
+          int index = 0;
 
-              @Override
-              public void accept(MappingData mappingData) {
-                mappingMarshalers[index++] = MappingMarshaler.create(mappingData);
-              }
-            });
+          @Override
+          public void accept(MappingData mappingData) {
+            mappingMarshalers[index++] = MappingMarshaler.create(mappingData);
+          }
+        });
     return mappingMarshalers;
   }
 

@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "7.0.4"
+  id("com.diffplug.spotless") version "7.1.0"
 }
 
 if (!hasLauncherForJavaVersion(17)) {
@@ -53,7 +53,7 @@ dependencies {
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.3.3"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.4")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:7.1.0")
   implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.0.2")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
@@ -62,7 +62,7 @@ dependencies {
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.6")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.2.0")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.3.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.2.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.21")
   implementation("org.owasp:dependency-check-gradle:12.1.3")
