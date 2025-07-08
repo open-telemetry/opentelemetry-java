@@ -17,22 +17,22 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class IncludeExcludePredicateTest {
 
-  private static final Predicate<String> exactInclude =
+  private static final Predicate<String> EXACT_INCLUDE =
       IncludeExcludePredicate.createExactMatching(singletonList("foo"), null);
-  private static final Predicate<String> exactExclude =
+  private static final Predicate<String> EXACT_EXCLUDE =
       IncludeExcludePredicate.createExactMatching(null, singletonList("bar"));
-  private static final Predicate<String> exactIncludeAndExclude =
+  private static final Predicate<String> EXACT_INCLUDE_AND_EXCLUDE =
       IncludeExcludePredicate.createExactMatching(singletonList("foo"), singletonList("bar"));
-  private static final Predicate<String> exactMulti =
+  private static final Predicate<String> EXACT_MULTI =
       IncludeExcludePredicate.createExactMatching(asList("foo", "fooo"), asList("bar", "barr"));
 
-  private static final Predicate<String> patternInclude =
+  private static final Predicate<String> PATTERN_INCLUDE =
       IncludeExcludePredicate.createPatternMatching(singletonList("f?o"), null);
-  private static final Predicate<String> patternExclude =
+  private static final Predicate<String> PATTERN_EXCLUDE =
       IncludeExcludePredicate.createPatternMatching(null, singletonList("b?r"));
-  private static final Predicate<String> patternIncludeAndExclude =
+  private static final Predicate<String> PATTERN_INCLUDE_AND_EXCLUDE =
       IncludeExcludePredicate.createPatternMatching(singletonList("f?o"), singletonList("b?r"));
-  private static final Predicate<String> patternMulti =
+  private static final Predicate<String> PATTERN_MULTI =
       IncludeExcludePredicate.createPatternMatching(asList("f?o", "f?oo"), asList("b?r", "b?rr"));
 
   @ParameterizedTest
@@ -45,42 +45,42 @@ class IncludeExcludePredicateTest {
     return Stream.of(
         // exact matching
         // include only
-        Arguments.of(exactInclude, "foo", true),
-        Arguments.of(exactInclude, "bar", false),
-        Arguments.of(exactInclude, "baz", false),
+        Arguments.of(EXACT_INCLUDE, "foo", true),
+        Arguments.of(EXACT_INCLUDE, "bar", false),
+        Arguments.of(EXACT_INCLUDE, "baz", false),
         // exclude only
-        Arguments.of(exactExclude, "foo", true),
-        Arguments.of(exactExclude, "bar", false),
-        Arguments.of(exactExclude, "baz", true),
+        Arguments.of(EXACT_EXCLUDE, "foo", true),
+        Arguments.of(EXACT_EXCLUDE, "bar", false),
+        Arguments.of(EXACT_EXCLUDE, "baz", true),
         // include and exclude
-        Arguments.of(exactIncludeAndExclude, "foo", true),
-        Arguments.of(exactIncludeAndExclude, "bar", false),
-        Arguments.of(exactIncludeAndExclude, "baz", false),
+        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "foo", true),
+        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "bar", false),
+        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "baz", false),
         // multi
-        Arguments.of(exactMulti, "foo", true),
-        Arguments.of(exactMulti, "fooo", true),
-        Arguments.of(exactMulti, "bar", false),
-        Arguments.of(exactMulti, "barr", false),
-        Arguments.of(exactMulti, "baz", false),
+        Arguments.of(EXACT_MULTI, "foo", true),
+        Arguments.of(EXACT_MULTI, "fooo", true),
+        Arguments.of(EXACT_MULTI, "bar", false),
+        Arguments.of(EXACT_MULTI, "barr", false),
+        Arguments.of(EXACT_MULTI, "baz", false),
         // pattern matching
         // include only
-        Arguments.of(patternInclude, "foo", true),
-        Arguments.of(patternInclude, "bar", false),
-        Arguments.of(patternInclude, "baz", false),
+        Arguments.of(PATTERN_INCLUDE, "foo", true),
+        Arguments.of(PATTERN_INCLUDE, "bar", false),
+        Arguments.of(PATTERN_INCLUDE, "baz", false),
         // exclude only
-        Arguments.of(patternExclude, "foo", true),
-        Arguments.of(patternExclude, "bar", false),
-        Arguments.of(patternExclude, "baz", true),
+        Arguments.of(PATTERN_EXCLUDE, "foo", true),
+        Arguments.of(PATTERN_EXCLUDE, "bar", false),
+        Arguments.of(PATTERN_EXCLUDE, "baz", true),
         // include and exclude
-        Arguments.of(patternIncludeAndExclude, "foo", true),
-        Arguments.of(patternIncludeAndExclude, "bar", false),
-        Arguments.of(patternIncludeAndExclude, "baz", false),
+        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "foo", true),
+        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "bar", false),
+        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "baz", false),
         // multi
-        Arguments.of(patternMulti, "foo", true),
-        Arguments.of(patternMulti, "fooo", true),
-        Arguments.of(patternMulti, "bar", false),
-        Arguments.of(patternMulti, "barr", false),
-        Arguments.of(patternMulti, "baz", false));
+        Arguments.of(PATTERN_MULTI, "foo", true),
+        Arguments.of(PATTERN_MULTI, "fooo", true),
+        Arguments.of(PATTERN_MULTI, "bar", false),
+        Arguments.of(PATTERN_MULTI, "barr", false),
+        Arguments.of(PATTERN_MULTI, "baz", false));
   }
 
   @ParameterizedTest
@@ -92,24 +92,24 @@ class IncludeExcludePredicateTest {
   private static Stream<Arguments> stringRepresentationArgs() {
     return Stream.of(
         Arguments.of(
-            exactInclude, "IncludeExcludePredicate{globMatchingEnabled=false, included=[foo]}"),
+            EXACT_INCLUDE, "IncludeExcludePredicate{globMatchingEnabled=false, included=[foo]}"),
         Arguments.of(
-            exactExclude, "IncludeExcludePredicate{globMatchingEnabled=false, excluded=[bar]}"),
+            EXACT_EXCLUDE, "IncludeExcludePredicate{globMatchingEnabled=false, excluded=[bar]}"),
         Arguments.of(
-            exactIncludeAndExclude,
+            EXACT_INCLUDE_AND_EXCLUDE,
             "IncludeExcludePredicate{globMatchingEnabled=false, included=[foo], excluded=[bar]}"),
         Arguments.of(
-            exactMulti,
+            EXACT_MULTI,
             "IncludeExcludePredicate{globMatchingEnabled=false, included=[foo, fooo], excluded=[bar, barr]}"),
         Arguments.of(
-            patternInclude, "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o]}"),
+            PATTERN_INCLUDE, "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o]}"),
         Arguments.of(
-            patternExclude, "IncludeExcludePredicate{globMatchingEnabled=true, excluded=[b?r]}"),
+            PATTERN_EXCLUDE, "IncludeExcludePredicate{globMatchingEnabled=true, excluded=[b?r]}"),
         Arguments.of(
-            patternIncludeAndExclude,
+            PATTERN_INCLUDE_AND_EXCLUDE,
             "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o], excluded=[b?r]}"),
         Arguments.of(
-            patternMulti,
+            PATTERN_MULTI,
             "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o, f?oo], excluded=[b?r, b?rr]}"));
   }
 }
