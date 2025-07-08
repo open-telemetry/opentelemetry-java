@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.incubator.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,4 +149,26 @@ public class InstrumentationConfigUtil {
   }
 
   private InstrumentationConfigUtil() {}
+
+  /**
+   * Convert the {@code declarativeConfigProperties} to an instance of a given {@code modelType}.
+   *
+   * <p>This method is a simple wrapper of {@link ObjectMapper#convertValue(Object, Class)} combined
+   * with a call to {@link DeclarativeConfigProperties#toMap(DeclarativeConfigProperties)}.
+   *
+   * <p>NOTE: callers MUST add their own dependency on {@code
+   * com.fasterxml.jackson.core:jackson-databind}. This module's dependency is {@code compileOnly}
+   * since jackson is a large dependency that many users will not require. It's very possible to
+   * convert between {@link DeclarativeConfigProperties} (or a map representation from {@link
+   * DeclarativeConfigProperties#toMap(DeclarativeConfigProperties)}) and a target model type
+   * without jackson. This method is provided a convenience method for demonstration purposes.
+   */
+  public static <T> T convertToModel(
+      ObjectMapper objectMapper,
+      DeclarativeConfigProperties declarativeConfigProperties,
+      Class<T> modelType) {
+    Map<String, Object> configPropertiesMap =
+        DeclarativeConfigProperties.toMap(declarativeConfigProperties);
+    return objectMapper.convertValue(configPropertiesMap, modelType);
+  }
 }

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -201,7 +202,9 @@ public final class DeclarativeConfiguration {
   public static Sampler createSampler(DeclarativeConfigProperties genericSamplerModel) {
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
         requireYamlDeclarativeConfigProperties(genericSamplerModel);
-    SamplerModel samplerModel = convertToModel(yamlDeclarativeConfigProperties, SamplerModel.class);
+    SamplerModel samplerModel =
+        InstrumentationConfigUtil.convertToModel(
+            MAPPER, yamlDeclarativeConfigProperties, SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
         SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
@@ -215,20 +218,6 @@ public final class DeclarativeConfiguration {
           "Only YamlDeclarativeConfigProperties can be converted to model");
     }
     return (YamlDeclarativeConfigProperties) declarativeConfigProperties;
-  }
-
-  /**
-   * Convert the {@code declarativeConfigProperties} to an instance of a given {@code modelType}.
-   *
-   * <p>Wrapper around {@link ObjectMapper#convertValue(Object, Class)}. See {@link ObjectMapper}
-   * for full details. If the {@link ObjectMapper} we use doesn't match your requirements, configure
-   * your own instance and call {@link ObjectMapper#convertValue(Object, Class)} using it.
-   */
-  public static <T> T convertToModel(
-      DeclarativeConfigProperties declarativeConfigProperties, Class<T> modelType) {
-    Map<String, Object> configPropertiesMap =
-        DeclarativeConfigProperties.toMap(declarativeConfigProperties);
-    return MAPPER.convertValue(configPropertiesMap, modelType);
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {

@@ -3,17 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.incubator.fileconfig;
+package io.opentelemetry.api.incubator;
 
-import static io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration.MAPPER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.YamlDeclarativeConfigProperties;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -24,7 +27,9 @@ import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
-class DeclarativeConfigurationConvertTest {
+class ConvertToModelTest {
+
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   @Test
   void toMap_RoundTrip() throws JsonProcessingException {
@@ -56,7 +61,7 @@ class DeclarativeConfigurationConvertTest {
   void convertToModel_Empty() {
     DeclarativeConfigProperties properties = ofMap(Collections.emptyMap());
 
-    assertThat(DeclarativeConfiguration.convertToModel(properties, Model.class))
+    assertThat(InstrumentationConfigUtil.convertToModel(MAPPER, properties, Model.class))
         .isEqualTo(new Model());
   }
 
@@ -94,12 +99,12 @@ class DeclarativeConfigurationConvertTest {
     listEntryModel.value = "the_value";
     expected.structuredListProperty = Collections.singletonList(listEntryModel);
 
-    assertThat(DeclarativeConfiguration.convertToModel(properties, Model.class))
+    assertThat(InstrumentationConfigUtil.convertToModel(MAPPER, properties, Model.class))
         .isEqualTo(expected);
   }
 
   private static final ComponentLoader componentLoader =
-      SpiHelper.serviceComponentLoader(DeclarativeConfigurationConvertTest.class.getClassLoader());
+      SpiHelper.serviceComponentLoader(ConvertToModelTest.class.getClassLoader());
 
   private static YamlDeclarativeConfigProperties ofMap(Map<String, Object> map) {
     return YamlDeclarativeConfigProperties.create(map, componentLoader);
@@ -140,7 +145,7 @@ class DeclarativeConfigurationConvertTest {
 
     @Override
     public boolean equals(Object o) {
-      if (o == null || getClass() != o.getClass()) {
+      if (!(o instanceof Model)) {
         return false;
       }
       Model model = (Model) o;
