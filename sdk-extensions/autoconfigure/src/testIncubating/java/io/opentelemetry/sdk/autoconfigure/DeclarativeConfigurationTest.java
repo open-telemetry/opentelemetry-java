@@ -6,9 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static java.util.Collections.singletonMap;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -96,21 +93,23 @@ class DeclarativeConfigurationTest {
     assertThatThrownBy(
             () ->
                 AutoConfiguredOpenTelemetrySdk.builder()
-                    .addPropertiesSupplier(() -> singletonMap("otel.config.file", "foo"))
-                    .addPropertiesSupplier(
-                        () -> singletonMap("otel.experimental.config.file", "foo"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                    .setConfig(
+                        DefaultConfigProperties.createFromMap(
+                            Collections.singletonMap("otel.experimental.config.file", "foo")))
                     .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Configuration file not found");
 
-    assertThatCode(
+    assertThatThrownBy(
             () ->
                 AutoConfiguredOpenTelemetrySdk.builder()
-                    .addPropertiesSupplier(() -> singletonMap("otel.experimental.config.file", ""))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                    .setConfig(
+                        DefaultConfigProperties.createFromMap(
+                            Collections.singletonMap("otel.experimental.config.file", "")))
                     .build())
-        .doesNotThrowAnyException();
+        .hasMessageContaining(
+            "otel.metrics.exporter set to \"otlp\" but opentelemetry-exporter-otlp not found on "
+                + "classpath. Make sure to add it as a dependency.");
   }
 
   @Test
