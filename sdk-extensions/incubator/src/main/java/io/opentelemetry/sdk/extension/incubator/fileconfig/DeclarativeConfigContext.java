@@ -42,6 +42,7 @@ class DeclarativeConfigContext {
     return Collections.unmodifiableList(closeables);
   }
 
+  @Nullable
   public MeterProvider getMeterProvider() {
     return meterProvider;
   }

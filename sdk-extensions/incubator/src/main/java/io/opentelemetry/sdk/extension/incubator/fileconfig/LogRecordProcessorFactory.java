@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
@@ -52,7 +53,10 @@ final class LogRecordProcessorFactory
       if (batchModel.getScheduleDelay() != null) {
         builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
       }
-      builder.setMeterProvider(context.getMeterProvider());
+      MeterProvider meterProvider = context.getMeterProvider();
+      if (meterProvider != null) {
+        builder.setMeterProvider(meterProvider);
+      }
 
       return context.addCloseable(builder.build());
     }
