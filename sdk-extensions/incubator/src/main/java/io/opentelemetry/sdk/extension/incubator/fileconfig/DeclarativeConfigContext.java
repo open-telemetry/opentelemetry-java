@@ -10,6 +10,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 class DeclarativeConfigContext {
 
   private final SpiHelper spiHelper;
-  private MeterProvider meterProvider;
+  @Nullable private MeterProvider meterProvider;
   private final List<Closeable> closeables = new ArrayList<>();
 
   DeclarativeConfigContext(SpiHelper spiHelper) {
