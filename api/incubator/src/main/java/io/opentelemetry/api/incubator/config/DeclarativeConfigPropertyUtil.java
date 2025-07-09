@@ -48,9 +48,13 @@ final class DeclarativeConfigPropertyUtil {
   private static Object resolveValue(
       String key, DeclarativeConfigProperties declarativeConfigProperties) {
     for (int i = 0; i < valueResolvers.size(); i++) {
-      Object value = valueResolvers.get(i).apply(key, declarativeConfigProperties);
-      if (value != null) {
-        return value;
+      try {
+        Object value = valueResolvers.get(i).apply(key, declarativeConfigProperties);
+        if (value != null) {
+          return value;
+        }
+      } catch (DeclarativeConfigException e) {
+        // Ignore and continue
       }
     }
     return null;

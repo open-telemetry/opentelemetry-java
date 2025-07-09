@@ -151,24 +151,46 @@ public class InstrumentationConfigUtil {
   private InstrumentationConfigUtil() {}
 
   /**
-   * Convert the {@code declarativeConfigProperties} to an instance of a given {@code modelType}.
+   * Return {@code .instrumentation.java.<instrumentationName>}, after converting it to the {@code
+   * modelType} using the {@code objectMapper}. If no configuration exists for the {@code }
    *
-   * <p>This method is a simple wrapper of {@link ObjectMapper#convertValue(Object, Class)} combined
-   * with a call to {@link DeclarativeConfigProperties#toMap(DeclarativeConfigProperties)}.
+   * <p>This method is a convenience method for a common instrumentation library workflow:
+   *
+   * <ul>
+   *   <li>During initialization, an instrumentation library is given an {@link ConfigProvider} and
+   *       must initialize according to the relevant config
+   *   <li>It checks if the user has provided configuration for it, and if so...
+   *   <li>It converts the configuration to an in-memory model representing all of its relevant
+   *       properties
+   *   <li>It initializes using the strongly typed in-memory model
+   * </ul>
+   *
+   * <p>Conversion is done using {@link ObjectMapper#convertValue(Object, Class)} from {@code
+   * com.fasterxml.jackson.databind}, and assumes the {@code modelType} is a POJO written /
+   * annotated to support jackson databinding.
    *
    * <p>NOTE: callers MUST add their own dependency on {@code
    * com.fasterxml.jackson.core:jackson-databind}. This module's dependency is {@code compileOnly}
    * since jackson is a large dependency that many users will not require. It's very possible to
    * convert between {@link DeclarativeConfigProperties} (or a map representation from {@link
    * DeclarativeConfigProperties#toMap(DeclarativeConfigProperties)}) and a target model type
-   * without jackson. This method is provided a convenience method for demonstration purposes.
+   * without jackson. This method is provided as an optional convenience method.
+   *
+   * @throws IllegalArgumentException if conversion fails. See {@link
+   *     ObjectMapper#convertValue(Object, Class)} for details.
    */
-  public static <T> T convertToModel(
+  @Nullable
+  public static <T> T getInstrumentationConfigModel(
+      ConfigProvider configProvider,
+      String instrumentationName,
       ObjectMapper objectMapper,
-      DeclarativeConfigProperties declarativeConfigProperties,
       Class<T> modelType) {
-    Map<String, Object> configPropertiesMap =
-        DeclarativeConfigProperties.toMap(declarativeConfigProperties);
+    DeclarativeConfigProperties properties =
+        javaInstrumentationConfig(configProvider, instrumentationName);
+    if (properties == null) {
+      return null;
+    }
+    Map<String, Object> configPropertiesMap = DeclarativeConfigProperties.toMap(properties);
     return objectMapper.convertValue(configPropertiesMap, modelType);
   }
 }

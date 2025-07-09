@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -203,8 +202,8 @@ public final class DeclarativeConfiguration {
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
         requireYamlDeclarativeConfigProperties(genericSamplerModel);
     SamplerModel samplerModel =
-        InstrumentationConfigUtil.convertToModel(
-            MAPPER, yamlDeclarativeConfigProperties, SamplerModel.class);
+        MAPPER.convertValue(
+            DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
         SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),

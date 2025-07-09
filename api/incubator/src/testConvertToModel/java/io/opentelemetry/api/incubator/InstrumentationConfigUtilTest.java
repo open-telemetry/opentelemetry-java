@@ -11,12 +11,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.YamlDeclarativeConfigProperties;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -27,7 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
-class ConvertToModelTest {
+class InstrumentationConfigUtilTest {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -58,17 +60,31 @@ class ConvertToModelTest {
   }
 
   @Test
-  void convertToModel_Empty() {
-    DeclarativeConfigProperties properties = ofMap(Collections.emptyMap());
+  void getInstrumentationConfigModel_UnsetConfig() {
+    ConfigProvider configProvider = () -> null;
 
-    assertThat(InstrumentationConfigUtil.convertToModel(MAPPER, properties, Model.class))
+    assertThat(
+            InstrumentationConfigUtil.getInstrumentationConfigModel(
+                configProvider, "my_instrumentation_library", MAPPER, Model.class))
+        .isEqualTo(null);
+  }
+
+  @Test
+  void getInstrumentationConfigModel_EmptyConfig() {
+    ConfigProvider configProvider =
+        withInstrumentationConfig("my_instrumentation_library", Collections.emptyMap());
+
+    assertThat(
+            InstrumentationConfigUtil.getInstrumentationConfigModel(
+                configProvider, "my_instrumentation_library", MAPPER, Model.class))
         .isEqualTo(new Model());
   }
 
   @Test
-  void convertToModel_KitchenSink() {
-    DeclarativeConfigProperties properties =
-        ofMap(
+  void getInstrumentationConfigModel_KitchenSink() {
+    ConfigProvider configProvider =
+        withInstrumentationConfig(
+            "my_instrumentation_library",
             ImmutableMap.<String, Object>builder()
                 .put("string_property", "value")
                 .put("boolean_property", true)
@@ -84,6 +100,7 @@ class ConvertToModelTest {
                     Collections.singletonList(
                         ImmutableMap.of("key", "the_key", "value", "the_value")))
                 .build());
+
     Model expected = new Model();
     expected.stringProperty = "value";
     expected.booleanProperty = true;
@@ -99,15 +116,21 @@ class ConvertToModelTest {
     listEntryModel.value = "the_value";
     expected.structuredListProperty = Collections.singletonList(listEntryModel);
 
-    assertThat(InstrumentationConfigUtil.convertToModel(MAPPER, properties, Model.class))
+    assertThat(
+            InstrumentationConfigUtil.getInstrumentationConfigModel(
+                configProvider, "my_instrumentation_library", MAPPER, Model.class))
         .isEqualTo(expected);
   }
 
-  private static final ComponentLoader componentLoader =
-      SpiHelper.serviceComponentLoader(ConvertToModelTest.class.getClassLoader());
+  private static ConfigProvider withInstrumentationConfig(
+      String instrumentationName, Map<String, Object> instrumentationConfig) {
+    ExperimentalLanguageSpecificInstrumentationModel javaConfig =
+        new ExperimentalLanguageSpecificInstrumentationModel();
+    javaConfig.setAdditionalProperty(instrumentationName, instrumentationConfig);
 
-  private static YamlDeclarativeConfigProperties ofMap(Map<String, Object> map) {
-    return YamlDeclarativeConfigProperties.create(map, componentLoader);
+    return SdkConfigProvider.create(
+        new OpenTelemetryConfigurationModel()
+            .withInstrumentationDevelopment(new InstrumentationModel().withJava(javaConfig)));
   }
 
   private static class Model {
