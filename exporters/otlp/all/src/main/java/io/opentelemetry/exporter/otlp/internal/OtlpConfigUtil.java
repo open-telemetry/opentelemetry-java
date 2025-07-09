@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
-import io.opentelemetry.context.ComponentLoader;
+import io.opentelemetry.api.util.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;

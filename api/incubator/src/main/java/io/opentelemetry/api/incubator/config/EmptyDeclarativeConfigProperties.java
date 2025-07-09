@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.incubator.config;
 
-import io.opentelemetry.context.ComponentLoader;
+import io.opentelemetry.api.util.ComponentLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;

@@ -15,6 +15,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.util.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -29,8 +30,7 @@ public class SpiHelperTest {
 
   @Test
   public void canRetrieveByName() {
-    io.opentelemetry.context.ComponentLoader mockLoader =
-        spy(io.opentelemetry.context.ComponentLoader.class);
+    ComponentLoader mockLoader = spy(ComponentLoader.class);
     when(mockLoader.load(any()))
         .thenReturn(Collections.singletonList(new SpiExampleProviderImplementation()));
 
@@ -51,8 +51,7 @@ public class SpiHelperTest {
   public void instantiatesImplementationsLazily() {
     SpiExampleProvider mockProvider = mock(SpiExampleProvider.class);
     when(mockProvider.getName()).thenReturn("lazy-init-example");
-    io.opentelemetry.context.ComponentLoader mockLoader =
-        spy(io.opentelemetry.context.ComponentLoader.class);
+    ComponentLoader mockLoader = spy(ComponentLoader.class);
     when(mockLoader.load(any())).thenReturn(Collections.singletonList(mockProvider));
 
     SpiHelper spiHelper = SpiHelper.create(mockLoader);
@@ -71,8 +70,7 @@ public class SpiHelperTest {
 
   @Test
   public void onlyInstantiatesOnce() {
-    io.opentelemetry.context.ComponentLoader mockLoader =
-        mock(io.opentelemetry.context.ComponentLoader.class);
+    ComponentLoader mockLoader = mock(ComponentLoader.class);
     when(mockLoader.load(any()))
         .thenReturn(Collections.singletonList(new SpiExampleProviderImplementation()));
 
@@ -97,8 +95,7 @@ public class SpiHelperTest {
     when(mockProvider.getName()).thenReturn("init-failure-example");
     when(mockProvider.createSpiExample(any())).thenThrow(new RuntimeException());
 
-    io.opentelemetry.context.ComponentLoader mockLoader =
-        spy(io.opentelemetry.context.ComponentLoader.class);
+    ComponentLoader mockLoader = spy(ComponentLoader.class);
     when(mockLoader.load(any())).thenReturn(Collections.singletonList(mockProvider));
 
     SpiHelper spiHelper = SpiHelper.create(mockLoader);
@@ -125,8 +122,7 @@ public class SpiHelperTest {
     when(spi2.order()).thenReturn(0);
     when(spi3.order()).thenReturn(1);
 
-    io.opentelemetry.context.ComponentLoader mockLoader =
-        spy(io.opentelemetry.context.ComponentLoader.class);
+    ComponentLoader mockLoader = spy(ComponentLoader.class);
     when(mockLoader.load(ResourceProvider.class)).thenReturn(asList(spi1, spi2, spi3));
 
     SpiHelper spiHelper = SpiHelper.create(mockLoader);

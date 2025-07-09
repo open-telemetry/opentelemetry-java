@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.internal;
 
+import io.opentelemetry.api.util.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
@@ -26,26 +27,26 @@ import java.util.function.Supplier;
  */
 public final class SpiHelper {
 
-  private final io.opentelemetry.context.ComponentLoader componentLoader;
+  private final ComponentLoader componentLoader;
   private final Set<AutoConfigureListener> listeners =
       Collections.newSetFromMap(new IdentityHashMap<>());
 
-  private SpiHelper(io.opentelemetry.context.ComponentLoader componentLoader) {
+  private SpiHelper(ComponentLoader componentLoader) {
     this.componentLoader = componentLoader;
   }
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code classLoader}. */
   public static SpiHelper create(ClassLoader classLoader) {
-    return new SpiHelper(io.opentelemetry.context.ComponentLoader.forClassLoader(classLoader));
+    return new SpiHelper(ComponentLoader.forClassLoader(classLoader));
   }
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code componentLoader}. */
-  public static SpiHelper create(io.opentelemetry.context.ComponentLoader componentLoader) {
+  public static SpiHelper create(ComponentLoader componentLoader) {
     return new SpiHelper(componentLoader);
   }
 
-  /** Return the backing underlying {@link io.opentelemetry.context.ComponentLoader}. */
-  public io.opentelemetry.context.ComponentLoader getComponentLoader() {
+  /** Return the backing underlying {@link ComponentLoader}. */
+  public ComponentLoader getComponentLoader() {
     return componentLoader;
   }
 
