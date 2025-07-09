@@ -152,7 +152,8 @@ public class InstrumentationConfigUtil {
 
   /**
    * Return {@code .instrumentation.java.<instrumentationName>}, after converting it to the {@code
-   * modelType} using the {@code objectMapper}. If no configuration exists for the {@code }
+   * modelType} using the {@code objectMapper}. If no configuration exists for the {@code
+   * instrumentationName}, returns {@code null}.
    *
    * <p>This method is a convenience method for a common instrumentation library workflow:
    *
