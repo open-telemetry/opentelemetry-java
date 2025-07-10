@@ -75,7 +75,7 @@ final class SdkResource implements io.opentelemetry.api.incubator.entities.Resou
           entities.add(newEntity.build());
         } else {
           // TODO - use ThrottlingLogger?
-          logger.log(Level.WARNING, "Ignoring new entity, conflicts with existing: ", e);
+          logger.log(Level.INFO, "Ignoring new entity, conflicts with existing: ", e);
         }
       } else {
         entities.add(e);
