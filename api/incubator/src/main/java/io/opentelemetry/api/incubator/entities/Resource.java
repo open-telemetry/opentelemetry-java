@@ -13,7 +13,7 @@ public interface Resource {
    * @param entityType the type of entity to remove.
    * @return true if entity was found and removed.
    */
-  public boolean removeEntity(String entityType);
+  boolean removeEntity(String entityType);
 
   /**
    * Attaches an entity to the current {@link Resource}.
@@ -21,5 +21,5 @@ public interface Resource {
    * @param entityType The type of the entity.
    * @return A builder that can construct an entity.
    */
-  public EntityBuilder attachEntity(String entityType);
+  EntityBuilder attachEntity(String entityType);
 }
