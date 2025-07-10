@@ -247,8 +247,7 @@ public final class EntityUtil {
    * @param additional Additional entities to merge with base set.
    * @return A new set of entities with no duplicate types.
    */
-  public static Collection<Entity> mergeEntities(
-      Collection<Entity> base, Collection<Entity> additional) {
+  static Collection<Entity> mergeEntities(Collection<Entity> base, Collection<Entity> additional) {
     if (base.isEmpty()) {
       return additional;
     }
