@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.internal.compression;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.util.ComponentLoader;
+import io.opentelemetry.common.ComponentLoader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import org.junit.jupiter.api.Test;

@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.internal.compression;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.api.util.ComponentLoader;
+import io.opentelemetry.common.ComponentLoader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;

@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry API Common"
-otelJava.moduleName.set("io.opentelemetry.api.util")
+otelJava.moduleName.set("io.opentelemetry.common")
 
 dependencies {
 }

@@ -7,7 +7,7 @@ package io.opentelemetry.api.incubator.config;
 
 import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
 
-import io.opentelemetry.api.util.ComponentLoader;
+import io.opentelemetry.common.ComponentLoader;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
