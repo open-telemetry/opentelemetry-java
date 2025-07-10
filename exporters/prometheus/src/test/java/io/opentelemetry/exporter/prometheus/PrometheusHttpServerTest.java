@@ -139,10 +139,10 @@ class PrometheusHttpServerTest {
         .isEqualTo(
             "# HELP grpc_name_unit_total long_description\n"
                 + "# TYPE grpc_name_unit_total counter\n"
-                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 5.0\n"
+                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
                 + "# HELP http_name_unit_total double_description\n"
                 + "# TYPE http_name_unit_total counter\n"
-                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 3.5\n"
+                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
                 + "# TYPE target_info gauge\n"
                 + "target_info{kr=\"vr\"} 1\n");
   }
@@ -229,11 +229,11 @@ class PrometheusHttpServerTest {
             "# TYPE grpc_name_unit counter\n"
                 + "# UNIT grpc_name_unit unit\n"
                 + "# HELP grpc_name_unit long_description\n"
-                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 5.0\n"
+                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
                 + "# TYPE http_name_unit counter\n"
                 + "# UNIT http_name_unit unit\n"
                 + "# HELP http_name_unit double_description\n"
-                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 3.5\n"
+                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
                 + "# TYPE target info\n"
                 + "target_info{kr=\"vr\"} 1\n"
                 + "# EOF\n");
@@ -255,7 +255,7 @@ class PrometheusHttpServerTest {
             ""
                 + "# HELP grpc_name_unit_total long_description\n"
                 + "# TYPE grpc_name_unit_total counter\n"
-                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 5.0\n"
+                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
                 + "# TYPE target_info gauge\n"
                 + "target_info{kr=\"vr\"} 1\n");
   }
@@ -292,10 +292,10 @@ class PrometheusHttpServerTest {
           .isEqualTo(
               "# HELP grpc_name_unit_total long_description\n"
                   + "# TYPE grpc_name_unit_total counter\n"
-                  + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 5.0\n"
+                  + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
                   + "# HELP http_name_unit_total double_description\n"
                   + "# TYPE http_name_unit_total counter\n"
-                  + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 3.5\n"
+                  + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
                   + "# TYPE target_info gauge\n"
                   + "target_info{kr=\"vr\"} 1\n");
     }
@@ -320,10 +320,10 @@ class PrometheusHttpServerTest {
         .isEqualTo(
             "# HELP grpc_name_unit_total long_description\n"
                 + "# TYPE grpc_name_unit_total counter\n"
-                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 5.0\n"
+                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
                 + "# HELP http_name_unit_total double_description\n"
                 + "# TYPE http_name_unit_total counter\n"
-                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 3.5\n"
+                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
                 + "# TYPE target_info gauge\n"
                 + "target_info{kr=\"vr\"} 1\n");
   }
@@ -395,8 +395,8 @@ class PrometheusHttpServerTest {
     assertThat(response.contentUtf8())
         .isEqualTo(
             "# TYPE foo_unit_total counter\n"
-                + "foo_unit_total{otel_scope_name=\"scope1\",otel_scope_schema_url=\"\"} 1.0\n"
-                + "foo_unit_total{otel_scope_name=\"scope2\",otel_scope_schema_url=\"\"} 2.0\n"
+                + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0\n"
+                + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0\n"
                 + "# TYPE target_info gauge\n"
                 + "target_info{kr=\"vr\"} 1\n");
 
@@ -476,12 +476,12 @@ class PrometheusHttpServerTest {
                   + "# TYPE grpc_name_unit_total counter\n"
 
                   // Note the added resource attributes as labels
-                  + "grpc_name_unit_total{kp=\"vp\",kr=\"vr\",otel_scope_name=\"grpc\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 5.0\n"
+                  + "grpc_name_unit_total{kp=\"vp\",kr=\"vr\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
                   + "# HELP http_name_unit_total double_description\n"
                   + "# TYPE http_name_unit_total counter\n"
 
                   // Note the added resource attributes as labels
-                  + "http_name_unit_total{kp=\"vp\",kr=\"vr\",otel_scope_name=\"http\",otel_scope_schema_url=\"\",otel_scope_version=\"version\"} 3.5\n"
+                  + "http_name_unit_total{kp=\"vp\",kr=\"vr\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
                   + "# TYPE target_info gauge\n"
                   + "target_info{kr=\"vr\"} 1\n");
     }
@@ -605,10 +605,6 @@ class PrometheusHttpServerTest {
                     + "  label {\n"
                     + "    name: \"otel_scope_name\"\n"
                     + "    value: \"meter\"\n"
-                    + "  }\n"
-                    + "  label {\n"
-                    + "    name: \"otel_scope_schema_url\"\n"
-                    + "    value: \"\"\n"
                     + "  }\n"
                     + "  histogram {\n"
                     + "    sample_count: 1\n"
