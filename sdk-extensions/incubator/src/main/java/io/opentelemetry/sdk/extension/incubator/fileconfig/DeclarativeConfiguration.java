@@ -59,7 +59,8 @@ public final class DeclarativeConfiguration {
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
 
-  private static final ObjectMapper MAPPER;
+  // Visible for testing
+  static final ObjectMapper MAPPER;
 
   static {
     MAPPER =
@@ -162,8 +163,7 @@ public final class DeclarativeConfiguration {
    * @param model the configuration model
    * @return a generic {@link DeclarativeConfigProperties} representation of the model
    */
-  public static DeclarativeConfigProperties toConfigProperties(
-      OpenTelemetryConfigurationModel model) {
+  public static DeclarativeConfigProperties toConfigProperties(Object model) {
     return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
   }
 
@@ -201,7 +201,9 @@ public final class DeclarativeConfiguration {
   public static Sampler createSampler(DeclarativeConfigProperties genericSamplerModel) {
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
         requireYamlDeclarativeConfigProperties(genericSamplerModel);
-    SamplerModel samplerModel = convertToModel(yamlDeclarativeConfigProperties, SamplerModel.class);
+    SamplerModel samplerModel =
+        MAPPER.convertValue(
+            DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
         SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
@@ -215,11 +217,6 @@ public final class DeclarativeConfiguration {
           "Only YamlDeclarativeConfigProperties can be converted to model");
     }
     return (YamlDeclarativeConfigProperties) declarativeConfigProperties;
-  }
-
-  static <T> T convertToModel(
-      YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties, Class<T> modelType) {
-    return MAPPER.convertValue(yamlDeclarativeConfigProperties.toMap(), modelType);
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
