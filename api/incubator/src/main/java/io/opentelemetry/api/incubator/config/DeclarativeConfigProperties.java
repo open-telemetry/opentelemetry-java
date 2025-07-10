@@ -7,6 +7,7 @@ package io.opentelemetry.api.incubator.config;
 
 import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
 
+import io.opentelemetry.common.ComponentLoader;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -228,4 +229,7 @@ public interface DeclarativeConfigProperties {
    * @return the configuration property keys
    */
   Set<String> getPropertyKeys();
+
+  /** Return a {@link ComponentLoader} that should be used to load SPIs. */
+  ComponentLoader getComponentLoader();
 }

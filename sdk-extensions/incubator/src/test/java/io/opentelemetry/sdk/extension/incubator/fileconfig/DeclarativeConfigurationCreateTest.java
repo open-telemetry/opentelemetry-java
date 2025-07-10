@@ -13,9 +13,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
@@ -161,7 +161,7 @@ class DeclarativeConfigurationCreateTest {
         DeclarativeConfiguration.create(
             model,
             // customizer is TestDeclarativeConfigurationCustomizerProvider
-            SpiHelper.serviceComponentLoader(
+            ComponentLoader.forClassLoader(
                 DeclarativeConfigurationCreateTest.class.getClassLoader()));
     assertThat(sdk.toString())
         .contains(
