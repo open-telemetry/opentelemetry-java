@@ -7,8 +7,10 @@ package io.opentelemetry.api.incubator.entities;
 
 final class NoopResourceProvider implements ResourceProvider {
 
+  static final ResourceProvider INSTANCE = new NoopResourceProvider();
+
   @Override
   public Resource getResource() {
-    return new NoopResource();
+    return NoopResource.INSTANCE;
   }
 }

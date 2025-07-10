@@ -23,21 +23,15 @@ class EntityUtilTest {
         Arrays.asList(
             Entity.builder("a")
                 .setSchemaUrl("one")
-                .withId(id -> id.put("a.id", "a"))
-                .withDescription(builder -> builder.put("a.desc1", "a"))
+                .withId(Attributes.builder().put("a.id", "a").build())
+                .withDescription(Attributes.builder().put("a.desc1", "a").build())
                 .build());
     Collection<Entity> added =
         Arrays.asList(
             Entity.builder("a")
                 .setSchemaUrl("one")
-                .withId(
-                    builder -> {
-                      builder.put("a.id", "a");
-                    })
-                .withDescription(
-                    builder -> {
-                      builder.put("a.desc2", "b");
-                    })
+                .withId(Attributes.builder().put("a.id", "a").build())
+                .withDescription(Attributes.builder().put("a.desc2", "b").build())
                 .build());
     Collection<Entity> merged = EntityUtil.mergeEntities(base, added);
     assertThat(merged).hasSize(1);
@@ -61,21 +55,15 @@ class EntityUtilTest {
         Arrays.asList(
             Entity.builder("a")
                 .setSchemaUrl("one")
-                .withId(id -> id.put("a.id", "a"))
-                .withDescription(builder -> builder.put("a.desc1", "a"))
+                .withId(Attributes.builder().put("a.id", "a").build())
+                .withDescription(Attributes.builder().put("a.desc1", "a").build())
                 .build());
     Collection<Entity> added =
         Arrays.asList(
             Entity.builder("a")
                 .setSchemaUrl("two")
-                .withId(
-                    builder -> {
-                      builder.put("a.id", "a");
-                    })
-                .withDescription(
-                    builder -> {
-                      builder.put("a.desc2", "b");
-                    })
+                .withId(Attributes.builder().put("a.id", "a").build())
+                .withDescription(Attributes.builder().put("a.desc2", "b").build())
                 .build());
     Collection<Entity> merged = EntityUtil.mergeEntities(base, added);
     assertThat(merged).hasSize(1);
@@ -100,27 +88,15 @@ class EntityUtilTest {
         Arrays.asList(
             Entity.builder("a")
                 .setSchemaUrl("one")
-                .withId(
-                    builder -> {
-                      builder.put("a.id", "a");
-                    })
-                .withDescription(
-                    builder -> {
-                      builder.put("a.desc1", "a");
-                    })
+                .withId(Attributes.builder().put("a.id", "a").build())
+                .withDescription(Attributes.builder().put("a.desc1", "a").build())
                 .build());
     Collection<Entity> added =
         Arrays.asList(
             Entity.builder("a")
                 .setSchemaUrl("one")
-                .withId(
-                    builder -> {
-                      builder.put("a.id", "b");
-                    })
-                .withDescription(
-                    builder -> {
-                      builder.put("a.desc2", "b");
-                    })
+                .withId(Attributes.builder().put("a.id", "b").build())
+                .withDescription(Attributes.builder().put("a.desc2", "b").build())
                 .build());
     Collection<Entity> merged = EntityUtil.mergeEntities(base, added);
     assertThat(merged).hasSize(1);
@@ -143,19 +119,13 @@ class EntityUtilTest {
         Arrays.asList(
             Entity.builder("a")
                 .setSchemaUrl("one")
-                .withId(
-                    builder -> {
-                      builder.put("a.id", "a");
-                    })
+                .withId(Attributes.builder().put("a.id", "a").build())
                 .build());
     Collection<Entity> added =
         Arrays.asList(
             Entity.builder("b")
                 .setSchemaUrl("two")
-                .withId(
-                    builder -> {
-                      builder.put("b.id", "b");
-                    })
+                .withId(Attributes.builder().put("b.id", "b").build())
                 .build());
     Collection<Entity> merged = EntityUtil.mergeEntities(base, added);
     // Make sure we keep both entities when no conflict.
@@ -195,7 +165,10 @@ class EntityUtilTest {
     String result =
         EntityUtil.mergeResourceSchemaUrl(
             Arrays.asList(
-                Entity.builder("t").setSchemaUrl("one").withId(id -> id.put("id", 1)).build()),
+                Entity.builder("t")
+                    .setSchemaUrl("one")
+                    .withId(Attributes.builder().put("id", 1).build())
+                    .build()),
             "one",
             null);
     assertThat(result).isEqualTo("one");
@@ -208,8 +181,14 @@ class EntityUtilTest {
     String result =
         EntityUtil.mergeResourceSchemaUrl(
             Arrays.asList(
-                Entity.builder("t").setSchemaUrl("one").withId(id -> id.put("id", 1)).build(),
-                Entity.builder("t2").setSchemaUrl("two").withId(id -> id.put("id2", 1)).build()),
+                Entity.builder("t")
+                    .setSchemaUrl("one")
+                    .withId(Attributes.builder().put("id", 1).build())
+                    .build(),
+                Entity.builder("t2")
+                    .setSchemaUrl("two")
+                    .withId(Attributes.builder().put("id2", 1).build())
+                    .build()),
             "one",
             "one");
     assertThat(result).isEqualTo(null);
@@ -239,7 +218,8 @@ class EntityUtilTest {
         EntityUtil.mergeRawAttributes(
             Attributes.builder().put("a", 1).put("b", 1).build(),
             Attributes.builder().put("b", 2).put("c", 2).build(),
-            Arrays.asList(Entity.builder("c").withId(id -> id.put("c", 1)).build()));
+            Arrays.asList(
+                Entity.builder("c").withId(Attributes.builder().put("c", 1).build()).build()));
     assertThat(result.getConflicts()).satisfiesExactly(e -> assertThat(e).hasType("c"));
     assertThat(result.getAttributes())
         .hasSize(3)
@@ -252,7 +232,8 @@ class EntityUtilTest {
   void testAddEntity_reflection() {
     Resource result =
         EntityUtil.addEntity(
-                Resource.builder(), Entity.builder("a").withId(id -> id.put("a", 1)).build())
+                Resource.builder(),
+                Entity.builder("a").withId(Attributes.builder().put("a", 1).build()).build())
             .build();
     assertThat(EntityUtil.getEntities(result))
         .satisfiesExactlyInAnyOrder(e -> assertThat(e).hasType("a"));
@@ -264,8 +245,8 @@ class EntityUtilTest {
         EntityUtil.addAllEntity(
                 Resource.builder(),
                 Arrays.asList(
-                    Entity.builder("a").withId(id -> id.put("a", 1)).build(),
-                    Entity.builder("b").withId(id -> id.put("b", 1)).build()))
+                    Entity.builder("a").withId(Attributes.builder().put("a", 1).build()).build(),
+                    Entity.builder("b").withId(Attributes.builder().put("b", 1).build()).build()))
             .build();
     assertThat(EntityUtil.getEntities(result))
         .satisfiesExactlyInAnyOrder(

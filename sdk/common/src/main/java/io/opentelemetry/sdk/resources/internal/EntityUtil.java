@@ -34,6 +34,50 @@ public final class EntityUtil {
 
   private EntityUtil() {}
 
+  /**
+   * Constructs a new {@link Resource} with Entity support.
+   *
+   * @param entities The set of entities the resource needs.
+   * @return A constructed resource.
+   */
+  public static final Resource createResource(Collection<Entity> entities) {
+    return createResourceRaw(
+        Attributes.empty(), EntityUtil.mergeResourceSchemaUrl(entities, null, null), entities);
+  }
+
+  /**
+   * Constructs a new {@link Resource} with Entity support.
+   *
+   * @param attributes The raw attributes for the resource.
+   * @param schemaUrl The schema url for the resource.
+   * @param entities The set of entities the resource needs.
+   * @return A constructed resource.
+   */
+  static final Resource createResourceRaw(
+      Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
+    try {
+      Method method =
+          Resource.class.getDeclaredMethod(
+              "create", Attributes.class, String.class, Collection.class);
+      if (method != null) {
+        method.setAccessible(true);
+        Object result = method.invoke(null, attributes, schemaUrl, entities);
+        if (result instanceof Resource) {
+          return (Resource) result;
+        }
+      }
+    } catch (NoSuchMethodException nme) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
+    } catch (IllegalAccessException iae) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
+    } catch (InvocationTargetException ite) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    }
+    // Fall back to non-entity behavior?
+    logger.log(Level.WARNING, "Attempting to use entities with unsupported resource");
+    return Resource.empty();
+  }
+
   /** Appends a new entity on to the end of the list of entities. */
   public static final ResourceBuilder addEntity(ResourceBuilder rb, Entity e) {
     try {
@@ -250,15 +294,10 @@ public final class EntityUtil {
           Entity next =
               old.toBuilder()
                   .withDescription(
-                      builder -> {
-                        // Clean existing attributes.
-                        builder.removeIf(ignore -> true);
-                        // For attributes, last one wins.
-                        // To ensure the previous attributes override,
-                        // we write them second.
-                        builder.putAll(e.getDescription());
-                        builder.putAll(old.getDescription());
-                      })
+                      Attributes.builder()
+                          .putAll(e.getDescription())
+                          .putAll(old.getDescription())
+                          .build())
                   .build();
           entities.put(next.getType(), next);
         }
@@ -290,6 +329,6 @@ public final class EntityUtil {
     // Now figure out schema url for overall resource.
     String schemaUrl =
         EntityUtil.mergeResourceSchemaUrl(entities, base.getSchemaUrl(), next.getSchemaUrl());
-    return Resource.create(attributeResult.getAttributes(), schemaUrl, entities);
+    return createResourceRaw(attributeResult.getAttributes(), schemaUrl, entities);
   }
 }

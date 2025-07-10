@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -26,7 +27,7 @@ class TestExtendedOpenTelemetrySdk {
     otel.getResourceProvider()
         .getResource()
         .attachEntity("test")
-        .withId(id -> id.put("test.id", 1))
+        .withId(Attributes.builder().put("test.id", 1).build())
         .emit();
     // Write a metric.
     Meter meter = otel.getMeterProvider().get("test.scope");
@@ -48,7 +49,7 @@ class TestExtendedOpenTelemetrySdk {
     otel.getResourceProvider()
         .getResource()
         .attachEntity("test2")
-        .withId(id -> id.put("test2.id", 1))
+        .withId(Attributes.builder().put("test2.id", 1).build())
         .emit();
     // Verify we see the new entity and the metric.
     assertThat(sdkMeterReader.collectAllMetrics())

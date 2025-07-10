@@ -6,8 +6,6 @@
 package io.opentelemetry.api.incubator.entities;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
-import java.util.function.Consumer;
 
 /**
  * A builder of an Entity that allows to add identifying or descriptive {@link Attributes}, as well
@@ -37,18 +35,18 @@ public interface EntityBuilder {
   /**
    * Modify the descriptive attributes of this Entity.
    *
-   * @param f A {@link Consumer} which builds the descriptive attributes.
+   * @param description The {@link Attributes} which describe this Entity.
    * @return this
    */
-  EntityBuilder withDescription(Consumer<AttributesBuilder> f);
+  EntityBuilder withDescription(Attributes description);
 
   /**
    * Modify the identifying attributes of this Entity.
    *
-   * @param f A {@link Consumer} which builds the identifying attributes.
+   * @param id The {@link Attributes} which identify this Entity.
    * @return this
    */
-  EntityBuilder withId(Consumer<AttributesBuilder> f);
+  EntityBuilder withId(Attributes id);
 
   /** Emits the current entity. */
   void emit();
