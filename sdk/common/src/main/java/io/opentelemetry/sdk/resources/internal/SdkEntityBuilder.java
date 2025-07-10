@@ -22,6 +22,7 @@ final class SdkEntityBuilder implements EntityBuilder {
   @Nullable private String schemaUrl;
 
   SdkEntityBuilder(String entityType) {
+    AttributeCheckUtil.isValid(entityType);
     this.entityType = entityType;
     this.description = Attributes.empty();
     this.id = Attributes.empty();
@@ -42,12 +43,14 @@ final class SdkEntityBuilder implements EntityBuilder {
 
   @Override
   public EntityBuilder withDescription(Attributes description) {
+    AttributeCheckUtil.checkAttributes(description);
     this.description = description;
     return this;
   }
 
   @Override
   public EntityBuilder withId(Attributes id) {
+    AttributeCheckUtil.checkAttributes(id);
     this.id = id;
     return this;
   }
