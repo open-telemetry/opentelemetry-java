@@ -40,7 +40,7 @@ public final class EntityUtil {
    * @param entities The set of entities the resource needs.
    * @return A constructed resource.
    */
-  public static final Resource createResource(Collection<Entity> entities) {
+  public static Resource createResource(Collection<Entity> entities) {
     return createResourceRaw(
         Attributes.empty(), EntityUtil.mergeResourceSchemaUrl(entities, null, null), entities);
   }
@@ -53,7 +53,7 @@ public final class EntityUtil {
    * @param entities The set of entities the resource needs.
    * @return A constructed resource.
    */
-  static final Resource createResourceRaw(
+  static Resource createResourceRaw(
       Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
     try {
       Method method =
@@ -79,7 +79,7 @@ public final class EntityUtil {
   }
 
   /** Appends a new entity on to the end of the list of entities. */
-  public static final ResourceBuilder addEntity(ResourceBuilder rb, Entity e) {
+  public static ResourceBuilder addEntity(ResourceBuilder rb, Entity e) {
     try {
       Method method = ResourceBuilder.class.getDeclaredMethod("add", Entity.class);
       if (method != null) {
@@ -97,7 +97,7 @@ public final class EntityUtil {
   }
 
   /** Appends a new collection of entities on to the end of the list of entities. */
-  public static final ResourceBuilder addAllEntity(ResourceBuilder rb, Collection<Entity> e) {
+  public static ResourceBuilder addAllEntity(ResourceBuilder rb, Collection<Entity> e) {
     try {
       Method method = ResourceBuilder.class.getDeclaredMethod("addAll", Collection.class);
       if (method != null) {
@@ -120,7 +120,7 @@ public final class EntityUtil {
    * @return a collection of entities.
    */
   @SuppressWarnings("unchecked")
-  public static final Collection<Entity> getEntities(Resource r) {
+  public static Collection<Entity> getEntities(Resource r) {
     try {
       Method method = Resource.class.getDeclaredMethod("getEntities");
       if (method != null) {
@@ -142,7 +142,7 @@ public final class EntityUtil {
    *
    * @return a map of attributes.
    */
-  public static final Attributes getRawAttributes(Resource r) {
+  public static Attributes getRawAttributes(Resource r) {
     try {
       Method method = Resource.class.getDeclaredMethod("getRawAttributes");
       if (method != null) {
@@ -160,8 +160,7 @@ public final class EntityUtil {
   }
 
   /** Returns true if any entity in the collection has the attribute key, in id or description. */
-  public static final <T> boolean hasAttributeKey(
-      Collection<Entity> entities, AttributeKey<T> key) {
+  public static <T> boolean hasAttributeKey(Collection<Entity> entities, AttributeKey<T> key) {
     return entities.stream()
         .anyMatch(
             e -> e.getId().asMap().containsKey(key) || e.getDescription().asMap().containsKey(key));
@@ -169,7 +168,7 @@ public final class EntityUtil {
 
   /** Decides on a final SchemaURL for OTLP Resource based on entities chosen. */
   @Nullable
-  static final String mergeResourceSchemaUrl(
+  static String mergeResourceSchemaUrl(
       Collection<Entity> entities, @Nullable String baseUrl, @Nullable String nextUrl) {
     // Check if entities all share the same URL.
     Set<String> entitySchemas =
@@ -228,8 +227,7 @@ public final class EntityUtil {
       additional.forEach(
           (key, value) -> {
             for (Entity e : entities) {
-              if (e.getId().asMap().keySet().contains(key)
-                  || e.getDescription().asMap().keySet().contains(key)) {
+              if (e.getId().get(key) != null || e.getDescription().get(key) != null) {
                 // Remove the entity and push all attributes as raw,
                 // we have an override.
                 conflicts.add(e);
@@ -249,7 +247,7 @@ public final class EntityUtil {
    * @param additional Additional entities to merge with base set.
    * @return A new set of entities with no duplicate types.
    */
-  public static final Collection<Entity> mergeEntities(
+  public static Collection<Entity> mergeEntities(
       Collection<Entity> base, Collection<Entity> additional) {
     if (base.isEmpty()) {
       return additional;
