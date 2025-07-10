@@ -14,6 +14,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -62,9 +64,9 @@ class LoggerConfigTest {
               assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerC"))).hasSize(1);
             });
     // loggerA and loggerC are enabled, loggerB is disabled.
-    assertThat(((ExtendedLogger) loggerA).isEnabled()).isTrue();
-    assertThat(((ExtendedLogger) loggerB).isEnabled()).isFalse();
-    assertThat(((ExtendedLogger) loggerC).isEnabled()).isTrue();
+    assertThat(((ExtendedLogger) loggerA).isEnabled(Severity.INFO)).isTrue();
+    assertThat(((ExtendedLogger) loggerB).isEnabled(Severity.INFO)).isFalse();
+    assertThat(((ExtendedLogger) loggerC).isEnabled(Severity.INFO)).isTrue();
   }
 
   @ParameterizedTest
@@ -144,9 +146,9 @@ class LoggerConfigTest {
     ExtendedSdkLogger loggerC = (ExtendedSdkLogger) loggerProvider.get("loggerC");
 
     // verify isEnabled()
-    assertThat(loggerA.isEnabled()).isTrue();
-    assertThat(loggerB.isEnabled()).isFalse();
-    assertThat(loggerC.isEnabled()).isTrue();
+    assertThat(loggerA.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
+    assertThat(loggerB.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
+    assertThat(loggerC.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
 
     // verify logs are emitted as expected
     loggerA.logRecordBuilder().setBody("logA").emit();
@@ -162,9 +164,9 @@ class LoggerConfigTest {
         ScopeConfigurator.<LoggerConfig>builder().setDefault(disabled()).build());
 
     // verify isEnabled()
-    assertThat(loggerA.isEnabled()).isFalse();
-    assertThat(loggerB.isEnabled()).isFalse();
-    assertThat(loggerC.isEnabled()).isFalse();
+    assertThat(loggerA.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
+    assertThat(loggerB.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
+    assertThat(loggerC.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
 
     // verify logs are emitted as expected
     loggerA.logRecordBuilder().setBody("logA").emit();
@@ -179,9 +181,9 @@ class LoggerConfigTest {
             .build());
 
     // verify isEnabled()
-    assertThat(loggerA.isEnabled()).isTrue();
-    assertThat(loggerB.isEnabled()).isFalse();
-    assertThat(loggerC.isEnabled()).isTrue();
+    assertThat(loggerA.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
+    assertThat(loggerB.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
+    assertThat(loggerC.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
 
     // verify logs are emitted as expected
     loggerA.logRecordBuilder().setBody("logA").emit();

@@ -32,6 +32,11 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
   }
 
   @Override
+  public boolean isEnabled() {
+    return false;
+  }
+
+  @Override
   public ExtendedSpanBuilder spanBuilder(String spanName) {
     return NoopSpanBuilder.create();
   }

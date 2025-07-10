@@ -133,7 +133,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "prior-version=$PRIOR_VERSION" >> $GITHUB_OUTPUT
 
-  update-apidiff-baseline-to-released-version:
+  update-apidiff-baseline-and-docs-to-released-version:
     permissions:
       contents: write # for git push to PR branch
     runs-on: ubuntu-latest
@@ -187,6 +187,13 @@ jobs:
           ./gradlew --refresh-dependencies japicmp
           git add docs/apidiffs
 
+      - name: Update versions in README.md
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          ./gradlew updateVersionInDocs -Prelease.version=$VERSION
+          git add README.md
+
       - name: Use CLA approved bot
         run: .github/scripts/use-cla-approved-github-bot.sh
 
@@ -202,9 +209,9 @@ jobs:
           # not using secrets.GITHUB_TOKEN since pull requests from that token do not run workflows
           GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
         run: |
-          message="Update apidiff baseline to released version $VERSION"
-          body="Update apidiff baseline to released version \`$VERSION\`."
-          branch="otelbot/update-apidiff-baseline-to-released-version-${VERSION}"
+          message="Update apidiff baseline and documentation versions to released version $VERSION"
+          body="Update apidiff baseline and documentation versions to released version \`$VERSION\`."
+          branch="otelbot/update-apidiff-baseline-and-documentation-to-released-version-${VERSION}"
 
           git checkout -b $branch
           git commit -m "$message"

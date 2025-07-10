@@ -14,6 +14,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -53,24 +54,26 @@ class ExtendedLogsBridgeApiUsageTest {
     ExtendedLogger loggerB = (ExtendedLogger) loggerProvider.get("loggerB");
 
     // Check if logger is enabled before emitting log and avoid unnecessary computation
-    if (loggerA.isEnabled()) {
+    if (loggerA.isEnabled(Severity.INFO)) {
       loggerA
           .logRecordBuilder()
+          .setSeverity(Severity.INFO)
           .setBody("hello world!")
           .setAllAttributes(Attributes.builder().put("result", flipCoin()).build())
           .emit();
     }
-    if (loggerB.isEnabled()) {
+    if (loggerB.isEnabled(Severity.INFO)) {
       loggerB
           .logRecordBuilder()
+          .setSeverity(Severity.INFO)
           .setBody("hello world!")
           .setAllAttributes(Attributes.builder().put("result", flipCoin()).build())
           .emit();
     }
 
     // loggerA is enabled, loggerB is disabled
-    assertThat(loggerA.isEnabled()).isTrue();
-    assertThat(loggerB.isEnabled()).isFalse();
+    assertThat(loggerA.isEnabled(Severity.INFO)).isTrue();
+    assertThat(loggerB.isEnabled(Severity.INFO)).isFalse();
 
     // Collected data only consists of logs from loggerA. Note, loggerB's logs would be
     // omitted from the results even if logs were emitted. The check if enabled simply avoids
