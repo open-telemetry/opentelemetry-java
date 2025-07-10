@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator;
 
-import io.opentelemetry.api.incubator.entities.ExtendedOpenTelemetry;
+import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
 import io.opentelemetry.api.incubator.entities.ResourceProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;

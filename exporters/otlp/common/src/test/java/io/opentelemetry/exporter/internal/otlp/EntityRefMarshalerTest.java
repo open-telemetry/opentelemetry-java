@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.proto.common.v1.EntityRef;
 import io.opentelemetry.sdk.resources.internal.Entity;
@@ -25,8 +26,8 @@ class EntityRefMarshalerTest {
     Entity e =
         Entity.builder("test")
             .setSchemaUrl("test-url")
-            .withDescription(attr -> attr.put("desc.key", "desc.value"))
-            .withId(attr -> attr.put("id.key", "id.value"))
+            .withDescription(Attributes.builder().put("desc.key", "desc.value").build())
+            .withId(Attributes.builder().put("id.key", "id.value").build())
             .build();
     EntityRef proto = parse(EntityRef.getDefaultInstance(), EntityRefMarshaler.createForEntity(e));
     assertThat(proto.getType()).isEqualTo("test");

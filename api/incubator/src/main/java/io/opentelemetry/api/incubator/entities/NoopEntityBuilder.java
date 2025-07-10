@@ -5,22 +5,24 @@
 
 package io.opentelemetry.api.incubator.entities;
 
-import io.opentelemetry.api.common.AttributesBuilder;
-import java.util.function.Consumer;
+import io.opentelemetry.api.common.Attributes;
 
 final class NoopEntityBuilder implements EntityBuilder {
+
+  static final EntityBuilder INSTANCE = new NoopEntityBuilder();
+
   @Override
   public EntityBuilder setSchemaUrl(String schemaUrl) {
     return this;
   }
 
   @Override
-  public EntityBuilder withDescription(Consumer<AttributesBuilder> f) {
+  public EntityBuilder withDescription(Attributes description) {
     return this;
   }
 
   @Override
-  public EntityBuilder withId(Consumer<AttributesBuilder> f) {
+  public EntityBuilder withId(Attributes id) {
     return this;
   }
 

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.entities.detectors;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.entities.Resource;
 import io.opentelemetry.sdk.extension.incubator.entities.ResourceDetector;
 import java.util.UUID;
@@ -40,18 +41,12 @@ public final class ServiceDetector implements ResourceDetector {
         .attachEntity(ENTITY_TYPE)
         .setSchemaUrl(SCHEMA_URL)
         .withId(
-            id -> {
-              // Note: Identifying attributes MUST be provided together.
-              id.put(SERVICE_NAME, getServiceName())
-                  .put(SERVICE_INSTANCE_ID, getServiceInstanceId());
-            })
-        // No specified way to take these in.
-        // .withDescriptive(
-        //     builder -> {
-        //       if (!StringUtils.isNullOrEmpty(getVersion())) {
-        //         builder.put(SERVICE_VERSION, getVersion());
-        //       }
-        //     })
+            // Note: Identifying attributes MUST be provided together.
+            Attributes.builder()
+                .put(SERVICE_NAME, getServiceName())
+                .put(SERVICE_INSTANCE_ID, getServiceInstanceId())
+                .build())
+        // TODO - Need to figure out version
         .emit();
   }
 }

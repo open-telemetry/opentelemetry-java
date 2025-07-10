@@ -115,7 +115,7 @@ public abstract class Resource {
    * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
    *     ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
    */
-  public static Resource create(
+  static Resource create(
       Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
     AttributeCheckUtil.checkAttributes(Objects.requireNonNull(attributes, "attributes"));
     return new AutoValue_Resource(schemaUrl, attributes, entities);

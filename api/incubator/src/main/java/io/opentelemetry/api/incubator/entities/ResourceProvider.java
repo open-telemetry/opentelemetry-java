@@ -17,7 +17,7 @@ public interface ResourceProvider {
    * not record nor are emitted.
    */
   static ResourceProvider noop() {
-    return new NoopResourceProvider();
+    return NoopResourceProvider.INSTANCE;
   }
 
   /** Returns the active {@link Resource} for which Telemetry is reported. */
