@@ -322,7 +322,7 @@ public final class EntityUtil {
     Collection<Entity> entities = EntityUtil.mergeEntities(getEntities(base), getEntities(next));
     RawAttributeMergeResult attributeResult =
         EntityUtil.mergeRawAttributes(getRawAttributes(base), getRawAttributes(next), entities);
-    // Remove entiites that are conflicting with raw attributes, and therefore in an unknown state.
+    // Remove entities that are conflicting with raw attributes, and therefore in an unknown state.
     entities.removeAll(attributeResult.getConflicts());
     // Now figure out schema url for overall resource.
     String schemaUrl =
