@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.entities;
 
-import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.entities.EntityBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import java.util.function.Consumer;
@@ -26,14 +26,14 @@ final class SdkEntityBuilder implements EntityBuilder {
   }
 
   @Override
-  public EntityBuilder withDescription(Consumer<AttributesBuilder> f) {
-    builder.withDescription(f);
+  public EntityBuilder withDescription(Attributes description) {
+    builder.withDescription(description);
     return this;
   }
 
   @Override
-  public EntityBuilder withId(Consumer<AttributesBuilder> f) {
-    builder.withId(f);
+  public EntityBuilder withId(Attributes id) {
+    builder.withId(id);
     return this;
   }
 

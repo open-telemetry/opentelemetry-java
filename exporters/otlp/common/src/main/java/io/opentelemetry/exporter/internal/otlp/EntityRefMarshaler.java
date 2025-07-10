@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class EntityRefMarshaler extends MarshalerWithSize {
+final class EntityRefMarshaler extends MarshalerWithSize {
   @Nullable private final byte[] schemaUrlUtf8;
   private final byte[] typeUtf8;
   private final byte[][] idKeysUtf8;
@@ -38,7 +38,7 @@ public final class EntityRefMarshaler extends MarshalerWithSize {
   }
 
   /** Consttructs an entity reference marshaler from a full entity. */
-  public static EntityRefMarshaler createForEntity(Entity e) {
+  static EntityRefMarshaler createForEntity(Entity e) {
     byte[] schemaUrlUtf8 = null;
     if (!StringUtils.isNullOrEmpty(e.getSchemaUrl())) {
       schemaUrlUtf8 = e.getSchemaUrl().getBytes(StandardCharsets.UTF_8);

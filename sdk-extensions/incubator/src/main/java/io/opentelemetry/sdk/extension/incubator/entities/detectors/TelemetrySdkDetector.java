@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.entities.detectors;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.entities.Resource;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
 import io.opentelemetry.sdk.extension.incubator.entities.ResourceDetector;
@@ -33,10 +34,12 @@ public final class TelemetrySdkDetector implements ResourceDetector {
         .attachEntity(ENTITY_TYPE)
         .setSchemaUrl(SCHEMA_URL)
         .withId(
-            id -> {
-              id.put(TELEMETRY_SDK_NAME, "opentelemetry").put(TELEMETRY_SDK_LANGUAGE, "java");
-            })
-        .withDescription(desc -> desc.put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION))
+            Attributes.builder()
+                .put(TELEMETRY_SDK_NAME, "opentelemetry")
+                .put(TELEMETRY_SDK_LANGUAGE, "java")
+                .build())
+        .withDescription(
+            Attributes.builder().put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION).build())
         .emit();
   }
 }

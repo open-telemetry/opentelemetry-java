@@ -240,11 +240,19 @@ class ResourceTest {
   void testMergeResources_entities_separate_types_and_schema() {
     Resource resource1 =
         Resource.builder()
-            .add(Entity.builder("a").setSchemaUrl("one").withId(id -> id.put("a.id", "a")).build())
+            .add(
+                Entity.builder("a")
+                    .setSchemaUrl("one")
+                    .withId(Attributes.builder().put("a.id", "a").build())
+                    .build())
             .build();
     Resource resource2 =
         Resource.builder()
-            .add(Entity.builder("b").setSchemaUrl("two").withId(id -> id.put("b.id", "b")).build())
+            .add(
+                Entity.builder("b")
+                    .setSchemaUrl("two")
+                    .withId(Attributes.builder().put("b.id", "b").build())
+                    .build())
             .build();
     Resource merged = resource1.merge(resource2);
     assertThat(merged.getSchemaUrl()).isNull();

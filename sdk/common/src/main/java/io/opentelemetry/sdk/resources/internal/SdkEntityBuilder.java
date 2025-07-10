@@ -6,8 +6,6 @@
 package io.opentelemetry.sdk.resources.internal;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /**
@@ -19,21 +17,21 @@ import javax.annotation.Nullable;
  */
 final class SdkEntityBuilder implements EntityBuilder {
   private final String entityType;
-  private final AttributesBuilder descriptionBuilder;
-  private final AttributesBuilder idBuilder;
+  private Attributes description;
+  private Attributes id;
   @Nullable private String schemaUrl;
 
   SdkEntityBuilder(String entityType) {
     this.entityType = entityType;
-    this.descriptionBuilder = Attributes.builder();
-    this.idBuilder = Attributes.builder();
+    this.description = Attributes.empty();
+    this.id = Attributes.empty();
   }
 
   SdkEntityBuilder(Entity seed) {
     this.entityType = seed.getType();
     this.schemaUrl = seed.getSchemaUrl();
-    this.idBuilder = seed.getId().toBuilder();
-    this.descriptionBuilder = seed.getDescription().toBuilder();
+    this.id = seed.getId();
+    this.description = seed.getDescription();
   }
 
   @Override
@@ -43,19 +41,19 @@ final class SdkEntityBuilder implements EntityBuilder {
   }
 
   @Override
-  public EntityBuilder withDescription(Consumer<AttributesBuilder> f) {
-    f.accept(this.descriptionBuilder);
+  public EntityBuilder withDescription(Attributes description) {
+    this.description = description;
     return this;
   }
 
   @Override
-  public EntityBuilder withId(Consumer<AttributesBuilder> f) {
-    f.accept(this.idBuilder);
+  public EntityBuilder withId(Attributes id) {
+    this.id = id;
     return this;
   }
 
   @Override
   public Entity build() {
-    return SdkEntity.create(entityType, idBuilder.build(), descriptionBuilder.build(), schemaUrl);
+    return SdkEntity.create(entityType, id, description, schemaUrl);
   }
 }
