@@ -77,6 +77,8 @@ final class Otel2PrometheusConverter {
   private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
   private static final String OTEL_SCOPE_NAME = "otel_scope_name";
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
+  private static final String OTEL_SCOPE_SCHEMA_URL = "otel_scope_schema_url";
+  private static final String OTEL_SCOPE_ATTRIBUTE_PREFIX = "otel_scope_";
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
@@ -488,6 +490,16 @@ final class Otel2PrometheusConverter {
       if (scope.getVersion() != null) {
         labelNameToValue.putIfAbsent(OTEL_SCOPE_VERSION, scope.getVersion());
       }
+      String schemaUrl = scope.getSchemaUrl();
+      if (schemaUrl != null) {
+        labelNameToValue.putIfAbsent(OTEL_SCOPE_SCHEMA_URL, schemaUrl);
+      }
+      scope
+          .getAttributes()
+          .forEach(
+              (key, value) ->
+                  labelNameToValue.putIfAbsent(
+                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(), value.toString()));
     }
 
     if (resource != null) {

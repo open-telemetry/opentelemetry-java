@@ -38,7 +38,9 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
+import io.prometheus.metrics.model.snapshots.CounterSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
+import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,9 +49,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,7 +65,9 @@ class Otel2PrometheusConverterTest {
 
   private static final Pattern PATTERN =
       Pattern.compile(
-          "# HELP (?<help>.*)\n# TYPE (?<type>.*)\n(?<metricName>.*)\\{otel_scope_name=\"scope\"}(.|\\n)*");
+          "(.|\\n)*# HELP (?<help>.*)\n# TYPE (?<type>.*)\n(?<metricName>.*)\\{"
+              + "otel_scope_foo=\"bar\",otel_scope_name=\"scope\","
+              + "otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\"}(.|\\n)*");
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final Otel2PrometheusConverter converter =
@@ -79,16 +83,17 @@ class Otel2PrometheusConverterTest {
     ExpositionFormats.init().getPrometheusTextFormatWriter().write(out, snapshots);
     String expositionFormat = new String(out.toByteArray(), StandardCharsets.UTF_8);
 
-    // Uncomment to debug exposition format output
-    // System.out.println(expositionFormat);
-
-    Matcher matcher = PATTERN.matcher(expositionFormat);
-    assertThat(matcher.matches()).isTrue();
-    assertThat(matcher.group("help")).isEqualTo(expectedHelp);
-    assertThat(matcher.group("type")).isEqualTo(expectedType);
-    // Note: Summaries and histograms produce output which matches METRIC_NAME_PATTERN multiple
-    // times. The pattern ends up matching against the first.
-    assertThat(matcher.group("metricName")).isEqualTo(expectedMetricName);
+    assertThat(expositionFormat)
+        .matchesSatisfying(
+            PATTERN,
+            matcher -> {
+              assertThat(matcher.group("help")).isEqualTo(expectedHelp);
+              assertThat(matcher.group("type")).isEqualTo(expectedType);
+              // Note: Summaries and histograms produce output which matches METRIC_NAME_PATTERN
+              // multiple
+              // times. The pattern ends up matching against the first.
+              assertThat(matcher.group("metricName")).isEqualTo(expectedMetricName);
+            });
   }
 
   private static Stream<Arguments> metricMetadataArgs() {
@@ -239,7 +244,7 @@ class Otel2PrometheusConverterTest {
                   : "my_metric_units",
 
               // "cluster" attribute is added (due to reg expr specified) and only it
-              "cluster=\"mycluster\",foo1=\"bar1\",foo2=\"bar2\",otel_scope_name=\"scope\""));
+              "cluster=\"mycluster\",foo1=\"bar1\",foo2=\"bar2\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
     }
 
     // Resource attributes which also exists in the metric labels are not added twice
@@ -258,7 +263,7 @@ class Otel2PrometheusConverterTest {
 
             // "cluster" attribute is present only once and the value is taken
             // from the metric attributes and not the resource attributes
-            "cluster=\"mycluster2\",foo2=\"bar2\",otel_scope_name=\"scope\""));
+            "cluster=\"mycluster2\",foo2=\"bar2\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
     // Empty attributes
     arguments.add(
@@ -273,7 +278,7 @@ class Otel2PrometheusConverterTest {
                         stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
             /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
             "my_metric_units",
-            "cluster=\"mycluster\",otel_scope_name=\"scope\""));
+            "cluster=\"mycluster\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
     return arguments.stream();
   }
@@ -314,7 +319,11 @@ class Otel2PrometheusConverterTest {
 
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
 
-    Labels labels = snapshots.get(0).getDataPoints().get(0).getLabels();
+    Optional<MetricSnapshot> metricSnapshot =
+        snapshots.stream().filter(snapshot -> snapshot instanceof CounterSnapshot).findFirst();
+    assertThat(metricSnapshot).isPresent();
+
+    Labels labels = metricSnapshot.get().getDataPoints().get(0).getLabels();
     attributes.forEach(
         (key, value) -> {
           String labelValue = labels.get(key.getKey());
@@ -368,11 +377,17 @@ class Otel2PrometheusConverterTest {
     Attributes attributesToUse = attributes == null ? Attributes.empty() : attributes;
     Resource resourceToUse = resource == null ? Resource.getDefault() : resource;
 
+    InstrumentationScopeInfo scope =
+        InstrumentationScopeInfo.builder("scope")
+            .setVersion("version")
+            .setSchemaUrl("schemaUrl")
+            .setAttributes(Attributes.of(stringKey("foo"), "bar"))
+            .build();
     switch (metricDataType) {
       case SUMMARY:
         return ImmutableMetricData.createDoubleSummary(
             resourceToUse,
-            InstrumentationScopeInfo.create("scope"),
+            scope,
             metricName,
             "description",
             metricUnit,
@@ -383,7 +398,7 @@ class Otel2PrometheusConverterTest {
       case LONG_SUM:
         return ImmutableMetricData.createLongSum(
             resourceToUse,
-            InstrumentationScopeInfo.create("scope"),
+            scope,
             metricName,
             "description",
             metricUnit,
@@ -395,7 +410,7 @@ class Otel2PrometheusConverterTest {
       case DOUBLE_SUM:
         return ImmutableMetricData.createDoubleSum(
             resourceToUse,
-            InstrumentationScopeInfo.create("scope"),
+            scope,
             metricName,
             "description",
             metricUnit,
@@ -407,7 +422,7 @@ class Otel2PrometheusConverterTest {
       case LONG_GAUGE:
         return ImmutableMetricData.createLongGauge(
             resourceToUse,
-            InstrumentationScopeInfo.create("scope"),
+            scope,
             metricName,
             "description",
             metricUnit,
@@ -417,7 +432,7 @@ class Otel2PrometheusConverterTest {
       case DOUBLE_GAUGE:
         return ImmutableMetricData.createDoubleGauge(
             resourceToUse,
-            InstrumentationScopeInfo.create("scope"),
+            scope,
             metricName,
             "description",
             metricUnit,
@@ -427,7 +442,7 @@ class Otel2PrometheusConverterTest {
       case HISTOGRAM:
         return ImmutableMetricData.createDoubleHistogram(
             resourceToUse,
-            InstrumentationScopeInfo.create("scope"),
+            scope,
             metricName,
             "description",
             metricUnit,
@@ -448,7 +463,7 @@ class Otel2PrometheusConverterTest {
       case EXPONENTIAL_HISTOGRAM:
         return ImmutableMetricData.createExponentialHistogram(
             resourceToUse,
-            InstrumentationScopeInfo.create("scope"),
+            scope,
             metricName,
             "description",
             metricUnit,
