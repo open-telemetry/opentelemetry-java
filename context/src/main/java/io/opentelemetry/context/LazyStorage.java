@@ -37,9 +37,9 @@
 
 package io.opentelemetry.context;
 
+import io.opentelemetry.common.ComponentLoader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -103,9 +103,10 @@ final class LazyStorage {
       return ContextStorage.defaultStorage();
     }
 
+    ComponentLoader componentLoader =
+        ComponentLoader.forClassLoader(LazyStorage.class.getClassLoader());
     List<ContextStorageProvider> providers = new ArrayList<>();
-    for (ContextStorageProvider provider :
-        ServiceLoader.load(ContextStorageProvider.class, LazyStorage.class.getClassLoader())) {
+    for (ContextStorageProvider provider : componentLoader.load(ContextStorageProvider.class)) {
       if (provider
           .getClass()
           .getName()

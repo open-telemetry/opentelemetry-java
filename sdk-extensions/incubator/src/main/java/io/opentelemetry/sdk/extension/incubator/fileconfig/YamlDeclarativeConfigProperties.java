@@ -10,7 +10,7 @@ import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
+import io.opentelemetry.common.ComponentLoader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -303,6 +303,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   }
 
   /** Return the {@link ComponentLoader}. */
+  @Override
   public ComponentLoader getComponentLoader() {
     return componentLoader;
   }

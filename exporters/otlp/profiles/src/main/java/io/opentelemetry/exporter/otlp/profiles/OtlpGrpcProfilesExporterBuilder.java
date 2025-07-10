@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -201,10 +202,19 @@ public final class OtlpGrpcProfilesExporterBuilder {
     return this;
   }
 
-  /** Set the {@link ClassLoader} used to load the sender API. */
+  /**
+   * Set the {@link ClassLoader} used to load the sender API. Variant of {@link
+   * #setComponentLoader(ComponentLoader)}.
+   */
   public OtlpGrpcProfilesExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
-    delegate.setServiceClassLoader(serviceClassLoader);
+    return setComponentLoader(ComponentLoader.forClassLoader(serviceClassLoader));
+  }
+
+  /** Set the {@link ComponentLoader} used to load the sender API. */
+  public OtlpGrpcProfilesExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    delegate.setComponentLoader(componentLoader);
     return this;
   }
 

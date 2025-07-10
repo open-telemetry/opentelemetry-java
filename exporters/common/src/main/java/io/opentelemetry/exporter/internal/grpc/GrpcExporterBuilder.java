@@ -5,16 +5,16 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import static java.util.Objects.requireNonNull;
-
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +69,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
   private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
 
-  private ClassLoader serviceClassLoader = GrpcExporterBuilder.class.getClassLoader();
+  private ComponentLoader componentLoader =
+      ComponentLoader.forClassLoader(GrpcExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
 
   // Use Object type since gRPC may not be on the classpath.
@@ -124,9 +124,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
    * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
    */
   public GrpcExporterBuilder<T> setCompression(String compressionMethod) {
-    requireNonNull(compressionMethod, "compressionMethod");
     Compressor compressor =
-        CompressorUtil.validateAndResolveCompressor(compressionMethod, serviceClassLoader);
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, componentLoader);
     return setCompression(compressor);
   }
 
@@ -173,8 +172,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader) {
-    this.serviceClassLoader = serviceClassLoader;
+  public GrpcExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader) {
+    this.componentLoader = componentLoader;
     return this;
   }
 
@@ -283,7 +282,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     if (grpcChannel != null) {
       joiner.add("grpcChannel=" + grpcChannel);
     }
-    joiner.add("serviceClassLoader=" + serviceClassLoader);
+    joiner.add("componentLoader=" + componentLoader);
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
@@ -317,8 +316,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
    */
   private GrpcSenderProvider resolveGrpcSenderProvider() {
     Map<String, GrpcSenderProvider> grpcSenderProviders = new HashMap<>();
-    for (GrpcSenderProvider spi :
-        ServiceLoader.load(GrpcSenderProvider.class, serviceClassLoader)) {
+    for (GrpcSenderProvider spi : componentLoader.load(GrpcSenderProvider.class)) {
       grpcSenderProviders.put(spi.getClass().getName(), spi);
     }
 

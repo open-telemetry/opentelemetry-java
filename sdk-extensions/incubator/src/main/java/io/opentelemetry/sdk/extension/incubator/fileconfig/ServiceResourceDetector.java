@@ -38,7 +38,8 @@ public class ServiceResourceDetector implements ComponentProvider<Resource> {
   public Resource create(DeclarativeConfigProperties config) {
     ResourceBuilder builder = Resource.builder();
 
-    ConfigProperties properties = DefaultConfigProperties.create(Collections.emptyMap());
+    ConfigProperties properties =
+        DefaultConfigProperties.create(Collections.emptyMap(), config.getComponentLoader());
     String serviceName = properties.getString("otel.service.name");
     if (serviceName != null) {
       builder.put(SERVICE_NAME, serviceName).build();

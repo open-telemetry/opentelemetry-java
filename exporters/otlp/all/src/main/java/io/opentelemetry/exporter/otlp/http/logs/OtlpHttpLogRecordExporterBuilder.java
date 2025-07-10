@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -114,6 +115,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
    * supported by providing custom {@link Compressor} implementations via the service loader.
    */
   public OtlpHttpLogRecordExporterBuilder setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
     delegate.setCompression(compressionMethod);
     return this;
   }
@@ -241,13 +243,20 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Set the {@link ClassLoader} used to load the sender API.
+   * Set the {@link ClassLoader} used to load the sender API. Variant of {@link
+   * #setComponentLoader(ComponentLoader)}.
    *
    * @since 1.48.0
    */
   public OtlpHttpLogRecordExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
-    delegate.setServiceClassLoader(serviceClassLoader);
+    return setComponentLoader(ComponentLoader.forClassLoader(serviceClassLoader));
+  }
+
+  /** Set the {@link ComponentLoader} used to load the sender API. */
+  public OtlpHttpLogRecordExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    delegate.setComponentLoader(componentLoader);
     return this;
   }
 

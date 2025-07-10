@@ -38,6 +38,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
           config,
+          builder::setComponentLoader,
           builder::setEndpoint,
           builder::addHeader,
           builder::setCompression,
@@ -58,6 +59,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
           config,
+          builder::setComponentLoader,
           builder::setEndpoint,
           builder::addHeader,
           builder::setCompression,
