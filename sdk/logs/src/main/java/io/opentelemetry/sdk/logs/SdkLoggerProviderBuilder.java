@@ -81,7 +81,6 @@ public final class SdkLoggerProviderBuilder {
    * SdkLoggerProviderUtil#setResourceSupplier(SdkLoggerProviderBuilder, Supplier)}.
    *
    * @param supplier The supplier of {@link Resource}.
-   * @since 1.X.0
    */
   SdkLoggerProviderBuilder setResourceSupplier(Supplier<Resource> supplier) {
     this.resourceSupplier = supplier;
