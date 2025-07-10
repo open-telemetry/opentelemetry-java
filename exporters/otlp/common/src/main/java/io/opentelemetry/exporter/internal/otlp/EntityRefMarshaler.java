@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
 /**
- * A Marshaler of {@link io.opentelemetry.sdk.resources.Entity}.
+ * A Marshaler of {@link io.opentelemetry.sdk.resources.internal.Entity}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
