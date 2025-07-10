@@ -38,8 +38,7 @@ final class LoggerSharedState {
     this.exceptionAttributeResolver = exceptionAttributeResolver;
   }
 
-  // This is used in a test, and must be public for it.
-  public Resource getResource() {
+  Resource getResource() {
     return resourceSupplier.get();
   }
 

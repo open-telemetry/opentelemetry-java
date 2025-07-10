@@ -26,15 +26,9 @@ abstract class SdkEntity implements Entity {
    * @param id a map of attributes that identify the entity.
    * @param description a map of attributes that describe the entity.
    * @return a {@code Entity}.
-   * @throws NullPointerException if {@code id} or {@code description} is null.
-   * @throws IllegalArgumentException if entityType string, attribute key or attribute value is not
-   *     a valid printable ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
    */
   static final Entity create(
       String entityType, Attributes id, Attributes description, @Nullable String schemaUrl) {
-    AttributeCheckUtil.isValid(entityType);
-    AttributeCheckUtil.checkAttributes(id);
-    AttributeCheckUtil.checkAttributes(description);
     return new AutoValue_SdkEntity(entityType, id, description, schemaUrl);
   }
 
