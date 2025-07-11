@@ -24,9 +24,8 @@ class TestExtendedOpenTelemetrySdk {
             .withMeterProvider(builder -> builder.registerMetricReader(sdkMeterReader))
             .build();
     // Generate our first entity.
-    otel.getResourceProvider()
-        .getResource()
-        .attachEntity("test")
+    otel.getEntityProvider()
+        .attachOrUpdateEntity("test")
         .withId(Attributes.builder().put("test.id", 1).build())
         .emit();
     // Write a metric.
@@ -46,9 +45,8 @@ class TestExtendedOpenTelemetrySdk {
                                 attributes -> assertThat(attributes).containsEntry("test.id", 1))));
 
     // Now update the resource and check the point.
-    otel.getResourceProvider()
-        .getResource()
-        .attachEntity("test2")
+    otel.getEntityProvider()
+        .attachOrUpdateEntity("test2")
         .withId(Attributes.builder().put("test2.id", 1).build())
         .emit();
     // Verify we see the new entity and the metric.

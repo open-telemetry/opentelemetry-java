@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.entities.detectors;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.entities.Resource;
+import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
 import io.opentelemetry.sdk.extension.incubator.entities.ResourceDetector;
 
@@ -29,9 +29,9 @@ public final class TelemetrySdkDetector implements ResourceDetector {
       AttributeKey.stringKey("telemetry.sdk.version");
 
   @Override
-  public void configure(Resource resource) {
-    resource
-        .attachEntity(ENTITY_TYPE)
+  public void report(EntityProvider provider) {
+    provider
+        .attachOrUpdateEntity(ENTITY_TYPE)
         .setSchemaUrl(SCHEMA_URL)
         .withId(
             Attributes.builder()
