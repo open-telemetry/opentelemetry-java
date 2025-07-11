@@ -2,6 +2,60 @@
 
 ## Unreleased
 
+### API
+
+#### Common
+
+* Promote `ComponentLoader` to new `opentelemetry-common` artifact,
+  standardize SPI loading
+  ([#7446](https://github.com/open-telemetry/opentelemetry-java/pull/7446))
+
+#### Context
+
+* LazyStorage passes its ClassLoader when loading ContextStorageProvider SPI
+  ([#7424](https://github.com/open-telemetry/opentelemetry-java/pull/7424))
+
+#### Incubator
+
+* Add context and severity params to ExtendedLogger#isEnabled
+  ([#7268](https://github.com/open-telemetry/opentelemetry-java/pull/7268))
+* Add new convenience methods for converting DeclarativeConfigProperties to config model
+  ([#7453](https://github.com/open-telemetry/opentelemetry-java/pull/7453))
+
+### SDK
+
+* Add custom stacktrace renderer which is length limit aware
+  ([#7281](https://github.com/open-telemetry/opentelemetry-java/pull/7281))
+
+#### Metrics
+
+* Propagate flush to PeriodicMetricReader's metricExporter.
+  ([#7410](https://github.com/open-telemetry/opentelemetry-java/pull/7410))
+
+#### Exporters
+
+* OTLP - JdkHttpSender: ensure proper closure of HttpClient in shutdown method
+  ([#7390](https://github.com/open-telemetry/opentelemetry-java/pull/7390))
+* OTLP: profile exporters fix and test improvements
+  ([#7442](https://github.com/open-telemetry/opentelemetry-java/pull/7442))
+* OTLP: Loading Compressor SPI via ComponentLoader configured through setComponentLoader
+  ([#7428](https://github.com/open-telemetry/opentelemetry-java/pull/7428))
+* Prometheus: add scope schema URL and attributes
+  ([#7356](https://github.com/open-telemetry/opentelemetry-java/pull/7356))
+* Prometheus: extend prometheus declarative config support to include without_scope_info,
+  with_resource_constant_labels
+  ([#6840](https://github.com/open-telemetry/opentelemetry-java/pull/6840))
+
+#### Extensions
+
+* Autoconfigure: fix race condition of `GlobalOpenTelemetry` initialization with
+  `AutoConfiguredOpenTelemetrySdkBuilder`
+  ([#7365](https://github.com/open-telemetry/opentelemetry-java/pull/7365))
+* Declarative config: update to declarative config 1.0-rc.1
+  ([#7436](https://github.com/open-telemetry/opentelemetry-java/pull/7436))
+* Declarative config: resolve environment variable substitution for mixed quotes
+  ([#7433](https://github.com/open-telemetry/opentelemetry-java/pull/7433))
+
 ## Version 1.51.0 (2025-06-06)
 
 ### API
