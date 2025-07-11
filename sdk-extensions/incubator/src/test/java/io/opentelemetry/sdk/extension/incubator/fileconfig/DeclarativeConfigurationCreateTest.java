@@ -165,7 +165,7 @@ class DeclarativeConfigurationCreateTest {
                 DeclarativeConfigurationCreateTest.class.getClassLoader()));
     assertThat(sdk.toString())
         .contains(
-            "resource=Resource{schemaUrl=null, attributes={"
+            "resource=Resource{schemaUrl=null, rawAttributes={"
                 + "color=\"blue\", "
                 + "foo=\"bar\", "
                 + "service.name=\"unknown_service:java\", "

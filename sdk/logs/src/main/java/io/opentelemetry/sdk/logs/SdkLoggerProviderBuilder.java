@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /**
  * Builder class for {@link SdkLoggerProvider} instances.
@@ -33,6 +34,7 @@ import java.util.function.Supplier;
 public final class SdkLoggerProviderBuilder {
 
   private final List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
+  @Nullable private Supplier<Resource> resourceSupplier = null;
   private Resource resource = Resource.getDefault();
   private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
   private Clock clock = Clock.getDefault();
@@ -65,6 +67,22 @@ public final class SdkLoggerProviderBuilder {
   public SdkLoggerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = this.resource.merge(resource);
+    return this;
+  }
+
+  /**
+   * Registers a supplier of {@link Resource}.
+   *
+   * <p>This will override any {@link #addResource(Resource)} or {@link #setResource(Resource)}
+   * calls with the current supplier.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setResourceSupplier(SdkLoggerProviderBuilder, Supplier)}.
+   *
+   * @param supplier The supplier of {@link Resource}.
+   */
+  SdkLoggerProviderBuilder setResourceSupplier(Supplier<Resource> supplier) {
+    this.resourceSupplier = supplier;
     return this;
   }
 
@@ -192,8 +210,12 @@ public final class SdkLoggerProviderBuilder {
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
+    Supplier<Resource> resolvedSupplier = () -> this.resource;
+    if (resourceSupplier != null) {
+      resolvedSupplier = this.resourceSupplier;
+    }
     return new SdkLoggerProvider(
-        resource,
+        resolvedSupplier,
         logLimitsSupplier,
         logRecordProcessors,
         clock,

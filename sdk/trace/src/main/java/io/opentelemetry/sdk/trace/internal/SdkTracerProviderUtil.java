@@ -8,11 +8,13 @@ package io.opentelemetry.sdk.trace.internal;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * A collection of methods that allow use of experimental features prior to availability in public
@@ -88,5 +90,23 @@ public final class SdkTracerProviderUtil {
       throw new IllegalStateException(
           "Error calling setExceptionAttributeResolver on SdkTracerProviderBuilder", e);
     }
+  }
+
+  /**
+   * Reflectively set the {@link Supplier} of {@link Resource} to the {@link
+   * SdkTracerProviderBuilder}.
+   */
+  public static SdkTracerProviderBuilder setResourceSupplier(
+      SdkTracerProviderBuilder sdkTracerProviderBuilder, Supplier<Resource> supplier) {
+    try {
+      Method method =
+          SdkTracerProviderBuilder.class.getDeclaredMethod("setResourceSupplier", Supplier.class);
+      method.setAccessible(true);
+      method.invoke(sdkTracerProviderBuilder, supplier);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setTracerConfigurator on SdkTracerProvider", e);
+    }
+    return sdkTracerProviderBuilder;
   }
 }
