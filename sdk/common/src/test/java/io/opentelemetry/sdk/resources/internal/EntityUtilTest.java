@@ -37,16 +37,14 @@ class EntityUtilTest {
     assertThat(merged).hasSize(1);
     assertThat(merged)
         .anySatisfy(
-            entity ->
-                assertThat(entity)
-                    .hasType("a")
-                    .hasSchemaUrl("one")
-                    .hasIdSatisfying(id -> assertThat(id).containsEntry("a.id", "a"))
-                    .hasDescriptionSatisfying(
-                        desc ->
-                            assertThat(desc)
-                                .containsEntry("a.desc1", "a")
-                                .containsEntry("a.desc2", "b")));
+            entity -> {
+              assertThat(entity.getType()).isEqualTo("a");
+              assertThat(entity.getSchemaUrl()).isEqualTo("one");
+              assertThat(entity.getId()).containsEntry("a.id", "a");
+              assertThat(entity.getDescription())
+                  .containsEntry("a.desc1", "a")
+                  .containsEntry("a.desc2", "b");
+            });
   }
 
   @Test
@@ -69,17 +67,15 @@ class EntityUtilTest {
     assertThat(merged).hasSize(1);
     assertThat(merged)
         .anySatisfy(
-            entity ->
-                assertThat(entity)
-                    .hasType("a")
-                    .hasSchemaUrl("one")
-                    .hasIdSatisfying(id -> assertThat(id).containsEntry("a.id", "a"))
-                    .hasDescriptionSatisfying(
-                        desc ->
-                            assertThat(desc)
-                                .containsEntry("a.desc1", "a")
-                                // Don't merge between versions.
-                                .doesNotContainKey("a.desc2")));
+            entity -> {
+              assertThat(entity.getType()).isEqualTo("a");
+              assertThat(entity.getSchemaUrl()).isEqualTo("one");
+              assertThat(entity.getId()).containsEntry("a.id", "a");
+              assertThat(entity.getDescription())
+                  .containsEntry("a.desc1", "a")
+                  // Don't merge between versions.
+                  .doesNotContainKey("a.desc2");
+            });
   }
 
   @Test
@@ -102,15 +98,15 @@ class EntityUtilTest {
     assertThat(merged).hasSize(1);
     assertThat(merged)
         .satisfiesExactly(
-            e ->
-                assertThat(e)
-                    .hasSchemaUrl("one")
-                    .hasIdSatisfying(id -> assertThat(id).containsEntry("a.id", "a"))
-                    .hasDescriptionSatisfying(
-                        desc ->
-                            assertThat(desc)
-                                .containsEntry("a.desc1", "a")
-                                .doesNotContainKey("a.desc2")));
+            entity -> {
+              assertThat(entity.getType()).isEqualTo("a");
+              assertThat(entity.getSchemaUrl()).isEqualTo("one");
+              assertThat(entity.getId()).containsEntry("a.id", "a");
+              assertThat(entity.getDescription())
+                  .containsEntry("a.desc1", "a")
+                  // Don't merge between different ids.
+                  .doesNotContainKey("a.desc2");
+            });
   }
 
   @Test
@@ -131,7 +127,8 @@ class EntityUtilTest {
     // Make sure we keep both entities when no conflict.
     assertThat(merged)
         .satisfiesExactlyInAnyOrder(
-            a -> assertThat(a).hasType("a"), b -> assertThat(b).hasType("b"));
+            a -> assertThat(a.getType()).isEqualTo("a"),
+            b -> assertThat(b.getType()).isEqualTo("b"));
   }
 
   @Test
@@ -220,7 +217,7 @@ class EntityUtilTest {
             Attributes.builder().put("b", 2).put("c", 2).build(),
             Arrays.asList(
                 Entity.builder("c").withId(Attributes.builder().put("c", 1).build()).build()));
-    assertThat(result.getConflicts()).satisfiesExactly(e -> assertThat(e).hasType("c"));
+    assertThat(result.getConflicts()).satisfiesExactly(e -> assertThat(e.getType()).isEqualTo("c"));
     assertThat(result.getAttributes())
         .hasSize(3)
         .containsEntry("a", 1)
@@ -236,7 +233,7 @@ class EntityUtilTest {
                 Entity.builder("a").withId(Attributes.builder().put("a", 1).build()).build())
             .build();
     assertThat(EntityUtil.getEntities(result))
-        .satisfiesExactlyInAnyOrder(e -> assertThat(e).hasType("a"));
+        .satisfiesExactlyInAnyOrder(e -> assertThat(e.getType()).isEqualTo("a"));
   }
 
   @Test
@@ -250,6 +247,7 @@ class EntityUtilTest {
             .build();
     assertThat(EntityUtil.getEntities(result))
         .satisfiesExactlyInAnyOrder(
-            e -> assertThat(e).hasType("a"), e -> assertThat(e).hasType("b"));
+            e -> assertThat(e.getType()).isEqualTo("a"),
+            e -> assertThat(e.getType()).isEqualTo("b"));
   }
 }
