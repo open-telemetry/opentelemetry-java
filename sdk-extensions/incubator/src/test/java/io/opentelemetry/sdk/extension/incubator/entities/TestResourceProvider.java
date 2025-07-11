@@ -32,7 +32,7 @@ class TestResourceProvider {
   }
 
   @Test
-  void Resource_updatesDescription() {
+  void resource_updatesDescription() {
     SdkResourceProvider provider = SdkResourceProvider.builder().includeDefaults(false).build();
 
     provider
@@ -57,7 +57,7 @@ class TestResourceProvider {
   }
 
   @Test
-  void Resource_ignoresNewIds() {
+  void resource_ignoresNewIds() {
     SdkResourceProvider provider = SdkResourceProvider.builder().includeDefaults(false).build();
 
     provider
@@ -79,7 +79,7 @@ class TestResourceProvider {
   }
 
   @Test
-  void Resource_ignoresNewSchemaUrl() {
+  void resource_ignoresNewSchemaUrl() {
     SdkResourceProvider provider = SdkResourceProvider.builder().includeDefaults(false).build();
 
     provider
