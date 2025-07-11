@@ -66,12 +66,8 @@ public final class EntityUtil {
           return (Resource) result;
         }
       }
-    } catch (NoSuchMethodException nme) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
-    } catch (IllegalAccessException iae) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
-    } catch (InvocationTargetException ite) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", e);
     }
     // Fall back to non-entity behavior?
     logger.log(Level.WARNING, "Attempting to use entities with unsupported resource");
@@ -86,12 +82,8 @@ public final class EntityUtil {
         method.setAccessible(true);
         method.invoke(rb, e);
       }
-    } catch (NoSuchMethodException nme) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
-    } catch (IllegalAccessException iae) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
-    } catch (InvocationTargetException ite) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ex);
     }
     return rb;
   }
@@ -104,12 +96,8 @@ public final class EntityUtil {
         method.setAccessible(true);
         method.invoke(rb, e);
       }
-    } catch (NoSuchMethodException nme) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
-    } catch (IllegalAccessException iae) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
-    } catch (InvocationTargetException ite) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ex);
     }
     return rb;
   }
@@ -127,12 +115,8 @@ public final class EntityUtil {
         method.setAccessible(true);
         return (Collection<Entity>) method.invoke(r);
       }
-    } catch (NoSuchMethodException nme) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
-    } catch (IllegalAccessException iae) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
-    } catch (InvocationTargetException ite) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", e);
     }
     return Collections.emptyList();
   }
@@ -149,12 +133,8 @@ public final class EntityUtil {
         method.setAccessible(true);
         return (Attributes) method.invoke(r);
       }
-    } catch (NoSuchMethodException nme) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
-    } catch (IllegalAccessException iae) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
-    } catch (InvocationTargetException ite) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", e);
     }
     return Attributes.empty();
   }
