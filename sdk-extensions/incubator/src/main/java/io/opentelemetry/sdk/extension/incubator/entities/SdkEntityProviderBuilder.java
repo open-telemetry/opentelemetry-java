@@ -10,8 +10,8 @@ import io.opentelemetry.sdk.extension.incubator.entities.detectors.TelemetrySdkD
 import java.util.ArrayList;
 import java.util.List;
 
-/** A builder for {@link SdkResourceProvider}. */
-public final class SdkResourceProviderBuilder {
+/** A builder for {@link SdkEntityProvider}. */
+public final class SdkEntityProviderBuilder {
   private final List<ResourceDetector> detectors = new ArrayList<>();
   private boolean includeDefaults = true;
 
@@ -21,7 +21,7 @@ public final class SdkResourceProviderBuilder {
    * @param detector The resource detector.
    * @return this
    */
-  public SdkResourceProviderBuilder addDetector(ResourceDetector detector) {
+  public SdkEntityProviderBuilder addDetector(ResourceDetector detector) {
     this.detectors.add(detector);
     return this;
   }
@@ -32,20 +32,20 @@ public final class SdkResourceProviderBuilder {
    * @param include true if defaults should be used.
    * @return this
    */
-  public SdkResourceProviderBuilder includeDefaults(boolean include) {
+  public SdkEntityProviderBuilder includeDefaults(boolean include) {
     this.includeDefaults = include;
     return this;
   }
 
-  public SdkResourceProvider build() {
+  public SdkEntityProvider build() {
     // TODO - have defaults in the front?
     if (includeDefaults) {
       detectors.add(new ServiceDetector());
       detectors.add(new TelemetrySdkDetector());
     }
-    SdkResourceProvider result = new SdkResourceProvider();
-    // TODO - Should we move these onto the resource provider?
-    detectors.forEach(d -> d.configure(result.getResource()));
+    SdkEntityProvider result = new SdkEntityProvider();
+    // TODO - Should we move these onto the provider?
+    detectors.forEach(d -> d.report(result));
     return result;
   }
 }

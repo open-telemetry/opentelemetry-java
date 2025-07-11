@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator;
 
-import io.opentelemetry.api.incubator.entities.Resource;
-import io.opentelemetry.api.incubator.entities.ResourceProvider;
+import io.opentelemetry.api.incubator.entities.EntityBuilder;
+import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterBuilder;
@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.extension.incubator.entities.SdkResourceProvider;
+import io.opentelemetry.sdk.extension.incubator.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -36,16 +36,16 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
   private final ObfuscatedTracerProvider tracerProvider;
   private final ObfuscatedMeterProvider meterProvider;
   private final ObfuscatedLoggerProvider loggerProvider;
-  private final ObfuscatedResourceProvider resourceProvider;
+  private final ObfuscatedEntityProvider entityProvider;
   private final ContextPropagators propagators;
 
   ObfuscatedExtendedOpenTelemerySdk(
-      SdkResourceProvider resourceProvider,
+      SdkEntityProvider entityProvider,
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
       ContextPropagators propagators) {
-    this.resourceProvider = new ObfuscatedResourceProvider(resourceProvider);
+    this.entityProvider = new ObfuscatedEntityProvider(entityProvider);
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
     this.loggerProvider = new ObfuscatedLoggerProvider(loggerProvider);
@@ -86,8 +86,8 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
   }
 
   @Override
-  public ResourceProvider getResourceProvider() {
-    return resourceProvider;
+  public EntityProvider getEntityProvider() {
+    return entityProvider;
   }
 
   @Override
@@ -98,8 +98,8 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
   @Override
   public String toString() {
     return "ExtendedOpenTelemetrySdk{"
-        + "resourceProivder="
-        + resourceProvider.unobfuscate()
+        + "entityProvider="
+        + entityProvider.unobfuscate()
         + ", tracerProvider="
         + tracerProvider.unobfuscate()
         + ", meterProvider="
@@ -211,21 +211,26 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
    */
   @ThreadSafe
   // Visible for testing
-  static class ObfuscatedResourceProvider implements ResourceProvider {
+  static class ObfuscatedEntityProvider implements EntityProvider {
 
-    private final SdkResourceProvider delegate;
+    private final SdkEntityProvider delegate;
 
-    ObfuscatedResourceProvider(SdkResourceProvider delegate) {
+    ObfuscatedEntityProvider(SdkEntityProvider delegate) {
       this.delegate = delegate;
     }
 
-    @Override
-    public Resource getResource() {
-      return delegate.getResource();
+    public SdkEntityProvider unobfuscate() {
+      return delegate;
     }
 
-    public SdkResourceProvider unobfuscate() {
-      return delegate;
+    @Override
+    public boolean removeEntity(String entityType) {
+      return delegate.removeEntity(entityType);
+    }
+
+    @Override
+    public EntityBuilder attachOrUpdateEntity(String entityType) {
+      return delegate.attachOrUpdateEntity(entityType);
     }
   }
 }

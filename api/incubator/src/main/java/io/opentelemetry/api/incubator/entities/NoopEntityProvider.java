@@ -5,9 +5,9 @@
 
 package io.opentelemetry.api.incubator.entities;
 
-final class NoopResource implements Resource {
+final class NoopEntityProvider implements EntityProvider {
 
-  static final Resource INSTANCE = new NoopResource();
+  static final EntityProvider INSTANCE = new NoopEntityProvider();
 
   @Override
   public boolean removeEntity(String entityType) {
@@ -15,7 +15,7 @@ final class NoopResource implements Resource {
   }
 
   @Override
-  public EntityBuilder attachEntity(String entityType) {
+  public EntityBuilder attachOrUpdateEntity(String entityType) {
     return NoopEntityBuilder.INSTANCE;
   }
 }

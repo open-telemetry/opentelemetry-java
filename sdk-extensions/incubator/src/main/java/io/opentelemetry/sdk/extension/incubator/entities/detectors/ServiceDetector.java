@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.entities.detectors;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.entities.Resource;
+import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.sdk.extension.incubator.entities.ResourceDetector;
 import java.util.UUID;
 
@@ -35,10 +35,10 @@ public final class ServiceDetector implements ResourceDetector {
   }
 
   @Override
-  public void configure(Resource resource) {
+  public void report(EntityProvider provider) {
     // We only run on startup.
-    resource
-        .attachEntity(ENTITY_TYPE)
+    provider
+        .attachOrUpdateEntity(ENTITY_TYPE)
         .setSchemaUrl(SCHEMA_URL)
         .withId(
             // Note: Identifying attributes MUST be provided together.
