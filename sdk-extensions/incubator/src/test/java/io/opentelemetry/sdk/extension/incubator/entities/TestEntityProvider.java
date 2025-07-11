@@ -33,7 +33,8 @@ class TestEntityProvider {
 
     assertThat(EntityUtil.getEntities(provider.getResource()))
         .satisfiesExactlyInAnyOrder(
-            e -> assertThat(e).hasType("service"), e -> assertThat(e).hasType("telemetry.sdk"));
+            e -> assertThat(e.getType()).isEqualTo("service"),
+            e -> assertThat(e.getType()).isEqualTo("telemetry.sdk"));
   }
 
   @Test
