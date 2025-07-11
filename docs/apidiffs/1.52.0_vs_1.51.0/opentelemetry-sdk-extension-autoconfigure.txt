@@ -1,0 +1,4 @@
+Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-1.52.0.jar against opentelemetry-sdk-extension-autoconfigure-1.51.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(io.opentelemetry.common.ComponentLoader)
