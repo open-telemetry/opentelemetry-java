@@ -37,14 +37,14 @@ public interface Entity {
   /**
    * Returns a map of attributes that identify the entity.
    *
-   * @return a map of attributes.
+   * @return the entity identity.
    */
   Attributes getId();
 
   /**
    * Returns a map of attributes that describe the entity.
    *
-   * @return a map of attributes.
+   * @return the entity description.
    */
   Attributes getDescription();
 
@@ -53,7 +53,6 @@ public interface Entity {
    * does not abide by schema conventions (i.e. is custom).
    *
    * @return An OpenTelemetry schema URL.
-   * @since 1.4.0
    */
   @Nullable
   String getSchemaUrl();
