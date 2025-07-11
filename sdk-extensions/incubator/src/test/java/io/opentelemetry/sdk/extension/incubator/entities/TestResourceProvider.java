@@ -101,7 +101,7 @@ class TestResourceProvider {
   }
 
   @Test
-  void Resource_addsNewEntity() {
+  void resource_addsNewEntity() {
     SdkResourceProvider provider = SdkResourceProvider.builder().includeDefaults(false).build();
 
     provider
