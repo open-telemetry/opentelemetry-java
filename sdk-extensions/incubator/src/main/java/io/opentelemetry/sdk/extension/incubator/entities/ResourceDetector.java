@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.entities;
 
-import io.opentelemetry.api.incubator.entities.Resource;
+import io.opentelemetry.api.incubator.entities.EntityProvider;
 
 /**
  * The Resource detector in the SDK is responsible for detecting possible entities that could
@@ -14,9 +14,9 @@ import io.opentelemetry.api.incubator.entities.Resource;
  */
 public interface ResourceDetector {
   /**
-   * Configures a resource with detected entities.
+   * Reports detected entities.
    *
-   * @param resource The resource to detect entities on.
+   * @param provider The provider where entities are reported.
    */
-  public void configure(Resource resource);
+  public void report(EntityProvider provider);
 }

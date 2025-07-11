@@ -6,12 +6,12 @@
 package io.opentelemetry.sdk.extension.incubator;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.incubator.entities.ResourceProvider;
+import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.extension.incubator.entities.SdkResourceProvider;
-import io.opentelemetry.sdk.extension.incubator.entities.SdkResourceProviderBuilder;
+import io.opentelemetry.sdk.extension.incubator.entities.SdkEntityProvider;
+import io.opentelemetry.sdk.extension.incubator.entities.SdkEntityProviderBuilder;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
@@ -23,13 +23,13 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import java.util.function.Consumer;
 
-/** A new interface for creating OpenTelemetrySdk that supports {@link ResourceProvider}. */
+/** A new interface for creating OpenTelemetrySdk that supports {@link EntityProvider}. */
 public final class ExtendedOpenTelemetrySdkBuilder {
   private ContextPropagators propagators = ContextPropagators.noop();
   private final SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
   private final SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
   private final SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
-  private final SdkResourceProviderBuilder resourceProviderBuilder = SdkResourceProvider.builder();
+  private final SdkEntityProviderBuilder resourceProviderBuilder = SdkEntityProvider.builder();
 
   /** Sets the {@link ContextPropagators} to use. */
   public ExtendedOpenTelemetrySdkBuilder setPropagators(ContextPropagators propagators) {
@@ -83,18 +83,18 @@ public final class ExtendedOpenTelemetrySdkBuilder {
    * @see GlobalOpenTelemetry
    */
   public ExtendedOpenTelemetrySdk build() {
-    SdkResourceProvider resourceProvider = resourceProviderBuilder.build();
+    SdkEntityProvider resourceProvider = resourceProviderBuilder.build();
     SdkTracerProvider tracerProvider =
         SdkTracerProviderUtil.setResourceSupplier(
-                tracerProviderBuilder, resourceProvider::getSdkResource)
+                tracerProviderBuilder, resourceProvider::getResource)
             .build();
     SdkMeterProvider meterProvider =
         SdkMeterProviderUtil.setResourceSupplier(
-                meterProviderBuilder, resourceProvider::getSdkResource)
+                meterProviderBuilder, resourceProvider::getResource)
             .build();
     SdkLoggerProvider loggerProvider =
         SdkLoggerProviderUtil.setResourceSupplier(
-                loggerProviderBuilder, resourceProvider::getSdkResource)
+                loggerProviderBuilder, resourceProvider::getResource)
             .build();
     return new ObfuscatedExtendedOpenTelemerySdk(
         resourceProvider, tracerProvider, meterProvider, loggerProvider, propagators);

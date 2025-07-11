@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.entities;
 
-import io.opentelemetry.api.incubator.entities.EntityBuilder;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.Entity;
@@ -16,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-final class SdkResource implements io.opentelemetry.api.incubator.entities.Resource {
+final class SdkResourceState {
 
   // The currently advertised Resource to other SDK providers.
   private final AtomicReference<Resource> resource = new AtomicReference<>(Resource.empty());
@@ -26,7 +25,7 @@ final class SdkResource implements io.opentelemetry.api.incubator.entities.Resou
   @GuardedBy("writeLock")
   private final ArrayList<Entity> entities = new ArrayList<>();
 
-  private static final Logger logger = Logger.getLogger(SdkResource.class.getName());
+  private static final Logger logger = Logger.getLogger(SdkResourceState.class.getName());
 
   /** Returns the currently active resource. */
   public Resource getResource() {
@@ -36,12 +35,6 @@ final class SdkResource implements io.opentelemetry.api.incubator.entities.Resou
       throw new IllegalStateException("SdkResource should never have null resource");
     }
     return result;
-  }
-
-  @Override
-  public boolean removeEntity(String entityType) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'removeEntity'");
   }
 
   private static boolean hasSameSchemaUrl(Entity lhs, Entity rhs) {
@@ -83,10 +76,5 @@ final class SdkResource implements io.opentelemetry.api.incubator.entities.Resou
 
       resource.lazySet(EntityUtil.createResource(entities));
     }
-  }
-
-  @Override
-  public EntityBuilder attachEntity(String entityType) {
-    return new SdkEntityBuilder(entityType, this::attachEntityOnEmit);
   }
 }
