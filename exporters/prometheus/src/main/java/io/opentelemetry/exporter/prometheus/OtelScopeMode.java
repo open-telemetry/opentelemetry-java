@@ -21,7 +21,7 @@ public enum OtelScopeMode {
    */
   LABELS_AND_SCOPE_INFO;
 
-  boolean isEnabled() {
+  boolean isLabelOrInfo() {
     return this != DISABLED;
   }
 
