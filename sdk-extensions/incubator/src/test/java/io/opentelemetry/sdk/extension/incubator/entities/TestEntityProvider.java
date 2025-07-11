@@ -7,10 +7,15 @@ package io.opentelemetry.sdk.extension.incubator.entities;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class TestEntityProvider {
   @Test
@@ -114,5 +119,59 @@ class TestEntityProvider {
         .hasSize(2)
         .containsKey("one.id")
         .containsKey("two.id");
+  }
+
+  @Test
+  void resource_removesEntity() {
+    SdkEntityProvider provider = SdkEntityProvider.builder().includeDefaults(false).build();
+
+    provider
+        .attachOrUpdateEntity("one")
+        .setSchemaUrl("one")
+        .withId(Attributes.builder().put("one.id", 1).build())
+        .emit();
+
+    assertThat(provider.getResource().getAttributes()).hasSize(1).containsKey("one.id");
+
+    assertThat(provider.removeEntity("one")).isTrue();
+    assertThat(provider.getResource().getAttributes()).isEmpty();
+  }
+
+  @Test
+  void entityListener_notifiesOnAdd() {
+    SdkEntityProvider provider = SdkEntityProvider.builder().includeDefaults(false).build();
+
+    EntityListener listener = mock(EntityListener.class);
+    provider.onChange(listener);
+
+    provider
+        .attachOrUpdateEntity("one")
+        .setSchemaUrl("one")
+        .withId(Attributes.builder().put("one.id", 1).build())
+        .emit();
+    ArgumentCaptor<EntityState> entityCapture = ArgumentCaptor.forClass(EntityState.class);
+    ArgumentCaptor<Resource> resourceCapture = ArgumentCaptor.forClass(Resource.class);
+    verify(listener, times(1)).onEntityState(entityCapture.capture(), resourceCapture.capture());
+    assertThat(entityCapture.getValue().getType()).isEqualTo("one");
+    assertThat(resourceCapture.getValue().getAttributes()).hasSize(1).containsKey("one.id");
+  }
+
+  @Test
+  void entityListener_notifiesOnRemove() {
+    SdkEntityProvider provider = SdkEntityProvider.builder().includeDefaults(false).build();
+    provider
+        .attachOrUpdateEntity("one")
+        .setSchemaUrl("one")
+        .withId(Attributes.builder().put("one.id", 1).build())
+        .emit();
+    EntityListener listener = mock(EntityListener.class);
+    provider.onChange(listener);
+
+    provider.removeEntity("one");
+    ArgumentCaptor<EntityState> entityCapture = ArgumentCaptor.forClass(EntityState.class);
+    ArgumentCaptor<Resource> resourceCapture = ArgumentCaptor.forClass(Resource.class);
+    verify(listener, times(1)).onEntityDelete(entityCapture.capture(), resourceCapture.capture());
+    assertThat(entityCapture.getValue().getType()).isEqualTo("one");
+    assertThat(resourceCapture.getValue().getAttributes()).isEmpty();
   }
 }
