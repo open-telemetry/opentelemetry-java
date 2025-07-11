@@ -6,7 +6,7 @@
 
 #### Common
 
-* Promote `ComponentLoader` to new `opentelemetry-common` artifact, 
+* Promote `ComponentLoader` to new `opentelemetry-common` artifact,
   standardize SPI loading
   ([#7446](https://github.com/open-telemetry/opentelemetry-java/pull/7446))
 
