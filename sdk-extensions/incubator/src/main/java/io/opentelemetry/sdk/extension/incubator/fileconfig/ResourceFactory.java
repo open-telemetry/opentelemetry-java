@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static io.opentelemetry.sdk.internal.GlobUtil.createGlobPatternPredicate;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -15,6 +13,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Experi
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
+import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Collections;
@@ -90,35 +89,6 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
     if (included == null && excluded == null) {
       return ResourceFactory::matchAll;
     }
-    if (included == null) {
-      return excludedPredicate(excluded);
-    }
-    if (excluded == null) {
-      return includedPredicate(included);
-    }
-    return includedPredicate(included).and(excludedPredicate(excluded));
-  }
-
-  /**
-   * Returns a predicate which matches strings matching any of the {@code included} glob patterns.
-   */
-  private static Predicate<String> includedPredicate(List<String> included) {
-    Predicate<String> result = attributeKey -> false;
-    for (String include : included) {
-      result = result.or(createGlobPatternPredicate(include));
-    }
-    return result;
-  }
-
-  /**
-   * Returns a predicate which matches strings NOT matching any of the {@code excluded} glob
-   * patterns.
-   */
-  private static Predicate<String> excludedPredicate(List<String> excluded) {
-    Predicate<String> result = attributeKey -> true;
-    for (String exclude : excluded) {
-      result = result.and(createGlobPatternPredicate(exclude).negate());
-    }
-    return result;
+    return IncludeExcludePredicate.createPatternMatching(included, excluded);
   }
 }

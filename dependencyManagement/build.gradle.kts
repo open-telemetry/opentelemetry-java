@@ -16,14 +16,14 @@ val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.19.1",
   "com.google.guava:guava-bom:33.4.8-jre",
   "com.google.protobuf:protobuf-bom:4.31.1",
-  "com.squareup.okhttp3:okhttp-bom:4.12.0",
-  "com.squareup.okio:okio-bom:3.13.0", // applies to transitive dependencies of okhttp
+  "com.squareup.okhttp3:okhttp-bom:5.1.0",
+  "com.squareup.okio:okio-bom:3.15.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.73.0",
   "io.netty:netty-bom:4.2.2.Final",
   "io.zipkin.brave:brave-bom:6.3.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.1",
   "org.assertj:assertj-bom:3.27.3",
-  "org.testcontainers:testcontainers-bom:1.21.2",
+  "org.testcontainers:testcontainers-bom:1.21.3",
   "org.snakeyaml:snakeyaml-engine:2.9"
 )
 
@@ -68,7 +68,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.58.2",
+  "com.google.api.grpc:proto-google-common-protos:2.59.1",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
@@ -78,7 +78,7 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.46.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.47.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.34.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.7.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",

@@ -57,6 +57,11 @@ and deadlocks.
   * Review and merge the pull request that it creates for updating the change log in main
     (note that if this is not a patch release then the change log on main may already be up-to-date,
     in which case no pull request will be created).
+  * Once the release artifacts become available on Maven Central, the system will automatically
+    generate a new pull request titled `Update apidiff baseline and documentation versions to
+    released version $VERSION`. This pull request will contain updates to both the API diff baseline
+    and version references in the documentation files (README.md). Please review and merge this
+    automated pull request.
   * The [website](https://github.com/open-telemetry/opentelemetry.io) contains automation to update
     to the newly released version. Review and approve the pull request when available.
   * The [website](https://opentelemetry.io/docs/languages/java/configuration/#zero-code-sdk-autoconfigure)

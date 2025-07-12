@@ -10,11 +10,9 @@ import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.common.ComponentLoader;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -68,10 +66,10 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
    * com.fasterxml.jackson.databind.ObjectMapper}), and have values which are scalars, lists of
    * scalars, lists of maps, and maps.
    *
-   * @see DeclarativeConfiguration#toConfigProperties(OpenTelemetryConfigurationModel)
+   * @see DeclarativeConfiguration#toConfigProperties(Object)
    */
   @SuppressWarnings("unchecked")
-  static YamlDeclarativeConfigProperties create(
+  public static YamlDeclarativeConfigProperties create(
       Map<String, Object> properties, ComponentLoader componentLoader) {
     Map<String, Object> simpleEntries = new LinkedHashMap<>();
     Map<String, List<YamlDeclarativeConfigProperties>> listEntries = new LinkedHashMap<>();
@@ -202,9 +200,13 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     }
     Object value = simpleEntries.get(name);
     if (value instanceof List) {
-      return (List<T>)
-          ((List<Object>) value)
-              .stream()
+      List<Object> objectList = ((List<Object>) value);
+      if (objectList.isEmpty()) {
+        return Collections.emptyList();
+      }
+      List<T> result =
+          (List<T>)
+              objectList.stream()
                   .map(
                       entry -> {
                         if (scalarType == String.class) {
@@ -220,6 +222,10 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
                       })
                   .filter(Objects::nonNull)
                   .collect(toList());
+      if (result.isEmpty()) {
+        return null;
+      }
+      return result;
     }
     return null;
   }
@@ -296,18 +302,8 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     return joiner.toString();
   }
 
-  /** Return a map representation of the data. */
-  public Map<String, Object> toMap() {
-    Map<String, Object> result = new HashMap<>(simpleEntries);
-    listEntries.forEach(
-        (key, value) ->
-            result.put(
-                key, value.stream().map(YamlDeclarativeConfigProperties::toMap).collect(toList())));
-    mapEntries.forEach((key, value) -> result.put(key, value.toMap()));
-    return Collections.unmodifiableMap(result);
-  }
-
   /** Return the {@link ComponentLoader}. */
+  @Override
   public ComponentLoader getComponentLoader() {
     return componentLoader;
   }

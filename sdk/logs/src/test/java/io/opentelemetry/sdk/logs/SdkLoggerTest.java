@@ -21,6 +21,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.logs.LogRecordBuilder;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -142,8 +144,8 @@ class SdkLoggerTest {
     SdkLogger logger = (SdkLogger) loggerProvider.get("test");
 
     logger.updateLoggerConfig(LoggerConfig.disabled());
-    assertThat(logger.isEnabled()).isFalse();
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
     logger.updateLoggerConfig(LoggerConfig.enabled());
-    assertThat(logger.isEnabled()).isTrue();
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
   }
 }

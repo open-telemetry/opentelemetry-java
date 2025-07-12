@@ -9,19 +9,24 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * This class is internal and experimental. Its APIs are unstable and can change at any time. Its
+ * The default {@link ExceptionAttributeResolver}, populating standard {@code exception.*} as
+ * defined by the semantic conventions.
+ *
+ * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
  * APIs (or a version of them) may be promoted to the public stable API in the future, but no
  * guarantees are made.
+ *
+ * @see ExceptionAttributeResolver#getDefault()
+ * @see ExceptionAttributeResolver#getDefault(boolean) ()
  */
-public final class DefaultExceptionAttributeResolver implements ExceptionAttributeResolver {
+final class DefaultExceptionAttributeResolver implements ExceptionAttributeResolver {
 
-  private static final DefaultExceptionAttributeResolver INSTANCE =
-      new DefaultExceptionAttributeResolver();
+  static final String ENABLE_JVM_STACKTRACE_PROPERTY = "otel.experimental.sdk.jvm_stacktrace";
 
-  private DefaultExceptionAttributeResolver() {}
+  private final boolean jvmStacktraceEnabled;
 
-  public static ExceptionAttributeResolver getInstance() {
-    return INSTANCE;
+  DefaultExceptionAttributeResolver(boolean jvmStacktraceEnabled) {
+    this.jvmStacktraceEnabled = jvmStacktraceEnabled;
   }
 
   @Override
@@ -37,14 +42,23 @@ public final class DefaultExceptionAttributeResolver implements ExceptionAttribu
       attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_MESSAGE, exceptionMessage);
     }
 
+    String exceptionStacktrace =
+        jvmStacktraceEnabled
+            ? jvmStacktrace(throwable)
+            : limitsAwareStacktrace(throwable, maxAttributeLength);
+    attributeSetter.setAttribute(
+        ExceptionAttributeResolver.EXCEPTION_STACKTRACE, exceptionStacktrace);
+  }
+
+  private static String jvmStacktrace(Throwable throwable) {
     StringWriter stringWriter = new StringWriter();
     try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
       throwable.printStackTrace(printWriter);
     }
-    String exceptionStacktrace = stringWriter.toString();
-    if (exceptionStacktrace != null) {
-      attributeSetter.setAttribute(
-          ExceptionAttributeResolver.EXCEPTION_STACKTRACE, exceptionStacktrace);
-    }
+    return stringWriter.toString();
+  }
+
+  private static String limitsAwareStacktrace(Throwable throwable, int maxAttributeLength) {
+    return new StackTraceRenderer(throwable, maxAttributeLength).render();
   }
 }
