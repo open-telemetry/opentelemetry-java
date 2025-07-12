@@ -36,7 +36,7 @@ class ExporterInstrumentationTest {
   Supplier<MeterProvider> meterProviderSupplier = mock(Supplier.class);
 
   @ParameterizedTest
-  @EnumSource()
+  @EnumSource
   void validMeterProvider(InternalTelemetryVersion schemaVersion) {
     when(meterProviderSupplier.get())
         .thenReturn(
@@ -84,7 +84,7 @@ class ExporterInstrumentationTest {
   }
 
   @ParameterizedTest
-  @EnumSource()
+  @EnumSource
   void noopMeterProvider(InternalTelemetryVersion schemaVersion) {
 
     when(meterProviderSupplier.get()).thenReturn(MeterProvider.noop());
