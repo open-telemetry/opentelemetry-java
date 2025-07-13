@@ -66,6 +66,7 @@ testing {
 
         implementation("io.grpc:grpc-stub")
         implementation("io.grpc:grpc-netty")
+        implementation("com.fasterxml.jackson.core:jackson-core")
       }
     }
   }
