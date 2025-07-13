@@ -43,6 +43,27 @@ graalvmNative {
       // Required as of junit 5.10.0: https://junit.org/junit5/docs/5.10.0/release-notes/#deprecations-and-breaking-changes
       buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.LauncherConfig")
       buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.config.InstantiatingConfigurationParameterConverter")
+      // Required as of junit 5.13.0: https://junit.org/junit5/docs/5.13.0/release-notes/#deprecations-and-breaking-changes
+      val initializeAtBuildTime = listOf(
+        "org.junit.jupiter.api.DisplayNameGenerator\$IndicativeSentences",
+        "org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor\$ClassInfo",
+        "org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor\$LifecycleMethods",
+        "org.junit.jupiter.engine.descriptor.ClassTemplateInvocationTestDescriptor",
+        "org.junit.jupiter.engine.descriptor.ClassTemplateTestDescriptor",
+        "org.junit.jupiter.engine.descriptor.DynamicDescendantFilter\$Mode",
+        "org.junit.jupiter.engine.descriptor.ExclusiveResourceCollector\$1",
+        "org.junit.jupiter.engine.descriptor.MethodBasedTestDescriptor\$MethodInfo",
+        "org.junit.jupiter.engine.discovery.ClassSelectorResolver\$DummyClassTemplateInvocationContext",
+        "org.junit.platform.engine.support.store.NamespacedHierarchicalStore\$EvaluatedValue",
+        "org.junit.platform.launcher.core.DiscoveryIssueNotifier",
+        "org.junit.platform.launcher.core.HierarchicalOutputDirectoryProvider",
+        "org.junit.platform.launcher.core.LauncherDiscoveryResult\$EngineResultInfo",
+        "org.junit.platform.launcher.core.LauncherPhase",
+        "org.junit.platform.suite.engine.DiscoverySelectorResolver",
+        "org.junit.platform.suite.engine.SuiteTestDescriptor\$DiscoveryIssueForwardingListener",
+        "org.junit.platform.suite.engine.SuiteTestDescriptor\$LifecycleMethods",
+      )
+      buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
     }
   }
   toolchainDetection.set(false)
