@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":exporters:otlp:all"))
 }
 
-// org.graalvm.buildtools.native pluging requires java 11+ as of version 0.9.26
+// org.graalvm.buildtools.native plugin requires java 11+ as of version 0.9.26
 // https://github.com/graalvm/native-build-tools/blob/master/docs/src/docs/asciidoc/index.adoc
 tasks {
   withType<JavaCompile>().configureEach {
