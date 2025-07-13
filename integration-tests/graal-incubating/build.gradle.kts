@@ -44,26 +44,23 @@ graalvmNative {
       buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.LauncherConfig")
       buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.config.InstantiatingConfigurationParameterConverter")
       // Required as of junit 5.13.0: https://junit.org/junit5/docs/5.13.0/release-notes/#deprecations-and-breaking-changes
-      val initializeAtBuildTime = listOf(
-        "org.junit.jupiter.api.DisplayNameGenerator\$IndicativeSentences",
-        "org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor\$ClassInfo",
-        "org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor\$LifecycleMethods",
-        "org.junit.jupiter.engine.descriptor.ClassTemplateInvocationTestDescriptor",
-        "org.junit.jupiter.engine.descriptor.ClassTemplateTestDescriptor",
-        "org.junit.jupiter.engine.descriptor.DynamicDescendantFilter\$Mode",
-        "org.junit.jupiter.engine.descriptor.ExclusiveResourceCollector\$1",
-        "org.junit.jupiter.engine.descriptor.MethodBasedTestDescriptor\$MethodInfo",
-        "org.junit.jupiter.engine.discovery.ClassSelectorResolver\$DummyClassTemplateInvocationContext",
-        "org.junit.platform.engine.support.store.NamespacedHierarchicalStore\$EvaluatedValue",
-        "org.junit.platform.launcher.core.DiscoveryIssueNotifier",
-        "org.junit.platform.launcher.core.HierarchicalOutputDirectoryProvider",
-        "org.junit.platform.launcher.core.LauncherDiscoveryResult\$EngineResultInfo",
-        "org.junit.platform.launcher.core.LauncherPhase",
-        "org.junit.platform.suite.engine.DiscoverySelectorResolver",
-        "org.junit.platform.suite.engine.SuiteTestDescriptor\$DiscoveryIssueForwardingListener",
-        "org.junit.platform.suite.engine.SuiteTestDescriptor\$LifecycleMethods",
-      )
-      buildArgs.add("--initialize-at-build-time=${initializeAtBuildTime.joinToString(",")}")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.api.DisplayNameGenerator\$IndicativeSentences")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor\$ClassInfo")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor\$LifecycleMethods")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.descriptor.ClassTemplateInvocationTestDescriptor")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.descriptor.ClassTemplateTestDescriptor")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.descriptor.DynamicDescendantFilter\$Mode")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.descriptor.ExclusiveResourceCollector\$1")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.descriptor.MethodBasedTestDescriptor\$MethodInfo")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.discovery.ClassSelectorResolver\$DummyClassTemplateInvocationContext")
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.engine.support.store.NamespacedHierarchicalStore\$EvaluatedValue")
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.DiscoveryIssueNotifier")
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.HierarchicalOutputDirectoryProvider")
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.LauncherDiscoveryResult\$EngineResultInfo")
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.LauncherPhase")
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.suite.engine.DiscoverySelectorResolver")
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.suite.engine.SuiteTestDescriptor\$DiscoveryIssueForwardingListener")
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.suite.engine.SuiteTestDescriptor\$LifecycleMethods")
     }
   }
   toolchainDetection.set(false)
