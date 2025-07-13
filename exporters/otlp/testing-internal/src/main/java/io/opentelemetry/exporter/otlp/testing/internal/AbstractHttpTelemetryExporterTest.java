@@ -99,6 +99,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockserver.integration.ClientAndServer;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
@@ -475,7 +476,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   private static class ClientPrivateKeyProvider implements ArgumentsProvider {
     @Override
     @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+    public Stream<? extends Arguments> provideArguments(
+        ParameterDeclarations parameters, ExtensionContext context) throws Exception {
       return Stream.of(
           arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
           arguments(named("DER", clientCertificate.privateKey().getEncoded())));
