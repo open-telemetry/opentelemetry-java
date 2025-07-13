@@ -237,7 +237,8 @@ class B3PropagationIntegrationTest {
 
   public static class WebClientArgumentSupplier implements ArgumentsProvider {
     @Override
-    public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(
+        ParameterDeclarations parameters, ExtensionContext context) {
       return Stream.of(
           Arguments.of("b3multi", b3MultiClient), Arguments.of("b3single", b3SingleClient));
     }
