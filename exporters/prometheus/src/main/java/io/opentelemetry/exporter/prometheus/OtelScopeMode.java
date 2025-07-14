@@ -6,8 +6,6 @@
 package io.opentelemetry.exporter.prometheus;
 
 public enum OtelScopeMode {
-  /** No scope information is exported. */
-  DISABLED,
   /**
    * Only the labels of the metrics are exported, but not the scope_info info metrics.
    *
@@ -20,10 +18,6 @@ public enum OtelScopeMode {
    * <p>This is the default mode.
    */
   LABELS_AND_SCOPE_INFO;
-
-  boolean isLabelOrInfo() {
-    return this != DISABLED;
-  }
 
   boolean isScopeInfoEnabled() {
     return this == LABELS_AND_SCOPE_INFO;

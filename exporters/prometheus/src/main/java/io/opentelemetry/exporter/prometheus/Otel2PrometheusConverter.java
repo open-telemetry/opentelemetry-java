@@ -125,8 +125,7 @@ final class Otel2PrometheusConverter {
       if (resource == null) {
         resource = metricData.getResource();
       }
-      if (otelScopeMode.isLabelOrInfo()
-          && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
+      if (!metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
         scopes.add(metricData.getInstrumentationScopeInfo());
       }
     }
@@ -458,8 +457,7 @@ final class Otel2PrometheusConverter {
    * Convert OpenTelemetry attributes to Prometheus labels.
    *
    * @param resource optional resource (attributes) to be converted.
-   * @param scope will be converted to {@code otel_scope_*} labels if {@code otelScopeMode} is
-   *     {@link OtelScopeMode#isLabelOrInfo()}.
+   * @param scope will be converted to {@code otel_scope_*} labels.
    * @param attributes the attributes to be converted.
    * @param additionalAttributes optional list of key/value pairs, may be empty.
    */
@@ -486,7 +484,7 @@ final class Otel2PrometheusConverter {
           requireNonNull(additionalAttributes[i]), additionalAttributes[i + 1]);
     }
 
-    if (otelScopeMode.isLabelOrInfo() && scope != null) {
+    if (scope != null) {
       labelNameToValue.putIfAbsent(OTEL_SCOPE_NAME, scope.getName());
       if (scope.getVersion() != null) {
         labelNameToValue.putIfAbsent(OTEL_SCOPE_VERSION, scope.getVersion());
