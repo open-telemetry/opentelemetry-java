@@ -51,11 +51,9 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class AttributesAdviceTest {
 
@@ -74,7 +72,7 @@ class AttributesAdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
+  @MethodSource("instrumentProviderArgs")
   void instrumentWithoutAdvice(
       InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
@@ -91,7 +89,7 @@ class AttributesAdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
+  @MethodSource("instrumentProviderArgs")
   void instrumentWithAdvice(
       InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
@@ -113,7 +111,7 @@ class AttributesAdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
+  @MethodSource("instrumentProviderArgs")
   void instrumentWithAdviceAndViews(
       InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
@@ -143,7 +141,7 @@ class AttributesAdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
+  @MethodSource("instrumentProviderArgs")
   void instrumentWithAdviceAndDescriptionViews(
       InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
@@ -175,7 +173,7 @@ class AttributesAdviceTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(InstrumentsProvider.class)
+  @MethodSource("instrumentProviderArgs")
   void instrumentWithAdviceAndBaggage(
       InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
@@ -217,148 +215,142 @@ class AttributesAdviceTest {
                             equalTo(stringKey("baggage1"), "value1"))));
   }
 
-  static final class InstrumentsProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-      return Stream.of(
-          // double counter
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, attributesAdvice) -> {
-                    DoubleCounterBuilder doubleCounterBuilder =
-                        meterProvider.get("meter").counterBuilder(name).ofDoubles();
-                    if (attributesAdvice != null) {
-                      ((ExtendedDoubleCounterBuilder) doubleCounterBuilder)
-                          .setAttributesAdvice(attributesAdvice);
-                    }
-                    DoubleCounter counter = doubleCounterBuilder.build();
-                    return counter::add;
-                  },
-              (PointsAssert<DoublePointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasDoubleSumSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // long counter
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, attributesAdvice) -> {
-                    LongCounterBuilder doubleCounterBuilder =
-                        meterProvider.get("meter").counterBuilder(name);
-                    if (attributesAdvice != null) {
-                      ((ExtendedLongCounterBuilder) doubleCounterBuilder)
-                          .setAttributesAdvice(attributesAdvice);
-                    }
-                    LongCounter counter = doubleCounterBuilder.build();
-                    return counter::add;
-                  },
-              (PointsAssert<LongPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasLongSumSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // double gauge
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, attributesAdvice) -> {
-                    DoubleGaugeBuilder doubleGaugeBuilder =
-                        meterProvider.get("meter").gaugeBuilder(name);
-                    if (attributesAdvice != null) {
-                      ((ExtendedDoubleGaugeBuilder) doubleGaugeBuilder)
-                          .setAttributesAdvice(attributesAdvice);
-                    }
-                    DoubleGauge gauge = doubleGaugeBuilder.build();
-                    return gauge::set;
-                  },
-              (PointsAssert<DoublePointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasDoubleGaugeSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // long gauge
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, attributesAdvice) -> {
-                    LongGaugeBuilder longGaugeBuilder =
-                        meterProvider.get("meter").gaugeBuilder(name).ofLongs();
-                    if (attributesAdvice != null) {
-                      ((ExtendedLongGaugeBuilder) longGaugeBuilder)
-                          .setAttributesAdvice(attributesAdvice);
-                    }
-                    LongGauge gauge = longGaugeBuilder.build();
-                    return gauge::set;
-                  },
-              (PointsAssert<LongPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasLongGaugeSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // double histogram
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, attributesAdvice) -> {
-                    DoubleHistogramBuilder doubleHistogramBuilder =
-                        meterProvider.get("meter").histogramBuilder(name);
-                    if (attributesAdvice != null) {
-                      ((ExtendedDoubleHistogramBuilder) doubleHistogramBuilder)
-                          .setAttributesAdvice(attributesAdvice);
-                    }
-                    DoubleHistogram histogram = doubleHistogramBuilder.build();
-                    return histogram::record;
-                  },
-              (PointsAssert<HistogramPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasHistogramSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // long histogram
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, attributesAdvice) -> {
-                    LongHistogramBuilder doubleHistogramBuilder =
-                        meterProvider.get("meter").histogramBuilder(name).ofLongs();
-                    if (attributesAdvice != null) {
-                      ((ExtendedLongHistogramBuilder) doubleHistogramBuilder)
-                          .setAttributesAdvice(attributesAdvice);
-                    }
-                    LongHistogram histogram = doubleHistogramBuilder.build();
-                    return histogram::record;
-                  },
-              (PointsAssert<HistogramPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasHistogramSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // double up down counter
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, attributesAdvice) -> {
-                    DoubleUpDownCounterBuilder doubleUpDownCounterBuilder =
-                        meterProvider.get("meter").upDownCounterBuilder(name).ofDoubles();
-                    if (attributesAdvice != null) {
-                      ((ExtendedDoubleUpDownCounterBuilder) doubleUpDownCounterBuilder)
-                          .setAttributesAdvice(attributesAdvice);
-                    }
-                    DoubleUpDownCounter upDownCounter = doubleUpDownCounterBuilder.build();
-                    return upDownCounter::add;
-                  },
-              (PointsAssert<DoublePointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasDoubleSumSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))),
-          // long up down counter
-          arguments(
-              (InstrumentFactory)
-                  (meterProvider, name, attributesAdvice) -> {
-                    LongUpDownCounterBuilder doubleUpDownCounterBuilder =
-                        meterProvider.get("meter").upDownCounterBuilder(name);
-                    if (attributesAdvice != null) {
-                      ((ExtendedLongUpDownCounterBuilder) doubleUpDownCounterBuilder)
-                          .setAttributesAdvice(attributesAdvice);
-                    }
-                    LongUpDownCounter upDownCounter = doubleUpDownCounterBuilder.build();
-                    return upDownCounter::add;
-                  },
-              (PointsAssert<LongPointAssert>)
-                  (metricAssert, assertions) ->
-                      metricAssert.hasLongSumSatisfying(
-                          sum -> sum.hasPointsSatisfying(assertions))));
-    }
+  private static Stream<Arguments> instrumentProviderArgs() {
+    return Stream.of(
+        // double counter
+        arguments(
+            (InstrumentFactory)
+                (meterProvider, name, attributesAdvice) -> {
+                  DoubleCounterBuilder doubleCounterBuilder =
+                      meterProvider.get("meter").counterBuilder(name).ofDoubles();
+                  if (attributesAdvice != null) {
+                    ((ExtendedDoubleCounterBuilder) doubleCounterBuilder)
+                        .setAttributesAdvice(attributesAdvice);
+                  }
+                  DoubleCounter counter = doubleCounterBuilder.build();
+                  return counter::add;
+                },
+            (PointsAssert<DoublePointAssert>)
+                (metricAssert, assertions) ->
+                    metricAssert.hasDoubleSumSatisfying(
+                        sum -> sum.hasPointsSatisfying(assertions))),
+        // long counter
+        arguments(
+            (InstrumentFactory)
+                (meterProvider, name, attributesAdvice) -> {
+                  LongCounterBuilder doubleCounterBuilder =
+                      meterProvider.get("meter").counterBuilder(name);
+                  if (attributesAdvice != null) {
+                    ((ExtendedLongCounterBuilder) doubleCounterBuilder)
+                        .setAttributesAdvice(attributesAdvice);
+                  }
+                  LongCounter counter = doubleCounterBuilder.build();
+                  return counter::add;
+                },
+            (PointsAssert<LongPointAssert>)
+                (metricAssert, assertions) ->
+                    metricAssert.hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(assertions))),
+        // double gauge
+        arguments(
+            (InstrumentFactory)
+                (meterProvider, name, attributesAdvice) -> {
+                  DoubleGaugeBuilder doubleGaugeBuilder =
+                      meterProvider.get("meter").gaugeBuilder(name);
+                  if (attributesAdvice != null) {
+                    ((ExtendedDoubleGaugeBuilder) doubleGaugeBuilder)
+                        .setAttributesAdvice(attributesAdvice);
+                  }
+                  DoubleGauge gauge = doubleGaugeBuilder.build();
+                  return gauge::set;
+                },
+            (PointsAssert<DoublePointAssert>)
+                (metricAssert, assertions) ->
+                    metricAssert.hasDoubleGaugeSatisfying(
+                        sum -> sum.hasPointsSatisfying(assertions))),
+        // long gauge
+        arguments(
+            (InstrumentFactory)
+                (meterProvider, name, attributesAdvice) -> {
+                  LongGaugeBuilder longGaugeBuilder =
+                      meterProvider.get("meter").gaugeBuilder(name).ofLongs();
+                  if (attributesAdvice != null) {
+                    ((ExtendedLongGaugeBuilder) longGaugeBuilder)
+                        .setAttributesAdvice(attributesAdvice);
+                  }
+                  LongGauge gauge = longGaugeBuilder.build();
+                  return gauge::set;
+                },
+            (PointsAssert<LongPointAssert>)
+                (metricAssert, assertions) ->
+                    metricAssert.hasLongGaugeSatisfying(
+                        sum -> sum.hasPointsSatisfying(assertions))),
+        // double histogram
+        arguments(
+            (InstrumentFactory)
+                (meterProvider, name, attributesAdvice) -> {
+                  DoubleHistogramBuilder doubleHistogramBuilder =
+                      meterProvider.get("meter").histogramBuilder(name);
+                  if (attributesAdvice != null) {
+                    ((ExtendedDoubleHistogramBuilder) doubleHistogramBuilder)
+                        .setAttributesAdvice(attributesAdvice);
+                  }
+                  DoubleHistogram histogram = doubleHistogramBuilder.build();
+                  return histogram::record;
+                },
+            (PointsAssert<HistogramPointAssert>)
+                (metricAssert, assertions) ->
+                    metricAssert.hasHistogramSatisfying(
+                        sum -> sum.hasPointsSatisfying(assertions))),
+        // long histogram
+        arguments(
+            (InstrumentFactory)
+                (meterProvider, name, attributesAdvice) -> {
+                  LongHistogramBuilder doubleHistogramBuilder =
+                      meterProvider.get("meter").histogramBuilder(name).ofLongs();
+                  if (attributesAdvice != null) {
+                    ((ExtendedLongHistogramBuilder) doubleHistogramBuilder)
+                        .setAttributesAdvice(attributesAdvice);
+                  }
+                  LongHistogram histogram = doubleHistogramBuilder.build();
+                  return histogram::record;
+                },
+            (PointsAssert<HistogramPointAssert>)
+                (metricAssert, assertions) ->
+                    metricAssert.hasHistogramSatisfying(
+                        sum -> sum.hasPointsSatisfying(assertions))),
+        // double up down counter
+        arguments(
+            (InstrumentFactory)
+                (meterProvider, name, attributesAdvice) -> {
+                  DoubleUpDownCounterBuilder doubleUpDownCounterBuilder =
+                      meterProvider.get("meter").upDownCounterBuilder(name).ofDoubles();
+                  if (attributesAdvice != null) {
+                    ((ExtendedDoubleUpDownCounterBuilder) doubleUpDownCounterBuilder)
+                        .setAttributesAdvice(attributesAdvice);
+                  }
+                  DoubleUpDownCounter upDownCounter = doubleUpDownCounterBuilder.build();
+                  return upDownCounter::add;
+                },
+            (PointsAssert<DoublePointAssert>)
+                (metricAssert, assertions) ->
+                    metricAssert.hasDoubleSumSatisfying(
+                        sum -> sum.hasPointsSatisfying(assertions))),
+        // long up down counter
+        arguments(
+            (InstrumentFactory)
+                (meterProvider, name, attributesAdvice) -> {
+                  LongUpDownCounterBuilder doubleUpDownCounterBuilder =
+                      meterProvider.get("meter").upDownCounterBuilder(name);
+                  if (attributesAdvice != null) {
+                    ((ExtendedLongUpDownCounterBuilder) doubleUpDownCounterBuilder)
+                        .setAttributesAdvice(attributesAdvice);
+                  }
+                  LongUpDownCounter upDownCounter = doubleUpDownCounterBuilder.build();
+                  return upDownCounter::add;
+                },
+            (PointsAssert<LongPointAssert>)
+                (metricAssert, assertions) ->
+                    metricAssert.hasLongSumSatisfying(sum -> sum.hasPointsSatisfying(assertions))));
   }
 
   @FunctionalInterface
