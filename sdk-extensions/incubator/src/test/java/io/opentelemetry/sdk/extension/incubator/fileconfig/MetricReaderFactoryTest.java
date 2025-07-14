@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.prometheus.OtelScopeMode;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -165,7 +166,7 @@ class MetricReaderFactoryTest {
         PrometheusHttpServer.builder()
             .setHost("localhost")
             .setPort(port)
-            .setOtelScopeEnabled(false)
+            .setOtelScopeMode(OtelScopeMode.LABELS_ONLY)
             .setAllowedResourceAttributesFilter(
                 IncludeExcludePredicate.createPatternMatching(
                     singletonList("foo"), singletonList("bar")))
