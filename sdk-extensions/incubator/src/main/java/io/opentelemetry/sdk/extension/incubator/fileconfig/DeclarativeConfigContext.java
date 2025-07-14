@@ -22,8 +22,8 @@ import javax.annotation.Nullable;
 class DeclarativeConfigContext {
 
   private final SpiHelper spiHelper;
-  @Nullable private MeterProvider meterProvider;
   private final List<Closeable> closeables = new ArrayList<>();
+  @Nullable private MeterProvider meterProvider;
 
   DeclarativeConfigContext(SpiHelper spiHelper) {
     this.spiHelper = spiHelper;
