@@ -42,7 +42,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final String host;
   private final int port;
-  private final boolean otelScopeEnabled;
+  private final OtelScopeMode otelScopeMode;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
   private final MemoryMode memoryMode;
   private final DefaultAggregationSelector defaultAggregationSelector;
@@ -80,7 +80,7 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable Authenticator authenticator) {
     this.host = host;
     this.port = port;
-    this.otelScopeEnabled = otelScopeEnabled;
+    this.otelScopeMode = otelScopeMode;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.memoryMode = memoryMode;
     this.defaultAggregationSelector = defaultAggregationSelector;
@@ -171,7 +171,7 @@ public final class PrometheusHttpServer implements MetricReader {
     StringJoiner joiner = new StringJoiner(",", "PrometheusHttpServer{", "}");
     joiner.add("host=" + host);
     joiner.add("port=" + port);
-    joiner.add("otelScopeEnabled=" + otelScopeEnabled);
+    joiner.add("otelScopeMode=" + otelScopeMode);
     joiner.add("allowedResourceAttributesFilter=" + allowedResourceAttributesFilter);
     joiner.add("memoryMode=" + memoryMode);
     joiner.add(

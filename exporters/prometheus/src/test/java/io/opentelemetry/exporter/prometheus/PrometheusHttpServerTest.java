@@ -413,7 +413,7 @@ class PrometheusHttpServerTest {
             "PrometheusHttpServer{"
                 + "host=localhost,"
                 + "port=0,"
-                + "otelScopeEnabled=true,"
+                + "otelScopeMode=LABELS_AND_SCOPE_INFO,"
                 + "allowedResourceAttributesFilter=null,"
                 + "memoryMode=REUSABLE_DATA,"
                 + "defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}"
@@ -528,7 +528,7 @@ class PrometheusHttpServerTest {
     PrometheusHttpServerBuilder builder = PrometheusHttpServer.builder();
     builder.setHost("localhost");
     builder.setPort(1234);
-    builder.setOtelScopeMode(OtelScopeMode.DISABLED);
+    builder.setOtelScopeMode(OtelScopeMode.LABELS_ONLY);
 
     Predicate<String> resourceAttributesFilter = s -> false;
     builder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
@@ -555,7 +555,7 @@ class PrometheusHttpServerTest {
         .isInstanceOf(PrometheusHttpServerBuilder.class)
         .hasFieldOrPropertyWithValue("host", "localhost")
         .hasFieldOrPropertyWithValue("port", 1234)
-        .hasFieldOrPropertyWithValue("otelScopeMode", OtelScopeMode.DISABLED)
+        .hasFieldOrPropertyWithValue("otelScopeMode", OtelScopeMode.LABELS_ONLY)
         .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
         .hasFieldOrPropertyWithValue("executor", executor)
         .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry)
