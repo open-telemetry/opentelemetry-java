@@ -1030,10 +1030,10 @@ class PrometheusMetricReaderTest {
   }
 
   @Test
-  void otelScopeDisabled() throws IOException {
+  void otelScopeLabelsOnly() throws IOException {
     PrometheusMetricReader reader =
         new PrometheusMetricReader(
-            OtelScopeMode.DISABLED, /* allowedResourceAttributesFilter= */ null);
+            OtelScopeMode.LABELS_ONLY, /* allowedResourceAttributesFilter= */ null);
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1051,8 +1051,8 @@ class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE test_count counter\n"
-            + "test_count_total 1.0\n"
-            + "test_count_created "
+            + "test_count_total{otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} 1.0\n"
+            + "test_count_created{otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} "
             + createdTimestamp
             + "\n"
             + "# EOF\n";
