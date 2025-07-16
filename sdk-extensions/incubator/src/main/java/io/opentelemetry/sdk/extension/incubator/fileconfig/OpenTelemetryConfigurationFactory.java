@@ -6,15 +6,15 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 final class OpenTelemetryConfigurationFactory
-    implements Factory<OpenTelemetryConfigurationModel, OpenTelemetrySdk> {
+    implements Factory<OpenTelemetryConfigurationModel, ExtendedOpenTelemetrySdk> {
 
   private static final Pattern SUPPORTED_FILE_FORMATS = Pattern.compile("^(0.4)|(1.0(-rc.\\d*)?)$");
 
@@ -28,9 +28,9 @@ final class OpenTelemetryConfigurationFactory
   }
 
   @Override
-  public OpenTelemetrySdk create(
+  public ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
-    OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
+    ExtendedOpenTelemetrySdkBuilder builder = ExtendedOpenTelemetrySdk.builder();
     String fileFormat = model.getFileFormat();
     if (fileFormat == null || !SUPPORTED_FILE_FORMATS.matcher(fileFormat).matches()) {
       throw new DeclarativeConfigException(
@@ -43,49 +43,53 @@ final class OpenTelemetryConfigurationFactory
       return builder.build();
     }
 
+    builder.setCloseableConsumer(context::addCloseable);
+    builder.setConfigProvider(SdkConfigProvider.create(model, context.getComponentLoader()));
+
     if (model.getPropagator() != null) {
       builder.setPropagators(
           PropagatorFactory.getInstance().create(model.getPropagator(), context));
     }
 
-    Resource resource = Resource.getDefault();
+    Resource resource;
     if (model.getResource() != null) {
       resource = ResourceFactory.getInstance().create(model.getResource(), context);
+    } else {
+      resource = Resource.getDefault();
     }
 
     if (model.getLoggerProvider() != null) {
-      builder.setLoggerProvider(
-          context.addCloseable(
+      builder.withLoggerProvider(
+          sdkLoggerProviderBuilder ->
               LoggerProviderFactory.getInstance()
-                  .create(
+                  .configure(
+                      sdkLoggerProviderBuilder.setResource(resource),
                       LoggerProviderAndAttributeLimits.create(
                           model.getAttributeLimits(), model.getLoggerProvider()),
-                      context)
-                  .setResource(resource)
-                  .build()));
+                      context));
     }
 
     if (model.getTracerProvider() != null) {
-      builder.setTracerProvider(
-          context.addCloseable(
+      builder.withTracerProvider(
+          sdkTracerProviderBuilder ->
               TracerProviderFactory.getInstance()
-                  .create(
+                  .configure(
+                      sdkTracerProviderBuilder.setResource(resource),
                       TracerProviderAndAttributeLimits.create(
                           model.getAttributeLimits(), model.getTracerProvider()),
-                      context)
-                  .setResource(resource)
-                  .build()));
+                      context));
     }
 
     if (model.getMeterProvider() != null) {
-      builder.setMeterProvider(
-          context.addCloseable(
+      builder.withMeterProvider(
+          sdkMeterProviderBuilder ->
               MeterProviderFactory.getInstance()
-                  .create(model.getMeterProvider(), context)
-                  .setResource(resource)
-                  .build()));
+                  .configure(
+                      sdkMeterProviderBuilder.setResource(resource),
+                      model.getMeterProvider(),
+                      context));
     }
 
-    return context.addCloseable(builder.build());
+    return builder.build();
   }
 }

@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanPr
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
@@ -22,8 +21,7 @@ import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 
-final class TracerProviderFactory
-    implements Factory<TracerProviderAndAttributeLimits, SdkTracerProviderBuilder> {
+final class TracerProviderFactory {
 
   private static final TracerProviderFactory INSTANCE = new TracerProviderFactory();
 
@@ -33,13 +31,13 @@ final class TracerProviderFactory
     return INSTANCE;
   }
 
-  @Override
-  public SdkTracerProviderBuilder create(
-      TracerProviderAndAttributeLimits model, DeclarativeConfigContext context) {
-    SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
+  public void configure(
+      SdkTracerProviderBuilder builder,
+      TracerProviderAndAttributeLimits model,
+      DeclarativeConfigContext context) {
     TracerProviderModel tracerProviderModel = model.getTracerProvider();
     if (tracerProviderModel == null) {
-      return builder;
+      return;
     }
 
     SpanLimits spanLimits =
@@ -90,8 +88,6 @@ final class TracerProviderFactory
       }
       SdkTracerProviderUtil.setTracerConfigurator(builder, configuratorBuilder.build());
     }
-
-    return builder;
   }
 
   private static class TracerConfigFactory

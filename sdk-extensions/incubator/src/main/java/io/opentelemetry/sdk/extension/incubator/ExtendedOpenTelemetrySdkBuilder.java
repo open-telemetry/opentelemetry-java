@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import java.io.Closeable;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -26,6 +27,10 @@ public final class ExtendedOpenTelemetrySdkBuilder {
   private final SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
   private ContextPropagators propagators = ContextPropagators.noop();
   private ConfigProvider configProvider = ConfigProvider.noop();
+  private Consumer<Closeable> closeableConsumer =
+      closeable -> {
+        // Default no-op closeable consumer
+      };
 
   /** Sets the {@link ContextPropagators} to use. */
   public ExtendedOpenTelemetrySdkBuilder setPropagators(ContextPropagators propagators) {
@@ -36,6 +41,11 @@ public final class ExtendedOpenTelemetrySdkBuilder {
   /** Sets the {@link ConfigProvider} to use. */
   public ExtendedOpenTelemetrySdkBuilder setConfigProvider(ConfigProvider configProvider) {
     this.configProvider = Objects.requireNonNull(configProvider, "configProvider must not be null");
+    return this;
+  }
+
+  public ExtendedOpenTelemetrySdkBuilder setCloseableConsumer(Consumer<Closeable> configurator) {
+    this.closeableConsumer = Objects.requireNonNull(configurator, "configurator must not be null");
     return this;
   }
 
@@ -88,8 +98,14 @@ public final class ExtendedOpenTelemetrySdkBuilder {
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
     SdkMeterProvider meterProvider = meterProviderBuilder.build();
     SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
-    return new ObfuscatedExtendedOpenTelemetrySdk(
-        configProvider, tracerProvider, meterProvider, loggerProvider, propagators);
+    closeableConsumer.accept(tracerProvider);
+    closeableConsumer.accept(meterProvider);
+    closeableConsumer.accept(loggerProvider);
+    ObfuscatedExtendedOpenTelemetrySdk sdk =
+        new ObfuscatedExtendedOpenTelemetrySdk(
+            configProvider, tracerProvider, meterProvider, loggerProvider, propagators);
+    closeableConsumer.accept(sdk);
+    return sdk;
   }
 
   /**
