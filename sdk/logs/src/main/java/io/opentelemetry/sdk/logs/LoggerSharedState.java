@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  */
 final class LoggerSharedState {
   private final Object lock = new Object();
-  private final Supplier<Resource> resourceSupplier;
+  private final Resource resource;
   private final Supplier<LogLimits> logLimitsSupplier;
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
@@ -26,12 +26,12 @@ final class LoggerSharedState {
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
-      Supplier<Resource> resourceSupplier,
+      Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
       Clock clock,
       ExceptionAttributeResolver exceptionAttributeResolver) {
-    this.resourceSupplier = resourceSupplier;
+    this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
@@ -39,7 +39,7 @@ final class LoggerSharedState {
   }
 
   Resource getResource() {
-    return resourceSupplier.get();
+    return resource;
   }
 
   LogLimits getLogLimits() {

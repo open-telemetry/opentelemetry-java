@@ -6,14 +6,14 @@
 package io.opentelemetry.sdk.extension.incubator;
 
 import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
-import io.opentelemetry.api.incubator.entities.EntityProvider;
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.io.Closeable;
 
-/** A new interface for creating OpenTelemetrySdk that supports {@link EntityProvider}. */
+/** A new interface for creating OpenTelemetrySdk that supports getting {@link ConfigProvider}. */
 public interface ExtendedOpenTelemetrySdk extends ExtendedOpenTelemetry, Closeable {
   /**
    * Shutdown the SDK. Calls {@link SdkTracerProvider#shutdown()}, {@link

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 /** Builder of {@link SdkTracerProvider}. */
 public final class SdkTracerProviderBuilder {
@@ -33,7 +32,6 @@ public final class SdkTracerProviderBuilder {
   private Clock clock = Clock.getDefault();
   private IdGenerator idsGenerator = IdGenerator.random();
   private Resource resource = Resource.getDefault();
-  @Nullable private Supplier<Resource> resourceSupplier = null;
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
@@ -94,23 +92,6 @@ public final class SdkTracerProviderBuilder {
   public SdkTracerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = this.resource.merge(resource);
-    return this;
-  }
-
-  /**
-   * Registers a supplier of {@link Resource}.
-   *
-   * <p>This will override any {@link #addResource(Resource)} or {@link #setResource(Resource)}
-   * calls with the current supplier.
-   *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkTracerProviderUtil#setResourceSupplier(SdkTracerProviderBuilder, Supplier)}.
-   *
-   * @param supplier The supplier of {@link Resource}.
-   * @since 1.X.0
-   */
-  SdkTracerProviderBuilder setResourceSupplier(Supplier<Resource> supplier) {
-    this.resourceSupplier = supplier;
     return this;
   }
 
@@ -257,14 +238,10 @@ public final class SdkTracerProviderBuilder {
    * @return The instance.
    */
   public SdkTracerProvider build() {
-    Supplier<Resource> resolvedSupplier = () -> resource;
-    if (resourceSupplier != null) {
-      resolvedSupplier = resourceSupplier;
-    }
     return new SdkTracerProvider(
         clock,
         idsGenerator,
-        resolvedSupplier,
+        resource,
         spanLimitsSupplier,
         sampler,
         spanProcessors,
