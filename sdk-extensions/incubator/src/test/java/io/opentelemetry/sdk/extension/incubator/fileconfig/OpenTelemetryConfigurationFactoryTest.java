@@ -22,7 +22,6 @@ import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
@@ -115,22 +114,26 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
-    OpenTelemetrySdk expectedSdk = OpenTelemetrySdk.builder().build();
+    OpenTelemetryConfigurationModel model =
+        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.1");
+    ExtendedOpenTelemetrySdk expectedSdk =
+        ExtendedOpenTelemetrySdk.builder()
+            .setConfigProvider(SdkConfigProvider.create(model))
+            .build();
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance()
-            .create(new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.1"), context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
-    assertThat(sdk.toString()).isEqualTo(expectedSdk.toString());
+    assertThat(sdk).hasToString(expectedSdk.toString());
   }
 
   @Test
   void create_Disabled() {
     List<Closeable> closeables = new ArrayList<>();
-    OpenTelemetrySdk expectedSdk = OpenTelemetrySdk.builder().build();
+    ExtendedOpenTelemetrySdk expectedSdk = ExtendedOpenTelemetrySdk.builder().build();
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
