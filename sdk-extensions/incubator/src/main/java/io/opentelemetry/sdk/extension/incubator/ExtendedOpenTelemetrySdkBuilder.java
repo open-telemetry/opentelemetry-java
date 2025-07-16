@@ -10,6 +10,7 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -19,6 +20,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.io.Closeable;
 import java.util.Objects;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 /** A new interface for creating OpenTelemetrySdk that supports {@link ConfigProvider}. */
 public final class ExtendedOpenTelemetrySdkBuilder {
@@ -26,7 +28,7 @@ public final class ExtendedOpenTelemetrySdkBuilder {
   private final SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
   private final SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
   private ContextPropagators propagators = ContextPropagators.noop();
-  private ConfigProvider configProvider = ConfigProvider.noop();
+  @Nullable private SdkConfigProvider configProvider;
   private Consumer<Closeable> closeableConsumer =
       closeable -> {
         // Default no-op closeable consumer
@@ -39,7 +41,7 @@ public final class ExtendedOpenTelemetrySdkBuilder {
   }
 
   /** Sets the {@link ConfigProvider} to use. */
-  public ExtendedOpenTelemetrySdkBuilder setConfigProvider(ConfigProvider configProvider) {
+  public ExtendedOpenTelemetrySdkBuilder setConfigProvider(SdkConfigProvider configProvider) {
     this.configProvider = Objects.requireNonNull(configProvider, "configProvider must not be null");
     return this;
   }
