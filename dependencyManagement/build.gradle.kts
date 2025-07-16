@@ -19,24 +19,24 @@ val DEPENDENCY_BOMS = listOf(
   "com.squareup.okhttp3:okhttp-bom:5.1.0",
   "com.squareup.okio:okio-bom:3.15.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.73.0",
-  "io.netty:netty-bom:4.2.2.Final",
+  "io.netty:netty-bom:4.2.3.Final",
   "io.zipkin.brave:brave-bom:6.3.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.1",
   "org.assertj:assertj-bom:3.27.3",
   "org.testcontainers:testcontainers-bom:1.21.3",
-  "org.snakeyaml:snakeyaml-engine:2.9"
+  "org.snakeyaml:snakeyaml-engine:2.10"
 )
 
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.38.0"
+val errorProneVersion = "2.40.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
-val prometheusServerVersion = "1.3.8"
+val prometheusServerVersion = "1.3.10"
 val armeriaVersion = "1.32.5"
-val junitVersion = "5.12.2"
+val junitVersion = "5.13.3"
 
 val DEPENDENCIES = listOf(
   "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
@@ -68,7 +68,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.59.0",
+  "com.google.api.grpc:proto-google-common-protos:2.59.1",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",

@@ -59,22 +59,6 @@ public final class AutoConfigureUtil {
     }
   }
 
-  /** Sets the {@link ComponentLoader} to be used in the auto-configuration process. */
-  public static AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(
-      AutoConfiguredOpenTelemetrySdkBuilder builder, ComponentLoader componentLoader) {
-    try {
-      Method method =
-          AutoConfiguredOpenTelemetrySdkBuilder.class.getDeclaredMethod(
-              "setComponentLoader", ComponentLoader.class);
-      method.setAccessible(true);
-      method.invoke(builder, componentLoader);
-      return builder;
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-      throw new IllegalStateException(
-          "Error calling setComponentLoader on AutoConfiguredOpenTelemetrySdkBuilder", e);
-    }
-  }
-
   /** Sets the {@link ConfigProperties} customizer to be used in the auto-configuration process. */
   public static AutoConfiguredOpenTelemetrySdkBuilder setConfigPropertiesCustomizer(
       AutoConfiguredOpenTelemetrySdkBuilder builder,

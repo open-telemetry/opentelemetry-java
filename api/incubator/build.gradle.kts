@@ -12,6 +12,9 @@ otelJava.moduleName.set("io.opentelemetry.api.incubator")
 dependencies {
   api(project(":api:all"))
 
+  // Supports optional InstrumentationConfigUtil#convertToModel
+  compileOnly("com.fasterxml.jackson.core:jackson-databind")
+
   annotationProcessor("com.google.auto.value:auto-value")
 
   // To use parsed config file as input for InstrumentationConfigUtilTest
@@ -23,4 +26,17 @@ dependencies {
   testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 
   testImplementation("com.google.guava:guava")
+}
+
+testing {
+  suites {
+    register<JvmTestSuite>("testConvertToModel") {
+      dependencies {
+        implementation("com.fasterxml.jackson.core:jackson-databind")
+        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":sdk-extensions:autoconfigure"))
+        implementation("com.google.guava:guava")
+      }
+    }
+  }
 }

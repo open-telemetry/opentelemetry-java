@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.FileInputStream;
@@ -52,9 +52,9 @@ final class IncubatingUtil {
       Class<?> sdkConfigProvider =
           Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider");
       Method createFileConfigProvider =
-          sdkConfigProvider.getMethod("create", openTelemetryConfiguration);
-      ConfigProvider configProvider = (ConfigProvider) createFileConfigProvider.invoke(null, model);
-
+          sdkConfigProvider.getMethod("create", openTelemetryConfiguration, ComponentLoader.class);
+      ConfigProvider configProvider =
+          (ConfigProvider) createFileConfigProvider.invoke(null, model, componentLoader);
       Resource configuredResource = createResourceFromModel(model, componentLoader);
 
       return AutoConfiguredOpenTelemetrySdk.create(sdk, configuredResource, null, configProvider);

@@ -11,8 +11,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
@@ -59,9 +59,10 @@ public final class DeclarativeConfiguration {
   private static final Pattern ENV_VARIABLE_REFERENCE =
       Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
-      SpiHelper.serviceComponentLoader(DeclarativeConfiguration.class.getClassLoader());
+      ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
 
-  private static final ObjectMapper MAPPER;
+  // Visible for testing
+  static final ObjectMapper MAPPER;
 
   static {
     MAPPER =
@@ -164,8 +165,7 @@ public final class DeclarativeConfiguration {
    * @param model the configuration model
    * @return a generic {@link DeclarativeConfigProperties} representation of the model
    */
-  public static DeclarativeConfigProperties toConfigProperties(
-      OpenTelemetryConfigurationModel model) {
+  public static DeclarativeConfigProperties toConfigProperties(Object model) {
     return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
   }
 
@@ -203,7 +203,9 @@ public final class DeclarativeConfiguration {
   public static Sampler createSampler(DeclarativeConfigProperties genericSamplerModel) {
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
         requireYamlDeclarativeConfigProperties(genericSamplerModel);
-    SamplerModel samplerModel = convertToModel(yamlDeclarativeConfigProperties, SamplerModel.class);
+    SamplerModel samplerModel =
+        MAPPER.convertValue(
+            DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
         SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
@@ -227,11 +229,6 @@ public final class DeclarativeConfiguration {
           "Only YamlDeclarativeConfigProperties can be converted to model");
     }
     return (YamlDeclarativeConfigProperties) declarativeConfigProperties;
-  }
-
-  static <T> T convertToModel(
-      YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties, Class<T> modelType) {
-    return MAPPER.convertValue(yamlDeclarativeConfigProperties.toMap(), modelType);
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {

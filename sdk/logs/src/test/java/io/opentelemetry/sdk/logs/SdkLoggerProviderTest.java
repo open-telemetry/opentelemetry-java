@@ -361,20 +361,22 @@ class SdkLoggerProviderTest {
   @Test
   void propagatesEnablementToLoggerDirectly() {
     SdkLogger logger = (SdkLogger) sdkLoggerProvider.get("test");
-    boolean isEnabled = logger.isEnabled();
+    boolean isEnabled = logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current());
 
     sdkLoggerProvider.setLoggerConfigurator(flipConfigurator(isEnabled));
 
-    assertThat(logger.isEnabled()).isEqualTo(!isEnabled);
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current()))
+        .isEqualTo(!isEnabled);
   }
 
   @Test
   void propagatesEnablementToLoggerByUtil() {
     SdkLogger logger = (SdkLogger) sdkLoggerProvider.get("test");
-    boolean isEnabled = logger.isEnabled();
+    boolean isEnabled = logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current());
 
     SdkLoggerProviderUtil.setLoggerConfigurator(sdkLoggerProvider, flipConfigurator(isEnabled));
 
-    assertThat(logger.isEnabled()).isEqualTo(!isEnabled);
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current()))
+        .isEqualTo(!isEnabled);
   }
 }

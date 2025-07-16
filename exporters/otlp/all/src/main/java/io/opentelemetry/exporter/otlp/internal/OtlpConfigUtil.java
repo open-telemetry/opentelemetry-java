@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -53,6 +54,7 @@ public final class OtlpConfigUtil {
   public static void configureOtlpExporterBuilder(
       String dataType,
       ConfigProperties config,
+      Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
       Consumer<String> setCompression,
@@ -61,6 +63,8 @@ public final class OtlpConfigUtil {
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
       Consumer<MemoryMode> setMemoryMode) {
+    setComponentLoader.accept(config.getComponentLoader());
+
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =

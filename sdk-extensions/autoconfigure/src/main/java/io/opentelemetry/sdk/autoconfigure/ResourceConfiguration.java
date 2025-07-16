@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -59,7 +60,10 @@ public final class ResourceConfiguration {
    * @return the resource.
    */
   public static Resource createEnvironmentResource() {
-    return createEnvironmentResource(DefaultConfigProperties.create(Collections.emptyMap()));
+    return createEnvironmentResource(
+        DefaultConfigProperties.create(
+            Collections.emptyMap(),
+            ComponentLoader.forClassLoader(ResourceConfiguration.class.getClassLoader())));
   }
 
   /**

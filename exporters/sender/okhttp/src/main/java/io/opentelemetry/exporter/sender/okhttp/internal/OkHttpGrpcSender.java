@@ -75,6 +75,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   @Nullable private final Compressor compressor;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
+  @SuppressWarnings("TooManyParameters")
   public OkHttpGrpcSender(
       String endpoint,
       @Nullable Compressor compressor,

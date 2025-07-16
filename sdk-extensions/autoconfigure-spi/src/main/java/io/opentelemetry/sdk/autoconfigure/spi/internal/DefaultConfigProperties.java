@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;
@@ -38,6 +39,7 @@ import javax.annotation.Nullable;
 public final class DefaultConfigProperties implements ConfigProperties {
 
   private final Map<String, String> config;
+  private final ComponentLoader componentLoader;
 
   /**
    * Creates a {@link DefaultConfigProperties} by merging system properties, environment variables,
@@ -46,9 +48,10 @@ public final class DefaultConfigProperties implements ConfigProperties {
    * <p>Environment variables take priority over {@code defaultProperties}. System properties take
    * priority over environment variables.
    */
-  public static DefaultConfigProperties create(Map<String, String> defaultProperties) {
+  public static DefaultConfigProperties create(
+      Map<String, String> defaultProperties, ComponentLoader componentLoader) {
     return new DefaultConfigProperties(
-        ConfigUtil.safeSystemProperties(), System.getenv(), defaultProperties);
+        ConfigUtil.safeSystemProperties(), System.getenv(), defaultProperties, componentLoader);
   }
 
   /**
@@ -56,13 +59,18 @@ public final class DefaultConfigProperties implements ConfigProperties {
    * properties and environment variables.
    */
   public static DefaultConfigProperties createFromMap(Map<String, String> properties) {
-    return new DefaultConfigProperties(properties, Collections.emptyMap(), Collections.emptyMap());
+    return new DefaultConfigProperties(
+        properties,
+        Collections.emptyMap(),
+        Collections.emptyMap(),
+        ComponentLoader.forClassLoader(DefaultConfigProperties.class.getClassLoader()));
   }
 
   private DefaultConfigProperties(
       Map<?, ?> systemProperties,
       Map<String, String> environmentVariables,
-      Map<String, String> defaultProperties) {
+      Map<String, String> defaultProperties,
+      ComponentLoader componentLoader) {
     Map<String, String> config = new HashMap<>();
     defaultProperties.forEach(
         (name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
@@ -73,6 +81,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
             config.put(ConfigUtil.normalizePropertyKey(key.toString()), value.toString()));
 
     this.config = config;
+    this.componentLoader = componentLoader;
   }
 
   private DefaultConfigProperties(
@@ -82,6 +91,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
     overrides.forEach((name, value) -> config.put(ConfigUtil.normalizePropertyKey(name), value));
 
     this.config = config;
+    this.componentLoader = previousProperties.componentLoader;
   }
 
   @Override
@@ -231,6 +241,11 @@ public final class DefaultConfigProperties implements ConfigProperties {
         .collect(
             Collectors.toMap(
                 Map.Entry::getKey, Map.Entry::getValue, (first, next) -> next, LinkedHashMap::new));
+  }
+
+  @Override
+  public ComponentLoader getComponentLoader() {
+    return componentLoader;
   }
 
   /**
