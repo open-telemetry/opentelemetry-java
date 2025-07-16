@@ -6,8 +6,6 @@
 package io.opentelemetry.sdk.extension.incubator;
 
 import io.opentelemetry.api.incubator.config.ConfigProvider;
-import io.opentelemetry.api.incubator.entities.EntityBuilder;
-import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterBuilder;
@@ -17,7 +15,6 @@ import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.extension.incubator.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -29,24 +26,24 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link ExtendedOpenTelemetrySdk}. */
-final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySdk {
+final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTelemetrySdk {
 
   private static final Logger LOGGER =
-      Logger.getLogger(ObfuscatedExtendedOpenTelemerySdk.class.getName());
+      Logger.getLogger(ObfuscatedExtendedOpenTelemetrySdk.class.getName());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   private final ObfuscatedTracerProvider tracerProvider;
   private final ObfuscatedMeterProvider meterProvider;
   private final ObfuscatedLoggerProvider loggerProvider;
-  private final ObfuscatedEntityProvider configProvider;
+  private final ConfigProvider configProvider;
   private final ContextPropagators propagators;
 
-  ObfuscatedExtendedOpenTelemerySdk(
+  ObfuscatedExtendedOpenTelemetrySdk(
       ConfigProvider configProvider,
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
       ContextPropagators propagators) {
-    this.configProvider = new ObfuscatedEntityProvider(configProvider);
+    this.configProvider = configProvider;
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
     this.loggerProvider = new ObfuscatedLoggerProvider(loggerProvider);
@@ -99,8 +96,8 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
   @Override
   public String toString() {
     return "ExtendedOpenTelemetrySdk{"
-        + "entityProvider="
-        + configProvider.unobfuscate()
+        + "configProvider="
+        + configProvider
         + ", tracerProvider="
         + tracerProvider.unobfuscate()
         + ", meterProvider="
@@ -200,38 +197,6 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
 
     public SdkLoggerProvider unobfuscate() {
       return delegate;
-    }
-  }
-
-  /**
-   * This class allows the SDK to unobfuscate an obfuscated static global provider.
-   *
-   * <p>Static global providers are obfuscated when they are returned from the API to prevent users
-   * from casting them to their SDK specific implementation. For example, we do not want users to
-   * use patterns like {@code (SdkResourceProvider) openTelemetry.getResourceProvider()}.
-   */
-  @ThreadSafe
-  // Visible for testing
-  static class ObfuscatedEntityProvider implements EntityProvider {
-
-    private final SdkEntityProvider delegate;
-
-    ObfuscatedEntityProvider(SdkEntityProvider delegate) {
-      this.delegate = delegate;
-    }
-
-    public SdkEntityProvider unobfuscate() {
-      return delegate;
-    }
-
-    @Override
-    public boolean removeEntity(String entityType) {
-      return delegate.removeEntity(entityType);
-    }
-
-    @Override
-    public EntityBuilder attachOrUpdateEntity(String entityType) {
-      return delegate.attachOrUpdateEntity(entityType);
     }
   }
 }
