@@ -33,7 +33,7 @@ final class OpenTelemetryConfigurationFactory
   @Override
   public ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
-    ExtendedOpenTelemetrySdkBuilder builder = ExtendedOpenTelemetrySdk.builder();
+    ExtendedOpenTelemetrySdkBuilder builder = new ExtendedOpenTelemetrySdkBuilder();
     String fileFormat = model.getFileFormat();
     if (fileFormat == null || !SUPPORTED_FILE_FORMATS.matcher(fileFormat).matches()) {
       throw new DeclarativeConfigException(

@@ -24,6 +24,7 @@ import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
@@ -117,7 +118,7 @@ class OpenTelemetryConfigurationFactoryTest {
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.1");
     ExtendedOpenTelemetrySdk expectedSdk =
-        ExtendedOpenTelemetrySdk.builder()
+        new ExtendedOpenTelemetrySdkBuilder()
             .setConfigProvider(SdkConfigProvider.create(model))
             .build();
     cleanup.addCloseable(expectedSdk);
@@ -133,7 +134,7 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Disabled() {
     List<Closeable> closeables = new ArrayList<>();
-    ExtendedOpenTelemetrySdk expectedSdk = ExtendedOpenTelemetrySdk.builder().build();
+    ExtendedOpenTelemetrySdk expectedSdk = new ExtendedOpenTelemetrySdkBuilder().build();
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
@@ -252,7 +253,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .withAttributeKeys(null)))));
 
     ExtendedOpenTelemetrySdk expectedSdk =
-        ExtendedOpenTelemetrySdk.builder()
+        new ExtendedOpenTelemetrySdkBuilder()
             .setConfigProvider(SdkConfigProvider.create(model))
             .setPropagators(
                 ContextPropagators.create(

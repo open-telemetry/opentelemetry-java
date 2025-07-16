@@ -28,7 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
+public class OpenTelemetrySdk implements OpenTelemetry, Closeable {
 
   private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySdk.class.getName());
 
@@ -38,7 +38,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
   private final ObfuscatedLoggerProvider loggerProvider;
   private final ContextPropagators propagators;
 
-  OpenTelemetrySdk(
+  protected OpenTelemetrySdk(
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
