@@ -25,7 +25,7 @@ class LoggerSharedStateTest {
     when(logRecordProcessor.shutdown()).thenReturn(code);
     LoggerSharedState state =
         new LoggerSharedState(
-            () -> Resource.empty(),
+            Resource.empty(),
             LogLimits::getDefault,
             logRecordProcessor,
             Clock.getDefault(),

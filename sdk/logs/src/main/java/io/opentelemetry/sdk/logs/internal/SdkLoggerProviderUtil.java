@@ -10,11 +10,9 @@ import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.resources.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * A collection of methods that allow use of experimental features prior to availability in public
@@ -91,25 +89,5 @@ public final class SdkLoggerProviderUtil {
       throw new IllegalStateException(
           "Error calling setExceptionAttributeResolver on SdkLoggerProviderBuilder", e);
     }
-  }
-
-  /**
-   * Reflectively assign the {@link Supplier} of {@link Resource} to the {@link
-   * SdkLoggerProviderBuilder}.
-   *
-   * @param sdkLoggerProvider the builder
-   */
-  public static SdkLoggerProviderBuilder setResourceSupplier(
-      SdkLoggerProviderBuilder sdkLoggerProvider, Supplier<Resource> resourceSupplier) {
-    try {
-      Method method =
-          SdkLoggerProviderBuilder.class.getDeclaredMethod("setResourceSupplier", Supplier.class);
-      method.setAccessible(true);
-      method.invoke(sdkLoggerProvider, resourceSupplier);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling setLoggerConfigurator on SdkLoggerProvider", e);
-    }
-    return sdkLoggerProvider;
   }
 }

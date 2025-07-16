@@ -10,7 +10,6 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.resource.v1.internal.Resource;
-import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -38,10 +37,7 @@ public final class ResourceMarshaler extends MarshalerWithSize {
 
       RealResourceMarshaler realMarshaler =
           new RealResourceMarshaler(
-              KeyValueMarshaler.createForAttributes(resource.getAttributes()),
-              EntityUtil.getEntities(resource).stream()
-                  .map(EntityRefMarshaler::createForEntity)
-                  .toArray(MarshalerWithSize[]::new));
+              KeyValueMarshaler.createForAttributes(resource.getAttributes()));
 
       ByteArrayOutputStream binaryBos =
           new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());
@@ -74,26 +70,19 @@ public final class ResourceMarshaler extends MarshalerWithSize {
 
   private static final class RealResourceMarshaler extends MarshalerWithSize {
     private final KeyValueMarshaler[] attributes;
-    private final MarshalerWithSize[] entityRefs;
 
-    private RealResourceMarshaler(KeyValueMarshaler[] attributes, MarshalerWithSize[] entityRefs) {
-      super(calculateSize(attributes, entityRefs));
+    private RealResourceMarshaler(KeyValueMarshaler[] attributes) {
+      super(calculateSize(attributes));
       this.attributes = attributes;
-      this.entityRefs = entityRefs;
     }
 
     @Override
     protected void writeTo(Serializer output) throws IOException {
       output.serializeRepeatedMessage(Resource.ATTRIBUTES, attributes);
-      output.serializeRepeatedMessage(Resource.ENTITY_REFS, entityRefs);
     }
 
-    private static int calculateSize(
-        KeyValueMarshaler[] attributeMarshalers, MarshalerWithSize[] entityRefs) {
-      int size = 0;
-      size += MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
-      size += size += MarshalerUtil.sizeRepeatedMessage(Resource.ENTITY_REFS, entityRefs);
-      return size;
+    private static int calculateSize(KeyValueMarshaler[] attributeMarshalers) {
+      return MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
     }
   }
 }

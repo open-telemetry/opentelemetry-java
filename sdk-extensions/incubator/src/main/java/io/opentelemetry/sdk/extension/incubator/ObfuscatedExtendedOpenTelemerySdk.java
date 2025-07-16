@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator;
 
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.entities.EntityBuilder;
 import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.api.logs.LoggerBuilder;
@@ -36,16 +37,16 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
   private final ObfuscatedTracerProvider tracerProvider;
   private final ObfuscatedMeterProvider meterProvider;
   private final ObfuscatedLoggerProvider loggerProvider;
-  private final ObfuscatedEntityProvider entityProvider;
+  private final ObfuscatedEntityProvider configProvider;
   private final ContextPropagators propagators;
 
   ObfuscatedExtendedOpenTelemerySdk(
-      SdkEntityProvider entityProvider,
+      ConfigProvider configProvider,
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
       ContextPropagators propagators) {
-    this.entityProvider = new ObfuscatedEntityProvider(entityProvider);
+    this.configProvider = new ObfuscatedEntityProvider(configProvider);
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
     this.loggerProvider = new ObfuscatedLoggerProvider(loggerProvider);
@@ -71,6 +72,11 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
   }
 
   @Override
+  public ConfigProvider getConfigProvider() {
+    return configProvider;
+  }
+
+  @Override
   public TracerProvider getTracerProvider() {
     return tracerProvider;
   }
@@ -86,11 +92,6 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
   }
 
   @Override
-  public EntityProvider getEntityProvider() {
-    return entityProvider;
-  }
-
-  @Override
   public ContextPropagators getPropagators() {
     return propagators;
   }
@@ -99,7 +100,7 @@ final class ObfuscatedExtendedOpenTelemerySdk implements ExtendedOpenTelemetrySd
   public String toString() {
     return "ExtendedOpenTelemetrySdk{"
         + "entityProvider="
-        + entityProvider.unobfuscate()
+        + configProvider.unobfuscate()
         + ", tracerProvider="
         + tracerProvider.unobfuscate()
         + ", meterProvider="

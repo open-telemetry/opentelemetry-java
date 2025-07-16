@@ -6,12 +6,12 @@
 package io.opentelemetry.api.incubator;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.incubator.entities.EntityProvider;
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 
-/** Extension to {@link OpenTelemetry} that adds {@link EntityProvider}. */
+/** Extension to {@link OpenTelemetry} that supports getting {@link ConfigProvider}. */
 public interface ExtendedOpenTelemetry extends OpenTelemetry {
-  /** Returns the {@link EntityProvider} for this {@link OpenTelemetry}. */
-  default EntityProvider getEntityProvider() {
-    return EntityProvider.noop();
+  /** Returns the {@link ConfigProvider} for this {@link OpenTelemetry}. */
+  default ConfigProvider getConfigProvider() {
+    return ConfigProvider.noop();
   }
 }

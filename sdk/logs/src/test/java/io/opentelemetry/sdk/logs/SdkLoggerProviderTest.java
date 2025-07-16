@@ -343,15 +343,15 @@ class SdkLoggerProviderTest {
   @Test
   void toString_Valid() {
     when(logRecordProcessor.toString()).thenReturn("MockLogRecordProcessor");
-    // Check that components of Logger are to-stringed.
     assertThat(sdkLoggerProvider.toString())
-        .matches("SdkLoggerProvider\\{.*}")
-        .matches(".*clock=SystemClock\\{}.*")
-        .matches(".*resource=Resource\\{.*}.*")
-        .matches(
-            ".*logLimits=LogLimits\\{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647},.*")
-        .matches(".*logRecordProcessor=MockLogRecordProcessor, .*")
-        .matches(".*loggerConfigurator=ScopeConfiguratorImpl\\{conditions=\\[]}.*");
+        .isEqualTo(
+            "SdkLoggerProvider{"
+                + "clock=SystemClock{}, "
+                + "resource=Resource{schemaUrl=null, attributes={key=\"value\"}}, "
+                + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
+                + "logRecordProcessor=MockLogRecordProcessor, "
+                + "loggerConfigurator=ScopeConfiguratorImpl{conditions=[]}"
+                + "}");
   }
 
   private static ScopeConfigurator<LoggerConfig> flipConfigurator(boolean enabled) {
