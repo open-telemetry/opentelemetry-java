@@ -8,7 +8,10 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -58,36 +61,37 @@ final class OpenTelemetryConfigurationFactory
       resource = Resource.getDefault();
     }
 
-    if (model.getLoggerProvider() != null) {
+    LoggerProviderModel loggerProvider = model.getLoggerProvider();
+    if (loggerProvider != null) {
       builder.withLoggerProvider(
           sdkLoggerProviderBuilder ->
               LoggerProviderFactory.getInstance()
                   .configure(
                       sdkLoggerProviderBuilder.setResource(resource),
                       LoggerProviderAndAttributeLimits.create(
-                          model.getAttributeLimits(), model.getLoggerProvider()),
+                          model.getAttributeLimits(), loggerProvider),
                       context));
     }
 
-    if (model.getTracerProvider() != null) {
+    TracerProviderModel tracerProvider = model.getTracerProvider();
+    if (tracerProvider != null) {
       builder.withTracerProvider(
           sdkTracerProviderBuilder ->
               TracerProviderFactory.getInstance()
                   .configure(
                       sdkTracerProviderBuilder.setResource(resource),
                       TracerProviderAndAttributeLimits.create(
-                          model.getAttributeLimits(), model.getTracerProvider()),
+                          model.getAttributeLimits(), tracerProvider),
                       context));
     }
 
-    if (model.getMeterProvider() != null) {
+    MeterProviderModel meterProvider = model.getMeterProvider();
+    if (meterProvider != null) {
       builder.withMeterProvider(
           sdkMeterProviderBuilder ->
               MeterProviderFactory.getInstance()
                   .configure(
-                      sdkMeterProviderBuilder.setResource(resource),
-                      model.getMeterProvider(),
-                      context));
+                      sdkMeterProviderBuilder.setResource(resource), meterProvider, context));
     }
 
     return builder.build();

@@ -50,4 +50,9 @@ public final class SdkConfigProvider implements ConfigProvider {
   public DeclarativeConfigProperties getInstrumentationConfig() {
     return instrumentationConfig;
   }
+
+  @Override
+  public String toString() {
+    return "SdkConfigProvider{" + "instrumentationConfig=" + instrumentationConfig + '}';
+  }
 }
