@@ -122,6 +122,8 @@ public final class GlobalOpenTelemetry {
    *
    * <p>This method calls the given {@code supplier} and calls {@link #set(OpenTelemetry)}, all
    * while holding the {@link GlobalOpenTelemetry} mutex.
+   *
+   * @since 1.52.0
    */
   public static void set(Supplier<OpenTelemetry> supplier) {
     synchronized (mutex) {

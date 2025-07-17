@@ -38,7 +38,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
-import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
@@ -948,7 +947,7 @@ class SdkSpanTest {
             parentSpanId,
             null,
             null,
-            DefaultExceptionAttributeResolver.getInstance());
+            ExceptionAttributeResolver.getDefault());
     try {
       Span span1 = createTestSpan(SpanKind.INTERNAL);
       Span span2 = createTestSpan(SpanKind.INTERNAL);
@@ -1038,7 +1037,7 @@ class SdkSpanTest {
             Context.root(),
             SpanLimits.getDefault(),
             spanProcessor,
-            DefaultExceptionAttributeResolver.getInstance(),
+            ExceptionAttributeResolver.getDefault(),
             testClock,
             resource,
             null,
@@ -1384,7 +1383,7 @@ class SdkSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
-            DefaultExceptionAttributeResolver.getInstance(),
+            ExceptionAttributeResolver.getDefault(),
             testClock,
             resource,
             AttributesMap.create(
@@ -1468,7 +1467,7 @@ class SdkSpanTest {
         null,
         attributesMap,
         Collections.singletonList(link),
-        DefaultExceptionAttributeResolver.getInstance());
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestRootSpan() {
@@ -1478,7 +1477,7 @@ class SdkSpanTest {
         SpanId.getInvalid(),
         null,
         Collections.singletonList(link),
-        DefaultExceptionAttributeResolver.getInstance());
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(SpanKind kind) {
@@ -1488,7 +1487,7 @@ class SdkSpanTest {
         parentSpanId,
         null,
         Collections.singletonList(link),
-        DefaultExceptionAttributeResolver.getInstance());
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(SpanLimits config) {
@@ -1498,7 +1497,7 @@ class SdkSpanTest {
         parentSpanId,
         null,
         Collections.singletonList(link),
-        DefaultExceptionAttributeResolver.getInstance());
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(
@@ -1613,7 +1612,7 @@ class SdkSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
-            DefaultExceptionAttributeResolver.getInstance(),
+            ExceptionAttributeResolver.getDefault(),
             clock,
             resource,
             attributesWithCapacity,

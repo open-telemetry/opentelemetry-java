@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.http;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -78,8 +79,9 @@ class HttpExporterBuilderTest {
   @Test
   void compressionString_usesServiceClassLoader() {
     // Create a class loader that cannot load CompressorProvider services
-    ClassLoader emptyClassLoader = new URLClassLoader(new URL[0], null);
-    builder.setServiceClassLoader(emptyClassLoader);
+    ComponentLoader emptyComponentLoader =
+        ComponentLoader.forClassLoader(new URLClassLoader(new URL[0], null));
+    builder.setComponentLoader(emptyComponentLoader);
 
     // This should still work because gzip compressor is hardcoded
     builder.setCompression("gzip");

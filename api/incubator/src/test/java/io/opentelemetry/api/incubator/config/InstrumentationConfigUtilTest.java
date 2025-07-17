@@ -150,7 +150,8 @@ class InstrumentationConfigUtilTest {
         .isInstanceOfSatisfying(
             YamlDeclarativeConfigProperties.class,
             exampleConfig ->
-                assertThat(exampleConfig.toMap()).isEqualTo(ImmutableMap.of("property", "value")));
+                assertThat(DeclarativeConfigProperties.toMap(exampleConfig))
+                    .isEqualTo(ImmutableMap.of("property", "value")));
     assertThat(
             InstrumentationConfigUtil.javaInstrumentationConfig(kitchenSinkConfigProvider, "foo"))
         .isNull();

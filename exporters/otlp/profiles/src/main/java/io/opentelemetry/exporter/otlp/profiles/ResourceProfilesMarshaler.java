@@ -35,13 +35,13 @@ final class ResourceProfilesMarshaler extends MarshalerWithSize {
     int posResource = 0;
     for (Map.Entry<Resource, Map<InstrumentationScopeInfo, List<ProfileMarshaler>>> entry :
         resourceAndScopeMap.entrySet()) {
-      InstrumentationScopeProfilesMarshaler[] instrumentationLibrarySpansMarshalers =
+      InstrumentationScopeProfilesMarshaler[] instrumentationScopeProfilesMarshalers =
           new InstrumentationScopeProfilesMarshaler[entry.getValue().size()];
       int posInstrumentation = 0;
 
       for (Map.Entry<InstrumentationScopeInfo, List<ProfileMarshaler>> entryIs :
           entry.getValue().entrySet()) {
-        instrumentationLibrarySpansMarshalers[posInstrumentation++] =
+        instrumentationScopeProfilesMarshalers[posInstrumentation++] =
             new InstrumentationScopeProfilesMarshaler(
                 InstrumentationScopeMarshaler.create(entryIs.getKey()),
                 MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
@@ -52,7 +52,7 @@ final class ResourceProfilesMarshaler extends MarshalerWithSize {
           new ResourceProfilesMarshaler(
               ResourceMarshaler.create(entry.getKey()),
               MarshalerUtil.toBytes(entry.getKey().getSchemaUrl()),
-              instrumentationLibrarySpansMarshalers);
+              instrumentationScopeProfilesMarshalers);
     }
 
     return resourceProfilesMarshalers;

@@ -38,6 +38,7 @@ public class OtlpHttpSpanExporterComponentProvider implements ComponentProvider<
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_TRACES,
         config,
+        builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
         builder::setCompression,

@@ -8,9 +8,9 @@ package io.opentelemetry.exporter.internal.compression;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.common.ComponentLoader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -25,7 +25,8 @@ import javax.annotation.Nullable;
 public final class CompressorUtil {
 
   private static final Map<String, Compressor> compressorRegistry =
-      buildCompressorRegistry(CompressorUtil.class.getClassLoader());
+      buildCompressorRegistry(
+          ComponentLoader.forClassLoader(CompressorUtil.class.getClassLoader()));
 
   private CompressorUtil() {}
 
@@ -44,16 +45,16 @@ public final class CompressorUtil {
    * Validate that the {@code compressionMethod} is "none" or matches a registered compressor.
    *
    * @param compressionMethod the compression method to validate and resolve
-   * @param classLoader the class loader to use for loading SPI implementations, or null to use the
-   *     default
+   * @param componentLoader the component loader to use for loading SPI implementations, or null to
+   *     use the default
    * @return {@code null} if {@code compressionMethod} is "none" or the registered compressor
    * @throws IllegalArgumentException if no match is found
    */
   @Nullable
   public static Compressor validateAndResolveCompressor(
-      String compressionMethod, @Nullable ClassLoader classLoader) {
+      String compressionMethod, @Nullable ComponentLoader componentLoader) {
     Map<String, Compressor> registry =
-        classLoader == null ? compressorRegistry : buildCompressorRegistry(classLoader);
+        componentLoader == null ? compressorRegistry : buildCompressorRegistry(componentLoader);
 
     Set<String> supportedEncodings = registry.keySet();
     Compressor compressor = registry.get(compressionMethod);
@@ -64,9 +65,9 @@ public final class CompressorUtil {
     return compressor;
   }
 
-  private static Map<String, Compressor> buildCompressorRegistry(ClassLoader classLoader) {
+  private static Map<String, Compressor> buildCompressorRegistry(ComponentLoader componentLoader) {
     Map<String, Compressor> compressors = new HashMap<>();
-    for (CompressorProvider spi : ServiceLoader.load(CompressorProvider.class, classLoader)) {
+    for (CompressorProvider spi : componentLoader.load(CompressorProvider.class)) {
       Compressor compressor = spi.getInstance();
       compressors.put(compressor.getEncoding(), compressor);
     }
