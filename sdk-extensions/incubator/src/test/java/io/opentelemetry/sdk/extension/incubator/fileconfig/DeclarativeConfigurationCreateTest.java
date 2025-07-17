@@ -183,7 +183,8 @@ class DeclarativeConfigurationCreateTest {
     ResourceModel resourceModel = new ResourceModel();
     resourceModel.withAttributesList("service.name=TestService");
     ComponentLoader componentLoader =
-        SpiHelper.serviceComponentLoader(DeclarativeConfigurationCreateTest.class.getClassLoader());
+        SpiHelper.create(DeclarativeConfigurationCreateTest.class.getClassLoader())
+            .getComponentLoader();
 
     Resource resource = DeclarativeConfiguration.createResource(resourceModel, componentLoader);
 
@@ -195,7 +196,8 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void create_defaultResource() {
     ComponentLoader componentLoader =
-        SpiHelper.serviceComponentLoader(DeclarativeConfigurationCreateTest.class.getClassLoader());
+        SpiHelper.create(DeclarativeConfigurationCreateTest.class.getClassLoader())
+            .getComponentLoader();
 
     Resource resource = DeclarativeConfiguration.createResource(null, componentLoader);
 
