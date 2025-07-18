@@ -10,6 +10,7 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.WithShutdown;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -120,7 +121,7 @@ public final class ExtendedOpenTelemetrySdkBuilder {
 
     try {
       Method setExtendedOpenTelemetrySdk =
-          builder.getClass().getDeclaredMethod("setExtendedOpenTelemetrySdk", Object.class);
+          builder.getClass().getDeclaredMethod("setExtendedOpenTelemetrySdk", WithShutdown.class);
       setExtendedOpenTelemetrySdk.setAccessible(true);
       setExtendedOpenTelemetrySdk.invoke(builder, extendedOpenTelemetrySdk);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

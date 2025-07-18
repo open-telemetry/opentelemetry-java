@@ -24,7 +24,6 @@ import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
@@ -125,8 +124,7 @@ class OpenTelemetryConfigurationFactoryTest {
             .build();
     cleanup.addCloseable(expectedSdk);
 
-    ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+    OpenTelemetrySdk sdk = OpenTelemetryConfigurationFactory.getInstance().create(model, context);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -136,10 +134,10 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Disabled() {
     List<Closeable> closeables = new ArrayList<>();
-    ExtendedOpenTelemetrySdk expectedSdk = new ExtendedOpenTelemetrySdkBuilder().build();
+    OpenTelemetrySdk expectedSdk = OpenTelemetrySdk.builder().build();
     cleanup.addCloseable(expectedSdk);
 
-    ExtendedOpenTelemetrySdk sdk =
+    OpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
@@ -254,7 +252,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .withName("stream-name")
                                         .withAttributeKeys(null)))));
 
-    ExtendedOpenTelemetrySdk expectedSdk =
+    OpenTelemetrySdk expectedSdk =
         new ExtendedOpenTelemetrySdkBuilder()
             .setConfigProvider(SdkConfigProvider.create(model))
             .setPropagators(
@@ -312,8 +310,7 @@ class OpenTelemetryConfigurationFactoryTest {
             .build();
     cleanup.addCloseable(expectedSdk);
 
-    ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+    OpenTelemetrySdk sdk = OpenTelemetryConfigurationFactory.getInstance().create(model, context);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 

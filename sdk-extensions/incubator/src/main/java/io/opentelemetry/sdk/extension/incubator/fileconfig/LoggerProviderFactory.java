@@ -32,7 +32,8 @@ final class LoggerProviderFactory {
 
   public void configure(
       SdkLoggerProviderBuilder builder,
-      LoggerProviderAndAttributeLimits model, DeclarativeConfigContext context) {
+      LoggerProviderAndAttributeLimits model,
+      DeclarativeConfigContext context) {
 
     LoggerProviderModel loggerProviderModel = model.getLoggerProvider();
     if (loggerProviderModel == null) {
@@ -81,7 +82,6 @@ final class LoggerProviderFactory {
       }
       SdkLoggerProviderUtil.setLoggerConfigurator(builder, configuratorBuilder.build());
     }
-
   }
 
   private static class LoggerConfigFactory

@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -29,7 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
+public final class OpenTelemetrySdk implements OpenTelemetry, Closeable, WithShutdown {
 
   private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySdk.class.getName());
 
@@ -38,14 +37,14 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
   private final ObfuscatedMeterProvider meterProvider;
   private final ObfuscatedLoggerProvider loggerProvider;
   private final ContextPropagators propagators;
-  @Nullable private final Object extendedOpenTelemetrySdk;
+  @Nullable private final WithShutdown extendedOpenTelemetrySdk;
 
   OpenTelemetrySdk(
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
       ContextPropagators propagators,
-      @Nullable Object extendedOpenTelemetrySdk) {
+      @Nullable WithShutdown extendedOpenTelemetrySdk) {
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
     this.loggerProvider = new ObfuscatedLoggerProvider(loggerProvider);
@@ -100,13 +99,13 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
     return propagators;
   }
 
-  /**
-   * Shutdown the SDK. Calls {@link SdkTracerProvider#shutdown()}, {@link
-   * SdkMeterProvider#shutdown()}, and {@link SdkLoggerProvider#shutdown()}.
-   *
-   * @return a {@link CompletableResultCode} which completes when all providers are shutdown
-   */
+  @Override
   public CompletableResultCode shutdown() {
+    if (extendedOpenTelemetrySdk != null) {
+      // If an ExtendedOpenTelemetrySdk is present, we delegate the shutdown to it.
+      return extendedOpenTelemetrySdk.shutdown();
+    }
+
     if (!isShutdown.compareAndSet(false, true)) {
       LOGGER.info("Multiple shutdown calls");
       return CompletableResultCode.ofSuccess();
@@ -116,11 +115,6 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
     results.add(meterProvider.unobfuscate().shutdown());
     results.add(loggerProvider.unobfuscate().shutdown());
     return CompletableResultCode.ofAll(results);
-  }
-
-  @Override
-  public void close() {
-    shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Override

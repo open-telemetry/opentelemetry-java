@@ -21,7 +21,7 @@ public final class OpenTelemetrySdkBuilder {
   @Nullable private SdkTracerProvider tracerProvider;
   @Nullable private SdkMeterProvider meterProvider;
   @Nullable private SdkLoggerProvider loggerProvider;
-  @Nullable private Object extendedOpenTelemetrySdk;
+  @Nullable private WithShutdown extendedOpenTelemetrySdk;
 
   /**
    * Package protected to disallow direct initialization.
@@ -72,11 +72,11 @@ public final class OpenTelemetrySdkBuilder {
   }
 
   /**
-   * Sets the ExtendedOpenTelemetrySdk to use. This can be used to configure extended
-   * OpenTelemetry settings.
+   * Sets the ExtendedOpenTelemetrySdk to use. This can be used to configure extended OpenTelemetry
+   * settings.
    */
   OpenTelemetrySdkBuilder setExtendedOpenTelemetrySdk(
-      @Nullable Object extendedOpenTelemetrySdk) {
+      @Nullable WithShutdown extendedOpenTelemetrySdk) {
     this.extendedOpenTelemetrySdk = extendedOpenTelemetrySdk;
     return this;
   }
@@ -122,6 +122,7 @@ public final class OpenTelemetrySdkBuilder {
       loggerProvider = SdkLoggerProvider.builder().build();
     }
 
-    return new OpenTelemetrySdk(tracerProvider, meterProvider, loggerProvider, propagators, extendedOpenTelemetrySdk);
+    return new OpenTelemetrySdk(
+        tracerProvider, meterProvider, loggerProvider, propagators, extendedOpenTelemetrySdk);
   }
 }

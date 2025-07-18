@@ -43,6 +43,7 @@ class DeclarativeConfigContext {
   ComponentLoader getComponentLoader() {
     return spiHelper.getComponentLoader();
   }
+
   /**
    * Find a registered {@link ComponentProvider} with {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link

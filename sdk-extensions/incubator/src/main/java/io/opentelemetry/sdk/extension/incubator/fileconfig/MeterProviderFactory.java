@@ -91,7 +91,6 @@ final class MeterProviderFactory {
       }
       SdkMeterProviderUtil.setMeterConfigurator(builder, configuratorBuilder.build());
     }
-
   }
 
   private static class MeterConfigFactory
