@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -50,11 +51,13 @@ class LoggerProviderFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     cleanup.addCloseable(expectedProvider);
 
-    SdkLoggerProvider provider = LoggerProviderFactory.getInstance().create(model, context).build();
+    SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
+    LoggerProviderFactory.getInstance().configure(builder, model, context);
+    SdkLoggerProvider provider = builder.build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 
-    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
+    assertThat(provider).hasToString(expectedProvider.toString());
   }
 
   private static Stream<Arguments> createArguments() {

@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link ExtendedOpenTelemetrySdk}. */
-final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTelemetrySdk {
+public final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTelemetrySdk {
 
   private static final Logger LOGGER =
       Logger.getLogger(ObfuscatedExtendedOpenTelemetrySdk.class.getName());
@@ -37,7 +37,7 @@ final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTelemetryS
   private final ConfigProvider configProvider;
   private final ContextPropagators propagators;
 
-  ObfuscatedExtendedOpenTelemetrySdk(
+  public ObfuscatedExtendedOpenTelemetrySdk(
       ConfigProvider configProvider,
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,

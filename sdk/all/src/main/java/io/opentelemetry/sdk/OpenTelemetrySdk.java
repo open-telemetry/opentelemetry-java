@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
@@ -37,16 +38,19 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
   private final ObfuscatedMeterProvider meterProvider;
   private final ObfuscatedLoggerProvider loggerProvider;
   private final ContextPropagators propagators;
+  @Nullable private final Object extendedOpenTelemetrySdk;
 
   OpenTelemetrySdk(
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
-      ContextPropagators propagators) {
+      ContextPropagators propagators,
+      @Nullable Object extendedOpenTelemetrySdk) {
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
     this.loggerProvider = new ObfuscatedLoggerProvider(loggerProvider);
     this.propagators = propagators;
+    this.extendedOpenTelemetrySdk = extendedOpenTelemetrySdk;
   }
 
   /**
@@ -130,6 +134,8 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
         + loggerProvider.unobfuscate()
         + ", propagators="
         + propagators
+        + ", extendedOpenTelemetrySdk="
+        + extendedOpenTelemetrySdk
         + "}";
   }
 
