@@ -15,18 +15,19 @@ import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.WithShutdown;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link ExtendedOpenTelemetrySdk}. */
-public final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTelemetrySdk {
+public final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTelemetrySdk,
+    WithShutdown {
 
   private static final Logger LOGGER =
       Logger.getLogger(ObfuscatedExtendedOpenTelemetrySdk.class.getName());
@@ -50,6 +51,7 @@ public final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTel
     this.propagators = propagators;
   }
 
+  @Override
   public CompletableResultCode shutdown() {
     if (!isShutdown.compareAndSet(false, true)) {
       LOGGER.info("Multiple shutdown calls");
@@ -60,11 +62,6 @@ public final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTel
     results.add(meterProvider.unobfuscate().shutdown());
     results.add(loggerProvider.unobfuscate().shutdown());
     return CompletableResultCode.ofAll(results);
-  }
-
-  @Override
-  public void close() {
-    shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Override

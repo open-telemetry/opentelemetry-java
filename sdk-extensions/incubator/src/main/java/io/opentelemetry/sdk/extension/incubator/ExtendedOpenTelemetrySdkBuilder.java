@@ -10,9 +10,9 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.WithShutdown;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.internal.WithShutdown;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -107,7 +107,7 @@ public final class ExtendedOpenTelemetrySdkBuilder {
     closeableConsumer.accept(tracerProvider);
     closeableConsumer.accept(meterProvider);
     closeableConsumer.accept(loggerProvider);
-    ExtendedOpenTelemetrySdk extendedOpenTelemetrySdk =
+    ObfuscatedExtendedOpenTelemetrySdk extendedOpenTelemetrySdk =
         new ObfuscatedExtendedOpenTelemetrySdk(
             configProvider, tracerProvider, meterProvider, loggerProvider, propagators);
     closeableConsumer.accept(extendedOpenTelemetrySdk);
