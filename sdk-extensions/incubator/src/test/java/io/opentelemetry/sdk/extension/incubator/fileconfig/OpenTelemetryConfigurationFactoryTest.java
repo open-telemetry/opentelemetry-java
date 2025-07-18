@@ -90,8 +90,7 @@ class OpenTelemetryConfigurationFactoryTest {
       assertThatThrownBy(
               () -> OpenTelemetryConfigurationFactory.getInstance().create(model, context))
           .isInstanceOf(DeclarativeConfigException.class)
-          .hasMessageMatching(
-              "Unsupported file format '.+'\\. Supported formats include 0\\.4, 1\\.0\\*");
+          .hasMessage("Unsupported file format. Supported formats include 0.4, 1.0*");
     }
   }
 
