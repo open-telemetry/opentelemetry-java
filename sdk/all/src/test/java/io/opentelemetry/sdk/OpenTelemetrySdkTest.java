@@ -413,6 +413,7 @@ class OpenTelemetrySdkTest {
         .matches("OpenTelemetrySdk\\{tracerProvider=SdkTracerProvider\\{.*}.*}")
         .matches("OpenTelemetrySdk\\{.*, meterProvider=SdkMeterProvider\\{.*}.*}")
         .matches("OpenTelemetrySdk\\{.*, loggerProvider=SdkLoggerProvider\\{.*}.*}")
-        .matches("OpenTelemetrySdk\\{.*, propagators=DefaultContextPropagators\\{.*}}");
+        .matches(
+            "OpenTelemetrySdk\\{.*, propagators=DefaultContextPropagators\\{.*}, extendedOpenTelemetrySdk=null}");
   }
 }
