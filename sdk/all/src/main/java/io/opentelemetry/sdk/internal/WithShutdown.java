@@ -12,6 +12,12 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.io.Closeable;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Class that provides a shutdown method to close the SDK components gracefully.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public interface WithShutdown extends Closeable {
   /**
    * Shutdown the SDK. Calls {@link SdkTracerProvider#shutdown()}, {@link
