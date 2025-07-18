@@ -102,7 +102,7 @@ public class InstrumentationConfigUtil {
    * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
    */
   @Nullable
-  public static List<String> httpSeverResponseCapturedHeaders(ConfigProvider configProvider) {
+  public static List<String> httpServerResponseCapturedHeaders(ConfigProvider configProvider) {
     return getOrNull(
         configProvider,
         config -> config.getScalarList("response_captured_headers", String.class),
