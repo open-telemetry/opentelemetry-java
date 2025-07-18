@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -115,6 +116,11 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable, WithShu
     results.add(meterProvider.unobfuscate().shutdown());
     results.add(loggerProvider.unobfuscate().shutdown());
     return CompletableResultCode.ofAll(results);
+  }
+
+  @Override
+  public void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Override

@@ -1,7 +1,4 @@
 Comparing source compatibility of opentelemetry-sdk-1.53.0-SNAPSHOT.jar against opentelemetry-sdk-1.52.0.jar
-***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.OpenTelemetrySdk  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	---! REMOVED METHOD: PUBLIC(-) void close()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.WithShutdown  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: java.io.Closeable
