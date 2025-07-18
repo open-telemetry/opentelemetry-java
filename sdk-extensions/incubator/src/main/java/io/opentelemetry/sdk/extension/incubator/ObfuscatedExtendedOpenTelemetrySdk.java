@@ -26,8 +26,8 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link ExtendedOpenTelemetrySdk}. */
-public final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTelemetrySdk,
-    WithShutdown {
+public final class ObfuscatedExtendedOpenTelemetrySdk
+    implements ExtendedOpenTelemetrySdk, WithShutdown {
 
   private static final Logger LOGGER =
       Logger.getLogger(ObfuscatedExtendedOpenTelemetrySdk.class.getName());
