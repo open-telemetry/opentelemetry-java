@@ -29,7 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-public final class OpenTelemetrySdk implements OpenTelemetry, Closeable, WithShutdown {
+public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
 
   private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySdk.class.getName());
 
@@ -100,7 +100,12 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable, WithShu
     return propagators;
   }
 
-  @Override
+  /**
+   * Shutdown the SDK. Calls {@link SdkTracerProvider#shutdown()}, {@link
+   * SdkMeterProvider#shutdown()}, and {@link SdkLoggerProvider#shutdown()}.
+   *
+   * @return a {@link CompletableResultCode} which completes when all providers are shutdown
+   */
   public CompletableResultCode shutdown() {
     if (extendedOpenTelemetrySdk != null) {
       // If an ExtendedOpenTelemetrySdk is present, we delegate the shutdown to it.

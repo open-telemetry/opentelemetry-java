@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
@@ -49,7 +50,6 @@ public final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTel
     this.propagators = propagators;
   }
 
-  @Override
   public CompletableResultCode shutdown() {
     if (!isShutdown.compareAndSet(false, true)) {
       LOGGER.info("Multiple shutdown calls");
@@ -60,6 +60,11 @@ public final class ObfuscatedExtendedOpenTelemetrySdk implements ExtendedOpenTel
     results.add(meterProvider.unobfuscate().shutdown());
     results.add(loggerProvider.unobfuscate().shutdown());
     return CompletableResultCode.ofAll(results);
+  }
+
+  @Override
+  public void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Override

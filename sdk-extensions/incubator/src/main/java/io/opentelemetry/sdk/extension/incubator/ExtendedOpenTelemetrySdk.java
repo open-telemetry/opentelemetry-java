@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.extension.incubator;
 import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.WithShutdown;
+import java.io.Closeable;
 import java.lang.reflect.Field;
 import javax.annotation.Nullable;
 
 /** A new interface for creating OpenTelemetrySdk that supports getting {@link ConfigProvider}. */
-public interface ExtendedOpenTelemetrySdk extends ExtendedOpenTelemetry, WithShutdown {
+public interface ExtendedOpenTelemetrySdk extends ExtendedOpenTelemetry, Closeable {
   /** Returns a builder for {@link ExtendedOpenTelemetrySdk}. */
   static ExtendedOpenTelemetrySdkBuilder builder() {
     return new ExtendedOpenTelemetrySdkBuilder();
