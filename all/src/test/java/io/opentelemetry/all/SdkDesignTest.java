@@ -71,6 +71,10 @@ class SdkDesignTest {
         parents.addAll(input.getOwner().getAllRawInterfaces());
 
         for (JavaClass parent : parents) {
+          if (parent.getPackageName().contains(".internal.")) {
+            continue;
+          }
+
           Optional<JavaMethod> found = parent.tryGetMethod(name, paramsType);
           if (found.isPresent()) {
             return true;
