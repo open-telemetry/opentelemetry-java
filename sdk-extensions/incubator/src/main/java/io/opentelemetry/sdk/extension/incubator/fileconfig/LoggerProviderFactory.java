@@ -15,14 +15,12 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Logger
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.LogLimits;
-import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import java.util.List;
 
-final class LoggerProviderFactory
-    implements Factory<LoggerProviderAndAttributeLimits, SdkLoggerProviderBuilder> {
+final class LoggerProviderFactory {
 
   private static final LoggerProviderFactory INSTANCE = new LoggerProviderFactory();
 
@@ -32,14 +30,13 @@ final class LoggerProviderFactory
     return INSTANCE;
   }
 
-  @Override
-  public SdkLoggerProviderBuilder create(
-      LoggerProviderAndAttributeLimits model, DeclarativeConfigContext context) {
-    SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
-
+  public void configure(
+      SdkLoggerProviderBuilder builder,
+      LoggerProviderAndAttributeLimits model,
+      DeclarativeConfigContext context) {
     LoggerProviderModel loggerProviderModel = model.getLoggerProvider();
     if (loggerProviderModel == null) {
-      return builder;
+      return;
     }
 
     LogLimits logLimits =
@@ -84,8 +81,6 @@ final class LoggerProviderFactory
       }
       SdkLoggerProviderUtil.setLoggerConfigurator(builder, configuratorBuilder.build());
     }
-
-    return builder;
   }
 
   private static class LoggerConfigFactory
