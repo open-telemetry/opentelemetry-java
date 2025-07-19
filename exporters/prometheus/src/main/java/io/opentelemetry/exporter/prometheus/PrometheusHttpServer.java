@@ -42,7 +42,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final String host;
   private final int port;
-  private final boolean otelScopeEnabled;
+  private final OtelScopeMode otelScopeMode;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
   private final MemoryMode memoryMode;
   private final DefaultAggregationSelector defaultAggregationSelector;
@@ -72,7 +72,7 @@ public final class PrometheusHttpServer implements MetricReader {
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
-      boolean otelScopeEnabled,
+      OtelScopeMode otelScopeMode,
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode,
       @Nullable HttpHandler defaultHandler,
@@ -80,13 +80,13 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable Authenticator authenticator) {
     this.host = host;
     this.port = port;
-    this.otelScopeEnabled = otelScopeEnabled;
+    this.otelScopeMode = otelScopeMode;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.memoryMode = memoryMode;
     this.defaultAggregationSelector = defaultAggregationSelector;
     this.builder = builder;
     this.prometheusMetricReader =
-        new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
+        new PrometheusMetricReader(otelScopeMode, allowedResourceAttributesFilter);
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
     // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,
@@ -171,7 +171,7 @@ public final class PrometheusHttpServer implements MetricReader {
     StringJoiner joiner = new StringJoiner(",", "PrometheusHttpServer{", "}");
     joiner.add("host=" + host);
     joiner.add("port=" + port);
-    joiner.add("otelScopeEnabled=" + otelScopeEnabled);
+    joiner.add("otelScopeMode=" + otelScopeMode);
     joiner.add("allowedResourceAttributesFilter=" + allowedResourceAttributesFilter);
     joiner.add("memoryMode=" + memoryMode);
     joiner.add(
