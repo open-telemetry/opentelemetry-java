@@ -9,6 +9,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -53,6 +54,16 @@ final class OpenTelemetryConfigurationFactory
       resource = ResourceFactory.getInstance().create(model.getResource(), context);
     }
 
+    if (model.getMeterProvider() != null) {
+      SdkMeterProvider meterProvider =
+          MeterProviderFactory.getInstance()
+              .create(model.getMeterProvider(), context)
+              .setResource(resource)
+              .build();
+      context.setMeterProvider(meterProvider);
+      builder.setMeterProvider(context.addCloseable(meterProvider));
+    }
+
     if (model.getLoggerProvider() != null) {
       builder.setLoggerProvider(
           context.addCloseable(
@@ -73,15 +84,6 @@ final class OpenTelemetryConfigurationFactory
                       TracerProviderAndAttributeLimits.create(
                           model.getAttributeLimits(), model.getTracerProvider()),
                       context)
-                  .setResource(resource)
-                  .build()));
-    }
-
-    if (model.getMeterProvider() != null) {
-      builder.setMeterProvider(
-          context.addCloseable(
-              MeterProviderFactory.getInstance()
-                  .create(model.getMeterProvider(), context)
                   .setResource(resource)
                   .build()));
     }
