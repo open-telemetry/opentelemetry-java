@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk;
+package io.opentelemetry.sdk.extension.incubator;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterBuilder;
@@ -19,100 +19,40 @@ import io.opentelemetry.sdk.internal.shutdown.WithShutdown;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** The SDK implementation of {@link OpenTelemetry}. */
-@ThreadSafe
-public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
+/** The SDK implementation of {@link ExtendedOpenTelemetrySdk}. */
+public final class ObfuscatedExtendedOpenTelemetrySdk
+    implements ExtendedOpenTelemetrySdk, WithShutdown {
 
-  private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySdk.class.getName());
-
+  private static final Logger LOGGER =
+      Logger.getLogger(ObfuscatedExtendedOpenTelemetrySdk.class.getName());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   private final ObfuscatedTracerProvider tracerProvider;
   private final ObfuscatedMeterProvider meterProvider;
   private final ObfuscatedLoggerProvider loggerProvider;
+  private final ConfigProvider configProvider;
   private final ContextPropagators propagators;
-  @Nullable private final WithShutdown extendedOpenTelemetrySdk;
 
-  OpenTelemetrySdk(
+  public ObfuscatedExtendedOpenTelemetrySdk(
+      ConfigProvider configProvider,
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
-      ContextPropagators propagators,
-      @Nullable WithShutdown extendedOpenTelemetrySdk) {
+      ContextPropagators propagators) {
+    this.configProvider = configProvider;
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
     this.loggerProvider = new ObfuscatedLoggerProvider(loggerProvider);
     this.propagators = propagators;
-    this.extendedOpenTelemetrySdk = extendedOpenTelemetrySdk;
-  }
-
-  /**
-   * Returns a new {@link OpenTelemetrySdkBuilder} for configuring an instance of {@linkplain
-   * OpenTelemetrySdk the OpenTelemetry SDK}.
-   */
-  public static OpenTelemetrySdkBuilder builder() {
-    return new OpenTelemetrySdkBuilder();
   }
 
   @Override
-  public TracerProvider getTracerProvider() {
-    return tracerProvider;
-  }
-
-  /** Returns the {@link SdkTracerProvider} for this {@link OpenTelemetrySdk}. */
-  public SdkTracerProvider getSdkTracerProvider() {
-    return tracerProvider.unobfuscate();
-  }
-
-  @Override
-  public MeterProvider getMeterProvider() {
-    return meterProvider;
-  }
-
-  /** Returns the {@link SdkMeterProvider} for this {@link OpenTelemetrySdk}. */
-  public SdkMeterProvider getSdkMeterProvider() {
-    return meterProvider.unobfuscate();
-  }
-
-  @Override
-  public LoggerProvider getLogsBridge() {
-    return loggerProvider;
-  }
-
-  /**
-   * Returns the {@link SdkLoggerProvider} for this {@link OpenTelemetrySdk}.
-   *
-   * @since 1.19.0
-   */
-  public SdkLoggerProvider getSdkLoggerProvider() {
-    return loggerProvider.unobfuscate();
-  }
-
-  @Override
-  public ContextPropagators getPropagators() {
-    return propagators;
-  }
-
-  /**
-   * Shutdown the SDK. Calls {@link SdkTracerProvider#shutdown()}, {@link
-   * SdkMeterProvider#shutdown()}, and {@link SdkLoggerProvider#shutdown()}.
-   *
-   * @return a {@link CompletableResultCode} which completes when all providers are shutdown
-   */
   public CompletableResultCode shutdown() {
-    if (extendedOpenTelemetrySdk != null) {
-      // If an ExtendedOpenTelemetrySdk is present, we delegate the shutdown to it.
-      return extendedOpenTelemetrySdk.shutdown();
-    }
-
     if (!isShutdown.compareAndSet(false, true)) {
       LOGGER.info("Multiple shutdown calls");
       return CompletableResultCode.ofSuccess();
@@ -125,14 +65,36 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
   }
 
   @Override
-  public void close() {
-    shutdown().join(10, TimeUnit.SECONDS);
+  public ConfigProvider getConfigProvider() {
+    return configProvider;
+  }
+
+  @Override
+  public TracerProvider getTracerProvider() {
+    return tracerProvider;
+  }
+
+  @Override
+  public MeterProvider getMeterProvider() {
+    return meterProvider;
+  }
+
+  @Override
+  public LoggerProvider getLogsBridge() {
+    return loggerProvider;
+  }
+
+  @Override
+  public ContextPropagators getPropagators() {
+    return propagators;
   }
 
   @Override
   public String toString() {
-    return "OpenTelemetrySdk{"
-        + "tracerProvider="
+    return "ExtendedOpenTelemetrySdk{"
+        + "configProvider="
+        + configProvider
+        + ", tracerProvider="
         + tracerProvider.unobfuscate()
         + ", meterProvider="
         + meterProvider.unobfuscate()
@@ -140,8 +102,6 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
         + loggerProvider.unobfuscate()
         + ", propagators="
         + propagators
-        + ", extendedOpenTelemetrySdk="
-        + extendedOpenTelemetrySdk
         + "}";
   }
 
