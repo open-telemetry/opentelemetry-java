@@ -6,12 +6,14 @@
 package io.opentelemetry.exporter.prometheus.internal;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.exporter.prometheus.OtelScopeMode;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Declarative configuration SPI implementation for {@link PrometheusHttpServer}.
@@ -46,8 +48,8 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
     }
 
     Boolean withoutScopeInfo = config.getBoolean("without_scope_info");
-    if (withoutScopeInfo != null) {
-      prometheusBuilder.setOtelScopeEnabled(!withoutScopeInfo);
+    if (Objects.equals(withoutScopeInfo, true)) {
+      prometheusBuilder.setOtelScopeMode(OtelScopeMode.LABELS_ONLY);
     }
 
     DeclarativeConfigProperties withResourceConstantLabels =
