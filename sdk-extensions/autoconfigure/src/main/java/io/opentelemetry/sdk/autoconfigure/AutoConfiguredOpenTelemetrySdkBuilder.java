@@ -445,12 +445,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   private AutoConfiguredOpenTelemetrySdk buildImpl() {
-    SpiHelper spiHelper = SpiHelper.create(componentLoader);
-
-    ConfigProperties configProperties =
-        this.config != null ? this.config : DefaultConfigProperties.create(Collections.emptyMap());
     AutoConfiguredOpenTelemetrySdk fromFileConfiguration =
-        maybeConfigureFromFile(configProperties, componentLoader);
+        maybeConfigureFromFile(
+            this.config != null
+                ? this.config
+                : DefaultConfigProperties.create(Collections.emptyMap(), componentLoader),
+            componentLoader);
     if (fromFileConfiguration != null) {
       maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
       Object configProvider = fromFileConfiguration.getConfigProvider();
@@ -460,6 +460,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return fromFileConfiguration;
     }
 
+    SpiHelper spiHelper = SpiHelper.create(componentLoader);
     if (!customized) {
       customized = true;
       mergeSdkTracerProviderConfigurer();
