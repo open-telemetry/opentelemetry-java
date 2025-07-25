@@ -110,12 +110,12 @@ public class StringMarshalBenchmark {
       context = new MarshalerContext(/* marshalStringNoAllocation= */ true, useUnsafe);
     }
 
-    public void initialize(String string) {
+    private void initialize(String string) {
       value = string;
       size = StringAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(string, context);
     }
 
-    public void reset() {
+    private void reset() {
       context.reset();
     }
 
