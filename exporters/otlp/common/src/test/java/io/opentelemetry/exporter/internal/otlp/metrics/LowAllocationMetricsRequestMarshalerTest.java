@@ -128,7 +128,7 @@ class LowAllocationMetricsRequestMarshalerTest {
       MarshalerContext context = new MarshalerContext();
       class TestMarshaler extends MarshalerWithSize {
 
-        protected TestMarshaler() {
+        TestMarshaler() {
           super(ExemplarStatelessMarshaler.INSTANCE.getBinarySerializedSize(exemplar, context));
         }
 
@@ -171,7 +171,7 @@ class LowAllocationMetricsRequestMarshalerTest {
       MarshalerContext context = new MarshalerContext();
       class TestMarshaler extends MarshalerWithSize {
 
-        protected TestMarshaler() {
+        TestMarshaler() {
           super(SummaryStatelessMarshaler.INSTANCE.getBinarySerializedSize(summary, context));
         }
 
