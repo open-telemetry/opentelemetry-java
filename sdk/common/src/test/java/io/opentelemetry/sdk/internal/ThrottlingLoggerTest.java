@@ -58,8 +58,8 @@ class ThrottlingLoggerTest {
     logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(WARN), "oh no!");
     logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(INFO), "oh yes!");
     assertThat(
-        logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(ERROR), "secrets")
-            .getThrowable())
+            logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(ERROR), "secrets")
+                .getThrowable())
         .isSameAs(throwable);
   }
 
