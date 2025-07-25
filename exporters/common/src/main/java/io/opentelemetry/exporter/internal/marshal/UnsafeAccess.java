@@ -71,7 +71,7 @@ class UnsafeAccess {
   private UnsafeAccess() {}
 
   private static class UnsafeHolder {
-    public static final Unsafe UNSAFE;
+    private static final Unsafe UNSAFE;
 
     static {
       UNSAFE = getUnsafe();
