@@ -295,7 +295,7 @@ public final class DeclarativeConfiguration {
     private static final int ESCAPE_SEQUENCE_LENGTH = ESCAPE_SEQUENCE.length();
     private static final char ESCAPE_SEQUENCE_REPLACEMENT = '$';
 
-    public EnvComposer(
+    private EnvComposer(
         LoadSettings settings, ParserImpl parser, Map<String, String> environmentVariables) {
       super(settings, parser);
       this.load = new Load(settings);
