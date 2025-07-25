@@ -47,6 +47,23 @@ class ThrottlingLoggerTest {
   }
 
   @Test
+  void delegationCustom() {
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, 10, 2, TimeUnit.HOURS);
+
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.INFO, "oh yes!");
+    RuntimeException throwable = new RuntimeException();
+    logger.log(Level.SEVERE, "secrets", throwable);
+
+    logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(WARN), "oh no!");
+    logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(INFO), "oh yes!");
+    assertThat(
+        logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(ERROR), "secrets")
+            .getThrowable())
+        .isSameAs(throwable);
+  }
+
+  @Test
   void logsBelowLevelDontCount() {
     ThrottlingLogger logger =
         new ThrottlingLogger(Logger.getLogger(ThrottlingLoggerTest.class.getName()));
