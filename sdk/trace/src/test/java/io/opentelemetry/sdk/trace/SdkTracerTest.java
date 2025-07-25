@@ -151,7 +151,7 @@ class SdkTracerTest {
   private static class SimpleSpanOperation implements OperationUpdater {
     private final SdkTracer tracer;
 
-    public SimpleSpanOperation(SdkTracer tracer) {
+    private SimpleSpanOperation(SdkTracer tracer) {
       this.tracer = tracer;
     }
 
@@ -168,7 +168,7 @@ class SdkTracerTest {
 
   private static class CountingSpanExporter implements SpanExporter {
 
-    public final AtomicLong numberOfSpansExported = new AtomicLong();
+    private final AtomicLong numberOfSpansExported = new AtomicLong();
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
