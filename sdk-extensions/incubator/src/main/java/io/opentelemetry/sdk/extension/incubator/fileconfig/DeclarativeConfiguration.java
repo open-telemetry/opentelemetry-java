@@ -246,7 +246,7 @@ public final class DeclarativeConfiguration {
     private final LoadSettings settings;
     private final Map<String, String> environmentVariables;
 
-    public EnvLoad(LoadSettings settings, Map<String, String> environmentVariables) {
+    private EnvLoad(LoadSettings settings, Map<String, String> environmentVariables) {
       super(settings);
       this.settings = settings;
       this.environmentVariables = environmentVariables;
