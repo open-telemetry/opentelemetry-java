@@ -15,6 +15,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,23 @@ class ThrottlingLoggerTest {
   @Test
   void delegation() {
     ThrottlingLogger logger = new ThrottlingLogger(realLogger);
+
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.INFO, "oh yes!");
+    RuntimeException throwable = new RuntimeException();
+    logger.log(Level.SEVERE, "secrets", throwable);
+
+    logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(WARN), "oh no!");
+    logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(INFO), "oh yes!");
+    assertThat(
+            logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(ERROR), "secrets")
+                .getThrowable())
+        .isSameAs(throwable);
+  }
+
+  @Test
+  void delegationCustom() {
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, 10, 2, TimeUnit.HOURS);
 
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.INFO, "oh yes!");
@@ -76,7 +94,26 @@ class ThrottlingLoggerTest {
     assertThat(logs.getEvents()).hasSize(7);
     logs.assertDoesNotContain("oh no I should be suppressed!");
     logs.assertContains(
-        "Too many log messages detected. Will only log once per minute from now on.");
+        "Too many log messages detected. Will only log 1 time(s) per minute from now on.");
+    logs.assertContains("oh no I should trigger suppression!");
+  }
+
+  @Test
+  void tenInAnHourTriggersLimiting() {
+    Clock clock = TestClock.create();
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, clock, 10, 2, TimeUnit.HOURS);
+
+    for (int i = 0; i < 10; i++) {
+      logger.log(Level.WARNING, "oh no!");
+    }
+
+    logger.log(Level.WARNING, "oh no I should trigger suppression!");
+    logger.log(Level.WARNING, "oh no I should be suppressed!");
+
+    assertThat(logs.getEvents()).hasSize(12);
+    logs.assertDoesNotContain("oh no I should be suppressed!");
+    logs.assertContains(
+        "Too many log messages detected. Will only log 2 time(s) per hour from now on.");
     logs.assertContains("oh no I should trigger suppression!");
   }
 
@@ -130,7 +167,7 @@ class ThrottlingLoggerTest {
     logs.assertDoesNotContain("oh no I should be suppressed!");
     logs.assertContains("oh no I should trigger suppression!");
     logs.assertContains(
-        "Too many log messages detected. Will only log once per minute from now on.");
+        "Too many log messages detected. Will only log 1 time(s) per minute from now on.");
 
     clock.advance(Duration.ofMillis(60_001));
     logger.log(Level.WARNING, "oh no!");
@@ -143,6 +180,41 @@ class ThrottlingLoggerTest {
     logger.log(Level.WARNING, "oh no I should be suppressed!");
     assertThat(logs.getEvents()).hasSize(9);
     assertThat(logs.getEvents().get(8).getMessage()).isEqualTo("oh no!");
+  }
+
+  @Test
+  void afterAnHourLetTwoThrough() {
+    TestClock clock = TestClock.create();
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, clock, 10, 2, TimeUnit.HOURS);
+
+    for (int i = 0; i < 10; i++) {
+      logger.log(Level.WARNING, "oh no!");
+    }
+
+    logger.log(Level.WARNING, "oh no I should trigger suppression!");
+    logger.log(Level.WARNING, "oh no I should be suppressed!");
+
+    assertThat(logs.getEvents()).hasSize(12);
+    logs.assertDoesNotContain("oh no I should be suppressed!");
+    logs.assertContains("oh no I should trigger suppression!");
+    logs.assertContains(
+        "Too many log messages detected. Will only log 2 time(s) per hour from now on.");
+
+    clock.advance(Duration.ofMinutes(61));
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.WARNING, "oh no I should be suppressed!");
+    assertThat(logs.getEvents()).hasSize(14);
+    assertThat(logs.getEvents().get(13).getMessage()).isEqualTo("oh no!");
+
+    clock.advance(Duration.ofMinutes(61));
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.WARNING, "oh no I should be suppressed!");
+    assertThat(logs.getEvents()).hasSize(16);
+    assertThat(logs.getEvents().get(15).getMessage()).isEqualTo("oh no!");
+
+    logs.assertDoesNotContain("oh no I should be suppressed!");
   }
 
   @Test
@@ -180,5 +252,46 @@ class ThrottlingLoggerTest {
 
     assertThat(logs.getEvents()).hasSize(8);
     assertThat(logs.getEvents().get(7).getMessage()).isEqualTo("allowed 1");
+  }
+
+  @Test
+  void allowOnlyTwoLogPerHourAfterSuppression() {
+    TestClock clock = TestClock.create();
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, clock, 10, 2, TimeUnit.HOURS);
+
+    for (int i = 0; i < 10; i++) {
+      logger.log(Level.WARNING, "oh no!");
+    }
+
+    logger.log(Level.WARNING, "oh no I should trigger suppression!");
+    logger.log(Level.WARNING, "oh no I should be suppressed!");
+
+    assertThat(logs.getEvents()).hasSize(12);
+
+    clock.advance(Duration.ofMinutes(10));
+    logger.log(Level.WARNING, "suppression 1");
+    clock.advance(Duration.ofMinutes(10));
+    logger.log(Level.WARNING, "suppression 2");
+    clock.advance(Duration.ofMinutes(10));
+    clock.advance(Duration.ofSeconds(1));
+    logger.log(Level.WARNING, "allowed 1");
+    clock.advance(Duration.ofMinutes(10));
+    logger.log(Level.WARNING, "suppression 3");
+    clock.advance(Duration.ofMinutes(10));
+    logger.log(Level.WARNING, "suppression 4");
+    clock.advance(Duration.ofMinutes(10));
+    clock.advance(Duration.ofSeconds(1));
+    logger.log(Level.WARNING, "allowed 2");
+
+    logs.assertDoesNotContain("suppression 1");
+    logs.assertDoesNotContain("suppression 2");
+    logs.assertDoesNotContain("suppression 3");
+    logs.assertDoesNotContain("suppression 4");
+    logs.assertContains("allowed 1");
+    logs.assertContains("allowed 2");
+
+    assertThat(logs.getEvents()).hasSize(14);
+    assertThat(logs.getEvents().get(12).getMessage()).isEqualTo("allowed 1");
+    assertThat(logs.getEvents().get(13).getMessage()).isEqualTo("allowed 2");
   }
 }
