@@ -121,7 +121,7 @@ class GrpcExporterTest {
   private static class DummyServiceFutureStub
       extends MarshalerServiceStub<DummyMarshaler, Object, DummyServiceFutureStub> {
 
-    protected DummyServiceFutureStub(Channel channel, CallOptions callOptions) {
+    private DummyServiceFutureStub(Channel channel, CallOptions callOptions) {
       super(channel, callOptions);
     }
 
@@ -147,7 +147,7 @@ class GrpcExporterTest {
 
   private static class DummyMarshaler extends MarshalerWithSize {
 
-    protected DummyMarshaler() {
+    private DummyMarshaler() {
       super(0);
     }
 
