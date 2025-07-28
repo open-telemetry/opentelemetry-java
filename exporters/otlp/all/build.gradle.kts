@@ -64,8 +64,12 @@ testing {
               }
             }
           }
+          if (it.equals("LATEST")) {
+            implementation("com.squareup.okhttp3:okhttp-jvm")
+          } else {
+            implementation("com.squareup.okhttp3:okhttp")
+          }
 
-          implementation("com.squareup.okhttp3:okhttp-jvm")
           implementation("io.grpc:grpc-stub")
         }
 
