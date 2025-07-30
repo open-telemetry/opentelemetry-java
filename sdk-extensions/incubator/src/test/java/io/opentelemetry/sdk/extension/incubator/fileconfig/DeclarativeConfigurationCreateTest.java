@@ -12,13 +12,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -172,5 +176,33 @@ class DeclarativeConfigurationCreateTest {
                 + "telemetry.sdk.language=\"java\", "
                 + "telemetry.sdk.name=\"opentelemetry\", "
                 + "telemetry.sdk.version=\"");
+  }
+
+  @Test
+  void create_Resource() {
+    ResourceModel resourceModel = new ResourceModel();
+    resourceModel.withAttributesList("service.name=TestService");
+    ComponentLoader componentLoader =
+        SpiHelper.create(DeclarativeConfigurationCreateTest.class.getClassLoader())
+            .getComponentLoader();
+
+    Resource resource = DeclarativeConfiguration.createResource(resourceModel, componentLoader);
+
+    assertThat(resource).isNotNull();
+    assertThat(resource.getAttributes().get(AttributeKey.stringKey("service.name")))
+        .isEqualTo("TestService");
+  }
+
+  @Test
+  void create_defaultResource() {
+    ComponentLoader componentLoader =
+        SpiHelper.create(DeclarativeConfigurationCreateTest.class.getClassLoader())
+            .getComponentLoader();
+
+    Resource resource = DeclarativeConfiguration.createResource(null, componentLoader);
+
+    assertThat(resource).isNotNull();
+    assertThat(resource.getAttributes().get(AttributeKey.stringKey("service.name")))
+        .isEqualTo("unknown_service:java");
   }
 }
