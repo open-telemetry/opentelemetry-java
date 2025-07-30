@@ -16,8 +16,7 @@ import java.util.List;
  * Implementation of {@link LogRecordProcessor} that filters log records based on minimum severity
  * level and delegates to downstream processors.
  *
- * <p>This processor only forwards log records to downstream processors if the log record's severity
- * level is greater than or equal to the configured minimum severity level.
+ * <p>Only log records with severity greater than or equal to the configured minimum are forwarded.
  */
 public final class SeverityBasedLogRecordProcessor implements LogRecordProcessor {
 

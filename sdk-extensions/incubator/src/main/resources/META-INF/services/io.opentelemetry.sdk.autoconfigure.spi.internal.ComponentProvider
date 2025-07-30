@@ -1,2 +1,3 @@
 io.opentelemetry.sdk.extension.incubator.fileconfig.ServiceResourceDetector
 io.opentelemetry.sdk.extension.incubator.fileconfig.internal.SeverityBasedLogRecordProcessorComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.internal.TraceBasedLogRecordProcessorComponentProvider
