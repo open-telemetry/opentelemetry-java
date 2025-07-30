@@ -15,6 +15,7 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -82,7 +83,7 @@ public final class DeclarativeConfiguration {
    *
    * @throws DeclarativeConfigException if unable to parse or interpret
    */
-  public static OpenTelemetrySdk parseAndCreate(InputStream inputStream) {
+  public static ExtendedOpenTelemetrySdk parseAndCreate(InputStream inputStream) {
     OpenTelemetryConfigurationModel configurationModel = parse(inputStream);
     return create(configurationModel);
   }
@@ -95,7 +96,8 @@ public final class DeclarativeConfiguration {
    * @return the {@link OpenTelemetrySdk}
    * @throws DeclarativeConfigException if unable to interpret
    */
-  public static OpenTelemetrySdk create(OpenTelemetryConfigurationModel configurationModel) {
+  public static ExtendedOpenTelemetrySdk create(
+      OpenTelemetryConfigurationModel configurationModel) {
     return create(configurationModel, DEFAULT_COMPONENT_LOADER);
   }
 
@@ -109,7 +111,7 @@ public final class DeclarativeConfiguration {
    * @return the {@link OpenTelemetrySdk}
    * @throws DeclarativeConfigException if unable to interpret
    */
-  public static OpenTelemetrySdk create(
+  public static ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
 

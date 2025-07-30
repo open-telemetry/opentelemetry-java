@@ -15,7 +15,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
@@ -157,7 +157,7 @@ class DeclarativeConfigurationCreateTest {
             .withProcessors(
                 Collections.singletonList(
                     new SpanProcessorModel().withAdditionalProperty("test", null))));
-    OpenTelemetrySdk sdk =
+    ExtendedOpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
             model,
             // customizer is TestDeclarativeConfigurationCustomizerProvider
