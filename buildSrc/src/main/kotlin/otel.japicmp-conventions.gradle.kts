@@ -142,6 +142,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
           // Temporarily suppress warnings from public generated classes from :sdk-extensions:jaeger-remote-sampler
           "io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2"
         )
+        annotationExcludes.add("@kotlin.Metadata")
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
         txtOutputFile.set(
           apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_$baselineVersion/${base.archivesName.get()}.txt") }
