@@ -15,8 +15,10 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -208,6 +210,29 @@ public final class DeclarativeConfiguration {
         SamplerFactory.getInstance(),
         SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
         samplerModel);
+  }
+
+  /**
+   * Create a {@link LogRecordProcessor} from the {@code logRecordProcessorModel} representing the
+   * log record processor config.
+   *
+   * <p>This is used when log record processors are composed, with one processor accepting one or
+   * more additional processors as config properties. The {@link ComponentProvider} implementation
+   * can call this to configure a delegate {@link LogRecordProcessor} from the {@link
+   * DeclarativeConfigProperties} corresponding to a particular config property.
+   */
+  public static LogRecordProcessor createLogRecordProcessor(
+      DeclarativeConfigProperties genericLogRecordProcessorModel) {
+    YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
+        requireYamlDeclarativeConfigProperties(genericLogRecordProcessorModel);
+    LogRecordProcessorModel logRecordProcessorModel =
+        MAPPER.convertValue(
+            DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties),
+            LogRecordProcessorModel.class);
+    return createAndMaybeCleanup(
+        LogRecordProcessorFactory.getInstance(),
+        SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
+        logRecordProcessorModel);
   }
 
   private static YamlDeclarativeConfigProperties requireYamlDeclarativeConfigProperties(
