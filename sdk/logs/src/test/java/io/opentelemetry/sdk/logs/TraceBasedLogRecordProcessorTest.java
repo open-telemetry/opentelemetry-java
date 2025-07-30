@@ -32,8 +32,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class TraceBasedLogRecordProcessorTest {
 
-  @Mock private LogRecordProcessor processor1;
-  @Mock private LogRecordProcessor processor2;
+  @Mock private LogRecordProcessor delegate;
   @Mock private ReadWriteLogRecord logRecord;
 
   private Context context;
@@ -44,10 +43,8 @@ class TraceBasedLogRecordProcessorTest {
   @BeforeEach
   void setUp() {
     context = Context.current();
-    when(processor1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(processor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
-    when(processor2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(processor2.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
 
     // Create sampled span context
     sampledSpanContext =
@@ -70,81 +67,48 @@ class TraceBasedLogRecordProcessorTest {
   }
 
   @Test
-  void builder_RequiresAtLeastOneProcessor() {
-    assertThatThrownBy(() -> TraceBasedLogRecordProcessor.builder().build())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("At least one processor must be added");
-  }
-
-  @Test
-  void builder_NullProcessor() {
-    assertThatThrownBy(
-            () -> TraceBasedLogRecordProcessor.builder().addProcessors((LogRecordProcessor) null))
+  void builder_RequiresProcessor() {
+    assertThatThrownBy(() -> TraceBasedLogRecordProcessor.builder(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("processor");
+        .hasMessageContaining("delegate");
   }
 
   @Test
-  void builder_NullProcessorArray() {
-    assertThatThrownBy(
-            () -> TraceBasedLogRecordProcessor.builder().addProcessors((LogRecordProcessor[]) null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("processors");
-  }
-
-  @Test
-  void builder_NullProcessorIterable() {
-    assertThatThrownBy(
-            () ->
-                TraceBasedLogRecordProcessor.builder()
-                    .addProcessors((Iterable<LogRecordProcessor>) null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("processors");
-  }
-
-  @Test
-  void onEmit_SampledSpanContext_DelegatesToAllProcessors() {
+  void onEmit_SampledSpanContext_DelegatesToProcessor() {
     when(logRecord.getSpanContext()).thenReturn(sampledSpanContext);
 
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1, processor2).build();
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     processor.onEmit(context, logRecord);
 
-    verify(processor1).onEmit(same(context), same(logRecord));
-    verify(processor2).onEmit(same(context), same(logRecord));
+    verify(delegate).onEmit(same(context), same(logRecord));
   }
 
   @Test
   void onEmit_NotSampledSpanContext_DoesNotDelegate() {
     when(logRecord.getSpanContext()).thenReturn(notSampledSpanContext);
 
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1, processor2).build();
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     processor.onEmit(context, logRecord);
 
-    verify(processor1, never()).onEmit(any(), any());
-    verify(processor2, never()).onEmit(any(), any());
+    verify(delegate, never()).onEmit(any(), any());
   }
 
   @Test
   void onEmit_InvalidSpanContext_DelegatesToProcessor() {
     when(logRecord.getSpanContext()).thenReturn(invalidSpanContext);
 
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1, processor2).build();
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     processor.onEmit(context, logRecord);
 
-    verify(processor1).onEmit(same(context), same(logRecord));
-    verify(processor2).onEmit(same(context), same(logRecord));
+    verify(delegate).onEmit(same(context), same(logRecord));
   }
 
   @Test
   void onEmit_VariousSpanContexts() {
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1).build();
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     // Test sampled span context
     testSpanContext(processor, sampledSpanContext, /* shouldDelegate= */ true);
@@ -163,45 +127,40 @@ class TraceBasedLogRecordProcessorTest {
     processor.onEmit(context, logRecord);
 
     if (shouldDelegate) {
-      verify(processor1).onEmit(same(context), same(logRecord));
+      verify(delegate).onEmit(same(context), same(logRecord));
     } else {
-      verify(processor1, never()).onEmit(same(context), same(logRecord));
+      verify(delegate, never()).onEmit(same(context), same(logRecord));
     }
 
     // Reset mock for next test
-    org.mockito.Mockito.reset(processor1);
-    when(processor1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(processor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    org.mockito.Mockito.reset(delegate);
+    when(delegate.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
-  void shutdown_DelegatesToAllProcessors() {
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1, processor2).build();
+  void shutdown_DelegatesToProcessor() {
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     CompletableResultCode result = processor.shutdown();
 
-    verify(processor1).shutdown();
-    verify(processor2).shutdown();
+    verify(delegate).shutdown();
     assertThat(result.isSuccess()).isTrue();
   }
 
   @Test
-  void forceFlush_DelegatesToAllProcessors() {
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1, processor2).build();
+  void forceFlush_DelegatesToProcessor() {
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     CompletableResultCode result = processor.forceFlush();
 
-    verify(processor1).forceFlush();
-    verify(processor2).forceFlush();
+    verify(delegate).forceFlush();
     assertThat(result.isSuccess()).isTrue();
   }
 
   @Test
   void toString_Valid() {
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1).build();
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     String toString = processor.toString();
     assertThat(toString).contains("TraceBasedLogRecordProcessor");
@@ -210,31 +169,25 @@ class TraceBasedLogRecordProcessorTest {
 
   @Test
   void shutdown_ProcessorFailure() {
-    when(processor1.shutdown()).thenReturn(CompletableResultCode.ofFailure());
-    when(processor2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.shutdown()).thenReturn(CompletableResultCode.ofFailure());
 
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1, processor2).build();
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     CompletableResultCode result = processor.shutdown();
 
-    verify(processor1).shutdown();
-    verify(processor2).shutdown();
+    verify(delegate).shutdown();
     assertThat(result.isSuccess()).isFalse();
   }
 
   @Test
   void forceFlush_ProcessorFailure() {
-    when(processor1.forceFlush()).thenReturn(CompletableResultCode.ofFailure());
-    when(processor2.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.forceFlush()).thenReturn(CompletableResultCode.ofFailure());
 
-    TraceBasedLogRecordProcessor processor =
-        TraceBasedLogRecordProcessor.builder().addProcessors(processor1, processor2).build();
+    TraceBasedLogRecordProcessor processor = TraceBasedLogRecordProcessor.builder(delegate).build();
 
     CompletableResultCode result = processor.forceFlush();
 
-    verify(processor1).forceFlush();
-    verify(processor2).forceFlush();
+    verify(delegate).forceFlush();
     assertThat(result.isSuccess()).isFalse();
   }
 }

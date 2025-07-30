@@ -10,8 +10,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.TraceBasedLogRecordProcessor;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * ComponentProvider for TraceBasedLogRecordProcessor to support declarative configuration.
@@ -34,19 +32,13 @@ public class TraceBasedLogRecordProcessorComponentProvider
 
   @Override
   public LogRecordProcessor create(DeclarativeConfigProperties config) {
-    List<DeclarativeConfigProperties> processorConfigs = config.getStructuredList("processors");
-    if (processorConfigs == null || processorConfigs.isEmpty()) {
-      throw new IllegalArgumentException(
-          "At least one processor is required for trace_based log processors");
+    DeclarativeConfigProperties delegateConfig = config.getStructured("delegate");
+    if (delegateConfig == null) {
+      throw new IllegalArgumentException("delegate is required for trace_based log processors");
     }
 
-    List<LogRecordProcessor> processors = new ArrayList<>();
-    for (DeclarativeConfigProperties processorConfig : processorConfigs) {
-      LogRecordProcessor processor =
-          DeclarativeConfiguration.createLogRecordProcessor(processorConfig);
-      processors.add(processor);
-    }
+    LogRecordProcessor delegate = DeclarativeConfiguration.createLogRecordProcessor(delegateConfig);
 
-    return TraceBasedLogRecordProcessor.builder().addProcessors(processors).build();
+    return TraceBasedLogRecordProcessor.builder(delegate).build();
   }
 }

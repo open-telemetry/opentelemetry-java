@@ -33,10 +33,10 @@ class TraceBasedLogRecordProcessorComponentProviderTest {
   void createTraceBasedProcessor_ValidConfig() {
     DeclarativeConfigProperties config =
         getConfig(
-            "processors:\n" // this comment exists only to influence spotless formatting
-                + "  - simple:\n"
-                + "      exporter:\n"
-                + "        console: {}\n");
+            "delegate:\n" // this comment exists only to influence spotless formatting
+                + "  simple:\n"
+                + "    exporter:\n"
+                + "      console: {}\n");
 
     TraceBasedLogRecordProcessorComponentProvider provider =
         new TraceBasedLogRecordProcessorComponentProvider();
@@ -52,7 +52,7 @@ class TraceBasedLogRecordProcessorComponentProviderTest {
   }
 
   @Test
-  void createTraceBasedProcessor_MissingProcessors() {
+  void createTraceBasedProcessor_MissingDelegate() {
     DeclarativeConfigProperties config = getConfig("");
 
     TraceBasedLogRecordProcessorComponentProvider provider =
@@ -60,32 +60,13 @@ class TraceBasedLogRecordProcessorComponentProviderTest {
 
     assertThatThrownBy(() -> provider.create(config))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("At least one processor is required for trace_based log processors");
+        .hasMessage("delegate is required for trace_based log processors");
   }
 
   @Test
-  void createTraceBasedProcessor_EmptyProcessors() {
-    DeclarativeConfigProperties config = getConfig("processors: []\n");
-
-    TraceBasedLogRecordProcessorComponentProvider provider =
-        new TraceBasedLogRecordProcessorComponentProvider();
-
-    assertThatThrownBy(() -> provider.create(config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("At least one processor is required for trace_based log processors");
-  }
-
-  @Test
-  void createTraceBasedProcessor_MultipleProcessors() {
+  void createTraceBasedProcessor_SingleDelegate() {
     DeclarativeConfigProperties config =
-        getConfig(
-            "processors:\n"
-                + "  - simple:\n"
-                + "      exporter:\n"
-                + "        console: {}\n"
-                + "  - simple:\n"
-                + "      exporter:\n"
-                + "        console: {}\n");
+        getConfig("delegate:\n" + "  simple:\n" + "    exporter:\n" + "      console: {}\n");
 
     TraceBasedLogRecordProcessorComponentProvider provider =
         new TraceBasedLogRecordProcessorComponentProvider();

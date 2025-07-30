@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.util.List;
 
 /**
  * Implementation of {@link LogRecordProcessor} that filters log records based on minimum severity
@@ -23,10 +22,9 @@ public final class SeverityBasedLogRecordProcessor implements LogRecordProcessor
   private final Severity minimumSeverity;
   private final LogRecordProcessor delegate;
 
-  SeverityBasedLogRecordProcessor(Severity minimumSeverity, List<LogRecordProcessor> processors) {
+  SeverityBasedLogRecordProcessor(Severity minimumSeverity, LogRecordProcessor delegate) {
     this.minimumSeverity = requireNonNull(minimumSeverity, "minimumSeverity");
-    requireNonNull(processors, "processors");
-    this.delegate = LogRecordProcessor.composite(processors);
+    this.delegate = requireNonNull(delegate, "delegate");
   }
 
   /**
@@ -34,10 +32,12 @@ public final class SeverityBasedLogRecordProcessor implements LogRecordProcessor
    * SeverityBasedLogRecordProcessor}.
    *
    * @param minimumSeverity the minimum severity level required for processing
+   * @param delegate the processor to delegate to
    * @return a new {@link SeverityBasedLogRecordProcessorBuilder}
    */
-  public static SeverityBasedLogRecordProcessorBuilder builder(Severity minimumSeverity) {
-    return new SeverityBasedLogRecordProcessorBuilder(minimumSeverity);
+  public static SeverityBasedLogRecordProcessorBuilder builder(
+      Severity minimumSeverity, LogRecordProcessor delegate) {
+    return new SeverityBasedLogRecordProcessorBuilder(minimumSeverity, delegate);
   }
 
   @Override

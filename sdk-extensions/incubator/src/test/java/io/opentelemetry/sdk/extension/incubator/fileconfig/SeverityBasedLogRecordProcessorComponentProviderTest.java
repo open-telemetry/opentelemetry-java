@@ -34,10 +34,10 @@ class SeverityBasedLogRecordProcessorComponentProviderTest {
     DeclarativeConfigProperties config =
         getConfig(
             "minimum_severity: \"WARN\"\n"
-                + "processors:\n"
-                + "  - simple:\n"
-                + "      exporter:\n"
-                + "        console: {}\n");
+                + "delegate:\n"
+                + "  simple:\n"
+                + "    exporter:\n"
+                + "      console: {}\n");
 
     SeverityBasedLogRecordProcessorComponentProvider provider =
         new SeverityBasedLogRecordProcessorComponentProvider();
@@ -56,10 +56,10 @@ class SeverityBasedLogRecordProcessorComponentProviderTest {
   void createSeverityBasedProcessor_MissingMinimumSeverity() {
     DeclarativeConfigProperties config =
         getConfig(
-            "processors:\n" // this comment exists only to influence spotless formatting
-                + "  - simple:\n"
-                + "      exporter:\n"
-                + "        console: {}\n");
+            "delegate:\n" // this comment exists only to influence spotless formatting
+                + "  simple:\n"
+                + "    exporter:\n"
+                + "      console: {}\n");
 
     SeverityBasedLogRecordProcessorComponentProvider provider =
         new SeverityBasedLogRecordProcessorComponentProvider();
@@ -75,10 +75,10 @@ class SeverityBasedLogRecordProcessorComponentProviderTest {
     DeclarativeConfigProperties config =
         getConfig(
             "minimum_severity: \"INVALID\"\n"
-                + "processors:\n"
-                + "  - simple:\n"
-                + "      exporter:\n"
-                + "        console: {}\n");
+                + "delegate:\n"
+                + "  simple:\n"
+                + "    exporter:\n"
+                + "      console: {}\n");
 
     SeverityBasedLogRecordProcessorComponentProvider provider =
         new SeverityBasedLogRecordProcessorComponentProvider();
@@ -89,41 +89,26 @@ class SeverityBasedLogRecordProcessorComponentProviderTest {
   }
 
   @Test
-  void createSeverityBasedProcessor_MissingProcessors() {
-    DeclarativeConfigProperties config = getConfig("");
+  void createSeverityBasedProcessor_MissingDelegate() {
+    DeclarativeConfigProperties config = getConfig("minimum_severity: \"WARN\"\n");
 
     SeverityBasedLogRecordProcessorComponentProvider provider =
         new SeverityBasedLogRecordProcessorComponentProvider();
 
     assertThatThrownBy(() -> provider.create(config))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("minimum_severity is required for severity_based log processors");
+        .hasMessage("delegate is required for severity_based log processors");
   }
 
   @Test
-  void createSeverityBasedProcessor_EmptyProcessors() {
-    DeclarativeConfigProperties config = getConfig("minimum_severity: \"WARN\"\nprocessors: []\n");
-
-    SeverityBasedLogRecordProcessorComponentProvider provider =
-        new SeverityBasedLogRecordProcessorComponentProvider();
-
-    assertThatThrownBy(() -> provider.create(config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("At least one processor is required for severity_based log processors");
-  }
-
-  @Test
-  void createSeverityBasedProcessor_MultipleProcessors() {
+  void createSeverityBasedProcessor_SingleDelegate() {
     DeclarativeConfigProperties config =
         getConfig(
             "minimum_severity: \"INFO\"\n"
-                + "processors:\n"
-                + "  - simple:\n"
-                + "      exporter:\n"
-                + "        console: {}\n"
-                + "  - simple:\n"
-                + "      exporter:\n"
-                + "        console: {}\n");
+                + "delegate:\n"
+                + "  simple:\n"
+                + "    exporter:\n"
+                + "      console: {}\n");
 
     SeverityBasedLogRecordProcessorComponentProvider provider =
         new SeverityBasedLogRecordProcessorComponentProvider();

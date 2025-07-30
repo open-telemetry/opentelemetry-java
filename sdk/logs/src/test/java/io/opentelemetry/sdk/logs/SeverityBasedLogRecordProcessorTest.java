@@ -28,8 +28,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SeverityBasedLogRecordProcessorTest {
 
-  @Mock private LogRecordProcessor processor1;
-  @Mock private LogRecordProcessor processor2;
+  @Mock private LogRecordProcessor delegate;
   @Mock private ReadWriteLogRecord logRecord;
 
   private Context context;
@@ -37,84 +36,46 @@ class SeverityBasedLogRecordProcessorTest {
   @BeforeEach
   void setUp() {
     context = Context.current();
-    when(processor1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(processor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
-    when(processor2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(processor2.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
   void builder_RequiresMinimumSeverity() {
-    assertThatThrownBy(() -> SeverityBasedLogRecordProcessor.builder(null))
+    assertThatThrownBy(() -> SeverityBasedLogRecordProcessor.builder(null, delegate))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("minimumSeverity");
   }
 
   @Test
-  void builder_RequiresAtLeastOneProcessor() {
-    assertThatThrownBy(() -> SeverityBasedLogRecordProcessor.builder(Severity.INFO).build())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("At least one processor must be added");
-  }
-
-  @Test
-  void builder_NullProcessor() {
-    assertThatThrownBy(
-            () ->
-                SeverityBasedLogRecordProcessor.builder(Severity.INFO)
-                    .addProcessors((LogRecordProcessor) null))
+  void builder_RequiresProcessor() {
+    assertThatThrownBy(() -> SeverityBasedLogRecordProcessor.builder(Severity.INFO, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("processor");
+        .hasMessageContaining("delegate");
   }
 
   @Test
-  void builder_NullProcessorArray() {
-    assertThatThrownBy(
-            () ->
-                SeverityBasedLogRecordProcessor.builder(Severity.INFO)
-                    .addProcessors((LogRecordProcessor[]) null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("processors");
-  }
-
-  @Test
-  void builder_NullProcessorIterable() {
-    assertThatThrownBy(
-            () ->
-                SeverityBasedLogRecordProcessor.builder(Severity.INFO)
-                    .addProcessors((Iterable<LogRecordProcessor>) null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("processors");
-  }
-
-  @Test
-  void onEmit_SeverityMeetsMinimum_DelegatesToAllProcessors() {
+  void onEmit_SeverityMeetsMinimum_DelegatesToProcessor() {
     when(logRecord.getSeverity()).thenReturn(Severity.WARN);
 
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.WARN)
-            .addProcessors(processor1, processor2)
-            .build();
+        SeverityBasedLogRecordProcessor.builder(Severity.WARN, delegate).build();
 
     processor.onEmit(context, logRecord);
 
-    verify(processor1).onEmit(same(context), same(logRecord));
-    verify(processor2).onEmit(same(context), same(logRecord));
+    verify(delegate).onEmit(same(context), same(logRecord));
   }
 
   @Test
-  void onEmit_SeverityAboveMinimum_DelegatesToAllProcessors() {
+  void onEmit_SeverityAboveMinimum_DelegatesToProcessor() {
     when(logRecord.getSeverity()).thenReturn(Severity.ERROR);
 
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.WARN)
-            .addProcessors(processor1, processor2)
-            .build();
+        SeverityBasedLogRecordProcessor.builder(Severity.WARN, delegate).build();
 
     processor.onEmit(context, logRecord);
 
-    verify(processor1).onEmit(same(context), same(logRecord));
-    verify(processor2).onEmit(same(context), same(logRecord));
+    verify(delegate).onEmit(same(context), same(logRecord));
   }
 
   @Test
@@ -122,14 +83,11 @@ class SeverityBasedLogRecordProcessorTest {
     when(logRecord.getSeverity()).thenReturn(Severity.DEBUG);
 
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.WARN)
-            .addProcessors(processor1, processor2)
-            .build();
+        SeverityBasedLogRecordProcessor.builder(Severity.WARN, delegate).build();
 
     processor.onEmit(context, logRecord);
 
-    verify(processor1, never()).onEmit(any(), any());
-    verify(processor2, never()).onEmit(any(), any());
+    verify(delegate, never()).onEmit(any(), any());
   }
 
   @Test
@@ -137,17 +95,17 @@ class SeverityBasedLogRecordProcessorTest {
     when(logRecord.getSeverity()).thenReturn(Severity.UNDEFINED_SEVERITY_NUMBER);
 
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.INFO).addProcessors(processor1).build();
+        SeverityBasedLogRecordProcessor.builder(Severity.INFO, delegate).build();
 
     processor.onEmit(context, logRecord);
 
-    verify(processor1, never()).onEmit(any(), any());
+    verify(delegate, never()).onEmit(any(), any());
   }
 
   @Test
   void onEmit_VariousSeverityLevels() {
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.WARN).addProcessors(processor1).build();
+        SeverityBasedLogRecordProcessor.builder(Severity.WARN, delegate).build();
 
     // Test all severity levels
     testSeverityLevel(processor, Severity.UNDEFINED_SEVERITY_NUMBER, /* shouldDelegate= */ false);
@@ -184,49 +142,43 @@ class SeverityBasedLogRecordProcessorTest {
     processor.onEmit(context, logRecord);
 
     if (shouldDelegate) {
-      verify(processor1).onEmit(same(context), same(logRecord));
+      verify(delegate).onEmit(same(context), same(logRecord));
     } else {
-      verify(processor1, never()).onEmit(same(context), same(logRecord));
+      verify(delegate, never()).onEmit(same(context), same(logRecord));
     }
 
     // Reset mock for next test
-    org.mockito.Mockito.reset(processor1);
-    when(processor1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    when(processor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    org.mockito.Mockito.reset(delegate);
+    when(delegate.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
-  void shutdown_DelegatesToAllProcessors() {
+  void shutdown_DelegatesToProcessor() {
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.INFO)
-            .addProcessors(processor1, processor2)
-            .build();
+        SeverityBasedLogRecordProcessor.builder(Severity.INFO, delegate).build();
 
     CompletableResultCode result = processor.shutdown();
 
-    verify(processor1).shutdown();
-    verify(processor2).shutdown();
+    verify(delegate).shutdown();
     assertThat(result.isSuccess()).isTrue();
   }
 
   @Test
-  void forceFlush_DelegatesToAllProcessors() {
+  void forceFlush_DelegatesToProcessor() {
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.INFO)
-            .addProcessors(processor1, processor2)
-            .build();
+        SeverityBasedLogRecordProcessor.builder(Severity.INFO, delegate).build();
 
     CompletableResultCode result = processor.forceFlush();
 
-    verify(processor1).forceFlush();
-    verify(processor2).forceFlush();
+    verify(delegate).forceFlush();
     assertThat(result.isSuccess()).isTrue();
   }
 
   @Test
   void toString_Valid() {
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.WARN).addProcessors(processor1).build();
+        SeverityBasedLogRecordProcessor.builder(Severity.WARN, delegate).build();
 
     String toString = processor.toString();
     assertThat(toString).contains("SeverityBasedLogRecordProcessor");
@@ -236,35 +188,27 @@ class SeverityBasedLogRecordProcessorTest {
 
   @Test
   void shutdown_ProcessorFailure() {
-    when(processor1.shutdown()).thenReturn(CompletableResultCode.ofFailure());
-    when(processor2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.shutdown()).thenReturn(CompletableResultCode.ofFailure());
 
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.INFO)
-            .addProcessors(processor1, processor2)
-            .build();
+        SeverityBasedLogRecordProcessor.builder(Severity.INFO, delegate).build();
 
     CompletableResultCode result = processor.shutdown();
 
-    verify(processor1).shutdown();
-    verify(processor2).shutdown();
+    verify(delegate).shutdown();
     assertThat(result.isSuccess()).isFalse();
   }
 
   @Test
   void forceFlush_ProcessorFailure() {
-    when(processor1.forceFlush()).thenReturn(CompletableResultCode.ofFailure());
-    when(processor2.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(delegate.forceFlush()).thenReturn(CompletableResultCode.ofFailure());
 
     SeverityBasedLogRecordProcessor processor =
-        SeverityBasedLogRecordProcessor.builder(Severity.INFO)
-            .addProcessors(processor1, processor2)
-            .build();
+        SeverityBasedLogRecordProcessor.builder(Severity.INFO, delegate).build();
 
     CompletableResultCode result = processor.forceFlush();
 
-    verify(processor1).forceFlush();
-    verify(processor2).forceFlush();
+    verify(delegate).forceFlush();
     assertThat(result.isSuccess()).isFalse();
   }
 }

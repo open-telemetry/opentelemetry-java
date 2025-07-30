@@ -11,8 +11,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SeverityBasedLogRecordProcessor;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * ComponentProvider for SeverityBasedLogRecordProcessor to support declarative configuration.
@@ -48,21 +46,13 @@ public class SeverityBasedLogRecordProcessorComponentProvider
       throw new IllegalArgumentException("Invalid severity value: " + minimumSeverityStr, e);
     }
 
-    List<DeclarativeConfigProperties> processorConfigs = config.getStructuredList("processors");
-    if (processorConfigs == null || processorConfigs.isEmpty()) {
-      throw new IllegalArgumentException(
-          "At least one processor is required for severity_based log processors");
+    DeclarativeConfigProperties delegateConfig = config.getStructured("delegate");
+    if (delegateConfig == null) {
+      throw new IllegalArgumentException("delegate is required for severity_based log processors");
     }
 
-    List<LogRecordProcessor> processors = new ArrayList<>();
-    for (DeclarativeConfigProperties processorConfig : processorConfigs) {
-      LogRecordProcessor processor =
-          DeclarativeConfiguration.createLogRecordProcessor(processorConfig);
-      processors.add(processor);
-    }
+    LogRecordProcessor delegate = DeclarativeConfiguration.createLogRecordProcessor(delegateConfig);
 
-    return SeverityBasedLogRecordProcessor.builder(minimumSeverity)
-        .addProcessors(processors)
-        .build();
+    return SeverityBasedLogRecordProcessor.builder(minimumSeverity, delegate).build();
   }
 }

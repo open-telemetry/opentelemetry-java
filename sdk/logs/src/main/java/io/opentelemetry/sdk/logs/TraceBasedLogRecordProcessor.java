@@ -9,31 +9,29 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.util.List;
 
 /**
- * A {@link LogRecordProcessor} that filters out log records associated with
- * sampled out spans.
- * 
- * Log records not tied to any span (invalid span context) are not sampled out.
+ * A {@link LogRecordProcessor} that filters out log records associated with sampled out spans.
+ *
+ * <p>Log records not tied to any span (invalid span context) are not sampled out.
  */
 public final class TraceBasedLogRecordProcessor implements LogRecordProcessor {
 
   private final LogRecordProcessor delegate;
 
-  TraceBasedLogRecordProcessor(List<LogRecordProcessor> processors) {
-    requireNonNull(processors, "processors");
-    this.delegate = LogRecordProcessor.composite(processors);
+  TraceBasedLogRecordProcessor(LogRecordProcessor delegate) {
+    this.delegate = requireNonNull(delegate, "delegate");
   }
 
   /**
    * Returns a new {@link TraceBasedLogRecordProcessorBuilder} to construct a {@link
    * TraceBasedLogRecordProcessor}.
    *
+   * @param delegate the processor to delegate to
    * @return a new {@link TraceBasedLogRecordProcessorBuilder}
    */
-  public static TraceBasedLogRecordProcessorBuilder builder() {
-    return new TraceBasedLogRecordProcessorBuilder();
+  public static TraceBasedLogRecordProcessorBuilder builder(LogRecordProcessor delegate) {
+    return new TraceBasedLogRecordProcessorBuilder(delegate);
   }
 
   @Override
