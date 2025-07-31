@@ -96,10 +96,9 @@ class DeclarativeConfigurationTest {
     assertThatThrownBy(
             () ->
                 AutoConfiguredOpenTelemetrySdk.builder()
-                    .addPropertiesSupplier(() -> singletonMap("otel.config.file", "foo"))
-                    .addPropertiesSupplier(
-                        () -> singletonMap("otel.experimental.config.file", "foo"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                    .setConfig(
+                        DefaultConfigProperties.createFromMap(
+                            Collections.singletonMap("otel.experimental.config.file", "foo")))
                     .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Configuration file not found");
