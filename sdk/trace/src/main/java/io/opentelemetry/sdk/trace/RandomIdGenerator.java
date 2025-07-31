@@ -8,10 +8,11 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.internal.RandomSupplier;
+import io.opentelemetry.sdk.trace.internal.ExtendedIdGenerator;
 import java.util.Random;
 import java.util.function.Supplier;
 
-enum RandomIdGenerator implements IdGenerator {
+enum RandomIdGenerator implements IdGenerator, ExtendedIdGenerator {
   INSTANCE;
 
   private static final long INVALID_ID = 0;
@@ -41,5 +42,10 @@ enum RandomIdGenerator implements IdGenerator {
   @Override
   public String toString() {
     return "RandomIdGenerator{}";
+  }
+
+  @Override
+  public boolean randomTraceId() {
+    return true;
   }
 }

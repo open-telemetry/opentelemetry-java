@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.trace.data.LinkData;
+import io.opentelemetry.sdk.trace.internal.ExtendedIdGenerator;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
@@ -34,6 +35,9 @@ import javax.annotation.Nullable;
 
 /** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
 class SdkSpanBuilder implements SpanBuilder {
+
+  // TODO: Move to ImmutableTraceFlags when W3C Trace Context Level 2 is finalized.
+  private static final byte TRACE_FLAGS_RANDOM_BIT = 0x10;
 
   private final String spanName;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -193,13 +197,22 @@ class SdkSpanBuilder implements SpanBuilder {
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
     SamplingDecision samplingDecision = samplingResult.getDecision();
 
+    TraceFlags traceFlags =
+        isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault();
+    if (idGenerator instanceof ExtendedIdGenerator) {
+      boolean randomTraceId = ((ExtendedIdGenerator) idGenerator).randomTraceId();
+      if (randomTraceId) {
+        traceFlags = TraceFlags.fromByte((byte) (traceFlags.asByte() | TRACE_FLAGS_RANDOM_BIT));
+      }
+    }
+
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
         ImmutableSpanContext.create(
             traceId,
             spanId,
-            isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
+            traceFlags,
             samplingResultTraceState,
             /* remote= */ false,
             tracerSharedState.isIdGeneratorSafeToSkipIdValidation());

@@ -33,6 +33,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.internal.ExtendedIdGenerator;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -965,6 +966,61 @@ class SdkSpanBuilderTest {
     assertThat(SdkSpanBuilder.isRecording(SamplingDecision.RECORD_AND_SAMPLE)).isTrue();
   }
 
+  @Test
+  void traceFlags() {
+    // Default ID generator and sampler populate both bits.
+    assertThat(
+            sdkTracer.spanBuilder(SPAN_NAME).startSpan().getSpanContext().getTraceFlags().asByte())
+        .isEqualTo((byte) 0x11);
+
+    SdkTracerProvider tracerSdkFactory =
+        SdkTracerProvider.builder()
+            .setIdGenerator(
+                new IdGenerator() {
+                  @Override
+                  public String generateSpanId() {
+                    return "111";
+                  }
+
+                  @Override
+                  public String generateTraceId() {
+                    return "222";
+                  }
+                })
+            .addSpanProcessor(mockedSpanProcessor)
+            .build();
+    SdkTracer sdkTracer = (SdkTracer) tracerSdkFactory.get("SpanBuilderSdkTest");
+    assertThat(
+            sdkTracer.spanBuilder(SPAN_NAME).startSpan().getSpanContext().getTraceFlags().asByte())
+        .isEqualTo((byte) 0x01);
+
+    tracerSdkFactory =
+        SdkTracerProvider.builder()
+            .setIdGenerator(
+                new ExtendedIdGenerator() {
+                  @Override
+                  public boolean randomTraceId() {
+                    return false;
+                  }
+
+                  @Override
+                  public String generateSpanId() {
+                    return "111";
+                  }
+
+                  @Override
+                  public String generateTraceId() {
+                    return "222";
+                  }
+                })
+            .addSpanProcessor(mockedSpanProcessor)
+            .build();
+    sdkTracer = (SdkTracer) tracerSdkFactory.get("SpanBuilderSdkTest");
+    assertThat(
+            sdkTracer.spanBuilder(SPAN_NAME).startSpan().getSpanContext().getTraceFlags().asByte())
+        .isEqualTo((byte) 0x01);
+  }
+
   // SpanData is very commonly used in unit tests, we want the toString to make sure it's relatively
   // easy to understand failure messages.
   // TODO(anuraaga): Currently it isn't - we even return the same (or maybe incorrect?) stuff twice.
@@ -983,7 +1039,7 @@ class SdkSpanBuilderTest {
             "SpanData\\{spanContext=ImmutableSpanContext\\{"
                 + "traceId=[0-9a-f]{32}, "
                 + "spanId=[0-9a-f]{16}, "
-                + "traceFlags=01, "
+                + "traceFlags=11, "
                 + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=true}, "
                 + "parentSpanContext=ImmutableSpanContext\\{"
                 + "traceId=00000000000000000000000000000000, "
