@@ -43,9 +43,4 @@ enum RandomIdGenerator implements IdGenerator, ExtendedIdGenerator {
   public String toString() {
     return "RandomIdGenerator{}";
   }
-
-  @Override
-  public boolean randomTraceId() {
-    return true;
-  }
 }
