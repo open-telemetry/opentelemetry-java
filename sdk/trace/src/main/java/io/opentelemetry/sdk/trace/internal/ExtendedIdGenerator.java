@@ -20,5 +20,8 @@ public interface ExtendedIdGenerator extends IdGenerator {
    * Returns {@code true} if the {@link IdGenerator} returns trace IDs with the right-most 7 bytes
    * being random.
    */
-  boolean randomTraceId();
+  default boolean randomTraceId() {
+    // Assume IDs are random since in practice, they are.
+    return true;
+  }
 }
