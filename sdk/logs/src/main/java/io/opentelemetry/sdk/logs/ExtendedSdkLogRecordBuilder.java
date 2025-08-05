@@ -25,8 +25,10 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   @Nullable private ExtendedAttributesMap extendedAttributes;
 
   ExtendedSdkLogRecordBuilder(
-      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
-    super(loggerSharedState, instrumentationScopeInfo);
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      SdkLogger logger) {
+    super(loggerSharedState, instrumentationScopeInfo, logger);
   }
 
   @Override
@@ -132,7 +134,12 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     if (loggerSharedState.hasBeenShutdown()) {
       return;
     }
+
     Context context = this.context == null ? Context.current() : this.context;
+    if (!logger.isEnabled(severity, context)) {
+      return;
+    }
+
     long observedTimestampEpochNanos =
         this.observedTimestampEpochNanos == 0
             ? this.loggerSharedState.getClock().now()

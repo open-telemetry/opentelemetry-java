@@ -24,6 +24,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +58,8 @@ class SdkLogRecordBuilderTest {
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
     when(loggerSharedState.getClock()).thenReturn(clock);
 
-    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO);
+    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, LoggerConfig.enabled());
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
   }
 
   @Test
@@ -119,6 +121,78 @@ class SdkLogRecordBuilderTest {
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
         .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
+  }
+
+  @Test
+  void emit_WithMinimumSeverityConfiguration() {
+    LoggerConfig config =
+        LoggerConfig.builder().setMinimumSeverity(Severity.INFO.getSeverityNumber()).build();
+    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, config);
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
+
+    builder.setBody("too-low").setSeverity(Severity.DEBUG).emit();
+    assertThat(emittedLog.get()).isNull();
+
+    builder.setBody("allowed").setSeverity(Severity.INFO).emit();
+    assertThat(emittedLog.get().toLogRecordData()).hasBody("allowed");
+  }
+
+  @Test
+  void emit_DropsUnsampledTraceWhenTraceBased() {
+    LoggerConfig config = LoggerConfig.builder().setTraceBased(true).build();
+    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, config);
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
+
+    SpanContext unsampledSpanContext =
+        SpanContext.create(
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bbbbbbbbbbbbbbbb",
+            TraceFlags.getDefault(),
+            TraceState.getDefault());
+    builder
+        .setBody("unsampled")
+        .setContext(Span.wrap(unsampledSpanContext).storeInContext(Context.root()))
+        .emit();
+    assertThat(emittedLog.get()).isNull();
+
+    SpanContext sampledSpanContext =
+        SpanContext.create(
+            "cccccccccccccccccccccccccccccccc",
+            "dddddddddddddddd",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+    builder
+        .setBody("sampled")
+        .setContext(Span.wrap(sampledSpanContext).storeInContext(Context.root()))
+        .emit();
+    assertThat(emittedLog.get().toLogRecordData())
+        .hasSpanContext(sampledSpanContext)
+        .hasBody("sampled");
+  }
+
+  @Test
+  void emit_AllowsUndefinedSeverityWithMinimumSeverity() {
+    LoggerConfig config =
+        LoggerConfig.builder().setMinimumSeverity(Severity.WARN.getSeverityNumber()).build();
+    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, config);
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
+
+    // Undefined severity should bypass the minimum severity filter
+    builder.setBody("undefined-severity").setSeverity(Severity.UNDEFINED_SEVERITY_NUMBER).emit();
+    assertThat(emittedLog.get().toLogRecordData())
+        .hasBody("undefined-severity")
+        .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
+  }
+
+  @Test
+  void emit_AllowsNoTraceContextWithTraceBased() {
+    LoggerConfig config = LoggerConfig.builder().setTraceBased(true).build();
+    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, config);
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
+
+    // No trace context should bypass the trace-based filter
+    builder.setBody("no-trace-context").emit();
+    assertThat(emittedLog.get().toLogRecordData()).hasBody("no-trace-context");
   }
 
   @Test
