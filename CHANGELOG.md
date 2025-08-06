@@ -3,16 +3,16 @@
 ## Unreleased
 
 ### SDK
- 
+
 * File based config will log the wrong file format, when applicable.
   ([#7498](https://github.com/open-telemetry/opentelemetry-java/pull/7498))
 
-#### Exporters 
- 
-* Change `okhttp` dependency to `okhttp-jvm`, which fixes missing class failures in 
+#### Exporters
+
+* Change `okhttp` dependency to `okhttp-jvm`, which fixes missing class failures in
   transitive dependencies.
   ([#7517](https://github.com/open-telemetry/opentelemetry-java/pull/7517))
- 
+
 ## Version 1.52.0 (2025-07-11)
 
 ### API
