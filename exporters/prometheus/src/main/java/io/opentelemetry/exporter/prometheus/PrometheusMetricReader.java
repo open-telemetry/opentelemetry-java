@@ -29,6 +29,8 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   private final Otel2PrometheusConverter converter;
 
   /**
+   * This constructor is deprecated and will be removed in a future release.
+   *
    * @deprecated use {@link PrometheusMetricReader#PrometheusMetricReader(OtelScopeMode, Predicate)}
    *     instead.
    */
