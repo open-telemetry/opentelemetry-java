@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Declarative configuration SPI implementation for {@link PrometheusHttpServer}.

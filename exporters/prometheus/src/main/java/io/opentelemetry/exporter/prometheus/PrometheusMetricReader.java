@@ -28,6 +28,17 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
   private final Otel2PrometheusConverter converter;
 
+  /**
+   * @deprecated use {@link PrometheusMetricReader#PrometheusMetricReader(OtelScopeMode, Predicate)}
+   *     instead.
+   */
+  @SuppressWarnings("unused")
+  @Deprecated
+  public PrometheusMetricReader(
+      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    this(OtelScopeMode.LABELS_AND_SCOPE_INFO, allowedResourceAttributesFilter);
+  }
+
   // TODO: refactor to public static create or builder pattern to align with project style
   /** See {@link Otel2PrometheusConverter#Otel2PrometheusConverter(OtelScopeMode, Predicate)}. */
   public PrometheusMetricReader(
