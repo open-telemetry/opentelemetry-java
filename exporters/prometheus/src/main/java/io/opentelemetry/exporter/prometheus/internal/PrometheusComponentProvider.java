@@ -48,7 +48,7 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
     }
 
     Boolean withoutScopeInfo = config.getBoolean("without_scope_info");
-    if (Objects.equals(withoutScopeInfo, true)) {
+    if (Boolean.TRUE.equals(withoutScopeInfo)) {
       prometheusBuilder.setOtelScopeMode(OtelScopeMode.LABELS_ONLY);
     }
 
