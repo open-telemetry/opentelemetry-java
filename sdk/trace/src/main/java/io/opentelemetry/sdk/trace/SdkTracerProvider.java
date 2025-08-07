@@ -5,17 +5,20 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
+import io.opentelemetry.sdk.trace.internal.SpanInstrumentation;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
@@ -54,7 +57,9 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
       ScopeConfigurator<TracerConfig> tracerConfigurator,
-      ExceptionAttributeResolver exceptionAttributeResolver) {
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      InternalTelemetryVersion internalTelemetryVersion,
+      Supplier<MeterProvider> meterProviderSupplier) {
     this.sharedState =
         new TracerSharedState(
             clock,
@@ -63,7 +68,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             spanLimitsSupplier,
             sampler,
             spanProcessors,
-            exceptionAttributeResolver);
+            exceptionAttributeResolver,
+            SpanInstrumentation.create(internalTelemetryVersion, meterProviderSupplier));
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->
