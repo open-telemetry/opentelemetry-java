@@ -19,7 +19,9 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -62,7 +64,9 @@ public final class OtlpConfigUtil {
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
-      Consumer<MemoryMode> setMemoryMode) {
+      Consumer<MemoryMode> setMemoryMode,
+      BiConsumer<Double, Double> setThrottlingLoggerRate,
+      Consumer<TimeUnit> setThrottlingLoggerTimeUnit) {
     setComponentLoader.accept(config.getComponentLoader());
 
     String protocol = getOtlpProtocol(dataType, config);
@@ -143,6 +147,27 @@ public final class OtlpConfigUtil {
     }
 
     ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
+
+    double logRateStr = config.getDouble("otel.exporter.otlp.lograte", 5);
+    double logThrottleRateStr = config.getDouble("otel.exporter.otlp.throttledlograte", 1);
+    setThrottlingLoggerRate.accept(logRateStr, logThrottleRateStr);
+
+    String logTimeUnitStr = config.getString("otel.exporter.otlp.logtimeunit", "MINUTES");
+    TimeUnit logTimeUnit;
+    switch (logTimeUnitStr.toUpperCase(Locale.ROOT)) {
+      case "SECONDS":
+        logTimeUnit = TimeUnit.SECONDS;
+        break;
+      case "HOURS":
+        logTimeUnit = TimeUnit.HOURS;
+        break;
+      case "DAYS":
+        logTimeUnit = TimeUnit.DAYS;
+        break;
+      default:
+        logTimeUnit = TimeUnit.MINUTES;
+    }
+    setThrottlingLoggerTimeUnit.accept(logTimeUnit);
   }
 
   static void configureOtlpHeaders(
