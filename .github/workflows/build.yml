@@ -85,7 +85,7 @@ jobs:
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
         # this fails on windows because of the bash-specific if/then/else syntax, but that's ok
         # because we only need to run this validation once (on any platform)
-        if: ${{ matrix.os != 'windows-latest' && !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') }}
+        if: ${{ matrix.os != 'windows-latest' && !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') && !startsWith(github.ref_name, 'otelbot/update-apidiff-baseline-and-documentation-to-released-version') }}
         run: |
           # need to "git add" in case any generated files did not already exist
           git add docs/apidiffs
