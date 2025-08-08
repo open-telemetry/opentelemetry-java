@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.53.0 (2025-08-08)
+
 ### SDK
 
 * File based config will log the wrong file format, when applicable.
