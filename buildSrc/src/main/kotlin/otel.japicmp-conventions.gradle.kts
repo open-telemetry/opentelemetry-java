@@ -16,7 +16,10 @@ plugins {
  */
 val latestReleasedVersion: String by lazy {
   // hack to find the current released version of the project
-  val temp: Configuration = configurations.create("tempConfig")
+  val temp: Configuration = configurations.create("tempConfig") {
+    resolutionStrategy.cacheChangingModulesFor(0, "seconds")
+    resolutionStrategy.cacheDynamicVersionsFor(0, "seconds")
+  }
   // pick the api, since it's always there.
   dependencies.add(temp.name, "io.opentelemetry:opentelemetry-api:latest.release")
   val moduleVersion = configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
