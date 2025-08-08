@@ -179,12 +179,13 @@ class CollectorIntegrationTest {
     NumberDataPoint requestTotalDataPoint = requestTotalSum.getDataPoints(0);
     assertThat(requestTotalDataPoint.getAsDouble()).isEqualTo(3.0);
     assertThat(requestTotalDataPoint.getAttributesList())
-        .containsExactlyInAnyOrder(
-            stringKeyValue("animal", "bear"),
-            // Scope name and version are serialized as attributes to disambiguate metrics with the
-            // same name in different scopes
-            stringKeyValue("otel_scope_name", "test"),
-            stringKeyValue("otel_scope_version", "1.0.0"));
+        .containsExactlyInAnyOrder(stringKeyValue("animal", "bear"));
+    // Scope name and version are serialized as attributes to disambiguate metrics with the
+    // same name in different scopes
+    // TODO: potentially add these back or remove entirely, see
+    // https://github.com/open-telemetry/opentelemetry-java/issues/7544
+    // stringKeyValue("otel_scope_name", "test"),
+    // stringKeyValue("otel_scope_version", "1.0.0"));
   }
 
   private static KeyValue stringKeyValue(String key, String value) {
