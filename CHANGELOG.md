@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.53.0 (2025-08-08)
 
 ### SDK
 
