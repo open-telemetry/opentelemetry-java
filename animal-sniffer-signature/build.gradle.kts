@@ -22,9 +22,6 @@ val generatedSignature = configurations.create("generatedSignature") {
   isCanBeConsumed = true
   isCanBeResolved = false
 }
-configurations.add(signatureJar)
-configurations.add(signatureJarClasspath)
-configurations.add(generatedSignature)
 
 dependencies {
   signature("com.toasttab.android:gummy-bears-api-23:0.12.0@signature")
