@@ -13,7 +13,9 @@ jobs:
     permissions:
       contents: write # for git push to benchmarks branch
     name: Benchmark SDK
-    runs-on: equinix-bare-metal
+    runs-on: oracle-bare-metal-64cpu-512gb-x86-64
+    container:
+      image: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
