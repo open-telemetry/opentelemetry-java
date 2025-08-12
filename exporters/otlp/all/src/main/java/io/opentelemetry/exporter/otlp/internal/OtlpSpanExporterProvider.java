@@ -52,7 +52,9 @@ public class OtlpSpanExporterProvider
           builder::setTrustedCertificates,
           builder::setClientTls,
           builder::setRetryPolicy,
-          builder::setMemoryMode);
+          builder::setMemoryMode,
+          builder::setThrottlingLoggerRate,
+          builder::setThrottlingLoggerTimeUnit);
       builder.setMeterProvider(meterProviderRef::get);
 
       return builder.build();
@@ -70,7 +72,9 @@ public class OtlpSpanExporterProvider
           builder::setTrustedCertificates,
           builder::setClientTls,
           builder::setRetryPolicy,
-          builder::setMemoryMode);
+          builder::setMemoryMode,
+          builder::setThrottlingLoggerRate,
+          builder::setThrottlingLoggerTimeUnit);
       builder.setMeterProvider(meterProviderRef::get);
 
       return builder.build();

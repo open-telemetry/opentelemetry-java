@@ -362,6 +362,19 @@ public final class OtlpGrpcMetricExporterBuilder {
     return this;
   }
 
+  /** Set the initial and throttled rate for the ThrottlingLogger. */
+  public OtlpGrpcMetricExporterBuilder setThrottlingLoggerRate(
+      double rateLimit, double throttledRateLimit) {
+    delegate.setLogThrottlingRate(rateLimit, throttledRateLimit);
+    return this;
+  }
+
+  /** Set the time unit used for the ThrottlingLogger. */
+  public OtlpGrpcMetricExporterBuilder setThrottlingLoggerTimeUnit(TimeUnit rateTimeUnit) {
+    delegate.setLogThrottlingTimeUnit(rateTimeUnit);
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *

@@ -70,6 +70,10 @@ public final class HttpExporterBuilder<T extends Marshaler> {
       ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
 
+  private double throttlingLoggerRateLimit = 5;
+  private double throttlingLoggerThrottledRateLimit = 1;
+  private TimeUnit throttlingLoggerTimeUnit = TimeUnit.MINUTES;
+
   public HttpExporterBuilder(
       StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
     this.exporterType = exporterType;
@@ -187,6 +191,17 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     }
   }
 
+  public HttpExporterBuilder<T> setLogThrottlingRate(double rateLimit, double throttledRateLimit) {
+    this.throttlingLoggerRateLimit = rateLimit;
+    this.throttlingLoggerThrottledRateLimit = throttledRateLimit;
+    return this;
+  }
+
+  public HttpExporterBuilder<T> setLogThrottlingTimeUnit(TimeUnit rateTimeUnit) {
+    this.throttlingLoggerTimeUnit = rateTimeUnit;
+    return this;
+  }
+
   @SuppressWarnings("BuilderReturnThis")
   public HttpExporterBuilder<T> copy() {
     HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterType, endpoint);
@@ -205,6 +220,9 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
     copy.componentLoader = componentLoader;
+    copy.throttlingLoggerRateLimit = throttlingLoggerRateLimit;
+    copy.throttlingLoggerThrottledRateLimit = throttlingLoggerThrottledRateLimit;
+    copy.throttlingLoggerTimeUnit = throttlingLoggerTimeUnit;
     return copy;
   }
 
