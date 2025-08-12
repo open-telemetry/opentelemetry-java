@@ -12,6 +12,7 @@ public enum OtelScopeMode {
    * <p>This will eventually be the default mode, but is opt-in for now.
    */
   LABELS_ONLY,
+
   /**
    * Both labels and scope_info are exported.
    *
