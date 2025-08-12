@@ -76,7 +76,7 @@ The following credentials are required for building or publishing (and automatic
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
   * Each maintainer will have their own set of Sonotype credentials with permission to publish to
     the `io.opentelemetry` group prefix.
-  * [Register to publish](https://central.sonatype.org/register/central-portal/#and-publishing-is-easy)
+  * [Register to publish](https://central.sonatype.org/register/central-portal/#publishing)
     and comment on [OSSRH-63768](https://issues.sonatype.org/browse/OSSRH-63768) with confirmation
     from another maintainer.
   * To obtain `SONATYPE_USER` and `SONATYPE_KEY` for your account, login

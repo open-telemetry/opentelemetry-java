@@ -2758,7 +2758,7 @@ should not be many. Thanks for bearing with us on this.
   This provides improved ergonomics and control around autoconfigure customization.
 - Added experimental support for enabling OTLP retry support for the `grpc` exporters. If enabled
   via `otel.experimental.exporter.otlp.retry.enabled`,
-  a [default retry policy](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#otlp-exporter-retry)
+  a default retry policy](https://opentelemetry.io/docs/languages/java/configuration/#properties-exporters)
   will be used.
 - The metric export interval of `PeriodicMetricReader` is now configured
   via `otel.metric.export.interval`. The existing `otel.imr.export.interval` property has been
