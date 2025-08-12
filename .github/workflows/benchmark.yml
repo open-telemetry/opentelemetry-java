@@ -15,10 +15,10 @@ jobs:
     name: Benchmark SDK
     runs-on: oracle-bare-metal-64cpu-512gb-x86-64
     container:
-      image: ubuntu:24.04
+      image: ubuntu:24.04@sha256:a08e551cb33850e4740772b38217fc1796a66da2506d312abe51acda354ff061
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       - id: setup-java
         name: Set up Java for build
@@ -28,7 +28,7 @@ jobs:
           java-version: 17
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@ac638b010cf58a27ee6c972d7336334ccaf61c96 # v4.4.1
+        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
       - name: Run jmh
         run: ./gradlew jmhJar
 
