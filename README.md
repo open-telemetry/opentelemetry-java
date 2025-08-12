@@ -235,7 +235,7 @@ See the [VERSIONING.md](VERSIONING.md) for complete details on compatibility pol
 
 ## Contacting us
 
-We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
+We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#implementation-sigs).
 
 To report a bug, or request a new feature,
 please [open an issue](https://github.com/open-telemetry/opentelemetry-java/issues/new/choose).
