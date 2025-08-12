@@ -214,7 +214,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   public CompletableResultCode shutdown() {
     client.dispatcher().cancelAll();
     if (managedExecutor) {
-      client.dispatcher().executorService().shutdownNow();
+      client.dispatcher().executorService().shutdown();
     }
     client.connectionPool().evictAll();
     return CompletableResultCode.ofSuccess();
