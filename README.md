@@ -1,6 +1,6 @@
 # OpenTelemetry Java
 
-[![Maven Central][maven-image]][maven-url]
+[![Release](https://img.shields.io/github/v/release/open-telemetry/opentelemetry-java?include_prereleases&style=)](https://github.com/open-telemetry/opentelemetry-java/releases/)
 [![Coverage Status][codecov-image]][codecov-url]
 [![FOSSA License Status](https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-java.svg?type=shield&issueType=license)](https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-java?ref=badge_shield&issueType=license)
 [![FOSSA Security Status](https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-java.svg?type=shield&issueType=security)](https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-java?ref=badge_shield&issueType=security)
@@ -303,5 +303,3 @@ We are currently resource constrained and are actively seeking new contributors 
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/graph/badge.svg
 [codecov-url]: https://app.codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/
 [dependencies-and-boms]: https://opentelemetry.io/docs/languages/java/intro/#dependencies-and-boms
-[maven-image]: https://maven-badges.sml.io/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
-[maven-url]: https://maven-badges.sml.io/maven-central/io.opentelemetry/opentelemetry-api
