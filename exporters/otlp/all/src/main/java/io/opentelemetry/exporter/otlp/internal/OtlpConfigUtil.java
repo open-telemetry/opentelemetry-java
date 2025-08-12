@@ -33,7 +33,7 @@ public final class OtlpConfigUtil {
 
   private static final Logger logger = Logger.getLogger(OtlpConfigUtil.class.getName());
 
-  public static final String DATA_TYPE_TRACES = "traces";
+  public static final String DATA_TYPE_TRACES="traces";
   public static final String DATA_TYPE_METRICS = "metrics";
   public static final String DATA_TYPE_LOGS = "logs";
 
