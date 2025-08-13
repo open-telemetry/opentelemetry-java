@@ -52,7 +52,7 @@ jobs:
           - os: macos-13
             test-java-version: 23
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
@@ -69,7 +69,7 @@ jobs:
           java-version: 17
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@ac638b010cf58a27ee6c972d7336334ccaf61c96 # v4.4.1
+        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
       - name: Build
         run: >
             ./gradlew build
@@ -135,7 +135,7 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       - id: setup-java
         name: Set up Java
@@ -145,7 +145,7 @@ jobs:
           java-version: 17
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@ac638b010cf58a27ee6c972d7336334ccaf61c96 # v4.4.1
+        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
         # skipping release branches because the versions in those branches are not snapshots
         # (also this skips pull requests)
         if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
@@ -170,7 +170,7 @@ jobs:
           - 21
           - 23
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - uses: graalvm/setup-graalvm@7f488cf82a3629ee755e4e97342c01d6bed318fa # v1.3.5
         with:
           java-version: ${{ matrix.test-graal-version }}
