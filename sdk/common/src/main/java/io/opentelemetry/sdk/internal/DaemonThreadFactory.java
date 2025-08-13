@@ -9,6 +9,7 @@ import io.opentelemetry.context.Context;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 
 /**
  * A {@link ThreadFactory} that delegates to {@code Executors.defaultThreadFactory()} and marks all
@@ -45,6 +46,8 @@ public final class DaemonThreadFactory implements ThreadFactory {
     Thread t =
         delegate.newThread(
             propagateContextForTesting ? Context.current().wrap(runnable) : runnable);
+    t.setUncaughtExceptionHandler(
+        new ManagedUncaughtExceptionHandler(t.getUncaughtExceptionHandler()));
     try {
       t.setDaemon(true);
       t.setName(namePrefix + "-" + counter.incrementAndGet());
@@ -52,5 +55,25 @@ public final class DaemonThreadFactory implements ThreadFactory {
       // Well, we tried.
     }
     return t;
+  }
+
+  private static class ManagedUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+    @Nullable private final Thread.UncaughtExceptionHandler delegate;
+
+    private ManagedUncaughtExceptionHandler(@Nullable Thread.UncaughtExceptionHandler delegate) {
+      this.delegate = delegate;
+    }
+
+    @SuppressWarnings({"Interruption", "ThrowSpecificExceptions"})
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+      if (e instanceof InterruptedException) {
+        t.interrupt();
+      } else if (delegate != null) {
+        delegate.uncaughtException(t, e);
+      } else {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }
