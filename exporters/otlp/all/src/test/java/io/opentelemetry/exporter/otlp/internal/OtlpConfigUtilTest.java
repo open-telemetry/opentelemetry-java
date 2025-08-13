@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -468,5 +469,58 @@ class OtlpConfigUtilTest {
     ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(config, aggregationRef::set);
     // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
     return aggregationRef.get();
+  }
+
+  @Test
+  void configureOtlpExporterBuilder_ThrottlingLoggerTimeUnit() {
+    // Test default value
+    assertThat(configureThrottlingLoggerTimeUnit(Collections.emptyMap()))
+        .isEqualTo(TimeUnit.MINUTES);
+    assertThat(
+            configureThrottlingLoggerTimeUnit(
+                ImmutableMap.of("otel.exporter.otlp.logtimeunit", "invalid")))
+        .isEqualTo(TimeUnit.MINUTES);
+    assertThat(
+            configureThrottlingLoggerTimeUnit(
+                ImmutableMap.of("otel.exporter.otlp.logtimeunit", "SECONDS")))
+        .isEqualTo(TimeUnit.SECONDS);
+    assertThat(
+            configureThrottlingLoggerTimeUnit(
+                ImmutableMap.of("otel.exporter.otlp.logtimeunit", "HOURS")))
+        .isEqualTo(TimeUnit.HOURS);
+    assertThat(
+            configureThrottlingLoggerTimeUnit(
+                ImmutableMap.of("otel.exporter.otlp.logtimeunit", "DAYS")))
+        .isEqualTo(TimeUnit.DAYS);
+    assertThat(
+            configureThrottlingLoggerTimeUnit(
+                ImmutableMap.of("otel.exporter.otlp.logtimeunit", "MINUTES")))
+        .isEqualTo(TimeUnit.MINUTES);
+    assertThat(
+            configureThrottlingLoggerTimeUnit(
+                ImmutableMap.of("otel.exporter.otlp.logtimeunit", "hours")))
+        .isEqualTo(TimeUnit.HOURS);
+  }
+
+  /** Configure and return the time unit. */
+  private static TimeUnit configureThrottlingLoggerTimeUnit(Map<String, String> properties) {
+    AtomicReference<TimeUnit> throttlingLoggerTimeUnit = new AtomicReference<>();
+
+    OtlpConfigUtil.configureOtlpExporterBuilder(
+        DATA_TYPE_LOGS,
+        DefaultConfigProperties.createFromMap(properties),
+        value -> {},
+        value -> {},
+        (value1, value2) -> {},
+        value -> {},
+        value -> {},
+        value -> {},
+        (value1, value2) -> {},
+        value -> {},
+        value -> {},
+        (value1, value2) -> {},
+        throttlingLoggerTimeUnit::set);
+
+    return throttlingLoggerTimeUnit.get();
   }
 }
