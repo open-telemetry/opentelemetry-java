@@ -58,7 +58,7 @@ public final class DaemonThreadFactory implements ThreadFactory {
       this.delegate = delegate;
     }
 
-    @SuppressWarnings({"Interruption", "ThrowSpecificExceptions"})
+    @SuppressWarnings("Interruption")
     @Override
     public void uncaughtException(Thread t, Throwable e) {
       if (e instanceof InterruptedException) {
