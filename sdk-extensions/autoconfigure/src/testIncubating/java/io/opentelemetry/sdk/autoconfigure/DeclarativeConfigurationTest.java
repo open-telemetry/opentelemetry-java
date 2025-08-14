@@ -115,6 +115,8 @@ class DeclarativeConfigurationTest {
 
   @Test
   void configFile_Valid() {
+    Resource expectedResource =
+        Resource.getDefault().toBuilder().put("service.name", "test").build();
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
@@ -122,8 +124,7 @@ class DeclarativeConfigurationTest {
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
-                    .setResource(
-                        Resource.getDefault().toBuilder().put("service.name", "test").build())
+                    .setResource(expectedResource)
                     .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                     .build())
             .build();
@@ -138,9 +139,7 @@ class DeclarativeConfigurationTest {
 
     assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
         .isEqualTo(expectedSdk.toString());
-    // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from
-    // file
-    assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(Resource.getDefault());
+    assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(expectedResource);
     verify(builder, times(1)).shutdownHook(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
     assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
     logCapturer.assertContains("Autoconfiguring from configuration file: " + configFilePath);
