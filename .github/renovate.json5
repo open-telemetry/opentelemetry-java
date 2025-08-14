@@ -82,4 +82,17 @@
       enabled: false
     }
   ],
+  customManagers: [
+    {
+      customType: 'regex',
+      datasourceTemplate: 'java-version',
+      managerFilePatterns: [
+        '.github/workflows/**'
+      ],
+      matchStrings: [
+        '(?<currentValue>\\d+) # renovate: datasource=java-version',
+      ],
+      depNameTemplate: 'java',
+    },
+  ],
 }
