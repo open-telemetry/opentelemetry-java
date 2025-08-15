@@ -37,6 +37,11 @@ jobs:
           cd sdk/trace/build
           java -jar libs/opentelemetry-sdk-trace-*-jmh.jar -rf json SpanBenchmark SpanPipelineBenchmark ExporterBenchmark
 
+      - name: Install Git # since Git isn't available in the container image used above
+        run: |
+          apt-get update
+          apt-get install -y git
+          
       - name: Store benchmark results
         uses: benchmark-action/github-action-benchmark@d48d326b4ca9ba73ca0cd0d59f108f9e02a381c7 # v1.20.4
         with:
