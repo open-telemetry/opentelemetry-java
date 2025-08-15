@@ -60,7 +60,7 @@ import org.testcontainers.utility.DockerImageName;
 class CollectorIntegrationTest {
 
   private static final String COLLECTOR_IMAGE =
-      "ghcr.io/open-telemetry/opentelemetry-java/otel-collector" + collectorVersion();
+      "otel/opentelemetry-collector-contrib" + collectorVersion();
 
   private static String collectorVersion() {
     String otelCollectorVersion = System.getenv("OTEL_COLLECTOR_VERSION");

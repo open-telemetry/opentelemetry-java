@@ -115,7 +115,7 @@ abstract class OtlpExporterIntegrationTest {
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   private static final String COLLECTOR_IMAGE =
-      "ghcr.io/open-telemetry/opentelemetry-java/otel-collector" + collectorVersion();
+      "otel/opentelemetry-collector-contrib" + collectorVersion();
 
   private static String collectorVersion() {
     String otelCollectorVersion = System.getenv("OTEL_COLLECTOR_VERSION");
