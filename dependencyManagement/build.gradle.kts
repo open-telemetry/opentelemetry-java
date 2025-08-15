@@ -43,7 +43,6 @@ val DEPENDENCY_BOMS = listOf(
 val DEPENDENCIES = listOf(
   "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
   "org.junit.jupiter:junit-jupiter-params:${junitVersion}",
-  "org.junit.jupiter:junit-jupiter-pioneer:${junitVersion}",
   "com.linecorp.armeria:armeria:${armeriaVersion}",
   "com.linecorp.armeria:armeria-grpc:${armeriaVersion}",
   "com.linecorp.armeria:armeria-grpc-protocol:${armeriaVersion}",
