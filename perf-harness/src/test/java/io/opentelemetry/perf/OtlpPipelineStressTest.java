@@ -68,8 +68,7 @@ public class OtlpPipelineStressTest {
 
   @Container
   public static final GenericContainer<?> collectorContainer =
-      new GenericContainer<>(
-              DockerImageName.parse("ghcr.io/open-telemetry/opentelemetry-java/otel-collector"))
+      new GenericContainer<>(DockerImageName.parse("otel/opentelemetry-collector-contrib:latest"))
           .withImagePullPolicy(PullPolicy.alwaysPull())
           .withNetwork(network)
           .withNetworkAliases("otel-collector")
@@ -94,8 +93,7 @@ public class OtlpPipelineStressTest {
 
   @Container
   public static final GenericContainer<?> toxiproxyContainer =
-      new GenericContainer<>(
-              DockerImageName.parse("ghcr.io/open-telemetry/opentelemetry-java/toxiproxy"))
+      new GenericContainer<>(DockerImageName.parse("shopify/toxiproxy:latest"))
           .withImagePullPolicy(PullPolicy.alwaysPull())
           .withNetwork(network)
           .withNetworkAliases("toxiproxy")
