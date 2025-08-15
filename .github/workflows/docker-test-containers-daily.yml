@@ -8,8 +8,23 @@ on:
 permissions:
   contents: read
 
+env:
+  # renovate: datasource=github-releases depName=opentelemetry-collector packageName=open-telemetry/opentelemetry-collector-releases
+  OTEL_COLLECTOR_VERSION: v0.132.2
+
 jobs:
+  set-collector-version:
+    runs-on: ubuntu-latest
+    outputs:
+      otel_collector_version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - name: Set OpenTelemetry Collector version
+        id: set-version
+        # strip the "v" from the version
+        run: echo "version=${OTEL_COLLECTOR_VERSION#v}" >> $GITHUB_OUTPUT
+
   copy-images:
+    needs: set-collector-version
     permissions:
       contents: read
       packages: write
@@ -18,8 +33,8 @@ jobs:
         include:
           - source: jaegertracing/all-in-one:1.32
             target_image: jaeger:1.32
-          - source: otel/opentelemetry-collector-contrib:latest
-            target_image: otel-collector
+          - source: otel/opentelemetry-collector-contrib:${{ needs.set-collector-version.outputs.otel_collector_version }}
+            target_image: otel-collector:${{ needs.set-collector-version.outputs.otel_collector_version }}
           - source: shopify/toxiproxy:latest
             target_image: toxiproxy
           - source: eclipse-temurin:17-jre-focal
