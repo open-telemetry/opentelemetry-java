@@ -8,10 +8,9 @@ on:
   pull_request:
   workflow_dispatch:
 
-#env:
-  # uncomment once the collector has been pushed in the daily workflow
+env:
   # renovate: datasource=github-releases depName=opentelemetry-collector packageName=open-telemetry/opentelemetry-collector-releases
-  #  OTEL_COLLECTOR_VERSION: v0.132.2
+  OTEL_COLLECTOR_VERSION: v0.132.2
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
@@ -77,11 +76,11 @@ jobs:
         uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
       - name: Build
         run: >
-            ./gradlew build
-            ${{ matrix.coverage && 'jacocoTestReport' || '' }}
-            -PtestJavaVersion=${{ matrix.test-java-version }}
-            "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
-            "-Porg.gradle.java.installations.auto-download=false"
+          ./gradlew build
+          ${{ matrix.coverage && 'jacocoTestReport' || '' }}
+          -PtestJavaVersion=${{ matrix.test-java-version }}
+          "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
+          "-Porg.gradle.java.installations.auto-download=false"
         env:
           # JMH-based tests run only  if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
