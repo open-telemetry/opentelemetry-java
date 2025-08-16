@@ -8,10 +8,9 @@ on:
   pull_request:
   workflow_dispatch:
 
-#env:
-  # uncomment once the collector has been pushed in the daily workflow
+env:
   # renovate: datasource=github-releases depName=opentelemetry-collector packageName=open-telemetry/opentelemetry-collector-releases
-  #  OTEL_COLLECTOR_VERSION: v0.132.2
+  OTEL_COLLECTOR_VERSION: v0.132.2
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
