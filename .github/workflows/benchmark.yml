@@ -16,7 +16,7 @@ jobs:
     runs-on: oracle-bare-metal-64cpu-512gb-x86-64
     container:
       image: ubuntu:24.04@sha256:7c06e91f61fa88c08cc74f7e1b7c69ae24910d745357e0dfe1d2c0322aaf20f9
-    timeout-minutes: 10
+    timeout-minutes: 20 # since there is only a single bare metal runner across all repos
     steps:
       - name: Install Git
         run: |
