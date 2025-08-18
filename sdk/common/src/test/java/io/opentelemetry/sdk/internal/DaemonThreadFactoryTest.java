@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,7 +34,7 @@ class DaemonThreadFactoryTest {
         };
     ExecutorService service =
         Executors.newSingleThreadExecutor(new DaemonThreadFactory("test", delegateFactory));
-    Runnable runnable =
+    Callable<Boolean> callable =
         () -> {
           Thread.UncaughtExceptionHandler uncaughtExceptionHandler =
               Thread.currentThread().getUncaughtExceptionHandler();
@@ -53,8 +54,9 @@ class DaemonThreadFactoryTest {
           IllegalStateException e = new IllegalStateException();
           uncaughtExceptionHandler.uncaughtException(threadMock, e);
           verify(defaultHandler).uncaughtException(threadMock, e);
+          return true;
         };
 
-    service.submit(runnable).get(5, TimeUnit.SECONDS);
+    assertThat(service.submit(callable).get(5, TimeUnit.SECONDS)).isTrue();
   }
 }
