@@ -75,7 +75,7 @@ val DEPENDENCIES = listOf(
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp-jvm:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.4.1",
-  "com.uber.nullaway:nullaway:0.12.8",
+  "com.uber.nullaway:nullaway:0.12.9",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
