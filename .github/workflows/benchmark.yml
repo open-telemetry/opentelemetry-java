@@ -18,6 +18,14 @@ jobs:
       image: ubuntu:24.04@sha256:a08e551cb33850e4740772b38217fc1796a66da2506d312abe51acda354ff061
     timeout-minutes: 10
     steps:
+      - name: Install Git
+        run: |
+          apt-get update
+          apt-get install -y git
+
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       - id: setup-java
@@ -37,11 +45,9 @@ jobs:
           cd sdk/trace/build
           java -jar libs/opentelemetry-sdk-trace-*-jmh.jar -rf json SpanBenchmark SpanPipelineBenchmark ExporterBenchmark
 
-      - name: Install Git # since Git isn't available in the container image used above
-        run: |
-          apt-get update
-          apt-get install -y git
-          
+      - name: Use CLA approved github bot
+        run: .github/scripts/use-cla-approved-github-bot.sh
+
       - name: Store benchmark results
         uses: benchmark-action/github-action-benchmark@d48d326b4ca9ba73ca0cd0d59f108f9e02a381c7 # v1.20.4
         with:
