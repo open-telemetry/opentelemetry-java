@@ -555,7 +555,8 @@ final class Otel2PrometheusConverter {
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    // Repeated __ are not allowed according to spec, although this is allowed in prometheus
+    // Repeated __ are discouraged according to spec, although this is allowed in prometheus, see
+    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1
     while (name.contains("__")) {
       name = name.replace("__", "_");
     }
