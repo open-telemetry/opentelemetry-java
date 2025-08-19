@@ -27,6 +27,7 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
@@ -839,6 +840,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
+            .setComponentLoader(ComponentLoader.forClassLoader(new ClassLoader() {}))
             .build()) {
       Object unwrapped = exporter.unwrap();
       Field builderField = unwrapped.getClass().getDeclaredField("builder");
@@ -850,6 +852,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         assertThat(copy.unwrap())
             .extracting("builder")
             .usingRecursiveComparison()
+            .withStrictTypeChecking()
             .ignoringFields("tlsConfigHelper")
             .isEqualTo(builderField.get(unwrapped));
       } finally {
@@ -862,6 +865,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         assertThat(copy.unwrap())
             .extracting("builder")
             .usingRecursiveComparison()
+            .withStrictTypeChecking()
             .ignoringFields("tlsConfigHelper")
             .isNotEqualTo(builderField.get(unwrapped));
       } finally {
