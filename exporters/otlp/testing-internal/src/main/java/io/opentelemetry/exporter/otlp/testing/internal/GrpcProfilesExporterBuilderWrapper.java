@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
 import io.opentelemetry.exporter.otlp.profiles.ProfileData;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -119,6 +120,12 @@ final class GrpcProfilesExporterBuilderWrapper implements TelemetryExporterBuild
   public TelemetryExporterBuilder<ProfileData> setServiceClassLoader(
       ClassLoader serviceClassLoader) {
     builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<ProfileData> setComponentLoader(ComponentLoader componentLoader) {
+    builder.setComponentLoader(componentLoader);
     return this;
   }
 
