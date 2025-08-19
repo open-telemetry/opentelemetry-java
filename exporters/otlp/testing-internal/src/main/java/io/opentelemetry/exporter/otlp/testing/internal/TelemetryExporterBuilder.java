@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
@@ -73,6 +74,8 @@ public interface TelemetryExporterBuilder<T> {
   TelemetryExporterBuilder<T> setChannel(Object channel);
 
   TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader);
+
+  TelemetryExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader);
 
   TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService);
 

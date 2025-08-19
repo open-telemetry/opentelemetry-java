@@ -204,6 +204,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     copy.meterProviderSupplier = meterProviderSupplier;
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
+    copy.componentLoader = componentLoader;
     return copy;
   }
 
