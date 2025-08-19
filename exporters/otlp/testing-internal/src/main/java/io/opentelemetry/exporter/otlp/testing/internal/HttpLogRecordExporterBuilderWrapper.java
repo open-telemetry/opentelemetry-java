@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -119,6 +120,13 @@ public class HttpLogRecordExporterBuilderWrapper
   public TelemetryExporterBuilder<LogRecordData> setServiceClassLoader(
       ClassLoader serviceClassLoader) {
     builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setComponentLoader(
+      ComponentLoader componentLoader) {
+    builder.setComponentLoader(componentLoader);
     return this;
   }
 
