@@ -850,6 +850,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         assertThat(copy.unwrap())
             .extracting("builder")
             .usingRecursiveComparison()
+            .withStrictTypeChecking()
             .ignoringFields("tlsConfigHelper")
             .isEqualTo(builderField.get(unwrapped));
       } finally {
@@ -862,6 +863,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         assertThat(copy.unwrap())
             .extracting("builder")
             .usingRecursiveComparison()
+            .withStrictTypeChecking()
             .ignoringFields("tlsConfigHelper")
             .isNotEqualTo(builderField.get(unwrapped));
       } finally {
