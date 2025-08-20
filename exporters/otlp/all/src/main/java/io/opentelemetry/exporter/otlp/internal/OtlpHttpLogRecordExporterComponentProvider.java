@@ -42,6 +42,7 @@ public class OtlpHttpLogRecordExporterComponentProvider
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
+        auth -> builder.setHeaders(auth::getAuthenticationHeaders),
         builder::setCompression,
         builder::setTimeout,
         builder::setTrustedCertificates,

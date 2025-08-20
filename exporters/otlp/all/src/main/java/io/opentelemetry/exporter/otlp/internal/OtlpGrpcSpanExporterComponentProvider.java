@@ -41,6 +41,7 @@ public class OtlpGrpcSpanExporterComponentProvider implements ComponentProvider<
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
+        auth -> builder.setHeaders(auth::getAuthenticationHeaders),
         builder::setCompression,
         builder::setTimeout,
         builder::setTrustedCertificates,
