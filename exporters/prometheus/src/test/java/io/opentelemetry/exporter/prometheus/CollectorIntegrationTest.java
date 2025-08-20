@@ -59,7 +59,8 @@ import org.testcontainers.utility.DockerImageName;
 @SuppressWarnings("NonFinalStaticField")
 class CollectorIntegrationTest {
 
-  private static final String COLLECTOR_IMAGE = "otel/opentelemetry-collector-contrib:0.132.2@sha256:8d5c6595ac5d6fd8ee0ca91868bead6426353b077722b85f5ae98e583caa259b";
+  private static final String COLLECTOR_IMAGE =
+      "otel/opentelemetry-collector-contrib:0.132.2@sha256:8d5c6595ac5d6fd8ee0ca91868bead6426353b077722b85f5ae98e583caa259b";
 
   private static final Integer COLLECTOR_HEALTH_CHECK_PORT = 13133;
 
