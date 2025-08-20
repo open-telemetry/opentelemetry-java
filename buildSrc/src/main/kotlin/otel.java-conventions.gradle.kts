@@ -47,8 +47,6 @@ checkstyle {
   configProperties["rootDir"] = rootDir
 }
 
-
-
 dependencyCheck {
   skipConfigurations = mutableListOf(
     "errorprone",
