@@ -63,7 +63,7 @@ class PrometheusMetricReaderTest {
     this.createdTimestamp = convertTimestamp(testClock.now());
     this.reader =
         new PrometheusMetricReader(
-            OtelScopeMode.LABELS_AND_SCOPE_INFO, /* allowedResourceAttributesFilter= */ null);
+            /* otelScopeInfoMetricEnabled */ true, /* allowedResourceAttributesFilter= */ null);
     this.meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -779,7 +779,7 @@ class PrometheusMetricReaderTest {
       int prometheusScale = Math.min(otelScale, 8);
       PrometheusMetricReader reader =
           new PrometheusMetricReader(
-              OtelScopeMode.LABELS_AND_SCOPE_INFO, /* allowedResourceAttributesFilter= */ null);
+              /* otelScopeInfoMetricEnabled */ true, /* allowedResourceAttributesFilter= */ null);
       Meter meter =
           SdkMeterProvider.builder()
               .registerMetricReader(reader)
@@ -1033,7 +1033,7 @@ class PrometheusMetricReaderTest {
   void otelScopeLabelsOnly() throws IOException {
     PrometheusMetricReader reader =
         new PrometheusMetricReader(
-            OtelScopeMode.LABELS_ONLY, /* allowedResourceAttributesFilter= */ null);
+            /* otelScopeInfoMetricEnabled */ false, /* allowedResourceAttributesFilter= */ null);
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1064,7 +1064,7 @@ class PrometheusMetricReaderTest {
   void addResourceAttributesWorks() throws IOException {
     PrometheusMetricReader reader =
         new PrometheusMetricReader(
-            OtelScopeMode.LABELS_AND_SCOPE_INFO,
+            /* otelScopeInfoMetricEnabled */ true,
             /* allowedResourceAttributesFilter= */ Predicates.is("cluster"));
     Meter meter =
         SdkMeterProvider.builder()

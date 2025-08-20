@@ -82,7 +82,7 @@ final class Otel2PrometheusConverter {
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
-  private final OtelScopeMode otelScopeMode;
+  private final boolean otelScopeInfoMetricEnabled;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -94,14 +94,15 @@ final class Otel2PrometheusConverter {
   /**
    * Constructor with feature flag parameter.
    *
-   * @param otelScopeMode enable generation of the OpenTelemetry instrumentation scope info metric
-   *     and labels.
+   * @param otelScopeInfoMetricEnabled enable generation of the OpenTelemetry instrumentation scope
+   *     info metric and labels.
    * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
    *     matching this predicate will be added as labels on each exported metric
    */
   Otel2PrometheusConverter(
-      OtelScopeMode otelScopeMode, @Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this.otelScopeMode = otelScopeMode;
+      boolean otelScopeInfoMetricEnabled,
+      @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    this.otelScopeInfoMetricEnabled = otelScopeInfoMetricEnabled;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
@@ -125,7 +126,7 @@ final class Otel2PrometheusConverter {
       if (resource == null) {
         resource = metricData.getResource();
       }
-      if (otelScopeMode.isScopeInfoEnabled()
+      if (otelScopeInfoMetricEnabled
           && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
         scopes.add(metricData.getInstrumentationScopeInfo());
       }
@@ -133,7 +134,7 @@ final class Otel2PrometheusConverter {
     if (resource != null) {
       putOrMerge(snapshotsByName, makeTargetInfo(resource));
     }
-    if (otelScopeMode.isScopeInfoEnabled() && !scopes.isEmpty()) {
+    if (otelScopeInfoMetricEnabled && !scopes.isEmpty()) {
       putOrMerge(snapshotsByName, makeScopeInfo(scopes));
     }
     return new MetricSnapshots(snapshotsByName.values());
