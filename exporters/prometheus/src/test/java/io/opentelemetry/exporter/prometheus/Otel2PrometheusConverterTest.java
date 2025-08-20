@@ -72,7 +72,7 @@ class Otel2PrometheusConverterTest {
 
   private final Otel2PrometheusConverter converter =
       new Otel2PrometheusConverter(
-          OtelScopeMode.LABELS_AND_SCOPE_INFO, /* allowedResourceAttributesFilter= */ null);
+          /* otelScopeInfoMetricEnabled */ true, /* allowedResourceAttributesFilter= */ null);
 
   @ParameterizedTest
   @MethodSource("metricMetadataArgs")
@@ -203,7 +203,7 @@ class Otel2PrometheusConverterTest {
 
     Otel2PrometheusConverter converter =
         new Otel2PrometheusConverter(
-            OtelScopeMode.LABELS_AND_SCOPE_INFO, allowedResourceAttributesFilter);
+            /* otelScopeInfoMetricEnabled */ true, allowedResourceAttributesFilter);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
@@ -504,7 +504,7 @@ class Otel2PrometheusConverterTest {
 
     Otel2PrometheusConverter otel2PrometheusConverter =
         new Otel2PrometheusConverter(
-            OtelScopeMode.LABELS_AND_SCOPE_INFO,
+            /* otelScopeInfoMetricEnabled */ true,
             /* allowedResourceAttributesFilter= */ countPredicate);
 
     // Create 20 different metric data objects with 2 different resource attributes;
