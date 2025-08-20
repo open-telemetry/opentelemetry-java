@@ -3,8 +3,9 @@
   extends: [
     'config:best-practices',
     'helpers:pinGitHubActionDigestsToSemver',
-    'customManagers:githubActionsVersions'
   ],
+  ignorePaths: [], // overwrite default ignore which includes **/test/**
+                   // used to update docker image versions used in Java test files
   packageRules: [
     {
       // this is to reduce the number of renovate PRs
@@ -94,6 +95,18 @@
         '(?<currentValue>\\d+) # renovate: datasource=java-version',
       ],
       depNameTemplate: 'java',
+    },
+    {
+      customType: 'regex',
+      datasourceTemplate: 'docker',
+      managerFilePatterns: [
+        '**/*.java'
+      ],
+      matchStrings: [
+        '"(?<depName>otel/opentelemetry-collector-contrib):(?<currentValue>[^@"]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"',
+      ],
+      autoReplaceStringTemplate: '"{{depName}}:{{newValue}}{{#if newDigest}}@{{newDigest}}{{/if}}"',
+      versioningTemplate: 'docker',
     },
   ],
 }
