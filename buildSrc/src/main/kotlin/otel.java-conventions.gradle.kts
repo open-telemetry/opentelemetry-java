@@ -47,9 +47,7 @@ checkstyle {
   configProperties["rootDir"] = rootDir
 }
 
-tasks.withType<Checkstyle>().configureEach {
-  exclude("**/build/generated/**")
-}
+
 
 dependencyCheck {
   skipConfigurations = mutableListOf(

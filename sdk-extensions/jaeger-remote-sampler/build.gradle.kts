@@ -79,4 +79,8 @@ tasks {
       compilerArgs.add("-Xlint:-serial")
     }
   }
+
+  checkstyleMain {
+    source = fileTree("src/main/java")
+  }
 }
