@@ -42,6 +42,7 @@ public class OtlpHttpMetricExporterComponentProvider implements ComponentProvide
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
+        auth -> builder.setHeaders(auth::getAuthenticationHeaders),
         builder::setCompression,
         builder::setTimeout,
         builder::setTrustedCertificates,

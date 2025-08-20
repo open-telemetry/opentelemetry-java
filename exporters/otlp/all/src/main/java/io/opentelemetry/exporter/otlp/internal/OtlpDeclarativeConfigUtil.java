@@ -10,6 +10,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.configureOt
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.readFileBytes;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.validateEndpoint;
 
+import io.opentelemetry.api.incubator.authenticator.ExporterAuthenticator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.StreamSupport;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -51,6 +53,7 @@ public final class OtlpDeclarativeConfigUtil {
       Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
+      Consumer<ExporterAuthenticator> setAuthenticator,
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates,
@@ -63,6 +66,26 @@ public final class OtlpDeclarativeConfigUtil {
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
     if (endpoint != null) {
       setEndpoint.accept(endpoint.toString());
+    }
+
+    DeclarativeConfigProperties authenticator = config.getStructured("authenticator");
+    if (authenticator != null) {
+      String authenticatorName = authenticator.getString("name");
+      if (authenticatorName == null) {
+        throw new ConfigurationException(
+            "authenticator.name must be set when using an authenticator");
+      }
+      Iterable<ExporterAuthenticator> authenticators =
+          config.getComponentLoader().load(ExporterAuthenticator.class);
+      ExporterAuthenticator exporterAuthenticator =
+          StreamSupport.stream(authenticators.spliterator(), false)
+              .filter(auth -> authenticatorName.equals(auth.getName()))
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new ConfigurationException(
+                          "Invalid authenticator specified: " + authenticatorName));
+      setAuthenticator.accept(exporterAuthenticator);
     }
 
     String headerList = config.getString("headers_list");
