@@ -9,7 +9,6 @@ import io.opentelemetry.api.incubator.authenticator.ExporterAuthenticator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import java.util.Collections;
-import java.util.Map;
 
 public class TestAuthComponentProvider implements ComponentProvider<ExporterAuthenticator> {
   @Override
@@ -25,18 +24,6 @@ public class TestAuthComponentProvider implements ComponentProvider<ExporterAuth
   @Override
   public ExporterAuthenticator create(
       DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
-    return new ExporterAuthenticator() {
-      ;
-
-      @Override
-      public String getName() {
-        return "test_auth";
-      }
-
-      @Override
-      public Map<String, String> getAuthenticationHeaders() {
-        return Collections.singletonMap("auth_provider_key1", "value1");
-      }
-    };
+    return () -> Collections.singletonMap("auth_provider_key1", "value1");
   }
 }
