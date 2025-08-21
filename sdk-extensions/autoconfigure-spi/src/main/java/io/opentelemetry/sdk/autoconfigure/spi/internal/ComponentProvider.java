@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  * configuration.
  *
  * <p>NOTE: when {@link #getType()} is {@link Resource}, the {@link #getName()} is not (currently)
- * used, and {@link #create(DeclarativeConfigProperties)} is (currently) called with an empty {@link
+ * used, and {@link #create(DeclarativeConfigProperties, ComponentProviderLoader)} is (currently) called with an empty {@link
  * DeclarativeConfigProperties}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
@@ -33,6 +33,14 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  *     {@link Resource}.
  */
 public interface ComponentProvider<T> {
+
+  /**
+   * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+   * at any time.
+   */
+  interface ComponentProviderLoader {
+    <T> T loadComponent(Class<T> type, String name, Object model);
+  }
 
   /**
    * The type of SDK extension component. For example, if providing instances of a custom span
@@ -59,5 +67,5 @@ public interface ComponentProvider<T> {
    */
   // TODO (jack-berg): consider dynamic configuration use case before stabilizing in case that
   // affects any API decisions
-  T create(DeclarativeConfigProperties config);
+  T create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader);
 }

@@ -69,15 +69,8 @@ val downloadConfigurationSchema by tasks.registering(Download::class) {
 }
 
 val unzipConfigurationSchema by tasks.registering(Copy::class) {
-  dependsOn(downloadConfigurationSchema)
-
-  from(zipTree(downloadConfigurationSchema.get().dest))
-  eachFile(closureOf<FileCopyDetails> {
-    // Remove the top level folder "/opentelemetry-configuration-$configurationRef"
-    val pathParts = path.split("/")
-    path = pathParts.subList(1, pathParts.size).joinToString("/")
-  })
-  into("$buildDirectory/configuration/")
+  from("/home/gregor/source/opentelemetry-configuration/schema")
+  into("$buildDirectory/configuration/schema/")
 }
 
 val deleteTypeDescriptions by tasks.registering(Delete::class) {

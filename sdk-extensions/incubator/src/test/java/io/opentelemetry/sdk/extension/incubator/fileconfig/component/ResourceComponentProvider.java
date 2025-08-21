@@ -21,7 +21,8 @@ public class ResourceComponentProvider implements ComponentProvider<Resource> {
   }
 
   @Override
-  public Resource create(DeclarativeConfigProperties config) {
+  public Resource create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return Resource.builder().put("shape", "square").put("color", "red").build();
   }
 }

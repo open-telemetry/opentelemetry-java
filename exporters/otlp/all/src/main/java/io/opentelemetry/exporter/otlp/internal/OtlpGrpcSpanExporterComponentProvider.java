@@ -32,12 +32,13 @@ public class OtlpGrpcSpanExporterComponentProvider implements ComponentProvider<
   }
 
   @Override
-  public SpanExporter create(DeclarativeConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_TRACES,
         config,
+        componentProviderLoader,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,

@@ -48,7 +48,8 @@ final class TextMapPropagatorFactory
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "propagator");
     TextMapPropagator propagator =
-        context.loadComponent(TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(
+            TextMapPropagator.class, keyValue.getKey(), keyValue.getValue(), context);
     return TextMapPropagatorAndName.create(propagator, keyValue.getKey());
   }
 
@@ -60,7 +61,7 @@ final class TextMapPropagatorFactory
       textMapPropagator = W3CBaggagePropagator.getInstance();
     } else {
       textMapPropagator =
-          context.loadComponent(TextMapPropagator.class, name, Collections.emptyMap());
+          context.loadComponent(TextMapPropagator.class, name, Collections.emptyMap(), context);
     }
     return TextMapPropagatorAndName.create(textMapPropagator, name);
   }

@@ -29,7 +29,7 @@ public final class ConsoleSpanExporterComponentProvider implements ComponentProv
   }
 
   @Override
-  public SpanExporter create(DeclarativeConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return LoggingSpanExporter.create();
   }
 }

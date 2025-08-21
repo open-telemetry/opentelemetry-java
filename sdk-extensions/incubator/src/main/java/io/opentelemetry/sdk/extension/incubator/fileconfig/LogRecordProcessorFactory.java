@@ -70,7 +70,8 @@ final class LogRecordProcessorFactory
         FileConfigUtil.getSingletonMapEntry(
             model.getAdditionalProperties(), "log record processor");
     LogRecordProcessor logRecordProcessor =
-        context.loadComponent(LogRecordProcessor.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(
+            LogRecordProcessor.class, keyValue.getKey(), keyValue.getValue(), context);
     return context.addCloseable(logRecordProcessor);
   }
 }
