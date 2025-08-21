@@ -52,7 +52,9 @@ class DeclarativeConfigContext {
   @SuppressWarnings({"unchecked", "rawtypes"})
   <T> T loadComponent(Class<T> type, String name, Object model, DeclarativeConfigContext context) {
     DeclarativeConfigProperties config =
-        DeclarativeConfiguration.toConfigProperties(model, spiHelper.getComponentLoader());
+        model instanceof DeclarativeConfigProperties
+            ? (DeclarativeConfigProperties) model
+            : DeclarativeConfiguration.toConfigProperties(model, spiHelper.getComponentLoader());
 
     // TODO(jack-berg): cache loaded component providers
     List<ComponentProvider> componentProviders = spiHelper.load(ComponentProvider.class);
@@ -95,8 +97,9 @@ class DeclarativeConfigContext {
       DeclarativeConfigContext context) {
     return new ComponentProvider.ComponentProviderLoader() {
       @Override
-      public <T> T loadComponent(Class<T> type, String name, Object model) {
-        return context.loadComponent(type, name, model, context);
+      public <T> T loadComponent(
+          Class<T> type, String name, DeclarativeConfigProperties properties) {
+        return context.loadComponent(type, name, properties, context);
       }
     };
   }

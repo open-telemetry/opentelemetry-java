@@ -39,7 +39,7 @@ public interface ComponentProvider<T> {
    * at any time.
    */
   interface ComponentProviderLoader {
-    <T> T loadComponent(Class<T> type, String name, Object model);
+    <T> T loadComponent(Class<T> type, String name, DeclarativeConfigProperties properties);
   }
 
   /**

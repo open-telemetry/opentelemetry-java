@@ -24,6 +24,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -71,22 +72,17 @@ public final class OtlpDeclarativeConfigUtil {
 
     DeclarativeConfigProperties authenticator = config.getStructured("authenticator");
     if (authenticator != null) {
-      String authenticatorName = authenticator.getString("name");
-      if (authenticatorName == null) {
+      Set<String> propertyKeys = authenticator.getPropertyKeys();
+      int size = propertyKeys.size();
+      if (size != 1) {
         throw new ConfigurationException(
-            "authenticator.name must be set when using an authenticator");
+            "authenticator must be a single structured property, but found "
+                + size
+                + " properties: "
+                + propertyKeys);
       }
-      //      Iterable<ExporterAuthenticator> authenticators =
-      //          config.getComponentLoader().load(ExporterAuthenticator.class);
-      //      ExporterAuthenticator exporterAuthenticator =
-      //          StreamSupport.stream(authenticators.spliterator(), false)
-      //              .filter(auth -> authenticatorName.equals(auth.getName()))
-      //              .findFirst()
-      //              .orElseThrow(
-      //                  () ->
-      //                      new ConfigurationException(
-      //                          "Invalid authenticator specified: " + authenticatorName));
 
+      String authenticatorName = propertyKeys.iterator().next();
       ExporterAuthenticator exporterAuthenticator =
           componentProviderLoader.loadComponent(
               ExporterAuthenticator.class, authenticatorName, authenticator);
