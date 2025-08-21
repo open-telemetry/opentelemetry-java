@@ -62,7 +62,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span processor");
     SpanProcessor spanProcessor =
-        context.loadComponent(SpanProcessor.class, keyValue.getKey(), keyValue.getValue(), context);
+        context.loadComponent(SpanProcessor.class, keyValue.getKey(), keyValue.getValue());
     return context.addCloseable(spanProcessor);
   }
 }

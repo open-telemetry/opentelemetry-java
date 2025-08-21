@@ -50,7 +50,7 @@ class DeclarativeConfigContext {
    *     ComponentProvider.ComponentProviderLoader)} throws
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  <T> T loadComponent(Class<T> type, String name, Object model, DeclarativeConfigContext context) {
+  <T> T loadComponent(Class<T> type, String name, Object model) {
     DeclarativeConfigProperties config =
         model instanceof DeclarativeConfigProperties
             ? (DeclarativeConfigProperties) model
@@ -86,21 +86,11 @@ class DeclarativeConfigContext {
     ComponentProvider<T> provider = (ComponentProvider<T>) matchedProviders.get(0);
 
     try {
-      return provider.create(config, getComponentLoader(context));
+      return provider.create(config, this::loadComponent);
     } catch (Throwable throwable) {
       throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
     }
   }
 
-  private ComponentProvider.ComponentProviderLoader getComponentLoader(
-      DeclarativeConfigContext context) {
-    return new ComponentProvider.ComponentProviderLoader() {
-      @Override
-      public <T> T loadComponent(
-          Class<T> type, String name, DeclarativeConfigProperties properties) {
-        return context.loadComponent(type, name, properties, context);
-      }
-    };
-  }
 }
