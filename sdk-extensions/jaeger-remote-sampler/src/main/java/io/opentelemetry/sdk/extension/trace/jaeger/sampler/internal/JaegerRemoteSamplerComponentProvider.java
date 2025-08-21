@@ -31,7 +31,7 @@ public class JaegerRemoteSamplerComponentProvider implements ComponentProvider<S
   }
 
   @Override
-  public Sampler create(DeclarativeConfigProperties config) {
+  public Sampler create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     JaegerRemoteSamplerBuilder builder = JaegerRemoteSampler.builder();
 
     // Optional configuration

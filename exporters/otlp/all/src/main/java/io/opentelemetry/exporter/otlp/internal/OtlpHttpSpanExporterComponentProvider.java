@@ -32,12 +32,13 @@ public class OtlpHttpSpanExporterComponentProvider implements ComponentProvider<
   }
 
   @Override
-  public SpanExporter create(DeclarativeConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     OtlpHttpSpanExporterBuilder builder = httpBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_TRACES,
         config,
+        componentProviderLoader,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,

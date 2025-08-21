@@ -33,7 +33,7 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span exporter");
     SpanExporter spanExporter =
-        context.loadComponent(SpanExporter.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(SpanExporter.class, keyValue.getKey(), keyValue.getValue(), context);
     return context.addCloseable(spanExporter);
   }
 }

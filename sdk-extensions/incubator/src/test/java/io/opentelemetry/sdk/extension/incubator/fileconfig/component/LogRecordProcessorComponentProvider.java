@@ -24,7 +24,8 @@ public class LogRecordProcessorComponentProvider implements ComponentProvider<Lo
   }
 
   @Override
-  public LogRecordProcessor create(DeclarativeConfigProperties config) {
+  public LogRecordProcessor create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return new TestLogRecordProcessor(config);
   }
 

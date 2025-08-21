@@ -32,7 +32,7 @@ class ServiceResourceDetectorTest {
   void create_SystemPropertySet() {
     System.setProperty("otel.service.name", "test");
 
-    assertThat(new ServiceResourceDetector().create(DeclarativeConfigProperties.empty()))
+    assertThat(new ServiceResourceDetector().create(DeclarativeConfigProperties.empty(), null))
         .satisfies(
             resource -> {
               Attributes attributes = resource.getAttributes();
@@ -48,7 +48,7 @@ class ServiceResourceDetectorTest {
 
   @Test
   void create_NoSystemProperty() {
-    assertThat(new ServiceResourceDetector().create(DeclarativeConfigProperties.empty()))
+    assertThat(new ServiceResourceDetector().create(DeclarativeConfigProperties.empty(), null))
         .satisfies(
             resource -> {
               Attributes attributes = resource.getAttributes();

@@ -68,6 +68,6 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
 
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "sampler");
-    return context.loadComponent(Sampler.class, keyValue.getKey(), keyValue.getValue());
+    return context.loadComponent(Sampler.class, keyValue.getKey(), keyValue.getValue(), context);
   }
 }

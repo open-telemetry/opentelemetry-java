@@ -16,6 +16,7 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -25,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.StreamSupport;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -50,6 +50,7 @@ public final class OtlpDeclarativeConfigUtil {
   public static void configureOtlpExporterBuilder(
       String dataType,
       DeclarativeConfigProperties config,
+      ComponentProvider.ComponentProviderLoader componentProviderLoader,
       Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
@@ -75,16 +76,21 @@ public final class OtlpDeclarativeConfigUtil {
         throw new ConfigurationException(
             "authenticator.name must be set when using an authenticator");
       }
-      Iterable<ExporterAuthenticator> authenticators =
-          config.getComponentLoader().load(ExporterAuthenticator.class);
+      //      Iterable<ExporterAuthenticator> authenticators =
+      //          config.getComponentLoader().load(ExporterAuthenticator.class);
+      //      ExporterAuthenticator exporterAuthenticator =
+      //          StreamSupport.stream(authenticators.spliterator(), false)
+      //              .filter(auth -> authenticatorName.equals(auth.getName()))
+      //              .findFirst()
+      //              .orElseThrow(
+      //                  () ->
+      //                      new ConfigurationException(
+      //                          "Invalid authenticator specified: " + authenticatorName));
+
       ExporterAuthenticator exporterAuthenticator =
-          StreamSupport.stream(authenticators.spliterator(), false)
-              .filter(auth -> authenticatorName.equals(auth.getName()))
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new ConfigurationException(
-                          "Invalid authenticator specified: " + authenticatorName));
+          componentProviderLoader.loadComponent(
+              ExporterAuthenticator.class, authenticatorName, authenticator);
+
       setAuthenticator.accept(exporterAuthenticator);
     }
 
