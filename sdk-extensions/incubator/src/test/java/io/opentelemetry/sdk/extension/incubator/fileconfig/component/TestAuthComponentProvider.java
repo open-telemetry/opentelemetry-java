@@ -5,24 +5,25 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig.component;
 
+import io.opentelemetry.api.incubator.authenticator.ExporterAuthenticator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 
-public class ResourceComponentProvider implements ComponentProvider<Resource> {
+public class TestAuthComponentProvider implements ComponentProvider<ExporterAuthenticator> {
   @Override
-  public Class<Resource> getType() {
-    return Resource.class;
+  public Class<ExporterAuthenticator> getType() {
+    return ExporterAuthenticator.class;
   }
 
   @Override
   public String getName() {
-    return "shape_color";
+    return "test_auth";
   }
 
   @Override
-  public Resource create(
+  public ExporterAuthenticator create(
       DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
-    return Resource.builder().put("shape", "square").put("color", "red").build();
+    return () -> Collections.singletonMap("auth_provider_key1", "value1");
   }
 }

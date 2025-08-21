@@ -29,7 +29,7 @@ public final class JaegerComponentProvider implements ComponentProvider<TextMapP
   }
 
   @Override
-  public TextMapPropagator create(DeclarativeConfigProperties config) {
+  public TextMapPropagator create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return JaegerPropagator.getInstance();
   }
 }

@@ -30,7 +30,7 @@ public final class OtlpStdoutSpanExporterComponentProvider
   }
 
   @Override
-  public SpanExporter create(DeclarativeConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     OtlpStdoutSpanExporterBuilder builder = OtlpStdoutSpanExporter.builder();
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     return builder.build();

@@ -33,15 +33,18 @@ public class OtlpGrpcLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(DeclarativeConfigProperties config) {
+  public LogRecordExporter create(DeclarativeConfigProperties config,
+      ComponentProviderLoader componentProviderLoader) {
     OtlpGrpcLogRecordExporterBuilder builder = grpcBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_LOGS,
         config,
+        componentProviderLoader,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
+        auth -> builder.setHeaders(auth::getAuthenticationHeaders),
         builder::setCompression,
         builder::setTimeout,
         builder::setTrustedCertificates,

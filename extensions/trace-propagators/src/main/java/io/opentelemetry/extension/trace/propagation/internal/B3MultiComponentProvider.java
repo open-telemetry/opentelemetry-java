@@ -30,7 +30,7 @@ public final class B3MultiComponentProvider implements ComponentProvider<TextMap
   }
 
   @Override
-  public TextMapPropagator create(DeclarativeConfigProperties config) {
+  public TextMapPropagator create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return B3Propagator.injectingMultiHeaders();
   }
 }

@@ -24,7 +24,8 @@ public class LogRecordExporterComponentProvider implements ComponentProvider<Log
   }
 
   @Override
-  public LogRecordExporter create(DeclarativeConfigProperties config) {
+  public LogRecordExporter create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return new TestLogRecordExporter(config);
   }
 

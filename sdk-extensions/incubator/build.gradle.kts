@@ -58,8 +58,9 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 val configurationTag = "1.0.0-rc.1"
-val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
-val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
+// todo revert this when config PR is merged: https://github.com/open-telemetry/opentelemetry-configuration/pull/275
+val configurationRef = "refs/heads/authenticator" // Replace with commit SHA to point to experiment with a specific commit
+val configurationRepoZip = "https://github.com/zeitlinger/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {
