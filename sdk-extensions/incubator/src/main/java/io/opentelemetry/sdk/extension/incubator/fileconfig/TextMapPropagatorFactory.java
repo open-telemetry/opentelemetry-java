@@ -48,8 +48,7 @@ final class TextMapPropagatorFactory
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "propagator");
     TextMapPropagator propagator =
-        context.loadComponent(
-            TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());
     return TextMapPropagatorAndName.create(propagator, keyValue.getKey());
   }
 

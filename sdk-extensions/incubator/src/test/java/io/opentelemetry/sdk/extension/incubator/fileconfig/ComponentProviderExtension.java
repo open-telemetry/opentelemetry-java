@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static org.mockito.Mockito.spy;
@@ -39,11 +44,11 @@ public class ComponentProviderExtension implements BeforeEachCallback {
             });
   }
 
-  public DeclarativeConfigContext getContext() {
+  DeclarativeConfigContext getContext() {
     return context;
   }
 
-  public ComponentProvider<?> getComponentProvider(String name, Class<?> type) {
+  ComponentProvider<?> getComponentProvider(String name, Class<?> type) {
     return loadedComponentProviders.stream()
         .filter(
             componentProvider ->

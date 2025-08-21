@@ -32,8 +32,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "log record exporter");
     LogRecordExporter logRecordExporter =
-        context.loadComponent(
-            LogRecordExporter.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(LogRecordExporter.class, keyValue.getKey(), keyValue.getValue());
     return context.addCloseable(logRecordExporter);
   }
 }

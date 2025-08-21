@@ -9,9 +9,7 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigTest
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
@@ -22,9 +20,9 @@ import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricE
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AuthenticatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
@@ -45,14 +43,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -72,8 +67,7 @@ class MetricExporterFactoryTest {
   @RegisterExtension
   ComponentProviderExtension componentProviderExtension = new ComponentProviderExtension();
 
-  private final DeclarativeConfigContext context =
-      componentProviderExtension.getContext();
+  private final DeclarativeConfigContext context = componentProviderExtension.getContext();
 
   @Test
   void create_OtlpHttpDefaults() {
@@ -118,6 +112,7 @@ class MetricExporterFactoryTest {
             .setEndpoint("http://example:4318/v1/metrics")
             .addHeader("key1", "value1")
             .addHeader("key2", "value2")
+            .setHeaders(() -> Collections.singletonMap("auth_provider_key1", "value1"))
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
             .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
@@ -152,6 +147,8 @@ class MetricExporterFactoryTest {
                                     new NameStringValuePairModel()
                                         .withName("key2")
                                         .withValue("value2")))
+                            .withAuthenticator(
+                                new AuthenticatorModel().withAdditionalProperty("test_auth", null))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificateFile(certificatePath)
@@ -171,7 +168,7 @@ class MetricExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_http", MetricExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_http", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/metrics");
@@ -217,7 +214,7 @@ class MetricExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_grpc", MetricExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_grpc", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
@@ -240,6 +237,7 @@ class MetricExporterFactoryTest {
             .setEndpoint("http://example:4317")
             .addHeader("key1", "value1")
             .addHeader("key2", "value2")
+            .setHeaders(() -> Collections.singletonMap("auth_provider_key1", "value1"))
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
             .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
@@ -274,6 +272,8 @@ class MetricExporterFactoryTest {
                                     new NameStringValuePairModel()
                                         .withName("key2")
                                         .withValue("value2")))
+                            .withAuthenticator(
+                                new AuthenticatorModel().withAdditionalProperty("test_auth", null))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificateFile(certificatePath)
@@ -293,7 +293,7 @@ class MetricExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_grpc", MetricExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_grpc", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4317");
@@ -355,7 +355,8 @@ class MetricExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_file/development", MetricExporter.class);
+        componentProviderExtension.getComponentProvider(
+            "otlp_file/development", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
   }
 

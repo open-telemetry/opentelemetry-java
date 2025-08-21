@@ -21,6 +21,7 @@ import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AuthenticatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
@@ -34,6 +35,7 @@ import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -103,6 +105,7 @@ class LogRecordExporterFactoryTest {
             .setEndpoint("http://example:4318/v1/logs")
             .addHeader("key1", "value1")
             .addHeader("key2", "value2")
+            .setHeaders(() -> Collections.singletonMap("auth_provider_key1", "value1"))
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
             .build();
@@ -133,6 +136,8 @@ class LogRecordExporterFactoryTest {
                                     new NameStringValuePairModel()
                                         .withName("key2")
                                         .withValue("value2")))
+                            .withAuthenticator(
+                                new AuthenticatorModel().withAdditionalProperty("test_auth", null))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificateFile(certificatePath)
@@ -212,6 +217,7 @@ class LogRecordExporterFactoryTest {
             .setEndpoint("http://example:4317")
             .addHeader("key1", "value1")
             .addHeader("key2", "value2")
+            .setHeaders(() -> Collections.singletonMap("auth_provider_key1", "value1"))
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
             .build();
@@ -242,6 +248,8 @@ class LogRecordExporterFactoryTest {
                                     new NameStringValuePairModel()
                                         .withName("key2")
                                         .withValue("value2")))
+                            .withAuthenticator(
+                                new AuthenticatorModel().withAdditionalProperty("test_auth", null))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificateFile(certificatePath)
@@ -300,7 +308,8 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        componentProviderExtension.getComponentProvider("otlp_file/development", LogRecordExporter.class);
+        componentProviderExtension.getComponentProvider(
+            "otlp_file/development", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
   }
 
