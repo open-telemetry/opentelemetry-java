@@ -99,7 +99,7 @@ final class MetricReaderFactory
       if (prometheusModel != null) {
         MetricReader metricReader =
             context.addCloseable(
-                context.loadComponent(MetricReader.class, "prometheus", prometheusModel, context));
+                context.loadComponent(MetricReader.class, "prometheus", prometheusModel));
         CardinalityLimitSelector cardinalityLimitSelector = null;
         if (model.getCardinalityLimits() != null) {
           cardinalityLimitSelector =

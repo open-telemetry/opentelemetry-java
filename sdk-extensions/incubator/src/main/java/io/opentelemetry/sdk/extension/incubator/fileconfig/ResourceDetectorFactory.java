@@ -25,6 +25,6 @@ final class ResourceDetectorFactory
       ExperimentalResourceDetectorModel model, DeclarativeConfigContext context) {
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "resource detector");
-    return context.loadComponent(Resource.class, keyValue.getKey(), keyValue.getValue(), context);
+    return context.loadComponent(Resource.class, keyValue.getKey(), keyValue.getValue());
   }
 }

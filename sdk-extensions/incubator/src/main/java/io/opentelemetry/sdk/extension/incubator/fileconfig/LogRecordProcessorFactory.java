@@ -71,7 +71,7 @@ final class LogRecordProcessorFactory
             model.getAdditionalProperties(), "log record processor");
     LogRecordProcessor logRecordProcessor =
         context.loadComponent(
-            LogRecordProcessor.class, keyValue.getKey(), keyValue.getValue(), context);
+            LogRecordProcessor.class, keyValue.getKey(), keyValue.getValue());
     return context.addCloseable(logRecordProcessor);
   }
 }
