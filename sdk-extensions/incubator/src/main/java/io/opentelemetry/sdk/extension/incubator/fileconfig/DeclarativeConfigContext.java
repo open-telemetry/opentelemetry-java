@@ -92,5 +92,4 @@ class DeclarativeConfigContext {
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
     }
   }
-
 }

@@ -75,9 +75,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
-            .create(
-                new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
-                context);
+            .create(new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -85,7 +83,8 @@ class SpanExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = componentProviderExtension.getComponentProvider("otlp_http", SpanExporter.class);
+    ComponentProvider<?> componentProvider =
+        componentProviderExtension.getComponentProvider("otlp_http", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
@@ -107,6 +106,7 @@ class SpanExporterFactoryTest {
             .setEndpoint("http://example:4318/v1/traces")
             .addHeader("key1", "value1")
             .addHeader("key2", "value2")
+            .setHeaders(() -> Collections.singletonMap("auth_provider_key1", "value1"))
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
             .build();
@@ -137,6 +137,8 @@ class SpanExporterFactoryTest {
                                     new NameStringValuePairModel()
                                         .withName("key2")
                                         .withValue("value2")))
+                            .withAuthenticator(
+                                new AuthenticatorModel().withAdditionalProperty("test_auth", null))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificateFile(certificatePath)
@@ -150,7 +152,8 @@ class SpanExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = componentProviderExtension.getComponentProvider("otlp_http", SpanExporter.class);
+    ComponentProvider<?> componentProvider =
+        componentProviderExtension.getComponentProvider("otlp_http", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/traces");
@@ -190,7 +193,8 @@ class SpanExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = componentProviderExtension.getComponentProvider("otlp_grpc", SpanExporter.class);
+    ComponentProvider<?> componentProvider =
+        componentProviderExtension.getComponentProvider("otlp_grpc", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
@@ -257,7 +261,8 @@ class SpanExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = componentProviderExtension.getComponentProvider("otlp_grpc", SpanExporter.class);
+    ComponentProvider<?> componentProvider =
+        componentProviderExtension.getComponentProvider("otlp_grpc", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4317");
@@ -313,7 +318,8 @@ class SpanExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = componentProviderExtension.getComponentProvider("zipkin", SpanExporter.class);
+    ComponentProvider<?> componentProvider =
+        componentProviderExtension.getComponentProvider("zipkin", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
@@ -346,7 +352,8 @@ class SpanExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = componentProviderExtension.getComponentProvider("zipkin", SpanExporter.class);
+    ComponentProvider<?> componentProvider =
+        componentProviderExtension.getComponentProvider("zipkin", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://zipkin:9411/v1/v2/spans");
@@ -373,7 +380,8 @@ class SpanExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        componentProviderExtension.getComponentProvider("otlp_file/development", SpanExporter.class);
+        componentProviderExtension.getComponentProvider(
+            "otlp_file/development", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
   }
 

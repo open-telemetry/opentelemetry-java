@@ -32,8 +32,7 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "metric exporter");
     MetricExporter metricExporter =
-        context.loadComponent(
-            MetricExporter.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(MetricExporter.class, keyValue.getKey(), keyValue.getValue());
     return context.addCloseable(metricExporter);
   }
 }
