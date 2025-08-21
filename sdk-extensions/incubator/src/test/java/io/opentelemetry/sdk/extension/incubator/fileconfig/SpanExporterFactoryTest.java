@@ -82,9 +82,14 @@ class SpanExporterFactoryTest {
             invocation -> {
               List<ComponentProvider<?>> result =
                   (List<ComponentProvider<?>>) invocation.callRealMethod();
-              loadedComponentProviders =
-                  result.stream().map(Mockito::spy).collect(Collectors.toList());
-              return loadedComponentProviders;
+
+              // only capture first invocation for exporter, not second for authenticator
+              if (loadedComponentProviders.isEmpty()) {
+                loadedComponentProviders =
+                    result.stream().map(Mockito::spy).collect(Collectors.toList());
+                return loadedComponentProviders;
+              }
+              return result;
             });
   }
 
@@ -240,9 +245,7 @@ class SpanExporterFactoryTest {
             .setEndpoint("http://example:4317")
             .addHeader("key1", "value1")
             .addHeader("key2", "value2")
-            .setHeaders(
-                () -> Collections.singletonMap("auth_provider_key1", "value1")
-            )
+            .setHeaders(() -> Collections.singletonMap("auth_provider_key1", "value1"))
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
             .build();
