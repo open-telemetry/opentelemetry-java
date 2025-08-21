@@ -12,3 +12,4 @@ io.opentelemetry.sdk.extension.incubator.fileconfig.component.ContainerResourceP
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.HostResourceProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.OsResourceProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.ProcessResourceProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.TestAuthComponentProvider

@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.api.incubator.authenticator.ExporterAuthenticator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
@@ -45,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,38 +72,6 @@ class SpanExporterFactoryTest {
       spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
   private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
 
-  private static final ComponentProvider<ExporterAuthenticator> authenticatorComponentProvider =
-     new ComponentProvider<ExporterAuthenticator>() {
-      @Override
-      public Class<ExporterAuthenticator> getType() {
-        return ExporterAuthenticator.class;
-      }
-
-      @Override
-      public String getName() {
-        return "test_auth";
-      }
-
-      @Override
-      public ExporterAuthenticator create(
-          DeclarativeConfigProperties config,
-          ComponentProviderLoader componentProviderLoader) {
-        return new ExporterAuthenticator() {
-          ;
-
-          @Override
-          public String getName() {
-            return "test_auth";
-          }
-
-          @Override
-          public Map<String, String> getAuthenticationHeaders() {
-            return Collections.singletonMap("auth_provider_key1", "value1");
-          }
-        };
-      }
-    };
-
   private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
 
   @BeforeEach
@@ -118,7 +84,6 @@ class SpanExporterFactoryTest {
                   (List<ComponentProvider<?>>) invocation.callRealMethod();
               loadedComponentProviders =
                   result.stream().map(Mockito::spy).collect(Collectors.toList());
-              loadedComponentProviders.add(authenticatorComponentProvider);
               return loadedComponentProviders;
             });
   }
