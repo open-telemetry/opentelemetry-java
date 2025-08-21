@@ -123,20 +123,37 @@ class TraceStateTest {
   }
 
   @Test
-  void testVendorIdLongerThan13Characters() {
-    assertThat(TraceState.builder().put("1@nrabcdefghijkl", FIRST_VALUE).build())
+  void testVendorIdWith14Characters() {
+    String key = "1@nrabcdefghijkl";
+    assertThat(TraceState.builder().put(key, FIRST_VALUE).build().get(key)).isEqualTo(FIRST_VALUE);
+  }
+
+  @Test
+  void testVendorIdLongerThan14Characters() {
+    assertThat(TraceState.builder().put("1@nrabcdefghijklm", FIRST_VALUE).build())
         .isEqualTo(TraceState.getDefault());
   }
 
   @Test
-  void testVendorIdLongerThan13Characters_longTenantId() {
-    assertThat(TraceState.builder().put("12345678901234567890@nrabcdefghijkl", FIRST_VALUE).build())
+  void testVendorIdLongerThan14Characters_longTenantId() {
+    assertThat(
+            TraceState.builder().put("12345678901234567890@nrabcdefghijklm", FIRST_VALUE).build())
         .isEqualTo(TraceState.getDefault());
   }
 
   @Test
-  void tenantIdLongerThan240Characters() {
+  void tenantIdWith241Characters() {
     char[] chars = new char[241];
+    Arrays.fill(chars, 'a');
+    String tenantId = new String(chars);
+    assertThat(
+            TraceState.builder().put(tenantId + "@nr", FIRST_VALUE).build().get(tenantId + "@nr"))
+        .isEqualTo(FIRST_VALUE);
+  }
+
+  @Test
+  void tenantIdLongerThan241Characters() {
+    char[] chars = new char[242];
     Arrays.fill(chars, 'a');
     String tenantId = new String(chars);
     assertThat(TraceState.builder().put(tenantId + "@nr", FIRST_VALUE).build())
