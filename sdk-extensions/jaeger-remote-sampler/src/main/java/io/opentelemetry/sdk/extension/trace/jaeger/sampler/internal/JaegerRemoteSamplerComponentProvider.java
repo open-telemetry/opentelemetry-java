@@ -19,9 +19,9 @@ import java.time.Duration;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class JaegerRemoteSamplerComponentProvider implements ComponentProvider<Sampler> {
+public class JaegerRemoteSamplerComponentProvider implements ComponentProvider {
   @Override
-  public Class<Sampler> getType() {
+  public Class<?> getType() {
     return Sampler.class;
   }
 

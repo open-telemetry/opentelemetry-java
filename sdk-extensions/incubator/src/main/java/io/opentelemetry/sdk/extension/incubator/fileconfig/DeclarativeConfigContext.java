@@ -13,7 +13,6 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /** Declarative configuration context and state carrier. */
@@ -54,11 +53,8 @@ class DeclarativeConfigContext {
 
     // TODO(jack-berg): cache loaded component providers
     List<ComponentProvider> componentProviders = spiHelper.load(ComponentProvider.class);
-    List<ComponentProvider<?>> matchedProviders =
+    List<ComponentProvider> matchedProviders =
         componentProviders.stream()
-            .map(
-                (Function<ComponentProvider, ComponentProvider<?>>)
-                    componentProvider -> componentProvider)
             .filter(
                 componentProvider ->
                     componentProvider.getType() == type && name.equals(componentProvider.getName()))
@@ -79,10 +75,10 @@ class DeclarativeConfigContext {
                   .collect(Collectors.joining(",", "[", "]")));
     }
     // Exactly one matching component provider
-    ComponentProvider<T> provider = (ComponentProvider<T>) matchedProviders.get(0);
+    ComponentProvider provider = matchedProviders.get(0);
 
     try {
-      return provider.create(config);
+      return (T) provider.create(config);
     } catch (Throwable throwable) {
       throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);

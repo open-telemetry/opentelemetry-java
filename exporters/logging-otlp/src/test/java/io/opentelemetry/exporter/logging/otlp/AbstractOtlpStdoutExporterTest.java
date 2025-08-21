@@ -333,7 +333,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
                 properties.getComponentLoader().load(ComponentProvider.class).spliterator(), false)
             .filter(
                 p -> {
-                  ComponentProvider<?> c = p;
+                  ComponentProvider c = p;
                   return "otlp_file/development".equals(c.getName())
                       && c.getType().equals(componentProviderType);
                 })

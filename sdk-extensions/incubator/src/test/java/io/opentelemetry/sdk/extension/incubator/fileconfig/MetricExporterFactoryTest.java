@@ -71,7 +71,7 @@ class MetricExporterFactoryTest {
   private final SpiHelper spiHelper =
       spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
   private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
-  private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
+  private List<ComponentProvider> loadedComponentProviders = Collections.emptyList();
 
   @BeforeEach
   @SuppressWarnings("unchecked")
@@ -79,15 +79,15 @@ class MetricExporterFactoryTest {
     when(spiHelper.load(ComponentProvider.class))
         .thenAnswer(
             invocation -> {
-              List<ComponentProvider<?>> result =
-                  (List<ComponentProvider<?>>) invocation.callRealMethod();
+              List<ComponentProvider> result =
+                  (List<ComponentProvider>) invocation.callRealMethod();
               loadedComponentProviders =
                   result.stream().map(Mockito::spy).collect(Collectors.toList());
               return loadedComponentProviders;
             });
   }
 
-  private ComponentProvider<?> getComponentProvider(String name, Class<?> type) {
+  private ComponentProvider getComponentProvider(String name, Class<?> type) {
     return loadedComponentProviders.stream()
         .filter(
             componentProvider ->
@@ -115,8 +115,7 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_http", MetricExporter.class);
+    ComponentProvider componentProvider = getComponentProvider("otlp_http", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
@@ -192,8 +191,7 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_http", MetricExporter.class);
+    ComponentProvider componentProvider = getComponentProvider("otlp_http", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/metrics");
@@ -238,8 +236,7 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_grpc", MetricExporter.class);
+    ComponentProvider componentProvider = getComponentProvider("otlp_grpc", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
@@ -314,8 +311,7 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_grpc", MetricExporter.class);
+    ComponentProvider componentProvider = getComponentProvider("otlp_grpc", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4317");
@@ -376,7 +372,7 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
+    ComponentProvider componentProvider =
         getComponentProvider("otlp_file/development", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture());
   }

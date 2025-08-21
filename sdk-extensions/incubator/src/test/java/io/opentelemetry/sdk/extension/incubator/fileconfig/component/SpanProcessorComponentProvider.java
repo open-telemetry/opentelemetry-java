@@ -13,9 +13,9 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-public class SpanProcessorComponentProvider implements ComponentProvider<SpanProcessor> {
+public class SpanProcessorComponentProvider implements ComponentProvider {
   @Override
-  public Class<SpanProcessor> getType() {
+  public Class<?> getType() {
     return SpanProcessor.class;
   }
 

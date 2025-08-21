@@ -15,9 +15,9 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.Nullable;
 
-public class TextMapPropagatorComponentProvider implements ComponentProvider<TextMapPropagator> {
+public class TextMapPropagatorComponentProvider implements ComponentProvider {
   @Override
-  public Class<TextMapPropagator> getType() {
+  public Class<?> getType() {
     return TextMapPropagator.class;
   }
 

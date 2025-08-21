@@ -65,7 +65,7 @@ class LogRecordExporterFactoryTest {
   private final SpiHelper spiHelper =
       spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
   private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
-  private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
+  private List<ComponentProvider> loadedComponentProviders = Collections.emptyList();
 
   @BeforeEach
   @SuppressWarnings("unchecked")
@@ -73,15 +73,15 @@ class LogRecordExporterFactoryTest {
     when(spiHelper.load(ComponentProvider.class))
         .thenAnswer(
             invocation -> {
-              List<ComponentProvider<?>> result =
-                  (List<ComponentProvider<?>>) invocation.callRealMethod();
+              List<ComponentProvider> result =
+                  (List<ComponentProvider>) invocation.callRealMethod();
               loadedComponentProviders =
                   result.stream().map(Mockito::spy).collect(Collectors.toList());
               return loadedComponentProviders;
             });
   }
 
-  private ComponentProvider<?> getComponentProvider(String name, Class<?> type) {
+  private ComponentProvider getComponentProvider(String name, Class<?> type) {
     return loadedComponentProviders.stream()
         .filter(
             componentProvider ->
@@ -110,7 +110,7 @@ class LogRecordExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
+    ComponentProvider componentProvider =
         getComponentProvider("otlp_http", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
@@ -176,7 +176,7 @@ class LogRecordExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
+    ComponentProvider componentProvider =
         getComponentProvider("otlp_http", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
@@ -220,7 +220,7 @@ class LogRecordExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
+    ComponentProvider componentProvider =
         getComponentProvider("otlp_grpc", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
@@ -285,7 +285,7 @@ class LogRecordExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
+    ComponentProvider componentProvider =
         getComponentProvider("otlp_grpc", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
@@ -329,7 +329,7 @@ class LogRecordExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider =
+    ComponentProvider componentProvider =
         getComponentProvider("otlp_file/development", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture());
   }
