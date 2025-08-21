@@ -69,34 +69,11 @@ class MetricExporterFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final SpiHelper spiHelper =
-      spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
-  private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
-  private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
+  @RegisterExtension
+  ComponentProviderExtension componentProviderExtension = new ComponentProviderExtension();
 
-  @BeforeEach
-  @SuppressWarnings("unchecked")
-  void setup() {
-    when(spiHelper.load(ComponentProvider.class))
-        .thenAnswer(
-            invocation -> {
-              List<ComponentProvider<?>> result =
-                  (List<ComponentProvider<?>>) invocation.callRealMethod();
-              loadedComponentProviders =
-                  result.stream().map(Mockito::spy).collect(Collectors.toList());
-              return loadedComponentProviders;
-            });
-  }
-
-  private ComponentProvider<?> getComponentProvider(String name, Class<?> type) {
-    return loadedComponentProviders.stream()
-        .filter(
-            componentProvider ->
-                componentProvider.getName().equals(name)
-                    && componentProvider.getType().equals(type))
-        .findFirst()
-        .orElseThrow(IllegalStateException::new);
-  }
+  private final DeclarativeConfigContext context =
+      componentProviderExtension.getContext();
 
   @Test
   void create_OtlpHttpDefaults() {
@@ -117,7 +94,7 @@ class MetricExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_http", MetricExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_http", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();

@@ -9,9 +9,7 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigTest
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
@@ -21,7 +19,6 @@ import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordE
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
@@ -37,16 +34,12 @@ import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -63,34 +56,10 @@ class LogRecordExporterFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final SpiHelper spiHelper =
-      spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
-  private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
-  private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
+  @RegisterExtension
+  ComponentProviderExtension componentProviderExtension = new ComponentProviderExtension();
 
-  @BeforeEach
-  @SuppressWarnings("unchecked")
-  void setup() {
-    when(spiHelper.load(ComponentProvider.class))
-        .thenAnswer(
-            invocation -> {
-              List<ComponentProvider<?>> result =
-                  (List<ComponentProvider<?>>) invocation.callRealMethod();
-              loadedComponentProviders =
-                  result.stream().map(Mockito::spy).collect(Collectors.toList());
-              return loadedComponentProviders;
-            });
-  }
-
-  private ComponentProvider<?> getComponentProvider(String name, Class<?> type) {
-    return loadedComponentProviders.stream()
-        .filter(
-            componentProvider ->
-                componentProvider.getName().equals(name)
-                    && componentProvider.getType().equals(type))
-        .findFirst()
-        .orElseThrow(IllegalStateException::new);
-  }
+  private final DeclarativeConfigContext context = componentProviderExtension.getContext();
 
   @Test
   void create_OtlpHttpDefaults() {
@@ -112,7 +81,7 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_http", LogRecordExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_http", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
@@ -178,7 +147,7 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_http", LogRecordExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_http", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/logs");
@@ -222,7 +191,7 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_grpc", LogRecordExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_grpc", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
@@ -287,7 +256,7 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_grpc", LogRecordExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_grpc", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4317");
@@ -331,7 +300,7 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
-        getComponentProvider("otlp_file/development", LogRecordExporter.class);
+        componentProviderExtension.getComponentProvider("otlp_file/development", LogRecordExporter.class);
     verify(componentProvider).create(configCaptor.capture(), any());
   }
 
