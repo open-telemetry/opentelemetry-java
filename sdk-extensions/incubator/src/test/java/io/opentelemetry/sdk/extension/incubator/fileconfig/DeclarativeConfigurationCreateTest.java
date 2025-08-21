@@ -75,6 +75,7 @@ class DeclarativeConfigurationCreateTest {
           new String(Files.readAllBytes(example.toPath()), StandardCharsets.UTF_8);
       String rewrittenExampleContent =
           exampleContent
+              .replaceAll(",xray", "")
               .replaceAll(
                   "certificate_file: .*\n",
                   "certificate_file: "
