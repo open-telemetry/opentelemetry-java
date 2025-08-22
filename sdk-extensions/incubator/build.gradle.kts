@@ -40,7 +40,7 @@ dependencies {
   testImplementation(project(":exporters:zipkin"))
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
-  // testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
+  testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
   testImplementation("com.google.guava:guava-testlib")
