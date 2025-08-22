@@ -434,7 +434,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  @SetSystemProperty(key = "maven.home", value = "temp")
   void builder_catchesException() throws InterruptedException {
     OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
     doThrow(NoClassDefFoundError.class).when(sdk).close();

@@ -638,7 +638,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             // https://github.com/open-telemetry/opentelemetry-java/issues/6827
             // logging deps might not be on the classpath at this point
             System.out.printf("%s Flush failed during shutdown: %s%n", Level.WARNING, e);
-            return;
           }
         });
   }
