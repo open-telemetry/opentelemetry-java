@@ -60,7 +60,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private static final Logger logger =
       Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
   private static final boolean INCUBATOR_AVAILABLE;
-  private static final Boolean IS_MAVEN;
 
   static {
     boolean incubatorAvailable = false;
@@ -74,7 +73,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       // Not available
     }
     INCUBATOR_AVAILABLE = incubatorAvailable;
-    IS_MAVEN = System.getProperty("maven.home") != null;
   }
 
   @Nullable private ConfigProperties config;
@@ -638,12 +636,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             sdk.close();
           } catch (NoClassDefFoundError e) {
             // https://github.com/open-telemetry/opentelemetry-java/issues/6827
-            if (IS_MAVEN) {
-              // logging deps might not be on the classpath at this point
-              System.out.printf("%s Flush failed during shutdown: %s%n", Level.WARNING, e);
-              return;
-            }
-            throw e;
+            // logging deps might not be on the classpath at this point
+            System.out.printf("%s Flush failed during shutdown: %s%n", Level.WARNING, e);
+            return;
           }
         });
   }
