@@ -257,7 +257,7 @@ class LongSumAggregatorTest {
     MutableLongPointData pointData = (MutableLongPointData) aggregator.createReusablePoint();
 
     Attributes attributes = Attributes.of(AttributeKey.longKey("test"), 100L);
-    List<LongExemplarData> examplarsFrom =
+    List<LongExemplarData> exemplarsFrom =
         Collections.singletonList(
             ImmutableLongExemplarData.create(
                 attributes,
@@ -268,12 +268,12 @@ class LongSumAggregatorTest {
                     TraceFlags.getDefault(),
                     TraceState.getDefault()),
                 1));
-    pointData.set(0, 1, attributes, 2000, examplarsFrom);
+    pointData.set(0, 1, attributes, 2000, exemplarsFrom);
 
     MutableLongPointData toPointData = (MutableLongPointData) aggregator.createReusablePoint();
 
     Attributes toAttributes = Attributes.of(AttributeKey.longKey("test"), 100L);
-    List<LongExemplarData> examplarsTo =
+    List<LongExemplarData> exemplarsTo =
         Collections.singletonList(
             ImmutableLongExemplarData.create(
                 attributes,
@@ -284,7 +284,7 @@ class LongSumAggregatorTest {
                     TraceFlags.getDefault(),
                     TraceState.getDefault()),
                 2));
-    toPointData.set(0, 2, toAttributes, 4000, examplarsTo);
+    toPointData.set(0, 2, toAttributes, 4000, exemplarsTo);
 
     aggregator.copyPoint(pointData, toPointData);
 
