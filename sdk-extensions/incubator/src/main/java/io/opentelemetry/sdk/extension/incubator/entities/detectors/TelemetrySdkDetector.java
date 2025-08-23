@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.entities.detectors;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.entities.EntityProvider;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
 import io.opentelemetry.sdk.extension.incubator.entities.ResourceDetector;
 
@@ -29,7 +30,7 @@ public final class TelemetrySdkDetector implements ResourceDetector {
       AttributeKey.stringKey("telemetry.sdk.version");
 
   @Override
-  public void report(EntityProvider provider) {
+  public CompletableResultCode report(EntityProvider provider) {
     provider
         .attachOrUpdateEntity(ENTITY_TYPE)
         .setSchemaUrl(SCHEMA_URL)
@@ -41,5 +42,6 @@ public final class TelemetrySdkDetector implements ResourceDetector {
         .withDescription(
             Attributes.builder().put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION).build())
         .emit();
+    return CompletableResultCode.ofSuccess();
   }
 }

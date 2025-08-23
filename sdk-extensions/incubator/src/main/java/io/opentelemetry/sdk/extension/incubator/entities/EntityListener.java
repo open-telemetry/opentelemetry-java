@@ -9,6 +9,14 @@ import io.opentelemetry.sdk.resources.Resource;
 
 /** A listener for changes in the EntityState of this SDK. */
 public interface EntityListener {
+
+  /**
+   * Called when the EntityProvider is initialized with full resource state.
+   *
+   * @param resource The initialized state of the Resource.
+   */
+  public void onResourceInit(Resource resource);
+
   /**
    * Called when an entity has been added or its state has changed.
    *

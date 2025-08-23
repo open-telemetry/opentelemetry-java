@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.entities.detectors;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.entities.EntityProvider;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.extension.incubator.entities.ResourceDetector;
 import java.util.UUID;
 
@@ -35,7 +36,7 @@ public final class ServiceDetector implements ResourceDetector {
   }
 
   @Override
-  public void report(EntityProvider provider) {
+  public CompletableResultCode report(EntityProvider provider) {
     // We only run on startup.
     provider
         .attachOrUpdateEntity(ENTITY_TYPE)
@@ -48,5 +49,6 @@ public final class ServiceDetector implements ResourceDetector {
                 .build())
         // TODO - Need to figure out version
         .emit();
+    return CompletableResultCode.ofSuccess();
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.entities;
 
+import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -12,9 +13,12 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +32,7 @@ final class SdkResourceSharedState {
 
   // The currently advertised Resource to other SDK providers.
   private final AtomicReference<Resource> resource = new AtomicReference<>(Resource.empty());
+  private final AtomicBoolean initialized = new AtomicBoolean(false);
   private final Object writeLock = new Object();
   private final List<EntityListener> listeners = new CopyOnWriteArrayList<>();
   private final ExecutorService listenerExecutor;
@@ -44,6 +49,32 @@ final class SdkResourceSharedState {
   }
 
   /**
+   * Begins initializing state with the given resource detectors.
+   *
+   * <p>This will initialize after all resource detectors have completed, or 200 ms.
+   *
+   * @param detectors The set of resource detectors that are considered initializing.
+   * @param provider The entity provider for the resource detectors.
+   */
+  @SuppressWarnings("FutureReturnValueIgnored")
+  void beginInitialization(Collection<ResourceDetector> detectors, EntityProvider provider) {
+    // TODO - Should we create a different instance of entity provider for initial resource
+    // detection?
+    Collection<CompletableResultCode> results = new ArrayList<>(detectors.size());
+    for (ResourceDetector d : detectors) {
+      results.add(d.report(provider));
+    }
+    CompletableResultCode allDone = CompletableResultCode.ofAll(results);
+    // Ensure our blocking is done using the async model provided to use via
+    // ExecutorService.
+    listenerExecutor.submit(
+        () -> {
+          allDone.join(200, TimeUnit.MILLISECONDS);
+          this.initialize();
+        });
+  }
+
+  /**
    * Shutdown the provider. The resulting {@link CompletableResultCode} completes when all complete.
    */
   CompletableResultCode shutdown() {
@@ -54,6 +85,7 @@ final class SdkResourceSharedState {
 
   /** Returns the currently active resource. */
   public Resource getResource() {
+
     Resource result = resource.get();
     // We do this to make NullAway happy.
     if (result == null) {
@@ -137,25 +169,55 @@ final class SdkResourceSharedState {
     }
   }
 
+  /** Mark the resource as initialized and notify listeners. */
+  @SuppressWarnings("FutureReturnValueIgnored")
+  private void initialize() {
+    // Prevent writes so initialize events happen before updates,
+    // in the event of other issues.
+    synchronized (writeLock) {
+      Resource resource = this.resource.get();
+      if (resource == null) {
+        // Catastrophic failure, TODO - some kind of logic error message
+        return;
+      }
+      // We only do this once.
+      if (initialized.compareAndSet(false, true)) {
+        for (EntityListener listener : listeners) {
+          listenerExecutor.submit(() -> listener.onResourceInit(resource));
+        }
+      }
+    }
+  }
+
   @SuppressWarnings("FutureReturnValueIgnored")
   private void publishEntityStateChange(EntityState state, Resource resource) {
-    for (EntityListener listener : listeners) {
-      // We isolate listener execution via executor, if configured.
-      // We ignore failures on futures to avoid having one listener block others.
-      listenerExecutor.submit(() -> listener.onEntityState(state, resource));
+    if (initialized.get()) {
+      for (EntityListener listener : listeners) {
+        // We isolate listener execution via executor, if configured.
+        // We ignore failures on futures to avoid having one listener block others.
+        listenerExecutor.submit(() -> listener.onEntityState(state, resource));
+      }
     }
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
   private void publishEntityDelete(EntityState deleted, Resource resource) {
-    for (EntityListener listener : listeners) {
-      // We isolate listener execution via executor, if configured.
-      // We ignore failures on futures to avoid having one listener block others.
-      listenerExecutor.submit(() -> listener.onEntityDelete(deleted, resource));
+    if (initialized.get()) {
+      for (EntityListener listener : listeners) {
+        // We isolate listener execution via executor, if configured.
+        // We ignore failures on futures to avoid having one listener block others.
+        listenerExecutor.submit(() -> listener.onEntityDelete(deleted, resource));
+      }
     }
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored")
   public void addListener(EntityListener listener) {
     listeners.add(listener);
+    if (initialized.get()) {
+      // We isolate listener execution via executor, if configured.
+      // We ignore failures on futures to avoid having one listener block others.
+      listenerExecutor.submit(() -> listener.onResourceInit(getResource()));
+    }
   }
 }

@@ -10,6 +10,7 @@ import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.extension.incubator.entities.LatestResourceSupplier;
 import io.opentelemetry.sdk.extension.incubator.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.extension.incubator.entities.SdkEntityProviderBuilder;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -84,17 +85,16 @@ public final class ExtendedOpenTelemetrySdkBuilder {
    */
   public ExtendedOpenTelemetrySdk build() {
     SdkEntityProvider resourceProvider = resourceProviderBuilder.build();
+    // TODO - allow startup delay configuration
+    LatestResourceSupplier sdkResourceSupplier = new LatestResourceSupplier(200);
+    resourceProvider.onChange(sdkResourceSupplier);
     SdkTracerProvider tracerProvider =
-        SdkTracerProviderUtil.setResourceSupplier(
-                tracerProviderBuilder, resourceProvider::getResource)
+        SdkTracerProviderUtil.setResourceSupplier(tracerProviderBuilder, sdkResourceSupplier)
             .build();
     SdkMeterProvider meterProvider =
-        SdkMeterProviderUtil.setResourceSupplier(
-                meterProviderBuilder, resourceProvider::getResource)
-            .build();
+        SdkMeterProviderUtil.setResourceSupplier(meterProviderBuilder, sdkResourceSupplier).build();
     SdkLoggerProvider loggerProvider =
-        SdkLoggerProviderUtil.setResourceSupplier(
-                loggerProviderBuilder, resourceProvider::getResource)
+        SdkLoggerProviderUtil.setResourceSupplier(loggerProviderBuilder, sdkResourceSupplier)
             .build();
     return new ObfuscatedExtendedOpenTelemerySdk(
         resourceProvider, tracerProvider, meterProvider, loggerProvider, propagators);

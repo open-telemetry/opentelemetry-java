@@ -8,12 +8,16 @@ package io.opentelemetry.sdk.extension.incubator.entities;
 import io.opentelemetry.sdk.extension.incubator.entities.detectors.ServiceDetector;
 import io.opentelemetry.sdk.extension.incubator.entities.detectors.TelemetrySdkDetector;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /** A builder for {@link SdkEntityProvider}. */
 public final class SdkEntityProviderBuilder {
   private final List<ResourceDetector> detectors = new ArrayList<>();
   private boolean includeDefaults = true;
+  // TODO - add configuraiton settings for this.
+  private ExecutorService executorService = new CurrentThreadExecutorService();
 
   /**
    * Adds a {@link ResourceDetector} that will be run when constructing this provider.
@@ -23,6 +27,17 @@ public final class SdkEntityProviderBuilder {
    */
   public SdkEntityProviderBuilder addDetector(ResourceDetector detector) {
     this.detectors.add(detector);
+    return this;
+  }
+
+  /**
+   * Sets the excutor service which isolates entity listeners and resource detectors.
+   *
+   * @param executorService The executor service to use for async tasks.
+   * @return this
+   */
+  SdkEntityProviderBuilder setListenerExecutorService(ExecutorService executorService) {
+    this.executorService = executorService;
     return this;
   }
 
@@ -43,9 +58,6 @@ public final class SdkEntityProviderBuilder {
       detectors.add(new ServiceDetector());
       detectors.add(new TelemetrySdkDetector());
     }
-    SdkEntityProvider result = new SdkEntityProvider();
-    // TODO - Should we move these onto the provider?
-    detectors.forEach(d -> d.report(result));
-    return result;
+    return new SdkEntityProvider(executorService, Collections.unmodifiableCollection(detectors));
   }
 }

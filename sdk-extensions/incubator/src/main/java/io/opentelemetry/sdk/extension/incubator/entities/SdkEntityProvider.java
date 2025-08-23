@@ -8,23 +8,17 @@ package io.opentelemetry.sdk.extension.incubator.entities;
 import io.opentelemetry.api.incubator.entities.EntityBuilder;
 import io.opentelemetry.api.incubator.entities.EntityProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collection;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /** The SDK implementation of {@link EntityProvider}. */
 public final class SdkEntityProvider implements EntityProvider {
-  // TODO - Give control over listener execution model.
-  // For now, just run everything on the same thread as the entity-attach call.
-  private final SdkResourceSharedState state =
-      new SdkResourceSharedState(new CurrentThreadExecutorService());
+  private final SdkResourceSharedState state;
 
-  /**
-   * Obtains the current {@link Resource} for the SDK.
-   *
-   * @return the active {@link Resource} for this SDK.
-   */
-  public Resource getResource() {
-    return state.getResource();
+  SdkEntityProvider(ExecutorService executorService, Collection<ResourceDetector> detectors) {
+    this.state = new SdkResourceSharedState(executorService);
+    state.beginInitialization(detectors, this);
   }
 
   /**
