@@ -33,6 +33,9 @@ public class PrometheusMetricReaderProvider implements ConfigurableMetricReaderP
       prometheusBuilder.setHost(host);
     }
 
+    prometheusBuilder.setUtf8SupportEnabled(
+        config.getBoolean("otel.exporter.prometheus.utf8", false));
+
     ExporterBuilderUtil.configureExporterMemoryMode(config, prometheusBuilder::setMemoryMode);
 
     String defaultHistogramAggregation =

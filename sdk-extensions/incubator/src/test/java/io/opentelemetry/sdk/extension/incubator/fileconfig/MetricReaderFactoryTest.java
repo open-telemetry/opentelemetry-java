@@ -130,7 +130,8 @@ class MetricReaderFactoryTest {
   void create_PullPrometheusDefault() throws IOException {
     int port = randomAvailablePort();
     List<Closeable> closeables = new ArrayList<>();
-    PrometheusHttpServer expectedReader = PrometheusHttpServer.builder().setPort(port).build();
+    PrometheusHttpServer expectedReader =
+        PrometheusHttpServer.builder().setUtf8SupportEnabled(true).setPort(port).build();
     // Close the reader to avoid port conflict with the new instance created by MetricReaderFactory
     expectedReader.close();
 
@@ -166,6 +167,7 @@ class MetricReaderFactoryTest {
             .setHost("localhost")
             .setPort(port)
             .setOtelScopeEnabled(false)
+            .setUtf8SupportEnabled(true)
             .setAllowedResourceAttributesFilter(
                 IncludeExcludePredicate.createPatternMatching(
                     singletonList("foo"), singletonList("bar")))
