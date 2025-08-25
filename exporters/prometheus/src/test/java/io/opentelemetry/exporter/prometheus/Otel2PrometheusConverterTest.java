@@ -37,6 +37,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.prometheus.metrics.config.EscapingScheme;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
@@ -68,24 +69,77 @@ class Otel2PrometheusConverterTest {
           "(.|\\n)*# HELP (?<help>.*)\n# TYPE (?<type>.*)\n(?<metricName>.*)\\{"
               + "otel_scope_foo=\"bar\",otel_scope_name=\"scope\","
               + "otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\"}(.|\\n)*");
+  private static final Pattern ESCAPE_PATTERN =
+      Pattern.compile(
+          "(.|\\n)*# HELP (?<help>.*)\n# TYPE (?<type>.*)\n\\{\"(?<metricName>.*)\","
+              + "otel_scope_foo=\"bar\",otel_scope_name=\"scope\","
+              + "otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\"}(.|\\n)*");
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final Otel2PrometheusConverter converter =
-      new Otel2PrometheusConverter(true, /* allowedResourceAttributesFilter= */ null);
+      new Otel2PrometheusConverter(
+          true, /* allowedResourceAttributesFilter= */ null, /* utf8SupportEnabled */ true);
 
   @ParameterizedTest
   @MethodSource("metricMetadataArgs")
   void metricMetadata(
       MetricData metricData, String expectedType, String expectedHelp, String expectedMetricName)
       throws IOException {
+    assertMetricData(
+        metricData,
+        expectedType,
+        expectedHelp,
+        expectedMetricName,
+        new Otel2PrometheusConverter(
+            true, /* allowedResourceAttributesFilter= */ null, /* utf8SupportEnabled */ false),
+        EscapingScheme.UNDERSCORE_ESCAPING,
+        PATTERN);
+  }
+
+  @Test
+  void metricMetadataUtf8() throws IOException {
+    // all UTF-8 chars are accepted as is
+    // repeated "_" are collapsed, but 2 λ are not collapsed to a single "_"
+    // In a real application, the escaping scheme is passed using the "escaping" header when
+    // scraping the metrics
+
+    MetricData metricData = createSampleMetricData("λλbe__happy", "1", MetricDataType.LONG_GAUGE);
+    assertMetricData(
+        metricData,
+        "__be_happy_ratio gauge",
+        "__be_happy_ratio description",
+        "__be_happy_ratio",
+        converter,
+        EscapingScheme.UNDERSCORE_ESCAPING,
+        PATTERN);
+
+    assertMetricData(
+        metricData,
+        "\"λλbe_happy_ratio\" gauge",
+        "\"λλbe_happy_ratio\" description",
+        "λλbe_happy_ratio",
+        converter,
+        EscapingScheme.ALLOW_UTF8,
+        ESCAPE_PATTERN);
+  }
+
+  private static void assertMetricData(
+      MetricData metricData,
+      String expectedType,
+      String expectedHelp,
+      String expectedMetricName,
+      Otel2PrometheusConverter converter,
+      EscapingScheme escapingScheme,
+      Pattern pattern)
+      throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
-    ExpositionFormats.init().getPrometheusTextFormatWriter().write(out, snapshots);
+    ExpositionFormats.init().getPrometheusTextFormatWriter().write(out, snapshots, escapingScheme);
     String expositionFormat = new String(out.toByteArray(), StandardCharsets.UTF_8);
 
     assertThat(expositionFormat)
         .matchesSatisfying(
-            PATTERN,
+            pattern,
             matcher -> {
               assertThat(matcher.group("help")).isEqualTo(expectedHelp);
               assertThat(matcher.group("type")).isEqualTo(expectedType);
@@ -138,12 +192,13 @@ class Otel2PrometheusConverterTest {
             "metric_name_2 summary",
             "metric_name_2 description",
             "metric_name_2_count"),
-        // unsupported characters are translated to "_", repeated "_" are dropped
+        // unsupported characters are translated to "_", repeated "_" are collapsed if
+        // the original name had consecutive "_"
         Arguments.of(
-            createSampleMetricData("s%%ple", "%/min", MetricDataType.SUMMARY),
-            "s_ple_percent_per_minute summary",
-            "s_ple_percent_per_minute description",
-            "s_ple_percent_per_minute_count"),
+            createSampleMetricData("s%%p__le", "%/min", MetricDataType.SUMMARY),
+            "s_p_le_percent_per_minute summary",
+            "s_p_le_percent_per_minute description",
+            "s_p_le_percent_per_minute_count"),
         // metric unit is not appended if the name already contains the unit
         Arguments.of(
             createSampleMetricData("metric_name_total", "total", MetricDataType.LONG_SUM),
@@ -201,7 +256,8 @@ class Otel2PrometheusConverterTest {
       throws IOException {
 
     Otel2PrometheusConverter converter =
-        new Otel2PrometheusConverter(true, allowedResourceAttributesFilter);
+        new Otel2PrometheusConverter(
+            true, allowedResourceAttributesFilter, /* utf8SupportEnabled */ true);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
@@ -501,7 +557,10 @@ class Otel2PrometheusConverterTest {
         };
 
     Otel2PrometheusConverter otel2PrometheusConverter =
-        new Otel2PrometheusConverter(true, /* allowedResourceAttributesFilter= */ countPredicate);
+        new Otel2PrometheusConverter(
+            true,
+            /* allowedResourceAttributesFilter= */ countPredicate,
+            /* utf8SupportEnabled */ true);
 
     // Create 20 different metric data objects with 2 different resource attributes;
     Resource resource1 = Resource.builder().put("cluster", "cluster1").build();

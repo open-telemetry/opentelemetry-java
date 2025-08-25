@@ -33,7 +33,9 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
 
   @Override
   public MetricReader create(DeclarativeConfigProperties config) {
-    PrometheusHttpServerBuilder prometheusBuilder = PrometheusHttpServer.builder();
+    PrometheusHttpServerBuilder prometheusBuilder =
+        PrometheusHttpServer.builder()
+            .setUtf8SupportEnabled(true); // we can accept a breaking change in declarative config
 
     Integer port = config.getInt("port");
     if (port != null) {

@@ -31,6 +31,7 @@ public final class PrometheusHttpServerBuilder {
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
   private boolean otelScopeEnabled = true;
+  private boolean utf8SupportEnabled = false;
   @Nullable private Predicate<String> allowedResourceAttributesFilter;
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
@@ -46,6 +47,7 @@ public final class PrometheusHttpServerBuilder {
     this.port = builder.port;
     this.prometheusRegistry = builder.prometheusRegistry;
     this.otelScopeEnabled = builder.otelScopeEnabled;
+    this.utf8SupportEnabled = builder.utf8SupportEnabled;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
@@ -87,6 +89,30 @@ public final class PrometheusHttpServerBuilder {
   @SuppressWarnings("UnusedReturnValue")
   public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
     this.otelScopeEnabled = otelScopeEnabled;
+    return this;
+  }
+
+  /**
+   * Set if UTF-8 support is enabled.
+   *
+   * <p>If set to {@code true}, the exporter will pass metric names and labels unchanged to the
+   * prometheus client library, which supports UTF-8.
+   *
+   * <p>UTF-8 will only be seen in the exported metrics if the prometheus server <a
+   * href="https://prometheus.github.io/client_java/exporters/unicode/">signals support for
+   * UTF-8</a>
+   *
+   * <p>Therefore, it's safe to always set this setting to {@code true} if you're not affected by
+   * following change in behavior:
+   *
+   * <p>If set to {@code true}, multiple non-legacy characters (e.g. <code>%%</code>) in a row will
+   * not be replaced with a single underscore as recommended in the <a href=
+   * "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1">Prometheus
+   * conversion specification</a>.
+   */
+  @SuppressWarnings("UnusedReturnValue")
+  public PrometheusHttpServerBuilder setUtf8SupportEnabled(boolean utf8SupportEnabled) {
+    this.utf8SupportEnabled = utf8SupportEnabled;
     return this;
   }
 
@@ -177,6 +203,7 @@ public final class PrometheusHttpServerBuilder {
         executor,
         prometheusRegistry,
         otelScopeEnabled,
+        utf8SupportEnabled,
         allowedResourceAttributesFilter,
         memoryMode,
         defaultHandler,
