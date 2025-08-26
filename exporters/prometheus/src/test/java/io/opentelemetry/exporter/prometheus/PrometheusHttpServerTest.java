@@ -414,6 +414,7 @@ class PrometheusHttpServerTest {
                 + "host=localhost,"
                 + "port=0,"
                 + "otelScopeEnabled=true,"
+                + "utf8SupportEnabled=false,"
                 + "allowedResourceAttributesFilter=null,"
                 + "memoryMode=REUSABLE_DATA,"
                 + "defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}"
