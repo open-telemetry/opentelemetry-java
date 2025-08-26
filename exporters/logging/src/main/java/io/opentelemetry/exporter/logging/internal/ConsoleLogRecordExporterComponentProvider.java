@@ -30,7 +30,8 @@ public final class ConsoleLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public LogRecordExporter create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return SystemOutLogRecordExporter.create();
   }
 }

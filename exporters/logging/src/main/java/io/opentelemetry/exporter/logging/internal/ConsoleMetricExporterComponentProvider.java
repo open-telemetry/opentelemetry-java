@@ -30,7 +30,8 @@ public final class ConsoleMetricExporterComponentProvider
   }
 
   @Override
-  public MetricExporter create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public MetricExporter create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return LoggingMetricExporter.create();
   }
 }

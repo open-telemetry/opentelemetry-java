@@ -33,8 +33,8 @@ public class OtlpGrpcLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(DeclarativeConfigProperties config,
-      ComponentProviderLoader componentProviderLoader) {
+  public LogRecordExporter create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     OtlpGrpcLogRecordExporterBuilder builder = grpcBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(

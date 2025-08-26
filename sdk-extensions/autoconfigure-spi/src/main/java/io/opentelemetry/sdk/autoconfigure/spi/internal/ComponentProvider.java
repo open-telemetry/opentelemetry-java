@@ -21,8 +21,8 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  * configuration.
  *
  * <p>NOTE: when {@link #getType()} is {@link Resource}, the {@link #getName()} is not (currently)
- * used, and {@link #create(DeclarativeConfigProperties, ComponentProviderLoader)} is (currently) called with an empty {@link
- * DeclarativeConfigProperties}.
+ * used, and {@link #create(DeclarativeConfigProperties, ComponentProviderLoader)} is (currently)
+ * called with an empty {@link DeclarativeConfigProperties}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -35,8 +35,8 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 public interface ComponentProvider<T> {
 
   /**
-   * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
-   * at any time.
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
    */
   interface ComponentProviderLoader {
     <T> T loadComponent(Class<T> type, String name, DeclarativeConfigProperties properties);

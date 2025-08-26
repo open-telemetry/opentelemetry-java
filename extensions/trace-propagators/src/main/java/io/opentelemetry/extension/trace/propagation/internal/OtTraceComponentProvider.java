@@ -30,7 +30,8 @@ public final class OtTraceComponentProvider implements ComponentProvider<TextMap
   }
 
   @Override
-  public TextMapPropagator create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public TextMapPropagator create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     return OtTracePropagator.getInstance();
   }
 }

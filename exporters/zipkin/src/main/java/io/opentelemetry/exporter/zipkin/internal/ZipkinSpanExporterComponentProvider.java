@@ -30,7 +30,8 @@ public class ZipkinSpanExporterComponentProvider implements ComponentProvider<Sp
   }
 
   @Override
-  public SpanExporter create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public SpanExporter create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     ZipkinSpanExporterBuilder builder = ZipkinSpanExporter.builder();
 
     String endpoint = config.getString("endpoint");

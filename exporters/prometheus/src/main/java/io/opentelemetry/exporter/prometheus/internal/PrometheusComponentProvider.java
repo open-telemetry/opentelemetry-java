@@ -32,7 +32,8 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
   }
 
   @Override
-  public MetricReader create(DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public MetricReader create(
+      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
     PrometheusHttpServerBuilder prometheusBuilder = PrometheusHttpServer.builder();
 
     Integer port = config.getInt("port");
