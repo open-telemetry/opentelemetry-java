@@ -75,7 +75,7 @@ public class HistogramCollectBenchmark {
                       // Effectively disable periodic reading so reading is only done on #flush()
                       .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
                       .build());
-      // Disable examplars
+      // Disable exemplars
       SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
       sdkMeterProvider = builder.build();
       histogram = sdkMeterProvider.get("meter").histogramBuilder("histogram").build();
