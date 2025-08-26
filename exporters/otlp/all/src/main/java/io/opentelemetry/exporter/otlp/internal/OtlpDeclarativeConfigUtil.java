@@ -24,9 +24,11 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -55,7 +57,7 @@ public final class OtlpDeclarativeConfigUtil {
       Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
-      Consumer<ExporterAuthenticator> setAuthenticator,
+      Consumer<Supplier<Map<String, String>>> setHeaders,
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates,
@@ -87,7 +89,7 @@ public final class OtlpDeclarativeConfigUtil {
           componentProviderLoader.loadComponent(
               ExporterAuthenticator.class, authenticatorName, authenticator);
 
-      setAuthenticator.accept(exporterAuthenticator);
+      setHeaders.accept(exporterAuthenticator::getAuthenticationHeaders);
     }
 
     String headerList = config.getString("headers_list");
