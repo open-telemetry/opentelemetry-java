@@ -263,7 +263,7 @@ class DoubleSumAggregatorTest {
     MutableDoublePointData pointData = (MutableDoublePointData) aggregator.createReusablePoint();
 
     Attributes attributes = Attributes.of(AttributeKey.longKey("test"), 100L);
-    List<DoubleExemplarData> examplarsFrom =
+    List<DoubleExemplarData> exemplarsFrom =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -274,12 +274,12 @@ class DoubleSumAggregatorTest {
                     TraceFlags.getDefault(),
                     TraceState.getDefault()),
                 1));
-    pointData.set(0, 1, attributes, 2000, examplarsFrom);
+    pointData.set(0, 1, attributes, 2000, exemplarsFrom);
 
     MutableDoublePointData toPointData = (MutableDoublePointData) aggregator.createReusablePoint();
 
     Attributes toAttributes = Attributes.of(AttributeKey.longKey("test"), 100L);
-    List<DoubleExemplarData> examplarsTo =
+    List<DoubleExemplarData> exemplarsTo =
         Collections.singletonList(
             ImmutableDoubleExemplarData.create(
                 attributes,
@@ -290,7 +290,7 @@ class DoubleSumAggregatorTest {
                     TraceFlags.getDefault(),
                     TraceState.getDefault()),
                 2));
-    toPointData.set(0, 2, toAttributes, 4000, examplarsTo);
+    toPointData.set(0, 2, toAttributes, 4000, exemplarsTo);
 
     aggregator.copyPoint(pointData, toPointData);
 

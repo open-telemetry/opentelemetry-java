@@ -95,7 +95,7 @@ public class InstrumentGarbageCollectionBenchmark {
 
       attributesList = AttributesGenerator.generate(cardinality);
 
-      // Disable examplars
+      // Disable exemplars
       SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
 
       sdkMeterProvider = builder.build();
