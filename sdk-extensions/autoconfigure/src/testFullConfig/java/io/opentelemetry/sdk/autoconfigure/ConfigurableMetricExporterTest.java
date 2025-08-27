@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+import io.opentelemetry.exporter.otlp.internal.OtlpMetricExporterProvider;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -52,7 +53,8 @@ class ConfigurableMetricExporterTest {
       assertThat(spiHelper.getListeners())
           .satisfiesExactlyInAnyOrder(
               listener ->
-                  assertThat(listener).isInstanceOf(TestConfigurableMetricExporterProvider.class));
+                  assertThat(listener).isInstanceOf(TestConfigurableMetricExporterProvider.class),
+              listener -> assertThat(listener).isInstanceOf(OtlpMetricExporterProvider.class));
     }
   }
 
