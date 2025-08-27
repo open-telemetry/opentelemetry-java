@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLabelName;
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
@@ -91,6 +92,8 @@ final class Otel2PrometheusConverter {
    */
   private final Map<Attributes, List<AttributeKey<?>>> resourceAttributesToAllowedKeysCache;
 
+  private final boolean utf8SupportEnabled;
+
   /**
    * Constructor with feature flag parameter.
    *
@@ -100,13 +103,16 @@ final class Otel2PrometheusConverter {
    *     matching this predicate will be added as labels on each exported metric
    */
   Otel2PrometheusConverter(
-      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
+      boolean otelScopeEnabled,
+      @Nullable Predicate<String> allowedResourceAttributesFilter,
+      boolean utf8SupportEnabled) {
     this.otelScopeEnabled = otelScopeEnabled;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
             ? new ConcurrentHashMap<>()
             : Collections.emptyMap();
+    this.utf8SupportEnabled = utf8SupportEnabled;
   }
 
   MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
@@ -457,8 +463,8 @@ final class Otel2PrometheusConverter {
    * Convert OpenTelemetry attributes to Prometheus labels.
    *
    * @param resource optional resource (attributes) to be converted.
-   * @param scope will be converted to {@code otel_scope_*} labels if {@code otelScopeEnabled} is
-   *     {@code true}.
+   * @param scope that will be converted to {@code otel_scope_*} labels if {@code otelScopeEnabled}
+   *     is {@code true}.
    * @param attributes the attributes to be converted.
    * @param additionalAttributes optional list of key/value pairs, may be empty.
    */
@@ -548,14 +554,20 @@ final class Otel2PrometheusConverter {
     return allowedAttributeKeys;
   }
 
-  private static MetricMetadata convertMetadata(MetricData metricData) {
-    String name = sanitizeMetricName(metricData.getName());
+  private MetricMetadata convertMetadata(MetricData metricData) {
+    String name = metricData.getName();
+    if (!utf8SupportEnabled) {
+      name = prometheusName(name);
+    }
+    name = sanitizeMetricName(name);
+
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    // Repeated __ are not allowed according to spec, although this is allowed in prometheus
+    // Repeated __ are discouraged according to spec, although this is allowed in prometheus, see
+    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1
     while (name.contains("__")) {
       name = name.replace("__", "_");
     }
