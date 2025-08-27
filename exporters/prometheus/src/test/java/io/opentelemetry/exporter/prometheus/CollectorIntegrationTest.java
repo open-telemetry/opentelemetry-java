@@ -133,25 +133,24 @@ class CollectorIntegrationTest {
     assertThat(resourceMetrics.getResource().getAttributesList())
         .containsExactlyInAnyOrder(
             // Resource attributes derived from the prometheus scrape config
-            stringKeyValue("service.name", "app"),
             stringKeyValue("service.instance.id", "host.testcontainers.internal:" + prometheusPort),
             stringKeyValue("server.address", "host.testcontainers.internal"),
             stringKeyValue("server.port", String.valueOf(prometheusPort)),
             stringKeyValue("url.scheme", "http"),
             // Resource attributes from the metric SDK resource translated to target_info
             stringKeyValue(
-                "service_name",
+                "service.name",
                 Objects.requireNonNull(resource.getAttributes().get(stringKey("service.name")))),
             stringKeyValue(
-                "telemetry_sdk_name",
+                "telemetry.sdk.name",
                 Objects.requireNonNull(
                     resource.getAttributes().get(stringKey("telemetry.sdk.name")))),
             stringKeyValue(
-                "telemetry_sdk_language",
+                "telemetry.sdk.language",
                 Objects.requireNonNull(
                     resource.getAttributes().get(stringKey("telemetry.sdk.language")))),
             stringKeyValue(
-                "telemetry_sdk_version",
+                "telemetry.sdk.version",
                 Objects.requireNonNull(
                     resource.getAttributes().get(stringKey("telemetry.sdk.version")))));
 
