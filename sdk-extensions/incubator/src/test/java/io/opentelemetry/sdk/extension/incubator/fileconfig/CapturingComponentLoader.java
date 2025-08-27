@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * A test utility that captures the configuration passed to component providers during loading.
+ * This allows tests to verify that component providers receive the expected configuration.
+ */
 class CapturingComponentLoader implements ComponentLoader {
 
   private final ComponentLoader delegate;
