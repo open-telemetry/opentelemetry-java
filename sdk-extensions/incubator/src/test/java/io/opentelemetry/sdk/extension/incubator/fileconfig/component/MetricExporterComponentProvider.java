@@ -27,8 +27,7 @@ public class MetricExporterComponentProvider implements ComponentProvider<Metric
   }
 
   @Override
-  public MetricExporter create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     return new TestMetricExporter(config);
   }
 

@@ -27,8 +27,7 @@ public class SamplerComponentProvider implements ComponentProvider<Sampler> {
   }
 
   @Override
-  public Sampler create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public Sampler create(DeclarativeConfigProperties config) {
     return new TestSampler(config);
   }
 

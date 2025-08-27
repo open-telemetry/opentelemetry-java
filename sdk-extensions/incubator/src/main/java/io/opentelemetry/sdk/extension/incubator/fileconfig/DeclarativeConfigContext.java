@@ -42,19 +42,20 @@ class DeclarativeConfigContext {
   /**
    * Find a registered {@link ComponentProvider} with {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
-   * ComponentProvider#create(DeclarativeConfigProperties,
-   * ComponentProvider.ComponentProviderLoader)} with the given {@code model}.
+   * ComponentProvider#create(DeclarativeConfigProperties)} with the given {@code model}.
    *
    * @throws DeclarativeConfigException if no matching providers are found, or if multiple are found
-   *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties,
-   *     ComponentProvider.ComponentProviderLoader)} throws
+   *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
   <T> T loadComponent(Class<T> type, String name, Object model) {
     DeclarativeConfigProperties config =
-        model instanceof DeclarativeConfigProperties
-            ? (DeclarativeConfigProperties) model
-            : DeclarativeConfiguration.toConfigProperties(model, spiHelper.getComponentLoader());
+        new DeclarativeConfigPropertiesWithComponentProviderLoader(
+            model instanceof DeclarativeConfigProperties
+                ? (DeclarativeConfigProperties) model
+                : DeclarativeConfiguration.toConfigProperties(
+                    model, spiHelper.getComponentLoader()),
+            this::loadComponent);
 
     // TODO(jack-berg): cache loaded component providers
     List<ComponentProvider> componentProviders = spiHelper.load(ComponentProvider.class);
@@ -86,7 +87,7 @@ class DeclarativeConfigContext {
     ComponentProvider<T> provider = (ComponentProvider<T>) matchedProviders.get(0);
 
     try {
-      return provider.create(config, this::loadComponent);
+      return provider.create(config);
     } catch (Throwable throwable) {
       throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);

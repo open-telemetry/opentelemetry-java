@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigTestUtil.createTempFileWithContent;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
@@ -89,7 +88,7 @@ class MetricExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("otlp_http", MetricExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
     assertThat(configProperties.getString("endpoint")).isNull();
@@ -169,7 +168,7 @@ class MetricExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("otlp_http", MetricExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/metrics");
     List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
@@ -215,7 +214,7 @@ class MetricExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("otlp_grpc", MetricExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getStructured("headers")).isNull();
@@ -294,7 +293,7 @@ class MetricExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("otlp_grpc", MetricExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4317");
     List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
@@ -357,7 +356,7 @@ class MetricExporterFactoryTest {
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider(
             "otlp_file/development", MetricExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
   }
 
   @Test

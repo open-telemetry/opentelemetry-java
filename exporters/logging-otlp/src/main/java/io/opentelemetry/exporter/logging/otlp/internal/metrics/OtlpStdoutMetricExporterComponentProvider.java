@@ -30,8 +30,7 @@ public final class OtlpStdoutMetricExporterComponentProvider
   }
 
   @Override
-  public MetricExporter create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutMetricExporterBuilder builder = OtlpStdoutMetricExporter.builder();
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     IncubatingExporterBuilderUtil.configureOtlpAggregationTemporality(

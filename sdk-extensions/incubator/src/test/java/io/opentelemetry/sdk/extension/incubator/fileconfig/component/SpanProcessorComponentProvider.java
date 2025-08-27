@@ -25,8 +25,7 @@ public class SpanProcessorComponentProvider implements ComponentProvider<SpanPro
   }
 
   @Override
-  public SpanProcessor create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public SpanProcessor create(DeclarativeConfigProperties config) {
     return new TestSpanProcessor(config);
   }
 

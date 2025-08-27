@@ -27,8 +27,7 @@ public class TextMapPropagatorComponentProvider implements ComponentProvider<Tex
   }
 
   @Override
-  public TextMapPropagator create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public TextMapPropagator create(DeclarativeConfigProperties config) {
     return new TestTextMapPropagator(config);
   }
 

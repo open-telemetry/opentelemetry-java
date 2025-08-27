@@ -33,14 +33,12 @@ public class OtlpHttpMetricExporterComponentProvider implements ComponentProvide
   }
 
   @Override
-  public MetricExporter create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     OtlpHttpMetricExporterBuilder builder = httpBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_METRICS,
         config,
-        componentProviderLoader,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,

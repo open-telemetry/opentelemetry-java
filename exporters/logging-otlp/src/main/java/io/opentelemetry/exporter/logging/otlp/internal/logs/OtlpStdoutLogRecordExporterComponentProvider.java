@@ -30,8 +30,7 @@ public final class OtlpStdoutLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public LogRecordExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     return builder.build();

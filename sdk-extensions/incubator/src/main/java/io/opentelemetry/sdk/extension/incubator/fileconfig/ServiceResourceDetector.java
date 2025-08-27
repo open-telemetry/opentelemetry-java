@@ -35,8 +35,7 @@ public class ServiceResourceDetector implements ComponentProvider<Resource> {
   }
 
   @Override
-  public Resource create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public Resource create(DeclarativeConfigProperties config) {
     ResourceBuilder builder = Resource.builder();
 
     ConfigProperties properties =

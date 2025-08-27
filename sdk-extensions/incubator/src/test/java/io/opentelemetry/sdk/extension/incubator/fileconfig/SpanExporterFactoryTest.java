@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigTestUtil.createTempFileWithContent;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
@@ -85,7 +84,7 @@ class SpanExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("otlp_http", SpanExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
     assertThat(configProperties.getString("endpoint")).isNull();
@@ -154,7 +153,7 @@ class SpanExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("otlp_http", SpanExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/traces");
     List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
@@ -195,7 +194,7 @@ class SpanExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("otlp_grpc", SpanExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getStructured("headers")).isNull();
@@ -263,7 +262,7 @@ class SpanExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("otlp_grpc", SpanExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4317");
     List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
@@ -320,7 +319,7 @@ class SpanExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("zipkin", SpanExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getLong("timeout")).isNull();
@@ -354,7 +353,7 @@ class SpanExporterFactoryTest {
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider("zipkin", SpanExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://zipkin:9411/v1/v2/spans");
     assertThat(configProperties.getLong("timeout")).isEqualTo(15_000);
@@ -382,7 +381,7 @@ class SpanExporterFactoryTest {
     ComponentProvider<?> componentProvider =
         componentProviderExtension.getComponentProvider(
             "otlp_file/development", SpanExporter.class);
-    verify(componentProvider).create(configCaptor.capture(), any());
+    verify(componentProvider).create(configCaptor.capture());
   }
 
   @Test

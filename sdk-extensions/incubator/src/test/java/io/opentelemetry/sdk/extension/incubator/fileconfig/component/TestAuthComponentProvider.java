@@ -22,8 +22,7 @@ public class TestAuthComponentProvider implements ComponentProvider<ExporterAuth
   }
 
   @Override
-  public ExporterAuthenticator create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public ExporterAuthenticator create(DeclarativeConfigProperties config) {
     return () -> Collections.singletonMap("auth_provider_key1", "value1");
   }
 }

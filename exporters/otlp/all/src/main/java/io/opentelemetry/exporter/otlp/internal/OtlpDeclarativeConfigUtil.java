@@ -16,7 +16,6 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -53,7 +52,6 @@ public final class OtlpDeclarativeConfigUtil {
   public static void configureOtlpExporterBuilder(
       String dataType,
       DeclarativeConfigProperties config,
-      ComponentProvider.ComponentProviderLoader componentProviderLoader,
       Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
@@ -86,8 +84,9 @@ public final class OtlpDeclarativeConfigUtil {
 
       String authenticatorName = propertyKeys.iterator().next();
       ExporterAuthenticator exporterAuthenticator =
-          componentProviderLoader.loadComponent(
-              ExporterAuthenticator.class, authenticatorName, authenticator);
+          config
+              .getComponentProviderLoader()
+              .loadComponent(ExporterAuthenticator.class, authenticatorName, authenticator);
 
       setHeaders.accept(exporterAuthenticator::getAuthenticationHeaders);
     }

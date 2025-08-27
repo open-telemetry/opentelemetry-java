@@ -24,8 +24,7 @@ public class SpanExporterComponentProvider implements ComponentProvider<SpanExpo
   }
 
   @Override
-  public SpanExporter create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public SpanExporter create(DeclarativeConfigProperties config) {
     return new TestSpanExporter(config);
   }
 

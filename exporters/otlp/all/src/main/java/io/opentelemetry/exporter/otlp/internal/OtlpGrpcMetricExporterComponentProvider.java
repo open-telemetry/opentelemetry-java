@@ -33,14 +33,12 @@ public class OtlpGrpcMetricExporterComponentProvider implements ComponentProvide
   }
 
   @Override
-  public MetricExporter create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     OtlpGrpcMetricExporterBuilder builder = grpcBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_METRICS,
         config,
-        componentProviderLoader,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,

@@ -30,8 +30,7 @@ public final class B3ComponentProvider implements ComponentProvider<TextMapPropa
   }
 
   @Override
-  public TextMapPropagator create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public TextMapPropagator create(DeclarativeConfigProperties config) {
     return B3Propagator.injectingSingleHeader();
   }
 }

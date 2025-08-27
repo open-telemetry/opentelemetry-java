@@ -33,14 +33,12 @@ public class OtlpHttpLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public LogRecordExporter create(DeclarativeConfigProperties config) {
     OtlpHttpLogRecordExporterBuilder builder = httpBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_LOGS,
         config,
-        componentProviderLoader,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,

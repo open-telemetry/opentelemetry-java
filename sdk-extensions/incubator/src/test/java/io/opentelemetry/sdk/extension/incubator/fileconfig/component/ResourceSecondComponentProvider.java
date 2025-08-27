@@ -21,8 +21,7 @@ public class ResourceSecondComponentProvider implements ComponentProvider<Resour
   }
 
   @Override
-  public Resource create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public Resource create(DeclarativeConfigProperties config) {
     return Resource.builder().put("order", "second").build();
   }
 }

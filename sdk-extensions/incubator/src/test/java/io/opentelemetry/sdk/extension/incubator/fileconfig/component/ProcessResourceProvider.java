@@ -24,8 +24,7 @@ public class ProcessResourceProvider implements ComponentProvider<Resource> {
   }
 
   @Override
-  public Resource create(
-      DeclarativeConfigProperties config, ComponentProviderLoader componentProviderLoader) {
+  public Resource create(DeclarativeConfigProperties config) {
     return Resource.empty();
   }
 }

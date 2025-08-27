@@ -339,7 +339,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
                 })
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No provider found"))
-            .create(properties, null);
+            .create(properties);
   }
 
   @SuppressWarnings("unchecked")
