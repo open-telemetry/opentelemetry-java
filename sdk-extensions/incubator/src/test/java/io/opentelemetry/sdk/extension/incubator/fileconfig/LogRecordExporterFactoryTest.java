@@ -136,7 +136,8 @@ class LogRecordExporterFactoryTest {
                                         .withName("key2")
                                         .withValue("value2")))
                             .withAuthenticator(
-                                new AuthenticatorModel().withAdditionalProperty("test_auth", null))
+                                new AuthenticatorModel()
+                                    .withAdditionalProperty("rainy_cloud", null))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificateFile(certificatePath)
@@ -248,7 +249,8 @@ class LogRecordExporterFactoryTest {
                                         .withName("key2")
                                         .withValue("value2")))
                             .withAuthenticator(
-                                new AuthenticatorModel().withAdditionalProperty("test_auth", null))
+                                new AuthenticatorModel()
+                                    .withAdditionalProperty("rainy_cloud", null))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificateFile(certificatePath)

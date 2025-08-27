@@ -18,7 +18,7 @@ public class TestAuthComponentProvider implements ComponentProvider<ExporterAuth
 
   @Override
   public String getName() {
-    return "test_auth";
+    return "rainy_cloud";
   }
 
   @Override

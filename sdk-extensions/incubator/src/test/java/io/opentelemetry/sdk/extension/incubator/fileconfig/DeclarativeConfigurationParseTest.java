@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Always
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AuthenticatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.B3MultiPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.B3PropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BaggagePropagatorModel;
@@ -237,6 +238,11 @@ class DeclarativeConfigurationParseTest {
                         .withConfig(new ExperimentalTracerConfigModel().withDisabled(false))));
     tracerProvider.withTracerConfiguratorDevelopment(tracerConfigurator);
 
+    Map<String, Object> authAttributes = new HashMap<>();
+    authAttributes.put("tenant", "foo");
+    authAttributes.put("region", "bar");
+    AuthenticatorModel authenticator =
+        new AuthenticatorModel().withAdditionalProperty("rainy_cloud", authAttributes);
     SpanProcessorModel spanProcessor1 =
         new SpanProcessorModel()
             .withBatch(
@@ -259,6 +265,7 @@ class DeclarativeConfigurationParseTest {
                                                 .withName("api-key")
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
+                                    .withAuthenticator(authenticator)
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
                                     .withEncoding(
@@ -281,6 +288,7 @@ class DeclarativeConfigurationParseTest {
                                                 .withName("api-key")
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
+                                    .withAuthenticator(authenticator)
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
                                     .withInsecure(false))));
@@ -368,6 +376,7 @@ class DeclarativeConfigurationParseTest {
                                                 .withName("api-key")
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
+                                    .withAuthenticator(authenticator)
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
                                     .withEncoding(
@@ -390,6 +399,7 @@ class DeclarativeConfigurationParseTest {
                                                 .withName("api-key")
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
+                                    .withAuthenticator(authenticator)
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
                                     .withInsecure(false))));
@@ -483,6 +493,7 @@ class DeclarativeConfigurationParseTest {
                                                 .withName("api-key")
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
+                                    .withAuthenticator(authenticator)
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
                                     .withEncoding(OtlpHttpExporterModel.OtlpHttpEncoding.PROTOBUF)
@@ -524,6 +535,7 @@ class DeclarativeConfigurationParseTest {
                                                 .withName("api-key")
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
+                                    .withAuthenticator(authenticator)
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
                                     .withInsecure(false)
