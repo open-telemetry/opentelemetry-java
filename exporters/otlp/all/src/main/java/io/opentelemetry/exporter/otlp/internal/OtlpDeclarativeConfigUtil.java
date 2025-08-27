@@ -10,6 +10,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.configureOt
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.readFileBytes;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.validateEndpoint;
 
+import io.opentelemetry.api.incubator.authenticator.ExporterAuthenticator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
@@ -22,8 +23,11 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -51,6 +55,7 @@ public final class OtlpDeclarativeConfigUtil {
       Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
+      Consumer<Supplier<Map<String, String>>> setHeaders,
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates,
@@ -63,6 +68,27 @@ public final class OtlpDeclarativeConfigUtil {
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
     if (endpoint != null) {
       setEndpoint.accept(endpoint.toString());
+    }
+
+    DeclarativeConfigProperties authenticator = config.getStructured("authenticator");
+    if (authenticator != null) {
+      Set<String> propertyKeys = authenticator.getPropertyKeys();
+      int size = propertyKeys.size();
+      if (size != 1) {
+        throw new ConfigurationException(
+            "authenticator must be a single structured property, but found "
+                + size
+                + " properties: "
+                + propertyKeys);
+      }
+
+      String authenticatorName = propertyKeys.iterator().next();
+      ExporterAuthenticator exporterAuthenticator =
+          config
+              .getComponentProviderLoader()
+              .loadComponent(ExporterAuthenticator.class, authenticatorName, authenticator);
+
+      setHeaders.accept(exporterAuthenticator::getAuthenticationHeaders);
     }
 
     String headerList = config.getString("headers_list");

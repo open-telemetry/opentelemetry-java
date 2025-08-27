@@ -106,6 +106,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
               + "\" has unrecognized object type "
               + value.getClass().getName());
     }
+
     return new YamlDeclarativeConfigProperties(
         simpleEntries, listEntries, mapEntries, componentLoader);
   }
