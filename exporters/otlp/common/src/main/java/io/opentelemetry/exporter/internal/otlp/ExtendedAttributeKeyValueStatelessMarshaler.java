@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeType;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
@@ -22,6 +23,7 @@ import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValueList;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
 
@@ -168,6 +170,18 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
               (List<Object>) value,
               AttributeArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
+        case BYTES:
+          return BytesAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
+              (ByteBuffer) value, context);
+        case ARRAY:
+          return StatelessMarshalerUtil.sizeMessageWithContext(
+              AnyValue.ARRAY_VALUE,
+              (List<Value<?>>) value,
+              ArrayAnyValueStatelessMarshaler.INSTANCE,
+              context);
+        case MAP:
+          // TODO: Implement MAP support for extended stateless marshaler
+          throw new IllegalArgumentException("MAP attribute type not yet supported in extended stateless marshaler");
         case EXTENDED_ATTRIBUTES:
           return StatelessMarshalerUtil.sizeMessageWithContext(
               AnyValue.KVLIST_VALUE,
@@ -213,6 +227,19 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
               AttributeArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
           return;
+        case BYTES:
+          BytesAnyValueStatelessMarshaler.INSTANCE.writeTo(output, (ByteBuffer) value, context);
+          return;
+        case ARRAY:
+          output.serializeMessageWithContext(
+              AnyValue.ARRAY_VALUE,
+              (List<Value<?>>) value,
+              ArrayAnyValueStatelessMarshaler.INSTANCE,
+              context);
+          return;
+        case MAP:
+          // TODO: Implement MAP support for extended stateless marshaler
+          throw new IllegalArgumentException("MAP attribute type not yet supported in extended stateless marshaler");
         case EXTENDED_ATTRIBUTES:
           output.serializeMessageWithContext(
               AnyValue.KVLIST_VALUE,

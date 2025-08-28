@@ -70,4 +70,19 @@ public interface AttributeKey<T> {
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
+
+  /** Returns a new AttributeKey for byte[] valued attributes. */
+  static AttributeKey<byte[]> bytesKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.BYTES);
+  }
+
+  /** Returns a new AttributeKey for heterogeneous array valued attributes. */
+  static AttributeKey<List<Value<?>>> arrayKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.ARRAY);
+  }
+
+  /** Returns a new AttributeKey for map valued attributes. */
+  static AttributeKey<Attributes> mapKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.MAP);
+  }
 }

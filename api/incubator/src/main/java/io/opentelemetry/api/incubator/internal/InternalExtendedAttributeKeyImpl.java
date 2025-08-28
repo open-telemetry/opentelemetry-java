@@ -138,6 +138,12 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
       case DOUBLE_ARRAY:
         return InternalAttributeKeyImpl.create(
             extendedAttributeKey.getKey(), AttributeType.DOUBLE_ARRAY);
+      case BYTES:
+        return InternalAttributeKeyImpl.create(extendedAttributeKey.getKey(), AttributeType.BYTES);
+      case ARRAY:
+        return InternalAttributeKeyImpl.create(extendedAttributeKey.getKey(), AttributeType.ARRAY);
+      case MAP:
+        return InternalAttributeKeyImpl.create(extendedAttributeKey.getKey(), AttributeType.MAP);
       case EXTENDED_ATTRIBUTES:
         return null;
     }
@@ -172,6 +178,15 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
       case DOUBLE_ARRAY:
         return InternalExtendedAttributeKeyImpl.create(
             attributeKey.getKey(), ExtendedAttributeType.DOUBLE_ARRAY);
+      case BYTES:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.BYTES);
+      case ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.ARRAY);
+      case MAP:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.EXTENDED_ATTRIBUTES);
     }
     throw new IllegalArgumentException("Unrecognized attributeKey type: " + attributeKey.getType());
   }

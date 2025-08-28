@@ -11,6 +11,7 @@ package io.opentelemetry.api.common;
  * @see Value#of(KeyValue...)
  * @since 1.42.0
  */
+// TODO can we deprecate in favor of Attributes?
 public interface KeyValue {
 
   /** Returns a {@link KeyValue} for the given {@code key} and {@code value}. */

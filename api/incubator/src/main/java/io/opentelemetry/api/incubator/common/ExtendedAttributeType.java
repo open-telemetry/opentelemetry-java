@@ -21,6 +21,9 @@ public enum ExtendedAttributeType {
   BOOLEAN_ARRAY,
   LONG_ARRAY,
   DOUBLE_ARRAY,
+  BYTES,
+  ARRAY,
+  MAP,
   // Extended types unique to ExtendedAttributes
   EXTENDED_ATTRIBUTES;
 }

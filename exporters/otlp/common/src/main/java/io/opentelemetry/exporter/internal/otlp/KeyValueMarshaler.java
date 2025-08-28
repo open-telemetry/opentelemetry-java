@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.otlp;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
@@ -118,6 +119,18 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
       case DOUBLE_ARRAY:
         return new KeyValueMarshaler(
             keyUtf8, ArrayAnyValueMarshaler.createDouble((List<Double>) value));
+      case BYTES:
+        return new KeyValueMarshaler(keyUtf8, BytesAnyValueMarshaler.create((byte[]) value));
+      case ARRAY:
+        @SuppressWarnings("unchecked")
+        List<Value<?>> valueList = (List<Value<?>>) value;
+        return new KeyValueMarshaler(keyUtf8, ArrayAnyValueMarshaler.createAnyValue(valueList));
+      case MAP:
+        return new KeyValueMarshaler(
+            keyUtf8,
+            new KeyValueListAnyValueMarshaler(
+                new KeyValueListAnyValueMarshaler.KeyValueListMarshaler(
+                    createForAttributes((Attributes) value))));
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.

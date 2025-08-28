@@ -314,6 +314,12 @@ class ExtendedAttributesTest {
         return ExtendedAttributeKey.longArrayKey(key);
       case DOUBLE_ARRAY:
         return ExtendedAttributeKey.doubleArrayKey(key);
+      case BYTES:
+        return ExtendedAttributeKey.bytesKey(key);
+      case ARRAY:
+        return ExtendedAttributeKey.arrayKey(key);
+      case MAP:
+        return ExtendedAttributeKey.mapKey(key);
       case EXTENDED_ATTRIBUTES:
         return ExtendedAttributeKey.extendedAttributesKey(key);
     }

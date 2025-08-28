@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
@@ -16,6 +17,7 @@ import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -100,6 +102,18 @@ public final class AttributeKeyValueStatelessMarshaler
               (List<Object>) value,
               AttributeArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
+        case BYTES:
+          return BytesAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
+              (ByteBuffer) value, context);
+        case ARRAY:
+          return StatelessMarshalerUtil.sizeMessageWithContext(
+              AnyValue.ARRAY_VALUE,
+              (List<Value<?>>) value,
+              ArrayAnyValueStatelessMarshaler.INSTANCE,
+              context);
+        case MAP:
+          // TODO: Implement MAP support for stateless marshaler
+          throw new IllegalArgumentException("MAP attribute type not yet supported in stateless marshaler");
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with
       // unaligned versions which are not supported.
@@ -136,6 +150,19 @@ public final class AttributeKeyValueStatelessMarshaler
               AttributeArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
           return;
+        case BYTES:
+          BytesAnyValueStatelessMarshaler.INSTANCE.writeTo(output, (ByteBuffer) value, context);
+          return;
+        case ARRAY:
+          output.serializeMessageWithContext(
+              AnyValue.ARRAY_VALUE,
+              (List<Value<?>>) value,
+              ArrayAnyValueStatelessMarshaler.INSTANCE,
+              context);
+          return;
+        case MAP:
+          // TODO: Implement MAP support for stateless marshaler
+          throw new IllegalArgumentException("MAP attribute type not yet supported in stateless marshaler");
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with
       // unaligned versions which are not supported.

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.incubator.internal.InternalExtendedAttributeKeyImpl;
@@ -110,6 +112,18 @@ public class IncubatingUtil {
       case DOUBLE_ARRAY:
         return new KeyValueMarshaler(
             keyUtf8, ArrayAnyValueMarshaler.createDouble((List<Double>) value));
+      case BYTES:
+        return new KeyValueMarshaler(keyUtf8, BytesAnyValueMarshaler.create((byte[]) value));
+      case ARRAY:
+        @SuppressWarnings("unchecked")
+        List<Value<?>> valueList = (List<Value<?>>) value;
+        return new KeyValueMarshaler(keyUtf8, ArrayAnyValueMarshaler.createAnyValue(valueList));
+      case MAP:
+        return new KeyValueMarshaler(
+            keyUtf8,
+            new KeyValueListAnyValueMarshaler(
+                new KeyValueListAnyValueMarshaler.KeyValueListMarshaler(
+                    KeyValueMarshaler.createForAttributes((Attributes) value))));
       case EXTENDED_ATTRIBUTES:
         return new KeyValueMarshaler(
             keyUtf8,

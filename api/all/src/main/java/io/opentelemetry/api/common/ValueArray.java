@@ -15,6 +15,7 @@ import java.util.Objects;
 
 final class ValueArray implements Value<List<Value<?>>> {
 
+  // TODO can we make more performant by using List<Object>?
   private final List<Value<?>> value;
 
   private ValueArray(List<Value<?>> value) {

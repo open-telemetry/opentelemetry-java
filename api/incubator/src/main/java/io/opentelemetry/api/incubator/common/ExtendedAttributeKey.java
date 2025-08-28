@@ -93,6 +93,21 @@ public interface ExtendedAttributeKey<T> {
     return fromAttributeKey(AttributeKey.doubleArrayKey(key));
   }
 
+  /** Returns a new ExtendedAttributeKey for byte[] valued attributes. */
+  static ExtendedAttributeKey<byte[]> bytesKey(String key) {
+    return fromAttributeKey(AttributeKey.bytesKey(key));
+  }
+
+  /** Returns a new ExtendedAttributeKey for heterogeneous array valued attributes. */
+  static ExtendedAttributeKey<List<io.opentelemetry.api.common.Value<?>>> arrayKey(String key) {
+    return fromAttributeKey(AttributeKey.arrayKey(key));
+  }
+
+  /** Returns a new ExtendedAttributeKey for map valued attributes. */
+  static ExtendedAttributeKey<io.opentelemetry.api.common.Attributes> mapKey(String key) {
+    return fromAttributeKey(AttributeKey.mapKey(key));
+  }
+
   /** Returns a new ExtendedAttributeKey for Map valued attributes. */
   static ExtendedAttributeKey<ExtendedAttributes> extendedAttributesKey(String key) {
     return InternalExtendedAttributeKeyImpl.create(key, ExtendedAttributeType.EXTENDED_ATTRIBUTES);

@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import java.util.Arrays;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
@@ -678,6 +679,19 @@ final class Otel2PrometheusConverter {
                   "Unexpected label value of %s for %s",
                   attributeValue.getClass().getName(), type.name()));
         }
+      case BYTES:
+        return Arrays.toString((byte[]) attributeValue);
+      case ARRAY:
+        if (attributeValue instanceof List) {
+          return toJsonStr((List<?>) attributeValue);
+        } else {
+          throw new IllegalStateException(
+              String.format(
+                  "Unexpected label value of %s for %s",
+                  attributeValue.getClass().getName(), type.name()));
+        }
+      case MAP:
+        return attributeValue.toString();
     }
     throw new IllegalStateException("Unrecognized AttributeType: " + type);
   }

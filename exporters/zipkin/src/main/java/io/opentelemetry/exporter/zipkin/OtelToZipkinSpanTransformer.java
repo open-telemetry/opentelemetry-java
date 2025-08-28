@@ -14,6 +14,7 @@ import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import java.util.Arrays;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -223,6 +224,12 @@ final class OtelToZipkinSpanTransformer {
       case LONG_ARRAY:
       case DOUBLE_ARRAY:
         return commaSeparated((List<?>) attributeValue);
+      case BYTES:
+        return Arrays.toString((byte[]) attributeValue);
+      case ARRAY:
+        return commaSeparated((List<?>) attributeValue);
+      case MAP:
+        return String.valueOf(attributeValue);
     }
     throw new IllegalStateException("Unknown attribute type: " + type);
   }

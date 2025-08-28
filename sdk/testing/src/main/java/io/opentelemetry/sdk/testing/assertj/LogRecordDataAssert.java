@@ -344,6 +344,17 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
         return hasBodyField(
             key.getKey(),
             Value.of(((List<Double>) value).stream().map(Value::of).collect(toList())));
+      case BYTES:
+        return hasBodyField(key.getKey(), Value.of((byte[]) value));
+      case ARRAY:
+        return hasBodyField(key.getKey(), Value.of((List<Value<?>>) value));
+      case MAP:
+        // Convert Attributes to Map format that Value.of can understand
+        Map<String, Value<?>> valueMap = new java.util.HashMap<>();
+        ((io.opentelemetry.api.common.Attributes) value).forEach((attrKey, attrValue) -> {
+          valueMap.put(attrKey.getKey(), Value.of(String.valueOf(attrValue)));
+        });
+        return hasBodyField(key.getKey(), Value.of(valueMap));
     }
     return this;
   }
