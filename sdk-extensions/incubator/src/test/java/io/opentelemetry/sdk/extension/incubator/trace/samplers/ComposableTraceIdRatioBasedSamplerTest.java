@@ -26,6 +26,9 @@ class ComposableTraceIdRatioBasedSamplerTest {
   void testDescription() {
     assertThat(ComposableSampler.traceIdRatioBased(1.0).getDescription())
         .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=0, ratio=1.0}");
+    assertThat(ComposableSampler.traceIdRatioBased(1.0))
+        .hasToString("ComposableTraceIdRatioBasedSampler{threshold=0, ratio=1.0}");
+
     assertThat(ComposableSampler.traceIdRatioBased(0.5).getDescription())
         .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=8, ratio=0.5}");
     assertThat(ComposableSampler.traceIdRatioBased(0.25).getDescription())

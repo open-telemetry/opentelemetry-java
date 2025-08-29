@@ -24,6 +24,7 @@ class ComposableAlwaysOnSamplerTest {
   void testDescription() {
     assertThat(ComposableSampler.alwaysOn().getDescription())
         .isEqualTo("ComposableAlwaysOnSampler");
+    assertThat(ComposableSampler.alwaysOn()).hasToString("ComposableAlwaysOnSampler");
   }
 
   @Test
