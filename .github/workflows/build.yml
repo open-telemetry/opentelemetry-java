@@ -78,7 +78,7 @@ jobs:
             "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
             "-Porg.gradle.java.installations.auto-download=false"
         env:
-          # JMH-based tests run only  if this environment variable is set to true
+          # JMH-based tests run only if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
       - name: Check for diff
