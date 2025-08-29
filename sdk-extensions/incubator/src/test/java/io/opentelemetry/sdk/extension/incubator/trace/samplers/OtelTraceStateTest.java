@@ -11,17 +11,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.TraceState;
 import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class OtelTraceStateTest {
 
+  private static String getXString(int len) {
+    return Stream.generate(() -> "X").limit(len).collect(Collectors.joining());
+  }
+
   @ParameterizedTest
   @CsvSource({
     "'', ''",
     "a, a",
     "#, #",
+    ";, ''",
+    "a;, a",
+    "a;b;, a;b",
+    "animal:bear;food:pizza, animal:bear;food:pizza",
     "rv:1234567890abcd, rv:1234567890abcd",
     "rv:01020304050607, rv:01020304050607",
     "rv:1234567890abcde, ''",
@@ -60,6 +70,21 @@ class OtelTraceStateTest {
   void roundTrip(String input, String output) {
     String result = OtelTraceState.parse(TraceState.builder().put("ot", input).build()).serialize();
     assertThat(result).isEqualTo(output);
+  }
+
+  @Test
+  void notTooLong() {
+    String input = "a:" + getXString(214) + ";rv:1234567890abcd;th:1234567890abcd;x:3";
+    String result = OtelTraceState.parse(TraceState.builder().put("ot", input).build()).serialize();
+    assertThat(result)
+        .isEqualTo("th:1234567890abcd;rv:1234567890abcd;a:" + getXString(214) + ";x:3");
+  }
+
+  @Test
+  void tooLong() {
+    String input = "a:" + getXString(215) + ";rv:1234567890abcd;th:1234567890abcd;x:3";
+    String result = OtelTraceState.parse(TraceState.builder().put("ot", input).build()).serialize();
+    assertThat(result).isEmpty();
   }
 
   @Test

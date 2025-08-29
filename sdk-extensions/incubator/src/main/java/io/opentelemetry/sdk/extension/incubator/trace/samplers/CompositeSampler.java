@@ -107,4 +107,9 @@ public final class CompositeSampler implements Sampler {
   public String getDescription() {
     return delegate.getDescription();
   }
+
+  @Override
+  public String toString() {
+    return this.getDescription();
+  }
 }

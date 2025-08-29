@@ -146,6 +146,17 @@ class CompositeSamplerTest {
   }
 
   @Test
+  void description() {
+    assertThat(
+            CompositeSampler.wrap(ComposableSampler.parentThreshold(ComposableSampler.alwaysOn()))
+                .getDescription())
+        .isEqualTo("ComposableParentThresholdSampler{rootSampler=ComposableAlwaysOnSampler}");
+    assertThat(
+            CompositeSampler.wrap(ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())))
+        .hasToString("ComposableParentThresholdSampler{rootSampler=ComposableAlwaysOnSampler}");
+  }
+
+  @Test
   void testMinThresholdWithoutParentRandomValue() {
     Input input = new Input();
 
