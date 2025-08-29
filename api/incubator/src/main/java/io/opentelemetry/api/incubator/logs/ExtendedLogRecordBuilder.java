@@ -8,8 +8,6 @@ package io.opentelemetry.api.incubator.logs;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
-import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
@@ -72,12 +70,6 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
 
   /**
    * {@inheritDoc}
-   *
-   * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
-   * ExtendedAttributeKey}-value pairs, but not all {@link ExtendedAttributeKey}-value pairs can be
-   * represented as standard {@link AttributeKey}-value pairs. From the standpoint of the emitted
-   * log record, there is no difference between adding attributes using the standard or extended
-   * attribute APIs.
    */
   @SuppressWarnings("unchecked")
   @Override
@@ -91,47 +83,10 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
   }
 
   /**
-   * Sets attributes. If the {@link LogRecordBuilder} previously contained a mapping for any of the
-   * keys, the old values are replaced by the specified values.
-   *
-   * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
-   * ExtendedAttributeKey}-value pairs, but not all {@link ExtendedAttributeKey}-value pairs can be
-   * represented as standard {@link AttributeKey}-value pairs. From the standpoint of the emitted
-   * log record, there is no difference between adding attributes using the standard or extended
-   * attribute APIs.
-   */
-  @SuppressWarnings("unchecked")
-  default ExtendedLogRecordBuilder setAllAttributes(ExtendedAttributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
-      return this;
-    }
-    attributes.forEach(
-        (attributeKey, value) -> setAttribute((ExtendedAttributeKey<Object>) attributeKey, value));
-    return this;
-  }
-
-  /**
    * {@inheritDoc}
-   *
-   * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
-   * ExtendedAttributeKey}-value pairs, but not all {@link ExtendedAttributeKey}-value pairs can be
-   * represented as standard {@link AttributeKey}-value pairs. From the standpoint of the emitted
-   * log record, there is no difference between adding attributes using the standard or extended
-   * attribute APIs.
    */
   @Override
   <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value);
-
-  /**
-   * Set an attribute.
-   *
-   * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
-   * ExtendedAttributeKey}-value pairs, but not all {@link ExtendedAttributeKey}-value pairs can be
-   * represented as standard {@link AttributeKey}-value pairs. From the standpoint of the emitted
-   * log record, there is no difference between adding attributes using the standard or extended
-   * attribute APIs.
-   */
-  <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value);
 
   /** Set standard {@code exception.*} attributes based on the {@code throwable}. */
   ExtendedLogRecordBuilder setException(Throwable throwable);

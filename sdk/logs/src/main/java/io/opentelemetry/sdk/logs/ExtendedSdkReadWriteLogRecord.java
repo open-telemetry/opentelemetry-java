@@ -8,13 +8,11 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
-import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ExtendedAttributesMap;
+import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.logs.internal.ExtendedReadWriteLogRecord;
 import io.opentelemetry.sdk.resources.Resource;
@@ -29,7 +27,7 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
 
   @GuardedBy("lock")
   @Nullable
-  private ExtendedAttributesMap extendedAttributes;
+  private AttributesMap attributes;
 
   @SuppressWarnings("unused")
   private ExtendedSdkReadWriteLogRecord(
@@ -43,7 +41,7 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable ExtendedAttributesMap extendedAttributes) {
+      @Nullable AttributesMap attributes) {
     super(
         logLimits,
         resource,
@@ -56,7 +54,7 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
         body,
         null,
         eventName);
-    this.extendedAttributes = extendedAttributes;
+    this.attributes = attributes;
   }
 
   /** Create the extended log record with the given configuration. */
@@ -71,7 +69,7 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable ExtendedAttributesMap extendedAttributes) {
+      @Nullable AttributesMap attributes) {
     return new ExtendedSdkReadWriteLogRecord(
         logLimits,
         resource,
@@ -83,7 +81,7 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
         severity,
         severityText,
         body,
-        extendedAttributes);
+        attributes);
   }
 
   @Override
@@ -91,31 +89,23 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    return setAttribute(ExtendedAttributeKey.fromAttributeKey(key), value);
-  }
-
-  @Override
-  public <T> ExtendedSdkReadWriteLogRecord setAttribute(ExtendedAttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
-      return this;
-    }
     synchronized (lock) {
-      if (extendedAttributes == null) {
-        extendedAttributes =
-            ExtendedAttributesMap.create(
+      if (attributes == null) {
+        attributes =
+            AttributesMap.create(
                 logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
       }
-      extendedAttributes.put(key, value);
+      attributes.put(key, value);
     }
     return this;
   }
 
-  private ExtendedAttributes getImmutableExtendedAttributes() {
+  private Attributes getImmutableAttributes() {
     synchronized (lock) {
-      if (extendedAttributes == null) {
-        return ExtendedAttributes.empty();
+      if (attributes == null) {
+        return Attributes.empty();
       }
-      return extendedAttributes.immutableCopy();
+      return attributes.immutableCopy();
     }
   }
 
@@ -132,35 +122,24 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
           severity,
           severityText,
           body,
-          getImmutableExtendedAttributes(),
-          extendedAttributes == null ? 0 : extendedAttributes.getTotalAddedValues());
+          getImmutableAttributes(),
+          attributes == null ? 0 : attributes.getTotalAddedValues());
     }
   }
 
   @Override
   public Attributes getAttributes() {
-    return getExtendedAttributes().asAttributes();
+    return getImmutableAttributes();
   }
 
   @Nullable
   @Override
   public <T> T getAttribute(AttributeKey<T> key) {
-    return getAttribute(ExtendedAttributeKey.fromAttributeKey(key));
-  }
-
-  @Nullable
-  @Override
-  public <T> T getAttribute(ExtendedAttributeKey<T> key) {
     synchronized (lock) {
-      if (extendedAttributes == null || extendedAttributes.isEmpty()) {
+      if (attributes == null || attributes.isEmpty()) {
         return null;
       }
-      return extendedAttributes.get(key);
+      return attributes.get(key);
     }
-  }
-
-  @Override
-  public ExtendedAttributes getExtendedAttributes() {
-    return getImmutableExtendedAttributes();
   }
 }
