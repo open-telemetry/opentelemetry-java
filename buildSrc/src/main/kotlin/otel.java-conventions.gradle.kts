@@ -42,7 +42,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "11.0.0"
+  toolVersion = "11.0.1"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
