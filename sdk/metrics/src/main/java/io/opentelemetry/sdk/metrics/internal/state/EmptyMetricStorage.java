@@ -44,4 +44,9 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
   public boolean isEnabled() {
     return false;
   }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    // do nothing
+  }
 }
