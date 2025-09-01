@@ -29,6 +29,8 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   private final Otel2PrometheusConverter converter;
 
   /**
+   * See {@link Otel2PrometheusConverter#Otel2PrometheusConverter(boolean, Predicate, boolean)}.
+   *
    * @deprecated use {@link #PrometheusMetricReader(boolean, Predicate, boolean)}.
    */
   @Deprecated
