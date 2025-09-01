@@ -35,7 +35,8 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   public PrometheusMetricReader(
       boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.converter =
-        new Otel2PrometheusConverter(otelScopeEnabled, allowedResourceAttributesFilter, false);
+        new Otel2PrometheusConverter(
+            otelScopeEnabled, allowedResourceAttributesFilter, /* utf8SupportEnabled= */ false);
   }
 
   // TODO: refactor to public static create or builder pattern to align with project style
