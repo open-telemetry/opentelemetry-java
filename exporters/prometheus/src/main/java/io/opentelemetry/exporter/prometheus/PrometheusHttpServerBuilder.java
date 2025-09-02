@@ -83,6 +83,19 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
+  /**
+   * Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}.
+   *
+   * @deprecated {@code otel_scope_*} attributes are always generated. Use {@link
+   *     #setOtelScopeInfoMetricEnabled(boolean)} to control emission of the {@code otel_scope_info}
+   *     metric.
+   */
+  @SuppressWarnings("UnusedReturnValue")
+  @Deprecated
+  public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
+    return this;
+  }
+
   /** Set if the {@code otel_scope_info} metric is emitted. Default is {@code true}. */
   @SuppressWarnings("UnusedReturnValue")
   public PrometheusHttpServerBuilder setOtelScopeInfoMetricEnabled(
