@@ -574,6 +574,14 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   @Nullable
   private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(
       ConfigProperties config, ComponentLoader componentLoader) {
+    if (INCUBATOR_AVAILABLE) {
+      AutoConfiguredOpenTelemetrySdk sdk = IncubatingUtil.configureFromSpi(componentLoader);
+      if (sdk != null) {
+        logger.fine("Autoconfigured from SPI by opentelemetry-sdk-extension-incubator");
+        return sdk;
+      }
+    }
+
     String otelConfigFile = config.getString("otel.config.file");
     if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
       logger.warning(

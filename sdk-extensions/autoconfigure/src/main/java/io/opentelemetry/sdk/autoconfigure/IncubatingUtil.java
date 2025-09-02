@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Utilities for interacting with incubating components ({@code
@@ -36,28 +37,12 @@ final class IncubatingUtil {
       Logger logger, String configurationFile, ComponentLoader componentLoader) {
     logger.fine("Autoconfiguring from configuration file: " + configurationFile);
     try (FileInputStream fis = new FileInputStream(configurationFile)) {
-      Class<?> declarativeConfiguration =
+      Object model =
           Class.forName(
-              "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
-      Method parse = declarativeConfiguration.getMethod("parse", InputStream.class);
-      Object model = parse.invoke(null, fis);
-      Class<?> openTelemetryConfiguration =
-          Class.forName(
-              "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel");
-      Method create =
-          declarativeConfiguration.getMethod(
-              "create", openTelemetryConfiguration, ComponentLoader.class);
-      OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, componentLoader);
-      Class<?> sdkConfigProvider =
-          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider");
-      Method createFileConfigProvider =
-          sdkConfigProvider.getMethod("create", openTelemetryConfiguration, ComponentLoader.class);
-      ConfigProvider configProvider =
-          (ConfigProvider) createFileConfigProvider.invoke(null, model, componentLoader);
-      // Note: can't access file configuration resource without reflection so setting a dummy
-      // resource
-      return AutoConfiguredOpenTelemetrySdk.create(
-          sdk, Resource.getDefault(), null, configProvider);
+                  "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration")
+              .getMethod("parse", InputStream.class)
+              .invoke(null, fis);
+      return getOpenTelemetrySdk(model, componentLoader);
     } catch (FileNotFoundException e) {
       throw new ConfigurationException("Configuration file not found", e);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
@@ -75,6 +60,63 @@ final class IncubatingUtil {
       // above by FileInputStream.close()
       throw new ConfigurationException("Error closing file", e);
     }
+  }
+
+  @Nullable
+  public static AutoConfiguredOpenTelemetrySdk configureFromSpi(ComponentLoader componentLoader) {
+    try {
+      Class<?> providerClass =
+          Class.forName(
+              "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationProvider");
+      Method getConfigurationModel = providerClass.getMethod("getConfigurationModel");
+
+      for (Object configProvider : componentLoader.load(providerClass)) {
+        Object model = getConfigurationModel.invoke(configProvider);
+        if (model != null) {
+          return getOpenTelemetrySdk(model, componentLoader);
+        }
+      }
+      return null;
+    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
+      throw new ConfigurationException(
+          "Error configuring from SPI. Is opentelemetry-sdk-extension-incubator on the classpath?",
+          e);
+    } catch (InvocationTargetException e) {
+      Throwable cause = e.getCause();
+      if (cause instanceof DeclarativeConfigException) {
+        throw toConfigurationException((DeclarativeConfigException) cause);
+      }
+      throw new ConfigurationException("Unexpected error configuring from SPI", e);
+    }
+  }
+
+  private static AutoConfiguredOpenTelemetrySdk getOpenTelemetrySdk(
+      Object model, ComponentLoader componentLoader)
+      throws IllegalAccessException,
+          InvocationTargetException,
+          ClassNotFoundException,
+          NoSuchMethodException {
+
+    Class<?> openTelemetryConfiguration =
+        Class.forName(
+            "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel");
+    Class<?> declarativeConfiguration =
+        Class.forName(
+            "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
+    Method create =
+        declarativeConfiguration.getMethod(
+            "create", openTelemetryConfiguration, ComponentLoader.class);
+
+    OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, componentLoader);
+    Class<?> sdkConfigProvider =
+        Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider");
+    Method createFileConfigProvider =
+        sdkConfigProvider.getMethod("create", openTelemetryConfiguration, ComponentLoader.class);
+    ConfigProvider configProvider =
+        (ConfigProvider) createFileConfigProvider.invoke(null, model, componentLoader);
+    // Note: can't access file configuration resource without reflection so setting a dummy
+    // resource
+    return AutoConfiguredOpenTelemetrySdk.create(sdk, Resource.getDefault(), null, configProvider);
   }
 
   private static ConfigurationException toConfigurationException(
