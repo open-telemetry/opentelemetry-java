@@ -113,7 +113,7 @@ class ComplexAttributesTest {
             .put(mapKey("map"), map)
             .build();
 
-    // We don't verify the exact representation here as that's more of a formatting detail.
-    assertThat(attributes.toString()).contains("list").contains("map");
+    // TODO revisit toString format for lists
+    assertThat(attributes.toString()).isEqualTo("{list=[ValueString{value1}], map={key=\"value\"}}");
   }
 }
