@@ -232,4 +232,8 @@ public interface DeclarativeConfigProperties {
 
   /** Return a {@link ComponentLoader} that should be used to load SPIs. */
   ComponentLoader getComponentLoader();
+
+  default ComponentProviderLoader getComponentProviderLoader() {
+    return EmptyComponentProviderLoader.getInstance();
+  }
 }
