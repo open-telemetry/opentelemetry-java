@@ -32,14 +32,15 @@ public interface AggregationTemporalitySelector {
    *
    * <p>{@link AggregationTemporality#DELTA} is returned for {@link InstrumentType#COUNTER}, {@link
    * InstrumentType#OBSERVABLE_COUNTER}, and {@link InstrumentType#HISTOGRAM}. {@link
-   * AggregationTemporality#CUMULATIVE} is returned for {@link InstrumentType#UP_DOWN_COUNTER} and
-   * {@link InstrumentType#OBSERVABLE_UP_DOWN_COUNTER}.
+   * AggregationTemporality#CUMULATIVE} is returned for {@link InstrumentType#UP_DOWN_COUNTER},
+   * {@link InstrumentType#OBSERVABLE_UP_DOWN_COUNTER} and {@link InstrumentType#GAUGE}.
    */
   static AggregationTemporalitySelector deltaPreferred() {
     return instrumentType -> {
       switch (instrumentType) {
         case UP_DOWN_COUNTER:
         case OBSERVABLE_UP_DOWN_COUNTER:
+        case GAUGE:
           return AggregationTemporality.CUMULATIVE;
         case COUNTER:
         case OBSERVABLE_COUNTER:
