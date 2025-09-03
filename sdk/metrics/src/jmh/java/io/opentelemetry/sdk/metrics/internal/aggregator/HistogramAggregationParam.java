@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import java.util.Collections;
 
 /** The types of histogram aggregation to benchmark. */
