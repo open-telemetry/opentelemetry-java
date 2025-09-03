@@ -20,7 +20,6 @@ import java.util.function.Supplier;
  * An interface for an exemplar reservoir of samples.
  *
  * <p>This represents a reservoir for a specific "point" of metric data.
- *
  */
 public interface ExemplarReservoir<T extends ExemplarData> {
 

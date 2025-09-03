@@ -11,7 +11,6 @@ import io.opentelemetry.context.Context;
 /**
  * Exemplar filters are used to pre-filter measurements before attempting to store them in a
  * reservoir.
- *
  */
 public interface ExemplarFilter {
   /** Returns whether or not a reservoir should attempt to filter a measurement. */
