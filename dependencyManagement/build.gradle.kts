@@ -26,7 +26,7 @@ val DEPENDENCY_BOMS = listOf(
   // (which is EPL licensed) or armeria bom (which is Apache licensed but is getting flagged
   // by FOSSA for containing EPL-licensed)
 
-  "com.fasterxml.jackson:jackson-bom:2.19.2",
+  "com.fasterxml.jackson:jackson-bom:2.20.0",
   "com.google.guava:guava-bom:33.4.8-jre",
   "com.google.protobuf:protobuf-bom:4.32.0",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
