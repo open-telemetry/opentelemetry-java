@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;

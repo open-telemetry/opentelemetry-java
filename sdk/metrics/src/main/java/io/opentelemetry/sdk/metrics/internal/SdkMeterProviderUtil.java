@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.lang.reflect.InvocationTargetException;

@@ -16,6 +16,8 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.RandomFixedSizeExemplarReservoir;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Random;

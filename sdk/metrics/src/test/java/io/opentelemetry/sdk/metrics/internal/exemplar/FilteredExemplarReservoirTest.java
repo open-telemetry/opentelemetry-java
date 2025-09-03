@@ -14,6 +14,9 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.FilteredExemplarReservoir;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,8 +25,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class FilteredExemplarReservoirTest {
-  @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
-  @Mock ExemplarFilter filter;
+  @Mock
+  ExemplarReservoir<DoubleExemplarData> reservoir;
+  @Mock
+  ExemplarFilter filter;
 
   @Test
   void testFilter_preventsSampling() {

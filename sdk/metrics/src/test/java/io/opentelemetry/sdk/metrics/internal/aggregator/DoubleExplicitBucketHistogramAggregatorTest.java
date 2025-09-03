@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;

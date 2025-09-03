@@ -23,7 +23,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;

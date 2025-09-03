@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;

@@ -19,8 +19,8 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import java.util.function.Supplier;
 
 /**

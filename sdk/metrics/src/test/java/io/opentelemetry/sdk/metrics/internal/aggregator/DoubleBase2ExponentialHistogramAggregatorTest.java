@@ -27,7 +27,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramP
 import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
