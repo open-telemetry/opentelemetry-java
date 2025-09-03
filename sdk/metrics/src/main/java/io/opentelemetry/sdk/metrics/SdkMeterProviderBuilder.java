@@ -82,11 +82,8 @@ public final class SdkMeterProviderBuilder {
 
   /**
    * Assign an {@link ExemplarFilter} for all metrics created by Meters.
-   *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#setExemplarFilter(SdkMeterProviderBuilder, ExemplarFilter)}.
    */
-  SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
+  public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
     this.exemplarFilter = filter;
     return this;
   }
