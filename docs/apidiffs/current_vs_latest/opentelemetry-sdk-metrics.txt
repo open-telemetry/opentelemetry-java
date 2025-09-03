@@ -1,2 +1,46 @@
-Comparing source compatibility of opentelemetry-sdk-metrics-1.55.0-SNAPSHOT.jar against opentelemetry-sdk-metrics-1.54.0.jar
-No changes.
+Comparing source compatibility of opentelemetry-sdk-metrics-1.54.0-SNAPSHOT.jar against opentelemetry-sdk-metrics-1.53.0.jar
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.exemplar.AlwaysOffFilter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) boolean shouldSampleMeasurement(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) boolean shouldSampleMeasurement(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.exemplar.AlwaysOnFilter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) boolean shouldSampleMeasurement(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) boolean shouldSampleMeasurement(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter alwaysOff()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter alwaysOn()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean shouldSampleMeasurement(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean shouldSampleMeasurement(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter traceBased()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.metrics.data.ExemplarData
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List<T> collectAndReset(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<io.opentelemetry.sdk.metrics.data.DoubleExemplarData> doubleFixedSizeReservoir(io.opentelemetry.sdk.common.Clock, int, java.util.function.Supplier<java.util.Random>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<io.opentelemetry.sdk.metrics.data.DoubleExemplarData> doubleNoSamples()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<T> filtered(io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter, io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<T>)
+		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.metrics.data.ExemplarData
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<io.opentelemetry.sdk.metrics.data.DoubleExemplarData> histogramBucketReservoir(io.opentelemetry.sdk.common.Clock, java.util.List<java.lang.Double>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<io.opentelemetry.sdk.metrics.data.LongExemplarData> longFixedSizeReservoir(io.opentelemetry.sdk.common.Clock, int, java.util.function.Supplier<java.util.Random>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<io.opentelemetry.sdk.metrics.data.LongExemplarData> longNoSamples()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<T> longToDouble(io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir<T>)
+		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.metrics.data.ExemplarData
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void offerDoubleMeasurement(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void offerLongMeasurement(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.exemplar.TraceBasedExemplarFilter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) boolean shouldSampleMeasurement(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) boolean shouldSampleMeasurement(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder setExemplarFilter(io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter)
