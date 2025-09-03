@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import java.io.Closeable;
 import java.util.Collections;
@@ -39,20 +38,8 @@ final class MeterProviderConfiguration {
       List<Closeable> closeables) {
 
     // Configure default exemplar filters.
-    String exemplarFilter =
-        config.getString("otel.metrics.exemplar.filter", "trace_based").toLowerCase(Locale.ROOT);
-    switch (exemplarFilter) {
-      case "always_off":
-        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOff());
-        break;
-      case "always_on":
-        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOn());
-        break;
-      case "trace_based":
-      default:
-        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.traceBased());
-        break;
-    }
+    ExemplarFilter filter = getExemplarFilter(config);
+    meterProviderBuilder.setExemplarFilter(filter);
 
     Integer cardinalityLimit = config.getInt("otel.java.metrics.cardinality.limit");
     if (cardinalityLimit == null) {
@@ -74,6 +61,20 @@ final class MeterProviderConfiguration {
             reader ->
                 meterProviderBuilder.registerMetricReader(
                     reader, instrumentType -> resolvedCardinalityLimit));
+  }
+
+  private static ExemplarFilter getExemplarFilter(ConfigProperties config) {
+    String exemplarFilter =
+        config.getString("otel.metrics.exemplar.filter", "trace_based").toLowerCase(Locale.ROOT);
+    switch (exemplarFilter) {
+      case "always_off":
+        return ExemplarFilter.alwaysOff();
+      case "always_on":
+        return ExemplarFilter.alwaysOn();
+      case "trace_based":
+      default:
+        return ExemplarFilter.traceBased();
+    }
   }
 
   static List<MetricReader> configureMetricReaders(
