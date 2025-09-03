@@ -73,7 +73,8 @@ class ExemplarFilterTest {
 
   @Test
   void setExemplarFilter() {
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder().setExemplarFilter(ExemplarFilter.alwaysOn());
+    SdkMeterProviderBuilder builder =
+        SdkMeterProvider.builder().setExemplarFilter(ExemplarFilter.alwaysOn());
     assertThat(builder)
         .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)))
         .isEqualTo(ExemplarFilter.alwaysOn());

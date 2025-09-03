@@ -8,10 +8,7 @@ package io.opentelemetry.sdk.metrics.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 
-/**
- * A filter which makes no measurements eligible for being an exemplar.
- *
- */
+/** A filter which makes no measurements eligible for being an exemplar. */
 public final class AlwaysOffFilter implements ExemplarFilter {
   static final ExemplarFilter INSTANCE = new AlwaysOffFilter();
 

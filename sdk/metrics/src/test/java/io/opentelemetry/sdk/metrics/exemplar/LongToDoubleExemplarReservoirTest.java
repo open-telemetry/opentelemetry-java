@@ -12,8 +12,6 @@ import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.exemplar.LongToDoubleExemplarReservoir;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -21,8 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class LongToDoubleExemplarReservoirTest {
-  @Mock
-  ExemplarReservoir<?> delegate;
+  @Mock ExemplarReservoir<?> delegate;
 
   @Test
   void offerDoubleMeasurement() {
