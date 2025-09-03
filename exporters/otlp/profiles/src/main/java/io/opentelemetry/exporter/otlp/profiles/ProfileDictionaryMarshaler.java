@@ -12,16 +12,17 @@ import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.profiles.v1development.internal.ProfilesDictionary;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 final class ProfileDictionaryMarshaler extends MarshalerWithSize {
 
   private final MappingMarshaler[] mappingTableMarshalers;
   private final LocationMarshaler[] locationTableMarshalers;
   private final FunctionMarshaler[] functionTableMarshalers;
-  private final KeyValueMarshaler[] attributeTableMarshalers;
-  private final AttributeUnitMarshaler[] attributeUnitMarshalers;
   private final LinkMarshaler[] linkTableMarshalers;
   private final byte[][] stringTable;
+  private final KeyValueMarshaler[] attributeTableMarshalers; // TODO
+  private final StackMarshaler[] stackTableMarshalers;
 
   static ProfileDictionaryMarshaler create(ProfileDictionaryData profileDictionaryData) {
 
@@ -31,10 +32,6 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
         LocationMarshaler.createRepeated(profileDictionaryData.getLocationTable());
     FunctionMarshaler[] functionMarshalers =
         FunctionMarshaler.createRepeated(profileDictionaryData.getFunctionTable());
-    KeyValueMarshaler[] attributeTableMarshalers =
-        KeyValueMarshaler.createRepeated(profileDictionaryData.getAttributeTable());
-    AttributeUnitMarshaler[] attributeUnitsMarshalers =
-        AttributeUnitMarshaler.createRepeated(profileDictionaryData.getAttributeUnits());
     LinkMarshaler[] linkMarshalers =
         LinkMarshaler.createRepeated(profileDictionaryData.getLinkTable());
 
@@ -44,40 +41,46 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
           profileDictionaryData.getStringTable().get(i).getBytes(StandardCharsets.UTF_8);
     }
 
+    KeyValueMarshaler[] attributeTableMarshalers =
+        KeyValueMarshaler.createRepeated(Collections.emptyList());
+    // TODO JH profileDictionaryData.getAttributeTable()
+    StackMarshaler[] stackTableMarshalers =
+        StackMarshaler.createRepeated(profileDictionaryData.getStackTable());
+
     return new ProfileDictionaryMarshaler(
         mappingMarshalers,
         locationMarshalers,
         functionMarshalers,
-        attributeTableMarshalers,
-        attributeUnitsMarshalers,
         linkMarshalers,
-        convertedStrings);
+        convertedStrings,
+        attributeTableMarshalers,
+        stackTableMarshalers);
   }
 
   private ProfileDictionaryMarshaler(
       MappingMarshaler[] mappingTableMarshalers,
       LocationMarshaler[] locationTableMarshalers,
       FunctionMarshaler[] functionTableMarshalers,
-      KeyValueMarshaler[] attributeTableMarshalers,
-      AttributeUnitMarshaler[] attributeUnitMarshalers,
       LinkMarshaler[] linkTableMarshalers,
-      byte[][] stringTableUtf8) {
+      byte[][] stringTableUtf8,
+      KeyValueMarshaler[] attributeTableMarshalers,
+      StackMarshaler[] stackTableMarshalers) {
     super(
         calculateSize(
             mappingTableMarshalers,
             locationTableMarshalers,
             functionTableMarshalers,
-            attributeTableMarshalers,
-            attributeUnitMarshalers,
             linkTableMarshalers,
-            stringTableUtf8));
+            stringTableUtf8,
+            attributeTableMarshalers,
+            stackTableMarshalers));
     this.mappingTableMarshalers = mappingTableMarshalers;
     this.locationTableMarshalers = locationTableMarshalers;
     this.functionTableMarshalers = functionTableMarshalers;
-    this.attributeTableMarshalers = attributeTableMarshalers;
-    this.attributeUnitMarshalers = attributeUnitMarshalers;
     this.linkTableMarshalers = linkTableMarshalers;
     this.stringTable = stringTableUtf8;
+    this.attributeTableMarshalers = attributeTableMarshalers;
+    this.stackTableMarshalers = stackTableMarshalers;
   }
 
   @Override
@@ -85,20 +88,20 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(ProfilesDictionary.MAPPING_TABLE, mappingTableMarshalers);
     output.serializeRepeatedMessage(ProfilesDictionary.LOCATION_TABLE, locationTableMarshalers);
     output.serializeRepeatedMessage(ProfilesDictionary.FUNCTION_TABLE, functionTableMarshalers);
-    output.serializeRepeatedMessage(ProfilesDictionary.ATTRIBUTE_TABLE, attributeTableMarshalers);
-    output.serializeRepeatedMessage(ProfilesDictionary.ATTRIBUTE_UNITS, attributeUnitMarshalers);
     output.serializeRepeatedMessage(ProfilesDictionary.LINK_TABLE, linkTableMarshalers);
     output.serializeRepeatedString(ProfilesDictionary.STRING_TABLE, stringTable);
+    output.serializeRepeatedMessage(ProfilesDictionary.ATTRIBUTE_TABLE, attributeTableMarshalers);
+    output.serializeRepeatedMessage(ProfilesDictionary.STACK_TABLE, stackTableMarshalers);
   }
 
   private static int calculateSize(
       MappingMarshaler[] mappingMarshalers,
       LocationMarshaler[] locationMarshalers,
       FunctionMarshaler[] functionMarshalers,
-      KeyValueMarshaler[] attributeTableMarshalers,
-      AttributeUnitMarshaler[] attributeUnitMarshalers,
       LinkMarshaler[] linkMarshalers,
-      byte[][] stringTable) {
+      byte[][] stringTable,
+      KeyValueMarshaler[] attributeTableMarshalers,
+      StackMarshaler[] stackTableMarshalers) {
     int size;
     size = 0;
     size += MarshalerUtil.sizeRepeatedMessage(ProfilesDictionary.MAPPING_TABLE, mappingMarshalers);
@@ -106,14 +109,12 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
         MarshalerUtil.sizeRepeatedMessage(ProfilesDictionary.LOCATION_TABLE, locationMarshalers);
     size +=
         MarshalerUtil.sizeRepeatedMessage(ProfilesDictionary.FUNCTION_TABLE, functionMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(ProfilesDictionary.LINK_TABLE, linkMarshalers);
+    size += MarshalerUtil.sizeRepeatedString(ProfilesDictionary.STRING_TABLE, stringTable);
     size +=
         MarshalerUtil.sizeRepeatedMessage(
             ProfilesDictionary.ATTRIBUTE_TABLE, attributeTableMarshalers);
-    size +=
-        MarshalerUtil.sizeRepeatedMessage(
-            ProfilesDictionary.ATTRIBUTE_UNITS, attributeUnitMarshalers);
-    size += MarshalerUtil.sizeRepeatedMessage(ProfilesDictionary.LINK_TABLE, linkMarshalers);
-    size += MarshalerUtil.sizeRepeatedString(ProfilesDictionary.STRING_TABLE, stringTable);
+    size += MarshalerUtil.sizeRepeatedMessage(ProfilesDictionary.STACK_TABLE, stackTableMarshalers);
 
     return size;
   }

@@ -12,16 +12,14 @@ import io.opentelemetry.proto.profiles.v1development.internal.Location;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 
 final class LocationMarshaler extends MarshalerWithSize {
 
   private static final LocationMarshaler[] EMPTY_REPEATED = new LocationMarshaler[0];
 
-  @Nullable private final Integer mappingIndex;
+  private final int mappingIndex;
   private final long address;
   private final LineMarshaler[] lineMarshalers;
-  private final boolean isFolded;
   private final List<Integer> attributeIndices;
 
   static LocationMarshaler create(LocationData locationData) {
@@ -29,7 +27,6 @@ final class LocationMarshaler extends MarshalerWithSize {
         locationData.getMappingIndex(),
         locationData.getAddress(),
         LineMarshaler.createRepeated(locationData.getLines()),
-        locationData.isFolded(),
         locationData.getAttributeIndices());
   }
 
@@ -52,39 +49,34 @@ final class LocationMarshaler extends MarshalerWithSize {
   }
 
   private LocationMarshaler(
-      @Nullable Integer mappingIndex,
+      int mappingIndex,
       long address,
       LineMarshaler[] lineMarshalers,
-      boolean isFolded,
       List<Integer> attributeIndices) {
-    super(calculateSize(mappingIndex, address, lineMarshalers, isFolded, attributeIndices));
+    super(calculateSize(mappingIndex, address, lineMarshalers, attributeIndices));
     this.mappingIndex = mappingIndex;
     this.address = address;
     this.lineMarshalers = lineMarshalers;
-    this.isFolded = isFolded;
     this.attributeIndices = attributeIndices;
   }
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt32Optional(Location.MAPPING_INDEX, mappingIndex);
+    output.serializeInt32(Location.MAPPING_INDEX, mappingIndex);
     output.serializeUInt64(Location.ADDRESS, address);
     output.serializeRepeatedMessage(Location.LINE, lineMarshalers);
-    output.serializeBool(Location.IS_FOLDED, isFolded);
     output.serializeRepeatedInt32(Location.ATTRIBUTE_INDICES, attributeIndices);
   }
 
   private static int calculateSize(
-      @Nullable Integer mappingIndex,
+      int mappingIndex,
       long address,
       LineMarshaler[] lineMarshalers,
-      boolean isFolded,
       List<Integer> attributeIndices) {
     int size = 0;
-    size += MarshalerUtil.sizeInt32Optional(Location.MAPPING_INDEX, mappingIndex);
+    size += MarshalerUtil.sizeInt32(Location.MAPPING_INDEX, mappingIndex);
     size += MarshalerUtil.sizeUInt64(Location.ADDRESS, address);
     size += MarshalerUtil.sizeRepeatedMessage(Location.LINE, lineMarshalers);
-    size += MarshalerUtil.sizeBool(Location.IS_FOLDED, isFolded);
     size += MarshalerUtil.sizeRepeatedInt32(Location.ATTRIBUTE_INDICES, attributeIndices);
     return size;
   }
