@@ -31,9 +31,12 @@ public final class SdkMeterProviderUtil {
 
   /**
    * Reflectively assign the {@link ExemplarFilter} to the {@link SdkMeterProviderBuilder}.
+   * This method is deprecated, and you should set the {@link ExemplarFilter} directly
+   * on the {@link SdkMeterProviderBuilder}.
    *
    * @param sdkMeterProviderBuilder the builder
    */
+  @Deprecated
   public static SdkMeterProviderBuilder setExemplarFilter(
       SdkMeterProviderBuilder sdkMeterProviderBuilder, ExemplarFilter exemplarFilter) {
     try {
