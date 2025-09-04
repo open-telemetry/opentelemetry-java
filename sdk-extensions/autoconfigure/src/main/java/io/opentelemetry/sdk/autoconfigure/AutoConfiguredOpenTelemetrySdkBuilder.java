@@ -445,6 +445,21 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   private AutoConfiguredOpenTelemetrySdk buildImpl() {
+    AutoConfiguredOpenTelemetrySdk fromFileConfiguration =
+        maybeConfigureFromFile(
+            this.config != null
+                ? this.config
+                : DefaultConfigProperties.create(Collections.emptyMap(), componentLoader),
+            componentLoader);
+    if (fromFileConfiguration != null) {
+      maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
+      Object configProvider = fromFileConfiguration.getConfigProvider();
+      if (setResultAsGlobal && INCUBATOR_AVAILABLE && configProvider != null) {
+        IncubatingUtil.setGlobalConfigProvider(configProvider);
+      }
+      return fromFileConfiguration;
+    }
+
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
     if (!customized) {
       customized = true;
@@ -454,19 +469,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         customizer.customize(this);
       }
     }
-
     ConfigProperties config = getConfig();
-
-    AutoConfiguredOpenTelemetrySdk fromFileConfiguration =
-        maybeConfigureFromFile(config, componentLoader);
-    if (fromFileConfiguration != null) {
-      maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
-      Object configProvider = fromFileConfiguration.getConfigProvider();
-      if (setResultAsGlobal && INCUBATOR_AVAILABLE && configProvider != null) {
-        IncubatingUtil.setGlobalConfigProvider(configProvider);
-      }
-      return fromFileConfiguration;
-    }
 
     Resource resource =
         ResourceConfiguration.configureResource(config, spiHelper, resourceCustomizer);
@@ -571,6 +574,14 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   @Nullable
   private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(
       ConfigProperties config, ComponentLoader componentLoader) {
+    if (INCUBATOR_AVAILABLE) {
+      AutoConfiguredOpenTelemetrySdk sdk = IncubatingUtil.configureFromSpi(componentLoader);
+      if (sdk != null) {
+        logger.fine("Autoconfigured from SPI by opentelemetry-sdk-extension-incubator");
+        return sdk;
+      }
+    }
+
     String otelConfigFile = config.getString("otel.config.file");
     if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
       logger.warning(

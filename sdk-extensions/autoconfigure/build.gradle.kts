@@ -86,6 +86,14 @@ testing {
         implementation(project(":sdk:testing"))
       }
     }
+
+    register<JvmTestSuite>("testDeclarativeConfigSpi") {
+      dependencies {
+        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":sdk:testing"))
+      }
+    }
   }
 }
 
