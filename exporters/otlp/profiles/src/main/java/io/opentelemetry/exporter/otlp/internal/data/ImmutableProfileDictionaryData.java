@@ -39,7 +39,7 @@ public abstract class ImmutableProfileDictionaryData implements ProfileDictionar
       List<FunctionData> functionTable,
       List<LinkData> linkTable,
       List<String> stringTable,
-      List<KeyValueAndUnitData<?>> attributeTable,
+      List<KeyValueAndUnitData> attributeTable,
       List<StackData> stackTable) {
     return new AutoValue_ImmutableProfileDictionaryData(
         mappingTable,

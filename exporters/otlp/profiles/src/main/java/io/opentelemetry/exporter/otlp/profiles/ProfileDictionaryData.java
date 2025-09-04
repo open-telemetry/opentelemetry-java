@@ -37,7 +37,7 @@ public interface ProfileDictionaryData {
   List<String> getStringTable();
 
   /** Lookup table for attributes. */
-  List<KeyValueAndUnitData<?>> getAttributeTable();
+  List<KeyValueAndUnitData> getAttributeTable();
 
   /** Lookup table for stacks. */
   List<StackData> getStackTable();

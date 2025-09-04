@@ -12,8 +12,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableFunctionData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableKeyValueAndUnitData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLineData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLinkData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLocationData;
@@ -23,8 +25,10 @@ import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileDictionaryDa
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableSampleData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableStackData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableValueTypeData;
+import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.profiles.v1development.Function;
+import io.opentelemetry.proto.profiles.v1development.KeyValueAndUnit;
 import io.opentelemetry.proto.profiles.v1development.Line;
 import io.opentelemetry.proto.profiles.v1development.Link;
 import io.opentelemetry.proto.profiles.v1development.Location;
@@ -119,6 +123,49 @@ public class ProfilesRequestMarshalerTest {
 
     for (int i = 0; i < marshalers.length; i++) {
       Line roundTripResult = parse(Line.getDefaultInstance(), marshalers[i]);
+      assertThat(roundTripResult).isEqualTo(builderResults.get(i));
+    }
+  }
+
+  @Test
+  void compareKeyValueAndUnitMarshaling() {
+    KeyValueAndUnitData input = ImmutableKeyValueAndUnitData.create(1, Value.of("foo"), 3);
+    KeyValueAndUnit builderResult =
+        KeyValueAndUnit.newBuilder()
+            .setKeyStrindex(1)
+            .setValue(AnyValue.newBuilder().setStringValue("foo").build())
+            .setUnitStrindex(3)
+            .build();
+
+    KeyValueAndUnit roundTripResult =
+        parse(KeyValueAndUnit.getDefaultInstance(), KeyValueAndUnitMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareRepeatedKeyValueAndUnitMarshaling() {
+    List<KeyValueAndUnitData> inputs = new ArrayList<>();
+    inputs.add(ImmutableKeyValueAndUnitData.create(1, Value.of("foo"), 3));
+    inputs.add(ImmutableKeyValueAndUnitData.create(4, Value.of("bar"), 6));
+
+    List<KeyValueAndUnit> builderResults = new ArrayList<>();
+    builderResults.add(
+        KeyValueAndUnit.newBuilder()
+            .setKeyStrindex(1)
+            .setValue(AnyValue.newBuilder().setStringValue("foo").build())
+            .setUnitStrindex(3)
+            .build());
+    builderResults.add(
+        KeyValueAndUnit.newBuilder()
+            .setKeyStrindex(4)
+            .setValue(AnyValue.newBuilder().setStringValue("bar").build())
+            .setUnitStrindex(6)
+            .build());
+
+    KeyValueAndUnitMarshaler[] marshalers = KeyValueAndUnitMarshaler.createRepeated(inputs);
+
+    for (int i = 0; i < marshalers.length; i++) {
+      KeyValueAndUnit roundTripResult = parse(KeyValueAndUnit.getDefaultInstance(), marshalers[i]);
       assertThat(roundTripResult).isEqualTo(builderResults.get(i));
     }
   }

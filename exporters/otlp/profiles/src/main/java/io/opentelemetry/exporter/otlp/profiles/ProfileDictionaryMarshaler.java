@@ -8,11 +8,9 @@ package io.opentelemetry.exporter.otlp.profiles;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.profiles.v1development.internal.ProfilesDictionary;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 
 final class ProfileDictionaryMarshaler extends MarshalerWithSize {
 
@@ -21,7 +19,7 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
   private final FunctionMarshaler[] functionTableMarshalers;
   private final LinkMarshaler[] linkTableMarshalers;
   private final byte[][] stringTable;
-  private final KeyValueMarshaler[] attributeTableMarshalers; // TODO
+  private final KeyValueAndUnitMarshaler[] attributeTableMarshalers;
   private final StackMarshaler[] stackTableMarshalers;
 
   static ProfileDictionaryMarshaler create(ProfileDictionaryData profileDictionaryData) {
@@ -41,9 +39,8 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
           profileDictionaryData.getStringTable().get(i).getBytes(StandardCharsets.UTF_8);
     }
 
-    KeyValueMarshaler[] attributeTableMarshalers =
-        KeyValueMarshaler.createRepeated(Collections.emptyList());
-    // TODO JH profileDictionaryData.getAttributeTable()
+    KeyValueAndUnitMarshaler[] attributeTableMarshalers =
+        KeyValueAndUnitMarshaler.createRepeated(profileDictionaryData.getAttributeTable());
     StackMarshaler[] stackTableMarshalers =
         StackMarshaler.createRepeated(profileDictionaryData.getStackTable());
 
@@ -63,7 +60,7 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
       FunctionMarshaler[] functionTableMarshalers,
       LinkMarshaler[] linkTableMarshalers,
       byte[][] stringTableUtf8,
-      KeyValueMarshaler[] attributeTableMarshalers,
+      KeyValueAndUnitMarshaler[] attributeTableMarshalers,
       StackMarshaler[] stackTableMarshalers) {
     super(
         calculateSize(
@@ -100,7 +97,7 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
       FunctionMarshaler[] functionMarshalers,
       LinkMarshaler[] linkMarshalers,
       byte[][] stringTable,
-      KeyValueMarshaler[] attributeTableMarshalers,
+      KeyValueAndUnitMarshaler[] attributeTableMarshalers,
       StackMarshaler[] stackTableMarshalers) {
     int size;
     size = 0;

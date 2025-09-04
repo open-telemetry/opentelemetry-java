@@ -5,22 +5,22 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.exporter.internal.otlp.AttributeKeyValue;
+import io.opentelemetry.api.common.Value;
 
 /**
- * Describes a KeyValue pair with optional unit description for the value.
+ * Describes a KeyValue pair with optional unit description for the value. Similar to
+ * io.opentelemetry.api.common.KeyValue, but dictionary-centric.
  *
  * @see "common.proto::KeyValue"
  * @see "profiles.proto::KeyValueAndUnit"
  */
-public interface KeyValueAndUnitData<T> extends AttributeKeyValue<T> {
+public interface KeyValueAndUnitData {
 
   /** Index into string table. */
-  String getKeyStringIndex();
+  int getKeyStringIndex();
 
-  // T getValue();
+  Value<?> getValue();
 
   /** Index into string table. 0 indicates implicit (via semconv) or undefined. */
-  String getUnitStringIndex();
+  int getUnitStringIndex();
 }
-// TODO JH finish me, then add Marshaler, tests
