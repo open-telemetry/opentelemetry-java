@@ -21,13 +21,10 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -143,39 +140,10 @@ public final class DeclarativeConfiguration {
   public static AutoConfiguredOpenTelemetrySdk createAutoConfiguredSdk(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
     DeclarativeConfigContext context = DeclarativeConfigContext.create(componentLoader);
-
     OpenTelemetrySdk sdk = create(configurationModel, context);
     SdkConfigProvider provider = SdkConfigProvider.create(configurationModel, componentLoader);
 
-    try {
-      Method method =
-          Class.forName(AutoConfiguredOpenTelemetrySdk.class.getName())
-              .getDeclaredMethod(
-                  "create",
-                  OpenTelemetrySdk.class,
-                  Resource.class,
-                  ConfigProperties.class,
-                  Object.class);
-      method.setAccessible(true);
-      return (AutoConfiguredOpenTelemetrySdk)
-          method.invoke(null, sdk, context.getResource(), null, provider);
-    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
-      throw new ConfigurationException(
-          "Error configuring from file. Is opentelemetry-sdk-extension-incubator on the classpath?",
-          e);
-    } catch (InvocationTargetException e) {
-      Throwable cause = e.getCause();
-      if (cause instanceof DeclarativeConfigException) {
-        throw toConfigurationException((DeclarativeConfigException) cause);
-      }
-      throw new ConfigurationException("Unexpected error configuring from file", e);
-    }
-  }
-
-  private static ConfigurationException toConfigurationException(
-      DeclarativeConfigException exception) {
-    String message = Objects.requireNonNull(exception.getMessage());
-    return new ConfigurationException(message, exception);
+    return AutoConfiguredOpenTelemetrySdkAccess.create(sdk, context.getResource(), provider);
   }
 
   /**
