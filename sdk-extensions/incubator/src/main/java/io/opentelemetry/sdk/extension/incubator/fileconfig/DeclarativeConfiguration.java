@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -117,6 +118,30 @@ public final class DeclarativeConfiguration {
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
 
+    ExtendedOpenTelemetrySdk sdk = createAndMaybeCleanup(
+        OpenTelemetryConfigurationFactory.getInstance(),
+        spiHelper,
+        customizeModel(configurationModel, spiHelper));
+    callAutoConfigureListeners(spiHelper, sdk);
+    return sdk;
+  }
+
+  public static Resource createResource(
+      OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
+    SpiHelper spiHelper = SpiHelper.create(componentLoader);
+    OpenTelemetryConfigurationModel model = customizeModel(configurationModel, spiHelper);
+
+    Resource resource = Resource.getDefault();
+    if (model.getResource() != null) {
+      resource =
+          ResourceFactory.getInstance()
+              .create(model.getResource(), new DeclarativeConfigContext(spiHelper));
+    }
+    return resource;
+  }
+
+  private static OpenTelemetryConfigurationModel customizeModel(
+      OpenTelemetryConfigurationModel configurationModel, SpiHelper spiHelper) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
 
     for (DeclarativeConfigurationCustomizerProvider provider :
@@ -124,13 +149,7 @@ public final class DeclarativeConfiguration {
       provider.customize(builder);
     }
 
-    ExtendedOpenTelemetrySdk sdk =
-        createAndMaybeCleanup(
-            OpenTelemetryConfigurationFactory.getInstance(),
-            spiHelper,
-            builder.customizeModel(configurationModel));
-    callAutoConfigureListeners(spiHelper, sdk);
-    return sdk;
+    return builder.customizeModel(configurationModel);
   }
 
   /**
