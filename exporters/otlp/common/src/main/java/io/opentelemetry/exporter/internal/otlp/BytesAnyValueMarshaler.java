@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 final class BytesAnyValueMarshaler extends MarshalerWithSize {
 
@@ -25,6 +26,10 @@ final class BytesAnyValueMarshaler extends MarshalerWithSize {
     byte[] bytes = new byte[value.remaining()];
     value.get(bytes);
     return new BytesAnyValueMarshaler(bytes);
+  }
+
+  static MarshalerWithSize create(byte[] value) {
+    return new BytesAnyValueMarshaler(Arrays.copyOf(value, value.length));
   }
 
   @Override

@@ -58,6 +58,12 @@ public abstract class AttributeAssertion {
       case LONG_ARRAY:
       case DOUBLE_ARRAY:
         return assertThat((List<?>) value);
+      case BYTES:
+        return assertThat((byte[]) value);
+      case ARRAY:
+        return assertThat((List<?>) value);
+      case MAP:
+        return assertThat((io.opentelemetry.api.common.Attributes) value);
     }
     throw new IllegalArgumentException("Unknown type for key " + key);
   }

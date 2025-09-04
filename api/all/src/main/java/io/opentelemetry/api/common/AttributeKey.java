@@ -26,11 +26,6 @@ public interface AttributeKey<T> {
   /** Returns the type of attribute for this key. Useful for building switch statements. */
   AttributeType getType();
 
-  // TODO (jack-berg): uncomment when extended attributes are promoted from incubator to API
-  // default ExtendedAttributeKey<T> asExtendedAttributeKey() {
-  //  return InternalAttributeKeyImpl.toExtendedAttributeKey(this);
-  // }
-
   /** Returns a new AttributeKey for String valued attributes. */
   static AttributeKey<String> stringKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.STRING);
@@ -69,5 +64,20 @@ public interface AttributeKey<T> {
   /** Returns a new AttributeKey for List&lt;Double&gt; valued attributes. */
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
+  }
+
+  /** Returns a new AttributeKey for byte[] valued attributes. */
+  static AttributeKey<byte[]> bytesKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.BYTES);
+  }
+
+  /** Returns a new AttributeKey for heterogeneous array valued attributes. */
+  static AttributeKey<List<Value<?>>> arrayKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.ARRAY);
+  }
+
+  /** Returns a new AttributeKey for map valued attributes. */
+  static AttributeKey<Attributes> mapKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.MAP);
   }
 }

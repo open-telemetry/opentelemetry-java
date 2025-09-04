@@ -1,2 +1,12 @@
 Comparing source compatibility of opentelemetry-api-1.54.0-SNAPSHOT.jar against opentelemetry-api-1.53.0.jar
-No changes.
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.AttributeKey  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	GENERIC TEMPLATES: === T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.AttributeKey<java.util.List<io.opentelemetry.api.common.Value<?>>> arrayKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.AttributeKey bytesKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.AttributeKey<io.opentelemetry.api.common.Attributes> mapKey(java.lang.String)
+***  MODIFIED ENUM: PUBLIC FINAL io.opentelemetry.api.common.AttributeType  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.AttributeType BYTES
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.AttributeType ARRAY
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.AttributeType MAP

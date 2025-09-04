@@ -7,7 +7,6 @@ package io.opentelemetry.api.incubator.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
@@ -48,11 +47,6 @@ class ExtendedDefaultLogger implements ExtendedLogger {
 
     @Override
     public ExtendedLogRecordBuilder setException(Throwable throwable) {
-      return this;
-    }
-
-    @Override
-    public <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
       return this;
     }
 

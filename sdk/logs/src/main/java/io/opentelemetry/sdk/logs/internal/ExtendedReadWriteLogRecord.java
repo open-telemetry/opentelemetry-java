@@ -5,11 +5,10 @@
 
 package io.opentelemetry.sdk.logs.internal;
 
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
-import io.opentelemetry.api.incubator.common.ExtendedAttributes;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
-import javax.annotation.Nullable;
 
 /**
  * A collection of configuration options which define the behavior of a {@link
@@ -27,37 +26,29 @@ public interface ExtendedReadWriteLogRecord extends ReadWriteLogRecord {
    *
    * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
    */
-  <T> ExtendedReadWriteLogRecord setAttribute(ExtendedAttributeKey<T> key, T value);
+  @Override
+  <T> ExtendedReadWriteLogRecord setAttribute(AttributeKey<T> key, T value);
 
   /**
    * Sets attributes to the {@link ReadWriteLogRecord}. If the {@link ReadWriteLogRecord} previously
    * contained a mapping for any of the keys, the old values are replaced by the specified values.
    *
-   * @param extendedAttributes the attributes
+   * @param attributes the attributes
    * @return this.
    */
+  @Override
   @SuppressWarnings("unchecked")
-  default ExtendedReadWriteLogRecord setAllAttributes(ExtendedAttributes extendedAttributes) {
-    if (extendedAttributes == null || extendedAttributes.isEmpty()) {
+  default ExtendedReadWriteLogRecord setAllAttributes(Attributes attributes) {
+    if (attributes == null || attributes.isEmpty()) {
       return this;
     }
-    extendedAttributes.forEach(
+    attributes.forEach(
         (attributeKey, value) ->
-            this.setAttribute((ExtendedAttributeKey<Object>) attributeKey, value));
+            this.setAttribute((AttributeKey<Object>) attributeKey, value));
     return this;
   }
 
   /** Return an immutable {@link ExtendedLogRecordData} instance representing this log record. */
   @Override
   ExtendedLogRecordData toLogRecordData();
-
-  /**
-   * Returns the value of a given attribute if it exists. This is the equivalent of calling
-   * getAttributes().get(key)
-   */
-  @Nullable
-  <T> T getAttribute(ExtendedAttributeKey<T> key);
-
-  /** Returns the attributes for this log, or {@link ExtendedAttributes#empty()} if unset. */
-  ExtendedAttributes getExtendedAttributes();
 }

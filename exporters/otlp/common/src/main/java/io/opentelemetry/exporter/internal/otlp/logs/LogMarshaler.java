@@ -15,7 +15,6 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
-import io.opentelemetry.exporter.internal.otlp.IncubatingUtil;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
@@ -41,14 +40,9 @@ final class LogMarshaler extends MarshalerWithSize {
 
   static LogMarshaler create(LogRecordData logRecordData) {
     KeyValueMarshaler[] attributeMarshalers =
-        IncubatingUtil.isExtendedLogRecordData(logRecordData)
-            ? IncubatingUtil.createdExtendedAttributesMarhsalers(logRecordData)
-            : KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
+        KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
 
-    int attributeSize =
-        IncubatingUtil.isExtendedLogRecordData(logRecordData)
-            ? IncubatingUtil.extendedAttributesSize(logRecordData)
-            : logRecordData.getAttributes().size();
+    int attributeSize = logRecordData.getAttributes().size();
 
     MarshalerWithSize bodyMarshaler =
         logRecordData.getBodyValue() == null

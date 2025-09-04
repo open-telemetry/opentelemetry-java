@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.logs;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -33,7 +33,7 @@ abstract class ExtendedSdkLogRecordData implements ExtendedLogRecordData {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      ExtendedAttributes attributes,
+      Attributes attributes,
       int totalAttributeCount) {
     return new AutoValue_ExtendedSdkLogRecordData(
         resource,
@@ -43,8 +43,8 @@ abstract class ExtendedSdkLogRecordData implements ExtendedLogRecordData {
         spanContext,
         severity,
         severityText,
-        totalAttributeCount,
         attributes,
+        totalAttributeCount,
         body,
         eventName);
   }
