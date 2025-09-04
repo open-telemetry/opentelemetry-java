@@ -46,7 +46,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
-import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_4_31_1.Metrics;
+import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_4_32_0.Metrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -414,6 +414,7 @@ class PrometheusHttpServerTest {
                 + "host=localhost,"
                 + "port=0,"
                 + "otelScopeEnabled=true,"
+                + "utf8SupportEnabled=false,"
                 + "allowedResourceAttributesFilter=null,"
                 + "memoryMode=REUSABLE_DATA,"
                 + "defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}"

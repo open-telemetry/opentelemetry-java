@@ -43,6 +43,7 @@ public final class PrometheusHttpServer implements MetricReader {
   private final String host;
   private final int port;
   private final boolean otelScopeEnabled;
+  private final boolean utf8SupportEnabled;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
   private final MemoryMode memoryMode;
   private final DefaultAggregationSelector defaultAggregationSelector;
@@ -73,6 +74,7 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
       boolean otelScopeEnabled,
+      boolean utf8SupportEnabled,
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode,
       @Nullable HttpHandler defaultHandler,
@@ -81,12 +83,14 @@ public final class PrometheusHttpServer implements MetricReader {
     this.host = host;
     this.port = port;
     this.otelScopeEnabled = otelScopeEnabled;
+    this.utf8SupportEnabled = utf8SupportEnabled;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.memoryMode = memoryMode;
     this.defaultAggregationSelector = defaultAggregationSelector;
     this.builder = builder;
     this.prometheusMetricReader =
-        new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
+        new PrometheusMetricReader(
+            otelScopeEnabled, allowedResourceAttributesFilter, utf8SupportEnabled);
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
     // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,
@@ -172,6 +176,7 @@ public final class PrometheusHttpServer implements MetricReader {
     joiner.add("host=" + host);
     joiner.add("port=" + port);
     joiner.add("otelScopeEnabled=" + otelScopeEnabled);
+    joiner.add("utf8SupportEnabled=" + utf8SupportEnabled);
     joiner.add("allowedResourceAttributesFilter=" + allowedResourceAttributesFilter);
     joiner.add("memoryMode=" + memoryMode);
     joiner.add(
