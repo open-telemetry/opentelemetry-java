@@ -23,7 +23,7 @@ class DeclarativeConfigContext {
 
   private final SpiHelper spiHelper;
   private final List<Closeable> closeables = new ArrayList<>();
-  @Nullable private MeterProvider meterProvider;
+  @Nullable private volatile MeterProvider meterProvider;
 
   DeclarativeConfigContext(SpiHelper spiHelper) {
     this.spiHelper = spiHelper;
