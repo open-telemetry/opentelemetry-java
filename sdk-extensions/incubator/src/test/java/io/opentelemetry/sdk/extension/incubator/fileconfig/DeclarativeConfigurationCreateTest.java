@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -166,6 +167,27 @@ class DeclarativeConfigurationCreateTest {
     assertThat(sdk.toString())
         .contains(
             "resource=Resource{schemaUrl=null, attributes={"
+                + "color=\"blue\", "
+                + "foo=\"bar\", "
+                + "service.name=\"unknown_service:java\", "
+                + "telemetry.sdk.language=\"java\", "
+                + "telemetry.sdk.name=\"opentelemetry\", "
+                + "telemetry.sdk.version=\"");
+  }
+
+  @Test
+  void createResource() {
+    OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
+    model.withFileFormat("1.0-rc.1");
+    Resource resource =
+        DeclarativeConfiguration.createResource(
+            model,
+            // customizer is TestDeclarativeConfigurationCustomizerProvider
+            ComponentLoader.forClassLoader(
+                DeclarativeConfigurationCreateTest.class.getClassLoader()));
+    assertThat(resource.toString())
+        .contains(
+            "Resource{schemaUrl=null, attributes={"
                 + "color=\"blue\", "
                 + "foo=\"bar\", "
                 + "service.name=\"unknown_service:java\", "

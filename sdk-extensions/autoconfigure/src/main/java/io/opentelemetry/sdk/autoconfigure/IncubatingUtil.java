@@ -111,9 +111,12 @@ final class IncubatingUtil {
         sdkConfigProvider.getMethod("create", openTelemetryConfiguration, ComponentLoader.class);
     ConfigProvider configProvider =
         (ConfigProvider) createFileConfigProvider.invoke(null, model, componentLoader);
-    // Note: can't access file configuration resource without reflection so setting a dummy
-    // resource
-    return AutoConfiguredOpenTelemetrySdk.create(sdk, Resource.getDefault(), null, configProvider);
+    Method createResource =
+          declarativeConfiguration.getMethod(
+              "createResource", openTelemetryConfiguration, ComponentLoader.class);
+      Resource resource = (Resource) createResource.invoke(null, model, componentLoader);
+
+      return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, null, configProvider);
   }
 
   // Visible for testing
