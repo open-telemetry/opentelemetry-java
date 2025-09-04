@@ -56,11 +56,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +80,6 @@ final class Otel2PrometheusConverter {
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
-  private final boolean otelScopeInfoMetricEnabled;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -94,15 +91,10 @@ final class Otel2PrometheusConverter {
   /**
    * Constructor with feature flag parameter.
    *
-   * @param otelScopeInfoMetricEnabled enable generation of the OpenTelemetry instrumentation scope
-   *     info metric and labels.
    * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
    *     matching this predicate will be added as labels on each exported metric
    */
-  Otel2PrometheusConverter(
-      boolean otelScopeInfoMetricEnabled,
-      @Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this.otelScopeInfoMetricEnabled = otelScopeInfoMetricEnabled;
+  Otel2PrometheusConverter(@Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
@@ -116,7 +108,6 @@ final class Otel2PrometheusConverter {
     }
     Map<String, MetricSnapshot> snapshotsByName = new HashMap<>(metricDataCollection.size());
     Resource resource = null;
-    Set<InstrumentationScopeInfo> scopes = new LinkedHashSet<>();
     for (MetricData metricData : metricDataCollection) {
       MetricSnapshot snapshot = convert(metricData);
       if (snapshot == null) {
@@ -126,16 +117,9 @@ final class Otel2PrometheusConverter {
       if (resource == null) {
         resource = metricData.getResource();
       }
-      if (otelScopeInfoMetricEnabled
-          && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
-        scopes.add(metricData.getInstrumentationScopeInfo());
-      }
     }
     if (resource != null) {
       putOrMerge(snapshotsByName, makeTargetInfo(resource));
-    }
-    if (otelScopeInfoMetricEnabled && !scopes.isEmpty()) {
-      putOrMerge(snapshotsByName, makeScopeInfo(scopes));
     }
     return new MetricSnapshots(snapshotsByName.values());
   }
@@ -440,19 +424,6 @@ final class Otel2PrometheusConverter {
                     null, // resource attributes are only copied for point's attributes
                     null, // scope attributes are only needed for point's attributes
                     resource.getAttributes()))));
-  }
-
-  private InfoSnapshot makeScopeInfo(Set<InstrumentationScopeInfo> scopes) {
-    List<InfoDataPointSnapshot> prometheusScopeInfos = new ArrayList<>(scopes.size());
-    for (InstrumentationScopeInfo scope : scopes) {
-      prometheusScopeInfos.add(
-          new InfoDataPointSnapshot(
-              convertAttributes(
-                  null, // resource attributes are only copied for point's attributes
-                  scope,
-                  scope.getAttributes())));
-    }
-    return new InfoSnapshot(new MetricMetadata("otel_scope"), prometheusScopeInfos);
   }
 
   /**

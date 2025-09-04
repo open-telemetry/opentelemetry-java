@@ -165,7 +165,6 @@ class MetricReaderFactoryTest {
         PrometheusHttpServer.builder()
             .setHost("localhost")
             .setPort(port)
-            .setOtelScopeInfoMetricEnabled(true) // always enabled for declarative config
             .setAllowedResourceAttributesFilter(
                 IncludeExcludePredicate.createPatternMatching(
                     singletonList("foo"), singletonList("bar")))

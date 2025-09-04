@@ -30,7 +30,6 @@ public final class PrometheusHttpServerBuilder {
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
-  private boolean otelScopeInfoMetricEnabled = true;
   @Nullable private Predicate<String> allowedResourceAttributesFilter;
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
@@ -45,7 +44,6 @@ public final class PrometheusHttpServerBuilder {
     this.host = builder.host;
     this.port = builder.port;
     this.prometheusRegistry = builder.prometheusRegistry;
-    this.otelScopeInfoMetricEnabled = builder.otelScopeInfoMetricEnabled;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
@@ -86,21 +84,11 @@ public final class PrometheusHttpServerBuilder {
   /**
    * Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}.
    *
-   * @deprecated {@code otel_scope_*} attributes are always generated. Use {@link
-   *     #setOtelScopeInfoMetricEnabled(boolean)} to control emission of the {@code otel_scope_info}
-   *     metric.
+   * @deprecated {@code otel_scope_*} attributes are always generated.
    */
   @SuppressWarnings("UnusedReturnValue")
   @Deprecated
   public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
-    return this;
-  }
-
-  /** Set if the {@code otel_scope_info} metric is emitted. Default is {@code true}. */
-  @SuppressWarnings("UnusedReturnValue")
-  public PrometheusHttpServerBuilder setOtelScopeInfoMetricEnabled(
-      boolean otelScopeInfoMetricEnabled) {
-    this.otelScopeInfoMetricEnabled = otelScopeInfoMetricEnabled;
     return this;
   }
 
@@ -190,7 +178,6 @@ public final class PrometheusHttpServerBuilder {
         port,
         executor,
         prometheusRegistry,
-        otelScopeInfoMetricEnabled,
         allowedResourceAttributesFilter,
         memoryMode,
         defaultHandler,

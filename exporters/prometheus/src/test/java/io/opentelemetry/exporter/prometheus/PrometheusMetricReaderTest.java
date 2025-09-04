@@ -61,9 +61,7 @@ class PrometheusMetricReaderTest {
   void setUp() {
     this.testClock.setTime(Instant.ofEpochMilli((System.currentTimeMillis() / 100) * 100));
     this.createdTimestamp = convertTimestamp(testClock.now());
-    this.reader =
-        new PrometheusMetricReader(
-            /* otelScopeInfoMetricEnabled */ true, /* allowedResourceAttributesFilter= */ null);
+    this.reader = new PrometheusMetricReader(/* allowedResourceAttributesFilter= */ null);
     this.meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -778,8 +776,7 @@ class PrometheusMetricReaderTest {
       int otelScale = random.nextInt(24) - 4;
       int prometheusScale = Math.min(otelScale, 8);
       PrometheusMetricReader reader =
-          new PrometheusMetricReader(
-              /* otelScopeInfoMetricEnabled */ true, /* allowedResourceAttributesFilter= */ null);
+          new PrometheusMetricReader(/* allowedResourceAttributesFilter= */ null);
       Meter meter =
           SdkMeterProvider.builder()
               .registerMetricReader(reader)
@@ -1032,8 +1029,7 @@ class PrometheusMetricReaderTest {
   @Test
   void otelScopeLabelsOnly() throws IOException {
     PrometheusMetricReader reader =
-        new PrometheusMetricReader(
-            /* otelScopeInfoMetricEnabled */ false, /* allowedResourceAttributesFilter= */ null);
+        new PrometheusMetricReader(/* allowedResourceAttributesFilter= */ null);
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1063,9 +1059,7 @@ class PrometheusMetricReaderTest {
   @Test
   void addResourceAttributesWorks() throws IOException {
     PrometheusMetricReader reader =
-        new PrometheusMetricReader(
-            /* otelScopeInfoMetricEnabled */ true,
-            /* allowedResourceAttributesFilter= */ Predicates.is("cluster"));
+        new PrometheusMetricReader(/* allowedResourceAttributesFilter= */ Predicates.is("cluster"));
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)

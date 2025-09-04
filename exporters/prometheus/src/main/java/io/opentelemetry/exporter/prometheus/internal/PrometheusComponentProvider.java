@@ -45,11 +45,6 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
       prometheusBuilder.setHost(host);
     }
 
-    Boolean withoutScopeInfo = config.getBoolean("without_scope_info_metric");
-    if (withoutScopeInfo != null) {
-      prometheusBuilder.setOtelScopeInfoMetricEnabled(!withoutScopeInfo);
-    }
-
     DeclarativeConfigProperties withResourceConstantLabels =
         config.getStructured("with_resource_constant_labels");
     if (withResourceConstantLabels != null) {
