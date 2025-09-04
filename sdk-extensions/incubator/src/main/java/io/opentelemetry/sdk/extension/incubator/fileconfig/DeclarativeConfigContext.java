@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import java.io.Closeable;
@@ -16,17 +16,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 /** Declarative configuration context and state carrier. */
 class DeclarativeConfigContext {
 
   private final SpiHelper spiHelper;
   private final List<Closeable> closeables = new ArrayList<>();
+  private Resource resource = Resource.empty();
   @Nullable private volatile MeterProvider meterProvider;
 
+  // Visible for testing
   DeclarativeConfigContext(SpiHelper spiHelper) {
     this.spiHelper = spiHelper;
+  }
+
+  static DeclarativeConfigContext create(ComponentLoader componentLoader) {
+    return new DeclarativeConfigContext(SpiHelper.create(componentLoader));
   }
 
   /**
@@ -49,6 +54,18 @@ class DeclarativeConfigContext {
 
   public void setMeterProvider(MeterProvider meterProvider) {
     this.meterProvider = meterProvider;
+  }
+
+  Resource getResource() {
+    return resource;
+  }
+
+  void setResource(Resource resource) {
+    this.resource = resource;
+  }
+
+  SpiHelper getSpiHelper() {
+    return spiHelper;
   }
 
   /**
