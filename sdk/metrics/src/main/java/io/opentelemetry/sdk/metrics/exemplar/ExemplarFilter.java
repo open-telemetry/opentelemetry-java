@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.exemplar;
+package io.opentelemetry.sdk.metrics.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -11,9 +11,6 @@ import io.opentelemetry.context.Context;
 /**
  * Exemplar filters are used to pre-filter measurements before attempting to store them in a
  * reservoir.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
  */
 public interface ExemplarFilter {
   /** Returns whether or not a reservoir should attempt to filter a measurement. */

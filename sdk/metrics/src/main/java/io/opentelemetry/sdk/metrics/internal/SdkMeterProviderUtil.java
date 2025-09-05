@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.lang.reflect.InvocationTargetException;
@@ -30,10 +30,13 @@ public final class SdkMeterProviderUtil {
   private SdkMeterProviderUtil() {}
 
   /**
-   * Reflectively assign the {@link ExemplarFilter} to the {@link SdkMeterProviderBuilder}.
+   * Reflectively assign the {@link ExemplarFilter} to the {@link SdkMeterProviderBuilder}. This
+   * method is deprecated, and you should set the {@link ExemplarFilter} directly on the {@link
+   * SdkMeterProviderBuilder}.
    *
    * @param sdkMeterProviderBuilder the builder
    */
+  @Deprecated
   public static SdkMeterProviderBuilder setExemplarFilter(
       SdkMeterProviderBuilder sdkMeterProviderBuilder, ExemplarFilter exemplarFilter) {
     try {

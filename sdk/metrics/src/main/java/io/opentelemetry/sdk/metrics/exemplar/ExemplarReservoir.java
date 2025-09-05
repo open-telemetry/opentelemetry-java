@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.exemplar;
+package io.opentelemetry.sdk.metrics.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -20,9 +20,6 @@ import java.util.function.Supplier;
  * An interface for an exemplar reservoir of samples.
  *
  * <p>This represents a reservoir for a specific "point" of metric data.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
  */
 public interface ExemplarReservoir<T extends ExemplarData> {
 
