@@ -27,14 +27,13 @@ public abstract class ImmutableSampleData implements SampleData {
    * @return a new SampleData representing the given program context.
    */
   public static SampleData create(
-      int locationsStartIndex,
-      int locationsLength,
+      int stackIndex,
       List<Long> values,
       List<Integer> attributeIndices,
-      Integer linkIndex,
+      int linkIndex,
       List<Long> timestamps) {
     return new AutoValue_ImmutableSampleData(
-        locationsStartIndex, locationsLength, values, attributeIndices, linkIndex, timestamps);
+        stackIndex, values, attributeIndices, linkIndex, timestamps);
   }
 
   ImmutableSampleData() {}

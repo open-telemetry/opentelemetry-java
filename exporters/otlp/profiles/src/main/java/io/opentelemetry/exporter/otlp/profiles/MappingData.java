@@ -33,12 +33,4 @@ public interface MappingData {
 
   /** References to attributes in Profile.attribute_table. */
   List<Integer> getAttributeIndices();
-
-  boolean hasFunctions();
-
-  boolean hasFilenames();
-
-  boolean hasLineNumbers();
-
-  boolean hasInlineFrames();
 }

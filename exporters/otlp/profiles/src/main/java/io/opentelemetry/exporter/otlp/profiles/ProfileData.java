@@ -31,14 +31,11 @@ public interface ProfileData {
   /** Returns the dictionary data of this profile. */
   ProfileDictionaryData getProfileDictionaryData();
 
-  /** A description of the samples associated with each Sample.value. */
-  List<ValueTypeData> getSampleTypes();
+  /** A description of the type associated with each Sample.value. */
+  ValueTypeData getSampleType();
 
   /** The set of samples recorded in this profile. */
   List<SampleData> getSamples();
-
-  /** Array of locations referenced by samples. */
-  List<Integer> getLocationIndices();
 
   /** Time of collection (UTC) represented as nanoseconds past the epoch. */
   long getTimeNanos();
@@ -56,9 +53,6 @@ public interface ProfileData {
 
   /** Free-form text associated with the profile. Indices into string table. */
   List<Integer> getCommentStrIndices();
-
-  /** Type of the preferred sample. Index into the string table. */
-  int getDefaultSampleTypeStringIndex();
 
   /**
    * Returns a globally unique identifier for a profile, as 32 character lowercase hex String. An ID

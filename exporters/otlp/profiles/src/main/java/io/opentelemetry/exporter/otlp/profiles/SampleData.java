@@ -18,17 +18,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface SampleData {
 
-  /**
-   * locationsStartIndex along with locationsLength refers to a slice of locations in
-   * Profile.location. Supersedes locationIndices.
-   */
-  int getLocationsStartIndex();
-
-  /**
-   * locationsLength along with locationsStartIndex refers to a slice of locations in
-   * Profile.location. locationIndices.
-   */
-  int getLocationsLength();
+  /** Reference to stack in Profile.stack_table. */
+  int getStackIndex();
 
   /**
    * The type and unit of each value is defined by the corresponding entry in Profile.sample_type.
@@ -38,8 +29,8 @@ public interface SampleData {
   /** References to attributes in Profile.attribute_table. */
   List<Integer> getAttributeIndices();
 
-  /** Reference to link in Profile.link_table. */
-  Integer getLinkIndex();
+  /** Reference to link in Profile.link_table. 0 if none. */
+  int getLinkIndex();
 
   /**
    * Timestamps associated with Sample represented in ms. These timestamps are expected to fall

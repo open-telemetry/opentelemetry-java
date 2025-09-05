@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.exporter.internal.otlp.AttributeKeyValue;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,12 +28,6 @@ public interface ProfileDictionaryData {
   /** Functions referenced by locations. */
   List<FunctionData> getFunctionTable();
 
-  /** Lookup table for attributes. */
-  List<AttributeKeyValue<?>> getAttributeTable();
-
-  /** Represents a mapping between Attribute Keys and Units. */
-  List<AttributeUnitData> getAttributeUnits();
-
   /** Lookup table for links. */
   List<LinkData> getLinkTable();
 
@@ -42,4 +35,10 @@ public interface ProfileDictionaryData {
    * A common table for strings referenced by various messages. string_table[0] must always be "".
    */
   List<String> getStringTable();
+
+  /** Lookup table for attributes. */
+  List<KeyValueAndUnitData> getAttributeTable();
+
+  /** Lookup table for stacks. */
+  List<StackData> getStackTable();
 }

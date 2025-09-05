@@ -32,21 +32,9 @@ public abstract class ImmutableMappingData implements MappingData {
       long memoryLimit,
       long fileOffset,
       int filenameStringIndex,
-      List<Integer> attributeIndices,
-      boolean hasFunctions,
-      boolean hasFilenames,
-      boolean hasLineNumbers,
-      boolean hasInlineFrames) {
+      List<Integer> attributeIndices) {
     return new AutoValue_ImmutableMappingData(
-        memoryStart,
-        memoryLimit,
-        fileOffset,
-        filenameStringIndex,
-        attributeIndices,
-        hasFunctions,
-        hasFilenames,
-        hasLineNumbers,
-        hasInlineFrames);
+        memoryStart, memoryLimit, fileOffset, filenameStringIndex, attributeIndices);
   }
 
   ImmutableMappingData() {}

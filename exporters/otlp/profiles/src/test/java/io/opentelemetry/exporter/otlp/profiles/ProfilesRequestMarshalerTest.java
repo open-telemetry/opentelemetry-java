@@ -12,9 +12,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableAttributeUnitData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableFunctionData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableKeyValueAndUnitData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLineData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLinkData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLocationData;
@@ -22,10 +23,12 @@ import io.opentelemetry.exporter.otlp.internal.data.ImmutableMappingData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileDictionaryData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableSampleData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableStackData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableValueTypeData;
+import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
-import io.opentelemetry.proto.profiles.v1development.AttributeUnit;
 import io.opentelemetry.proto.profiles.v1development.Function;
+import io.opentelemetry.proto.profiles.v1development.KeyValueAndUnit;
 import io.opentelemetry.proto.profiles.v1development.Line;
 import io.opentelemetry.proto.profiles.v1development.Link;
 import io.opentelemetry.proto.profiles.v1development.Location;
@@ -34,6 +37,7 @@ import io.opentelemetry.proto.profiles.v1development.Profile;
 import io.opentelemetry.proto.profiles.v1development.ResourceProfiles;
 import io.opentelemetry.proto.profiles.v1development.Sample;
 import io.opentelemetry.proto.profiles.v1development.ScopeProfiles;
+import io.opentelemetry.proto.profiles.v1development.Stack;
 import io.opentelemetry.proto.profiles.v1development.ValueType;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -49,36 +53,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class ProfilesRequestMarshalerTest {
-  @Test
-  void compareAttributeUnitMarshaling() {
-    AttributeUnitData input = ImmutableAttributeUnitData.create(1, 2);
-    AttributeUnit builderResult =
-        AttributeUnit.newBuilder().setAttributeKeyStrindex(1).setUnitStrindex(2).build();
-
-    AttributeUnit roundTripResult =
-        parse(AttributeUnit.getDefaultInstance(), AttributeUnitMarshaler.create(input));
-    assertThat(roundTripResult).isEqualTo(builderResult);
-  }
-
-  @Test
-  void compareRepeatedAttributeUnitMarshaling() {
-    List<AttributeUnitData> inputs = new ArrayList<>();
-    inputs.add(ImmutableAttributeUnitData.create(1, 2));
-    inputs.add(ImmutableAttributeUnitData.create(3, 4));
-
-    List<AttributeUnit> builderResults = new ArrayList<>();
-    builderResults.add(
-        AttributeUnit.newBuilder().setAttributeKeyStrindex(1).setUnitStrindex(2).build());
-    builderResults.add(
-        AttributeUnit.newBuilder().setAttributeKeyStrindex(3).setUnitStrindex(4).build());
-
-    AttributeUnitMarshaler[] marshalers = AttributeUnitMarshaler.createRepeated(inputs);
-
-    for (int i = 0; i < marshalers.length; i++) {
-      AttributeUnit roundTripResult = parse(AttributeUnit.getDefaultInstance(), marshalers[i]);
-      assertThat(roundTripResult).isEqualTo(builderResults.get(i));
-    }
-  }
 
   @Test
   void compareFunctionMarshaling() {
@@ -154,6 +128,49 @@ public class ProfilesRequestMarshalerTest {
   }
 
   @Test
+  void compareKeyValueAndUnitMarshaling() {
+    KeyValueAndUnitData input = ImmutableKeyValueAndUnitData.create(1, Value.of("foo"), 3);
+    KeyValueAndUnit builderResult =
+        KeyValueAndUnit.newBuilder()
+            .setKeyStrindex(1)
+            .setValue(AnyValue.newBuilder().setStringValue("foo").build())
+            .setUnitStrindex(3)
+            .build();
+
+    KeyValueAndUnit roundTripResult =
+        parse(KeyValueAndUnit.getDefaultInstance(), KeyValueAndUnitMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareRepeatedKeyValueAndUnitMarshaling() {
+    List<KeyValueAndUnitData> inputs = new ArrayList<>();
+    inputs.add(ImmutableKeyValueAndUnitData.create(1, Value.of("foo"), 3));
+    inputs.add(ImmutableKeyValueAndUnitData.create(4, Value.of("bar"), 6));
+
+    List<KeyValueAndUnit> builderResults = new ArrayList<>();
+    builderResults.add(
+        KeyValueAndUnit.newBuilder()
+            .setKeyStrindex(1)
+            .setValue(AnyValue.newBuilder().setStringValue("foo").build())
+            .setUnitStrindex(3)
+            .build());
+    builderResults.add(
+        KeyValueAndUnit.newBuilder()
+            .setKeyStrindex(4)
+            .setValue(AnyValue.newBuilder().setStringValue("bar").build())
+            .setUnitStrindex(6)
+            .build());
+
+    KeyValueAndUnitMarshaler[] marshalers = KeyValueAndUnitMarshaler.createRepeated(inputs);
+
+    for (int i = 0; i < marshalers.length; i++) {
+      KeyValueAndUnit roundTripResult = parse(KeyValueAndUnit.getDefaultInstance(), marshalers[i]);
+      assertThat(roundTripResult).isEqualTo(builderResults.get(i));
+    }
+  }
+
+  @Test
   void compareLinkMarshaling() {
     String traceId = "0123456789abcdef0123456789abcdef";
     String spanId = "fedcba9876543210";
@@ -196,13 +213,11 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareLocationMarshaling() {
-    LocationData input =
-        ImmutableLocationData.create(1, 2, Collections.emptyList(), true, listOf(4, 5));
+    LocationData input = ImmutableLocationData.create(1, 2, Collections.emptyList(), listOf(4, 5));
     Location builderResult =
         Location.newBuilder()
             .setMappingIndex(1)
             .setAddress(2)
-            .setIsFolded(true)
             .addAllAttributeIndices(listOf(4, 5))
             .build();
 
@@ -214,22 +229,20 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedLocationMarshaling() {
     List<LocationData> inputs = new ArrayList<>();
-    inputs.add(ImmutableLocationData.create(1, 2, Collections.emptyList(), true, listOf(3, 4)));
-    inputs.add(ImmutableLocationData.create(5, 6, Collections.emptyList(), true, listOf(7, 8)));
+    inputs.add(ImmutableLocationData.create(1, 2, Collections.emptyList(), listOf(3, 4)));
+    inputs.add(ImmutableLocationData.create(5, 6, Collections.emptyList(), listOf(7, 8)));
 
     List<Location> builderResults = new ArrayList<>();
     builderResults.add(
         Location.newBuilder()
             .setMappingIndex(1)
             .setAddress(2)
-            .setIsFolded(true)
             .addAllAttributeIndices(listOf(3, 4))
             .build());
     builderResults.add(
         Location.newBuilder()
             .setMappingIndex(5)
             .setAddress(6)
-            .setIsFolded(true)
             .addAllAttributeIndices(listOf(7, 8))
             .build());
 
@@ -243,8 +256,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareMappingMarshaling() {
-    MappingData input =
-        ImmutableMappingData.create(1, 2, 3, 4, listOf(5, 6), true, true, true, true);
+    MappingData input = ImmutableMappingData.create(1, 2, 3, 4, listOf(5, 6));
     Mapping builderResult =
         Mapping.newBuilder()
             .setMemoryStart(1)
@@ -252,10 +264,6 @@ public class ProfilesRequestMarshalerTest {
             .setFileOffset(3)
             .setFilenameStrindex(4)
             .addAllAttributeIndices(listOf(5, 6))
-            .setHasFunctions(true)
-            .setHasFilenames(true)
-            .setHasLineNumbers(true)
-            .setHasInlineFrames(true)
             .build();
 
     Mapping roundTripResult = parse(Mapping.getDefaultInstance(), MappingMarshaler.create(input));
@@ -265,8 +273,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedMappingMarshaling() {
     List<MappingData> inputs = new ArrayList<>();
-    inputs.add(ImmutableMappingData.create(1, 2, 3, 4, listOf(5, 6), true, true, true, true));
-    inputs.add(ImmutableMappingData.create(7, 8, 9, 10, listOf(11, 12), true, true, true, true));
+    inputs.add(ImmutableMappingData.create(1, 2, 3, 4, listOf(5, 6)));
+    inputs.add(ImmutableMappingData.create(7, 8, 9, 10, listOf(11, 12)));
 
     List<Mapping> builderResults = new ArrayList<>();
     builderResults.add(
@@ -276,10 +284,6 @@ public class ProfilesRequestMarshalerTest {
             .setFileOffset(3)
             .setFilenameStrindex(4)
             .addAllAttributeIndices(listOf(5, 6))
-            .setHasFunctions(true)
-            .setHasFilenames(true)
-            .setHasLineNumbers(true)
-            .setHasInlineFrames(true)
             .build());
     builderResults.add(
         Mapping.newBuilder()
@@ -288,16 +292,39 @@ public class ProfilesRequestMarshalerTest {
             .setFileOffset(9)
             .setFilenameStrindex(10)
             .addAllAttributeIndices(listOf(11, 12))
-            .setHasFunctions(true)
-            .setHasFilenames(true)
-            .setHasLineNumbers(true)
-            .setHasInlineFrames(true)
             .build());
 
     MappingMarshaler[] marshalers = MappingMarshaler.createRepeated(inputs);
 
     for (int i = 0; i < marshalers.length; i++) {
       Mapping roundTripResult = parse(Mapping.getDefaultInstance(), marshalers[i]);
+      assertThat(roundTripResult).isEqualTo(builderResults.get(i));
+    }
+  }
+
+  @Test
+  void compareStackMarshaling() {
+    StackData input = ImmutableStackData.create(listOf(1, 2));
+    Stack builderResult = Stack.newBuilder().addAllLocationIndices(listOf(1, 2)).build();
+
+    Stack roundTripResult = parse(Stack.getDefaultInstance(), StackMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareRepeatedStackMarshaling() {
+    List<StackData> inputs = new ArrayList<>();
+    inputs.add(ImmutableStackData.create(listOf(1, 2)));
+    inputs.add(ImmutableStackData.create(listOf(3, 4)));
+
+    List<Stack> builderResults = new ArrayList<>();
+    builderResults.add(Stack.newBuilder().addAllLocationIndices(listOf(1, 2)).build());
+    builderResults.add(Stack.newBuilder().addAllLocationIndices(listOf(3, 4)).build());
+
+    StackMarshaler[] marshalers = StackMarshaler.createRepeated(inputs);
+
+    for (int i = 0; i < marshalers.length; i++) {
+      Stack roundTripResult = parse(Stack.getDefaultInstance(), marshalers[i]);
       assertThat(roundTripResult).isEqualTo(builderResults.get(i));
     }
   }
@@ -318,15 +345,13 @@ public class ProfilesRequestMarshalerTest {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList()),
+            ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
             Collections.emptyList(),
-            Collections.emptyList(),
-            listOf(1, 2),
             5L,
             6L,
             ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
             7L,
             listOf(8, 9),
-            0,
             profileId,
             Collections.emptyList(),
             3,
@@ -338,13 +363,20 @@ public class ProfilesRequestMarshalerTest {
 
     Profile profileContainer =
         Profile.newBuilder()
+            .setSampleType(
+                ValueType.newBuilder()
+                    .setTypeStrindex(1)
+                    .setUnitStrindex(2)
+                    .setAggregationTemporality(
+                        io.opentelemetry.proto.profiles.v1development.AggregationTemporality
+                            .AGGREGATION_TEMPORALITY_CUMULATIVE)
+                    .build())
             .setProfileId(ByteString.fromHex(profileId))
             .setDroppedAttributesCount(3)
             .setOriginalPayloadFormat("format")
             .setOriginalPayload(ByteString.copyFrom(new byte[] {4, 5}))
-            .addAllLocationIndices(listOf(1, 2))
-            .setTimeNanos(5)
-            .setDurationNanos(6)
+            .setTimeUnixNano(5)
+            .setDurationNano(6)
             .setPeriod(7)
             .setPeriodType(
                 ValueType.newBuilder()
@@ -376,12 +408,11 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareSampleMarshaling() {
     SampleData input =
-        ImmutableSampleData.create(1, 2, listOf(3L, 4L), listOf(5, 6), 7, listOf(8L, 9L));
+        ImmutableSampleData.create(1, listOf(3L, 4L), listOf(5, 6), 7, listOf(8L, 9L));
     Sample builderResult =
         Sample.newBuilder()
-            .setLocationsStartIndex(1)
-            .setLocationsLength(2)
-            .addAllValue(listOf(3L, 4L))
+            .setStackIndex(1)
+            .addAllValues(listOf(3L, 4L))
             .addAllAttributeIndices(listOf(5, 6))
             .setLinkIndex(7)
             .addAllTimestampsUnixNano(listOf(8L, 9L))
@@ -394,25 +425,23 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedSampleMarshaling() {
     List<SampleData> inputs = new ArrayList<>();
-    inputs.add(ImmutableSampleData.create(1, 2, listOf(3L, 4L), listOf(5, 6), 7, listOf(8L, 9L)));
+    inputs.add(ImmutableSampleData.create(1, listOf(3L, 4L), listOf(5, 6), 7, listOf(8L, 9L)));
     inputs.add(
-        ImmutableSampleData.create(10, 11, listOf(12L, 13L), listOf(14, 15), 16, listOf(17L, 18L)));
+        ImmutableSampleData.create(10, listOf(12L, 13L), listOf(14, 15), 16, listOf(17L, 18L)));
 
     List<Sample> builderResults = new ArrayList<>();
     builderResults.add(
         Sample.newBuilder()
-            .setLocationsStartIndex(1)
-            .setLocationsLength(2)
-            .addAllValue(listOf(3L, 4L))
+            .setStackIndex(1)
+            .addAllValues(listOf(3L, 4L))
             .addAllAttributeIndices(listOf(5, 6))
             .setLinkIndex(7)
             .addAllTimestampsUnixNano(listOf(8L, 9L))
             .build());
     builderResults.add(
         Sample.newBuilder()
-            .setLocationsStartIndex(10)
-            .setLocationsLength(11)
-            .addAllValue(listOf(12L, 13L))
+            .setStackIndex(10)
+            .addAllValues(listOf(12L, 13L))
             .addAllAttributeIndices(listOf(14, 15))
             .setLinkIndex(16)
             .addAllTimestampsUnixNano(listOf(17L, 18L))
