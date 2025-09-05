@@ -5,7 +5,9 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +37,15 @@ public final class OkHttpUtil {
             60,
             TimeUnit.SECONDS,
             new SynchronousQueue<>(),
-            new DaemonThreadFactory("okhttp-dispatch", propagateContextForTestingInDispatcher)));
+            createThreadFactory("okhttp-dispatch")));
+  }
+
+  private static DaemonThreadFactory createThreadFactory(String namePrefix) {
+    if (propagateContextForTestingInDispatcher) {
+      return new DaemonThreadFactory(
+          namePrefix, r -> Executors.defaultThreadFactory().newThread(Context.current().wrap(r)));
+    }
+    return new DaemonThreadFactory(namePrefix);
   }
 
   private OkHttpUtil() {}
