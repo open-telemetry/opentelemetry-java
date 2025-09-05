@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.54.0 (2025-09-05)
+
 ### API
 
 #### Baggage
