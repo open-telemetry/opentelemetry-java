@@ -71,7 +71,7 @@ class Otel2PrometheusConverterTest {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final Otel2PrometheusConverter converter =
-      new Otel2PrometheusConverter(true, /* allowedResourceAttributesFilter= */ null);
+      new Otel2PrometheusConverter(/* allowedResourceAttributesFilter= */ null);
 
   @ParameterizedTest
   @MethodSource("metricMetadataArgs")
@@ -201,7 +201,7 @@ class Otel2PrometheusConverterTest {
       throws IOException {
 
     Otel2PrometheusConverter converter =
-        new Otel2PrometheusConverter(true, allowedResourceAttributesFilter);
+        new Otel2PrometheusConverter(allowedResourceAttributesFilter);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
@@ -501,7 +501,7 @@ class Otel2PrometheusConverterTest {
         };
 
     Otel2PrometheusConverter otel2PrometheusConverter =
-        new Otel2PrometheusConverter(true, /* allowedResourceAttributesFilter= */ countPredicate);
+        new Otel2PrometheusConverter(/* allowedResourceAttributesFilter= */ countPredicate);
 
     // Create 20 different metric data objects with 2 different resource attributes;
     Resource resource1 = Resource.builder().put("cluster", "cluster1").build();
