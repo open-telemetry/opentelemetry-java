@@ -47,10 +47,9 @@ class OtlpJsonLoggingMetricExporterTest {
         .isEqualTo(AggregationTemporality.DELTA);
   }
 
+  /** Test that the new create method with wrapperJsonObject parameter maintains correct aggregation temporality */
   @Test
   void getAggregationTemporalityWithWrapperJsonObject() {
-    // Test that the new create method with wrapperJsonObject parameter maintains correct
-    // aggregation temporality
     assertThat(
             OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, false)
                 .getAggregationTemporality(InstrumentType.COUNTER))
