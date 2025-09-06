@@ -139,25 +139,6 @@ class ResourceConfigurationTest {
                     attr.containsEntry("service.name", "unknown_service:java")
                         .doesNotContainKey("cat")
                         .containsEntry("animal", "cat")
-                        .containsEntry("color", "blue"))),
-        // old environment resource provider FQCN
-        Arguments.of(
-            "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider",
-            null,
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "test")
-                        .containsEntry("cat", "meow")
-                        .doesNotContainKey("animal")
-                        .doesNotContainKey("color"))),
-        Arguments.of(
-            null,
-            "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider",
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "unknown_service:java")
-                        .doesNotContainKey("cat")
-                        .containsEntry("animal", "cat")
                         .containsEntry("color", "blue"))));
   }
 

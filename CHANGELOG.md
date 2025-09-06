@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+## Version 1.54.0 (2025-09-05)
+
+### API
+
+#### Baggage
+
+* Fix guard against ArrayIndexOutOfBoundsException in BaggageCodec
+  ([#7239](https://github.com/open-telemetry/opentelemetry-java/pull/7239))
+
+### SDK
+
+#### Metrics
+
+* Fix MetricData.getDoubleSumData() ClassCastException with custom implementations
+  ([#7597](https://github.com/open-telemetry/opentelemetry-java/pull/7597))
+
+#### Exporters
+
+* Fix HttpExporterBuilder.copy() and GrpcExporterBuilder.copy() to preserve component loader
+  ([#7596](https://github.com/open-telemetry/opentelemetry-java/pull/7596))
+
+#### Extensions
+
+* Autoconfigure: Remove support for old EnvironmentResourceProvider package name
+  ([#7622](https://github.com/open-telemetry/opentelemetry-java/pull/7622))
+* Declarative config: Add DeclarativeConfigurationProvider SPI
+  ([#7472](https://github.com/open-telemetry/opentelemetry-java/pull/7472))
+* Declarative config: Pass meter provider to avoid using the global OpenTelemetry instance
+  ([#7475](https://github.com/open-telemetry/opentelemetry-java/pull/7475))
+
+### Project tooling
+
+* Update to Gradle v9
+  ([#7590](https://github.com/open-telemetry/opentelemetry-java/pull/7590))
+
 ## Version 1.53.0 (2025-08-08)
 
 ### SDK
