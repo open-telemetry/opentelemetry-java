@@ -37,7 +37,7 @@ class OtlpStdoutMetricExporterTest
         OtlpStdoutMetricExporter.class,
         ConfigurableMetricExporterProvider.class,
         MetricExporter.class,
-        "OtlpStdoutMetricExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true, memoryMode=IMMUTABLE_DATA, aggregationTemporalitySelector=AggregationTemporalitySelector{COUNTER=CUMULATIVE, UP_DOWN_COUNTER=CUMULATIVE, HISTOGRAM=CUMULATIVE, OBSERVABLE_COUNTER=CUMULATIVE, OBSERVABLE_UP_DOWN_COUNTER=CUMULATIVE, OBSERVABLE_GAUGE=CUMULATIVE, GAUGE=CUMULATIVE}, defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}}");
+        "OtlpStdoutMetricExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, useLowAllocation=true, memoryMode=IMMUTABLE_DATA, aggregationTemporalitySelector=AggregationTemporalitySelector{COUNTER=CUMULATIVE, UP_DOWN_COUNTER=CUMULATIVE, HISTOGRAM=CUMULATIVE, OBSERVABLE_COUNTER=CUMULATIVE, OBSERVABLE_UP_DOWN_COUNTER=CUMULATIVE, OBSERVABLE_GAUGE=CUMULATIVE, GAUGE=CUMULATIVE}, defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}}");
   }
 
   @Override
@@ -47,11 +47,11 @@ class OtlpStdoutMetricExporterTest
 
   @Override
   protected OtlpStdoutMetricExporter createExporter(
-      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject) {
+      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean useLowAllocation) {
     OtlpStdoutMetricExporterBuilder builder =
         OtlpStdoutMetricExporter.builder()
             .setMemoryMode(memoryMode)
-            .setWrapperJsonObject(wrapperJsonObject);
+            .setWrapperJsonObject(useLowAllocation);
     if (outputStream != null) {
       builder.setOutput(outputStream);
     } else {

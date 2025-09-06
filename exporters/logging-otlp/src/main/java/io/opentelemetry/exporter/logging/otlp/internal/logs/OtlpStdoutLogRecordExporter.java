@@ -34,17 +34,17 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
 
   private final Logger logger;
   private final JsonWriter jsonWriter;
-  private final boolean wrapperJsonObject;
+  private final boolean useLowAllocation;
   private final MemoryMode memoryMode;
   private final Function<Collection<LogRecordData>, CompletableResultCode> marshaler;
 
   OtlpStdoutLogRecordExporter(
-      Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject, MemoryMode memoryMode) {
+      Logger logger, JsonWriter jsonWriter, boolean useLowAllocation, MemoryMode memoryMode) {
     this.logger = logger;
     this.jsonWriter = jsonWriter;
-    this.wrapperJsonObject = wrapperJsonObject;
+    this.useLowAllocation = useLowAllocation;
     this.memoryMode = memoryMode;
-    marshaler = createMarshaler(jsonWriter, memoryMode, wrapperJsonObject);
+    marshaler = createMarshaler(jsonWriter, memoryMode, useLowAllocation);
   }
 
   /** Returns a new {@link OtlpStdoutLogRecordExporterBuilder}. */
@@ -54,8 +54,8 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
   }
 
   private static Function<Collection<LogRecordData>, CompletableResultCode> createMarshaler(
-      JsonWriter jsonWriter, MemoryMode memoryMode, boolean wrapperJsonObject) {
-    if (wrapperJsonObject) {
+      JsonWriter jsonWriter, MemoryMode memoryMode, boolean useLowAllocation) {
+    if (useLowAllocation) {
       LogReusableDataMarshaler reusableDataMarshaler =
           new LogReusableDataMarshaler(
               memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler));
@@ -103,7 +103,7 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
   public String toString() {
     StringJoiner joiner = new StringJoiner(", ", "OtlpStdoutLogRecordExporter{", "}");
     joiner.add("jsonWriter=" + jsonWriter);
-    joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    joiner.add("useLowAllocation=" + useLowAllocation);
     joiner.add("memoryMode=" + memoryMode);
     return joiner.toString();
   }

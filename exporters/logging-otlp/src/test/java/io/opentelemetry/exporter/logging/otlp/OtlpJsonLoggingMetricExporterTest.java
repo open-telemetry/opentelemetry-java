@@ -48,11 +48,11 @@ class OtlpJsonLoggingMetricExporterTest {
   }
 
   /**
-   * Test that the new create method with wrapperJsonObject parameter maintains correct aggregation
+   * Test that the new create method with useLowAllocation parameter maintains correct aggregation
    * temporality.
    */
   @Test
-  void getAggregationTemporalityWithWrapperJsonObject() {
+  void getAggregationTemporalityWithUseLowAllocation() {
     assertThat(
             OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, false)
                 .getAggregationTemporality(InstrumentType.COUNTER))
@@ -86,7 +86,7 @@ class OtlpJsonLoggingMetricExporterTest {
 
   @Test
   void logWithWrapperJsonObjectFalse() throws Exception {
-    // Test that wrapperJsonObject=false produces the same output as the default create()
+    // Test that useLowAllocation=false produces the same output as the default create()
     MetricExporter exporterWithoutWrapper =
         OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, false);
     testDataExporter.export(exporterWithoutWrapper);
@@ -102,7 +102,7 @@ class OtlpJsonLoggingMetricExporterTest {
 
   @Test
   void logWithWrapperJsonObjectTrue() throws Exception {
-    // Test that wrapperJsonObject=true produces wrapper format (enables low allocation)
+    // Test that useLowAllocation=true produces wrapper format (enables low allocation)
     MetricExporter exporterWithWrapper =
         OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, true);
     testDataExporter.export(exporterWithWrapper);
@@ -118,7 +118,7 @@ class OtlpJsonLoggingMetricExporterTest {
 
   @Test
   void logWithWrapperJsonObjectTrueAndDeltaTemporality() throws Exception {
-    // Test that wrapperJsonObject=true works with DELTA temporality too
+    // Test that useLowAllocation=true works with DELTA temporality too
     MetricExporter exporterWithWrapper =
         OtlpJsonLoggingMetricExporter.create(AggregationTemporality.DELTA, true);
     testDataExporter.export(exporterWithWrapper);

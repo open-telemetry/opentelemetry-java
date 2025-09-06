@@ -52,17 +52,17 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
    * aggregationTemporality}.
    *
    * @param aggregationTemporality the aggregation temporality to use
-   * @param wrapperJsonObject whether to wrap the JSON object in an outer JSON "resourceMetrics"
-   *     object. When {@code true}, uses low allocation OTLP marshalers with {@link
-   *     MemoryMode#REUSABLE_DATA}. When {@code false}, uses {@link MemoryMode#IMMUTABLE_DATA}.
+   * @param useLowAllocation whether to use low allocation OTLP marshalers with {@link
+   *     MemoryMode#REUSABLE_DATA}. When {@code true}, uses low allocation mode and wraps the JSON
+   *     object in an outer JSON "resourceMetrics" object. When {@code false}, uses {@link
+   *     MemoryMode#IMMUTABLE_DATA}.
    */
   public static MetricExporter create(
-      AggregationTemporality aggregationTemporality, boolean wrapperJsonObject) {
-    MemoryMode memoryMode =
-        wrapperJsonObject ? MemoryMode.REUSABLE_DATA : MemoryMode.IMMUTABLE_DATA;
+      AggregationTemporality aggregationTemporality, boolean useLowAllocation) {
+    MemoryMode memoryMode = useLowAllocation ? MemoryMode.REUSABLE_DATA : MemoryMode.IMMUTABLE_DATA;
     OtlpStdoutMetricExporter delegate =
         new OtlpStdoutMetricExporterBuilder(logger)
-            .setWrapperJsonObject(wrapperJsonObject)
+            .setWrapperJsonObject(useLowAllocation)
             .setMemoryMode(memoryMode)
             .build();
     return new OtlpJsonLoggingMetricExporter(delegate, aggregationTemporality);

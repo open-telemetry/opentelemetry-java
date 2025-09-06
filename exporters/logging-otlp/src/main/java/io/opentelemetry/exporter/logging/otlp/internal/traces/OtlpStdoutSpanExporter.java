@@ -33,17 +33,17 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
 
   private final Logger logger;
   private final JsonWriter jsonWriter;
-  private final boolean wrapperJsonObject;
+  private final boolean useLowAllocation;
   private final MemoryMode memoryMode;
   private final Function<Collection<SpanData>, CompletableResultCode> marshaler;
 
   OtlpStdoutSpanExporter(
-      Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject, MemoryMode memoryMode) {
+      Logger logger, JsonWriter jsonWriter, boolean useLowAllocation, MemoryMode memoryMode) {
     this.logger = logger;
     this.jsonWriter = jsonWriter;
-    this.wrapperJsonObject = wrapperJsonObject;
+    this.useLowAllocation = useLowAllocation;
     this.memoryMode = memoryMode;
-    marshaler = createMarshaler(jsonWriter, memoryMode, wrapperJsonObject);
+    marshaler = createMarshaler(jsonWriter, memoryMode, useLowAllocation);
   }
 
   /** Returns a new {@link OtlpStdoutSpanExporterBuilder}. */
@@ -53,8 +53,8 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
   }
 
   private static Function<Collection<SpanData>, CompletableResultCode> createMarshaler(
-      JsonWriter jsonWriter, MemoryMode memoryMode, boolean wrapperJsonObject) {
-    if (wrapperJsonObject) {
+      JsonWriter jsonWriter, MemoryMode memoryMode, boolean useLowAllocation) {
+    if (useLowAllocation) {
       SpanReusableDataMarshaler reusableDataMarshaler =
           new SpanReusableDataMarshaler(
               memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler));
@@ -102,7 +102,7 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
   public String toString() {
     StringJoiner joiner = new StringJoiner(", ", "OtlpStdoutSpanExporter{", "}");
     joiner.add("jsonWriter=" + jsonWriter);
-    joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    joiner.add("useLowAllocation=" + useLowAllocation);
     joiner.add("memoryMode=" + memoryMode);
     return joiner.toString();
   }

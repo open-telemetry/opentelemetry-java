@@ -22,7 +22,7 @@ class OtlpStdoutSpanExporterTest extends AbstractOtlpStdoutExporterTest<OtlpStdo
         OtlpStdoutSpanExporter.class,
         ConfigurableSpanExporterProvider.class,
         SpanExporter.class,
-        "OtlpStdoutSpanExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true, memoryMode=IMMUTABLE_DATA}");
+        "OtlpStdoutSpanExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, useLowAllocation=true, memoryMode=IMMUTABLE_DATA}");
   }
 
   @Override
@@ -32,11 +32,11 @@ class OtlpStdoutSpanExporterTest extends AbstractOtlpStdoutExporterTest<OtlpStdo
 
   @Override
   protected OtlpStdoutSpanExporter createExporter(
-      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject) {
+      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean useLowAllocation) {
     OtlpStdoutSpanExporterBuilder builder =
         OtlpStdoutSpanExporter.builder()
             .setMemoryMode(memoryMode)
-            .setWrapperJsonObject(wrapperJsonObject);
+            .setWrapperJsonObject(useLowAllocation);
     if (outputStream != null) {
       builder.setOutput(outputStream);
     } else {

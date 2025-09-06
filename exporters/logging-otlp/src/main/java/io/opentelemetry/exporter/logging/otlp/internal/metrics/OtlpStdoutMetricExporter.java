@@ -38,7 +38,7 @@ public final class OtlpStdoutMetricExporter implements MetricExporter {
 
   private final Logger logger;
   private final JsonWriter jsonWriter;
-  private final boolean wrapperJsonObject;
+  private final boolean useLowAllocation;
   private final MemoryMode memoryMode;
   private final Function<Collection<MetricData>, CompletableResultCode> marshaler;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
@@ -47,17 +47,17 @@ public final class OtlpStdoutMetricExporter implements MetricExporter {
   OtlpStdoutMetricExporter(
       Logger logger,
       JsonWriter jsonWriter,
-      boolean wrapperJsonObject,
+      boolean useLowAllocation,
       MemoryMode memoryMode,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector) {
     this.logger = logger;
     this.jsonWriter = jsonWriter;
-    this.wrapperJsonObject = wrapperJsonObject;
+    this.useLowAllocation = useLowAllocation;
     this.memoryMode = memoryMode;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
-    marshaler = createMarshaler(jsonWriter, memoryMode, wrapperJsonObject);
+    marshaler = createMarshaler(jsonWriter, memoryMode, useLowAllocation);
   }
 
   /** Returns a new {@link OtlpStdoutMetricExporterBuilder}. */
@@ -67,8 +67,8 @@ public final class OtlpStdoutMetricExporter implements MetricExporter {
   }
 
   private static Function<Collection<MetricData>, CompletableResultCode> createMarshaler(
-      JsonWriter jsonWriter, MemoryMode memoryMode, boolean wrapperJsonObject) {
-    if (wrapperJsonObject) {
+      JsonWriter jsonWriter, MemoryMode memoryMode, boolean useLowAllocation) {
+    if (useLowAllocation) {
       MetricReusableDataMarshaler reusableDataMarshaler =
           new MetricReusableDataMarshaler(
               memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler));
@@ -131,7 +131,7 @@ public final class OtlpStdoutMetricExporter implements MetricExporter {
   public String toString() {
     StringJoiner joiner = new StringJoiner(", ", "OtlpStdoutMetricExporter{", "}");
     joiner.add("jsonWriter=" + jsonWriter);
-    joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    joiner.add("useLowAllocation=" + useLowAllocation);
     joiner.add("memoryMode=" + memoryMode);
     joiner.add(
         "aggregationTemporalitySelector="

@@ -79,7 +79,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   }
 
   protected abstract T createExporter(
-      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject);
+      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean useLowAllocation);
 
   protected abstract T createDefaultExporter();
 
@@ -134,13 +134,13 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   public static class TestCase {
     private final MemoryMode memoryMode;
-    private final boolean wrapperJsonObject;
+    private final boolean useLowAllocation;
     private final OutputType outputType;
 
-    public TestCase(OutputType outputType, MemoryMode memoryMode, boolean wrapperJsonObject) {
+    public TestCase(OutputType outputType, MemoryMode memoryMode, boolean useLowAllocation) {
       this.outputType = outputType;
       this.memoryMode = memoryMode;
-      this.wrapperJsonObject = wrapperJsonObject;
+      this.useLowAllocation = useLowAllocation;
     }
 
     public OutputType getOutputType() {
@@ -148,7 +148,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     }
 
     public boolean isWrapperJsonObject() {
-      return wrapperJsonObject;
+      return useLowAllocation;
     }
 
     public MemoryMode getMemoryMode() {
@@ -158,47 +158,42 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   static Stream<Arguments> exportTestCases() {
     return ImmutableList.of(
-        testCase(OutputType.SYSTEM_OUT, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ true),
-        testCase(OutputType.SYSTEM_OUT, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ false),
-        testCase(OutputType.FILE, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ true),
-        testCase(OutputType.FILE, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ false),
+        testCase(OutputType.SYSTEM_OUT, MemoryMode.IMMUTABLE_DATA, /* useLowAllocation= */ true),
+        testCase(OutputType.SYSTEM_OUT, MemoryMode.IMMUTABLE_DATA, /* useLowAllocation= */ false),
+        testCase(OutputType.FILE, MemoryMode.IMMUTABLE_DATA, /* useLowAllocation= */ true),
+        testCase(OutputType.FILE, MemoryMode.IMMUTABLE_DATA, /* useLowAllocation= */ false),
         testCase(
             OutputType.FILE_AND_BUFFERED_WRITER,
             MemoryMode.IMMUTABLE_DATA,
-            /* wrapperJsonObject= */ true),
+            /* useLowAllocation= */ true),
         testCase(
             OutputType.FILE_AND_BUFFERED_WRITER,
             MemoryMode.IMMUTABLE_DATA,
-            /* wrapperJsonObject= */ false),
-        testCase(OutputType.LOGGER, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ true),
-        testCase(OutputType.LOGGER, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ false),
-        testCase(OutputType.SYSTEM_OUT, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ true),
-        testCase(OutputType.SYSTEM_OUT, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ false),
-        testCase(OutputType.FILE, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ true),
-        testCase(OutputType.FILE, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ false),
+            /* useLowAllocation= */ false),
+        testCase(OutputType.LOGGER, MemoryMode.IMMUTABLE_DATA, /* useLowAllocation= */ true),
+        testCase(OutputType.LOGGER, MemoryMode.IMMUTABLE_DATA, /* useLowAllocation= */ false),
+        testCase(OutputType.SYSTEM_OUT, MemoryMode.REUSABLE_DATA, /* useLowAllocation= */ true),
+        testCase(OutputType.SYSTEM_OUT, MemoryMode.REUSABLE_DATA, /* useLowAllocation= */ false),
+        testCase(OutputType.FILE, MemoryMode.REUSABLE_DATA, /* useLowAllocation= */ true),
+        testCase(OutputType.FILE, MemoryMode.REUSABLE_DATA, /* useLowAllocation= */ false),
         testCase(
             OutputType.FILE_AND_BUFFERED_WRITER,
             MemoryMode.REUSABLE_DATA,
-            /* wrapperJsonObject= */ true),
+            /* useLowAllocation= */ true),
         testCase(
             OutputType.FILE_AND_BUFFERED_WRITER,
             MemoryMode.REUSABLE_DATA,
-            /* wrapperJsonObject= */ false),
-        testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ true),
-        testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ false))
+            /* useLowAllocation= */ false),
+        testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* useLowAllocation= */ true),
+        testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* useLowAllocation= */ false))
         .stream();
   }
 
   private static Arguments testCase(
-      OutputType type, MemoryMode memoryMode, boolean wrapperJsonObject) {
+      OutputType type, MemoryMode memoryMode, boolean useLowAllocation) {
     return Arguments.of(
-        "output="
-            + type
-            + ", wrapperJsonObject="
-            + wrapperJsonObject
-            + ", memoryMode="
-            + memoryMode,
-        new TestCase(type, memoryMode, wrapperJsonObject));
+        "output=" + type + ", useLowAllocation=" + useLowAllocation + ", memoryMode=" + memoryMode,
+        new TestCase(type, memoryMode, useLowAllocation));
   }
 
   @SuppressWarnings("SystemOut")
@@ -233,7 +228,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     if (testCase.getMemoryMode() == MemoryMode.REUSABLE_DATA && !testCase.isWrapperJsonObject()) {
       assertThatExceptionOfType(IllegalArgumentException.class)
           .isThrownBy(exporter::get)
-          .withMessage("Reusable data mode is not supported without wrapperJsonObject");
+          .withMessage("Reusable data mode is not supported without useLowAllocation");
       return;
     }
 
@@ -308,7 +303,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
     T exporter = exporterFromComponentProvider(properties);
 
-    assertThat(exporter).extracting("wrapperJsonObject").isEqualTo(true);
+    assertThat(exporter).extracting("useLowAllocation").isEqualTo(true);
     assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.IMMUTABLE_DATA);
     assertThat(exporter)
         .extracting("jsonWriter")

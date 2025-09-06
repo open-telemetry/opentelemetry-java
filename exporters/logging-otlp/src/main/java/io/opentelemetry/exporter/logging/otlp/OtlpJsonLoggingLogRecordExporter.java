@@ -37,16 +37,16 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
   /**
    * Returns a new {@link OtlpJsonLoggingLogRecordExporter}.
    *
-   * @param wrapperJsonObject whether to wrap the JSON object in an outer JSON "resourceLogs"
-   *     object. When {@code true}, uses low allocation OTLP marshalers with {@link
-   *     MemoryMode#REUSABLE_DATA}. When {@code false}, uses {@link MemoryMode#IMMUTABLE_DATA}.
+   * @param useLowAllocation whether to use low allocation OTLP marshalers with {@link
+   *     MemoryMode#REUSABLE_DATA}. When {@code true}, uses low allocation mode and wraps the JSON
+   *     object in an outer JSON "resourceLogs" object. When {@code false}, uses {@link
+   *     MemoryMode#IMMUTABLE_DATA}.
    */
-  public static LogRecordExporter create(boolean wrapperJsonObject) {
-    MemoryMode memoryMode =
-        wrapperJsonObject ? MemoryMode.REUSABLE_DATA : MemoryMode.IMMUTABLE_DATA;
+  public static LogRecordExporter create(boolean useLowAllocation) {
+    MemoryMode memoryMode = useLowAllocation ? MemoryMode.REUSABLE_DATA : MemoryMode.IMMUTABLE_DATA;
     OtlpStdoutLogRecordExporter delegate =
         new OtlpStdoutLogRecordExporterBuilder(logger)
-            .setWrapperJsonObject(wrapperJsonObject)
+            .setWrapperJsonObject(useLowAllocation)
             .setMemoryMode(memoryMode)
             .build();
     return new OtlpJsonLoggingLogRecordExporter(delegate);

@@ -27,7 +27,7 @@ public final class OtlpStdoutLogRecordExporterBuilder {
 
   private final Logger logger;
   private JsonWriter jsonWriter;
-  private boolean wrapperJsonObject = true;
+  private boolean useLowAllocation = true;
   private MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;
 
   public OtlpStdoutLogRecordExporterBuilder(Logger logger) {
@@ -38,11 +38,10 @@ public final class OtlpStdoutLogRecordExporterBuilder {
   /**
    * Sets the exporter to use the specified JSON object wrapper.
    *
-   * @param wrapperJsonObject whether to wrap the JSON object in an outer JSON "resourceLogs"
-   *     object.
+   * @param useLowAllocation whether to wrap the JSON object in an outer JSON "resourceLogs" object.
    */
-  public OtlpStdoutLogRecordExporterBuilder setWrapperJsonObject(boolean wrapperJsonObject) {
-    this.wrapperJsonObject = wrapperJsonObject;
+  public OtlpStdoutLogRecordExporterBuilder setWrapperJsonObject(boolean useLowAllocation) {
+    this.useLowAllocation = useLowAllocation;
     return this;
   }
 
@@ -84,10 +83,10 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpStdoutLogRecordExporter build() {
-    if (memoryMode == MemoryMode.REUSABLE_DATA && !wrapperJsonObject) {
+    if (memoryMode == MemoryMode.REUSABLE_DATA && !useLowAllocation) {
       throw new IllegalArgumentException(
-          "Reusable data mode is not supported without wrapperJsonObject");
+          "Reusable data mode is not supported without useLowAllocation");
     }
-    return new OtlpStdoutLogRecordExporter(logger, jsonWriter, wrapperJsonObject, memoryMode);
+    return new OtlpStdoutLogRecordExporter(logger, jsonWriter, useLowAllocation, memoryMode);
   }
 }

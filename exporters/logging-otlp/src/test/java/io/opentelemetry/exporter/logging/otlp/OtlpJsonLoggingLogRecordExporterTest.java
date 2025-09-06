@@ -47,7 +47,7 @@ class OtlpJsonLoggingLogRecordExporterTest {
 
   @Test
   void logWithWrapperJsonObjectFalse() throws Exception {
-    // Test that wrapperJsonObject=false produces the same output as the default create()
+    // Test that useLowAllocation=false produces the same output as the default create()
     LogRecordExporter exporterWithoutWrapper = OtlpJsonLoggingLogRecordExporter.create(false);
     testDataExporter.export(exporterWithoutWrapper);
 
@@ -62,7 +62,7 @@ class OtlpJsonLoggingLogRecordExporterTest {
 
   @Test
   void logWithWrapperJsonObjectTrue() throws Exception {
-    // Test that wrapperJsonObject=true produces wrapper format (enables low allocation)
+    // Test that useLowAllocation=true produces wrapper format (enables low allocation)
     LogRecordExporter exporterWithWrapper = OtlpJsonLoggingLogRecordExporter.create(true);
     testDataExporter.export(exporterWithWrapper);
 

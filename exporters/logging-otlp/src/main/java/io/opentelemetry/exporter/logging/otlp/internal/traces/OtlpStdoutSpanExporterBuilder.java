@@ -27,7 +27,7 @@ public final class OtlpStdoutSpanExporterBuilder {
 
   private final Logger logger;
   private JsonWriter jsonWriter;
-  private boolean wrapperJsonObject = true;
+  private boolean useLowAllocation = true;
   private MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;
 
   public OtlpStdoutSpanExporterBuilder(Logger logger) {
@@ -38,11 +38,11 @@ public final class OtlpStdoutSpanExporterBuilder {
   /**
    * Sets the exporter to use the specified JSON object wrapper.
    *
-   * @param wrapperJsonObject whether to wrap the JSON object in an outer JSON "resourceSpans"
+   * @param useLowAllocation whether to wrap the JSON object in an outer JSON "resourceSpans"
    *     object.
    */
-  public OtlpStdoutSpanExporterBuilder setWrapperJsonObject(boolean wrapperJsonObject) {
-    this.wrapperJsonObject = wrapperJsonObject;
+  public OtlpStdoutSpanExporterBuilder setWrapperJsonObject(boolean useLowAllocation) {
+    this.useLowAllocation = useLowAllocation;
     return this;
   }
 
@@ -84,10 +84,10 @@ public final class OtlpStdoutSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpStdoutSpanExporter build() {
-    if (memoryMode == MemoryMode.REUSABLE_DATA && !wrapperJsonObject) {
+    if (memoryMode == MemoryMode.REUSABLE_DATA && !useLowAllocation) {
       throw new IllegalArgumentException(
-          "Reusable data mode is not supported without wrapperJsonObject");
+          "Reusable data mode is not supported without useLowAllocation");
     }
-    return new OtlpStdoutSpanExporter(logger, jsonWriter, wrapperJsonObject, memoryMode);
+    return new OtlpStdoutSpanExporter(logger, jsonWriter, useLowAllocation, memoryMode);
   }
 }
