@@ -252,6 +252,7 @@ final class StrictContextStorage implements ContextStorage, AutoCloseable {
       thread.setName("weak-ref-cleaner-strictcontextstorage");
       thread.setPriority(Thread.MIN_PRIORITY);
       thread.setDaemon(true);
+      thread.setContextClassLoader(null);
       thread.start();
     }
 
