@@ -141,9 +141,9 @@ class Otel2PrometheusConverterTest {
         // unsupported characters are translated to "_", repeated "_" are dropped
         Arguments.of(
             createSampleMetricData("s%%ple", "%/min", MetricDataType.SUMMARY),
-            "s_ple_percent_per_minute summary",
-            "s_ple_percent_per_minute description",
-            "s_ple_percent_per_minute_count"),
+            "s__ple_percent_per_minute summary",
+            "s__ple_percent_per_minute description",
+            "s__ple_percent_per_minute_count"),
         // metric unit is not appended if the name already contains the unit
         Arguments.of(
             createSampleMetricData("metric_name_total", "total", MetricDataType.LONG_SUM),
@@ -186,9 +186,9 @@ class Otel2PrometheusConverterTest {
         // metric name cannot start with a number
         Arguments.of(
             createSampleMetricData("2_metric_name", "By", MetricDataType.SUMMARY),
-            "_metric_name_bytes summary",
-            "_metric_name_bytes description",
-            "_metric_name_bytes_count"));
+            "__metric_name_bytes summary",
+            "__metric_name_bytes description",
+            "__metric_name_bytes_count"));
   }
 
   @ParameterizedTest
