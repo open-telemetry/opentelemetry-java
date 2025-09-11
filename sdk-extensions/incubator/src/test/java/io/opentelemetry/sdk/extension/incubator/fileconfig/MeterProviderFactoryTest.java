@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
@@ -54,13 +53,11 @@ class MeterProviderFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     cleanup.addCloseable(expectedProvider);
 
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-    MeterProviderFactory.getInstance().configure(builder, model, context);
-    SdkMeterProvider provider = builder.build();
+    SdkMeterProvider provider = MeterProviderFactory.getInstance().create(model, context).build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 
-    assertThat(provider).hasToString(expectedProvider.toString());
+    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
   }
 
   private static Stream<Arguments> createArguments() {

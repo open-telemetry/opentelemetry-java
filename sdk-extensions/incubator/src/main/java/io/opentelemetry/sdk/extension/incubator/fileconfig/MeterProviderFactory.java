@@ -17,13 +17,15 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import java.util.List;
 
-final class MeterProviderFactory {
+final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeterProviderBuilder> {
+
   private static final MeterProviderFactory INSTANCE = new MeterProviderFactory();
 
   private MeterProviderFactory() {}
@@ -32,8 +34,11 @@ final class MeterProviderFactory {
     return INSTANCE;
   }
 
-  public void configure(
-      SdkMeterProviderBuilder builder, MeterProviderModel model, DeclarativeConfigContext context) {
+  @Override
+  public SdkMeterProviderBuilder create(
+      MeterProviderModel model, DeclarativeConfigContext context) {
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
+
     List<MetricReaderModel> readerModels = model.getReaders();
     if (readerModels != null) {
       readerModels.forEach(
@@ -89,6 +94,8 @@ final class MeterProviderFactory {
       }
       SdkMeterProviderUtil.setMeterConfigurator(builder, configuratorBuilder.build());
     }
+
+    return builder;
   }
 
   private static class MeterConfigFactory

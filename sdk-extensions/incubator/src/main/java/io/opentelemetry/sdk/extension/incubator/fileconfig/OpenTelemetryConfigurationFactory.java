@@ -6,12 +6,11 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -33,7 +32,7 @@ final class OpenTelemetryConfigurationFactory
   @Override
   public ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
-    ExtendedOpenTelemetrySdkBuilder builder = new ExtendedOpenTelemetrySdkBuilder();
+    OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
     String fileFormat = model.getFileFormat();
     if (fileFormat == null || !SUPPORTED_FILE_FORMATS.matcher(fileFormat).matches()) {
       throw new DeclarativeConfigException(
@@ -42,58 +41,54 @@ final class OpenTelemetryConfigurationFactory
     // TODO(jack-berg): log warning if version is not exact match, which may result in unexpected
     // behavior for experimental properties.
 
-    if (Objects.equals(true, model.getDisabled())) {
-      return builder.build();
+    if (!Objects.equals(true, model.getDisabled())) {
+      if (model.getPropagator() != null) {
+        builder.setPropagators(
+            PropagatorFactory.getInstance().create(model.getPropagator(), context));
+      }
+
+      Resource resource = Resource.getDefault();
+      if (model.getResource() != null) {
+        resource = ResourceFactory.getInstance().create(model.getResource(), context);
+      }
+
+      if (model.getMeterProvider() != null) {
+        SdkMeterProvider meterProvider =
+            MeterProviderFactory.getInstance()
+                .create(model.getMeterProvider(), context)
+                .setResource(resource)
+                .build();
+        builder.setMeterProvider(context.addCloseable(meterProvider));
+      }
+
+      if (model.getLoggerProvider() != null) {
+        builder.setLoggerProvider(
+            context.addCloseable(
+                LoggerProviderFactory.getInstance()
+                    .create(
+                        LoggerProviderAndAttributeLimits.create(
+                            model.getAttributeLimits(), model.getLoggerProvider()),
+                        context)
+                    .setResource(resource)
+                    .build()));
+      }
+
+      if (model.getTracerProvider() != null) {
+        builder.setTracerProvider(
+            context.addCloseable(
+                TracerProviderFactory.getInstance()
+                    .create(
+                        TracerProviderAndAttributeLimits.create(
+                            model.getAttributeLimits(), model.getTracerProvider()),
+                        context)
+                    .setResource(resource)
+                    .build()));
+      }
     }
 
-    builder.setCloseableConsumer(context::addCloseable);
-    builder.setConfigProvider(SdkConfigProvider.create(model, context.getComponentLoader()));
-
-    if (model.getPropagator() != null) {
-      builder.setPropagators(
-          PropagatorFactory.getInstance().create(model.getPropagator(), context));
-    }
-
-    Resource resource;
-    if (model.getResource() != null) {
-      resource = ResourceFactory.getInstance().create(model.getResource(), context);
-    } else {
-      resource = Resource.getDefault();
-    }
-
-    LoggerProviderModel loggerProvider = model.getLoggerProvider();
-    if (loggerProvider != null) {
-      builder.withLoggerProvider(
-          sdkLoggerProviderBuilder ->
-              LoggerProviderFactory.getInstance()
-                  .configure(
-                      sdkLoggerProviderBuilder.setResource(resource),
-                      LoggerProviderAndAttributeLimits.create(
-                          model.getAttributeLimits(), loggerProvider),
-                      context));
-    }
-
-    TracerProviderModel tracerProvider = model.getTracerProvider();
-    if (tracerProvider != null) {
-      builder.withTracerProvider(
-          sdkTracerProviderBuilder ->
-              TracerProviderFactory.getInstance()
-                  .configure(
-                      sdkTracerProviderBuilder.setResource(resource),
-                      TracerProviderAndAttributeLimits.create(
-                          model.getAttributeLimits(), tracerProvider),
-                      context));
-    }
-
-    MeterProviderModel meterProvider = model.getMeterProvider();
-    if (meterProvider != null) {
-      builder.withMeterProvider(
-          sdkMeterProviderBuilder ->
-              MeterProviderFactory.getInstance()
-                  .configure(
-                      sdkMeterProviderBuilder.setResource(resource), meterProvider, context));
-    }
-
-    return builder.build();
+    OpenTelemetrySdk openTelemetrySdk = context.addCloseable(builder.build());
+    SdkConfigProvider sdkConfigProvider =
+        SdkConfigProvider.create(model, context.getComponentLoader());
+    return ExtendedOpenTelemetrySdk.create(openTelemetrySdk, sdkConfigProvider);
   }
 }

@@ -54,13 +54,11 @@ class TracerProviderFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     cleanup.addCloseable(expectedProvider);
 
-    SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
-    TracerProviderFactory.getInstance().configure(builder, model, context);
-    SdkTracerProvider provider = builder.build();
+    SdkTracerProvider provider = TracerProviderFactory.getInstance().create(model, context).build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 
-    assertThat(provider).hasToString(expectedProvider.toString());
+    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
   }
 
   private static Stream<Arguments> createArguments() {

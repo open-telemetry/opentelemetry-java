@@ -24,7 +24,7 @@ public class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
 
   private final ObfuscatedConfigProvider configProvider;
 
-  public ExtendedOpenTelemetrySdk(
+  private ExtendedOpenTelemetrySdk(
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
@@ -32,6 +32,16 @@ public class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
       SdkConfigProvider configProvider) {
     super(tracerProvider, meterProvider, loggerProvider, propagators);
     this.configProvider = new ObfuscatedConfigProvider(configProvider);
+  }
+
+  public static ExtendedOpenTelemetrySdk create(
+      OpenTelemetrySdk openTelemetrySdk, SdkConfigProvider sdkConfigProvider) {
+    return new ExtendedOpenTelemetrySdk(
+        openTelemetrySdk.getSdkTracerProvider(),
+        openTelemetrySdk.getSdkMeterProvider(),
+        openTelemetrySdk.getSdkLoggerProvider(),
+        openTelemetrySdk.getPropagators(),
+        sdkConfigProvider);
   }
 
   @Override
