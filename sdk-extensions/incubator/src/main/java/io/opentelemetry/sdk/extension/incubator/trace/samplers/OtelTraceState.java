@@ -25,7 +25,8 @@ final class OtelTraceState {
       new OtelTraceState(INVALID_RANDOM_VALUE, INVALID_THRESHOLD, Collections.emptyList());
 
   private static final int MAX_OTEL_TRACE_STATE_LENGTH = 256;
-  private static final int MAX_VALUE_LENGTH = 14; // 56 bits, 4 bits per hex digit
+  // visible for testing
+  static final int MAX_VALUE_LENGTH = 14; // 56 bits, 4 bits per hex digit
 
   static final String OTEL_TRACE_STATE_KEY = "ot";
 

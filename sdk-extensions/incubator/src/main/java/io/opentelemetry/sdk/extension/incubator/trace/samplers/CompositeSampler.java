@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -49,7 +50,7 @@ public final class CompositeSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
     TraceState traceState = Span.fromContext(parentContext).getSpanContext().getTraceState();
-    OtelTraceState otTraceState = OtelTraceState.parse(traceState);
+    OtelTraceState otelTraceState = OtelTraceState.parse(traceState);
 
     SamplingIntent intent =
         delegate.getSamplingIntent(parentContext, traceId, name, spanKind, attributes, parentLinks);
@@ -59,11 +60,15 @@ public final class CompositeSampler implements Sampler {
     if (isValidThreshold(intent.getThreshold())) {
       thresholdReliable = intent.isThresholdReliable();
       long randomValue;
-      if (isValidRandomValue(otTraceState.getRandomValue())) {
-        randomValue = otTraceState.getRandomValue();
+      if (thresholdReliable) {
+        if (isValidRandomValue(otelTraceState.getRandomValue())) {
+          randomValue = otelTraceState.getRandomValue();
+        } else {
+          // Use last 56 bits of trace ID as random value.
+          randomValue = OtelEncodingUtils.longFromBase16String(traceId, 16) & 0x00FFFFFFFFFFFFFFL;
+        }
       } else {
-        // Use last 56 bits of trace ID as random value.
-        randomValue = OtelEncodingUtils.longFromBase16String(traceId, 16) & 0x00FFFFFFFFFFFFFFL;
+        randomValue = RandomSupplier.platformDefault().get().nextLong() & 0x00FFFFFFFFFFFFFFL;
       }
       sampled = intent.getThreshold() <= randomValue;
     }
@@ -71,16 +76,16 @@ public final class CompositeSampler implements Sampler {
     SamplingDecision decision =
         sampled ? SamplingDecision.RECORD_AND_SAMPLE : SamplingDecision.DROP;
     if (sampled && thresholdReliable) {
-      otTraceState =
+      otelTraceState =
           new OtelTraceState(
-              otTraceState.getRandomValue(), intent.getThreshold(), otTraceState.getRest());
+              otelTraceState.getRandomValue(), intent.getThreshold(), otelTraceState.getRest());
     } else {
-      otTraceState =
+      otelTraceState =
           new OtelTraceState(
-              otTraceState.getRandomValue(), INVALID_THRESHOLD, otTraceState.getRest());
+              otelTraceState.getRandomValue(), INVALID_THRESHOLD, otelTraceState.getRest());
     }
 
-    String ot = otTraceState.serialize();
+    String serializedState = otelTraceState.serialize();
     return new SamplingResult() {
       @Override
       public SamplingDecision getDecision() {
@@ -95,8 +100,9 @@ public final class CompositeSampler implements Sampler {
       @Override
       public TraceState getUpdatedTraceState(TraceState parentTraceState) {
         TraceState newTraceState = intent.getTraceStateUpdater().apply(traceState);
-        if (!ot.isEmpty()) {
-          newTraceState = newTraceState.toBuilder().put(OTEL_TRACE_STATE_KEY, ot).build();
+        if (!serializedState.isEmpty()) {
+          newTraceState =
+              newTraceState.toBuilder().put(OTEL_TRACE_STATE_KEY, serializedState).build();
         }
         return newTraceState;
       }
