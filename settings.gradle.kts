@@ -1,7 +1,7 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "8.3.8"
-    id("com.gradle.develocity") version "4.1"
+    id("com.gradleup.shadow") version "9.1.0"
+    id("com.gradle.develocity") version "4.1.1"
     id("de.undercouch.download") version "5.6.0"
     id("org.jsonschema2pojo") version "1.2.2"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"

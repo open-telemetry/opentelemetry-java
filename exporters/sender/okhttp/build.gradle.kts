@@ -12,7 +12,7 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
 
-  implementation("com.squareup.okhttp3:okhttp")
+  implementation("com.squareup.okhttp3:okhttp-jvm")
 
   compileOnly("io.grpc:grpc-stub")
   compileOnly("com.fasterxml.jackson.core:jackson-core")

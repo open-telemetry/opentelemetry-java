@@ -20,7 +20,7 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":exporters:sender:okhttp"))
 
-  implementation("com.squareup.okhttp3:okhttp")
+  implementation("com.squareup.okhttp3:okhttp-jvm")
 
   compileOnly("io.grpc:grpc-api")
   compileOnly("io.grpc:grpc-protobuf")
@@ -78,5 +78,10 @@ tasks {
       // Generated code so can't control serialization.
       compilerArgs.add("-Xlint:-serial")
     }
+  }
+
+  checkstyleMain {
+    // overrides the default which includes generated proto sources
+    source = fileTree("src/main/java")
   }
 }

@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Auto-configuration for the OpenTelemetry {@link Resource}.
@@ -35,8 +33,6 @@ import java.util.logging.Logger;
  * @since 1.28.0
  */
 public final class ResourceConfiguration {
-
-  private static final Logger logger = Logger.getLogger(ResourceConfiguration.class.getName());
 
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
@@ -46,11 +42,6 @@ public final class ResourceConfiguration {
   static final String DISABLED_ATTRIBUTE_KEYS = "otel.resource.disabled.keys";
   static final String ENABLED_RESOURCE_PROVIDERS = "otel.java.enabled.resource.providers";
   static final String DISABLED_RESOURCE_PROVIDERS = "otel.java.disabled.resource.providers";
-
-  private static final String OLD_ENVIRONMENT_DETECTOR_FQCN =
-      "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider";
-  private static final String NEW_ENVIRONMENT_DETECT_FQCN =
-      EnvironmentResourceProvider.class.getName();
 
   /**
    * Create a {@link Resource} from the environment. The resource contains attributes parsed from
@@ -104,32 +95,7 @@ public final class ResourceConfiguration {
     Resource result = Resource.getDefault();
 
     Set<String> enabledProviders = new HashSet<>(config.getList(ENABLED_RESOURCE_PROVIDERS));
-    if (enabledProviders.remove(OLD_ENVIRONMENT_DETECTOR_FQCN)) {
-      logger.log(
-          Level.WARNING,
-          "Found reference to "
-              + OLD_ENVIRONMENT_DETECTOR_FQCN
-              + " in "
-              + ENABLED_RESOURCE_PROVIDERS
-              + ". Please update to "
-              + NEW_ENVIRONMENT_DETECT_FQCN
-              + ". Support for the old provider name will be removed after 1.49.0.");
-      enabledProviders.add(NEW_ENVIRONMENT_DETECT_FQCN);
-    }
-
     Set<String> disabledProviders = new HashSet<>(config.getList(DISABLED_RESOURCE_PROVIDERS));
-    if (disabledProviders.remove(OLD_ENVIRONMENT_DETECTOR_FQCN)) {
-      logger.log(
-          Level.WARNING,
-          "Found reference to "
-              + OLD_ENVIRONMENT_DETECTOR_FQCN
-              + " in "
-              + DISABLED_RESOURCE_PROVIDERS
-              + ". Please update to "
-              + NEW_ENVIRONMENT_DETECT_FQCN
-              + ". Support for the old provider name will be removed after 1.49.0.");
-      disabledProviders.add(NEW_ENVIRONMENT_DETECT_FQCN);
-    }
 
     for (ResourceProvider resourceProvider : spiHelper.loadOrdered(ResourceProvider.class)) {
       if (!enabledProviders.isEmpty()

@@ -42,7 +42,10 @@ class SpanLimitsTest {
     // Preserves values
     SpanLimits spanLimitsDupe = spanLimits.toBuilder().build();
     // Use reflective comparison to catch when new fields are added.
-    assertThat(spanLimitsDupe).usingRecursiveComparison().isEqualTo(spanLimits);
+    assertThat(spanLimitsDupe)
+        .usingRecursiveComparison()
+        .withStrictTypeChecking()
+        .isEqualTo(spanLimits);
   }
 
   @Test

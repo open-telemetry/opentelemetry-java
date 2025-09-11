@@ -205,6 +205,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     copy.meterProviderSupplier = meterProviderSupplier;
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.grpcChannel = grpcChannel;
+    copy.componentLoader = componentLoader;
     return copy;
   }
 

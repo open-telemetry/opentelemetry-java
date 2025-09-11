@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.internal;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import io.opentelemetry.sdk.common.Clock;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -21,28 +22,52 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public class ThrottlingLogger {
-  private static final double RATE_LIMIT = 5;
-  private static final double THROTTLED_RATE_LIMIT = 1;
-  private static final TimeUnit rateTimeUnit = MINUTES;
+  private static final double DEFAULT_RATE_LIMIT = 5;
+  private static final double DEFAULT_THROTTLED_RATE_LIMIT = 1;
+  private static final TimeUnit DEFAULT_RATE_TIME_UNIT = MINUTES;
 
   private final Logger delegate;
   private final AtomicBoolean throttled = new AtomicBoolean(false);
   private final RateLimiter fastRateLimiter;
   private final RateLimiter throttledRateLimiter;
 
+  private final double rateLimit;
+  private final double throttledRateLimit;
+  private final TimeUnit rateTimeUnit;
+
   /** Create a new logger which will enforce a max number of messages per minute. */
   public ThrottlingLogger(Logger delegate) {
     this(delegate, Clock.getDefault());
   }
 
+  /** Alternate way to create logger that allows setting custom intervals and units. * */
+  public ThrottlingLogger(
+      Logger delegate, double rateLimit, double throttledRateLimit, TimeUnit rateTimeUnit) {
+    this(delegate, Clock.getDefault(), rateLimit, throttledRateLimit, rateTimeUnit);
+  }
+
   // visible for testing
   ThrottlingLogger(Logger delegate, Clock clock) {
+    this(delegate, clock, DEFAULT_RATE_LIMIT, DEFAULT_THROTTLED_RATE_LIMIT, DEFAULT_RATE_TIME_UNIT);
+  }
+
+  ThrottlingLogger(
+      Logger delegate,
+      Clock clock,
+      double rateLimit,
+      double throttledRateLimit,
+      TimeUnit rateTimeUnit) {
     this.delegate = delegate;
+    this.rateLimit = rateLimit;
+    this.throttledRateLimit = throttledRateLimit;
+    this.rateTimeUnit = rateTimeUnit;
     this.fastRateLimiter =
-        new RateLimiter(RATE_LIMIT / rateTimeUnit.toSeconds(1), RATE_LIMIT, clock);
+        new RateLimiter(this.rateLimit / this.rateTimeUnit.toSeconds(1), this.rateLimit, clock);
     this.throttledRateLimiter =
         new RateLimiter(
-            THROTTLED_RATE_LIMIT / rateTimeUnit.toSeconds(1), THROTTLED_RATE_LIMIT, clock);
+            this.throttledRateLimit / this.rateTimeUnit.toSeconds(1),
+            this.throttledRateLimit,
+            clock);
   }
 
   /** Log a message at the given level. */
@@ -69,9 +94,15 @@ public class ThrottlingLogger {
 
     if (throttled.compareAndSet(false, true)) {
       // spend the balance in the throttled one, so that it starts at zero.
-      throttledRateLimiter.trySpend(THROTTLED_RATE_LIMIT);
-      delegate.log(
-          level, "Too many log messages detected. Will only log once per minute from now on.");
+      throttledRateLimiter.trySpend(throttledRateLimit);
+      String timeUnitString = rateTimeUnit.toString().toLowerCase(Locale.ROOT);
+      String throttleMessage =
+          String.format(
+              Locale.ROOT,
+              "Too many log messages detected. Will only log %.0f time(s) per %s from now on.",
+              throttledRateLimit,
+              timeUnitString.substring(0, timeUnitString.length() - 1));
+      delegate.log(level, throttleMessage);
       doLog(level, message, throwable);
     }
   }
