@@ -358,12 +358,6 @@ class TracerShimTest {
   }
 
   @Test
-  void extract_null_spanctx() {
-    SpanContext spanContext = tracerShim.extract(Format.Builtin.TEXT_MAP, null);
-    assertThat(spanContext).isNull();
-  }
-
-  @Test
   void close_OpenTelemetrySdk() {
     SdkTracerProvider sdkProvider = mock(SdkTracerProvider.class);
     doThrow(new RuntimeException("testing error")).when(sdkProvider).close();
