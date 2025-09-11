@@ -137,31 +137,28 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Disabled() {
     List<Closeable> closeables = new ArrayList<>();
+    OpenTelemetryConfigurationModel model =
+        new OpenTelemetryConfigurationModel()
+            .withFileFormat("1.0-rc.1")
+            .withDisabled(true)
+            // Logger provider configuration should be ignored since SDK is disabled
+            .withLoggerProvider(
+                new LoggerProviderModel()
+                    .withProcessors(
+                        Collections.singletonList(
+                            new LogRecordProcessorModel()
+                                .withSimple(
+                                    new SimpleLogRecordProcessorModel()
+                                        .withExporter(
+                                            new LogRecordExporterModel()
+                                                .withOtlpHttp(new OtlpHttpExporterModel()))))));
     ExtendedOpenTelemetrySdk expectedSdk =
         ExtendedOpenTelemetrySdk.create(
-            OpenTelemetrySdk.builder().build(),
-            SdkConfigProvider.create(new OpenTelemetryConfigurationModel()));
+            OpenTelemetrySdk.builder().build(), SdkConfigProvider.create(model));
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance()
-            .create(
-                new OpenTelemetryConfigurationModel()
-                    .withFileFormat("1.0-rc.1")
-                    .withDisabled(true)
-                    // Logger provider configuration should be ignored since SDK is disabled
-                    .withLoggerProvider(
-                        new LoggerProviderModel()
-                            .withProcessors(
-                                Collections.singletonList(
-                                    new LogRecordProcessorModel()
-                                        .withSimple(
-                                            new SimpleLogRecordProcessorModel()
-                                                .withExporter(
-                                                    new LogRecordExporterModel()
-                                                        .withOtlpHttp(
-                                                            new OtlpHttpExporterModel())))))),
-                context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 

@@ -43,10 +43,6 @@ class DeclarativeConfigContext {
     return Collections.unmodifiableList(closeables);
   }
 
-  ComponentLoader getComponentLoader() {
-    return spiHelper.getComponentLoader();
-  }
-
   @Nullable
   public MeterProvider getMeterProvider() {
     return meterProvider;
