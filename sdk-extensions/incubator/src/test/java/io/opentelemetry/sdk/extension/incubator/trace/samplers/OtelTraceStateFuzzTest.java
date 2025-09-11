@@ -86,6 +86,7 @@ class OtelTraceStateFuzzTest {
         if (th == 0) {
           assertThat(thStr).isEqualTo("0");
         } else {
+          // No trailing zeros
           assertThat(thStr).doesNotMatch("[^0]+0");
         }
       }
