@@ -53,6 +53,7 @@ final class OpenTelemetryConfigurationFactory
     if (model.getResource() != null) {
       resource = ResourceFactory.getInstance().create(model.getResource(), context);
     }
+    context.setResource(resource);
 
     if (model.getMeterProvider() != null) {
       SdkMeterProvider meterProvider =
