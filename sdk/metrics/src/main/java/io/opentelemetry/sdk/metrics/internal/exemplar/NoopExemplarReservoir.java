@@ -20,6 +20,7 @@ class NoopExemplarReservoir<T extends ExemplarData> implements ExemplarReservoir
       new NoopExemplarReservoir<>();
   static final NoopExemplarReservoir<DoubleExemplarData> DOUBLE_INSTANCE =
       new NoopExemplarReservoir<>();
+  static final NoopExemplarReservoir<ExemplarData> ANY_INSTANCE = new NoopExemplarReservoir<>();
 
   private NoopExemplarReservoir() {}
 
