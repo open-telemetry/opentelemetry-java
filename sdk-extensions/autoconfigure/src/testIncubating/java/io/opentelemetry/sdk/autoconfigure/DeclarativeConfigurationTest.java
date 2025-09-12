@@ -33,6 +33,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -117,16 +118,6 @@ class DeclarativeConfigurationTest {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
-    OpenTelemetrySdk expectedSdk =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                    .setResource(
-                        Resource.getDefault().toBuilder().put("service.name", "test").build())
-                    .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
-                    .build())
-            .build();
-    cleanup.addCloseable(expectedSdk);
     AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
     Thread thread = new Thread();
     doReturn(thread).when(builder).shutdownHook(any());
@@ -135,8 +126,20 @@ class DeclarativeConfigurationTest {
         builder.setConfig(config).build();
     cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
 
-    assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
-        .isEqualTo(expectedSdk.toString());
+    OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
+    ExtendedOpenTelemetrySdk expectedSdk =
+        ExtendedOpenTelemetrySdk.create(
+            OpenTelemetrySdk.builder()
+                .setTracerProvider(
+                    SdkTracerProvider.builder()
+                        .setResource(
+                            Resource.getDefault().toBuilder().put("service.name", "test").build())
+                        .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
+                        .build())
+                .build(),
+            ((ExtendedOpenTelemetrySdk) openTelemetrySdk).getSdkConfigProvider());
+    cleanup.addCloseable(expectedSdk);
+    assertThat(openTelemetrySdk.toString()).hasToString(expectedSdk.toString());
     // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from
     // file
     assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(Resource.getDefault());
