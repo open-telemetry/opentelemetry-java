@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.internal.marshal;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -23,9 +28,9 @@ class ProtoSerializerTest {
 
     byte[] result = out.toByteArray();
     assertThat(result.length).isEqualTo(10); // one byte tag, one byte length, rest string
-    assertThat((int)result[0]).isEqualTo(field.getTag());
-    assertThat((int)result[1]).isEqualTo(value.length());
-    assertThat(new String(result, 2, result.length-2, UTF_8)).isEqualTo(value);
+    assertThat((int) result[0]).isEqualTo(field.getTag());
+    assertThat((int) result[1]).isEqualTo(value.length());
+    assertThat(new String(result, 2, result.length - 2, UTF_8)).isEqualTo(value);
   }
 
   @Test
@@ -45,8 +50,7 @@ class ProtoSerializerTest {
     byte[] result = out.toByteArray();
 
     assertThat(result.length).isEqualTo(2);
-    assertThat((int)result[0]).isEqualTo(field.getTag());
-    assertThat((int)result[1]).isEqualTo(0);
+    assertThat((int) result[0]).isEqualTo(field.getTag());
+    assertThat((int) result[1]).isEqualTo(0);
   }
-
 }
