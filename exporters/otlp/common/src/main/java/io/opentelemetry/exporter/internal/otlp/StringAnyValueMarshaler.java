@@ -33,9 +33,6 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
 
   @Override
   public void writeTo(Serializer output) throws IOException {
-    if (valueUtf8.length == 0) {
-      return;
-    }
     output.writeString(AnyValue.STRING_VALUE, valueUtf8);
   }
 

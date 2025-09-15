@@ -254,11 +254,19 @@ public abstract class Serializer implements AutoCloseable {
    */
   public void serializeStringWithContext(
       ProtoFieldInfo field, @Nullable String string, MarshalerContext context) throws IOException {
+    serializeStringWithContext(field, string, context, /* allowEmpty= */ false);
+  }
+
+  public void serializeStringWithContext(
+      ProtoFieldInfo field, @Nullable String string, MarshalerContext context, boolean allowEmpty)
+      throws IOException {
     if (string == null) {
       return;
     }
     if (string.isEmpty()) {
-      writeString(field, string, 0, context);
+      if (allowEmpty) {
+        writeString(field, string, 0, context);
+      }
       return;
     }
     if (context.marshalStringNoAllocation()) {

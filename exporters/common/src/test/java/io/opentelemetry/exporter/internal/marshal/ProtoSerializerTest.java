@@ -44,7 +44,7 @@ class ProtoSerializerTest {
     MarshalerContext context = new MarshalerContext();
     context.setSize(0, 0);
 
-    serializer.serializeStringWithContext(field, value, context);
+    serializer.serializeStringWithContext(field, value, context, true);
     serializer.close();
 
     byte[] result = out.toByteArray();

@@ -26,7 +26,8 @@ final class StringAnyValueStatelessMarshaler implements StatelessMarshaler<Strin
   @Override
   public void writeTo(Serializer output, String value, MarshalerContext context)
       throws IOException {
-    output.serializeStringWithContext(AnyValue.STRING_VALUE, value, context);
+    output.serializeStringWithContext(
+        AnyValue.STRING_VALUE, value, context, /* allowEmpty= */ true);
   }
 
   @Override

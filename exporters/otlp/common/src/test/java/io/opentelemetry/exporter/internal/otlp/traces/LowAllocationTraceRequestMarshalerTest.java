@@ -88,6 +88,7 @@ class LowAllocationTraceRequestMarshalerTest {
             Attributes.builder()
                 .put(KEY_BOOL, true)
                 .put(KEY_STRING, "string")
+                .put("empty", "")
                 .put(KEY_INT, 100L)
                 .put(KEY_DOUBLE, 100.3)
                 .build())
