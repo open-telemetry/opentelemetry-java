@@ -461,109 +461,28 @@ class AsynchronousMetricStorageTest {
     }
   }
 
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void enabledThenDisable_isEmpty(MemoryMode memoryMode) {
-  //    setup(memoryMode);
-  //
-  //    longCounterStorage.setEnabled(false);
-  //
-  //    assertThat(longCounterStorage.isEmpty()).isTrue();
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void enabledThenDisableThenEnable_isEmpty(MemoryMode memoryMode) {
-  //    setup(memoryMode);
-  //
-  //    longCounterStorage.setEnabled(false);
-  //    longCounterStorage.setEnabled(true);
-  //
-  //    assertThat(longCounterStorage.isEmpty()).isFalse();
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void enabledThenDisable_recordAndCollect(MemoryMode memoryMode) {
-  //    setup(memoryMode);
-  //
-  //    longCounterStorage.setEnabled(false);
-  //
-  //    longCounterStorage.record(Attributes.empty(), 10);
-  //
-  //    assertThat(longCounterStorage.collect(resource, scope, 0, 0).isEmpty()).isTrue();
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void enabledThenDisableThenEnable_recordAndCollect(MemoryMode memoryMode) {
-  //    setup(memoryMode);
-  //
-  //    longCounterStorage.setEnabled(false);
-  //    longCounterStorage.setEnabled(true);
-  //
-  //    longCounterStorage.record(Attributes.empty(), 10);
-  //
-  //    assertThat(longCounterStorage.collect(resource, scope, 0, 0).isEmpty()).isFalse();
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void disableDropsAggregatorState(MemoryMode memoryMode) {
-  //    setup(memoryMode);
-  //
-  //    longCounterStorage.record(Attributes.empty(), 10);
-  //
-  //    longCounterStorage.setEnabled(false);
-  //    longCounterStorage.setEnabled(true);
-  //
-  //    longCounterStorage.record(Attributes.empty(), 5);
-  //
-  //    MetricData metricData = longCounterStorage.collect(resource, scope, 0, 0);
-  //    assertThat(metricData)
-  //        .hasLongSumSatisfying(
-  //            sum ->
-  //                sum.satisfies(
-  //                    sumData ->
-  //                        assertThat(sumData.getPoints()).allMatch(point -> point.getValue() ==
-  // 5)));
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void collect_DeltaResetAfterDisabled(MemoryMode memoryMode) {
-  //    setup(memoryMode);
-  //
-  //    when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.DELTA);
-  //    longCounterStorage =
-  //        AsynchronousMetricStorage.create(
-  //            registeredReader,
-  //            registeredView,
-  //            InstrumentDescriptor.create(
-  //                "long-counter",
-  //                "description",
-  //                "unit",
-  //                InstrumentType.COUNTER,
-  //                InstrumentValueType.LONG,
-  //                Advice.empty()),
-  //            /* enabled= */ true);
-  //
-  //    longCounterStorage.setEpochInformation(0, 10);
-  //    longCounterStorage.record(Attributes.empty(), 5);
-  //    longCounterStorage.collect(resource, scope, 0, 0);
-  //
-  //    longCounterStorage.setEnabled(false);
-  //    longCounterStorage.setEnabled(true);
-  //
-  //    longCounterStorage.setEpochInformation(0, 30);
-  //    longCounterStorage.record(Attributes.empty(), 4);
-  //    MetricData metricData = longCounterStorage.collect(resource, scope, 0, 0);
-  //    assertThat(metricData)
-  //        .hasLongSumSatisfying(
-  //            sum ->
-  //                sum.satisfies(
-  //                    sumData ->
-  //                        assertThat(sumData.getPoints()).allMatch(point -> point.getValue() ==
-  // 4)));
-  //  }
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisable_recordAndCollect(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    longCounterStorage.setEnabled(false);
+
+    longCounterStorage.record(Attributes.empty(), 10);
+
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0).isEmpty()).isTrue();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisableThenEnable_recordAndCollect(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    longCounterStorage.setEnabled(false);
+    longCounterStorage.setEnabled(true);
+
+    longCounterStorage.record(Attributes.empty(), 10);
+
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0).isEmpty()).isFalse();
+  }
 }

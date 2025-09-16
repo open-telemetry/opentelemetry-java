@@ -322,9 +322,4 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
-
-  @Override
-  public boolean isEmpty() {
-    return aggregator == Aggregator.drop();
-  }
 }

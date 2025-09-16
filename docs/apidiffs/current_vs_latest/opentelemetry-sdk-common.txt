@@ -1,2 +1,11 @@
-Comparing source compatibility of opentelemetry-sdk-common-1.51.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.50.0.jar
-No changes.
+Comparing source compatibility of opentelemetry-sdk-common-1.51.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.54.0.jar
+---! REMOVED ENUM: PUBLIC(-) FINAL(-) io.opentelemetry.sdk.common.InternalTelemetryVersion  (class removed)
+	---  CLASS FILE FORMAT VERSION: n.a. <- 52.0
+	---! REMOVED INTERFACE: java.lang.constant.Constable
+	---! REMOVED INTERFACE: java.lang.Comparable
+	---! REMOVED INTERFACE: java.io.Serializable
+	---! REMOVED SUPERCLASS: java.lang.Enum
+	---! REMOVED FIELD: PUBLIC(-) STATIC(-) FINAL(-) io.opentelemetry.sdk.common.InternalTelemetryVersion LEGACY
+	---! REMOVED FIELD: PUBLIC(-) STATIC(-) FINAL(-) io.opentelemetry.sdk.common.InternalTelemetryVersion LATEST
+	---! REMOVED METHOD: PUBLIC(-) STATIC(-) io.opentelemetry.sdk.common.InternalTelemetryVersion valueOf(java.lang.String)
+	---! REMOVED METHOD: PUBLIC(-) STATIC(-) io.opentelemetry.sdk.common.InternalTelemetryVersion[] values()

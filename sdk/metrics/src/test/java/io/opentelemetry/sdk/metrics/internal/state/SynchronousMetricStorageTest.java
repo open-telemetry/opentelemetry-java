@@ -867,149 +867,85 @@ public class SynchronousMetricStorageTest {
     return argumentsList.stream();
   }
 
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void enabledThenDisable_isEnabled(MemoryMode memoryMode) {
-  //    initialize(memoryMode);
-  //
-  //    DefaultSynchronousMetricStorage<?, ?> storage =
-  //        new DefaultSynchronousMetricStorage<>(
-  //            deltaReader,
-  //            METRIC_DESCRIPTOR,
-  //            aggregator,
-  //            attributesProcessor,
-  //            CARDINALITY_LIMIT,
-  //            /* enabled= */ true);
-  //
-  //    storage.setEnabled(false);
-  //
-  //    assertThat(storage.isEnabled()).isFalse();
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void enabledThenDisableThenEnable_isEnabled(MemoryMode memoryMode) {
-  //    initialize(memoryMode);
-  //
-  //    DefaultSynchronousMetricStorage<?, ?> storage =
-  //        new DefaultSynchronousMetricStorage<>(
-  //            deltaReader,
-  //            METRIC_DESCRIPTOR,
-  //            aggregator,
-  //            attributesProcessor,
-  //            CARDINALITY_LIMIT,
-  //            /* enabled= */ true);
-  //
-  //    storage.setEnabled(false);
-  //    storage.setEnabled(true);
-  //
-  //    assertThat(storage.isEnabled()).isTrue();
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void enabledThenDisable_recordAndCollect(MemoryMode memoryMode) {
-  //    initialize(memoryMode);
-  //
-  //    DefaultSynchronousMetricStorage<?, ?> storage =
-  //        new DefaultSynchronousMetricStorage<>(
-  //            deltaReader,
-  //            METRIC_DESCRIPTOR,
-  //            aggregator,
-  //            attributesProcessor,
-  //            CARDINALITY_LIMIT,
-  //            /* enabled= */ true);
-  //
-  //    storage.setEnabled(false);
-  //
-  //    storage.recordDouble(10d, Attributes.empty(), Context.current());
-  //
-  //    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isTrue();
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void enabledThenDisableThenEnable_recordAndCollect(MemoryMode memoryMode) {
-  //    initialize(memoryMode);
-  //
-  //    DefaultSynchronousMetricStorage<?, ?> storage =
-  //        new DefaultSynchronousMetricStorage<>(
-  //            deltaReader,
-  //            METRIC_DESCRIPTOR,
-  //            aggregator,
-  //            attributesProcessor,
-  //            CARDINALITY_LIMIT,
-  //            /* enabled= */ true);
-  //
-  //    storage.setEnabled(false);
-  //    storage.setEnabled(true);
-  //
-  //    storage.recordDouble(10d, Attributes.empty(), Context.current());
-  //
-  //    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0,
-  // 10).isEmpty()).isFalse();
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void disableDropsAggregatorState(MemoryMode memoryMode) {
-  //    initialize(memoryMode);
-  //
-  //    DefaultSynchronousMetricStorage<?, ?> storage =
-  //        new DefaultSynchronousMetricStorage<>(
-  //            deltaReader,
-  //            METRIC_DESCRIPTOR,
-  //            aggregator,
-  //            attributesProcessor,
-  //            CARDINALITY_LIMIT,
-  //            /* enabled= */ true);
-  //
-  //    storage.recordDouble(10d, Attributes.empty(), Context.current());
-  //
-  //    storage.setEnabled(false);
-  //    storage.setEnabled(true);
-  //
-  //    storage.recordDouble(5d, Attributes.empty(), Context.current());
-  //
-  //    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10);
-  //    assertThat(metricData)
-  //        .hasDoubleSumSatisfying(
-  //            sum ->
-  //                sum.satisfies(
-  //                    sumData ->
-  //                        assertThat(sumData.getPoints()).allMatch(point -> point.getValue() ==
-  // 5d)));
-  //  }
-  //
-  //  @ParameterizedTest
-  //  @EnumSource(MemoryMode.class)
-  //  void collect_DeltaResetAfterDisabled(MemoryMode memoryMode) {
-  //    initialize(memoryMode);
-  //
-  //    DefaultSynchronousMetricStorage<?, ?> storage =
-  //        new DefaultSynchronousMetricStorage<>(
-  //            deltaReader,
-  //            METRIC_DESCRIPTOR,
-  //            aggregator,
-  //            attributesProcessor,
-  //            CARDINALITY_LIMIT,
-  //            /* enabled= */ true);
-  //
-  //    storage.recordDouble(5d, Attributes.empty(), Context.current());
-  //    storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10);
-  //    deltaReader.setLastCollectEpochNanos(10);
-  //
-  //    storage.setEnabled(false);
-  //    storage.setEnabled(true);
-  //
-  //    storage.recordDouble(4d, Attributes.empty(), Context.current());
-  //    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30);
-  //    assertThat(metricData)
-  //        .hasDoubleSumSatisfying(
-  //            sum ->
-  //                sum.satisfies(
-  //                    sumData ->
-  //                        assertThat(sumData.getPoints()).allMatch(point -> point.getValue() ==
-  // 4d)));
-  //  }
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisable_isEnabled(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
+
+    storage.setEnabled(false);
+
+    assertThat(storage.isEnabled()).isFalse();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisableThenEnable_isEnabled(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
+
+    storage.setEnabled(false);
+    storage.setEnabled(true);
+
+    assertThat(storage.isEnabled()).isTrue();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisable_recordAndCollect(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
+
+    storage.setEnabled(false);
+
+    storage.recordDouble(10d, Attributes.empty(), Context.current());
+
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isTrue();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisableThenEnable_recordAndCollect(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
+
+    storage.setEnabled(false);
+    storage.setEnabled(true);
+
+    storage.recordDouble(10d, Attributes.empty(), Context.current());
+
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isFalse();
+  }
 }
