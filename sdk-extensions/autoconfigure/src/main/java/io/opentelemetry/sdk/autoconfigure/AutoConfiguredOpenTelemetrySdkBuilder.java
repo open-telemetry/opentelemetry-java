@@ -451,12 +451,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
                 ? this.config
                 : DefaultConfigProperties.create(Collections.emptyMap(), componentLoader),
             componentLoader);
-    SpiHelper spiHelper = SpiHelper.create(componentLoader);
     if (fromFileConfiguration != null) {
-      OpenTelemetrySdk openTelemetrySdk = fromFileConfiguration.getOpenTelemetrySdk();
-      maybeRegisterShutdownHook(openTelemetrySdk);
-      callAutoConfigureListeners(spiHelper, openTelemetrySdk);
-
+      maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
       Object configProvider = fromFileConfiguration.getConfigProvider();
       if (setResultAsGlobal && INCUBATOR_AVAILABLE && configProvider != null) {
         IncubatingUtil.setGlobalConfigProvider(configProvider);
@@ -464,6 +460,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return fromFileConfiguration;
     }
 
+    SpiHelper spiHelper = SpiHelper.create(componentLoader);
     if (!customized) {
       customized = true;
       mergeSdkTracerProviderConfigurer();
