@@ -112,10 +112,8 @@ class TraceRequestMarshalerTest {
                         InstrumentationScopeInfo.builder("testLib")
                             .setVersion("1.0")
                             .setSchemaUrl("http://url")
-                            .setAttributes(Attributes.builder()
-                                .put("key", "value")
-                                .put("empty", "")
-                                .build())
+                            .setAttributes(
+                                Attributes.builder().put("key", "value").put("empty", "").build())
                             .build())
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
@@ -133,19 +131,22 @@ class TraceRequestMarshalerTest {
     assertThat(scope.getName()).isEqualTo("testLib");
     assertThat(scope.getVersion()).isEqualTo("1.0");
     assertThat(scope.getAttributesCount()).isEqualTo(2);
-    List<KeyValue> attributes = scope.getAttributesList().stream()
-        .sorted(Comparator.comparing(KeyValue::getKey)).collect(
-            Collectors.toList());
-    assertThat(attributes.get(0)).isEqualTo(
-        KeyValue.newBuilder()
-        .setKey("empty")
-        .setValue(AnyValue.newBuilder().setStringValue("").build())
-        .build());
-    assertThat(attributes.get(1)).isEqualTo(
-        KeyValue.newBuilder()
-        .setKey("key")
-        .setValue(AnyValue.newBuilder().setStringValue("value").build())
-        .build());
+    List<KeyValue> attributes =
+        scope.getAttributesList().stream()
+            .sorted(Comparator.comparing(KeyValue::getKey))
+            .collect(Collectors.toList());
+    assertThat(attributes.get(0))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("empty")
+                .setValue(AnyValue.newBuilder().setStringValue("").build())
+                .build());
+    assertThat(attributes.get(1))
+        .isEqualTo(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                .build());
   }
 
   @ParameterizedTest
