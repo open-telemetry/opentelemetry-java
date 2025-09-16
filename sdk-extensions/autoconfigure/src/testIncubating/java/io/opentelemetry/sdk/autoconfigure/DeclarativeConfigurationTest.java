@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -184,7 +185,7 @@ class DeclarativeConfigurationTest {
 
   @Test
   void configFile_setResultAsGlobalFalse() {
-    GlobalOpenTelemetry.set(OpenTelemetry.noop());
+    GlobalOpenTelemetry.set(mock(OpenTelemetry.class));
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
