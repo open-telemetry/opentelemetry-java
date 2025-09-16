@@ -70,4 +70,16 @@ public interface AttributeKey<T> {
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
+
+  static AttributeKey<byte[]> byteArrayKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.BYTE_ARRAY);
+  }
+
+  static AttributeKey<List<Value<?>>> valueArrayKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.VALUE_ARRAY);
+  }
+
+  static AttributeKey<List<KeyValue>> valueMapKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.VALUE_MAP);
+  }
 }
