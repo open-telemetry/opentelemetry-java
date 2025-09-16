@@ -264,10 +264,13 @@ public abstract class Serializer implements AutoCloseable {
       return;
     }
     if (string.isEmpty()) {
-      if (allowEmpty) {
-        writeString(field, string, 0, context);
+      if(!allowEmpty){
+        return;
       }
-      return;
+//      if (allowEmpty) {
+//        writeString(field, string, 0, context);
+//      }
+//      return;
     }
     if (context.marshalStringNoAllocation()) {
       writeString(field, string, context.getSize(), context);

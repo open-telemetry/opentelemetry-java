@@ -37,9 +37,6 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
   }
 
   private static int calculateSize(byte[] valueUtf8) {
-    if (valueUtf8.length == 0) {
-      return 0;
-    }
     return AnyValue.STRING_VALUE.getTagSize()
         + CodedOutputStream.computeByteArraySizeNoTag(valueUtf8);
   }

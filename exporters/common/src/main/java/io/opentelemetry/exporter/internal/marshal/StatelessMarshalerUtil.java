@@ -91,18 +91,27 @@ public final class StatelessMarshalerUtil {
    */
   public static int sizeStringWithContext(
       ProtoFieldInfo field, @Nullable String value, MarshalerContext context) {
-    if (value == null || value.isEmpty()) {
+    return sizeStringWithContext(field, value, context, /* allowEmpty= */ false);
+  }
+
+  public static int sizeStringWithContext(
+      ProtoFieldInfo field, @Nullable String value, MarshalerContext context, boolean allowEmpty) {
+    if (value == null) {
       return sizeBytes(field, 0);
+    }
+    if (value.isEmpty()) {
+      if (!allowEmpty) {
+        return sizeBytes(field, 0);
+      }
     }
     if (context.marshalStringNoAllocation()) {
       int utf8Size = getUtf8Size(value, context);
       context.addSize(utf8Size);
       return sizeBytes(field, utf8Size);
-    } else {
-      byte[] valueUtf8 = MarshalerUtil.toBytes(value);
-      context.addData(valueUtf8);
-      return sizeBytes(field, valueUtf8.length);
     }
+    byte[] valueUtf8 = MarshalerUtil.toBytes(value);
+    context.addData(valueUtf8);
+    return sizeBytes(field, valueUtf8.length);
   }
 
   /** Returns the size of a bytes field. */

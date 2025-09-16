@@ -32,6 +32,7 @@ final class StringAnyValueStatelessMarshaler implements StatelessMarshaler<Strin
 
   @Override
   public int getBinarySerializedSize(String value, MarshalerContext context) {
-    return StatelessMarshalerUtil.sizeStringWithContext(AnyValue.STRING_VALUE, value, context);
+    return StatelessMarshalerUtil.sizeStringWithContext(
+        AnyValue.STRING_VALUE, value, context, /* allowEmpty= */ true);
   }
 }
