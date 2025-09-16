@@ -28,7 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
+public class OpenTelemetrySdk implements OpenTelemetry, Closeable {
 
   private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySdk.class.getName());
 
@@ -38,7 +38,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
   private final ObfuscatedLoggerProvider loggerProvider;
   private final ContextPropagators propagators;
 
-  OpenTelemetrySdk(
+  protected OpenTelemetrySdk(
       SdkTracerProvider tracerProvider,
       SdkMeterProvider meterProvider,
       SdkLoggerProvider loggerProvider,
@@ -58,27 +58,27 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
   }
 
   @Override
-  public TracerProvider getTracerProvider() {
+  public final TracerProvider getTracerProvider() {
     return tracerProvider;
   }
 
   /** Returns the {@link SdkTracerProvider} for this {@link OpenTelemetrySdk}. */
-  public SdkTracerProvider getSdkTracerProvider() {
+  public final SdkTracerProvider getSdkTracerProvider() {
     return tracerProvider.unobfuscate();
   }
 
   @Override
-  public MeterProvider getMeterProvider() {
+  public final MeterProvider getMeterProvider() {
     return meterProvider;
   }
 
   /** Returns the {@link SdkMeterProvider} for this {@link OpenTelemetrySdk}. */
-  public SdkMeterProvider getSdkMeterProvider() {
+  public final SdkMeterProvider getSdkMeterProvider() {
     return meterProvider.unobfuscate();
   }
 
   @Override
-  public LoggerProvider getLogsBridge() {
+  public final LoggerProvider getLogsBridge() {
     return loggerProvider;
   }
 
@@ -87,12 +87,12 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
    *
    * @since 1.19.0
    */
-  public SdkLoggerProvider getSdkLoggerProvider() {
+  public final SdkLoggerProvider getSdkLoggerProvider() {
     return loggerProvider.unobfuscate();
   }
 
   @Override
-  public ContextPropagators getPropagators() {
+  public final ContextPropagators getPropagators() {
     return propagators;
   }
 
