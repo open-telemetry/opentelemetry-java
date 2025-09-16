@@ -13,7 +13,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
@@ -111,19 +111,31 @@ public final class DeclarativeConfiguration {
    */
   public static OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
-    SpiHelper spiHelper = SpiHelper.create(componentLoader);
+    return create(configurationModel, DeclarativeConfigContext.create(componentLoader));
+  }
 
+  private static OpenTelemetrySdk create(
+      OpenTelemetryConfigurationModel configurationModel, DeclarativeConfigContext context) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
 
     for (DeclarativeConfigurationCustomizerProvider provider :
-        spiHelper.loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
+        context.getSpiHelper().loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
       provider.customize(builder);
     }
 
     return createAndMaybeCleanup(
         OpenTelemetryConfigurationFactory.getInstance(),
-        spiHelper,
+        context,
         builder.customizeModel(configurationModel));
+  }
+
+  public static AutoConfiguredOpenTelemetrySdk createAutoConfiguredSdk(
+      OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
+    DeclarativeConfigContext context = DeclarativeConfigContext.create(componentLoader);
+    OpenTelemetrySdk sdk = create(configurationModel, context);
+    SdkConfigProvider provider = SdkConfigProvider.create(configurationModel, componentLoader);
+
+    return AutoConfiguredOpenTelemetrySdkAccess.create(sdk, context.getResource(), provider);
   }
 
   /**
@@ -206,7 +218,7 @@ public final class DeclarativeConfiguration {
             DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
-        SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
+        DeclarativeConfigContext.create(yamlDeclarativeConfigProperties.getComponentLoader()),
         samplerModel);
   }
 
@@ -219,8 +231,8 @@ public final class DeclarativeConfiguration {
     return (YamlDeclarativeConfigProperties) declarativeConfigProperties;
   }
 
-  static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
-    DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
+  static <M, R> R createAndMaybeCleanup(
+      Factory<M, R> factory, DeclarativeConfigContext context, M model) {
     try {
       return factory.create(model, context);
     } catch (RuntimeException e) {

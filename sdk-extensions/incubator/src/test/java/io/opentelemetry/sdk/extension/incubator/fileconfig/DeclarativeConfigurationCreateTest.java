@@ -16,6 +16,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
@@ -159,6 +160,27 @@ class DeclarativeConfigurationCreateTest {
                     new SpanProcessorModel().withAdditionalProperty("test", null))));
     OpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
+            model,
+            // customizer is TestDeclarativeConfigurationCustomizerProvider
+            ComponentLoader.forClassLoader(
+                DeclarativeConfigurationCreateTest.class.getClassLoader()));
+    assertThat(sdk.toString())
+        .contains(
+            "resource=Resource{schemaUrl=null, attributes={"
+                + "color=\"blue\", "
+                + "foo=\"bar\", "
+                + "service.name=\"unknown_service:java\", "
+                + "telemetry.sdk.language=\"java\", "
+                + "telemetry.sdk.name=\"opentelemetry\", "
+                + "telemetry.sdk.version=\"");
+  }
+
+  @Test
+  void createAutoConfiguredSdk() {
+    OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
+    model.withFileFormat("1.0-rc.1");
+    AutoConfiguredOpenTelemetrySdk sdk =
+        DeclarativeConfiguration.createAutoConfiguredSdk(
             model,
             // customizer is TestDeclarativeConfigurationCustomizerProvider
             ComponentLoader.forClassLoader(
