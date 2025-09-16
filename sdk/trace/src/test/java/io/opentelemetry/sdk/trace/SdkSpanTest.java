@@ -14,6 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,6 +38,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -942,7 +944,8 @@ class SdkSpanTest {
                 .build(),
             parentSpanId,
             null,
-            null);
+            null,
+            ExceptionAttributeResolver.getDefault());
     try {
       Span span1 = createTestSpan(SpanKind.INTERNAL);
       Span span2 = createTestSpan(SpanKind.INTERNAL);
@@ -1032,6 +1035,7 @@ class SdkSpanTest {
             Context.root(),
             SpanLimits.getDefault(),
             spanProcessor,
+            ExceptionAttributeResolver.getDefault(),
             testClock,
             resource,
             null,
@@ -1293,6 +1297,39 @@ class SdkSpanTest {
   }
 
   @Test
+  void recordException_CustomResolver() {
+    ExceptionAttributeResolver exceptionAttributeResolver =
+        new ExceptionAttributeResolver() {
+          @Override
+          public void setExceptionAttributes(
+              AttributeSetter attributeSetter, Throwable throwable, int maxAttributeLength) {
+            attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_TYPE, "type");
+            attributeSetter.setAttribute(
+                ExceptionAttributeResolver.EXCEPTION_STACKTRACE, "stacktrace");
+          }
+        };
+
+    SdkSpan span =
+        createTestSpan(
+            SpanKind.INTERNAL,
+            SpanLimits.getDefault(),
+            parentSpanId,
+            null,
+            Collections.singletonList(link),
+            exceptionAttributeResolver);
+
+    span.recordException(new IllegalStateException("error"));
+
+    List<EventData> events = span.toSpanData().getEvents();
+    assertThat(events.size()).isEqualTo(1);
+    EventData event = events.get(0);
+    assertThat(event)
+        .hasAttributesSatisfyingExactly(
+            equalTo(ExceptionAttributeResolver.EXCEPTION_TYPE, "type"),
+            equalTo(ExceptionAttributeResolver.EXCEPTION_STACKTRACE, "stacktrace"));
+  }
+
+  @Test
   void badArgsIgnored() {
     SdkSpan span = createTestRootSpan();
 
@@ -1343,6 +1380,7 @@ class SdkSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
+            ExceptionAttributeResolver.getDefault(),
             testClock,
             resource,
             AttributesMap.create(
@@ -1424,7 +1462,8 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         null,
         attributesMap,
-        Collections.singletonList(link));
+        Collections.singletonList(link),
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestRootSpan() {
@@ -1433,17 +1472,28 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         SpanId.getInvalid(),
         null,
-        Collections.singletonList(link));
+        Collections.singletonList(link),
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(SpanKind kind) {
     return createTestSpan(
-        kind, SpanLimits.getDefault(), parentSpanId, null, Collections.singletonList(link));
+        kind,
+        SpanLimits.getDefault(),
+        parentSpanId,
+        null,
+        Collections.singletonList(link),
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(SpanLimits config) {
     return createTestSpan(
-        SpanKind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
+        SpanKind.INTERNAL,
+        config,
+        parentSpanId,
+        null,
+        Collections.singletonList(link),
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(
@@ -1451,7 +1501,8 @@ class SdkSpanTest {
       SpanLimits config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      @Nullable List<LinkData> links) {
+      @Nullable List<LinkData> links,
+      ExceptionAttributeResolver exceptionAttributeResolver) {
     List<LinkData> linksCopy = links == null ? new ArrayList<>() : new ArrayList<>(links);
 
     SdkSpan span =
@@ -1468,6 +1519,7 @@ class SdkSpanTest {
             Context.root(),
             config,
             spanProcessor,
+            exceptionAttributeResolver,
             testClock,
             resource,
             attributes,
@@ -1555,6 +1607,7 @@ class SdkSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
+            ExceptionAttributeResolver.getDefault(),
             clock,
             resource,
             attributesWithCapacity,

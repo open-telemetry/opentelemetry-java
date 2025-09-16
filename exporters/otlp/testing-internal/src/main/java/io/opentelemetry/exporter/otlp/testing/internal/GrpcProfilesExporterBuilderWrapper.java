@@ -6,8 +6,11 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
 import io.opentelemetry.exporter.otlp.profiles.ProfileData;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
@@ -121,8 +124,28 @@ final class GrpcProfilesExporterBuilderWrapper implements TelemetryExporterBuild
   }
 
   @Override
+  public TelemetryExporterBuilder<ProfileData> setComponentLoader(ComponentLoader componentLoader) {
+    builder.setComponentLoader(componentLoader);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<ProfileData> setExecutorService(ExecutorService executorService) {
     builder.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<ProfileData> setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    // Not yet supported
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<ProfileData> setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    // Not yet supported
     return this;
   }
 

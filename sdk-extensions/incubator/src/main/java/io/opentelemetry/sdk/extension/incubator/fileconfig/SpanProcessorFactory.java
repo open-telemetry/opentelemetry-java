@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
@@ -47,6 +48,11 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       if (batchModel.getScheduleDelay() != null) {
         builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
       }
+      MeterProvider meterProvider = context.getMeterProvider();
+      if (meterProvider != null) {
+        builder.setMeterProvider(meterProvider);
+      }
+
       return context.addCloseable(builder.build());
     }
 

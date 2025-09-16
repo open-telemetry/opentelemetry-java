@@ -82,7 +82,7 @@ public enum TestSdk {
   private abstract static class SdkBuilder {
     abstract Meter build();
 
-    protected static Tracer buildTracer() {
+    private static Tracer buildTracer() {
       return SdkTracerProvider.builder()
           .setSampler(Sampler.alwaysOn())
           .build()

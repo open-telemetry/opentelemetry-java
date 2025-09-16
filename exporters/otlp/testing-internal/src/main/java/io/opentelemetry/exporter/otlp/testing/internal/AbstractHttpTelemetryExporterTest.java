@@ -5,7 +5,9 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Named.named;
@@ -25,6 +27,7 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
@@ -40,8 +43,13 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.testing.assertj.AttributeAssertion;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -92,6 +100,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockserver.integration.ClientAndServer;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
@@ -304,84 +313,74 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void compressionWithNone() {
-    TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build();
-    assertThat(exporter.unwrap()).extracting("delegate.httpSender.compressor").isNull();
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build()) {
+      assertThat(exporter.unwrap()).extracting("delegate.httpSender.compressor").isNull();
+
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(httpRequests)
           .singleElement()
           .satisfies(req -> assertThat(req.headers().get("content-encoding")).isNull());
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void compressionWithGzip() {
-    TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build();
-    assertThat(exporter.unwrap())
-        .extracting("delegate.httpSender.compressor")
-        .isEqualTo(GzipCompressor.getInstance());
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build()) {
+      assertThat(exporter.unwrap())
+          .extracting("delegate.httpSender.compressor")
+          .isEqualTo(GzipCompressor.getInstance());
+
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(httpRequests)
           .singleElement()
           .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("gzip"));
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void compressionWithSpiCompressor() {
-    TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("base64").build();
-    assertThat(exporter.unwrap())
-        .extracting("delegate.httpSender.compressor")
-        .isEqualTo(Base64Compressor.getInstance());
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("base64").build()) {
+      assertThat(exporter.unwrap())
+          .extracting("delegate.httpSender.compressor")
+          .isEqualTo(Base64Compressor.getInstance());
+
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(httpRequests)
           .singleElement()
           .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("base64"));
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void authorityWithAuth() {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint("http://foo:bar@localhost:" + server.httpPort() + path)
-            .build();
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void withHeaders() {
     AtomicInteger count = new AtomicInteger();
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri() + path)
             .addHeader("key1", "value1")
             .setHeaders(() -> Collections.singletonMap("key2", "value" + count.incrementAndGet()))
-            .build();
-    try {
+            .build()) {
       // Export twice to ensure header supplier gets invoked twice
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -399,24 +398,19 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                 assertThat(req.headers().get("key1")).isEqualTo("value1");
                 assertThat(req.headers().get("key2")).isEqualTo("value" + count.get());
               });
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void tls() throws Exception {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpsUri() + path)
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
-            .build();
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -431,30 +425,25 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
 
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpsUri() + path)
             .setSslContext(sslContext, trustManager)
-            .build();
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   @SuppressLogger(HttpExporter.class)
   void tls_untrusted() {
-    TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpsUri() + path).build();
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpsUri() + path).build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -472,26 +461,24 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @ParameterizedTest
   @ArgumentsSource(ClientPrivateKeyProvider.class)
   void clientTls(byte[] privateKey) throws Exception {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpsUri() + path)
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .setClientTls(
                 privateKey, Files.readAllBytes(clientCertificate.certificateFile().toPath()))
-            .build();
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
   private static class ClientPrivateKeyProvider implements ArgumentsProvider {
     @Override
     @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+    public Stream<? extends Arguments> provideArguments(
+        ParameterDeclarations parameters, ExtensionContext context) throws Exception {
       return Stream.of(
           arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
           arguments(named("DER", clientCertificate.privateKey().getEncoded())));
@@ -501,14 +488,13 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(HttpExporter.class)
   void connectTimeout() {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             // Connecting to a non-routable IP address to trigger connection error
             .setEndpoint("http://10.255.255.1")
             .setConnectTimeout(Duration.ofMillis(1))
             .setRetryPolicy(null)
-            .build();
-    try {
+            .build()) {
       long startTimeMillis = System.currentTimeMillis();
       CompletableResultCode result =
           exporter
@@ -530,25 +516,20 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       // Assert that the export request fails well before the default connect timeout of 10s
       assertThat(System.currentTimeMillis() - startTimeMillis)
           .isLessThan(TimeUnit.SECONDS.toMillis(1));
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void deadlineSetPerExport() throws InterruptedException {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri() + path)
             .setTimeout(Duration.ofMillis(1500))
-            .build();
-    try {
+            .build()) {
       TimeUnit.MILLISECONDS.sleep(2000);
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -670,31 +651,27 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     // configure mockserver to proxy to the local OTLP server
     InetSocketAddress serverSocketAddress = server.httpSocketAddress();
     try (ClientAndServer clientAndServer =
-        ClientAndServer.startClientAndServer(
-            serverSocketAddress.getHostName(), serverSocketAddress.getPort())) {
-      TelemetryExporter<T> exporter =
-          exporterBuilder()
-              // Configure exporter with server endpoint, and proxy options to route through
-              // mockserver proxy
-              .setEndpoint(server.httpUri() + path)
-              .setProxyOptions(
-                  ProxyOptions.create(
-                      InetSocketAddress.createUnresolved("localhost", clientAndServer.getPort())))
-              .build();
+            ClientAndServer.startClientAndServer(
+                serverSocketAddress.getHostName(), serverSocketAddress.getPort());
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                // Configure exporter with server endpoint, and proxy options to route through
+                // mockserver proxy
+                .setEndpoint(server.httpUri() + path)
+                .setProxyOptions(
+                    ProxyOptions.create(
+                        InetSocketAddress.createUnresolved("localhost", clientAndServer.getPort())))
+                .build()) {
 
-      try {
-        List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
 
-        assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-        // assert that mock server received request
-        assertThat(clientAndServer.retrieveRecordedRequests(new org.mockserver.model.HttpRequest()))
-            .hasSize(1);
-        // assert that server received telemetry from proxy, and is as expected
-        List<U> expectedResourceTelemetry = toProto(telemetry);
-        assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
-      } finally {
-        exporter.shutdown();
-      }
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      // assert that mock server received request
+      assertThat(clientAndServer.retrieveRecordedRequests(new org.mockserver.model.HttpRequest()))
+          .hasSize(1);
+      // assert that server received telemetry from proxy, and is as expected
+      List<U> expectedResourceTelemetry = toProto(telemetry);
+      assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
     }
   }
 
@@ -703,20 +680,17 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     ExecutorServiceSpy executorService =
         new ExecutorServiceSpy(Executors.newSingleThreadExecutor());
 
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri() + path)
             .setExecutorService(executorService)
-            .build();
-
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
 
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(executorService.getTaskCount()).isPositive();
     } finally {
-      exporter.shutdown();
       // If setting executor, the user is responsible for calling shutdown
       assertThat(executorService.isShutdown()).isFalse();
       executorService.shutdown();
@@ -848,7 +822,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           IOException,
           NoSuchFieldException,
           IllegalAccessException {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
             .setConnectTimeout(Duration.ofSeconds(4))
@@ -866,19 +840,19 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
-            .build();
+            .setComponentLoader(ComponentLoader.forClassLoader(new ClassLoader() {}))
+            .build()) {
+      Object unwrapped = exporter.unwrap();
+      Field builderField = unwrapped.getClass().getDeclaredField("builder");
+      builderField.setAccessible(true);
 
-    Object unwrapped = exporter.unwrap();
-    Field builderField = unwrapped.getClass().getDeclaredField("builder");
-    builderField.setAccessible(true);
-
-    try {
       // Builder copy should be equal to original when unchanged
       TelemetryExporter<T> copy = toBuilder(exporter).build();
       try {
         assertThat(copy.unwrap())
             .extracting("builder")
             .usingRecursiveComparison()
+            .withStrictTypeChecking()
             .ignoringFields("tlsConfigHelper")
             .isEqualTo(builderField.get(unwrapped));
       } finally {
@@ -891,13 +865,12 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         assertThat(copy.unwrap())
             .extracting("builder")
             .usingRecursiveComparison()
+            .withStrictTypeChecking()
             .ignoringFields("tlsConfigHelper")
             .isNotEqualTo(builderField.get(unwrapped));
       } finally {
         copy.shutdown();
       }
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -906,18 +879,16 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     ClassLoaderSpy classLoaderSpy =
         new ClassLoaderSpy(AbstractHttpTelemetryExporterTest.class.getClassLoader());
 
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setServiceClassLoader(classLoaderSpy)
             .setEndpoint(server.httpUri() + path)
-            .build();
-
-    assertThat(classLoaderSpy.getResourcesNames)
-        .isEqualTo(
-            Collections.singletonList(
-                "META-INF/services/io.opentelemetry.exporter.internal.http.HttpSenderProvider"));
-
-    exporter.shutdown();
+            .build()) {
+      assertThat(classLoaderSpy.getResourcesNames)
+          .isEqualTo(
+              Collections.singletonList(
+                  "META-INF/services/io.opentelemetry.exporter.internal.http.HttpSenderProvider"));
+    }
   }
 
   private static class ClassLoaderSpy extends ClassLoader {
@@ -936,13 +907,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void stringRepresentation() throws IOException, CertificateEncodingException {
-    TelemetryExporter<T> telemetryExporter = exporterBuilder().build();
-    try {
+    try (TelemetryExporter<T> telemetryExporter = exporterBuilder().build(); ) {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpHttp[a-zA-Z]*Exporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=[a-zA_Z]*, "
                   + "endpoint=http://localhost:4318/v1/[a-zA-Z]*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
@@ -956,11 +924,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + ".*" // Maybe additional signal specific fields
                   + "\\}");
-    } finally {
-      telemetryExporter.shutdown();
     }
 
-    telemetryExporter =
+    try (TelemetryExporter<T> telemetryExporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
             .setConnectTimeout(Duration.ofSeconds(4))
@@ -978,13 +944,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
-            .build();
-    try {
+            .build()) {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpHttp[a-zA-Z]*Exporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=[a-zA_Z]*, "
                   + "endpoint=http://example:4318/v1/[a-zA-Z]*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
@@ -999,8 +962,116 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
                   + ".*" // Maybe additional signal specific fields
                   + "\\}");
-    } finally {
-      telemetryExporter.shutdown();
+    }
+  }
+
+  @Test
+  void latestInternalTelemetry() {
+    InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
+    try (SdkMeterProvider meterProvider =
+            SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build();
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpUri() + path)
+                .setMeterProvider(() -> meterProvider)
+                .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+                .build()) {
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+      List<AttributeAssertion> expectedAttributes =
+          Arrays.asList(
+              satisfies(
+                  SemConvAttributes.OTEL_COMPONENT_TYPE,
+                  str -> str.matches("otlp_http_(log|metric|span)_exporter")),
+              satisfies(
+                  SemConvAttributes.OTEL_COMPONENT_NAME,
+                  str -> str.matches("otlp_http_(log|metric|span)_exporter/\\d+")),
+              satisfies(
+                  SemConvAttributes.SERVER_PORT, str -> str.isEqualTo(server.httpUri().getPort())),
+              satisfies(
+                  SemConvAttributes.SERVER_ADDRESS,
+                  str -> str.isEqualTo(server.httpUri().getHost())));
+
+      assertThat(inMemoryMetrics.collectAllMetrics())
+          .hasSize(3)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .satisfies(
+                          m ->
+                              assertThat(m.getName())
+                                  .matches(
+                                      "otel.sdk.exporter.(span|metric_data_point|log).inflight"))
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa -> pa.hasAttributesSatisfying(expectedAttributes))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .satisfies(
+                          m ->
+                              assertThat(m.getName())
+                                  .matches(
+                                      "otel.sdk.exporter.(span|metric_data_point|log).exported"))
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa -> pa.hasAttributesSatisfying(expectedAttributes))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.exporter.operation.duration")
+                      .hasHistogramSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa ->
+                                      pa.hasAttributesSatisfying(expectedAttributes)
+                                          .hasBucketCounts(1))));
+    }
+  }
+
+  @Test
+  void legacyInternalTelemetry() {
+    InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
+    try (SdkMeterProvider meterProvider =
+            SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build();
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpUri() + path)
+                .setMeterProvider(() -> meterProvider)
+                .setInternalTelemetryVersion(InternalTelemetryVersion.LEGACY)
+                .build()) {
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+      assertThat(inMemoryMetrics.collectAllMetrics())
+          .hasSize(2)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otlp.exporter.seen")
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa ->
+                                      pa.hasAttributesSatisfying(
+                                          satisfies(
+                                              stringKey("type"),
+                                              str -> str.matches("log|span|metric"))))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otlp.exporter.exported")
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa ->
+                                      pa.hasAttributesSatisfying(
+                                          satisfies(
+                                              stringKey("type"),
+                                              str -> str.matches("log|span|metric"))))));
     }
   }
 

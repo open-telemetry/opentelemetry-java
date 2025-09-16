@@ -49,7 +49,7 @@ public enum HistogramValueGenerator {
     private final double[] pool;
     private final AtomicInteger idx = new AtomicInteger(0);
 
-    public PoolSupplier(double[] pool) {
+    private PoolSupplier(double[] pool) {
       this.pool = pool;
     }
 

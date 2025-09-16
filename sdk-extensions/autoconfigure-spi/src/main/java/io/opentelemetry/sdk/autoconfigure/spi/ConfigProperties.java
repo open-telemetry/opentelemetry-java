@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure.spi;
 
 import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
 
+import io.opentelemetry.common.ComponentLoader;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -203,5 +204,10 @@ public interface ConfigProperties {
   default Map<String, String> getMap(String name, Map<String, String> defaultValue) {
     Map<String, String> value = getMap(name);
     return value.isEmpty() ? defaultValue : value;
+  }
+
+  /** Return a {@link ComponentLoader} that should be used to load SPIs. */
+  default ComponentLoader getComponentLoader() {
+    return ComponentLoader.forClassLoader(ConfigProperties.class.getClassLoader());
   }
 }

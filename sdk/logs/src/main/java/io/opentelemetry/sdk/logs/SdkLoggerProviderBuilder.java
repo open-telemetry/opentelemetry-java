@@ -12,6 +12,7 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -37,6 +38,8 @@ public final class SdkLoggerProviderBuilder {
   private Clock clock = Clock.getDefault();
   private ScopeConfiguratorBuilder<LoggerConfig> loggerConfiguratorBuilder =
       LoggerConfig.configuratorBuilder();
+  private ExceptionAttributeResolver exceptionAttributeResolver =
+      ExceptionAttributeResolver.getDefault();
 
   SdkLoggerProviderBuilder() {}
 
@@ -169,12 +172,32 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Set the exception attribute resolver, which resolves {@code exception.*} attributes an
+   * exception is set on a log.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setExceptionAttributeResolver(SdkLoggerProviderBuilder,
+   * ExceptionAttributeResolver)}.
+   */
+  SdkLoggerProviderBuilder setExceptionAttributeResolver(
+      ExceptionAttributeResolver exceptionAttributeResolver) {
+    requireNonNull(exceptionAttributeResolver, "exceptionAttributeResolver");
+    this.exceptionAttributeResolver = exceptionAttributeResolver;
+    return this;
+  }
+
+  /**
    * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
     return new SdkLoggerProvider(
-        resource, logLimitsSupplier, logRecordProcessors, clock, loggerConfiguratorBuilder.build());
+        resource,
+        logLimitsSupplier,
+        logRecordProcessors,
+        clock,
+        loggerConfiguratorBuilder.build(),
+        exceptionAttributeResolver);
   }
 }

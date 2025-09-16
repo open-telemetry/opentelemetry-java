@@ -13,20 +13,30 @@ jobs:
     permissions:
       contents: write # for git push to benchmarks branch
     name: Benchmark SDK
-    runs-on: self-hosted
-    timeout-minutes: 10
+    runs-on: oracle-bare-metal-64cpu-512gb-x86-64
+    container:
+      image: ubuntu:24.04@sha256:9cbed754112939e914291337b5e554b07ad7c392491dba6daf25eef1332a22e8
+    timeout-minutes: 20 # since there is only a single bare metal runner across all repos
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install Git
+        run: |
+          apt-get update
+          apt-get install -y git
+
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - id: setup-java
         name: Set up Java for build
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: 17
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559bcc6e43d26f6374244 # v4.3.1
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
       - name: Run jmh
         run: ./gradlew jmhJar
 
@@ -35,8 +45,11 @@ jobs:
           cd sdk/trace/build
           java -jar libs/opentelemetry-sdk-trace-*-jmh.jar -rf json SpanBenchmark SpanPipelineBenchmark ExporterBenchmark
 
+      - name: Use CLA approved github bot
+        run: .github/scripts/use-cla-approved-github-bot.sh
+
       - name: Store benchmark results
-        uses: benchmark-action/github-action-benchmark@d48d326b4ca9ba73ca0cd0d59f108f9e02a381c7 # v1.20.4
+        uses: benchmark-action/github-action-benchmark@4bdcce38c94cec68da58d012ac24b7b1155efe8b # v1.20.7
         with:
           tool: 'jmh'
           output-file-path: sdk/trace/build/jmh-result.json

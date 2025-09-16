@@ -32,14 +32,14 @@ jobs:
           - 11
           - 17
           - 21
-          - 23
+          - 23 # renovate: datasource=java-version
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-latest
             test-java-version: 21
             coverage: true
             jmh-based-tests: true
-        # macos-latest drops support for java 8 temurin. Run java 8 on macos-13. Run java 11, 17, 21 on macos-latest.
+        # macos-latest drops support for java 8 temurin. Run java 8 on macos-13. Run java 11+ on macos-latest.
         exclude:
           - os: macos-latest
             test-java-version: 8
@@ -50,26 +50,26 @@ jobs:
           - os: macos-13
             test-java-version: 21
           - os: macos-13
-            test-java-version: 23
+            test-java-version: 23 # renovate: datasource=java-version
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: ${{ matrix.test-java-version }}
 
       - id: setup-java
         name: Set up Java for build
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: 17
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559bcc6e43d26f6374244 # v4.3.1
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
       - name: Build
         run: >
             ./gradlew build
@@ -78,7 +78,7 @@ jobs:
             "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
             "-Porg.gradle.java.installations.auto-download=false"
         env:
-          # JMH-based tests run only  if this environment variable is set to true
+          # JMH-based tests run only if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
       - name: Check for diff
@@ -99,7 +99,7 @@ jobs:
             exit 1
           fi
 
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
         if: ${{ matrix.coverage }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -135,17 +135,17 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - id: setup-java
         name: Set up Java
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: 17
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559bcc6e43d26f6374244 # v4.3.1
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
         # skipping release branches because the versions in those branches are not snapshots
         # (also this skips pull requests)
         if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
@@ -170,8 +170,8 @@ jobs:
           - 21
           - 23
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: graalvm/setup-graalvm@01ed653ac833fe80569f1ef9f25585ba2811baab # v1.3.3
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: graalvm/setup-graalvm@7a1da54cb7fdef4ea19f6ecdfa9ecf59dc5a48fe # v1.3.6
         with:
           java-version: ${{ matrix.test-graal-version }}
           distribution: 'graalvm'

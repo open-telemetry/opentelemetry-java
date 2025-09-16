@@ -1,9 +1,2 @@
-Comparing source compatibility of opentelemetry-extension-kotlin-1.51.0-SNAPSHOT.jar against opentelemetry-extension-kotlin-1.54.0.jar
-===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.extension.kotlin.ContextExtensionsKt  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	***  MODIFIED ANNOTATION: kotlin.Metadata
-		===  UNCHANGED ELEMENT: xi=48
-		***  MODIFIED ELEMENT: mv=2,1,0 (<- 2,2,0)
-		===  UNCHANGED ELEMENT: k=2
-		===  UNCHANGED ELEMENT: d1=��&#xA;�&#xA;���&#xA;���&#xA;���&#xA;����&#xA;����0�*�0��&#xA;����0�*�0��&#xA;����0�*�0�¨��
-		===  UNCHANGED ELEMENT: d2=asContextElement,Lkotlin/coroutines/CoroutineContext;,Lio/opentelemetry/context/Context;,Lio/opentelemetry/context/ImplicitContextKeyed;,getOpenTelemetryContext,opentelemetry-extension-kotlin
+Comparing source compatibility of opentelemetry-extension-kotlin-1.55.0-SNAPSHOT.jar against opentelemetry-extension-kotlin-1.54.0.jar
+No changes.

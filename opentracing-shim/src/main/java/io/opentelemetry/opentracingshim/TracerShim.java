@@ -80,12 +80,13 @@ final class TracerShim implements Tracer {
   @Override
   public <C> void inject(SpanContext context, Format<C> format, C carrier) {
     if (context == null) {
-      logger.log(Level.INFO, "Cannot inject a null span context.");
+      logger.log(Level.WARNING, "Cannot inject a null span context.");
       return;
     }
 
     SpanContextShim contextShim = ShimUtil.getContextShim(context);
     if (contextShim == null) {
+      logger.log(Level.WARNING, "Cannot inject a null span context shim.");
       return;
     }
 
@@ -107,7 +108,7 @@ final class TracerShim implements Tracer {
       }
     } catch (RuntimeException e) {
       logger.log(
-          Level.INFO,
+          Level.WARNING,
           "Exception caught while extracting span context; returning null. "
               + "Exception: [{0}] Message: [{1}]",
           new String[] {e.getClass().getName(), e.getMessage()});
@@ -127,7 +128,7 @@ final class TracerShim implements Tracer {
       try {
         ((Closeable) provider).close();
       } catch (RuntimeException | IOException e) {
-        logger.log(Level.INFO, "Exception caught while closing TracerProvider.", e);
+        logger.log(Level.WARNING, "Exception caught while closing TracerProvider.", e);
       }
     }
   }

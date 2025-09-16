@@ -9,7 +9,9 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import java.util.List;
 
 /**
  * Declarative configuration SPI implementation for {@link PrometheusHttpServer}.
@@ -37,9 +39,26 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
     if (port != null) {
       prometheusBuilder.setPort(port);
     }
+
     String host = config.getString("host");
     if (host != null) {
       prometheusBuilder.setHost(host);
+    }
+
+    Boolean withoutScopeInfo = config.getBoolean("without_scope_info");
+    if (withoutScopeInfo != null) {
+      prometheusBuilder.setOtelScopeEnabled(!withoutScopeInfo);
+    }
+
+    DeclarativeConfigProperties withResourceConstantLabels =
+        config.getStructured("with_resource_constant_labels");
+    if (withResourceConstantLabels != null) {
+      List<String> included = withResourceConstantLabels.getScalarList("included", String.class);
+      List<String> excluded = withResourceConstantLabels.getScalarList("excluded", String.class);
+      if (included != null || excluded != null) {
+        prometheusBuilder.setAllowedResourceAttributesFilter(
+            IncludeExcludePredicate.createPatternMatching(included, excluded));
+      }
     }
 
     return prometheusBuilder.build();

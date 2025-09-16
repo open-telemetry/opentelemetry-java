@@ -24,8 +24,7 @@ class TraceContextIntegrationTest {
 
   @Container
   private static final GenericContainer<?> appContainer =
-      new GenericContainer<>(
-              DockerImageName.parse("ghcr.io/open-telemetry/opentelemetry-java/openjdk17"))
+      new GenericContainer<>(DockerImageName.parse("eclipse-temurin:17-jre-focal"))
           .withExposedPorts(5000)
           .withNetwork(Network.SHARED)
           .withNetworkAliases("app")

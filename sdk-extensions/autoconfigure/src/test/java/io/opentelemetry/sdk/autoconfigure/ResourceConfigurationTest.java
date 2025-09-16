@@ -12,6 +12,7 @@ import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -25,6 +26,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ResourceConfigurationTest {
 
+  private static final ComponentLoader componentLoader =
+      ComponentLoader.forClassLoader(ResourceConfigurationTest.class.getClassLoader());
+
   @Test
   void customConfigResourceWithDisabledKeys() {
     Map<String, String> props = new HashMap<>();
@@ -35,7 +39,7 @@ class ResourceConfigurationTest {
 
     assertThat(
             ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(props),
+                DefaultConfigProperties.create(props, componentLoader),
                 SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
                 (r, c) -> r))
         .isEqualTo(

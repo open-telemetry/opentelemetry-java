@@ -5,7 +5,10 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -120,8 +123,28 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
+  public TelemetryExporterBuilder<MetricData> setComponentLoader(ComponentLoader componentLoader) {
+    builder.setComponentLoader(componentLoader);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<MetricData> setExecutorService(ExecutorService executorService) {
     builder.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    builder.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    builder.setInternalTelemetryVersion(schemaVersion);
     return this;
   }
 

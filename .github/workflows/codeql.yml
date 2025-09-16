@@ -12,7 +12,7 @@ on:
       - release/*
       - benchmarks
   schedule:
-    - cron: "29 13 * * 2"  # weekly at 13:29 UTC on Tuesday
+    - cron: "23 16 * * 2"  # weekly at 16:23 UTC on Tuesday
 
 permissions:
   contents: read
@@ -23,32 +23,43 @@ jobs:
       contents: read
       actions: read  # for github/codeql-action/init to get workflow details
       security-events: write  # for github/codeql-action/analyze to upload SARIF results
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+          - language: java
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Set up Java 17
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        if: matrix.language == 'java'
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: 17
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@06832c7b30a0129d7fb559bcc6e43d26f6374244 # v4.3.1
+        if: matrix.language == 'java'
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3.28.17
+        uses: github/codeql-action/init@192325c86100d080feab897ff886c34abd4c83a3 # v3.30.3
         with:
-          languages: java, actions
-          # using "latest" helps to keep up with the latest Kotlin support
+          languages: ${{ matrix.language }}
+          # using "linked" helps to keep up with the latest Kotlin support
           # see https://github.com/github/codeql-action/issues/1555#issuecomment-1452228433
-          tools: latest
+          tools: linked
 
       - name: Assemble
+        if: matrix.language == 'java'
         # --no-build-cache is required for codeql to analyze all modules
         # --no-daemon is required for codeql to observe the compilation
         # (see https://docs.github.com/en/code-security/codeql-cli/getting-started-with-the-codeql-cli/preparing-your-code-for-codeql-analysis#specifying-build-commands)
         run: ./gradlew assemble --no-build-cache --no-daemon
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@60168efe1c415ce0f5521ea06d5c2062adbeed1b # v3.28.17
+        uses: github/codeql-action/analyze@192325c86100d080feab897ff886c34abd4c83a3 # v3.30.3
+        with:
+          category: "/language:${{matrix.language}}"
