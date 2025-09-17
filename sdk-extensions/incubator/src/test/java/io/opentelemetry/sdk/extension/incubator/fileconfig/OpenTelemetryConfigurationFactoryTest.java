@@ -5,11 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -24,7 +19,6 @@ import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
@@ -60,17 +54,31 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import java.lang.reflect.Field;
 
 class OpenTelemetryConfigurationFactoryTest {
 
@@ -166,7 +174,7 @@ class OpenTelemetryConfigurationFactoryTest {
   }
 
   @Test
-  void create_Configured() {
+  void create_Configured() throws NoSuchFieldException, IllegalAccessException {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.resources.Resource expectedResource =
         io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder()
@@ -320,5 +328,31 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(sdk).hasToString(expectedSdk.toString());
+
+    // test that the meter provider is wired through to the tracer and logger providers
+    Field field = SdkMeterProvider.class.getDeclaredField("sharedState");
+    field.setAccessible(true);
+    Object sharedState = field.get(sdk.getSdkMeterProvider());
+    assertThat(sdk)
+        .extracting("loggerProvider")
+        .extracting("delegate")
+        .extracting("sharedState")
+        .extracting("logRecordProcessor")
+        .extracting("worker")
+        .extracting("processedLogsCounter")
+        .extracting("sdkMeter")
+        .extracting("meterProviderSharedState")
+        .isEqualTo(sharedState);
+
+    assertThat(sdk)
+        .extracting("tracerProvider")
+        .extracting("delegate")
+        .extracting("sharedState")
+        .extracting("activeSpanProcessor")
+        .extracting("worker")
+        .extracting("processedSpansCounter")
+        .extracting("sdkMeter")
+        .extracting("meterProviderSharedState")
+        .isEqualTo(sharedState);
   }
 }
