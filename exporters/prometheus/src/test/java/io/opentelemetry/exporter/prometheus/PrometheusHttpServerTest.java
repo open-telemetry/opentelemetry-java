@@ -253,7 +253,8 @@ class PrometheusHttpServerTest {
             .join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
-        .isEqualTo("application/vnd.google.protobuf; proto=io.prometheus.client.MetricFamily; encoding=delimited");
+        .isEqualTo(
+            "application/vnd.google.protobuf; proto=io.prometheus.client.MetricFamily; encoding=delimited");
     // don't decode the protobuf, just verify it doesn't throw an exception
   }
 
