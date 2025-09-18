@@ -61,6 +61,7 @@ import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import java.io.Closeable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -166,7 +167,7 @@ class OpenTelemetryConfigurationFactoryTest {
   }
 
   @Test
-  void create_Configured() {
+  void create_Configured() throws NoSuchFieldException, IllegalAccessException {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.resources.Resource expectedResource =
         io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder()
@@ -320,5 +321,31 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(sdk).hasToString(expectedSdk.toString());
+
+    // test that the meter provider is wired through to the tracer and logger providers
+    Field field = SdkMeterProvider.class.getDeclaredField("sharedState");
+    field.setAccessible(true);
+    Object sharedState = field.get(sdk.getSdkMeterProvider());
+    assertThat(sdk)
+        .extracting("loggerProvider")
+        .extracting("delegate")
+        .extracting("sharedState")
+        .extracting("logRecordProcessor")
+        .extracting("worker")
+        .extracting("processedLogsCounter")
+        .extracting("sdkMeter")
+        .extracting("meterProviderSharedState")
+        .isEqualTo(sharedState);
+
+    assertThat(sdk)
+        .extracting("tracerProvider")
+        .extracting("delegate")
+        .extracting("sharedState")
+        .extracting("activeSpanProcessor")
+        .extracting("worker")
+        .extracting("processedSpansCounter")
+        .extracting("sdkMeter")
+        .extracting("meterProviderSharedState")
+        .isEqualTo(sharedState);
   }
 }
