@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### SDK
+
+#### Exporters
+
+* Prometheus: Fix regression in protobuf format export
+  ([#7664](https://github.com/open-telemetry/opentelemetry-java/pull/7664))
+
 ## Version 1.54.0 (2025-09-05)
 
 ### API
