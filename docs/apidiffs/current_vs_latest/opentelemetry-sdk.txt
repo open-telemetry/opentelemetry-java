@@ -1,4 +1,4 @@
-Comparing source compatibility of opentelemetry-sdk-1.55.0-SNAPSHOT.jar against opentelemetry-sdk-1.54.0.jar
+Comparing source compatibility of opentelemetry-sdk-1.55.0-SNAPSHOT.jar against opentelemetry-sdk-1.54.1.jar
 ***  MODIFIED CLASS: PUBLIC NON_FINAL (<- FINAL) io.opentelemetry.sdk.OpenTelemetrySdk  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	***  MODIFIED METHOD: PUBLIC FINAL (<- NON_FINAL) io.opentelemetry.api.logs.LoggerProvider getLogsBridge()
