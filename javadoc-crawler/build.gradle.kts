@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
   implementation("com.fasterxml.jackson.core:jackson-databind")
-  testImplementation("org.assertj:assertj-core:3.27.4")
+  testImplementation("org.assertj:assertj-core:3.27.5")
 }
 
 description = "OpenTelemetry Javadoc Crawler"
