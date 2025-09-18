@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 

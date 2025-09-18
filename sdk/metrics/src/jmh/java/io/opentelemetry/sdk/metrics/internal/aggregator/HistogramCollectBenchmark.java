@@ -14,10 +14,9 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,7 +75,7 @@ public class HistogramCollectBenchmark {
                       .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
                       .build());
       // Disable exemplars
-      SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
+      builder.setExemplarFilter(ExemplarFilter.alwaysOff());
       sdkMeterProvider = builder.build();
       histogram = sdkMeterProvider.get("meter").histogramBuilder("histogram").build();
 
