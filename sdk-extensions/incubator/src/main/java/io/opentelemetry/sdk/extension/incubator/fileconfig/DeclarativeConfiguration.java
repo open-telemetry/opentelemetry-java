@@ -124,7 +124,7 @@ public final class DeclarativeConfiguration {
       provider.customize(builder);
     }
 
-    OpenTelemetrySdk sdk =
+    ExtendedOpenTelemetrySdk sdk =
         createAndMaybeCleanup(
             OpenTelemetryConfigurationFactory.getInstance(),
             spiHelper,
