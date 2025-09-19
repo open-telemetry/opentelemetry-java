@@ -410,8 +410,8 @@ public final class DeclarativeConfiguration {
     }
   }
 
-  private static void callAutoConfigureListeners(
-      SpiHelper spiHelper, OpenTelemetrySdk openTelemetrySdk) {
+  // Visible for testing
+  static void callAutoConfigureListeners(SpiHelper spiHelper, OpenTelemetrySdk openTelemetrySdk) {
     for (AutoConfigureListener listener : spiHelper.getListeners()) {
       try {
         listener.afterAutoConfigure(openTelemetrySdk);
