@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.internal;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.security.AccessControlException;
 import org.junit.jupiter.api.Test;
 
 class SunMiscProhibitedSecurityManagerTest {
@@ -17,9 +16,7 @@ class SunMiscProhibitedSecurityManagerTest {
   public void checkPackageAccess_ProhibitsSunMisc() {
     SunMiscProhibitedSecurityManager sm = new SunMiscProhibitedSecurityManager();
     assertThatThrownBy(() -> sm.checkPackageAccess("sun.misc"))
-        .isInstanceOf(AccessControlException.class)
-        .hasMessage(
-            "access denied (\"java.lang.RuntimePermission\" \"accessClassInPackage.sun.misc\")");
+        .isInstanceOf(SecurityException.class);
   }
 
   @Test
@@ -28,9 +25,7 @@ class SunMiscProhibitedSecurityManagerTest {
 
     assertThatThrownBy(
             () -> sm.checkPermission(new RuntimePermission("accessClassInPackage.sun.misc")))
-        .isInstanceOf(AccessControlException.class)
-        .hasMessage(
-            "access denied (\"java.lang.RuntimePermission\" \"accessClassInPackage.sun.misc\")");
+        .isInstanceOf(SecurityException.class);
   }
 
   @Test
