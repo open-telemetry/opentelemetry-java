@@ -49,6 +49,19 @@ public final class SdkMeterProviderUtil {
     return sdkMeterProviderBuilder;
   }
 
+  /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProvider}. */
+  public static void setMeterConfigurator(
+      SdkMeterProvider sdkMeterProvider, ScopeConfigurator<MeterConfig> scopeConfigurator) {
+    try {
+      Method method =
+          SdkMeterProvider.class.getDeclaredMethod("setMeterConfigurator", ScopeConfigurator.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProvider, scopeConfigurator);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException("Error calling setMeterConfigurator on SdkMeterProvider", e);
+    }
+  }
+
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProviderBuilder}. */
   public static SdkMeterProviderBuilder setMeterConfigurator(
       SdkMeterProviderBuilder sdkMeterProviderBuilder,

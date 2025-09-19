@@ -88,7 +88,8 @@ final class SdkMeter implements Meter {
   private final MeterProviderSharedState meterProviderSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
-  private final boolean meterEnabled;
+
+  private boolean meterEnabled;
 
   SdkMeter(
       MeterProviderSharedState meterProviderSharedState,
@@ -103,6 +104,18 @@ final class SdkMeter implements Meter {
     this.meterEnabled = meterConfig.isEnabled();
   }
 
+  void updateMeterConfig(MeterConfig meterConfig) {
+    meterEnabled = meterConfig.isEnabled();
+
+    for (RegisteredReader registeredReader : readerStorageRegistries.keySet()) {
+      Collection<MetricStorage> storages =
+          Objects.requireNonNull(readerStorageRegistries.get(registeredReader)).getStorages();
+      for (MetricStorage storage : storages) {
+        storage.setEnabled(meterEnabled);
+      }
+    }
+  }
+
   // Visible for testing
   InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return instrumentationScopeInfo;
@@ -110,21 +123,22 @@ final class SdkMeter implements Meter {
 
   /** Collect all metrics for the meter. */
   Collection<MetricData> collectAll(RegisteredReader registeredReader, long epochNanos) {
-    // Short circuit collection process if meter is disabled
-    if (!meterEnabled) {
-      return Collections.emptyList();
-    }
     List<CallbackRegistration> currentRegisteredCallbacks;
     synchronized (callbackLock) {
       currentRegisteredCallbacks = new ArrayList<>(callbackRegistrations);
     }
     // Collections across all readers are sequential
     synchronized (collectLock) {
-      for (CallbackRegistration callbackRegistration : currentRegisteredCallbacks) {
-        callbackRegistration.invokeCallback(
-            registeredReader, meterProviderSharedState.getStartEpochNanos(), epochNanos);
+      // Only invoke callbacks if meter is enabled
+      if (meterEnabled) {
+        for (CallbackRegistration callbackRegistration : currentRegisteredCallbacks) {
+          callbackRegistration.invokeCallback(
+              registeredReader, meterProviderSharedState.getStartEpochNanos(), epochNanos);
+        }
       }
 
+      // Collect even if meter is disabled. Storage is responsible for managing state and returning
+      // empty metric if disabled.
       Collection<MetricStorage> storages =
           Objects.requireNonNull(readerStorageRegistries.get(registeredReader)).getStorages();
       List<MetricData> result = new ArrayList<>(storages.size());
@@ -275,7 +289,8 @@ final class SdkMeter implements Meter {
                     reader,
                     registeredView,
                     instrument,
-                    meterProviderSharedState.getExemplarFilter())));
+                    meterProviderSharedState.getExemplarFilter(),
+                    meterEnabled)));
       }
     }
 
@@ -301,7 +316,8 @@ final class SdkMeter implements Meter {
         }
         registeredStorages.add(
             registry.register(
-                AsynchronousMetricStorage.create(reader, registeredView, instrumentDescriptor)));
+                AsynchronousMetricStorage.create(
+                    reader, registeredView, instrumentDescriptor, meterEnabled)));
       }
     }
 

@@ -86,7 +86,8 @@ class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
-                Advice.empty()));
+                Advice.empty()),
+            /* enabled= */ true);
     doubleCounterStorage =
         AsynchronousMetricStorage.create(
             registeredReader,
@@ -97,7 +98,8 @@ class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE,
-                Advice.empty()));
+                Advice.empty()),
+            /* enabled= */ true);
   }
 
   @ParameterizedTest
@@ -174,7 +176,8 @@ class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
-                Advice.empty()));
+                Advice.empty()),
+            /* enabled= */ true);
 
     storage.setEpochInformation(0, 1);
     storage.record(Attributes.builder().put("key1", "a").put("key2", "b").build(), 1);
@@ -342,7 +345,8 @@ class AsynchronousMetricStorageTest {
                 "unit",
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
-                Advice.empty()));
+                Advice.empty()),
+            /* enabled= */ true);
 
     // Record measurement and collect at time 10
     longCounterStorage.setEpochInformation(0, 10);
@@ -455,5 +459,30 @@ class AsynchronousMetricStorageTest {
       assertThat(secondCollectPoints)
           .anySatisfy(point -> assertThat(point).isSameAs(firstCollectionPoint));
     }
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisable_recordAndCollect(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    longCounterStorage.setEnabled(false);
+
+    longCounterStorage.record(Attributes.empty(), 10);
+
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0).isEmpty()).isTrue();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisableThenEnable_recordAndCollect(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    longCounterStorage.setEnabled(false);
+    longCounterStorage.setEnabled(true);
+
+    longCounterStorage.record(Attributes.empty(), 10);
+
+    assertThat(longCounterStorage.collect(resource, scope, 0, 0).isEmpty()).isFalse();
   }
 }

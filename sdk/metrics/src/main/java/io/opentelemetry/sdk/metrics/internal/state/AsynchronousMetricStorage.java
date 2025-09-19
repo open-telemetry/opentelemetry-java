@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -86,12 +87,15 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private long startEpochNanos;
   private long epochNanos;
 
+  private boolean enabled;
+
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T, U> aggregator,
       AttributesProcessor attributesProcessor,
-      int maxCardinality) {
+      int maxCardinality,
+      boolean enabled) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     this.aggregationTemporality =
@@ -102,6 +106,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
+    this.enabled = enabled;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
     this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
     this.handleBuilder = ignored -> reusableHandlesPool.borrowObject();
@@ -125,7 +130,8 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       AsynchronousMetricStorage<T, U> create(
           RegisteredReader registeredReader,
           RegisteredView registeredView,
-          InstrumentDescriptor instrumentDescriptor) {
+          InstrumentDescriptor instrumentDescriptor,
+          boolean enabled) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
@@ -140,7 +146,8 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
         metricDescriptor,
         aggregator,
         registeredView.getViewAttributesProcessor(),
-        registeredView.getCardinalityLimit());
+        registeredView.getCardinalityLimit(),
+        enabled);
   }
 
   /** Record callback measurement from {@link ObservableLongMeasurement}. */
@@ -207,8 +214,10 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     aggregatorHandles.forEach(handleReleaser);
     aggregatorHandles.clear();
 
-    return aggregator.toMetricData(
-        resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality);
+    return enabled
+        ? aggregator.toMetricData(
+            resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality)
+        : EmptyMetricData.getInstance();
   }
 
   private Collection<T> collectWithDeltaAggregationTemporality() {
@@ -310,7 +319,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   }
 
   @Override
-  public boolean isEmpty() {
-    return aggregator == Aggregator.drop();
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 }
