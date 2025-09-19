@@ -32,6 +32,10 @@ jobs:
           - 11
           - 17
           - 21
+          # keeping 23 around for now because its new enough to support --sun-misc-unsafe-memory-access=deny
+          # but old enough to support -Djava.security.manager which is used to work around an issue with
+          # the protobuf test-only dependency
+          - 23
           - 24 # renovate: datasource=java-version
         # Collect coverage on latest LTS
         include:
@@ -49,6 +53,8 @@ jobs:
             test-java-version: 17
           - os: macos-13
             test-java-version: 21
+          - os: macos-13
+            test-java-version: 23
           - os: macos-13
             test-java-version: 24 # renovate: datasource=java-version
     steps:
@@ -70,11 +76,13 @@ jobs:
 
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+
       - name: Build
         run: >
             ./gradlew build
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
+            ${{ matrix.test-java-version == 23 && '-PdenyUnsafe=true' || '' }}
             "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
             "-Porg.gradle.java.installations.auto-download=false"
         env:

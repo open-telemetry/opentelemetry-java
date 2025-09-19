@@ -41,6 +41,16 @@ dependencies {
   jmhImplementation("io.grpc:grpc-netty")
 }
 
+tasks.withType<Test>().configureEach {
+  val denyUnsafe = gradle.startParameter.projectProperties.get("denyUnsafe")?.toBoolean() ?: false
+  if (denyUnsafe) {
+    // Use a custom Security Manager to force proper fallback from protobuf under --sun-misc-unsafe-memory-access=deny
+    // Workaround for https://github.com/protocolbuffers/protobuf/issues/20760
+    // Note: protobuf is only a test dependency, so this issue does not affect users
+    jvmArgs("-Djava.security.manager=io.opentelemetry.exporter.internal.otlp.unsafe.ProtobufWorkaroundSecurityManager")
+  }
+}
+
 testing {
   suites {
     register<JvmTestSuite>("testIncubating") {
