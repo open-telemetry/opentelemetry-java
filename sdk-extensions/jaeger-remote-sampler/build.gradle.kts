@@ -20,7 +20,7 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":exporters:sender:okhttp"))
 
-  implementation("com.squareup.okhttp3:okhttp-jvm")
+  implementation("com.squareup.okhttp3:okhttp")
 
   compileOnly("io.grpc:grpc-api")
   compileOnly("io.grpc:grpc-protobuf")

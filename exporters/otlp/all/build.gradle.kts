@@ -34,7 +34,7 @@ dependencies {
   jmhImplementation("com.linecorp.armeria:armeria")
   jmhImplementation("com.linecorp.armeria:armeria-grpc")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
-  jmhRuntimeOnly("com.squareup.okhttp3:okhttp-jvm")
+  jmhRuntimeOnly("com.squareup.okhttp3:okhttp")
   jmhRuntimeOnly("io.grpc:grpc-netty")
 }
 
@@ -64,12 +64,8 @@ testing {
               }
             }
           }
-          if (it.equals("LATEST")) {
-            implementation("com.squareup.okhttp3:okhttp-jvm")
-          } else {
-            implementation("com.squareup.okhttp3:okhttp")
-          }
 
+          implementation("com.squareup.okhttp3:okhttp")
           implementation("io.grpc:grpc-stub")
         }
 
