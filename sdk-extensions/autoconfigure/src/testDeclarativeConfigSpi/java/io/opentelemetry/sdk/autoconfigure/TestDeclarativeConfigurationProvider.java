@@ -17,6 +17,9 @@ public class TestDeclarativeConfigurationProvider implements DeclarativeConfigur
     String yaml =
         "file_format: \"1.0-rc.1\"\n"
             + "resource:\n"
+            + "  detection/development:\n"
+            + "    detectors:\n"
+            + "      - test:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
             + "      value: test\n"
