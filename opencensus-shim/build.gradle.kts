@@ -25,9 +25,17 @@ dependencies {
   testImplementation("io.opencensus:opencensus-contrib-exemplar-util")
 }
 
-tasks.named<Test>("test") {
-  // We must force a fork per-test class because OpenCensus pollutes globals with no restorative
-  // methods available.
-  setForkEvery(1)
-  maxParallelForks = 3
+tasks {
+  withType<Test>().configureEach {
+    // We must force a fork per-test class because OpenCensus pollutes globals with no restorative
+    // methods available.
+    setForkEvery(1)
+    maxParallelForks = 3
+
+    val denyUnsafe = gradle.startParameter.projectProperties.get("denyUnsafe")?.toBoolean() ?: false
+    if (denyUnsafe) {
+      // OpenCensus uses LMAX Disruptor 3.4.2 which uses Unsafe
+      jvmArgs("--sun-misc-unsafe-memory-access=allow")
+    }
+  }
 }
