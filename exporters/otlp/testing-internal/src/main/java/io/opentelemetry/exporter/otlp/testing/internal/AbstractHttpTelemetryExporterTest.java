@@ -13,6 +13,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.linecorp.armeria.common.HttpRequest;
@@ -101,7 +103,6 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.support.ParameterDeclarations;
-import org.mockserver.integration.ClientAndServer;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
@@ -648,30 +649,35 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void proxy() {
-    // configure mockserver to proxy to the local OTLP server
-    InetSocketAddress serverSocketAddress = server.httpSocketAddress();
-    try (ClientAndServer clientAndServer =
-            ClientAndServer.startClientAndServer(
-                serverSocketAddress.getHostName(), serverSocketAddress.getPort());
-        TelemetryExporter<T> exporter =
-            exporterBuilder()
-                // Configure exporter with server endpoint, and proxy options to route through
-                // mockserver proxy
-                .setEndpoint(server.httpUri() + path)
-                .setProxyOptions(
-                    ProxyOptions.create(
-                        InetSocketAddress.createUnresolved("localhost", clientAndServer.getPort())))
-                .build()) {
+    // configure wiremock to proxy to the local OTLP server
+    WireMockServer wireMockServer = new WireMockServer(0);
+    wireMockServer.start();
+
+    // Configure WireMock to proxy all requests to the actual server
+    wireMockServer.stubFor(
+        WireMock.any(WireMock.anyUrl())
+            .willReturn(WireMock.aResponse().proxiedFrom(server.httpUri().toString())));
+
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            // Configure exporter with server endpoint, and proxy options to route through
+            // wiremock proxy
+            .setEndpoint(server.httpUri() + path)
+            .setProxyOptions(
+                ProxyOptions.create(
+                    InetSocketAddress.createUnresolved("localhost", wireMockServer.port())))
+            .build()) {
 
       List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
 
       assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-      // assert that mock server received request
-      assertThat(clientAndServer.retrieveRecordedRequests(new org.mockserver.model.HttpRequest()))
-          .hasSize(1);
+      // assert that wiremock server received request
+      wireMockServer.verify(1, WireMock.anyRequestedFor(WireMock.anyUrl()));
       // assert that server received telemetry from proxy, and is as expected
       List<U> expectedResourceTelemetry = toProto(telemetry);
       assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+    } finally {
+      wireMockServer.stop();
     }
   }
 

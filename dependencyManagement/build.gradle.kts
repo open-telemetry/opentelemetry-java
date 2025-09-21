@@ -92,7 +92,7 @@ val DEPENDENCIES = listOf(
   "org.codehaus.mojo:animal-sniffer-annotations:1.24",
   "org.jctools:jctools-core:4.0.5",
   "org.junit-pioneer:junit-pioneer:1.9.1",
-  "org.mock-server:mockserver-netty:5.15.0:shaded",
+  "com.github.tomakehurst:wiremock-jre8:2.35.2",
   "org.skyscreamer:jsonassert:1.5.3",
   "com.android.tools:desugar_jdk_libs:2.1.5",
 )
