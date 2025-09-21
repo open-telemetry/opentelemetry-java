@@ -43,7 +43,7 @@ class JcToolsTest {
   void drain_MessagePassingQueue() {
     // Arrange
     batch.add("Test3");
-    Queue<String> queue = new MpscArrayQueue<>(10);
+    Queue<String> queue = JcTools.newFixedSizeQueue(10);
     queue.add("Test1");
     queue.add("Test2");
 
@@ -58,7 +58,7 @@ class JcToolsTest {
   @Test
   void drain_MaxBatch() {
     // Arrange
-    Queue<String> queue = new MpscArrayQueue<>(10);
+    Queue<String> queue = JcTools.newFixedSizeQueue(10);
     queue.add("Test1");
     queue.add("Test2");
 
@@ -79,7 +79,10 @@ class JcToolsTest {
     Queue<Object> objects = JcTools.newFixedSizeQueue(capacity);
 
     // Assert
-    assertThat(objects).isInstanceOf(MpscArrayQueue.class);
+    assertThat(objects)
+        .satisfiesAnyOf(
+            queue -> assertThat(queue).isInstanceOf(MpscArrayQueue.class),
+            queue -> assertThat(queue).isInstanceOf(ArrayBlockingQueue.class));
   }
 
   @Test
@@ -92,7 +95,7 @@ class JcToolsTest {
     long queueSize = JcTools.capacity(queue);
 
     // Assert
-    assertThat(queueSize).isGreaterThan(capacity);
+    assertThat(queueSize).isGreaterThanOrEqualTo(capacity);
   }
 
   @Test
