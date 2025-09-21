@@ -7,13 +7,13 @@ package io.opentelemetry.sdk.trace.internal;
 
 import java.util.Objects;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jctools.queues.MessagePassingQueue;
 import org.jctools.queues.MpscArrayQueue;
+import org.jctools.queues.atomic.MpscAtomicArrayQueue;
 
 /**
  * Internal accessor of JCTools package for fast queues.
@@ -25,11 +25,15 @@ public final class JcTools {
 
   private static final AtomicBoolean queueCreationWarningLogged = new AtomicBoolean();
   private static final Logger logger = Logger.getLogger(JcTools.class.getName());
+  private static final boolean PROACTIVELY_AVOID_UNSAFE = proactivelyAvoidUnsafe();
 
   /**
    * Returns a new {@link Queue} appropriate for use with multiple producers and a single consumer.
    */
   public static <T> Queue<T> newFixedSizeQueue(int capacity) {
+    if (PROACTIVELY_AVOID_UNSAFE) {
+      return new MpscAtomicArrayQueue<>(capacity);
+    }
     try {
       return new MpscArrayQueue<>(capacity);
     } catch (java.lang.NoClassDefFoundError | java.lang.ExceptionInInitializerError e) {
@@ -41,7 +45,7 @@ public final class JcTools {
       }
       // Happens when modules such as jdk.unsupported are disabled in a custom JRE distribution,
       // or a security manager preventing access to Unsafe is installed.
-      return new ArrayBlockingQueue<>(capacity);
+      return new MpscAtomicArrayQueue<>(capacity);
     }
   }
 
@@ -50,11 +54,7 @@ public final class JcTools {
    * to use the shaded classes.
    */
   public static long capacity(Queue<?> queue) {
-    if (queue instanceof MessagePassingQueue) {
-      return ((MessagePassingQueue<?>) queue).capacity();
-    } else {
-      return (long) ((ArrayBlockingQueue<?>) queue).remainingCapacity() + queue.size();
-    }
+    return ((MessagePassingQueue<?>) queue).capacity();
   }
 
   /**
@@ -65,22 +65,26 @@ public final class JcTools {
    */
   @SuppressWarnings("unchecked")
   public static <T> int drain(Queue<T> queue, int limit, Consumer<T> consumer) {
-    if (queue instanceof MessagePassingQueue) {
-      return ((MessagePassingQueue<T>) queue).drain(consumer::accept, limit);
-    } else {
-      return drainNonJcQueue(queue, limit, consumer);
-    }
+    return ((MessagePassingQueue<T>) queue).drain(consumer::accept, limit);
   }
 
-  private static <T> int drainNonJcQueue(
-      Queue<T> queue, int maxExportBatchSize, Consumer<T> consumer) {
-    int polledCount = 0;
-    T item;
-    while (polledCount < maxExportBatchSize && (item = queue.poll()) != null) {
-      consumer.accept(item);
-      ++polledCount;
+  private static boolean proactivelyAvoidUnsafe() {
+    double javaVersion = getJavaVersion();
+    // Avoid Unsafe on Java 23+ due to JEP-498 deprecation warnings:
+    // "WARNING: A terminally deprecated method in sun.misc.Unsafe has been called"
+    return javaVersion >= 23 || javaVersion == -1;
+  }
+
+  private static double getJavaVersion() {
+    String specVersion = System.getProperty("java.specification.version");
+    if (specVersion != null) {
+      try {
+        return Double.parseDouble(specVersion);
+      } catch (NumberFormatException exception) {
+        // ignore
+      }
     }
-    return polledCount;
+    return -1;
   }
 
   private JcTools() {}
