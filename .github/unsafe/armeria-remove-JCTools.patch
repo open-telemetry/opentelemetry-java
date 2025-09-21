@@ -1,0 +1,92 @@
+From f371066409daaf55739eb60e1ef0d9f42b21ac2a Mon Sep 17 00:00:00 2001
+From: Trask Stalnaker <trask.stalnaker@gmail.com>
+Date: Sat, 20 Sep 2025 15:36:51 -0700
+Subject: [PATCH] Remove JCTools
+
+---
+ .../java/com/linecorp/armeria/common/ExceptionSampler.java   | 5 ++---
+ .../linecorp/armeria/common/stream/DefaultStreamMessage.java | 4 ++--
+ core/src/main/java/com/linecorp/armeria/server/Server.java   | 4 ++--
+ 3 files changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/core/src/main/java/com/linecorp/armeria/common/ExceptionSampler.java b/core/src/main/java/com/linecorp/armeria/common/ExceptionSampler.java
+index 87afd2074..b5c1c2470 100644
+--- a/core/src/main/java/com/linecorp/armeria/common/ExceptionSampler.java
++++ b/core/src/main/java/com/linecorp/armeria/common/ExceptionSampler.java
+@@ -18,10 +18,9 @@ package com.linecorp.armeria.common;
+ import static java.util.Objects.requireNonNull;
+ 
+ import java.util.Map;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.function.Function;
+ 
+-import org.jctools.maps.NonBlockingHashMap;
+-
+ import com.google.common.base.MoreObjects;
+ 
+ import com.linecorp.armeria.common.util.Sampler;
+@@ -29,7 +28,7 @@ import com.linecorp.armeria.common.util.Sampler;
+ final class ExceptionSampler implements Sampler<Class<? extends Throwable>> {
+ 
+     private final Map<Class<? extends Throwable>, Sampler<Class<? extends Throwable>>> samplers =
+-            new NonBlockingHashMap<>();
++            new ConcurrentHashMap<>();
+     private final Function<? super Class<? extends Throwable>,
+             ? extends Sampler<Class<? extends Throwable>>> samplerFactory;
+     private final String spec;
+diff --git a/core/src/main/java/com/linecorp/armeria/common/stream/DefaultStreamMessage.java b/core/src/main/java/com/linecorp/armeria/common/stream/DefaultStreamMessage.java
+index e9328f03e..12173e999 100644
+--- a/core/src/main/java/com/linecorp/armeria/common/stream/DefaultStreamMessage.java
++++ b/core/src/main/java/com/linecorp/armeria/common/stream/DefaultStreamMessage.java
+@@ -22,9 +22,9 @@ import static java.util.Objects.requireNonNull;
+ 
+ import java.util.Queue;
+ import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.ConcurrentLinkedQueue;
+ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+ 
+-import org.jctools.queues.MpscChunkedArrayQueue;
+ import org.reactivestreams.Subscriber;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+@@ -109,7 +109,7 @@ public class DefaultStreamMessage<T> extends AbstractStreamWriter<T> {
+      */
+     @Deprecated
+     public DefaultStreamMessage() {
+-        queue = new MpscChunkedArrayQueue<>(INITIAL_CAPACITY, 1 << 30);
++        queue = new ConcurrentLinkedQueue<>();
+     }
+ 
+     @Override
+diff --git a/core/src/main/java/com/linecorp/armeria/server/Server.java b/core/src/main/java/com/linecorp/armeria/server/Server.java
+index 6b8b0b557..0c3eed942 100644
+--- a/core/src/main/java/com/linecorp/armeria/server/Server.java
++++ b/core/src/main/java/com/linecorp/armeria/server/Server.java
+@@ -37,6 +37,7 @@ import java.util.Set;
+ import java.util.concurrent.CompletableFuture;
+ import java.util.concurrent.CompletionException;
+ import java.util.concurrent.CompletionStage;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.ExecutionException;
+ import java.util.concurrent.Executor;
+ import java.util.concurrent.ExecutorService;
+@@ -51,7 +52,6 @@ import java.util.stream.Collectors;
+ 
+ import javax.net.ssl.SSLSession;
+ 
+-import org.jctools.maps.NonBlockingHashSet;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+@@ -119,7 +119,7 @@ public final class Server implements ListenableAsyncCloseable {
+ 
+     private final UpdatableServerConfig config;
+     private final StartStopSupport<Void, Void, Void, ServerListener> startStop;
+-    private final Set<ServerChannel> serverChannels = new NonBlockingHashSet<>();
++    private final Set<ServerChannel> serverChannels = ConcurrentHashMap.newKeySet();
+     private final ReentrantLock lock = new ReentrantShortLock();
+     @GuardedBy("lock")
+     private final Map<InetSocketAddress, ServerPort> activePorts = new LinkedHashMap<>();
+-- 
+2.51.0.windows.1
+
