@@ -49,5 +49,7 @@ class DeclarativeConfigurationSpiTest {
 
     assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
         .isEqualTo(expectedSdk.toString());
+
+    assertThat(TestResourceDetector.initialized).isTrue();
   }
 }

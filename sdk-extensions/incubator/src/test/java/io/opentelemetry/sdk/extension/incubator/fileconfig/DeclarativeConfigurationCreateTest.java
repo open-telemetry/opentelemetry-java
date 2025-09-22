@@ -9,12 +9,16 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigTest
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
@@ -172,5 +176,22 @@ class DeclarativeConfigurationCreateTest {
                 + "telemetry.sdk.language=\"java\", "
                 + "telemetry.sdk.name=\"opentelemetry\", "
                 + "telemetry.sdk.version=\"");
+  }
+
+  @Test
+  void callAutoConfigureListeners_exceptionIsCaught() {
+    SpiHelper spiHelper = mock(SpiHelper.class);
+    when(spiHelper.getListeners())
+        .thenReturn(
+            Collections.singleton(
+                sdk -> {
+                  throw new RuntimeException("Test exception from AutoConfigureListener");
+                }));
+
+    assertThatCode(
+            () ->
+                DeclarativeConfiguration.callAutoConfigureListeners(
+                    spiHelper, OpenTelemetrySdk.builder().build()))
+        .doesNotThrowAnyException();
   }
 }
