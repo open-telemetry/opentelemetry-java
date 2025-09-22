@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -135,7 +136,7 @@ class SdkSpanTest {
         spanData,
         Attributes.empty(),
         Collections.emptyList(),
-        Collections.singletonList(link),
+        singletonList(link),
         SPAN_NAME,
         START_EPOCH_NANOS,
         START_EPOCH_NANOS,
@@ -251,8 +252,8 @@ class SdkSpanTest {
       verifySpanData(
           spanData,
           expectedAttributes,
-          Collections.singletonList(event),
-          Collections.singletonList(link),
+          singletonList(event),
+          singletonList(link),
           SPAN_NEW_NAME,
           START_EPOCH_NANOS,
           0,
@@ -282,8 +283,8 @@ class SdkSpanTest {
     verifySpanData(
         spanData,
         expectedAttributes,
-        Collections.singletonList(event),
-        Collections.singletonList(link),
+        singletonList(event),
+        singletonList(link),
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
@@ -466,7 +467,8 @@ class SdkSpanTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // Testing deprecated code
+  @SuppressWarnings("deprecation")
+  // Testing deprecated code
   void getInstrumentationLibraryInfo() {
     SdkSpan span = createTestSpan(SpanKind.CLIENT);
     try {
@@ -552,13 +554,10 @@ class SdkSpanTest {
       span.setAttribute(doubleArrayKey("NullArrayDoubleKey"), null);
       span.setAttribute(booleanArrayKey("NullArrayBooleanKey"), null);
       // These should be maintained
-      span.setAttribute(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}));
-      span.setAttribute(
-          stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}));
-      span.setAttribute(
-          doubleArrayKey("ArrayWithNullDoubleKey"), Arrays.asList(new Double[] {null}));
-      span.setAttribute(
-          booleanArrayKey("ArrayWithNullBooleanKey"), Arrays.asList(new Boolean[] {null}));
+      span.setAttribute(longArrayKey("ArrayWithNullLongKey"), singletonList(null));
+      span.setAttribute(stringArrayKey("ArrayWithNullStringKey"), singletonList(null));
+      span.setAttribute(doubleArrayKey("ArrayWithNullDoubleKey"), singletonList(null));
+      span.setAttribute(booleanArrayKey("ArrayWithNullBooleanKey"), singletonList(null));
     } finally {
       span.end();
     }
@@ -691,10 +690,10 @@ class SdkSpanTest {
             .put(doubleArrayKey("NullArrayDoubleKey"), (Double[]) null)
             .put(booleanArrayKey("NullArrayBooleanKey"), (Boolean[]) null)
             // These should be maintained
-            .put(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}))
-            .put(stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}))
-            .put(doubleArrayKey("ArrayWithNullDoubleKey"), Arrays.asList(new Double[] {null}))
-            .put(booleanArrayKey("ArrayWithNullBooleanKey"), Arrays.asList(new Boolean[] {null}))
+            .put(longArrayKey("ArrayWithNullLongKey"), singletonList(null))
+            .put(stringArrayKey("ArrayWithNullStringKey"), singletonList(null))
+            .put(doubleArrayKey("ArrayWithNullDoubleKey"), singletonList(null))
+            .put(booleanArrayKey("ArrayWithNullBooleanKey"), singletonList(null))
             .build();
 
     try {
@@ -1315,7 +1314,7 @@ class SdkSpanTest {
             SpanLimits.getDefault(),
             parentSpanId,
             null,
-            Collections.singletonList(link),
+            singletonList(link),
             exceptionAttributeResolver);
 
     span.recordException(new IllegalStateException("error"));
@@ -1462,7 +1461,7 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         null,
         attributesMap,
-        Collections.singletonList(link),
+        singletonList(link),
         ExceptionAttributeResolver.getDefault());
   }
 
@@ -1472,7 +1471,7 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         SpanId.getInvalid(),
         null,
-        Collections.singletonList(link),
+        singletonList(link),
         ExceptionAttributeResolver.getDefault());
   }
 
@@ -1482,7 +1481,7 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         parentSpanId,
         null,
-        Collections.singletonList(link),
+        singletonList(link),
         ExceptionAttributeResolver.getDefault());
   }
 
@@ -1492,7 +1491,7 @@ class SdkSpanTest {
         config,
         parentSpanId,
         null,
-        Collections.singletonList(link),
+        singletonList(link),
         ExceptionAttributeResolver.getDefault());
   }
 
@@ -1611,7 +1610,7 @@ class SdkSpanTest {
             clock,
             resource,
             attributesWithCapacity,
-            Collections.singletonList(link1),
+            singletonList(link1),
             1,
             0);
     long startEpochNanos = clock.now();
@@ -1638,7 +1637,7 @@ class SdkSpanTest {
         result,
         attributesWithCapacity,
         events,
-        Collections.singletonList(link1),
+        singletonList(link1),
         name,
         startEpochNanos,
         endEpochNanos,
