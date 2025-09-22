@@ -162,14 +162,14 @@ class SdkSpanTest {
 
     AtomicBoolean endedStateInProcessor = new AtomicBoolean();
     doAnswer(
-        invocation -> {
-          ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
-          assertThat(sp.hasEnded()).isFalse();
-          sp.end(); // should have no effect, nested end should be detected
-          endedStateInProcessor.set(sp.hasEnded());
-          sp.setAttribute(dummyAttrib, "bar");
-          return null;
-        })
+            invocation -> {
+              ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
+              assertThat(sp.hasEnded()).isFalse();
+              sp.end(); // should have no effect, nested end should be detected
+              endedStateInProcessor.set(sp.hasEnded());
+              sp.setAttribute(dummyAttrib, "bar");
+              return null;
+            })
         .when(spanProcessor)
         .onEnding(any());
 
@@ -188,21 +188,21 @@ class SdkSpanTest {
     AttributeKey<String> concurrentAttrib = AttributeKey.stringKey("concurrent_foo");
 
     doAnswer(
-        invocation -> {
-          ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
+            invocation -> {
+              ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
 
-          Thread concurrent =
-              new Thread(
-                  () -> {
-                    sp.setAttribute(concurrentAttrib, "concurrent_bar");
-                  });
-          concurrent.start();
-          concurrent.join();
+              Thread concurrent =
+                  new Thread(
+                      () -> {
+                        sp.setAttribute(concurrentAttrib, "concurrent_bar");
+                      });
+              concurrent.start();
+              concurrent.join();
 
-          sp.setAttribute(syncAttrib, "sync_bar");
+              sp.setAttribute(syncAttrib, "sync_bar");
 
-          return null;
-        })
+              return null;
+            })
         .when(spanProcessor)
         .onEnding(any());
 
@@ -218,13 +218,13 @@ class SdkSpanTest {
 
     AtomicLong spanLatencyInProcessor = new AtomicLong();
     doAnswer(
-        invocation -> {
-          ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
+            invocation -> {
+              ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
 
-          testClock.advance(Duration.ofSeconds(100));
-          spanLatencyInProcessor.set(sp.getLatencyNanos());
-          return null;
-        })
+              testClock.advance(Duration.ofSeconds(100));
+              spanLatencyInProcessor.set(sp.getLatencyNanos());
+              return null;
+            })
         .when(spanProcessor)
         .onEnding(any());
 
@@ -307,7 +307,7 @@ class SdkSpanTest {
     SpanData spanData = span.toSpanData();
 
     assertThatThrownBy(
-        () -> spanData.getEvents().add(EventData.create(1000, "test", Attributes.empty())))
+            () -> spanData.getEvents().add(EventData.create(1000, "test", Attributes.empty())))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
@@ -318,7 +318,7 @@ class SdkSpanTest {
     SpanData spanData = span.toSpanData();
 
     assertThatThrownBy(
-        () -> spanData.getEvents().add(EventData.create(1000, "test", Attributes.empty())))
+            () -> spanData.getEvents().add(EventData.create(1000, "test", Attributes.empty())))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
@@ -468,7 +468,7 @@ class SdkSpanTest {
 
   @Test
   @SuppressWarnings("deprecation")
-    // Testing deprecated code
+  // Testing deprecated code
   void getInstrumentationLibraryInfo() {
     SdkSpan span = createTestSpan(SpanKind.CLIENT);
     try {
@@ -1373,8 +1373,8 @@ class SdkSpanTest {
             SpanKind.INTERNAL,
             parentSpanId != null
                 ? Span.wrap(
-                SpanContext.create(
-                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
+                    SpanContext.create(
+                        traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
                 : Span.getInvalid(),
             Context.root(),
             spanLimits,
@@ -1404,8 +1404,7 @@ class SdkSpanTest {
   private static Stream<Arguments> setStatusArgs() {
     return Stream.of(
         // Default status is UNSET
-        Arguments.of(spanConsumer(span -> {
-        }), StatusData.unset()),
+        Arguments.of(spanConsumer(span -> {}), StatusData.unset()),
         // Simple cases
         Arguments.of(spanConsumer(span -> span.setStatus(StatusCode.OK)), StatusData.ok()),
         Arguments.of(spanConsumer(span -> span.setStatus(StatusCode.ERROR)), StatusData.error()),
@@ -1513,8 +1512,8 @@ class SdkSpanTest {
             kind,
             parentSpanId != null
                 ? Span.wrap(
-                SpanContext.create(
-                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
+                    SpanContext.create(
+                        traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
                 : Span.getInvalid(),
             Context.root(),
             config,
@@ -1601,8 +1600,8 @@ class SdkSpanTest {
             kind,
             parentSpanId != null
                 ? Span.wrap(
-                SpanContext.create(
-                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
+                    SpanContext.create(
+                        traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
                 : Span.getInvalid(),
             Context.root(),
             spanLimits,
