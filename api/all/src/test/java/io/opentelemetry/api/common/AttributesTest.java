@@ -421,10 +421,14 @@ class AttributesTest {
     builder.put("long", 10);
     builder.put("double", 1.0);
     builder.put("bool", true);
-    builder.put("arrayString", new String[] {"string"});
-    builder.put("arrayLong", new long[] {10L});
-    builder.put("arrayDouble", new double[] {1.0});
-    builder.put("arrayBool", new boolean[] {true});
+    String[] strings = {"string"};
+    builder.put("arrayString", strings);
+    long[] longs = {10L};
+    builder.put("arrayLong", longs);
+    double[] doubles = {1.0};
+    builder.put("arrayDouble", doubles);
+    boolean[] booleans = {true};
+    builder.put("arrayBool", booleans);
     assertThat(builder.build().size()).isEqualTo(9);
 
     // note: currently these are no-op calls; that behavior is not required, so if it needs to
