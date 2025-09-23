@@ -37,7 +37,7 @@ public class ExporterBenchmark {
   public abstract static class AbstractProcessorBenchmark {
     private static final DockerImageName OTLP_COLLECTOR_IMAGE =
         DockerImageName.parse(
-            "otel/opentelemetry-collector-contrib:0.135.0@sha256:89107a3a8f4636a396927edf7025bb9614b8da2d92f4cc3f43109e8d115736e2");
+            "otel/opentelemetry-collector-contrib:0.136.0@sha256:45392d534c1edcc809c2d112394029246bc679d2ae5ea7081414a1fc74f2c621");
     protected static final int OTLP_PORT = 5678;
     private static final int HEALTH_CHECK_PORT = 13133;
     protected SdkSpanBuilder sdkSpanBuilder;
