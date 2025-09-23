@@ -19,7 +19,8 @@ import org.junit.jupiter.api.condition.JRE;
 public class JcToolsSecurityManagerTest {
 
   @Test
-  @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_11, JRE.JAVA_17})
+  // Security manager removed in Java 24
+  @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_11, JRE.JAVA_17, JRE.JAVA_21})
   @SuppressLogger(JcTools.class)
   void newFixedSizeQueue_SunMiscProhibited() {
     assertThat(System.getSecurityManager()).isNull();
