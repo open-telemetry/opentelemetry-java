@@ -1,0 +1,97 @@
+name: Benchmark PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  BENCHMARK_MODULE: sdk/logs
+  BENCHMARK_CLASSES: BooleanStateBenchmark
+
+jobs:
+  sdk-benchmark:
+    name: Benchmark SDK (Java ${{ matrix.test-java-version }})
+    if: contains(github.event.pull_request.labels.*.name, 'run benchmarks')
+    strategy:
+      fail-fast: false
+      matrix:
+        test-java-version:
+          - 17
+          - 24
+    runs-on: oracle-bare-metal-64cpu-512gb-x86-64
+    container:
+      image: ubuntu:24.04@sha256:353675e2a41babd526e2b837d7ec780c2a05bca0164f7ea5dbbd433d21d166fc
+    timeout-minutes: 20 # since there is only a single bare metal runner across all repos
+    steps:
+      - name: Install Git
+        run: |
+          apt-get update
+          apt-get install -y git
+
+      - name: Configure Git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - id: setup-java-test
+        name: Set up Java ${{ matrix.test-java-version }} for tests
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.test-java-version }}
+
+      - id: setup-java
+        name: Set up Java for build
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+
+      - name: Build Benchmark
+        run: ./gradlew jmhJar
+
+      - name: Run Benchmark
+        run: >
+          ${{ steps.setup-java-test.outputs.path }}/bin/java
+          -jar ${{ env.BENCHMARK_MODULE }}/build/libs/opentelemetry-*-jmh.jar
+          -rf json
+          ${{ env.BENCHMARK_CLASSES }}
+
+      - name: Rename results
+        run: mv jmh-result.json jmh-result-pr.json
+
+      - name: Switch to main branch
+        run: git checkout origin/main
+
+      - name: Build Benchmark on main branch
+        run: ./gradlew jmhJar
+
+      - name: Run Benchmark on main branch
+        run: >
+          ${{ steps.setup-java-test.outputs.path }}/bin/java
+          -jar ${{ env.BENCHMARK_MODULE }}/build/libs/opentelemetry-*-jmh.jar
+          -rf json
+          ${{ env.BENCHMARK_CLASSES }}
+        # Allow failure when benchmark doesn't exist on main branch (new benchmarks in PR)
+        continue-on-error: true
+
+      - name: Rename results
+        run: mv jmh-result.json jmh-result-main.json
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: benchmark-results-java-${{ matrix.test-java-version }}
+          path: |
+            jmh-result-pr.json
+            jmh-result-main.json
