@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.internal;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -69,22 +70,22 @@ public final class JcTools {
   }
 
   private static boolean proactivelyAvoidUnsafe() {
-    double javaVersion = getJavaVersion();
+    Optional<Double> javaVersion = getJavaVersion();
     // Avoid Unsafe on Java 23+ due to JEP-498 deprecation warnings:
     // "WARNING: A terminally deprecated method in sun.misc.Unsafe has been called"
-    return javaVersion >= 23 || javaVersion == -1;
+    return javaVersion.map(version -> version >= 23).orElse(true);
   }
 
-  private static double getJavaVersion() {
+  private static Optional<Double> getJavaVersion() {
     String specVersion = System.getProperty("java.specification.version");
     if (specVersion != null) {
       try {
-        return Double.parseDouble(specVersion);
+        return Optional.of(Double.parseDouble(specVersion));
       } catch (NumberFormatException exception) {
         // ignore
       }
     }
-    return -1;
+    return Optional.empty();
   }
 
   private JcTools() {}
