@@ -19,7 +19,6 @@ configurations {
   val implementation by getting
 
   create("transitiveSourceElements") {
-    isVisible = false
     isCanBeResolved = false
     isCanBeConsumed = true
     extendsFrom(implementation)
@@ -34,7 +33,6 @@ configurations {
   }
 
   create("coverageDataElements") {
-    isVisible = false
     isCanBeResolved = false
     isCanBeConsumed = true
     extendsFrom(implementation)
