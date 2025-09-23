@@ -9,6 +9,7 @@ import static io.opentelemetry.api.incubator.config.DeclarativeConfigProperties.
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
@@ -18,8 +19,12 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class YamlDeclarativeConfigPropertiesTest {
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(YamlDeclarativeConfigProperties.class);
 
   private static final String extendedSchema =
       "file_format: \"1.0-rc.1\"\n"
@@ -225,6 +230,22 @@ class YamlDeclarativeConfigPropertiesTest {
     assertThat(otherProps.getScalarList("str_key", String.class)).isNull();
     assertThat(otherProps.getStructured("str_key")).isNull();
     assertThat(otherProps.getStructuredList("str_key")).isNull();
+
+    assertWarning("Ignoring value for key [int_key] because it is Integer instead of String: 1");
+    assertWarning(
+        "Ignoring value for key [str_key] because it is String instead of Long: str_value");
+    assertWarning(
+        "Ignoring value for key [str_key] because it is String instead of Double: str_value");
+    assertWarning(
+        "Ignoring value for key [str_key] because it is String instead of Boolean: str_value");
+  }
+
+  private void assertWarning(String message) {
+    logs.assertContains(
+        e ->
+            String.format(e.getMessage().replaceAll("\\{\\d}", "%s"), e.getArgumentArray())
+                .contains(message),
+        message);
   }
 
   @Test
