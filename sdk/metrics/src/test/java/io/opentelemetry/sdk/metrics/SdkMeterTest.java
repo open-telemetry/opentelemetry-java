@@ -18,6 +18,7 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Locale;
@@ -480,5 +481,17 @@ class SdkMeterTest {
                 + "schemaUrl=null, "
                 + "attributes={}"
                 + "}}");
+  }
+
+  @Test
+  void updateEnabled() {
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
+    SdkMeter meter = (SdkMeter) sdkMeterProvider.get("test");
+
+    meter.updateMeterConfig(MeterConfig.disabled());
+    assertThat(meter.isMeterEnabled()).isFalse();
+    meter.updateMeterConfig(MeterConfig.enabled());
+    assertThat(meter.isMeterEnabled()).isTrue();
   }
 }

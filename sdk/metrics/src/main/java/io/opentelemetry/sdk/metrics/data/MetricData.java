@@ -122,7 +122,7 @@ public interface MetricData {
   @SuppressWarnings("unchecked")
   default SumData<DoublePointData> getDoubleSumData() {
     if (getType() == MetricDataType.DOUBLE_SUM) {
-      return (ImmutableSumData<DoublePointData>) getData();
+      return (SumData<DoublePointData>) getData();
     }
     return ImmutableSumData.empty();
   }

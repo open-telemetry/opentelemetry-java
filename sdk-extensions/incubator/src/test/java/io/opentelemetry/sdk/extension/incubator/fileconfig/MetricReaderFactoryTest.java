@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,12 +21,14 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.io.Closeable;
@@ -92,7 +95,7 @@ class MetricReaderFactoryTest {
   @Test
   void create_PeriodicConfigured() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.metrics.export.MetricReader expectedReader =
+    MetricReader expectedReader =
         io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
                 OtlpHttpMetricExporter.getDefault())
             .setInterval(Duration.ofMillis(1))
@@ -143,8 +146,7 @@ class MetricReaderFactoryTest {
                                         new ExperimentalPrometheusMetricExporterModel()
                                             .withPort(port)))),
                 context);
-    io.opentelemetry.sdk.metrics.export.MetricReader reader =
-        readerAndCardinalityLimits.getMetricReader();
+    MetricReader reader = readerAndCardinalityLimits.getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
@@ -160,7 +162,13 @@ class MetricReaderFactoryTest {
 
     List<Closeable> closeables = new ArrayList<>();
     PrometheusHttpServer expectedReader =
-        PrometheusHttpServer.builder().setHost("localhost").setPort(port).build();
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(port)
+            .setAllowedResourceAttributesFilter(
+                IncludeExcludePredicate.createPatternMatching(
+                    singletonList("foo"), singletonList("bar")))
+            .build();
     // Close the reader to avoid port conflict with the new instance created by MetricReaderFactory
     expectedReader.close();
 
@@ -170,16 +178,22 @@ class MetricReaderFactoryTest {
                 new MetricReaderModel()
                     .withPull(
                         new PullMetricReaderModel()
+                            .withCardinalityLimits(new CardinalityLimitsModel().withDefault(100))
                             .withExporter(
                                 new PullMetricExporterModel()
                                     .withPrometheusDevelopment(
                                         new ExperimentalPrometheusMetricExporterModel()
                                             .withHost("localhost")
-                                            .withPort(port)))
-                            .withCardinalityLimits(new CardinalityLimitsModel().withDefault(100))),
+                                            .withPort(port)
+                                            .withWithResourceConstantLabels(
+                                                new IncludeExcludeModel()
+                                                    .withIncluded(singletonList("foo"))
+                                                    .withExcluded(singletonList("bar")))
+                                            .withWithoutScopeInfo(true)
+                                            .withWithoutTypeSuffix(true)
+                                            .withWithoutUnits(true)))),
                 context);
-    io.opentelemetry.sdk.metrics.export.MetricReader reader =
-        readerAndCardinalityLimits.getMetricReader();
+    MetricReader reader = readerAndCardinalityLimits.getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 

@@ -488,6 +488,7 @@ class ViewRegistryTest {
               assertThat(view)
                   .as("is the same as the default view, except the attributes processor")
                   .usingRecursiveComparison()
+                  .withStrictTypeChecking()
                   .ignoringFields("viewAttributesProcessor")
                   .isEqualTo(DEFAULT_REGISTERED_VIEW);
               assertThat(view)
@@ -520,6 +521,7 @@ class ViewRegistryTest {
               assertThat(view)
                   .as("is the same as the default view, except the attributes processor")
                   .usingRecursiveComparison()
+                  .withStrictTypeChecking()
                   .ignoringFields("viewAttributesProcessor")
                   .isEqualTo(DEFAULT_REGISTERED_VIEW);
               assertThat(view)

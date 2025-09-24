@@ -28,6 +28,11 @@ class ExtendedDefaultLogger implements ExtendedLogger {
   }
 
   @Override
+  public boolean isEnabled(Severity severity, Context context) {
+    return false;
+  }
+
+  @Override
   public ExtendedLogRecordBuilder logRecordBuilder() {
     return NOOP_LOG_RECORD_BUILDER;
   }

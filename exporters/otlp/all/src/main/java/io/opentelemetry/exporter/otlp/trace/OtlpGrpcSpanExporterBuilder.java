@@ -11,14 +11,15 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
-import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
@@ -55,8 +56,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   OtlpGrpcSpanExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            "otlp",
-            "span",
+            StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,
@@ -140,13 +140,12 @@ public final class OtlpGrpcSpanExporterBuilder {
 
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
-   * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * method "gzip" and "none" are supported out of the box. Additional compression methods can be
+   * supported by providing custom {@link Compressor} implementations via the service loader.
    */
   public OtlpGrpcSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
-    delegate.setCompression(compressor);
+    delegate.setCompression(compressionMethod);
     return this;
   }
 
@@ -243,6 +242,19 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   *
+   * @since 1.51.0
+   */
+  public OtlpGrpcSpanExporterBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetryVersion(schemaVersion);
+    return this;
+  }
+
+  /**
    * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
    *
    * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
@@ -257,13 +269,20 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
-   * Set the {@link ClassLoader} used to load the sender API.
+   * Set the {@link ClassLoader} used to load the sender API. Variant of {@link
+   * #setComponentLoader(ComponentLoader)}.
    *
    * @since 1.48.0
    */
   public OtlpGrpcSpanExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
-    delegate.setServiceClassLoader(serviceClassLoader);
+    return setComponentLoader(ComponentLoader.forClassLoader(serviceClassLoader));
+  }
+
+  /** Set the {@link ComponentLoader} used to load the sender API. */
+  public OtlpGrpcSpanExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    delegate.setComponentLoader(componentLoader);
     return this;
   }
 

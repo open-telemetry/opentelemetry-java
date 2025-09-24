@@ -16,7 +16,10 @@ plugins {
  */
 val latestReleasedVersion: String by lazy {
   // hack to find the current released version of the project
-  val temp: Configuration = configurations.create("tempConfig")
+  val temp: Configuration = configurations.create("tempConfig") {
+    resolutionStrategy.cacheChangingModulesFor(0, "seconds")
+    resolutionStrategy.cacheDynamicVersionsFor(0, "seconds")
+  }
   // pick the api, since it's always there.
   dependencies.add(temp.name, "io.opentelemetry:opentelemetry-api:latest.release")
   val moduleVersion = configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
@@ -142,6 +145,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
           // Temporarily suppress warnings from public generated classes from :sdk-extensions:jaeger-remote-sampler
           "io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2"
         )
+        annotationExcludes.add("@kotlin.Metadata")
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
         txtOutputFile.set(
           apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_$baselineVersion/${base.archivesName.get()}.txt") }

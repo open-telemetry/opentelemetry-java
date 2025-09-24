@@ -10,7 +10,7 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
 
-  compileOnly("com.fasterxml.jackson.core:jackson-core")
+  testImplementation("com.fasterxml.jackson.core:jackson-core")
 }
 
 tasks {

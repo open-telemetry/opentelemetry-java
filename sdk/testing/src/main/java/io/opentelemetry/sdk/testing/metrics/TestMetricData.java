@@ -23,6 +23,8 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Immutable representation of all data collected by the {@link
  * io.opentelemetry.sdk.metrics.data.MetricData} class.
+ *
+ * @since 1.50.0
  */
 @Immutable
 @AutoValue

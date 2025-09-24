@@ -117,7 +117,8 @@ public class SynchronousMetricStorageTest {
             METRIC_DESCRIPTOR,
             aggregator,
             attributesProcessor,
-            CARDINALITY_LIMIT);
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
 
     storage.recordDouble(Double.NaN, Attributes.empty(), Context.current());
 
@@ -143,7 +144,8 @@ public class SynchronousMetricStorageTest {
             METRIC_DESCRIPTOR,
             aggregator,
             spyAttributesProcessor,
-            CARDINALITY_LIMIT);
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
     storage.recordDouble(1, attributes, Context.root());
     MetricData md = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
     assertThat(md)
@@ -166,7 +168,8 @@ public class SynchronousMetricStorageTest {
             METRIC_DESCRIPTOR,
             aggregator,
             attributesProcessor,
-            CARDINALITY_LIMIT);
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
@@ -210,7 +213,12 @@ public class SynchronousMetricStorageTest {
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
@@ -259,7 +267,12 @@ public class SynchronousMetricStorageTest {
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
@@ -361,7 +374,8 @@ public class SynchronousMetricStorageTest {
             METRIC_DESCRIPTOR,
             aggregator,
             attributesProcessor,
-            CARDINALITY_LIMIT);
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
     // series
@@ -428,7 +442,12 @@ public class SynchronousMetricStorageTest {
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
     // series
@@ -524,7 +543,12 @@ public class SynchronousMetricStorageTest {
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
     // series
@@ -606,7 +630,12 @@ public class SynchronousMetricStorageTest {
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
 
     // 1st recording: Recording goes to active map
     for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
@@ -814,7 +843,8 @@ public class SynchronousMetricStorageTest {
                   METRIC_DESCRIPTOR,
                   aggregator,
                   AttributesProcessor.noop(),
-                  CARDINALITY_LIMIT),
+                  CARDINALITY_LIMIT,
+                  /* enabled= */ true),
               (BiConsumer<Double, AtomicDouble>)
                   (value, cumulativeCount) -> cumulativeCount.addAndGet(value)));
 
@@ -828,11 +858,94 @@ public class SynchronousMetricStorageTest {
                   METRIC_DESCRIPTOR,
                   aggregator,
                   AttributesProcessor.noop(),
-                  CARDINALITY_LIMIT),
+                  CARDINALITY_LIMIT,
+                  /* enabled= */ true),
               (BiConsumer<Double, AtomicDouble>)
                   (value, cumulativeCount) -> cumulativeCount.set(value)));
     }
 
     return argumentsList.stream();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisable_isEnabled(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
+
+    storage.setEnabled(false);
+
+    assertThat(storage.isEnabled()).isFalse();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisableThenEnable_isEnabled(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
+
+    storage.setEnabled(false);
+    storage.setEnabled(true);
+
+    assertThat(storage.isEnabled()).isTrue();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisable_recordAndCollect(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
+
+    storage.setEnabled(false);
+
+    storage.recordDouble(10d, Attributes.empty(), Context.current());
+
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isTrue();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisableThenEnable_recordAndCollect(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            /* enabled= */ true);
+
+    storage.setEnabled(false);
+    storage.setEnabled(true);
+
+    storage.recordDouble(10d, Attributes.empty(), Context.current());
+
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isFalse();
   }
 }

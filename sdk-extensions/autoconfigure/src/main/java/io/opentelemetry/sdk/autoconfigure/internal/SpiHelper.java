@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.internal;
 
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
@@ -15,7 +16,6 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -37,17 +37,12 @@ public final class SpiHelper {
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code classLoader}. */
   public static SpiHelper create(ClassLoader classLoader) {
-    return new SpiHelper(serviceComponentLoader(classLoader));
+    return new SpiHelper(ComponentLoader.forClassLoader(classLoader));
   }
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code componentLoader}. */
   public static SpiHelper create(ComponentLoader componentLoader) {
     return new SpiHelper(componentLoader);
-  }
-
-  /** Create a {@link ComponentLoader} which loads using the {@code classLoader}. */
-  public static ComponentLoader serviceComponentLoader(ClassLoader classLoader) {
-    return new ServiceLoaderComponentLoader(classLoader);
   }
 
   /** Return the backing underlying {@link ComponentLoader}. */
@@ -124,18 +119,5 @@ public final class SpiHelper {
   /** Return the set of SPIs loaded which implement {@link AutoConfigureListener}. */
   public Set<AutoConfigureListener> getListeners() {
     return Collections.unmodifiableSet(listeners);
-  }
-
-  private static class ServiceLoaderComponentLoader implements ComponentLoader {
-    private final ClassLoader classLoader;
-
-    private ServiceLoaderComponentLoader(ClassLoader classLoader) {
-      this.classLoader = classLoader;
-    }
-
-    @Override
-    public <T> Iterable<T> load(Class<T> spiClass) {
-      return ServiceLoader.load(spiClass, classLoader);
-    }
   }
 }

@@ -46,6 +46,7 @@ public interface TextMapGetter<C> {
    * @param key the key of the field.
    * @return all values for a given {@code key} in order, or returns an empty list. Default method
    *     wraps {@code get()} as an {@link Iterator}.
+   * @since 1.50.0
    */
   default Iterator<String> getAll(@Nullable C carrier, String key) {
     String first = get(carrier, key);

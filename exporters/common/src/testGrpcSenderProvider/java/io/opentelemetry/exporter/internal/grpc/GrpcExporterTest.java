@@ -20,6 +20,7 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.annotation.Nullable;
@@ -39,8 +40,7 @@ class GrpcExporterTest {
     assertThatCode(
             () ->
                 new GrpcExporterBuilder<>(
-                        "exporter",
-                        "type",
+                        StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
                         () -> DummyServiceFutureStub::newFutureStub,
@@ -63,8 +63,7 @@ class GrpcExporterTest {
   void build_multipleSendersWithUpstream() throws URISyntaxException {
     assertThat(
             new GrpcExporterBuilder<>(
-                    "exporter",
-                    "type",
+                    StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                     10,
                     new URI("http://localhost"),
                     () -> DummyServiceFutureStub::newFutureStub,
@@ -84,8 +83,7 @@ class GrpcExporterTest {
   void build_multipleSendersWithOkHttp() throws URISyntaxException {
     assertThat(
             new GrpcExporterBuilder<>(
-                    "exporter",
-                    "type",
+                    StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                     10,
                     new URI("http://localhost"),
                     () -> DummyServiceFutureStub::newFutureStub,
@@ -106,8 +104,7 @@ class GrpcExporterTest {
     assertThatThrownBy(
             () ->
                 new GrpcExporterBuilder<>(
-                        "exporter",
-                        "type",
+                        StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
                         () -> DummyServiceFutureStub::newFutureStub,
@@ -124,7 +121,7 @@ class GrpcExporterTest {
   private static class DummyServiceFutureStub
       extends MarshalerServiceStub<DummyMarshaler, Object, DummyServiceFutureStub> {
 
-    protected DummyServiceFutureStub(Channel channel, CallOptions callOptions) {
+    private DummyServiceFutureStub(Channel channel, CallOptions callOptions) {
       super(channel, callOptions);
     }
 
@@ -150,7 +147,7 @@ class GrpcExporterTest {
 
   private static class DummyMarshaler extends MarshalerWithSize {
 
-    protected DummyMarshaler() {
+    private DummyMarshaler() {
       super(0);
     }
 

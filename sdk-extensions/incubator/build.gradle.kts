@@ -40,6 +40,7 @@ dependencies {
   testImplementation(project(":exporters:zipkin"))
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
+  testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
@@ -57,7 +58,7 @@ dependencies {
 // 7. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-val configurationTag = "0.4.0"
+val configurationTag = "1.0.0-rc.1"
 val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()

@@ -84,7 +84,11 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     return this;
   }
 
-  /** Asserts the log has the given epoch {@code eventName}. */
+  /**
+   * Asserts the log has the given epoch {@code eventName}.
+   *
+   * @since 1.50.0
+   */
   public LogRecordDataAssert hasEventName(String eventName) {
     isNotNull();
     if (!eventName.equals(actual.getEventName())) {

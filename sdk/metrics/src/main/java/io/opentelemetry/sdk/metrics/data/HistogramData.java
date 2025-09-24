@@ -17,6 +17,11 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface HistogramData extends Data<HistogramPointData> {
 
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   static HistogramData create(
       AggregationTemporality temporality, Collection<HistogramPointData> points) {
     return ImmutableHistogramData.create(temporality, points);

@@ -4,6 +4,7 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
   id("otel.animalsniffer-conventions")
+  id("otel.jmh-conventions")
 }
 apply<OtelVersionClassPlugin>()
 
@@ -20,6 +21,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava-testlib")
+  testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 }
 
 tasks {

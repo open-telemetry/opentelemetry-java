@@ -5,9 +5,14 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
+import io.opentelemetry.exporter.otlp.profiles.ProfileData;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -34,6 +39,10 @@ public interface TelemetryExporterBuilder<T> {
 
   static TelemetryExporterBuilder<LogRecordData> wrap(OtlpGrpcLogRecordExporterBuilder builder) {
     return new GrpcLogRecordExporterBuilderWrapper(builder);
+  }
+
+  static TelemetryExporterBuilder<ProfileData> wrap(OtlpGrpcProfilesExporterBuilder builder) {
+    return new GrpcProfilesExporterBuilderWrapper(builder);
   }
 
   TelemetryExporterBuilder<T> setEndpoint(String endpoint);
@@ -66,7 +75,13 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader);
 
+  TelemetryExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader);
+
   TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService);
+
+  TelemetryExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier);
+
+  TelemetryExporterBuilder<T> setInternalTelemetryVersion(InternalTelemetryVersion schemaVersion);
 
   TelemetryExporter<T> build();
 }

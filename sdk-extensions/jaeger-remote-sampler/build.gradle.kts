@@ -79,4 +79,9 @@ tasks {
       compilerArgs.add("-Xlint:-serial")
     }
   }
+
+  checkstyleMain {
+    // overrides the default which includes generated proto sources
+    source = fileTree("src/main/java")
+  }
 }

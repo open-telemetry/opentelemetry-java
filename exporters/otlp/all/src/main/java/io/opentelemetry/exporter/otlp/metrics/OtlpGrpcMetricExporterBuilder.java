@@ -11,14 +11,15 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
-import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -76,8 +77,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   OtlpGrpcMetricExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            "otlp",
-            "metric",
+            StandardComponentId.ExporterType.OTLP_GRPC_METRIC_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
@@ -163,13 +163,12 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
-   * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * method "gzip" and "none" are supported out of the box. Additional compression methods can be
+   * supported by providing custom {@link Compressor} implementations via the service loader.
    */
   public OtlpGrpcMetricExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
-    delegate.setCompression(compressor);
+    delegate.setCompression(compressionMethod);
     return this;
   }
 
@@ -274,8 +273,23 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   *
+   * @since 1.51.0
+   */
+  public OtlpGrpcMetricExporterBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetryVersion(schemaVersion);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.50.0
    */
   public OtlpGrpcMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
@@ -286,6 +300,8 @@ public final class OtlpGrpcMetricExporterBuilder {
   /**
    * Sets the {@link MeterProvider} supplier to use to collect metrics related to export. If not
    * set, uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.50.0
    */
   public OtlpGrpcMetricExporterBuilder setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
@@ -314,13 +330,20 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Set the {@link ClassLoader} used to load the sender API.
+   * Set the {@link ClassLoader} used to load the sender API. Variant of {@link
+   * #setComponentLoader(ComponentLoader)}.
    *
    * @since 1.48.0
    */
   public OtlpGrpcMetricExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
-    delegate.setServiceClassLoader(serviceClassLoader);
+    return setComponentLoader(ComponentLoader.forClassLoader(serviceClassLoader));
+  }
+
+  /** Set the {@link ComponentLoader} used to load the sender API. */
+  public OtlpGrpcMetricExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    delegate.setComponentLoader(componentLoader);
     return this;
   }
 

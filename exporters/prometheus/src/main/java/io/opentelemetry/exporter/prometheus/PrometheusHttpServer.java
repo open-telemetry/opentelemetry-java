@@ -26,6 +26,7 @@ import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
+import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -39,13 +40,16 @@ import javax.annotation.Nullable;
  */
 public final class PrometheusHttpServer implements MetricReader {
 
+  private final String host;
+  private final int port;
+  @Nullable private final Predicate<String> allowedResourceAttributesFilter;
+  private final MemoryMode memoryMode;
+  private final DefaultAggregationSelector defaultAggregationSelector;
+
   private final PrometheusHttpServerBuilder builder;
   private final HTTPServer httpServer;
   private final PrometheusMetricReader prometheusMetricReader;
   private final PrometheusRegistry prometheusRegistry;
-  private final String host;
-  private final MemoryMode memoryMode;
-  private final DefaultAggregationSelector defaultAggregationSelector;
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -67,17 +71,18 @@ public final class PrometheusHttpServer implements MetricReader {
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
-      boolean otelScopeEnabled,
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode,
       @Nullable HttpHandler defaultHandler,
       DefaultAggregationSelector defaultAggregationSelector,
       @Nullable Authenticator authenticator) {
-    this.builder = builder;
-    this.prometheusMetricReader =
-        new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
     this.host = host;
+    this.port = port;
+    this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.memoryMode = memoryMode;
+    this.defaultAggregationSelector = defaultAggregationSelector;
+    this.builder = builder;
+    this.prometheusMetricReader = new PrometheusMetricReader(allowedResourceAttributesFilter);
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
     // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,
@@ -106,7 +111,6 @@ public final class PrometheusHttpServer implements MetricReader {
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
-    this.defaultAggregationSelector = defaultAggregationSelector;
   }
 
   @Override
@@ -160,7 +164,15 @@ public final class PrometheusHttpServer implements MetricReader {
 
   @Override
   public String toString() {
-    return "PrometheusHttpServer{address=" + getAddress() + "}";
+    StringJoiner joiner = new StringJoiner(",", "PrometheusHttpServer{", "}");
+    joiner.add("host=" + host);
+    joiner.add("port=" + port);
+    joiner.add("allowedResourceAttributesFilter=" + allowedResourceAttributesFilter);
+    joiner.add("memoryMode=" + memoryMode);
+    joiner.add(
+        "defaultAggregationSelector="
+            + DefaultAggregationSelector.asString(defaultAggregationSelector));
+    return joiner.toString();
   }
 
   /**

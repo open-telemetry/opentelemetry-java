@@ -1,5 +1,2 @@
-Comparing source compatibility of opentelemetry-context-1.50.0-SNAPSHOT.jar against opentelemetry-context-1.49.0.jar
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.context.propagation.TextMapGetter  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	GENERIC TEMPLATES: === C:java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) java.util.Iterator<java.lang.String> getAll(java.lang.Object, java.lang.String)
+Comparing source compatibility of opentelemetry-context-1.55.0-SNAPSHOT.jar against opentelemetry-context-1.54.1.jar
+No changes.

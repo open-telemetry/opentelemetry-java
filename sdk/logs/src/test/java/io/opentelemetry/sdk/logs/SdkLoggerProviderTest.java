@@ -28,7 +28,10 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
+import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -349,5 +352,31 @@ class SdkLoggerProviderTest {
                 + "logRecordProcessor=MockLogRecordProcessor, "
                 + "loggerConfigurator=ScopeConfiguratorImpl{conditions=[]}"
                 + "}");
+  }
+
+  private static ScopeConfigurator<LoggerConfig> flipConfigurator(boolean enabled) {
+    return scopeInfo -> enabled ? LoggerConfig.disabled() : LoggerConfig.enabled();
+  }
+
+  @Test
+  void propagatesEnablementToLoggerDirectly() {
+    SdkLogger logger = (SdkLogger) sdkLoggerProvider.get("test");
+    boolean isEnabled = logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current());
+
+    sdkLoggerProvider.setLoggerConfigurator(flipConfigurator(isEnabled));
+
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current()))
+        .isEqualTo(!isEnabled);
+  }
+
+  @Test
+  void propagatesEnablementToLoggerByUtil() {
+    SdkLogger logger = (SdkLogger) sdkLoggerProvider.get("test");
+    boolean isEnabled = logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current());
+
+    SdkLoggerProviderUtil.setLoggerConfigurator(sdkLoggerProvider, flipConfigurator(isEnabled));
+
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current()))
+        .isEqualTo(!isEnabled);
   }
 }

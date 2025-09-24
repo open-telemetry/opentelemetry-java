@@ -38,8 +38,8 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
   }
 
   @Override
-  public void set(long increment) {
-    set(increment, Attributes.empty());
+  public void set(long value) {
+    set(value, Attributes.empty());
   }
 
   static class SdkLongGaugeBuilder implements LongGaugeBuilder {

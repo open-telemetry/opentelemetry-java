@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.logs.internal;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,6 +24,21 @@ import java.util.function.Predicate;
 public final class SdkLoggerProviderUtil {
 
   private SdkLoggerProviderUtil() {}
+
+  /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkLoggerProvider}. */
+  public static void setLoggerConfigurator(
+      SdkLoggerProvider sdkLoggerProvider, ScopeConfigurator<LoggerConfig> scopeConfigurator) {
+    try {
+      Method method =
+          SdkLoggerProvider.class.getDeclaredMethod(
+              "setLoggerConfigurator", ScopeConfigurator.class);
+      method.setAccessible(true);
+      method.invoke(sdkLoggerProvider, scopeConfigurator);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setLoggerConfigurator on SdkLoggerProvider", e);
+    }
+  }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkLoggerProviderBuilder}. */
   public static SdkLoggerProviderBuilder setLoggerConfigurator(
@@ -56,5 +73,21 @@ public final class SdkLoggerProviderUtil {
           "Error calling addLoggerConfiguratorCondition on SdkLoggerProviderBuilder", e);
     }
     return sdkLoggerProviderBuilder;
+  }
+
+  /** Reflectively set exception attribute resolver to the {@link SdkLoggerProviderBuilder}. */
+  public static void setExceptionAttributeResolver(
+      SdkLoggerProviderBuilder sdkLoggerProviderBuilder,
+      ExceptionAttributeResolver exceptionAttributeResolver) {
+    try {
+      Method method =
+          SdkLoggerProviderBuilder.class.getDeclaredMethod(
+              "setExceptionAttributeResolver", ExceptionAttributeResolver.class);
+      method.setAccessible(true);
+      method.invoke(sdkLoggerProviderBuilder, exceptionAttributeResolver);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setExceptionAttributeResolver on SdkLoggerProviderBuilder", e);
+    }
   }
 }

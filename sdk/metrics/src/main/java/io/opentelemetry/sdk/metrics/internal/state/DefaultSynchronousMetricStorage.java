@@ -74,12 +74,15 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final ConcurrentLinkedQueue<AggregatorHandle<T, U>> aggregatorHandlePool =
       new ConcurrentLinkedQueue<>();
 
+  private boolean enabled;
+
   DefaultSynchronousMetricStorage(
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T, U> aggregator,
       AttributesProcessor attributesProcessor,
-      int maxCardinality) {
+      int maxCardinality,
+      boolean enabled) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     this.aggregationTemporality =
@@ -90,6 +93,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
     this.memoryMode = registeredReader.getReader().getMemoryMode();
+    this.enabled = enabled;
   }
 
   // Visible for testing
@@ -99,6 +103,9 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
+    if (!enabled) {
+      return;
+    }
     AggregatorHolder<T, U> aggregatorHolder = getHolderForRecord();
     try {
       AggregatorHandle<T, U> handle =
@@ -111,6 +118,9 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {
+    if (!enabled) {
+      return;
+    }
     if (Double.isNaN(value)) {
       logger.log(
           Level.FINE,
@@ -132,8 +142,13 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   }
 
   @Override
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  @Override
   public boolean isEnabled() {
-    return true;
+    return enabled;
   }
 
   /**
@@ -299,7 +314,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       previousCollectionAggregatorHandles = aggregatorHandles;
     }
 
-    if (points.isEmpty()) {
+    if (points.isEmpty() || !enabled) {
       return EmptyMetricData.getInstance();
     }
 
