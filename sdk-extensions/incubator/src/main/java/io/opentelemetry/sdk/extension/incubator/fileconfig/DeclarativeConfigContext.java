@@ -60,6 +60,7 @@ class DeclarativeConfigContext {
   }
 
   Resource getResource() {
+    // called via reflection from io.opentelemetry.sdk.autoconfigure.IncubatingUtil
     return resource;
   }
 
