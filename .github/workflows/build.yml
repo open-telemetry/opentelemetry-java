@@ -32,7 +32,7 @@ jobs:
           - 11
           - 17
           - 21
-          - 24 # renovate: datasource=java-version
+          - 25 # renovate: datasource=java-version
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-latest
@@ -50,7 +50,7 @@ jobs:
           - os: macos-13
             test-java-version: 21
           - os: macos-13
-            test-java-version: 24 # renovate: datasource=java-version
+            test-java-version: 25 # renovate: datasource=java-version
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
@@ -168,7 +168,7 @@ jobs:
       matrix:
         test-graal-version:
           - 21
-          - 24 # renovate: datasource=java-version
+          - 25 # renovate: datasource=java-version
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: graalvm/setup-graalvm@aba6a077d71fbfc02138d7470c4ad6e7f85bd2a9 # v1.3.7
