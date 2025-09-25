@@ -132,8 +132,7 @@ class DeclarativeConfigurationTest {
             OpenTelemetrySdk.builder()
                 .setTracerProvider(
                     SdkTracerProvider.builder()
-                        .setResource(
-                            resource)
+                        .setResource(resource)
                         .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                         .build())
                 .build(),
