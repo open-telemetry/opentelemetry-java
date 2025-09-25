@@ -14,6 +14,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
@@ -118,12 +119,13 @@ public final class DeclarativeConfiguration {
     return create(configurationModel, DeclarativeConfigContext.create(componentLoader));
   }
 
-  private static OpenTelemetrySdk create(
+  private static ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, DeclarativeConfigContext context) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
 
+    SpiHelper spiHelper = context.getSpiHelper();
     for (DeclarativeConfigurationCustomizerProvider provider :
-        context.getSpiHelper().loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
+        spiHelper.loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
       provider.customize(builder);
     }
 
