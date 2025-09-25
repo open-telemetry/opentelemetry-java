@@ -13,7 +13,6 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
@@ -136,15 +135,6 @@ public final class DeclarativeConfiguration {
             builder.customizeModel(configurationModel));
     callAutoConfigureListeners(spiHelper, sdk);
     return sdk;
-  }
-
-  public static AutoConfiguredOpenTelemetrySdk createAutoConfiguredSdk(
-      OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
-    DeclarativeConfigContext context = DeclarativeConfigContext.create(componentLoader);
-    OpenTelemetrySdk sdk = create(configurationModel, context);
-    SdkConfigProvider provider = SdkConfigProvider.create(configurationModel, componentLoader);
-
-    return AutoConfiguredOpenTelemetrySdkAccess.create(sdk, context.getResource(), provider);
   }
 
   /**

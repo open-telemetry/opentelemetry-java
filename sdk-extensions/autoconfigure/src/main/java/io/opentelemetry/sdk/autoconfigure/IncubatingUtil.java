@@ -11,7 +11,9 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -98,11 +100,32 @@ final class IncubatingUtil {
     Class<?> declarativeConfiguration =
         Class.forName(
             "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
-    Method create =
-        declarativeConfiguration.getMethod(
-            "createAutoConfiguredSdk", openTelemetryConfiguration, ComponentLoader.class);
 
-    return (AutoConfiguredOpenTelemetrySdk) create.invoke(null, model, componentLoader);
+    Class<?> contextClass =
+        Class.forName(
+            "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigContext");
+    Method createContext = contextClass.getDeclaredMethod("create", ComponentLoader.class);
+    createContext.setAccessible(true);
+    Object context = createContext.invoke(null, componentLoader);
+
+    Method create =
+        declarativeConfiguration.getDeclaredMethod(
+            "create", openTelemetryConfiguration, contextClass);
+    create.setAccessible(true);
+    OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, context);
+
+    Class<?> providerClass =
+        Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider");
+    Object provider =
+        providerClass
+            .getDeclaredMethod("create", openTelemetryConfiguration, ComponentLoader.class)
+            .invoke(null, model, componentLoader);
+
+    Method getResource = contextClass.getDeclaredMethod("getResource");
+    getResource.setAccessible(true);
+    Resource resource = (Resource) getResource.invoke(context);
+
+    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, null, provider);
   }
 
   // Visible for testing
