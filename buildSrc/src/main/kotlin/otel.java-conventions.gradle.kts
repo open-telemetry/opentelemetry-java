@@ -70,6 +70,7 @@ dependencyCheck {
 }
 
 val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
+val disableUnsafe = gradle.startParameter.projectProperties.get("disableUnsafe")?.toBoolean() ?: false
 
 tasks {
   withType<JavaCompile>().configureEach {
@@ -112,6 +113,10 @@ tasks {
           languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
         },
       )
+    }
+
+    if (disableUnsafe) {
+      jvmArgs("--sun-misc-unsafe-memory-access=deny")
     }
 
     val defaultMaxRetries = if (System.getenv().containsKey("CI")) 2 else 0

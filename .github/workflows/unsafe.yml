@@ -1,0 +1,60 @@
+name: Unsafe disabled test
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unsafe-disabled-test:
+    name: Unsafe disabled test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - id: setup-java-test
+        name: Set up Java 24 for tests
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: 24
+
+      - id: setup-java
+        name: Set up Java for build
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+
+      - name: Build custom protobuf-java that doesn't require Unsafe
+        run: ./.github/unsafe/build-custom-protobuf.sh
+
+      - name: Build custom armeria that doesn't require Unsafe
+        run: ./.github/unsafe/build-custom-armeria.sh
+
+      - name: Prioritize Maven local repository to pick up custom builds
+        run: ./.github/unsafe/prioritize-maven-local.sh
+
+      - name: Update to LMAX Disruptor version that doesn't require Unsafe
+        run: ./.github/unsafe/update-lmax-disruptor.sh
+
+      - name: Build and test
+        run: >
+            ./gradlew build
+            -PdisableUnsafe=true
+            -PtestJavaVersion=24
+            "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
+            "-Porg.gradle.java.installations.auto-download=false"

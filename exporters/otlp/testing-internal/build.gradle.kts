@@ -34,7 +34,7 @@ dependencies {
   implementation("com.linecorp.armeria:armeria-junit5")
   implementation("io.github.netmikey.logunit:logunit-jul")
   implementation("org.assertj:assertj-core")
-  implementation("org.mock-server:mockserver-netty")
+  implementation("com.github.tomakehurst:wiremock-jre8")
 }
 
 // Skip OWASP dependencyCheck task on test module

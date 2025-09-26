@@ -1,0 +1,117 @@
+From d6276724f7f432af4693e9d786ecfcaddb73e505 Mon Sep 17 00:00:00 2001
+From: Trask Stalnaker <trask.stalnaker@gmail.com>
+Date: Sat, 20 Sep 2025 21:48:43 -0700
+Subject: [PATCH] Update Caffeine
+
+---
+ .../src/main/java/com/linecorp/armeria/common/Flags.java | 2 +-
+ .../armeria/internal/common/util/CertificateUtil.java    | 9 ++++++---
+ .../linecorp/armeria/server/file/FileServiceConfig.java  | 2 +-
+ dependencies.toml                                        | 5 ++---
+ gradle.properties                                        | 4 ++--
+ 5 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/core/src/main/java/com/linecorp/armeria/common/Flags.java b/core/src/main/java/com/linecorp/armeria/common/Flags.java
+index 57671a686..e1dd6eb3b 100644
+--- a/core/src/main/java/com/linecorp/armeria/common/Flags.java
++++ b/core/src/main/java/com/linecorp/armeria/common/Flags.java
+@@ -1722,7 +1722,7 @@ public final class Flags {
+                 if ("off".equals(value)) {
+                     return allowOff;
+                 }
+-                CaffeineSpec.parse(value);
++                var unused = CaffeineSpec.parse(value);
+                 return true;
+             } catch (Exception e) {
+                 return false;
+diff --git a/core/src/main/java/com/linecorp/armeria/internal/common/util/CertificateUtil.java b/core/src/main/java/com/linecorp/armeria/internal/common/util/CertificateUtil.java
+index a343428a3..48698e3ea 100644
+--- a/core/src/main/java/com/linecorp/armeria/internal/common/util/CertificateUtil.java
++++ b/core/src/main/java/com/linecorp/armeria/internal/common/util/CertificateUtil.java
+@@ -57,6 +57,8 @@ public final class CertificateUtil {
+ 
+     private static final Logger logger = LoggerFactory.getLogger(CertificateUtil.class);
+ 
++    private static final String NO_HOSTNAME_FOUND = "<NO_HOSTNAME_FOUND>";
++
+     private static final LoadingCache<X509Certificate, String> hostnameCache =
+             Caffeine.newBuilder()
+                     .weakKeys()
+@@ -73,11 +75,11 @@ public final class CertificateUtil {
+ 
+                             logger.warn("No common name or subject alternative name found " +
+                                         "in certificate: {}", cert);
+-                            return null;
++                            return NO_HOSTNAME_FOUND;
+                         } catch (Exception e) {
+                             logger.warn("Failed to get the common name or subject alternative name name " +
+                                         "from a certificate: {}", cert, e);
+-                            return null;
++                            return NO_HOSTNAME_FOUND;
+                         }
+                     });
+ 
+@@ -136,7 +138,8 @@ public final class CertificateUtil {
+         if (!(certificate instanceof X509Certificate)) {
+             return null;
+         }
+-        return hostnameCache.get((X509Certificate) certificate);
++        final String hostname = hostnameCache.get((X509Certificate) certificate);
++        return NO_HOSTNAME_FOUND.equals(hostname) ? null : hostname;
+     }
+ 
+     public static List<X509Certificate> toX509Certificates(File file) throws CertificateException {
+diff --git a/core/src/main/java/com/linecorp/armeria/server/file/FileServiceConfig.java b/core/src/main/java/com/linecorp/armeria/server/file/FileServiceConfig.java
+index 8766acd95..b6b8a1b62 100644
+--- a/core/src/main/java/com/linecorp/armeria/server/file/FileServiceConfig.java
++++ b/core/src/main/java/com/linecorp/armeria/server/file/FileServiceConfig.java
+@@ -72,7 +72,7 @@ public final class FileServiceConfig {
+             return null;
+         }
+         try {
+-            CaffeineSpec.parse(entryCacheSpec);
++            var unused = CaffeineSpec.parse(entryCacheSpec);
+         } catch (Exception e) {
+             throw new IllegalArgumentException("invalid cache spec: " + entryCacheSpec, e);
+         }
+diff --git a/dependencies.toml b/dependencies.toml
+index 22c366f47..bfd54bcce 100644
+--- a/dependencies.toml
++++ b/dependencies.toml
+@@ -15,8 +15,7 @@ brave6 = "6.3.0"
+ brotli4j = "1.18.0"
+ # Don"t upgrade bucket4j to 7.6.1 or 8.x that requires Java 11. The module name also has been changed to "com.bucket4j"
+ bucket4j = "7.6.0"
+-# Don"t upgrade Caffeine to 3.x that requires Java 11.
+-caffeine = "2.9.3"
++caffeine = "3.2.2"
+ cglib = "3.3.0"
+ checkerframework = "2.5.6"
+ checkstyle = "10.3.2"
+@@ -325,7 +324,7 @@ javadocs = "https://javadoc.io/doc/com.github.vladimir-bukhtoyarov/bucket4j-core
+ module = "com.github.ben-manes.caffeine:caffeine"
+ version.ref = "caffeine"
+ exclusions = "com.google.errorprone:error_prone_annotations"
+-javadocs = "https://www.javadoc.io/doc/com.github.ben-manes.caffeine/caffeine/2.9.3/"
++javadocs = "https://www.javadoc.io/doc/com.github.ben-manes.caffeine/caffeine/3.2.2/"
+ relocations = { from = "com.github.benmanes.caffeine", to = "com.linecorp.armeria.internal.shaded.caffeine" }
+ 
+ [libraries.cglib]
+diff --git a/gradle.properties b/gradle.properties
+index de5b05013..5ab06b436 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -12,8 +12,8 @@ licenseUrl=https://www.apache.org/license/LICENSE-2.0.txt
+ scmUrl=https://github.com/line/armeria
+ scmConnection=scm:git:https://github.com/line/armeria.git
+ scmDeveloperConnection=scm:git:ssh://git@github.com/line/armeria.git
+-javaSourceCompatibility=1.8
+-javaTargetCompatibility=1.8
++javaSourceCompatibility=11
++javaTargetCompatibility=11
+ publishUrlForRelease=https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/
+ publishUrlForSnapshot=https://central.sonatype.com/repository/maven-snapshots/
+ publishUsernameProperty=ossrhUsername
+-- 
+2.51.0.windows.1
+
