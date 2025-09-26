@@ -1,5 +1,3 @@
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
-
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
@@ -78,13 +76,5 @@ testing {
 tasks {
   check {
     dependsOn(testing.suites)
-  }
-}
-
-tasks {
-  withType<AnimalSniffer>().configureEach {
-    // We catch NoClassDefFoundError to fallback to non-jctools queues.
-    exclude("**/internal/shaded/jctools/**")
-    exclude("**/internal/JcTools*")
   }
 }
