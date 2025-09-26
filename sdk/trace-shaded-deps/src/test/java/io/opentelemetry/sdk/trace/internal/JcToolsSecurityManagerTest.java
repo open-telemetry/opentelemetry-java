@@ -11,7 +11,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+import org.jctools.queues.atomic.MpscAtomicArrayQueue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.junit.jupiter.api.condition.JRE;
@@ -30,7 +30,7 @@ public class JcToolsSecurityManagerTest {
       Queue<Object> queue =
           AccessController.doPrivileged(
               (PrivilegedAction<Queue<Object>>) () -> JcTools.newFixedSizeQueue(10));
-      assertThat(queue).isInstanceOf(ArrayBlockingQueue.class);
+      assertThat(queue).isInstanceOf(MpscAtomicArrayQueue.class);
     } finally {
       System.setSecurityManager(null);
     }
