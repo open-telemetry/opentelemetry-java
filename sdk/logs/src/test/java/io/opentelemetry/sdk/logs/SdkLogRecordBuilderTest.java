@@ -24,6 +24,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +58,8 @@ class SdkLogRecordBuilderTest {
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
     when(loggerSharedState.getClock()).thenReturn(clock);
 
-    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO);
+    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, LoggerConfig.enabled());
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
   }
 
   @Test

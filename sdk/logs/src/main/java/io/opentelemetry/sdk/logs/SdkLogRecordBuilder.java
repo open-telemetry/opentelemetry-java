@@ -22,6 +22,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
 
   protected final LoggerSharedState loggerSharedState;
   protected final LogLimits logLimits;
+  protected final SdkLogger logger;
 
   protected final InstrumentationScopeInfo instrumentationScopeInfo;
   protected long timestampEpochNanos;
@@ -34,10 +35,13 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
-      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      SdkLogger logger) {
     this.loggerSharedState = loggerSharedState;
     this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.logger = logger;
   }
 
   @Override
