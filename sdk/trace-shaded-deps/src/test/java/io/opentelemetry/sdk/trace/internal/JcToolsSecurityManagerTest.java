@@ -19,6 +19,7 @@ import org.junit.jupiter.api.condition.JRE;
 public class JcToolsSecurityManagerTest {
 
   @Test
+  // System.setSecurityManager throws UnsupportedOperationException in Java 18+
   @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_11, JRE.JAVA_17})
   @SuppressLogger(JcTools.class)
   void newFixedSizeQueue_SunMiscProhibited() {
