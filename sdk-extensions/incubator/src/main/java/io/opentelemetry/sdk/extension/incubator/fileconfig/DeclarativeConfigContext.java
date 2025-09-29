@@ -26,7 +26,7 @@ class DeclarativeConfigContext {
   private final SpiHelper spiHelper;
   private final List<Closeable> closeables = new ArrayList<>();
   @Nullable private volatile MeterProvider meterProvider;
-  private Resource resource = Resource.empty();
+  @Nullable private Resource resource = null;
 
   // Visible for testing
   DeclarativeConfigContext(SpiHelper spiHelper) {
@@ -61,6 +61,9 @@ class DeclarativeConfigContext {
 
   Resource getResource() {
     // called via reflection from io.opentelemetry.sdk.autoconfigure.IncubatingUtil
+    if (resource == null) {
+      throw new DeclarativeConfigException("Resource has not been configured yet.");
+    }
     return resource;
   }
 
