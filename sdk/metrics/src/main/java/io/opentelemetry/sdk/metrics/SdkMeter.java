@@ -89,7 +89,7 @@ final class SdkMeter implements Meter {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
 
-  private boolean meterEnabled;
+  private volatile boolean meterEnabled;
 
   SdkMeter(
       MeterProviderSharedState meterProviderSharedState,
