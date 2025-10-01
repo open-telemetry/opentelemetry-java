@@ -17,7 +17,7 @@ val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
 val armeriaVersion = "1.33.4"
-val junitVersion = "5.13.4"
+val junitVersion = "6.0.0"
 val okhttpVersion = "5.1.0"
 
 val DEPENDENCY_BOMS = listOf(
