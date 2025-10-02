@@ -21,9 +21,6 @@ import java.util.Map;
  *
  * <p>For a given Object o, after i = putIfAbsent(o), then getTable().get(i).equals(o);
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
- *
  * @param <T> the type of elements maintained by this table. The type should implement equals and
  *     hashCode in a manner consistent with Set/Map key expectations.
  */

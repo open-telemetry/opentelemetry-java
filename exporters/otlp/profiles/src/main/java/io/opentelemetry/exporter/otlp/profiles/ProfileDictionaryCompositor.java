@@ -26,9 +26,6 @@ import java.util.Collections;
  * references a non-existing element.
  *
  * <p>This class is not threadsafe and must be externally synchronized.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
  */
 public class ProfileDictionaryCompositor {
 
