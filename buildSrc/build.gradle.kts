@@ -54,7 +54,7 @@ dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:8.0.0")
-  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.2")
+  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.2.1")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
