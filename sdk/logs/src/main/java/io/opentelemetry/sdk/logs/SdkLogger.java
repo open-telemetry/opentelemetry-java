@@ -33,9 +33,7 @@ class SdkLogger implements Logger {
   private final LoggerSharedState loggerSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
 
-  // deliberately not volatile because of performance concerns
-  // - which means its eventually consistent
-  protected boolean loggerEnabled;
+  protected volatile boolean loggerEnabled;
 
   SdkLogger(
       LoggerSharedState loggerSharedState,
