@@ -9,6 +9,33 @@ plugins {
 description = "OpenTelemetry Log SDK"
 otelJava.moduleName.set("io.opentelemetry.sdk.logs")
 
+sourceSets {
+  create("jmhJava9") {
+    java {
+      srcDirs("src/jmh/java9")
+    }
+    compileClasspath += sourceSets.jmh.get().compileClasspath
+    compileClasspath += sourceSets.jmh.get().output
+  }
+}
+
+tasks {
+  named<JavaCompile>("compileJmhJava9Java") {
+    options.release = 9
+    dependsOn("compileJmhJava")
+  }
+
+  // Configure JMH jar as multi-release jar
+  named<Jar>("jmhJar") {
+    into("META-INF/versions/9") {
+      from(sourceSets["jmhJava9"].output)
+    }
+    manifest.attributes(
+      "Multi-Release" to "true"
+    )
+  }
+}
+
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
