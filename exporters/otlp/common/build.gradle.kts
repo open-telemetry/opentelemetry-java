@@ -69,3 +69,11 @@ wire {
     schemaHandlerFactoryClass = "io.opentelemetry.gradle.ProtoFieldsWireHandlerFactory"
   }
 }
+
+// Configure JMH jar to preserve multi-release jar attribute
+// so StringMarshalBenchmark can use VarHandleStringEncoder
+tasks.named<Jar>("jmhJar") {
+  manifest {
+    attributes["Multi-Release"] = "true"
+  }
+}
