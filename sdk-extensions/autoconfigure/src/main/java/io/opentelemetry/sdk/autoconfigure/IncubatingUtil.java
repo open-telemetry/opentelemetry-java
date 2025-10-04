@@ -100,20 +100,32 @@ final class IncubatingUtil {
     Class<?> declarativeConfiguration =
         Class.forName(
             "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
-    Method create =
-        declarativeConfiguration.getMethod(
-            "create", openTelemetryConfiguration, ComponentLoader.class);
 
-    OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, componentLoader);
-    Class<?> sdkConfigProvider =
+    Class<?> contextClass =
+        Class.forName(
+            "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigContext");
+    Method createContext = contextClass.getDeclaredMethod("create", ComponentLoader.class);
+    createContext.setAccessible(true);
+    Object context = createContext.invoke(null, componentLoader);
+
+    Method create =
+        declarativeConfiguration.getDeclaredMethod(
+            "create", openTelemetryConfiguration, contextClass);
+    create.setAccessible(true);
+    OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, context);
+
+    Class<?> providerClass =
         Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider");
-    Method createFileConfigProvider =
-        sdkConfigProvider.getMethod("create", openTelemetryConfiguration, ComponentLoader.class);
-    ConfigProvider configProvider =
-        (ConfigProvider) createFileConfigProvider.invoke(null, model, componentLoader);
-    // Note: can't access file configuration resource without reflection so setting a dummy
-    // resource
-    return AutoConfiguredOpenTelemetrySdk.create(sdk, Resource.getDefault(), null, configProvider);
+    Object provider =
+        providerClass
+            .getDeclaredMethod("create", openTelemetryConfiguration, ComponentLoader.class)
+            .invoke(null, model, componentLoader);
+
+    Method getResource = contextClass.getDeclaredMethod("getResource");
+    getResource.setAccessible(true);
+    Resource resource = (Resource) getResource.invoke(context);
+
+    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, null, provider);
   }
 
   // Visible for testing

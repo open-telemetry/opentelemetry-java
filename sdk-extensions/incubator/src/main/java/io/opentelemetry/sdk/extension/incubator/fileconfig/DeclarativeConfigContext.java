@@ -8,8 +8,10 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +26,15 @@ class DeclarativeConfigContext {
   private final SpiHelper spiHelper;
   private final List<Closeable> closeables = new ArrayList<>();
   @Nullable private volatile MeterProvider meterProvider;
+  @Nullable private Resource resource = null;
 
+  // Visible for testing
   DeclarativeConfigContext(SpiHelper spiHelper) {
     this.spiHelper = spiHelper;
+  }
+
+  static DeclarativeConfigContext create(ComponentLoader componentLoader) {
+    return new DeclarativeConfigContext(SpiHelper.create(componentLoader));
   }
 
   /**
@@ -49,6 +57,22 @@ class DeclarativeConfigContext {
 
   public void setMeterProvider(MeterProvider meterProvider) {
     this.meterProvider = meterProvider;
+  }
+
+  Resource getResource() {
+    // called via reflection from io.opentelemetry.sdk.autoconfigure.IncubatingUtil
+    if (resource == null) {
+      throw new DeclarativeConfigException("Resource has not been configured yet.");
+    }
+    return resource;
+  }
+
+  void setResource(Resource resource) {
+    this.resource = resource;
+  }
+
+  SpiHelper getSpiHelper() {
+    return spiHelper;
   }
 
   /**
