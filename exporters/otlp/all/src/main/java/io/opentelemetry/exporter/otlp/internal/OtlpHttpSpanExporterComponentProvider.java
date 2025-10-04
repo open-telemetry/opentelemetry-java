@@ -41,6 +41,7 @@ public class OtlpHttpSpanExporterComponentProvider implements ComponentProvider<
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
+        builder::setHeaders,
         builder::setCompression,
         builder::setTimeout,
         builder::setTrustedCertificates,

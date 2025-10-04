@@ -62,7 +62,12 @@ class DeclarativeConfigContext {
   @SuppressWarnings({"unchecked", "rawtypes"})
   <T> T loadComponent(Class<T> type, String name, Object model) {
     DeclarativeConfigProperties config =
-        DeclarativeConfiguration.toConfigProperties(model, spiHelper.getComponentLoader());
+        new DeclarativeConfigPropertiesWithComponentProviderLoader(
+            model instanceof DeclarativeConfigProperties
+                ? (DeclarativeConfigProperties) model
+                : DeclarativeConfiguration.toConfigProperties(
+                    model, spiHelper.getComponentLoader()),
+            this::loadComponent);
 
     // TODO(jack-berg): cache loaded component providers
     List<ComponentProvider> componentProviders = spiHelper.load(ComponentProvider.class);
