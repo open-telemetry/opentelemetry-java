@@ -21,13 +21,13 @@ dependencies {
   implementation(project(":exporters:otlp:all"))
 }
 
-// org.graalvm.buildtools.native plugin requires java 11+ as of version 0.9.26
+// org.graalvm.buildtools.native plugin requires java 17+ as of version 0.11.1
 // https://github.com/graalvm/native-build-tools/blob/master/docs/src/docs/asciidoc/index.adoc
 tasks {
   withType<JavaCompile>().configureEach {
-    sourceCompatibility = "11"
-    targetCompatibility = "11"
-    options.release.set(11)
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
+    options.release.set(17)
   }
   withType<Test>().configureEach {
     val testJavaVersion: String? by project
