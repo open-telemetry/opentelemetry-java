@@ -4,6 +4,9 @@
     'config:best-practices',
     'helpers:pinGitHubActionDigestsToSemver',
   ],
+  ignorePresets: [
+    'workarounds:javaLTSVersions', // Allow all Java major versions, not just LTS
+  ],
   ignorePaths: [], // overwrite default ignore which includes **/test/**
                    // used to update docker image versions used in Java test files
   packageRules: [
