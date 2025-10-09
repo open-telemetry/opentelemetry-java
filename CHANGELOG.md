@@ -1429,7 +1429,7 @@ the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specificat
 is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
 frameworks (e.g. JUL, Log4j, SLf4J, Logback) into OpenTelemetry. Users configure the Log SDK to
 dictate how logs are processed and exported.
-See [opentelemetry.io](https://opentelemetry.io/docs/languages/java/api/#logrecordbuilder) for
+See [opentelemetry.io](https://opentelemetry.io/docs/languages/java/api/#loggerprovider) for
 documentation on usage.
 
 ### API
