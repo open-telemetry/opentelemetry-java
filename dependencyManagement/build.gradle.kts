@@ -18,7 +18,7 @@ val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
 val armeriaVersion = "1.33.4"
 val junitVersion = "5.13.4"
-val okhttpVersion = "5.1.0"
+val okhttpVersion = "5.2.0"
 
 val DEPENDENCY_BOMS = listOf(
   // for some reason boms show up as runtime dependencies in license and vulnerability scans
