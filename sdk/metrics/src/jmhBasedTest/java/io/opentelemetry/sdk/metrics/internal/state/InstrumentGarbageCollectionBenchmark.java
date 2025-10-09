@@ -35,7 +35,7 @@ import org.openjdk.jmh.annotations.Warmup;
 
 /**
  * Run this through {@link InstrumentGarbageCollectionBenchmarkTest}, as it runs it embedded with
- * the GC profiler which what this test designed for (No need for command line run)
+ * the GC profiler which what this test designed for (No need for command line run).
  *
  * <p>This test creates 10 asynchronous counters (any asynchronous instrument will do as the code
  * path is almost the same for all async instrument types), and 1000 attribute sets. Each time the
