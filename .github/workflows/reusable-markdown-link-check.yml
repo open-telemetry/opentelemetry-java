@@ -1,4 +1,4 @@
-name: Reusable - Markdown link check
+name: Reusable - Link check
 
 on:
   workflow_call:
@@ -7,19 +7,22 @@ permissions:
   contents: read
 
 jobs:
-  markdown-link-check:
+  link-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
-      - uses: lycheeverse/lychee-action@885c65f3dc543b57c898c8099f4e08c8afd178a2 # v2.6.1
         with:
-          lycheeVersion: v0.18.1
-          # excluding links to pull requests and issues is done for performance
-          args: >
-            --include-fragments
-            --exclude "^https://github.com/open-telemetry/opentelemetry-java/(issues|pull)/\\d+$"
-            --max-retries 6
-            --retry-wait-time 10
-            --max-concurrency 4
-            .
+          fetch-depth: 0 # needed for merge-base used in lint:links-in-modified-files
+
+      - uses: jdx/mise-action@e3d7b8d67a7958d1207f6ed871e83b1ea780e7b0 # v3.3.1
+
+      - name: Link check - relative links (all files)
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: mise run lint:local-links
+
+      - name: Link check (modified files only)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: mise run lint:links-in-modified-files --base origin/${{ github.base_ref }} --head ${{ github.event.pull_request.head.sha }} --event ${{ github.event_name }}

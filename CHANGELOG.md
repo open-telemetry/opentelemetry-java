@@ -1429,7 +1429,7 @@ the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specificat
 is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
 frameworks (e.g. JUL, Log4j, SLf4J, Logback) into OpenTelemetry. Users configure the Log SDK to
 dictate how logs are processed and exported.
-See [opentelemetry.io](https://opentelemetry.io/docs/instrumentation/java/manual/#logs) for
+See [opentelemetry.io](https://opentelemetry.io/docs/languages/java/api/#loggerprovider) for
 documentation on usage.
 
 ### API
@@ -3902,7 +3902,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 #### Breaking changes
 
-- There have been many updates to the semantic conventions constants. The constants are now auto-generated from the YAML specification files, so the names will now be consistent across languages. For more information, see the [YAML Model for Semantic Conventions](https://github.com/open-telemetry/semantic-conventions/tree/main/model#yaml-model-for-semantic-conventions).
+- There have been many updates to the semantic conventions constants. The constants are now auto-generated from the YAML specification files, so the names will now be consistent across languages. For more information, see the [YAML Model for Semantic Conventions](https://github.com/open-telemetry/semantic-conventions/blob/main/model/README.md#yaml-model-for-semantic-conventions).
 - All API classes have been moved into the `io.opentelemetry.api.` prefix to support JPMS users.
 - The API no longer uses the `grpc-context` as the context implementation. It now uses `io.opentelemetry.context.Context`. This is published in the `opentelemetry-context` artifact. Interactions with the context were mostly moved to static methods in the `Span` and `Baggage` interfaces.
 - The Baggage API has been reworked to more closely match the specification. This includes the removal of the `BaggageManager`. Baggage is fully functional within the API, without needing to install an SDK.
