@@ -37,18 +37,18 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class LongLastValueAggregator implements Aggregator<LongPointData, LongExemplarData> {
-  private final Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier;
+public final class LongLastValueAggregator implements Aggregator<LongPointData> {
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
   private final MemoryMode memoryMode;
 
   public LongLastValueAggregator(
-      Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier, MemoryMode memoryMode) {
+      Supplier<ExemplarReservoir> reservoirSupplier, MemoryMode memoryMode) {
     this.reservoirSupplier = reservoirSupplier;
     this.memoryMode = memoryMode;
   }
 
   @Override
-  public AggregatorHandle<LongPointData, LongExemplarData> createHandle() {
+  public AggregatorHandle<LongPointData> createHandle() {
     return new Handle(reservoirSupplier.get(), memoryMode);
   }
 
@@ -89,14 +89,14 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
         ImmutableGaugeData.create(points));
   }
 
-  static final class Handle extends AggregatorHandle<LongPointData, LongExemplarData> {
+  static final class Handle extends AggregatorHandle<LongPointData> {
     @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePoint;
 
-    Handle(ExemplarReservoir<LongExemplarData> exemplarReservoir, MemoryMode memoryMode) {
+    Handle(ExemplarReservoir exemplarReservoir, MemoryMode memoryMode) {
       super(exemplarReservoir);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableLongPointData();
@@ -106,7 +106,12 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
     }
 
     @Override
-    protected LongPointData doAggregateThenMaybeReset(
+    protected boolean isDoubleType() {
+      return false;
+    }
+
+    @Override
+    protected LongPointData doAggregateThenMaybeResetLongs(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,

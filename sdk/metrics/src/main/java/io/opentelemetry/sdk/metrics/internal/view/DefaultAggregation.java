@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
@@ -58,7 +57,7 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
   }
 
   @Override
-  public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
+  public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilter exemplarFilter,
       MemoryMode memoryMode) {

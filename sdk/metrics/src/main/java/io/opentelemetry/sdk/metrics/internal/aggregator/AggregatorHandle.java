@@ -7,7 +7,8 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.List;
@@ -24,14 +25,16 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public abstract class AggregatorHandle<T extends PointData, U extends ExemplarData> {
+public abstract class AggregatorHandle<T extends PointData> {
 
   // A reservoir of sampled exemplars for this time period.
-  private final ExemplarReservoir<U> exemplarReservoir;
+  private final ExemplarReservoir exemplarReservoir;
   private volatile boolean valuesRecorded = false;
+  private final boolean isDoubleType;
 
-  protected AggregatorHandle(ExemplarReservoir<U> exemplarReservoir) {
+  protected AggregatorHandle(ExemplarReservoir exemplarReservoir) {
     this.exemplarReservoir = exemplarReservoir;
+    this.isDoubleType = isDoubleType();
   }
 
   /**
@@ -44,21 +47,54 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
       valuesRecorded = false;
     }
 
-    return doAggregateThenMaybeReset(
+    if (isDoubleType) {
+      return doAggregateThenMaybeResetDoubles(
+          startEpochNanos,
+          epochNanos,
+          attributes,
+          exemplarReservoir.collectAndResetDoubles(attributes),
+          reset);
+    }
+    return doAggregateThenMaybeResetLongs(
         startEpochNanos,
         epochNanos,
         attributes,
-        exemplarReservoir.collectAndReset(attributes),
+        exemplarReservoir.collectAndResetLongs(attributes),
         reset);
   }
 
+  /**
+   * Indicates whether this {@link AggregatorHandle} supports double or long values.
+   *
+   * <p>If it supports doubles, it MUST implement {@link #doAggregateThenMaybeResetDoubles(long,
+   * long, Attributes, List, boolean)} and {@link #doRecordDouble(double)}.
+   *
+   * <p>If it supports long, it MUST implement {@link #doAggregateThenMaybeResetLongs(long, long,
+   * Attributes, List, boolean)} and {@link #doRecordLong(long)}.
+   *
+   * @return true if it supports doubles, false if it supports longs.
+   */
+  protected abstract boolean isDoubleType();
+
   /** Implementation of the {@link #aggregateThenMaybeReset(long, long, Attributes, boolean)} . */
-  protected abstract T doAggregateThenMaybeReset(
+  protected T doAggregateThenMaybeResetDoubles(
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
-      List<U> exemplars,
-      boolean reset);
+      List<DoubleExemplarData> exemplars,
+      boolean reset) {
+    throw new UnsupportedOperationException("This aggregator does not support double values.");
+  }
+
+  /** Implementation of the {@link #aggregateThenMaybeReset(long, long, Attributes, boolean)} . */
+  protected T doAggregateThenMaybeResetLongs(
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      List<LongExemplarData> exemplars,
+      boolean reset) {
+    throw new UnsupportedOperationException("This aggregator does not support long values.");
+  }
 
   public final void recordLong(long value, Attributes attributes, Context context) {
     exemplarReservoir.offerLongMeasurement(value, attributes, context);
@@ -82,8 +118,7 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
    * values.
    */
   protected void doRecordLong(long value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording long values.");
+    throw new UnsupportedOperationException("This aggregator does not support long values.");
   }
 
   public final void recordDouble(double value, Attributes attributes, Context context) {
@@ -108,8 +143,7 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
    * double values.
    */
   protected void doRecordDouble(double value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording double values.");
+    throw new UnsupportedOperationException("This aggregator does not support double values.");
   }
 
   /**

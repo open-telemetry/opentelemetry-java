@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
  */
 public final class DoubleSumAggregator
     extends AbstractSumAggregator<DoublePointData, DoubleExemplarData> {
-  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
   private final MemoryMode memoryMode;
 
   /**
@@ -47,7 +47,7 @@ public final class DoubleSumAggregator
    */
   public DoubleSumAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
+      Supplier<ExemplarReservoir> reservoirSupplier,
       MemoryMode memoryMode) {
     super(instrumentDescriptor);
 
@@ -56,7 +56,7 @@ public final class DoubleSumAggregator
   }
 
   @Override
-  public AggregatorHandle<DoublePointData, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<DoublePointData> createHandle() {
     return new Handle(reservoirSupplier.get(), memoryMode);
   }
 
@@ -107,19 +107,24 @@ public final class DoubleSumAggregator
         ImmutableSumData.create(isMonotonic(), temporality, points));
   }
 
-  static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<DoublePointData> {
     private final DoubleAdder current = AdderUtil.createDoubleAdder();
 
     // Only used if memoryMode == MemoryMode.REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
 
-    Handle(ExemplarReservoir<DoubleExemplarData> exemplarReservoir, MemoryMode memoryMode) {
+    Handle(ExemplarReservoir exemplarReservoir, MemoryMode memoryMode) {
       super(exemplarReservoir);
       reusablePoint = memoryMode == MemoryMode.REUSABLE_DATA ? new MutableDoublePointData() : null;
     }
 
     @Override
-    protected DoublePointData doAggregateThenMaybeReset(
+    protected boolean isDoubleType() {
+      return true;
+    }
+
+    @Override
+    protected DoublePointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,

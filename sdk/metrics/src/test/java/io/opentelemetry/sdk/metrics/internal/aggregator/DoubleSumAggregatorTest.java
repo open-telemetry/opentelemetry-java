@@ -43,7 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleSumAggregatorTest {
 
-  @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
+  @Mock ExemplarReservoir reservoir;
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo scope = InstrumentationScopeInfo.empty();
@@ -62,7 +62,7 @@ class DoubleSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE,
                 Advice.empty()),
-            ExemplarReservoir::doubleNoSamples,
+            ExemplarReservoir::noSamples,
             memoryMode);
   }
 
@@ -77,8 +77,7 @@ class DoubleSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
@@ -95,8 +94,7 @@ class DoubleSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void multipleRecords_WithNegatives(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-23);
@@ -114,8 +112,7 @@ class DoubleSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
 
     aggregatorHandle.recordDouble(13);
     aggregatorHandle.recordDouble(12);
@@ -149,7 +146,7 @@ class DoubleSumAggregatorTest {
                 TraceState.getDefault()),
             1);
     List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
+    Mockito.when(reservoir.collectAndResetDoubles(Attributes.empty())).thenReturn(exemplars);
     DoubleSumAggregator aggregator =
         new DoubleSumAggregator(
             InstrumentDescriptor.create(
@@ -161,8 +158,7 @@ class DoubleSumAggregatorTest {
                 Advice.empty()),
             () -> reservoir,
             memoryMode);
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(
             aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
@@ -195,7 +191,7 @@ class DoubleSumAggregatorTest {
                     instrumentType,
                     InstrumentValueType.LONG,
                     Advice.empty()),
-                ExemplarReservoir::doubleNoSamples,
+                ExemplarReservoir::noSamples,
                 memoryMode);
 
         DoublePointData diffed =
@@ -305,8 +301,7 @@ class DoubleSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
     MetricData metricData =
@@ -366,8 +361,7 @@ class DoubleSumAggregatorTest {
   @Test
   void sameObjectReturnedOnReusableDataMemoryMode() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(1.0);
 
     DoublePointData firstCollection =

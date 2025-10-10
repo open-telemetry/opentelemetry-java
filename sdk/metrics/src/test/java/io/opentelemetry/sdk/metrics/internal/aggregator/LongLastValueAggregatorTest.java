@@ -42,7 +42,7 @@ class LongLastValueAggregatorTest {
   private LongLastValueAggregator aggregator;
 
   private void init(MemoryMode memoryMode) {
-    aggregator = new LongLastValueAggregator(ExemplarReservoir::longNoSamples, memoryMode);
+    aggregator = new LongLastValueAggregator(ExemplarReservoir::noSamples, memoryMode);
   }
 
   @ParameterizedTest
@@ -56,7 +56,7 @@ class LongLastValueAggregatorTest {
   @EnumSource(MemoryMode.class)
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     assertThat(
             aggregatorHandle
@@ -76,7 +76,7 @@ class LongLastValueAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
 
     aggregatorHandle.recordLong(13);
     assertThat(
@@ -189,7 +189,7 @@ class LongLastValueAggregatorTest {
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
 
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -217,7 +217,7 @@ class LongLastValueAggregatorTest {
   @Test
   void testReusablePointOnCollect() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<LongPointData, LongExemplarData> handle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> handle = aggregator.createHandle();
     handle.recordLong(1);
     LongPointData pointData =
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);

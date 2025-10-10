@@ -36,12 +36,12 @@ import javax.annotation.Nullable;
 public final class LongSumAggregator
     extends AbstractSumAggregator<LongPointData, LongExemplarData> {
 
-  private final Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
   private final MemoryMode memoryMode;
 
   public LongSumAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier,
+      Supplier<ExemplarReservoir> reservoirSupplier,
       MemoryMode memoryMode) {
     super(instrumentDescriptor);
     this.reservoirSupplier = reservoirSupplier;
@@ -49,7 +49,7 @@ public final class LongSumAggregator
   }
 
   @Override
-  public AggregatorHandle<LongPointData, LongExemplarData> createHandle() {
+  public AggregatorHandle<LongPointData> createHandle() {
     return new Handle(reservoirSupplier.get(), memoryMode);
   }
 
@@ -100,20 +100,20 @@ public final class LongSumAggregator
         ImmutableSumData.create(isMonotonic(), temporality, points));
   }
 
-  static final class Handle extends AggregatorHandle<LongPointData, LongExemplarData> {
+  static final class Handle extends AggregatorHandle<LongPointData> {
     private final LongAdder current = AdderUtil.createLongAdder();
 
     // Only used if memoryMode == MemoryMode.REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePointData;
 
-    Handle(ExemplarReservoir<LongExemplarData> exemplarReservoir, MemoryMode memoryMode) {
+    Handle(ExemplarReservoir exemplarReservoir, MemoryMode memoryMode) {
       super(exemplarReservoir);
       reusablePointData =
           memoryMode == MemoryMode.REUSABLE_DATA ? new MutableLongPointData() : null;
     }
 
     @Override
-    protected LongPointData doAggregateThenMaybeReset(
+    protected LongPointData doAggregateThenMaybeResetLongs(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
@@ -127,6 +127,11 @@ public final class LongSumAggregator
         return ImmutableLongPointData.create(
             startEpochNanos, epochNanos, attributes, value, exemplars);
       }
+    }
+
+    @Override
+    protected boolean isDoubleType() {
+      return false;
     }
 
     @Override

@@ -33,33 +33,32 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AggregatorHandleTest {
 
-  @Mock ExemplarReservoir<DoubleExemplarData> doubleReservoir;
-  @Mock ExemplarReservoir<LongExemplarData> longReservoir;
+  @Mock ExemplarReservoir doubleReservoir;
+  @Mock ExemplarReservoir longReservoir;
 
   @Test
   void testRecordings() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
+    TestLongAggregatorHandle testLongAggregator = new TestLongAggregatorHandle(longReservoir);
 
-    testAggregator.recordLong(22);
-    assertThat(testAggregator.recordedLong.get()).isEqualTo(22);
-    assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
+    testLongAggregator.recordLong(22);
+    assertThat(testLongAggregator.recordedLong.get()).isEqualTo(22);
 
-    testAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
-    assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
-    assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
+    testLongAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
+    assertThat(testLongAggregator.recordedLong.get()).isEqualTo(0);
 
-    testAggregator.recordDouble(33.55);
-    assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
-    assertThat(testAggregator.recordedDouble.get()).isEqualTo(33.55);
+    TestDoubleAggregatorHandle testDoubleAggregator =
+        new TestDoubleAggregatorHandle(doubleReservoir);
 
-    testAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
-    assertThat(testAggregator.recordedLong.get()).isEqualTo(0);
-    assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
+    testDoubleAggregator.recordDouble(33.55);
+    assertThat(testDoubleAggregator.recordedDouble.get()).isEqualTo(33.55);
+
+    testDoubleAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
+    assertThat(testDoubleAggregator.recordedDouble.get()).isEqualTo(0);
   }
 
   @Test
   void testOfferMeasurementLongToExemplar() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(longReservoir);
+    TestLongAggregatorHandle testAggregator = new TestLongAggregatorHandle(longReservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     Context context = Context.root();
     testAggregator.recordLong(1L, attributes, context);
@@ -68,7 +67,7 @@ class AggregatorHandleTest {
 
   @Test
   void testOfferMeasurementDoubleToExemplar() {
-    TestAggregatorHandle<?> testAggregator = new TestAggregatorHandle<>(doubleReservoir);
+    TestDoubleAggregatorHandle testAggregator = new TestDoubleAggregatorHandle(doubleReservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     Context context = Context.root();
     testAggregator.recordDouble(1.0d, attributes, context);
@@ -77,8 +76,7 @@ class AggregatorHandleTest {
 
   @Test
   void testGenerateExemplarsOnCollect() {
-    TestAggregatorHandle<DoubleExemplarData> testAggregator =
-        new TestAggregatorHandle<>(doubleReservoir);
+    TestDoubleAggregatorHandle testAggregator = new TestDoubleAggregatorHandle(doubleReservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData result =
         ImmutableDoubleExemplarData.create(
@@ -92,29 +90,66 @@ class AggregatorHandleTest {
             1);
     // We need to first record a value so that collect and reset does something.
     testAggregator.recordDouble(1.0, Attributes.empty(), Context.root());
-    Mockito.when(doubleReservoir.collectAndReset(attributes))
+    Mockito.when(doubleReservoir.collectAndResetDoubles(attributes))
         .thenReturn(Collections.singletonList(result));
     testAggregator.aggregateThenMaybeReset(0, 1, attributes, /* reset= */ true);
-    assertThat(testAggregator.recordedExemplars.get()).containsExactly(result);
+    assertThat(testAggregator.recordedExemplars.get()).isEqualTo(Collections.singletonList(result));
   }
 
-  private static class TestAggregatorHandle<T extends ExemplarData>
-      extends AggregatorHandle<PointData, T> {
+  private static class TestDoubleAggregatorHandle extends TestAggregatorHandle {
+
+    TestDoubleAggregatorHandle(ExemplarReservoir reservoir) {
+      super(reservoir);
+    }
+
+    @Override
+    protected boolean isDoubleType() {
+      return true;
+    }
+  }
+
+  private static class TestLongAggregatorHandle extends TestAggregatorHandle {
+
+    TestLongAggregatorHandle(ExemplarReservoir reservoir) {
+      super(reservoir);
+    }
+
+    @Override
+    protected boolean isDoubleType() {
+      return false;
+    }
+  }
+
+  private abstract static class TestAggregatorHandle extends AggregatorHandle<PointData> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
-    final AtomicReference<List<T>> recordedExemplars = new AtomicReference<>();
+    final AtomicReference<List<? extends ExemplarData>> recordedExemplars = new AtomicReference<>();
 
-    TestAggregatorHandle(ExemplarReservoir<T> reservoir) {
+    TestAggregatorHandle(ExemplarReservoir reservoir) {
       super(reservoir);
     }
 
     @Nullable
     @Override
-    protected PointData doAggregateThenMaybeReset(
+    protected PointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
-        List<T> exemplars,
+        List<DoubleExemplarData> exemplars,
+        boolean reset) {
+      recordedLong.set(0);
+      recordedDouble.set(0);
+      recordedExemplars.set(exemplars);
+      return null;
+    }
+
+    @Nullable
+    @Override
+    protected PointData doAggregateThenMaybeResetLongs(
+        long startEpochNanos,
+        long epochNanos,
+        Attributes attributes,
+        List<LongExemplarData> exemplars,
         boolean reset) {
       recordedLong.set(0);
       recordedDouble.set(0);

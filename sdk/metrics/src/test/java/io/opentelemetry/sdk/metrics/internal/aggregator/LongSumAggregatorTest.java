@@ -43,7 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LongSumAggregatorTest {
 
-  @Mock ExemplarReservoir<LongExemplarData> reservoir;
+  @Mock ExemplarReservoir reservoir;
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
@@ -61,7 +61,7 @@ class LongSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
-            ExemplarReservoir::longNoSamples,
+            ExemplarReservoir::noSamples,
             memoryMode);
   }
 
@@ -76,7 +76,7 @@ class LongSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
@@ -93,7 +93,7 @@ class LongSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void multipleRecords_WithNegatives(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-23);
@@ -111,7 +111,7 @@ class LongSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
 
     aggregatorHandle.recordLong(13);
     aggregatorHandle.recordLong(12);
@@ -145,7 +145,7 @@ class LongSumAggregatorTest {
                 TraceState.getDefault()),
             1);
     List<LongExemplarData> exemplars = Collections.singletonList(exemplar);
-    Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
+    Mockito.when(reservoir.collectAndResetLongs(Attributes.empty())).thenReturn(exemplars);
     LongSumAggregator aggregator =
         new LongSumAggregator(
             InstrumentDescriptor.create(
@@ -157,7 +157,7 @@ class LongSumAggregatorTest {
                 Advice.empty()),
             () -> reservoir,
             memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(0, attributes, Context.root());
     assertThat(
             aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
@@ -189,7 +189,7 @@ class LongSumAggregatorTest {
                     instrumentType,
                     InstrumentValueType.LONG,
                     Advice.empty()),
-                ExemplarReservoir::longNoSamples,
+                ExemplarReservoir::noSamples,
                 memoryMode);
 
         LongPointData diffed =
@@ -299,7 +299,7 @@ class LongSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -360,7 +360,7 @@ class LongSumAggregatorTest {
   @Test
   void sameObjectReturnedOnReusableDataMemoryMode() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
 
     aggregatorHandle.recordLong(1L);
     LongPointData firstCollection =

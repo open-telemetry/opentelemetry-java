@@ -41,7 +41,7 @@ class DoubleLastValueAggregatorTest {
   private DoubleLastValueAggregator aggregator;
 
   private void init(MemoryMode memoryMode) {
-    aggregator = new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples, memoryMode);
+    aggregator = new DoubleLastValueAggregator(ExemplarReservoir::noSamples, memoryMode);
   }
 
   @ParameterizedTest
@@ -56,8 +56,7 @@ class DoubleLastValueAggregatorTest {
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
 
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
     assertThat(
             aggregatorHandle
@@ -78,8 +77,7 @@ class DoubleLastValueAggregatorTest {
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
 
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
 
     aggregatorHandle.recordDouble(13.1);
     assertThat(
@@ -229,8 +227,7 @@ class DoubleLastValueAggregatorTest {
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
 
-    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
     MetricData metricData =
@@ -260,7 +257,7 @@ class DoubleLastValueAggregatorTest {
   @Test
   void testReusableDataOnCollect() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<DoublePointData, DoubleExemplarData> handle = aggregator.createHandle();
+    AggregatorHandle<DoublePointData> handle = aggregator.createHandle();
     handle.recordDouble(1);
     DoublePointData pointData =
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
@@ -281,7 +278,7 @@ class DoubleLastValueAggregatorTest {
   @Test
   void testNullPointerExceptionWhenUnset() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<DoublePointData, DoubleExemplarData> handle = aggregator.createHandle();
+    AggregatorHandle<DoublePointData> handle = aggregator.createHandle();
     assertThatThrownBy(
             () -> handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ true))
         .isInstanceOf(NullPointerException.class);

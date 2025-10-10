@@ -33,7 +33,7 @@ public class HistogramBenchmark {
   public static class ThreadState {
     @Param HistogramValueGenerator valueGen;
     @Param HistogramAggregationParam aggregation;
-    private AggregatorHandle<?, ?> aggregatorHandle;
+    private AggregatorHandle<?> aggregatorHandle;
     private DoubleSupplier valueSupplier;
 
     @Setup(Level.Trial)

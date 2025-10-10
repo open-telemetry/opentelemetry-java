@@ -35,9 +35,9 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public final class DoubleBase2ExponentialHistogramAggregator
-    implements Aggregator<ExponentialHistogramPointData, DoubleExemplarData> {
+    implements Aggregator<ExponentialHistogramPointData> {
 
-  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
   private final int maxBuckets;
   private final int maxScale;
   private final MemoryMode memoryMode;
@@ -48,7 +48,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
    */
   public DoubleBase2ExponentialHistogramAggregator(
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
+      Supplier<ExemplarReservoir> reservoirSupplier,
       int maxBuckets,
       int maxScale,
       MemoryMode memoryMode) {
@@ -59,7 +59,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
   }
 
   @Override
-  public AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<ExponentialHistogramPointData> createHandle() {
     return new Handle(reservoirSupplier.get(), maxBuckets, maxScale, memoryMode);
   }
 
@@ -79,8 +79,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
         ImmutableExponentialHistogramData.create(temporality, points));
   }
 
-  static final class Handle
-      extends AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<ExponentialHistogramPointData> {
     private final int maxBuckets;
     private final int maxScale;
     @Nullable private DoubleBase2ExponentialHistogramBuckets positiveBuckets;
@@ -96,11 +95,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
     // Used only when MemoryMode = REUSABLE_DATA
     @Nullable private final MutableExponentialHistogramPointData reusablePoint;
 
-    Handle(
-        ExemplarReservoir<DoubleExemplarData> reservoir,
-        int maxBuckets,
-        int maxScale,
-        MemoryMode memoryMode) {
+    Handle(ExemplarReservoir reservoir, int maxBuckets, int maxScale, MemoryMode memoryMode) {
       super(reservoir);
       this.maxBuckets = maxBuckets;
       this.maxScale = maxScale;
@@ -118,7 +113,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
     }
 
     @Override
-    protected synchronized ExponentialHistogramPointData doAggregateThenMaybeReset(
+    protected synchronized ExponentialHistogramPointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
@@ -259,6 +254,11 @@ public final class DoubleBase2ExponentialHistogramAggregator
         downScale(buckets.getScaleReduction(value));
         buckets.record(value);
       }
+    }
+
+    @Override
+    protected boolean isDoubleType() {
+      return true;
     }
 
     @Override

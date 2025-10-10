@@ -25,7 +25,7 @@ import java.util.List;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DropAggregator implements Aggregator<PointData, DoubleExemplarData> {
+public final class DropAggregator implements Aggregator<PointData> {
 
   private static final PointData POINT_DATA =
       new PointData() {
@@ -50,12 +50,17 @@ public final class DropAggregator implements Aggregator<PointData, DoubleExempla
         }
       };
 
-  public static final Aggregator<PointData, DoubleExemplarData> INSTANCE = new DropAggregator();
+  public static final Aggregator<PointData> INSTANCE = new DropAggregator();
 
-  private static final AggregatorHandle<PointData, DoubleExemplarData> HANDLE =
-      new AggregatorHandle<PointData, DoubleExemplarData>(ExemplarReservoir.doubleNoSamples()) {
+  private static final AggregatorHandle<PointData> HANDLE =
+      new AggregatorHandle<PointData>(ExemplarReservoir.noSamples()) {
         @Override
-        protected PointData doAggregateThenMaybeReset(
+        protected boolean isDoubleType() {
+          return true;
+        }
+
+        @Override
+        protected PointData doAggregateThenMaybeResetDoubles(
             long startEpochNanos,
             long epochNanos,
             Attributes attributes,
@@ -74,7 +79,7 @@ public final class DropAggregator implements Aggregator<PointData, DoubleExempla
   private DropAggregator() {}
 
   @Override
-  public AggregatorHandle<PointData, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<PointData> createHandle() {
     return HANDLE;
   }
 
