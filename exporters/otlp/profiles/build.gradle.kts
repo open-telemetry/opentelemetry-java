@@ -27,4 +27,10 @@ dependencies {
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation(project(":exporters:sender:okhttp"))
   testImplementation("io.grpc:grpc-stub")
+
+  tasks {
+    withType(JavaCompile::class) {
+      options.release.set(11)
+    }
+  }
 }
