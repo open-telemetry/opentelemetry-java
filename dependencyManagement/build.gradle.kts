@@ -30,7 +30,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:33.5.0-jre",
   "com.google.protobuf:protobuf-bom:4.32.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
-  "com.squareup.okio:okio-bom:3.16.0", // applies to transitive dependencies of okhttp
+  "com.squareup.okio:okio-bom:3.16.1", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.76.0",
   "io.netty:netty-bom:4.2.6.Final",
   "io.zipkin.brave:brave-bom:6.3.0",
