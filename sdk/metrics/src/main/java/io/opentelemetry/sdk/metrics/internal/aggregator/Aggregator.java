@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -25,9 +23,9 @@ import javax.annotation.concurrent.Immutable;
  * at any time.
  */
 @Immutable
-public interface Aggregator<T extends PointData, U extends ExemplarData> {
+public interface Aggregator<T extends PointData> {
   /** Returns the drop aggregator, an aggregator that drops measurements. */
-  static Aggregator<?, DoubleExemplarData> drop() {
+  static Aggregator<?> drop() {
     return DropAggregator.INSTANCE;
   }
 
@@ -37,7 +35,7 @@ public interface Aggregator<T extends PointData, U extends ExemplarData> {
    *
    * @return a new {@link AggregatorHandle}.
    */
-  AggregatorHandle<T, U> createHandle();
+  AggregatorHandle<T> createHandle();
 
   /**
    * Returns a new DELTA point by computing the difference between two cumulative points.

@@ -24,59 +24,42 @@ import java.util.function.Supplier;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public interface ExemplarReservoir<T extends ExemplarData> {
+public interface ExemplarReservoir {
 
   /**
    * Wraps an {@link ExemplarReservoir}, casting calls from {@link
    * ExemplarReservoir#offerLongMeasurement(long, Attributes, Context)} to {@link
    * ExemplarReservoir#offerDoubleMeasurement(double, Attributes, Context)} such that {@link
-   * ExemplarReservoir#collectAndReset(Attributes)} only returns {@link DoubleExemplarData}.
+   * ExemplarReservoir#collectAndResetDoubles(Attributes)} only returns {@link DoubleExemplarData}
+   * and {@link ExemplarReservoir#collectAndResetLongs(Attributes)} throws.
    *
    * <p>This is used for {@link Aggregation#explicitBucketHistogram()} and {@link
    * Aggregation#base2ExponentialBucketHistogram()} which only support double measurements.
    */
-  static <T extends ExemplarData> ExemplarReservoir<T> longToDouble(ExemplarReservoir<T> delegate) {
-    return new LongToDoubleExemplarReservoir<>(delegate);
+  static ExemplarReservoir longToDouble(ExemplarReservoir delegate) {
+    return new LongToDoubleExemplarReservoir(delegate);
   }
 
   /** Wraps a {@link ExemplarReservoir} with a measurement pre-filter. */
-  static <T extends ExemplarData> ExemplarReservoir<T> filtered(
-      ExemplarFilter filter, ExemplarReservoir<T> original) {
-    return new FilteredExemplarReservoir<>(filter, original);
+  static ExemplarReservoir filtered(ExemplarFilter filter, ExemplarReservoir original) {
+    return new FilteredExemplarReservoir(filter, original);
   }
 
-  /** A double exemplar reservoir that stores no exemplars. */
-  static ExemplarReservoir<DoubleExemplarData> doubleNoSamples() {
-    return NoopExemplarReservoir.DOUBLE_INSTANCE;
-  }
-
-  /** A long exemplar reservoir that stores no exemplars. */
-  static ExemplarReservoir<LongExemplarData> longNoSamples() {
-    return NoopExemplarReservoir.LONG_INSTANCE;
+  /** An exemplar reservoir that stores no exemplars. */
+  static ExemplarReservoir noSamples() {
+    return NoopExemplarReservoir.INSTANCE;
   }
 
   /**
-   * A double reservoir with fixed size that stores the given number of exemplars.
+   * A reservoir with fixed size that stores the given number of exemplars.
    *
    * @param clock The clock to use when annotating measurements with time.
    * @param size The maximum number of exemplars to preserve.
    * @param randomSupplier The random number generator to use for sampling.
    */
-  static ExemplarReservoir<DoubleExemplarData> doubleFixedSizeReservoir(
+  static ExemplarReservoir fixedSizeReservoir(
       Clock clock, int size, Supplier<Random> randomSupplier) {
-    return RandomFixedSizeExemplarReservoir.createDouble(clock, size, randomSupplier);
-  }
-
-  /**
-   * A long reservoir with fixed size that stores the given number of exemplars.
-   *
-   * @param clock The clock to use when annotating measurements with time.
-   * @param size The maximum number of exemplars to preserve.
-   * @param randomSupplier The random number generator to use for sampling.
-   */
-  static ExemplarReservoir<LongExemplarData> longFixedSizeReservoir(
-      Clock clock, int size, Supplier<Random> randomSupplier) {
-    return RandomFixedSizeExemplarReservoir.createLong(clock, size, randomSupplier);
+    return RandomFixedSizeExemplarReservoir.create(clock, size, randomSupplier);
   }
 
   /**
@@ -86,8 +69,7 @@ public interface ExemplarReservoir<T extends ExemplarData> {
    * @param boundaries A list of (inclusive) upper bounds for the histogram. Should be in order from
    *     lowest to highest.
    */
-  static ExemplarReservoir<DoubleExemplarData> histogramBucketReservoir(
-      Clock clock, List<Double> boundaries) {
+  static ExemplarReservoir histogramBucketReservoir(Clock clock, List<Double> boundaries) {
     return new HistogramExemplarReservoir(clock, boundaries);
   }
 
@@ -107,5 +89,7 @@ public interface ExemplarReservoir<T extends ExemplarData> {
    * @return An (immutable) list of sampled exemplars for this point. Implementers are expected to
    *     filter out {@code pointAttributes} from the original recorded attributes.
    */
-  List<T> collectAndReset(Attributes pointAttributes);
+  List<DoubleExemplarData> collectAndResetDoubles(Attributes pointAttributes);
+
+  List<LongExemplarData> collectAndResetLongs(Attributes pointAttributes);
 }

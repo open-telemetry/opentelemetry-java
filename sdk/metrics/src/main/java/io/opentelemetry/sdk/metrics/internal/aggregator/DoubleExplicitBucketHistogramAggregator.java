@@ -36,14 +36,14 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public final class DoubleExplicitBucketHistogramAggregator
-    implements Aggregator<HistogramPointData, DoubleExemplarData> {
+    implements Aggregator<HistogramPointData> {
   private final double[] boundaries;
   private final MemoryMode memoryMode;
 
   // a cache for converting to MetricData
   private final List<Double> boundaryList;
 
-  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   /**
    * Constructs an explicit bucket histogram aggregator.
@@ -53,9 +53,7 @@ public final class DoubleExplicitBucketHistogramAggregator
    * @param memoryMode The {@link MemoryMode} to use in this aggregator.
    */
   public DoubleExplicitBucketHistogramAggregator(
-      double[] boundaries,
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
-      MemoryMode memoryMode) {
+      double[] boundaries, Supplier<ExemplarReservoir> reservoirSupplier, MemoryMode memoryMode) {
     this.boundaries = boundaries;
     this.memoryMode = memoryMode;
 
@@ -68,7 +66,7 @@ public final class DoubleExplicitBucketHistogramAggregator
   }
 
   @Override
-  public AggregatorHandle<HistogramPointData, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<HistogramPointData> createHandle() {
     return new Handle(this.boundaryList, this.boundaries, reservoirSupplier.get(), memoryMode);
   }
 
@@ -88,7 +86,7 @@ public final class DoubleExplicitBucketHistogramAggregator
         ImmutableHistogramData.create(temporality, pointData));
   }
 
-  static final class Handle extends AggregatorHandle<HistogramPointData, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<HistogramPointData> {
     // read-only
     private final List<Double> boundaryList;
     // read-only
@@ -117,7 +115,7 @@ public final class DoubleExplicitBucketHistogramAggregator
     Handle(
         List<Double> boundaryList,
         double[] boundaries,
-        ExemplarReservoir<DoubleExemplarData> reservoir,
+        ExemplarReservoir reservoir,
         MemoryMode memoryMode) {
       super(reservoir);
       this.boundaryList = boundaryList;
@@ -133,7 +131,12 @@ public final class DoubleExplicitBucketHistogramAggregator
     }
 
     @Override
-    protected HistogramPointData doAggregateThenMaybeReset(
+    protected boolean isDoubleType() {
+      return true;
+    }
+
+    @Override
+    protected HistogramPointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,

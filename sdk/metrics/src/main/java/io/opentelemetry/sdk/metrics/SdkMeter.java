@@ -304,7 +304,7 @@ final class SdkMeter implements Meter {
   /** Register new asynchronous storage associated with a given instrument. */
   SdkObservableMeasurement registerObservableMeasurement(
       InstrumentDescriptor instrumentDescriptor) {
-    List<AsynchronousMetricStorage<?, ?>> registeredStorages = new ArrayList<>();
+    List<AsynchronousMetricStorage<?>> registeredStorages = new ArrayList<>();
     for (Map.Entry<RegisteredReader, MetricStorageRegistry> entry :
         readerStorageRegistries.entrySet()) {
       RegisteredReader reader = entry.getKey();

@@ -67,8 +67,8 @@ class AsynchronousMetricStorageTest {
   @Mock private MetricReader reader;
   private RegisteredReader registeredReader;
 
-  private AsynchronousMetricStorage<?, ?> longCounterStorage;
-  private AsynchronousMetricStorage<?, ?> doubleCounterStorage;
+  private AsynchronousMetricStorage<?> longCounterStorage;
+  private AsynchronousMetricStorage<?> doubleCounterStorage;
 
   // Not using @BeforeEach since many methods require executing them for each MemoryMode
   void setup(MemoryMode memoryMode) {
@@ -161,7 +161,7 @@ class AsynchronousMetricStorageTest {
   void record_ProcessesAttributes(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    AsynchronousMetricStorage<?, ?> storage =
+    AsynchronousMetricStorage<?> storage =
         AsynchronousMetricStorage.create(
             registeredReader,
             RegisteredView.create(

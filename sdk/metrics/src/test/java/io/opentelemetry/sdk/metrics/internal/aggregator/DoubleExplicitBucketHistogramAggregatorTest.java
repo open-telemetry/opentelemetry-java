@@ -45,7 +45,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DoubleExplicitBucketHistogramAggregatorTest {
 
-  @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
+  @Mock ExemplarReservoir reservoir;
 
   private static final double[] boundaries = new double[] {10.0, 100.0, 1000.0};
   private static final List<Double> boundariesList =
@@ -60,7 +60,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   private void init(MemoryMode memoryMode) {
     aggregator =
         new DoubleExplicitBucketHistogramAggregator(
-            boundaries, ExemplarReservoir::doubleNoSamples, memoryMode);
+            boundaries, ExemplarReservoir::noSamples, memoryMode);
   }
 
   @ParameterizedTest
@@ -75,8 +75,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void testRecordings(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(20);
     aggregatorHandle.recordLong(5);
     aggregatorHandle.recordLong(150);
@@ -112,11 +111,10 @@ class DoubleExplicitBucketHistogramAggregatorTest {
                 TraceState.getDefault()),
             1);
     List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
-    Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
+    Mockito.when(reservoir.collectAndResetDoubles(Attributes.empty())).thenReturn(exemplars);
     DoubleExplicitBucketHistogramAggregator aggregator =
         new DoubleExplicitBucketHistogramAggregator(boundaries, () -> reservoir, memoryMode);
-    AggregatorHandle<HistogramPointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(
             aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
@@ -139,8 +137,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
 
     aggregatorHandle.recordLong(100);
     assertThat(
@@ -179,8 +176,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -250,8 +246,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void testHistogramCounts(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(1.1);
     HistogramPointData point =
         aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
@@ -263,8 +258,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void testMultithreadedUpdates(MemoryMode memoryMode) throws InterruptedException {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
     ImmutableList<Long> updates = ImmutableList.of(1L, 2L, 3L, 5L, 7L, 11L, 13L, 17L, 19L, 23L);
     int numberOfThreads = updates.size();
     int numberOfUpdates = 10000;
@@ -306,8 +300,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @Test
   void testReusableDataMemoryMode() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<HistogramPointData, DoubleExemplarData> aggregatorHandle =
-        aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
     aggregatorHandle.recordLong(20);
     aggregatorHandle.recordLong(30);

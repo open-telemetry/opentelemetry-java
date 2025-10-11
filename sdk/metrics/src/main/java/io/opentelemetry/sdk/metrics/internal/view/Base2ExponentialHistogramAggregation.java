@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
@@ -66,17 +65,17 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
+  public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilter exemplarFilter,
       MemoryMode memoryMode) {
-    return (Aggregator<T, U>)
+    return (Aggregator<T>)
         new DoubleBase2ExponentialHistogramAggregator(
             () ->
                 ExemplarReservoir.filtered(
                     exemplarFilter,
                     ExemplarReservoir.longToDouble(
-                        ExemplarReservoir.doubleFixedSizeReservoir(
+                        ExemplarReservoir.fixedSizeReservoir(
                             Clock.getDefault(),
                             Runtime.getRuntime().availableProcessors(),
                             RandomSupplier.platformDefault()))),

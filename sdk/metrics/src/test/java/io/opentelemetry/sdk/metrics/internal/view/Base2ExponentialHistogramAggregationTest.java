@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
@@ -47,7 +46,7 @@ class Base2ExponentialHistogramAggregationTest {
   @Test
   void minimumBucketsCanAccommodateMaxRange() {
     Aggregation aggregation = Base2ExponentialHistogramAggregation.create(2, 20);
-    Aggregator<ExponentialHistogramPointData, ExemplarData> aggregator =
+    Aggregator<ExponentialHistogramPointData> aggregator =
         ((AggregatorFactory) aggregation)
             .createAggregator(
                 InstrumentDescriptor.create(
@@ -59,8 +58,7 @@ class Base2ExponentialHistogramAggregationTest {
                     Advice.empty()),
                 ExemplarFilter.alwaysOff(),
                 MemoryMode.IMMUTABLE_DATA);
-    AggregatorHandle<ExponentialHistogramPointData, ExemplarData> handle =
-        aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> handle = aggregator.createHandle();
     // Record max range
     handle.recordDouble(Double.MIN_VALUE);
     handle.recordDouble(Double.MAX_VALUE);

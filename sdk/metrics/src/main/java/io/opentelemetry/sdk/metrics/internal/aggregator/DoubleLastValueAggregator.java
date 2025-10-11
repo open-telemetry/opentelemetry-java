@@ -40,19 +40,18 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public final class DoubleLastValueAggregator
-    implements Aggregator<DoublePointData, DoubleExemplarData> {
-  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+public final class DoubleLastValueAggregator implements Aggregator<DoublePointData> {
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
   private final MemoryMode memoryMode;
 
   public DoubleLastValueAggregator(
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier, MemoryMode memoryMode) {
+      Supplier<ExemplarReservoir> reservoirSupplier, MemoryMode memoryMode) {
     this.reservoirSupplier = reservoirSupplier;
     this.memoryMode = memoryMode;
   }
 
   @Override
-  public AggregatorHandle<DoublePointData, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<DoublePointData> createHandle() {
     return new Handle(reservoirSupplier.get(), memoryMode);
   }
 
@@ -94,14 +93,14 @@ public final class DoubleLastValueAggregator
         ImmutableGaugeData.create(points));
   }
 
-  static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<DoublePointData> {
     private final AtomicReference<AtomicLong> current = new AtomicReference<>(null);
     private final AtomicLong valueBits = new AtomicLong();
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
 
-    private Handle(ExemplarReservoir<DoubleExemplarData> reservoir, MemoryMode memoryMode) {
+    private Handle(ExemplarReservoir reservoir, MemoryMode memoryMode) {
       super(reservoir);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableDoublePointData();
@@ -111,7 +110,7 @@ public final class DoubleLastValueAggregator
     }
 
     @Override
-    protected DoublePointData doAggregateThenMaybeReset(
+    protected DoublePointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
@@ -127,6 +126,11 @@ public final class DoubleLastValueAggregator
         return ImmutableDoublePointData.create(
             startEpochNanos, epochNanos, attributes, value, exemplars);
       }
+    }
+
+    @Override
+    protected boolean isDoubleType() {
+      return true;
     }
 
     @Override

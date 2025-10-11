@@ -39,7 +39,7 @@ public class HistogramScaleBenchmark {
   public static class ThreadState {
     @Param HistogramValueGenerator valueGen;
     @Param HistogramAggregationParam aggregation;
-    private AggregatorHandle<?, ?> aggregatorHandle;
+    private AggregatorHandle<?> aggregatorHandle;
     private DoubleSupplier valueSupplier;
 
     @Setup(Level.Invocation)

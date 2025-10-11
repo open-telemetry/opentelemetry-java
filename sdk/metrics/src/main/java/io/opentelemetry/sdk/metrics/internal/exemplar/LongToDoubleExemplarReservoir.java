@@ -7,14 +7,15 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import java.util.List;
 
-class LongToDoubleExemplarReservoir<T extends ExemplarData> implements ExemplarReservoir<T> {
+class LongToDoubleExemplarReservoir implements ExemplarReservoir {
 
-  private final ExemplarReservoir<T> delegate;
+  private final ExemplarReservoir delegate;
 
-  LongToDoubleExemplarReservoir(ExemplarReservoir<T> delegate) {
+  LongToDoubleExemplarReservoir(ExemplarReservoir delegate) {
     this.delegate = delegate;
   }
 
@@ -29,7 +30,13 @@ class LongToDoubleExemplarReservoir<T extends ExemplarData> implements ExemplarR
   }
 
   @Override
-  public List<T> collectAndReset(Attributes pointAttributes) {
-    return delegate.collectAndReset(pointAttributes);
+  public List<DoubleExemplarData> collectAndResetDoubles(Attributes pointAttributes) {
+    return delegate.collectAndResetDoubles(pointAttributes);
+  }
+
+  @Override
+  public List<LongExemplarData> collectAndResetLongs(Attributes pointAttributes) {
+    throw new UnsupportedOperationException(
+        "This exemplar reservoir does not support collecting long values.");
   }
 }

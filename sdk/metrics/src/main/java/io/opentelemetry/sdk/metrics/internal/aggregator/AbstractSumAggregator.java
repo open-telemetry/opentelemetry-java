@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 
 abstract class AbstractSumAggregator<T extends PointData, U extends ExemplarData>
-    implements Aggregator<T, U> {
+    implements Aggregator<T> {
   private final boolean isMonotonic;
 
   AbstractSumAggregator(InstrumentDescriptor instrumentDescriptor) {

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -31,7 +30,7 @@ public interface AggregatorFactory {
    * @return a new {@link Aggregator}. {@link Aggregator#drop()} indicates no measurements should be
    *     recorded.
    */
-  <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
+  <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilter exemplarFilter,
       MemoryMode memoryMode);
