@@ -257,8 +257,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ### Maintainers
 
-- [Jack Berg](https://github.com/jack-berg), New Relic
-- [John Watson](https://github.com/jkwatson), Verta.ai
+- [Jack Berg](https://github.com/jack-berg), Grafana Labs
+- [John Watson](https://github.com/jkwatson), Cloudera
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
