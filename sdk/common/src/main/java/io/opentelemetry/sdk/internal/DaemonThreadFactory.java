@@ -45,6 +45,7 @@ public final class DaemonThreadFactory implements ThreadFactory {
     try {
       t.setDaemon(true);
       t.setName(namePrefix + "-" + counter.incrementAndGet());
+      t.setContextClassLoader(null);
     } catch (SecurityException e) {
       // Well, we tried.
     }
