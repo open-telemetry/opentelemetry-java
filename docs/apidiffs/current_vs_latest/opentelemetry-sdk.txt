@@ -1,10 +1,2 @@
-Comparing source compatibility of opentelemetry-sdk-1.56.0-SNAPSHOT.jar against opentelemetry-sdk-1.54.1.jar
-***  MODIFIED CLASS: PUBLIC NON_FINAL (<- FINAL) io.opentelemetry.sdk.OpenTelemetrySdk  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	***  MODIFIED METHOD: PUBLIC FINAL (<- NON_FINAL) io.opentelemetry.api.logs.LoggerProvider getLogsBridge()
-	***  MODIFIED METHOD: PUBLIC FINAL (<- NON_FINAL) io.opentelemetry.api.metrics.MeterProvider getMeterProvider()
-	***  MODIFIED METHOD: PUBLIC FINAL (<- NON_FINAL) io.opentelemetry.context.propagation.ContextPropagators getPropagators()
-	***  MODIFIED METHOD: PUBLIC FINAL (<- NON_FINAL) io.opentelemetry.sdk.logs.SdkLoggerProvider getSdkLoggerProvider()
-	***  MODIFIED METHOD: PUBLIC FINAL (<- NON_FINAL) io.opentelemetry.sdk.metrics.SdkMeterProvider getSdkMeterProvider()
-	***  MODIFIED METHOD: PUBLIC FINAL (<- NON_FINAL) io.opentelemetry.sdk.trace.SdkTracerProvider getSdkTracerProvider()
-	***  MODIFIED METHOD: PUBLIC FINAL (<- NON_FINAL) io.opentelemetry.api.trace.TracerProvider getTracerProvider()
+Comparing source compatibility of opentelemetry-sdk-1.56.0-SNAPSHOT.jar against opentelemetry-sdk-1.55.0.jar
+No changes.
