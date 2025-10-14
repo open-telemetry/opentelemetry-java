@@ -17,13 +17,12 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -38,18 +37,17 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public final class LongLastValueAggregator implements Aggregator<LongPointData> {
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final ExemplarReservoirFactory reservoirFactory;
   private final MemoryMode memoryMode;
 
-  public LongLastValueAggregator(
-      Supplier<ExemplarReservoir> reservoirSupplier, MemoryMode memoryMode) {
-    this.reservoirSupplier = reservoirSupplier;
+  public LongLastValueAggregator(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+    this.reservoirFactory = reservoirFactory;
     this.memoryMode = memoryMode;
   }
 
   @Override
   public AggregatorHandle<LongPointData> createHandle() {
-    return new Handle(reservoirSupplier.get(), memoryMode);
+    return new Handle(reservoirFactory, memoryMode);
   }
 
   @Override
@@ -96,8 +94,8 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData> 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePoint;
 
-    Handle(ExemplarReservoir exemplarReservoir, MemoryMode memoryMode) {
-      super(exemplarReservoir);
+    Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(reservoirFactory);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableLongPointData();
       } else {

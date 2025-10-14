@@ -27,7 +27,7 @@ class RandomFixedSizeExemplarReservoirTest {
   @Test
   public void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
+    RandomFixedSizeExemplarReservoir reservoir =
         RandomFixedSizeExemplarReservoir.create(clock, 1, RandomSupplier.platformDefault());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty())).isEmpty();
   }
@@ -35,7 +35,7 @@ class RandomFixedSizeExemplarReservoirTest {
   @Test
   public void oneMeasurement_alwaysSamplesFirstMeasurement() {
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
+    RandomFixedSizeExemplarReservoir reservoir =
         RandomFixedSizeExemplarReservoir.create(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerDoubleMeasurement(1.1, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
@@ -67,7 +67,7 @@ class RandomFixedSizeExemplarReservoirTest {
     Attributes partial = Attributes.builder().put("three", true).build();
     Attributes remaining = Attributes.builder().put("one", 1).put("two", "two").build();
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
+    RandomFixedSizeExemplarReservoir reservoir =
         RandomFixedSizeExemplarReservoir.create(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerDoubleMeasurement(1.1, all, Context.root());
     assertThat(reservoir.collectAndResetDoubles(partial))
@@ -90,7 +90,7 @@ class RandomFixedSizeExemplarReservoirTest {
                     SpanContext.createFromRemoteParent(
                         TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
+    RandomFixedSizeExemplarReservoir reservoir =
         RandomFixedSizeExemplarReservoir.create(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerDoubleMeasurement(1, all, context);
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
@@ -122,7 +122,9 @@ class RandomFixedSizeExemplarReservoirTest {
           }
         };
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir = ExemplarReservoir.fixedSizeReservoir(clock, 2, () -> mockRandom);
+    DoubleExemplarReservoir reservoir =
+        ExemplarReservoirFactory.fixedSizeReservoir(clock, 2, () -> mockRandom)
+            .createDoubleExemplarReservoir();
     reservoir.offerDoubleMeasurement(1, Attributes.of(key, 1L), Context.root());
     reservoir.offerDoubleMeasurement(2, Attributes.of(key, 2L), Context.root());
     reservoir.offerDoubleMeasurement(3, Attributes.of(key, 3L), Context.root());

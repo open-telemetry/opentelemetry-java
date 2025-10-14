@@ -17,14 +17,13 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -41,18 +40,18 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class DoubleLastValueAggregator implements Aggregator<DoublePointData> {
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final ExemplarReservoirFactory reservoirFactory;
   private final MemoryMode memoryMode;
 
   public DoubleLastValueAggregator(
-      Supplier<ExemplarReservoir> reservoirSupplier, MemoryMode memoryMode) {
-    this.reservoirSupplier = reservoirSupplier;
+      ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+    this.reservoirFactory = reservoirFactory;
     this.memoryMode = memoryMode;
   }
 
   @Override
   public AggregatorHandle<DoublePointData> createHandle() {
-    return new Handle(reservoirSupplier.get(), memoryMode);
+    return new Handle(reservoirFactory, memoryMode);
   }
 
   @Override
@@ -100,8 +99,8 @@ public final class DoubleLastValueAggregator implements Aggregator<DoublePointDa
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
 
-    private Handle(ExemplarReservoir reservoir, MemoryMode memoryMode) {
-      super(reservoir);
+    private Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(reservoirFactory);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableDoublePointData();
       } else {

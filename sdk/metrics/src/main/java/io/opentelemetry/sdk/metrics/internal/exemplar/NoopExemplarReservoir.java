@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 /** A reservoir that keeps no exemplars. */
-class NoopExemplarReservoir implements ExemplarReservoir {
+class NoopExemplarReservoir implements LongExemplarReservoir, DoubleExemplarReservoir {
 
   static final NoopExemplarReservoir INSTANCE = new NoopExemplarReservoir();
 

@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -23,7 +24,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +42,7 @@ class DoubleLastValueAggregatorTest {
   private DoubleLastValueAggregator aggregator;
 
   private void init(MemoryMode memoryMode) {
-    aggregator = new DoubleLastValueAggregator(ExemplarReservoir::noSamples, memoryMode);
+    aggregator = new DoubleLastValueAggregator(ExemplarReservoirFactory.noSamples(), memoryMode);
   }
 
   @ParameterizedTest
@@ -57,14 +58,14 @@ class DoubleLastValueAggregatorTest {
     init(memoryMode);
 
     AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordDouble(12.1);
+    aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(12.1);
-    aggregatorHandle.recordDouble(13.1);
-    aggregatorHandle.recordDouble(14.1);
+    aggregatorHandle.recordDouble(13.1, Attributes.empty(), Context.current());
+    aggregatorHandle.recordDouble(14.1, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
@@ -79,14 +80,14 @@ class DoubleLastValueAggregatorTest {
 
     AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
 
-    aggregatorHandle.recordDouble(13.1);
+    aggregatorHandle.recordDouble(13.1, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(13.1);
 
-    aggregatorHandle.recordDouble(12.1);
+    aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
@@ -228,7 +229,7 @@ class DoubleLastValueAggregatorTest {
     init(memoryMode);
 
     AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordDouble(10);
+    aggregatorHandle.recordDouble(10, Attributes.empty(), Context.current());
 
     MetricData metricData =
         aggregator.toMetricData(
@@ -258,17 +259,17 @@ class DoubleLastValueAggregatorTest {
   void testReusableDataOnCollect() {
     init(MemoryMode.REUSABLE_DATA);
     AggregatorHandle<DoublePointData> handle = aggregator.createHandle();
-    handle.recordDouble(1);
+    handle.recordDouble(1, Attributes.empty(), Context.current());
     DoublePointData pointData =
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
 
-    handle.recordDouble(1);
+    handle.recordDouble(1, Attributes.empty(), Context.current());
     DoublePointData pointData2 =
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
 
     assertThat(pointData).isSameAs(pointData2);
 
-    handle.recordDouble(1);
+    handle.recordDouble(1, Attributes.empty(), Context.current());
     DoublePointData pointDataWithReset =
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ true);
 

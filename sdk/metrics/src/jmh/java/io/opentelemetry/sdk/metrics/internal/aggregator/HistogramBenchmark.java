@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleSupplier;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -45,7 +47,8 @@ public class HistogramBenchmark {
     public void record() {
       // Record a number of samples.
       for (int i = 0; i < 2000; i++) {
-        this.aggregatorHandle.recordDouble(valueSupplier.getAsDouble());
+        this.aggregatorHandle.recordDouble(
+            valueSupplier.getAsDouble(), Attributes.empty(), Context.current());
       }
     }
   }

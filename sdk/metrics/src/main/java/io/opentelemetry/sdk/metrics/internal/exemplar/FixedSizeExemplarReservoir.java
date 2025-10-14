@@ -18,7 +18,7 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 /** Base for fixed-size reservoir sampling of Exemplars. */
-class FixedSizeExemplarReservoir implements ExemplarReservoir {
+class FixedSizeExemplarReservoir implements DoubleExemplarReservoir, LongExemplarReservoir {
 
   @Nullable private ReservoirCell[] storage;
   private final ReservoirCellSelector reservoirCellSelector;

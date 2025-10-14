@@ -17,8 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleLastValueAggregato
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import java.util.function.Supplier;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 
 /**
  * Last-value aggregation configuration.
@@ -43,14 +42,13 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
       ExemplarFilter exemplarFilter,
       MemoryMode memoryMode) {
 
-    Supplier<ExemplarReservoir> reservoirFactory =
-        () ->
-            ExemplarReservoir.filtered(
-                exemplarFilter,
-                ExemplarReservoir.fixedSizeReservoir(
-                    Clock.getDefault(),
-                    Runtime.getRuntime().availableProcessors(),
-                    RandomSupplier.platformDefault()));
+    ExemplarReservoirFactory reservoirFactory =
+        ExemplarReservoirFactory.filtered(
+            exemplarFilter,
+            ExemplarReservoirFactory.fixedSizeReservoir(
+                Clock.getDefault(),
+                Runtime.getRuntime().availableProcessors(),
+                RandomSupplier.platformDefault()));
 
     switch (instrumentDescriptor.getValueType()) {
       case LONG:

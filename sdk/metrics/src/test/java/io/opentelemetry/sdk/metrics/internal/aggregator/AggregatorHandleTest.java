@@ -18,9 +18,12 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
@@ -33,14 +36,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AggregatorHandleTest {
 
-  @Mock ExemplarReservoir doubleReservoir;
-  @Mock ExemplarReservoir longReservoir;
+  @Mock DoubleExemplarReservoir doubleReservoir;
+  @Mock LongExemplarReservoir longReservoir;
 
   @Test
   void testRecordings() {
     TestLongAggregatorHandle testLongAggregator = new TestLongAggregatorHandle(longReservoir);
 
-    testLongAggregator.recordLong(22);
+    testLongAggregator.recordLong(22, Attributes.empty(), Context.current());
     assertThat(testLongAggregator.recordedLong.get()).isEqualTo(22);
 
     testLongAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
@@ -49,7 +52,7 @@ class AggregatorHandleTest {
     TestDoubleAggregatorHandle testDoubleAggregator =
         new TestDoubleAggregatorHandle(doubleReservoir);
 
-    testDoubleAggregator.recordDouble(33.55);
+    testDoubleAggregator.recordDouble(33.55, Attributes.empty(), Context.current());
     assertThat(testDoubleAggregator.recordedDouble.get()).isEqualTo(33.55);
 
     testDoubleAggregator.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
@@ -98,8 +101,8 @@ class AggregatorHandleTest {
 
   private static class TestDoubleAggregatorHandle extends TestAggregatorHandle {
 
-    TestDoubleAggregatorHandle(ExemplarReservoir reservoir) {
-      super(reservoir);
+    TestDoubleAggregatorHandle(DoubleExemplarReservoir reservoir) {
+      super(reservoir, null);
     }
 
     @Override
@@ -110,8 +113,8 @@ class AggregatorHandleTest {
 
   private static class TestLongAggregatorHandle extends TestAggregatorHandle {
 
-    TestLongAggregatorHandle(ExemplarReservoir reservoir) {
-      super(reservoir);
+    TestLongAggregatorHandle(LongExemplarReservoir reservoir) {
+      super(null, reservoir);
     }
 
     @Override
@@ -125,8 +128,21 @@ class AggregatorHandleTest {
     final AtomicDouble recordedDouble = new AtomicDouble();
     final AtomicReference<List<? extends ExemplarData>> recordedExemplars = new AtomicReference<>();
 
-    TestAggregatorHandle(ExemplarReservoir reservoir) {
-      super(reservoir);
+    TestAggregatorHandle(
+        @Nullable DoubleExemplarReservoir doubleReservoir,
+        @Nullable LongExemplarReservoir longReservoir) {
+      super(
+          new ExemplarReservoirFactory() {
+            @Override
+            public DoubleExemplarReservoir createDoubleExemplarReservoir() {
+              return Objects.requireNonNull(doubleReservoir);
+            }
+
+            @Override
+            public LongExemplarReservoir createLongExemplarReservoir() {
+              return Objects.requireNonNull(longReservoir);
+            }
+          });
     }
 
     @Nullable

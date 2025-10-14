@@ -27,7 +27,9 @@ import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +45,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LongSumAggregatorTest {
 
-  @Mock ExemplarReservoir reservoir;
+  @Mock LongExemplarReservoir reservoir;
+  private final ExemplarReservoirFactory reservoirFactory =
+      new ExemplarReservoirFactory() {
+        @Override
+        public DoubleExemplarReservoir createDoubleExemplarReservoir() {
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public LongExemplarReservoir createLongExemplarReservoir() {
+          return reservoir;
+        }
+      };
 
   private static final Resource resource = Resource.getDefault();
   private static final InstrumentationScopeInfo library = InstrumentationScopeInfo.empty();
@@ -61,7 +75,7 @@ class LongSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
-            ExemplarReservoir::noSamples,
+            ExemplarReservoirFactory.noSamples(),
             memoryMode);
   }
 
@@ -77,11 +91,11 @@ class LongSumAggregatorTest {
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
     AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
@@ -94,12 +108,12 @@ class LongSumAggregatorTest {
   void multipleRecords_WithNegatives(MemoryMode memoryMode) {
     init(memoryMode);
     AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(-23);
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(-11);
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(-23, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(-11, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
@@ -113,16 +127,16 @@ class LongSumAggregatorTest {
     init(memoryMode);
     AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
 
-    aggregatorHandle.recordLong(13);
-    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(13, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(25);
 
-    aggregatorHandle.recordLong(12);
-    aggregatorHandle.recordLong(-25);
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(-25, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
@@ -155,7 +169,7 @@ class LongSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
-            () -> reservoir,
+            reservoirFactory,
             memoryMode);
     AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(0, attributes, Context.root());
@@ -189,7 +203,7 @@ class LongSumAggregatorTest {
                     instrumentType,
                     InstrumentValueType.LONG,
                     Advice.empty()),
-                ExemplarReservoir::noSamples,
+                ExemplarReservoirFactory.noSamples(),
                 memoryMode);
 
         LongPointData diffed =
@@ -300,7 +314,7 @@ class LongSumAggregatorTest {
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
     AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordLong(10);
+    aggregatorHandle.recordLong(10, Attributes.empty(), Context.current());
 
     MetricData metricData =
         aggregator.toMetricData(
@@ -362,11 +376,11 @@ class LongSumAggregatorTest {
     init(MemoryMode.REUSABLE_DATA);
     AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
 
-    aggregatorHandle.recordLong(1L);
+    aggregatorHandle.recordLong(1L, Attributes.empty(), Context.current());
     LongPointData firstCollection =
         aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false);
 
-    aggregatorHandle.recordLong(1L);
+    aggregatorHandle.recordLong(1L, Attributes.empty(), Context.current());
     LongPointData secondCollection =
         aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false);
 

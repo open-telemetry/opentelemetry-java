@@ -20,14 +20,16 @@ class HistogramExemplarReservoirTest {
   @Test
   void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir = new HistogramExemplarReservoir(clock, Collections.emptyList());
+    HistogramExemplarReservoir reservoir =
+        new HistogramExemplarReservoir(clock, Collections.emptyList());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty())).isEmpty();
   }
 
   @Test
   void oneBucket_samplesEverything() {
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir = new HistogramExemplarReservoir(clock, Collections.emptyList());
+    HistogramExemplarReservoir reservoir =
+        new HistogramExemplarReservoir(clock, Collections.emptyList());
     reservoir.offerDoubleMeasurement(1.1, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)
@@ -66,7 +68,7 @@ class HistogramExemplarReservoirTest {
   void multipleBuckets_samplesIntoCorrectBucket() {
     TestClock clock = TestClock.create();
     AttributeKey<Long> bucketKey = AttributeKey.longKey("bucket");
-    ExemplarReservoir reservoir =
+    HistogramExemplarReservoir reservoir =
         new HistogramExemplarReservoir(clock, Arrays.asList(0d, 10d, 20d));
     reservoir.offerDoubleMeasurement(-1.1, Attributes.of(bucketKey, 0L), Context.root());
     reservoir.offerDoubleMeasurement(1, Attributes.of(bucketKey, 1L), Context.root());
@@ -96,7 +98,8 @@ class HistogramExemplarReservoirTest {
   @Test
   void longMeasurement_CastsToDouble() {
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir = new HistogramExemplarReservoir(clock, Collections.emptyList());
+    HistogramExemplarReservoir reservoir =
+        new HistogramExemplarReservoir(clock, Collections.emptyList());
     reservoir.offerLongMeasurement(1L, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndResetDoubles(Attributes.empty()))
         .hasSize(1)

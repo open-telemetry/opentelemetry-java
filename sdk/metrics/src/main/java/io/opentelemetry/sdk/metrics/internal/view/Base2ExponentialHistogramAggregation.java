@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleBase2ExponentialHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 
 /**
  * Exponential bucket histogram aggregation configuration.
@@ -71,14 +71,12 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
       MemoryMode memoryMode) {
     return (Aggregator<T>)
         new DoubleBase2ExponentialHistogramAggregator(
-            () ->
-                ExemplarReservoir.filtered(
-                    exemplarFilter,
-                    ExemplarReservoir.longToDouble(
-                        ExemplarReservoir.fixedSizeReservoir(
-                            Clock.getDefault(),
-                            Runtime.getRuntime().availableProcessors(),
-                            RandomSupplier.platformDefault()))),
+            ExemplarReservoirFactory.filtered(
+                exemplarFilter,
+                ExemplarReservoirFactory.fixedSizeReservoir(
+                    Clock.getDefault(),
+                    Runtime.getRuntime().availableProcessors(),
+                    RandomSupplier.platformDefault())),
             maxBuckets,
             maxScale,
             memoryMode);

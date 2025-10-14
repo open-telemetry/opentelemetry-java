@@ -20,11 +20,10 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -36,21 +35,21 @@ import javax.annotation.Nullable;
 public final class LongSumAggregator
     extends AbstractSumAggregator<LongPointData, LongExemplarData> {
 
-  private final Supplier<ExemplarReservoir> reservoirSupplier;
+  private final ExemplarReservoirFactory reservoirFactory;
   private final MemoryMode memoryMode;
 
   public LongSumAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir> reservoirSupplier,
+      ExemplarReservoirFactory reservoirFactory,
       MemoryMode memoryMode) {
     super(instrumentDescriptor);
-    this.reservoirSupplier = reservoirSupplier;
+    this.reservoirFactory = reservoirFactory;
     this.memoryMode = memoryMode;
   }
 
   @Override
   public AggregatorHandle<LongPointData> createHandle() {
-    return new Handle(reservoirSupplier.get(), memoryMode);
+    return new Handle(reservoirFactory, memoryMode);
   }
 
   @Override
@@ -106,8 +105,8 @@ public final class LongSumAggregator
     // Only used if memoryMode == MemoryMode.REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePointData;
 
-    Handle(ExemplarReservoir exemplarReservoir, MemoryMode memoryMode) {
-      super(exemplarReservoir);
+    Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(reservoirFactory);
       reusablePointData =
           memoryMode == MemoryMode.REUSABLE_DATA ? new MutableLongPointData() : null;
     }

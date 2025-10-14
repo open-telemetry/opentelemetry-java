@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,7 +53,7 @@ public final class DropAggregator implements Aggregator<PointData> {
   public static final Aggregator<PointData> INSTANCE = new DropAggregator();
 
   private static final AggregatorHandle<PointData> HANDLE =
-      new AggregatorHandle<PointData>(ExemplarReservoir.noSamples()) {
+      new AggregatorHandle<PointData>(ExemplarReservoirFactory.noSamples()) {
         @Override
         protected boolean isDoubleType() {
           return true;
