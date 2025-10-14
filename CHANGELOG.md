@@ -2,6 +2,85 @@
 
 ## Unreleased
 
+## Version 1.55.0 (2025-10-13)
+
+### API
+
+#### Common
+
+* Improve GraalVM native image compatibility
+  ([#7160](https://github.com/open-telemetry/opentelemetry-java/pull/7160))
+
+#### Traces
+
+* Fix `TraceState` key validation limits to match W3C specification
+  ([#7575](https://github.com/open-telemetry/opentelemetry-java/pull/7575))
+
+#### Incubator
+
+* Add `ExtendedOpenTelemetry` API
+  ([#7496](https://github.com/open-telemetry/opentelemetry-java/pull/7496))
+* Add incubator implementation of composite sampling specification
+  ([#7626](https://github.com/open-telemetry/opentelemetry-java/pull/7626))
+
+### SDK
+
+#### Traces
+
+* Proactively avoid `Unsafe` on Java 23+ to avoid triggering JVM warning message
+  ([#7691](https://github.com/open-telemetry/opentelemetry-java/pull/7691))
+
+#### Metrics
+
+* Add `setMeterConfigurator()` support to `MeterProvider` (incubating API)
+  ([#7346](https://github.com/open-telemetry/opentelemetry-java/pull/7346))
+
+#### Exporters
+
+* OTLP: Configure metric exporter to use SDK's `MeterProvider` for internal metrics
+  ([#7541](https://github.com/open-telemetry/opentelemetry-java/pull/7541))
+* OTLP: Suppress logging of `InterruptedException` from managed OkHttp threads
+  ([#7565](https://github.com/open-telemetry/opentelemetry-java/pull/7565))
+* OTLP: Update dependency from `okhttp-jvm` back to `okhttp` for Gradle users,
+  preserving `okhttp-jvm` for Maven users
+  ([#7681](https://github.com/open-telemetry/opentelemetry-java/pull/7681))
+* Prometheus: Remove separate `otel_scope_info` metric and always add scope labels to data points
+  ([#7398](https://github.com/open-telemetry/opentelemetry-java/pull/7398))
+* Prometheus: Update exporter dependencies to use protobuf-free formats
+  ([#7664](https://github.com/open-telemetry/opentelemetry-java/pull/7664))
+
+#### Profiling
+
+* Update profiles exporter to support proto v1.8.0-alpha changes
+  ([#7638](https://github.com/open-telemetry/opentelemetry-java/pull/7638))
+* Add abstractions to assist with dictionary table assembly
+  ([#7717](https://github.com/open-telemetry/opentelemetry-java/pull/7717))
+* Add abstractions to assist with sample composition
+  ([#7727](https://github.com/open-telemetry/opentelemetry-java/pull/7727))
+
+#### Extensions
+
+* Autoconfigure: Improve exception logging when running in Maven
+  ([#7336](https://github.com/open-telemetry/opentelemetry-java/pull/7336))
+* Declarative configuration: Return `Resource`
+  ([#7639](https://github.com/open-telemetry/opentelemetry-java/pull/7639))
+* Declarative configuration: Invoke auto-configure listeners
+  ([#7654](https://github.com/open-telemetry/opentelemetry-java/pull/7654))
+* Declarative configuration: Add logging when incompatible types are found
+  ([#7693](https://github.com/open-telemetry/opentelemetry-java/pull/7693))
+
+### Shims
+
+#### OpenTracing Shim
+
+* Improve log levels in error scenarios
+  ([#6832](https://github.com/open-telemetry/opentelemetry-java/pull/6832))
+
+### Project tooling
+
+* Respect `testJavaVersion` property when running JMH benchmarks
+  ([#7697](https://github.com/open-telemetry/opentelemetry-java/pull/7697))
+
 ## Version 1.54.1 (2025-09-18)
 
 ### SDK
