@@ -65,7 +65,7 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.3.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.3.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
-  implementation("org.owasp:dependency-check-gradle:12.1.7")
+  implementation("org.owasp:dependency-check-gradle:12.1.8")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
 }
 
