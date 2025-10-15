@@ -51,7 +51,7 @@ public class StandardComponentId extends ComponentId.Lazy {
 
   private final ExporterType standardType;
 
-  StandardComponentId(ExporterType standardType) {
+  public StandardComponentId(ExporterType standardType) {
     super(standardType.value);
     this.standardType = standardType;
   }
