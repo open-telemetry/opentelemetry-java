@@ -267,6 +267,9 @@ public final class DoubleBase2ExponentialHistogramAggregator
 
     @Override
     public void recordLong(long value, Attributes attributes, Context context) {
+      // Since there is no LongExplicitBucketHistogramAggregator and we need to support measurements
+      // from LongHistogram, we redirect calls from #recordLong to #recordDouble. Without this, the
+      // base AggregatorHandle implementation of #recordLong throws.
       super.recordDouble((double) value, attributes, context);
     }
 
