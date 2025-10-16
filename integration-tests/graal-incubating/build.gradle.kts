@@ -23,17 +23,19 @@ dependencies {
   implementation(project(":api:incubator"))
 }
 
-// org.graalvm.buildtools.native plugin requires java 11+ as of version 0.9.26
+// org.graalvm.buildtools.native plugin requires java 17+ as of version 0.11.1
+val minJavaVersionForGraalVM = 17
+
 // https://github.com/graalvm/native-build-tools/blob/master/docs/src/docs/asciidoc/index.adoc
 tasks {
   withType<JavaCompile>().configureEach {
-    sourceCompatibility = "11"
-    targetCompatibility = "11"
-    options.release.set(11)
+    sourceCompatibility = minJavaVersionForGraalVM.toString()
+    targetCompatibility = minJavaVersionForGraalVM.toString()
+    options.release.set(minJavaVersionForGraalVM)
   }
   withType<Test>().configureEach {
     val testJavaVersion: String? by project
-    enabled = !testJavaVersion.equals("8")
+    enabled = (testJavaVersion?.toInt() ?: minJavaVersionForGraalVM) >= minJavaVersionForGraalVM
   }
 }
 
