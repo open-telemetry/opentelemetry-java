@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1760474939427,
+  "lastUpdate": 1760724415207,
   "repoUrl": "https://github.com/open-telemetry/opentelemetry-java",
   "entries": {
     "Benchmark": [
@@ -79467,6 +79467,72 @@ window.BENCHMARK_DATA = {
           {
             "name": "io.opentelemetry.sdk.trace.export.MultiSpanExporterBenchmark.export ( {\"exporterCount\":\"3\",\"spanCount\":\"1000\"} )",
             "value": 5853.191167470473,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "trask.stalnaker@gmail.com",
+            "name": "Trask Stalnaker",
+            "username": "trask"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "86e6f51543e8d9f840fa075189edb9bb34959be7",
+          "message": "Move to oracle bare metal benchmark runner (#7740)",
+          "timestamp": "2025-10-17T10:28:43-07:00",
+          "tree_id": "cab1d19b26b7cdaf1e936097f2df9d442dad914f",
+          "url": "https://github.com/open-telemetry/opentelemetry-java/commit/86e6f51543e8d9f840fa075189edb9bb34959be7"
+        },
+        "date": 1760724414181,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "io.opentelemetry.sdk.trace.FillSpanBenchmark.setFourAttributes",
+            "value": 3405.6783602024907,
+            "unit": "ops/ms",
+            "extra": "iterations: 20\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.SpanBenchmark.simpleSpanStartAddEventEnd_01Thread",
+            "value": 3159.3061537395074,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.SpanBenchmark.simpleSpanStartAddEventEnd_02Threads",
+            "value": 4560.868307483201,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 2"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.SpanBenchmark.simpleSpanStartAddEventEnd_05Threads",
+            "value": 4396.537658130849,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 5"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.SpanBenchmark.simpleSpanStartAddEventEnd_10Threads",
+            "value": 3091.7669249697346,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 10"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.export.MultiSpanExporterBenchmark.export ( {\"exporterCount\":\"1\",\"spanCount\":\"1000\"} )",
+            "value": 992922.1082455922,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.export.MultiSpanExporterBenchmark.export ( {\"exporterCount\":\"3\",\"spanCount\":\"1000\"} )",
+            "value": 5666.530008224889,
             "unit": "ops/ms",
             "extra": "iterations: 10\nforks: 1\nthreads: 1"
           }
