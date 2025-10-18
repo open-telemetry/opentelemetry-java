@@ -14,10 +14,14 @@ import io.opentelemetry.context.Context;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class AlwaysOnFilter implements ExemplarFilter {
-  static final ExemplarFilter INSTANCE = new AlwaysOnFilter();
+public final class AlwaysOnFilter implements ExemplarFilterInternal {
+  private static final ExemplarFilterInternal INSTANCE = new AlwaysOnFilter();
 
   private AlwaysOnFilter() {}
+
+  public static ExemplarFilterInternal getInstance() {
+    return INSTANCE;
+  }
 
   @Override
   public boolean shouldSampleMeasurement(long value, Attributes attributes, Context context) {

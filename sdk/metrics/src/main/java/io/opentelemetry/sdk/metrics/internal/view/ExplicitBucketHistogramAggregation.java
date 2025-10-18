@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExplicitBucketHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import java.util.List;
 
@@ -51,7 +51,7 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
   @SuppressWarnings("unchecked")
   public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      ExemplarFilter exemplarFilter,
+      ExemplarFilterInternal exemplarFilter,
       MemoryMode memoryMode) {
     return (Aggregator<T>)
         new DoubleExplicitBucketHistogramAggregator(
