@@ -32,11 +32,11 @@ public interface ExemplarFilter {
 
   /** A filter which makes all measurements eligible for being an exemplar. */
   static ExemplarFilter alwaysOn() {
-    return AlwaysOnFilter.INSTANCE;
+    return AlwaysOnExemplarFilter.INSTANCE;
   }
 
   /** A filter which makes no measurements eligible for being an exemplar. */
   static ExemplarFilter alwaysOff() {
-    return AlwaysOffFilter.INSTANCE;
+    return AlwaysOffExemplarFilter.INSTANCE;
   }
 }
