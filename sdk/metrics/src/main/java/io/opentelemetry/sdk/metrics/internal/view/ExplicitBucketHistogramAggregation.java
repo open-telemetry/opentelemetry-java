@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
@@ -16,7 +15,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExplicitBucketHist
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import java.util.List;
 
 /**
@@ -50,19 +49,17 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
+  public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilter exemplarFilter,
       MemoryMode memoryMode) {
-    return (Aggregator<T, U>)
+    return (Aggregator<T>)
         new DoubleExplicitBucketHistogramAggregator(
             bucketBoundaryArray,
-            () ->
-                ExemplarReservoir.filtered(
-                    exemplarFilter,
-                    ExemplarReservoir.longToDouble(
-                        ExemplarReservoir.histogramBucketReservoir(
-                            Clock.getDefault(), bucketBoundaries))),
+            ExemplarReservoirFactory.filtered(
+                exemplarFilter,
+                ExemplarReservoirFactory.histogramBucketReservoir(
+                    Clock.getDefault(), bucketBoundaries)),
             memoryMode);
   }
 

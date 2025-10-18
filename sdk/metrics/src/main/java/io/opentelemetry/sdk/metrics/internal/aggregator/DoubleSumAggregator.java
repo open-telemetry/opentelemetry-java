@@ -20,11 +20,10 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -35,29 +34,29 @@ import javax.annotation.Nullable;
  */
 public final class DoubleSumAggregator
     extends AbstractSumAggregator<DoublePointData, DoubleExemplarData> {
-  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+  private final ExemplarReservoirFactory reservoirFactory;
   private final MemoryMode memoryMode;
 
   /**
    * Constructs a sum aggregator.
    *
    * @param instrumentDescriptor The instrument being recorded, used to compute monotonicity.
-   * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
+   * @param reservoirFactory Supplier of exemplar reservoirs per-stream.
    * @param memoryMode The memory mode to use.
    */
   public DoubleSumAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
+      ExemplarReservoirFactory reservoirFactory,
       MemoryMode memoryMode) {
     super(instrumentDescriptor);
 
-    this.reservoirSupplier = reservoirSupplier;
+    this.reservoirFactory = reservoirFactory;
     this.memoryMode = memoryMode;
   }
 
   @Override
-  public AggregatorHandle<DoublePointData, DoubleExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get(), memoryMode);
+  public AggregatorHandle<DoublePointData> createHandle() {
+    return new Handle(reservoirFactory, memoryMode);
   }
 
   @Override
@@ -107,19 +106,24 @@ public final class DoubleSumAggregator
         ImmutableSumData.create(isMonotonic(), temporality, points));
   }
 
-  static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<DoublePointData> {
     private final DoubleAdder current = AdderUtil.createDoubleAdder();
 
     // Only used if memoryMode == MemoryMode.REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
 
-    Handle(ExemplarReservoir<DoubleExemplarData> exemplarReservoir, MemoryMode memoryMode) {
-      super(exemplarReservoir);
+    Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(reservoirFactory);
       reusablePoint = memoryMode == MemoryMode.REUSABLE_DATA ? new MutableDoublePointData() : null;
     }
 
     @Override
-    protected DoublePointData doAggregateThenMaybeReset(
+    protected boolean isDoubleType() {
+      return true;
+    }
+
+    @Override
+    protected DoublePointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,

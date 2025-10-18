@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
@@ -19,14 +20,13 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -36,26 +36,24 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public final class DoubleExplicitBucketHistogramAggregator
-    implements Aggregator<HistogramPointData, DoubleExemplarData> {
+    implements Aggregator<HistogramPointData> {
   private final double[] boundaries;
   private final MemoryMode memoryMode;
 
   // a cache for converting to MetricData
   private final List<Double> boundaryList;
 
-  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+  private final ExemplarReservoirFactory reservoirFactory;
 
   /**
    * Constructs an explicit bucket histogram aggregator.
    *
    * @param boundaries Bucket boundaries, in-order.
-   * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
+   * @param reservoirFactory Supplier of exemplar reservoirs per-stream.
    * @param memoryMode The {@link MemoryMode} to use in this aggregator.
    */
   public DoubleExplicitBucketHistogramAggregator(
-      double[] boundaries,
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
-      MemoryMode memoryMode) {
+      double[] boundaries, ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
     this.boundaries = boundaries;
     this.memoryMode = memoryMode;
 
@@ -64,12 +62,12 @@ public final class DoubleExplicitBucketHistogramAggregator
       boundaryList.add(v);
     }
     this.boundaryList = Collections.unmodifiableList(boundaryList);
-    this.reservoirSupplier = reservoirSupplier;
+    this.reservoirFactory = reservoirFactory;
   }
 
   @Override
-  public AggregatorHandle<HistogramPointData, DoubleExemplarData> createHandle() {
-    return new Handle(this.boundaryList, this.boundaries, reservoirSupplier.get(), memoryMode);
+  public AggregatorHandle<HistogramPointData> createHandle() {
+    return new Handle(boundaryList, boundaries, reservoirFactory, memoryMode);
   }
 
   @Override
@@ -88,7 +86,7 @@ public final class DoubleExplicitBucketHistogramAggregator
         ImmutableHistogramData.create(temporality, pointData));
   }
 
-  static final class Handle extends AggregatorHandle<HistogramPointData, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<HistogramPointData> {
     // read-only
     private final List<Double> boundaryList;
     // read-only
@@ -117,9 +115,9 @@ public final class DoubleExplicitBucketHistogramAggregator
     Handle(
         List<Double> boundaryList,
         double[] boundaries,
-        ExemplarReservoir<DoubleExemplarData> reservoir,
+        ExemplarReservoirFactory reservoirFactory,
         MemoryMode memoryMode) {
-      super(reservoir);
+      super(reservoirFactory);
       this.boundaryList = boundaryList;
       this.boundaries = boundaries;
       this.counts = new long[this.boundaries.length + 1];
@@ -133,7 +131,20 @@ public final class DoubleExplicitBucketHistogramAggregator
     }
 
     @Override
-    protected HistogramPointData doAggregateThenMaybeReset(
+    public void recordLong(long value, Attributes attributes, Context context) {
+      // Since there is no LongExplicitBucketHistogramAggregator and we need to support measurements
+      // from LongHistogram, we redirect calls from #recordLong to #recordDouble. Without this, the
+      // base AggregatorHandle implementation of #recordLong throws.
+      super.recordDouble((double) value, attributes, context);
+    }
+
+    @Override
+    protected boolean isDoubleType() {
+      return true;
+    }
+
+    @Override
+    protected HistogramPointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
@@ -192,11 +203,6 @@ public final class DoubleExplicitBucketHistogramAggregator
         this.count++;
         this.counts[bucketIndex]++;
       }
-    }
-
-    @Override
-    protected void doRecordLong(long value) {
-      doRecordDouble((double) value);
     }
   }
 }

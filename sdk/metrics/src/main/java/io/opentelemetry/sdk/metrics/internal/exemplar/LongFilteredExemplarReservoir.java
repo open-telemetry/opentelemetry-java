@@ -7,24 +7,17 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import java.util.List;
 
 /** A reservoir that has a pre-filter on measurements. */
-class FilteredExemplarReservoir<T extends ExemplarData> implements ExemplarReservoir<T> {
+class LongFilteredExemplarReservoir implements LongExemplarReservoir {
   private final ExemplarFilter filter;
-  private final ExemplarReservoir<T> reservoir;
+  private final LongExemplarReservoir reservoir;
 
-  FilteredExemplarReservoir(ExemplarFilter filter, ExemplarReservoir<T> reservoir) {
+  LongFilteredExemplarReservoir(ExemplarFilter filter, LongExemplarReservoir reservoir) {
     this.filter = filter;
     this.reservoir = reservoir;
-  }
-
-  @Override
-  public void offerDoubleMeasurement(double value, Attributes attributes, Context context) {
-    if (filter.shouldSampleMeasurement(value, attributes, context)) {
-      reservoir.offerDoubleMeasurement(value, attributes, context);
-    }
   }
 
   @Override
@@ -35,7 +28,7 @@ class FilteredExemplarReservoir<T extends ExemplarData> implements ExemplarReser
   }
 
   @Override
-  public List<T> collectAndReset(Attributes pointAttributes) {
-    return reservoir.collectAndReset(pointAttributes);
+  public List<LongExemplarData> collectAndResetLongs(Attributes pointAttributes) {
+    return reservoir.collectAndResetLongs(pointAttributes);
   }
 }

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
@@ -21,11 +22,10 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -35,9 +35,9 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public final class DoubleBase2ExponentialHistogramAggregator
-    implements Aggregator<ExponentialHistogramPointData, DoubleExemplarData> {
+    implements Aggregator<ExponentialHistogramPointData> {
 
-  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+  private final ExemplarReservoirFactory reservoirFactory;
   private final int maxBuckets;
   private final int maxScale;
   private final MemoryMode memoryMode;
@@ -45,22 +45,22 @@ public final class DoubleBase2ExponentialHistogramAggregator
   /**
    * Constructs an exponential histogram aggregator.
    *
-   * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
+   * @param reservoirFactory Supplier of exemplar reservoirs per-stream.
    */
   public DoubleBase2ExponentialHistogramAggregator(
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
+      ExemplarReservoirFactory reservoirFactory,
       int maxBuckets,
       int maxScale,
       MemoryMode memoryMode) {
-    this.reservoirSupplier = reservoirSupplier;
+    this.reservoirFactory = reservoirFactory;
     this.maxBuckets = maxBuckets;
     this.maxScale = maxScale;
     this.memoryMode = memoryMode;
   }
 
   @Override
-  public AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get(), maxBuckets, maxScale, memoryMode);
+  public AggregatorHandle<ExponentialHistogramPointData> createHandle() {
+    return new Handle(reservoirFactory, maxBuckets, maxScale, memoryMode);
   }
 
   @Override
@@ -79,8 +79,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
         ImmutableExponentialHistogramData.create(temporality, points));
   }
 
-  static final class Handle
-      extends AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> {
+  static final class Handle extends AggregatorHandle<ExponentialHistogramPointData> {
     private final int maxBuckets;
     private final int maxScale;
     @Nullable private DoubleBase2ExponentialHistogramBuckets positiveBuckets;
@@ -97,11 +96,11 @@ public final class DoubleBase2ExponentialHistogramAggregator
     @Nullable private final MutableExponentialHistogramPointData reusablePoint;
 
     Handle(
-        ExemplarReservoir<DoubleExemplarData> reservoir,
+        ExemplarReservoirFactory reservoirFactory,
         int maxBuckets,
         int maxScale,
         MemoryMode memoryMode) {
-      super(reservoir);
+      super(reservoirFactory);
       this.maxBuckets = maxBuckets;
       this.maxScale = maxScale;
       this.sum = 0;
@@ -118,7 +117,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
     }
 
     @Override
-    protected synchronized ExponentialHistogramPointData doAggregateThenMaybeReset(
+    protected synchronized ExponentialHistogramPointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
@@ -262,8 +261,16 @@ public final class DoubleBase2ExponentialHistogramAggregator
     }
 
     @Override
-    protected void doRecordLong(long value) {
-      doRecordDouble((double) value);
+    protected boolean isDoubleType() {
+      return true;
+    }
+
+    @Override
+    public void recordLong(long value, Attributes attributes, Context context) {
+      // Since there is no LongExplicitBucketHistogramAggregator and we need to support measurements
+      // from LongHistogram, we redirect calls from #recordLong to #recordDouble. Without this, the
+      // base AggregatorHandle implementation of #recordLong throws.
+      super.recordDouble((double) value, attributes, context);
     }
 
     void downScale(int by) {

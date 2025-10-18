@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,7 +25,7 @@ import java.util.List;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DropAggregator implements Aggregator<PointData, DoubleExemplarData> {
+public final class DropAggregator implements Aggregator<PointData> {
 
   private static final PointData POINT_DATA =
       new PointData() {
@@ -50,12 +50,17 @@ public final class DropAggregator implements Aggregator<PointData, DoubleExempla
         }
       };
 
-  public static final Aggregator<PointData, DoubleExemplarData> INSTANCE = new DropAggregator();
+  public static final Aggregator<PointData> INSTANCE = new DropAggregator();
 
-  private static final AggregatorHandle<PointData, DoubleExemplarData> HANDLE =
-      new AggregatorHandle<PointData, DoubleExemplarData>(ExemplarReservoir.doubleNoSamples()) {
+  private static final AggregatorHandle<PointData> HANDLE =
+      new AggregatorHandle<PointData>(ExemplarReservoirFactory.noSamples()) {
         @Override
-        protected PointData doAggregateThenMaybeReset(
+        protected boolean isDoubleType() {
+          return true;
+        }
+
+        @Override
+        protected PointData doAggregateThenMaybeResetDoubles(
             long startEpochNanos,
             long epochNanos,
             Attributes attributes,
@@ -74,7 +79,7 @@ public final class DropAggregator implements Aggregator<PointData, DoubleExempla
   private DropAggregator() {}
 
   @Override
-  public AggregatorHandle<PointData, DoubleExemplarData> createHandle() {
+  public AggregatorHandle<PointData> createHandle() {
     return HANDLE;
   }
 

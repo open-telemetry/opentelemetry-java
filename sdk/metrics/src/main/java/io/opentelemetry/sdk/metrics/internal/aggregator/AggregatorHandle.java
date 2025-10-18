@@ -7,10 +7,14 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
+import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -24,14 +28,28 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public abstract class AggregatorHandle<T extends PointData, U extends ExemplarData> {
+public abstract class AggregatorHandle<T extends PointData> {
+
+  private static final String UNSUPPORTED_LONG_MESSAGE =
+      "This aggregator does not support long values.";
+  private static final String UNSUPPORTED_DOUBLE_MESSAGE =
+      "This aggregator does not support double values.";
 
   // A reservoir of sampled exemplars for this time period.
-  private final ExemplarReservoir<U> exemplarReservoir;
+  @Nullable private final DoubleExemplarReservoir doubleReservoirFactory;
+  @Nullable private final LongExemplarReservoir longReservoirFactory;
+  private final boolean isDoubleType;
   private volatile boolean valuesRecorded = false;
 
-  protected AggregatorHandle(ExemplarReservoir<U> exemplarReservoir) {
-    this.exemplarReservoir = exemplarReservoir;
+  protected AggregatorHandle(ExemplarReservoirFactory reservoirFactory) {
+    this.isDoubleType = isDoubleType();
+    if (isDoubleType) {
+      this.doubleReservoirFactory = reservoirFactory.createDoubleExemplarReservoir();
+      this.longReservoirFactory = null;
+    } else {
+      this.doubleReservoirFactory = null;
+      this.longReservoirFactory = reservoirFactory.createLongExemplarReservoir();
+    }
   }
 
   /**
@@ -44,35 +62,60 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
       valuesRecorded = false;
     }
 
-    return doAggregateThenMaybeReset(
+    if (isDoubleType) {
+      return doAggregateThenMaybeResetDoubles(
+          startEpochNanos,
+          epochNanos,
+          attributes,
+          throwUnsupportedIfNull(this.doubleReservoirFactory, UNSUPPORTED_DOUBLE_MESSAGE)
+              .collectAndResetDoubles(attributes),
+          reset);
+    }
+    return doAggregateThenMaybeResetLongs(
         startEpochNanos,
         epochNanos,
         attributes,
-        exemplarReservoir.collectAndReset(attributes),
+        throwUnsupportedIfNull(this.longReservoirFactory, UNSUPPORTED_LONG_MESSAGE)
+            .collectAndResetLongs(attributes),
         reset);
   }
 
+  /**
+   * Indicates whether this {@link AggregatorHandle} supports double or long values.
+   *
+   * <p>If it supports doubles, it MUST implement {@link #doAggregateThenMaybeResetDoubles(long,
+   * long, Attributes, List, boolean)} and {@link #doRecordDouble(double)}.
+   *
+   * <p>If it supports long, it MUST implement {@link #doAggregateThenMaybeResetLongs(long, long,
+   * Attributes, List, boolean)} and {@link #doRecordLong(long)}.
+   *
+   * @return true if it supports doubles, false if it supports longs.
+   */
+  protected abstract boolean isDoubleType();
+
   /** Implementation of the {@link #aggregateThenMaybeReset(long, long, Attributes, boolean)} . */
-  protected abstract T doAggregateThenMaybeReset(
+  protected T doAggregateThenMaybeResetDoubles(
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
-      List<U> exemplars,
-      boolean reset);
-
-  public final void recordLong(long value, Attributes attributes, Context context) {
-    exemplarReservoir.offerLongMeasurement(value, attributes, context);
-    recordLong(value);
+      List<DoubleExemplarData> exemplars,
+      boolean reset) {
+    throw new UnsupportedOperationException(UNSUPPORTED_DOUBLE_MESSAGE);
   }
 
-  /**
-   * Updates the current aggregator with a newly recorded {@code long} value.
-   *
-   * <p>Visible for Testing
-   *
-   * @param value the new {@code long} value to be added.
-   */
-  public final void recordLong(long value) {
+  /** Implementation of the {@link #aggregateThenMaybeReset(long, long, Attributes, boolean)} . */
+  protected T doAggregateThenMaybeResetLongs(
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      List<LongExemplarData> exemplars,
+      boolean reset) {
+    throw new UnsupportedOperationException(UNSUPPORTED_LONG_MESSAGE);
+  }
+
+  public void recordLong(long value, Attributes attributes, Context context) {
+    throwUnsupportedIfNull(this.longReservoirFactory, UNSUPPORTED_LONG_MESSAGE)
+        .offerLongMeasurement(value, attributes, context);
     doRecordLong(value);
     valuesRecorded = true;
   }
@@ -82,23 +125,12 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
    * values.
    */
   protected void doRecordLong(long value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording long values.");
+    throw new UnsupportedOperationException("This aggregator does not support long values.");
   }
 
   public final void recordDouble(double value, Attributes attributes, Context context) {
-    exemplarReservoir.offerDoubleMeasurement(value, attributes, context);
-    recordDouble(value);
-  }
-
-  /**
-   * Updates the current aggregator with a newly recorded {@code double} value.
-   *
-   * <p>Visible for Testing
-   *
-   * @param value the new {@code double} value to be added.
-   */
-  public final void recordDouble(double value) {
+    throwUnsupportedIfNull(this.doubleReservoirFactory, UNSUPPORTED_DOUBLE_MESSAGE)
+        .offerDoubleMeasurement(value, attributes, context);
     doRecordDouble(value);
     valuesRecorded = true;
   }
@@ -108,8 +140,7 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
    * double values.
    */
   protected void doRecordDouble(double value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording double values.");
+    throw new UnsupportedOperationException(UNSUPPORTED_DOUBLE_MESSAGE);
   }
 
   /**
@@ -119,5 +150,12 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
    */
   public boolean hasRecordedValues() {
     return valuesRecorded;
+  }
+
+  private static <S> S throwUnsupportedIfNull(@Nullable S value, String message) {
+    if (value == null) {
+      throw new UnsupportedOperationException(message);
+    }
+    return value;
   }
 }
