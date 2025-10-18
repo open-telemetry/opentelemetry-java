@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.lang.reflect.InvocationTargetException;
@@ -28,26 +27,6 @@ import java.util.function.Predicate;
 public final class SdkMeterProviderUtil {
 
   private SdkMeterProviderUtil() {}
-
-  /**
-   * Reflectively assign the {@link ExemplarFilter} to the {@link SdkMeterProviderBuilder}.
-   *
-   * @param sdkMeterProviderBuilder the builder
-   */
-  public static SdkMeterProviderBuilder setExemplarFilter(
-      SdkMeterProviderBuilder sdkMeterProviderBuilder, ExemplarFilter exemplarFilter) {
-    try {
-      Method method =
-          SdkMeterProviderBuilder.class.getDeclaredMethod(
-              "setExemplarFilter", ExemplarFilter.class);
-      method.setAccessible(true);
-      method.invoke(sdkMeterProviderBuilder, exemplarFilter);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling setExemplarFilter on SdkMeterProviderBuilder", e);
-    }
-    return sdkMeterProviderBuilder;
-  }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProvider}. */
   public static void setMeterConfigurator(

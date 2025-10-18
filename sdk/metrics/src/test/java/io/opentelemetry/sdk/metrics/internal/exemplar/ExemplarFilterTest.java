@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.exemplar;
 
+import static io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal.asExemplarFilterInternal;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,9 +15,9 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ class ExemplarFilterTest {
   @Test
   void alwaysOff_NeverReturnsTrue() {
     assertThat(
-            ExemplarFilter.alwaysOff()
+            asExemplarFilterInternal(ExemplarFilter.alwaysOff())
                 .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isFalse();
   }
@@ -35,7 +36,7 @@ class ExemplarFilterTest {
   @Test
   void alwaysOn_AlwaysReturnsTrue() {
     assertThat(
-            ExemplarFilter.alwaysOn()
+            asExemplarFilterInternal(ExemplarFilter.alwaysOn())
                 .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isTrue();
   }
@@ -43,7 +44,7 @@ class ExemplarFilterTest {
   @Test
   void withSampledTrace_ReturnsFalseOnNoContext() {
     assertThat(
-            ExemplarFilter.traceBased()
+            asExemplarFilterInternal(ExemplarFilter.traceBased())
                 .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isFalse();
   }
@@ -56,7 +57,9 @@ class ExemplarFilterTest {
                 Span.wrap(
                     SpanContext.createFromRemoteParent(
                         TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
-    assertThat(ExemplarFilter.traceBased().shouldSampleMeasurement(1, Attributes.empty(), context))
+    assertThat(
+            asExemplarFilterInternal(ExemplarFilter.traceBased())
+                .shouldSampleMeasurement(1, Attributes.empty(), context))
         .isTrue();
   }
 
@@ -68,16 +71,19 @@ class ExemplarFilterTest {
                 Span.wrap(
                     SpanContext.createFromRemoteParent(
                         TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault())));
-    assertThat(ExemplarFilter.traceBased().shouldSampleMeasurement(1, Attributes.empty(), context))
+    assertThat(
+            asExemplarFilterInternal(ExemplarFilter.traceBased())
+                .shouldSampleMeasurement(1, Attributes.empty(), context))
         .isFalse();
   }
 
   @Test
   void setExemplarFilter() {
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-    SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOn());
+    SdkMeterProviderBuilder builder =
+        SdkMeterProvider.builder().setExemplarFilter(ExemplarFilter.alwaysOn());
     assertThat(builder)
-        .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)))
+        .extracting(
+            "exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilterInternal.class)))
         .isEqualTo(ExemplarFilter.alwaysOn());
   }
 }

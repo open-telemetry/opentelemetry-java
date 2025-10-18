@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
+import static io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal.asExemplarFilterInternal;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.Mockito.never;
@@ -23,6 +24,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -35,7 +37,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
@@ -102,7 +103,8 @@ public class SynchronousMetricStorageTest {
     aggregator =
         spy(
             ((AggregatorFactory) Aggregation.sum())
-                .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff(), memoryMode));
+                .createAggregator(
+                    DESCRIPTOR, asExemplarFilterInternal(ExemplarFilter.alwaysOff()), memoryMode));
   }
 
   @ParameterizedTest
@@ -826,7 +828,8 @@ public class SynchronousMetricStorageTest {
     for (MemoryMode memoryMode : MemoryMode.values()) {
       Aggregator<PointData> aggregator =
           ((AggregatorFactory) Aggregation.sum())
-              .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff(), memoryMode);
+              .createAggregator(
+                  DESCRIPTOR, asExemplarFilterInternal(ExemplarFilter.alwaysOff()), memoryMode);
 
       argumentsList.add(
           Arguments.of(

@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MeterProviderSharedState {
 
   public static MeterProviderSharedState create(
-      Clock clock, Resource resource, ExemplarFilter exemplarFilter, long startEpochNanos) {
+      Clock clock, Resource resource, ExemplarFilterInternal exemplarFilter, long startEpochNanos) {
     MeterProviderSharedState sharedState =
         new AutoValue_MeterProviderSharedState(clock, resource, startEpochNanos, exemplarFilter);
     return sharedState;
@@ -40,6 +40,6 @@ public abstract class MeterProviderSharedState {
   /** Returns the timestamp when the {@link SdkMeterProvider} was started, in epoch nanos. */
   public abstract long getStartEpochNanos();
 
-  /** Returns the {@link ExemplarFilter} for remembering synchronous measurements. */
-  public abstract ExemplarFilter getExemplarFilter();
+  /** Returns the {@link ExemplarFilterInternal} for remembering synchronous measurements. */
+  public abstract ExemplarFilterInternal getExemplarFilter();
 }

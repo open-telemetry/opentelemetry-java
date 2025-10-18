@@ -12,10 +12,11 @@ import java.util.List;
 
 /** A reservoir that has a pre-filter on measurements. */
 class DoubleFilteredExemplarReservoir implements DoubleExemplarReservoir {
-  private final ExemplarFilter filter;
+  private final ExemplarFilterInternal filter;
   private final DoubleExemplarReservoir reservoir;
 
-  DoubleFilteredExemplarReservoir(ExemplarFilter filter, DoubleExemplarReservoir reservoir) {
+  DoubleFilteredExemplarReservoir(
+      ExemplarFilterInternal filter, DoubleExemplarReservoir reservoir) {
     this.filter = filter;
     this.reservoir = reservoir;
   }

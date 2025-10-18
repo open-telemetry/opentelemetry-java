@@ -9,11 +9,10 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import java.io.Closeable;
 import java.util.Collections;
@@ -43,14 +42,14 @@ final class MeterProviderConfiguration {
         config.getString("otel.metrics.exemplar.filter", "trace_based").toLowerCase(Locale.ROOT);
     switch (exemplarFilter) {
       case "always_off":
-        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOff());
+        meterProviderBuilder.setExemplarFilter(ExemplarFilter.alwaysOff());
         break;
       case "always_on":
-        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOn());
+        meterProviderBuilder.setExemplarFilter(ExemplarFilter.alwaysOn());
         break;
       case "trace_based":
       default:
-        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.traceBased());
+        meterProviderBuilder.setExemplarFilter(ExemplarFilter.traceBased());
         break;
     }
 

@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class FilteredExemplarReservoirTest {
   @Mock DoubleExemplarReservoir doubleReservoir;
   @Mock LongExemplarReservoir longReservoir;
-  @Mock ExemplarFilter filter;
+  @Mock ExemplarFilterInternal filter;
 
   @Test
   void testFilterDouble_preventsSampling() {
