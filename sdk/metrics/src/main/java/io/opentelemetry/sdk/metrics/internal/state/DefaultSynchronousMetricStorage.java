@@ -73,7 +73,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData>
   private final ConcurrentLinkedQueue<AggregatorHandle<T>> aggregatorHandlePool =
       new ConcurrentLinkedQueue<>();
 
-  private boolean enabled;
+  private volatile boolean enabled;
 
   DefaultSynchronousMetricStorage(
       RegisteredReader registeredReader,
