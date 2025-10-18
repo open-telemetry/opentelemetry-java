@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setExemplarFilter;
 import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setMeterConfigurator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
@@ -29,6 +30,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,14 +92,18 @@ class MeterProviderFactoryTest {
                                 new ExperimentalMeterMatcherAndConfigModel()
                                     .withName("foo")
                                     .withConfig(
-                                        new ExperimentalMeterConfigModel().withDisabled(false))))),
-            setMeterConfigurator(
-                    SdkMeterProvider.builder(),
-                    ScopeConfigurator.<MeterConfig>builder()
-                        .setDefault(MeterConfig.disabled())
-                        .addCondition(
-                            ScopeConfiguratorBuilder.nameMatchesGlob("foo"), MeterConfig.enabled())
-                        .build())
+                                        new ExperimentalMeterConfigModel().withDisabled(false)))))
+                .withExemplarFilter(MeterProviderModel.ExemplarFilter.ALWAYS_ON),
+            setExemplarFilter(
+                    setMeterConfigurator(
+                        SdkMeterProvider.builder(),
+                        ScopeConfigurator.<MeterConfig>builder()
+                            .setDefault(MeterConfig.disabled())
+                            .addCondition(
+                                ScopeConfiguratorBuilder.nameMatchesGlob("foo"),
+                                MeterConfig.enabled())
+                            .build()),
+                    ExemplarFilter.alwaysOn())
                 .registerMetricReader(
                     PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault()).build())
                 .registerView(
