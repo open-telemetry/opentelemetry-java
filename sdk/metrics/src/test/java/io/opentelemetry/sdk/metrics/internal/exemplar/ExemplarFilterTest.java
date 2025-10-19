@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 import static io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal.asExemplarFilterInternal;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -85,5 +86,17 @@ class ExemplarFilterTest {
         .extracting(
             "exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilterInternal.class)))
         .isEqualTo(ExemplarFilter.alwaysOn());
+  }
+
+  @Test
+  void asExemplarFilterInternal_Valid() {
+    assertThat(asExemplarFilterInternal(ExemplarFilter.traceBased()))
+        .isSameAs(ExemplarFilter.traceBased());
+    assertThat(asExemplarFilterInternal(ExemplarFilter.alwaysOff()))
+        .isSameAs(ExemplarFilter.alwaysOff());
+    assertThat(asExemplarFilterInternal(ExemplarFilter.alwaysOn()))
+        .isSameAs(ExemplarFilter.alwaysOn());
+    assertThatThrownBy(() -> asExemplarFilterInternal(new ExemplarFilter() {}))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }
