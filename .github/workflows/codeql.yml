@@ -58,6 +58,8 @@ jobs:
         # --no-daemon is required for codeql to observe the compilation
         # (see https://docs.github.com/en/code-security/codeql-cli/getting-started-with-the-codeql-cli/preparing-your-code-for-codeql-analysis#specifying-build-commands)
         run: ./gradlew assemble --no-build-cache --no-daemon
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
