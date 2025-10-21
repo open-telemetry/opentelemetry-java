@@ -30,9 +30,8 @@ class SdkTracer implements Tracer {
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-  // deliberately not volatile because of performance concerns
-  // - which means its eventually consistent
-  protected boolean tracerEnabled;
+
+  protected volatile boolean tracerEnabled;
 
   SdkTracer(
       TracerSharedState sharedState,

@@ -85,7 +85,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
   private long startEpochNanos;
   private long epochNanos;
 
-  private boolean enabled;
+  private volatile boolean enabled;
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
