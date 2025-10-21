@@ -28,6 +28,7 @@ jobs:
         run: ./gradlew dependencyCheckAnalyze
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Upload report
         if: always()

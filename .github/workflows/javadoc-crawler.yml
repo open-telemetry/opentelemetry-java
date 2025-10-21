@@ -24,3 +24,5 @@ jobs:
 
       - name: Run crawler
         run: ./gradlew :javadoc-crawler:crawl
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}

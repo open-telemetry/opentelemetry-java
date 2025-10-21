@@ -80,6 +80,7 @@ jobs:
         env:
           # JMH-based tests run only if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Check for diff
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
@@ -159,6 +160,7 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
   build-graal:
     name: Build GraalVM
@@ -184,6 +186,8 @@ jobs:
           java --version
           native-image --version
           ./gradlew nativeTest
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
   required-status-check:
     # markdown-link-check is not required so pull requests are not blocked if external links break
