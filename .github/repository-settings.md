@@ -8,10 +8,6 @@ private admin repo.
 
 - `GPG_PASSWORD` - stored in OpenTelemetry-Java 1Password
 - `GPG_PRIVATE_KEY` - stored in OpenTelemetry-Java 1Password
-- `DEVELOCITY_ACCESS_KEY` - stored in OpenTelemetry-Java 1Password
-  - Generated at https://develocity.opentelemetry.io > My settings > Access keys
-  - Format of env var is `develocity.opentelemetry.io=<access key>`,
-    see [docs](https://docs.gradle.com/enterprise/gradle-plugin/#via_environment_variable)
 - `NVD_API_KEY` - stored in OpenTelemetry-Java 1Password
   - Generated at https://nvd.nist.gov/developers/request-an-api-key
   - Key is associated with [@trask](https://github.com/trask)'s gmail address
