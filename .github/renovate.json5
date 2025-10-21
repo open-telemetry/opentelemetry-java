@@ -62,7 +62,7 @@
       ],
       enabled: false,
       matchPackageNames: [
-        'org.mockito:{/,}**',
+        'org.mockito:**',
       ],
     },
     {
@@ -87,7 +87,8 @@
     {
       groupName: 'spotless packages',
       matchPackageNames: [
-        'com.diffplug.spotless{/,}**',
+        'com.diffplug.spotless',
+        'com.diffplug.spotless:**',
       ],
     },
     {
