@@ -16,6 +16,7 @@ private admin repo.
 
 ### Organization secrets
 
+- `DEVELOCITY_ACCESS_KEY`
 - `FOSSA_API_KEY`
 - `OTELBOT_PRIVATE_KEY`
 
