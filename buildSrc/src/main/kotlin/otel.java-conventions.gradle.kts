@@ -88,6 +88,8 @@ tasks {
             "-Xlint:-processing",
             // We suppress the "options" warning because it prevents compilation on modern JDKs
             "-Xlint:-options",
+            "-Xlint:-serial",
+            "-Xlint:-this-escape",
             // Fail build on any warning
             "-Werror",
           ),
