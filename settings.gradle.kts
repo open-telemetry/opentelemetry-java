@@ -6,12 +6,13 @@ pluginManagement {
     id("org.jsonschema2pojo") version "1.2.2"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("org.graalvm.buildtools.native") version "0.10.6"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
   }
 }
 
 plugins {
-  id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
   id("com.gradle.develocity")
+  id("org.gradle.toolchains.foojay-resolver-convention")
 }
 
 dependencyResolutionManagement {
