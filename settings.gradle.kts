@@ -103,15 +103,6 @@ develocity {
     capture {
       fileFingerprints = true
     }
-
-    if (!gradle.startParameter.taskNames.contains("listTestsInPartition") &&
-      !gradle.startParameter.taskNames.contains(":test-report:reportFlakyTests")) {
-      buildScanPublished {
-        File("build-scan.txt").printWriter().use { writer ->
-          writer.println(buildScanUri)
-        }
-      }
-    }
   }
 }
 
