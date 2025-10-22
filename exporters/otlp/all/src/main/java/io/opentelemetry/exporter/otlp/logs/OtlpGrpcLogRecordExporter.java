@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.logs;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.LogReusableDataMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -25,8 +24,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
 
-  private final GrpcExporterBuilder<Marshaler> builder;
-  private final GrpcExporter<Marshaler> delegate;
+  private final GrpcExporterBuilder builder;
+  private final GrpcExporter delegate;
   private final LogReusableDataMarshaler marshaler;
 
   /**
@@ -51,9 +50,7 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
   }
 
   OtlpGrpcLogRecordExporter(
-      GrpcExporterBuilder<Marshaler> builder,
-      GrpcExporter<Marshaler> delegate,
-      MemoryMode memoryMode) {
+      GrpcExporterBuilder builder, GrpcExporter delegate, MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
     this.marshaler = new LogReusableDataMarshaler(memoryMode, delegate::export);

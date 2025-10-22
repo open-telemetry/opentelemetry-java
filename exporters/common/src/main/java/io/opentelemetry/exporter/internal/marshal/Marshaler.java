@@ -6,6 +6,8 @@
 package io.opentelemetry.exporter.internal.marshal;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import io.opentelemetry.exporter.grpc.GrpcMessageWriter;
+import io.opentelemetry.exporter.http.HttpRequestBodyWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -53,4 +55,36 @@ public abstract class Marshaler {
   public abstract int getBinarySerializedSize();
 
   protected abstract void writeTo(Serializer output) throws IOException;
+
+  public HttpRequestBodyWriter toHttpRequestBodyWriter(boolean exportAsJson) {
+    return new HttpRequestBodyWriter() {
+      @Override
+      public void writeRequestBody(OutputStream output) throws IOException {
+        if (exportAsJson) {
+          writeJsonTo(output);
+        } else {
+          writeBinaryTo(output);
+        }
+      }
+
+      @Override
+      public int contentLength() {
+        return exportAsJson ? -1 : getBinarySerializedSize();
+      }
+    };
+  }
+
+  public GrpcMessageWriter toGrpcRequestBodyWriter() {
+    return new GrpcMessageWriter() {
+      @Override
+      public void writeMessage(OutputStream output) throws IOException {
+        writeBinaryTo(output);
+      }
+
+      @Override
+      public int contentLength() {
+        return getBinarySerializedSize();
+      }
+    };
+  }
 }

@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal.compressor;
 
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
+import io.opentelemetry.exporter.compressor.Compressor;
+import io.opentelemetry.exporter.compressor.CompressorProvider;
 
 public class Base64CompressorProvider implements CompressorProvider {
 

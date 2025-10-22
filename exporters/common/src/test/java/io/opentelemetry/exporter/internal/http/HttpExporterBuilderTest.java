@@ -9,9 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.compressor.Compressor;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -20,12 +19,12 @@ import org.junit.jupiter.api.Test;
 
 class HttpExporterBuilderTest {
 
-  private HttpExporterBuilder<Marshaler> builder;
+  private HttpExporterBuilder builder;
 
   @BeforeEach
   void setUp() {
     builder =
-        new HttpExporterBuilder<>(
+        new HttpExporterBuilder(
             StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost:4318");
   }
 

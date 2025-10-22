@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import java.net.URI;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,7 +70,7 @@ class ExporterInstrumentationTest {
             schemaVersion,
             meterProviderSupplier,
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
-            "http://testing:1234");
+            URI.create("http://testing:1234"));
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
     // Verify the supplier is only called once per underlying meter.
@@ -93,7 +94,7 @@ class ExporterInstrumentationTest {
             schemaVersion,
             meterProviderSupplier,
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
-            "http://testing:1234");
+            URI.create("http://testing:1234"));
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
     // Verify the supplier is invoked multiple times since it returns a noop meter.
@@ -108,24 +109,17 @@ class ExporterInstrumentationTest {
   }
 
   @Test
-  void serverAttributesInvalidUrl() {
-    assertThat(ExporterInstrumentation.extractServerAttributes("^")).isEmpty();
-  }
-
-  @Test
-  void serverAttributesEmptyUrl() {
-    assertThat(ExporterInstrumentation.extractServerAttributes("")).isEmpty();
-  }
-
-  @Test
   void serverAttributesHttps() {
-    assertThat(ExporterInstrumentation.extractServerAttributes("https://example.com/foo/bar?a=b"))
+    assertThat(
+            ExporterInstrumentation.extractServerAttributes(
+                URI.create("https://example.com/foo/bar?a=b")))
         .hasSize(2)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
         .containsEntry(SemConvAttributes.SERVER_PORT, 443);
 
     assertThat(
-            ExporterInstrumentation.extractServerAttributes("https://example.com:1234/foo/bar?a=b"))
+            ExporterInstrumentation.extractServerAttributes(
+                URI.create("https://example.com:1234/foo/bar?a=b")))
         .hasSize(2)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
         .containsEntry(SemConvAttributes.SERVER_PORT, 1234);
@@ -133,13 +127,16 @@ class ExporterInstrumentationTest {
 
   @Test
   void serverAttributesHttp() {
-    assertThat(ExporterInstrumentation.extractServerAttributes("http://example.com/foo/bar?a=b"))
+    assertThat(
+            ExporterInstrumentation.extractServerAttributes(
+                URI.create("http://example.com/foo/bar?a=b")))
         .hasSize(2)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
         .containsEntry(SemConvAttributes.SERVER_PORT, 80);
 
     assertThat(
-            ExporterInstrumentation.extractServerAttributes("http://example.com:1234/foo/bar?a=b"))
+            ExporterInstrumentation.extractServerAttributes(
+                URI.create("http://example.com:1234/foo/bar?a=b")))
         .hasSize(2)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
         .containsEntry(SemConvAttributes.SERVER_PORT, 1234);
@@ -147,11 +144,11 @@ class ExporterInstrumentationTest {
 
   @Test
   void serverAttributesUnknownScheme() {
-    assertThat(ExporterInstrumentation.extractServerAttributes("custom://foo"))
+    assertThat(ExporterInstrumentation.extractServerAttributes(URI.create("custom://foo")))
         .hasSize(1)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "foo");
 
-    assertThat(ExporterInstrumentation.extractServerAttributes("custom://foo:1234"))
+    assertThat(ExporterInstrumentation.extractServerAttributes(URI.create("custom://foo:1234")))
         .hasSize(2)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "foo")
         .containsEntry(SemConvAttributes.SERVER_PORT, 1234);

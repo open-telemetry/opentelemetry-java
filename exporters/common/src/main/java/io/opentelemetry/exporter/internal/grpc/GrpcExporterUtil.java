@@ -17,16 +17,6 @@ import javax.annotation.Nullable;
  */
 public final class GrpcExporterUtil {
 
-  public static final int GRPC_STATUS_CANCELLED = 1;
-  public static final int GRPC_STATUS_UNKNOWN = 2;
-  public static final int GRPC_STATUS_DEADLINE_EXCEEDED = 4;
-  public static final int GRPC_STATUS_RESOURCE_EXHAUSTED = 8;
-  public static final int GRPC_STATUS_ABORTED = 10;
-  public static final int GRPC_STATUS_OUT_OF_RANGE = 11;
-  public static final int GRPC_STATUS_UNIMPLEMENTED = 12;
-  public static final int GRPC_STATUS_UNAVAILABLE = 14;
-  public static final int GRPC_STATUS_DATA_LOSS = 15;
-
   static void logUnimplemented(Logger logger, String type, @Nullable String fullErrorMessage) {
 
     // hopefully temporary special handling for profile signal as it evolves towards stability.

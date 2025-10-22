@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
+import io.opentelemetry.exporter.grpc.GrpcStatusCode;
 import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.sender.okhttp.internal.GrpcRequestBody;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -53,7 +53,7 @@ final class OkHttpGrpcService implements GrpcService {
       SamplingStrategyResponseUnMarshaler responseUnmarshaller) {
     Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
 
-    RequestBody requestBody = new GrpcRequestBody(exportRequest, null);
+    RequestBody requestBody = new GrpcRequestBody(exportRequest.toGrpcRequestBodyWriter(), null);
     requestBuilder.post(requestBody);
 
     try {
@@ -69,6 +69,7 @@ final class OkHttpGrpcService implements GrpcService {
         // HTTP error.
       }
 
+      // TODO: convert to enum earlier
       String status = grpcStatus(response);
       if ("0".equals(status)) {
         if (bodyBytes.length > 5) {
@@ -93,7 +94,7 @@ final class OkHttpGrpcService implements GrpcService {
           status != null ? "gRPC status code " + status : "HTTP status code " + response.code();
       String errorMessage = grpcMessage(response);
 
-      if (String.valueOf(GrpcExporterUtil.GRPC_STATUS_UNIMPLEMENTED).equals(status)) {
+      if (String.valueOf(GrpcStatusCode.UNIMPLEMENTED.getValue()).equals(status)) {
         logger.log(
             Level.SEVERE,
             "Failed to execute "
@@ -101,7 +102,7 @@ final class OkHttpGrpcService implements GrpcService {
                 + "s. Server responded with UNIMPLEMENTED. "
                 + "Full error message: "
                 + errorMessage);
-      } else if (String.valueOf(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE).equals(status)) {
+      } else if (String.valueOf(GrpcStatusCode.UNAVAILABLE.getValue()).equals(status)) {
         logger.log(
             Level.SEVERE,
             "Failed to execute "

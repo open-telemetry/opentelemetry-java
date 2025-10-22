@@ -7,9 +7,9 @@ package io.opentelemetry.exporter.sender.jdk.internal;
 
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.http.HttpSender;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.compressor.Compressor;
+import io.opentelemetry.exporter.http.HttpRequestBodyWriter;
+import io.opentelemetry.exporter.http.HttpSender;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -66,10 +65,9 @@ public final class JdkHttpSender implements HttpSender {
   private final boolean managedExecutor;
   private final ExecutorService executorService;
   private final HttpClient client;
-  private final URI uri;
-  @Nullable private final Compressor compressor;
-  private final boolean exportAsJson;
+  private final URI endpoint;
   private final String contentType;
+  @Nullable private final Compressor compressor;
   private final long timeoutNanos;
   private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
@@ -78,23 +76,17 @@ public final class JdkHttpSender implements HttpSender {
   // Visible for testing
   JdkHttpSender(
       HttpClient client,
-      String endpoint,
-      @Nullable Compressor compressor,
-      boolean exportAsJson,
+      URI endpoint,
       String contentType,
+      @Nullable Compressor compressor,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable ExecutorService executorService) {
     this.client = client;
-    try {
-      this.uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException(e);
-    }
-    this.compressor = compressor;
-    this.exportAsJson = exportAsJson;
+    this.endpoint = endpoint;
     this.contentType = contentType;
+    this.compressor = compressor;
     this.timeoutNanos = timeoutNanos;
     this.headerSupplier = headerSupplier;
     this.retryPolicy = retryPolicy;
@@ -112,10 +104,9 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   JdkHttpSender(
-      String endpoint,
-      @Nullable Compressor compressor,
-      boolean exportAsJson,
+      URI endpoint,
       String contentType,
+      @Nullable Compressor compressor,
       long timeoutNanos,
       long connectTimeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
@@ -126,9 +117,8 @@ public final class JdkHttpSender implements HttpSender {
     this(
         configureClient(sslContext, connectTimeoutNanos, proxyOptions),
         endpoint,
-        compressor,
-        exportAsJson,
         contentType,
+        compressor,
         timeoutNanos,
         headerSupplier,
         retryPolicy,
@@ -162,15 +152,14 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public void send(
-      Marshaler marshaler,
-      int contentLength,
-      Consumer<Response> onResponse,
+      HttpRequestBodyWriter requestBodyWriter,
+      Consumer<io.opentelemetry.exporter.http.HttpResponse> onResponse,
       Consumer<Throwable> onError) {
     CompletableFuture<HttpResponse<byte[]>> unused =
         CompletableFuture.supplyAsync(
                 () -> {
                   try {
-                    return sendInternal(marshaler);
+                    return sendInternal(requestBodyWriter);
                   } catch (IOException e) {
                     throw new UncheckedIOException(e);
                   }
@@ -187,10 +176,10 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   // Visible for testing
-  HttpResponse<byte[]> sendInternal(Marshaler marshaler) throws IOException {
+  HttpResponse<byte[]> sendInternal(HttpRequestBodyWriter requestBodyWriter) throws IOException {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder =
-        HttpRequest.newBuilder().uri(uri).timeout(Duration.ofNanos(timeoutNanos));
+        HttpRequest.newBuilder().uri(endpoint).timeout(Duration.ofNanos(timeoutNanos));
     Map<String, List<String>> headers = headerSupplier.get();
     if (headers != null) {
       headers.forEach((key, values) -> values.forEach(value -> requestBuilder.header(key, value)));
@@ -202,12 +191,12 @@ public final class JdkHttpSender implements HttpSender {
     if (compressor != null) {
       requestBuilder.header("Content-Encoding", compressor.getEncoding());
       try (OutputStream compressed = compressor.compress(os)) {
-        write(marshaler, compressed);
+        requestBodyWriter.writeRequestBody(compressed);
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }
     } else {
-      write(marshaler, os);
+      requestBodyWriter.writeRequestBody(os);
     }
 
     ByteBufferPool byteBufferPool = threadLocalByteBufPool.get();
@@ -297,14 +286,6 @@ public final class JdkHttpSender implements HttpSender {
     return joiner.toString();
   }
 
-  private void write(Marshaler marshaler, OutputStream os) throws IOException {
-    if (exportAsJson) {
-      marshaler.writeJsonTo(os);
-    } else {
-      marshaler.writeBinaryTo(os);
-    }
-  }
-
   private HttpResponse<byte[]> sendRequest(
       HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
@@ -340,20 +321,21 @@ public final class JdkHttpSender implements HttpSender {
     }
   }
 
-  private static Response toHttpResponse(HttpResponse<byte[]> response) {
-    return new Response() {
+  private static io.opentelemetry.exporter.http.HttpResponse toHttpResponse(
+      HttpResponse<byte[]> response) {
+    return new io.opentelemetry.exporter.http.HttpResponse() {
       @Override
-      public int statusCode() {
+      public int getStatusCode() {
         return response.statusCode();
       }
 
       @Override
-      public String statusMessage() {
+      public String getStatusMessage() {
         return String.valueOf(response.statusCode());
       }
 
       @Override
-      public byte[] responseBody() {
+      public byte[] getResponseBody() {
         return response.body();
       }
     };

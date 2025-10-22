@@ -5,12 +5,16 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
+import static io.opentelemetry.exporter.grpc.GrpcStatusCode.UNAVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.grpc.GrpcResponse;
+import io.opentelemetry.exporter.grpc.GrpcSender;
+import io.opentelemetry.exporter.grpc.GrpcStatusCode;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -34,7 +38,7 @@ class GrpcExporterTest {
   void build_NoGrpcSenderProvider() {
     assertThatThrownBy(
             () ->
-                new GrpcExporterBuilder<>(
+                new GrpcExporterBuilder(
                         StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
@@ -49,7 +53,6 @@ class GrpcExporterTest {
 
   @ParameterizedTest
   @EnumSource
-  @SuppressWarnings("unchecked")
   @SuppressLogger(GrpcExporter.class)
   void testInternalTelemetry(StandardComponentId.ExporterType exporterType) {
     String signalMetricPrefix;
@@ -87,16 +90,16 @@ class GrpcExporterTest {
               .put(SemConvAttributes.SERVER_PORT, 1234)
               .build();
 
-      GrpcSender<Marshaler> mockSender = Mockito.mock(GrpcSender.class);
+      GrpcSender mockSender = Mockito.mock(GrpcSender.class);
       Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
 
-      GrpcExporter<Marshaler> exporter =
-          new GrpcExporter<Marshaler>(
+      GrpcExporter exporter =
+          new GrpcExporter(
               mockSender,
               InternalTelemetryVersion.LATEST,
               id,
               () -> meterProvider,
-              "http://testing:1234");
+              URI.create("http://testing:1234"));
 
       doAnswer(
               invoc -> {
@@ -117,7 +120,9 @@ class GrpcExporterTest {
                                                     pa.hasAttributes(expectedAttributes)
                                                         .hasValue(42))));
 
-                onResponse.accept(GrpcResponse.create(0, null));
+                onResponse.accept(
+                    ImmutableGrpcResponse.create(GrpcStatusCode.OK, null, new byte[0]));
+
                 return null;
               })
           .when(mockSender)
@@ -128,8 +133,8 @@ class GrpcExporterTest {
       doAnswer(
               invoc -> {
                 Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
-                onResponse.accept(
-                    GrpcResponse.create(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE, null));
+                onResponse.accept(ImmutableGrpcResponse.create(UNAVAILABLE, null, new byte[0]));
+
                 return null;
               })
           .when(mockSender)
@@ -171,7 +176,7 @@ class GrpcExporterTest {
                                               expectedAttributes.toBuilder()
                                                   .put(
                                                       SemConvAttributes.ERROR_TYPE,
-                                                      "" + GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
+                                                      "" + UNAVAILABLE.getValue())
                                                   .build())
                                           .hasValue(15),
                                   pa ->
@@ -201,10 +206,10 @@ class GrpcExporterTest {
                                               expectedAttributes.toBuilder()
                                                   .put(
                                                       SemConvAttributes.ERROR_TYPE,
-                                                      "" + GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
+                                                      "" + UNAVAILABLE.getValue())
                                                   .put(
                                                       SemConvAttributes.RPC_GRPC_STATUS_CODE,
-                                                      GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
+                                                      UNAVAILABLE.getValue())
                                                   .build())
                                           .hasBucketCounts(1),
                                   pa ->

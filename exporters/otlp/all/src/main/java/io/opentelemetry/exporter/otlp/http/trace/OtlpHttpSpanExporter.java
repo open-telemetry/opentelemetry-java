@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.http.trace;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.SpanReusableDataMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -25,14 +24,11 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpSpanExporter implements SpanExporter {
 
-  private final HttpExporterBuilder<Marshaler> builder;
-  private final HttpExporter<Marshaler> delegate;
+  private final HttpExporterBuilder builder;
+  private final HttpExporter delegate;
   private final SpanReusableDataMarshaler marshaler;
 
-  OtlpHttpSpanExporter(
-      HttpExporterBuilder<Marshaler> builder,
-      HttpExporter<Marshaler> delegate,
-      MemoryMode memoryMode) {
+  OtlpHttpSpanExporter(HttpExporterBuilder builder, HttpExporter delegate, MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
     this.marshaler = new SpanReusableDataMarshaler(memoryMode, delegate::export);

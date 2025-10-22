@@ -6,14 +6,16 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
+import io.opentelemetry.exporter.compressor.Compressor;
+import io.opentelemetry.exporter.http.HttpRequestBodyWriter;
+import io.opentelemetry.exporter.http.HttpResponse;
+import io.opentelemetry.exporter.http.HttpSender;
 import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.http.HttpSender;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -48,18 +50,16 @@ public final class OkHttpHttpSender implements HttpSender {
   private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
-  @Nullable private final Compressor compressor;
-  private final boolean exportAsJson;
   private final Supplier<Map<String, List<String>>> headerSupplier;
   private final MediaType mediaType;
+  @Nullable private final Compressor compressor;
 
   /** Create a sender. */
   @SuppressWarnings("TooManyParameters")
   public OkHttpHttpSender(
-      String endpoint,
-      @Nullable Compressor compressor,
-      boolean exportAsJson,
+      URI endpoint,
       String contentType,
+      @Nullable Compressor compressor,
       long timeoutNanos,
       long connectionTimeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
@@ -96,7 +96,7 @@ public final class OkHttpHttpSender implements HttpSender {
       builder.addInterceptor(new RetryInterceptor(retryPolicy, OkHttpHttpSender::isRetryable));
     }
 
-    boolean isPlainHttp = endpoint.startsWith("http://");
+    boolean isPlainHttp = endpoint.toString().startsWith("http://");
     if (isPlainHttp) {
       builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
     } else if (sslContext != null && trustManager != null) {
@@ -105,17 +105,15 @@ public final class OkHttpHttpSender implements HttpSender {
 
     this.client = builder.build();
     this.url = HttpUrl.get(endpoint);
-    this.compressor = compressor;
-    this.exportAsJson = exportAsJson;
     this.mediaType = MediaType.parse(contentType);
+    this.compressor = compressor;
     this.headerSupplier = headerSupplier;
   }
 
   @Override
   public void send(
-      Marshaler marshaler,
-      int contentLength,
-      Consumer<Response> onResponse,
+      HttpRequestBodyWriter requestBodyWriter,
+      Consumer<HttpResponse> onResponse,
       Consumer<Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
@@ -124,13 +122,10 @@ public final class OkHttpHttpSender implements HttpSender {
       headers.forEach(
           (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
     }
-    RequestBody body = new RawRequestBody(marshaler, exportAsJson, contentLength, mediaType);
     if (compressor != null) {
       requestBuilder.addHeader("Content-Encoding", compressor.getEncoding());
-      requestBuilder.post(new CompressedRequestBody(compressor, body));
-    } else {
-      requestBuilder.post(body);
     }
+    requestBuilder.post(new RequestBodyImpl(requestBodyWriter, compressor, mediaType));
 
     InstrumentationUtil.suppressInstrumentation(
         () ->
@@ -147,23 +142,28 @@ public final class OkHttpHttpSender implements HttpSender {
                       public void onResponse(Call call, okhttp3.Response response) {
                         try (ResponseBody body = response.body()) {
                           onResponse.accept(
-                              new Response() {
+                              new HttpResponse() {
                                 @Nullable private byte[] bodyBytes;
 
                                 @Override
-                                public int statusCode() {
+                                public int getStatusCode() {
                                   return response.code();
                                 }
 
                                 @Override
-                                public String statusMessage() {
+                                public String getStatusMessage() {
                                   return response.message();
                                 }
 
                                 @Override
-                                public byte[] responseBody() throws IOException {
+                                public byte[] getResponseBody() {
                                   if (bodyBytes == null) {
-                                    bodyBytes = body.bytes();
+                                    try {
+                                      bodyBytes = body.bytes();
+                                    } catch (IOException e) {
+                                      // TODO: suspicious ignored exception
+                                      bodyBytes = new byte[0];
+                                    }
                                   }
                                   return bodyBytes;
                                 }
@@ -187,24 +187,24 @@ public final class OkHttpHttpSender implements HttpSender {
     return RetryUtil.retryableHttpResponseCodes().contains(response.code());
   }
 
-  private static class RawRequestBody extends RequestBody {
+  private static class RequestBodyImpl extends RequestBody {
 
-    private final Marshaler marshaler;
-    private final boolean exportAsJson;
-    private final int contentLength;
+    private final HttpRequestBodyWriter requestBodyWriter;
+    @Nullable private final Compressor compressor;
     private final MediaType mediaType;
 
-    private RawRequestBody(
-        Marshaler marshaler, boolean exportAsJson, int contentLength, MediaType mediaType) {
-      this.marshaler = marshaler;
-      this.exportAsJson = exportAsJson;
-      this.contentLength = contentLength;
+    private RequestBodyImpl(
+        HttpRequestBodyWriter requestBodyWriter,
+        @Nullable Compressor compressor,
+        MediaType mediaType) {
+      this.requestBodyWriter = requestBodyWriter;
+      this.compressor = compressor;
       this.mediaType = mediaType;
     }
 
     @Override
     public long contentLength() {
-      return contentLength;
+      return compressor == null ? requestBodyWriter.contentLength() : -1;
     }
 
     @Override
@@ -214,39 +214,14 @@ public final class OkHttpHttpSender implements HttpSender {
 
     @Override
     public void writeTo(BufferedSink bufferedSink) throws IOException {
-      if (exportAsJson) {
-        marshaler.writeJsonTo(bufferedSink.outputStream());
+      if (compressor != null) {
+        BufferedSink compressedSink =
+            Okio.buffer(Okio.sink(compressor.compress(bufferedSink.outputStream())));
+        requestBodyWriter.writeRequestBody(compressedSink.outputStream());
+        compressedSink.close();
       } else {
-        marshaler.writeBinaryTo(bufferedSink.outputStream());
+        requestBodyWriter.writeRequestBody(bufferedSink.outputStream());
       }
-    }
-  }
-
-  private static class CompressedRequestBody extends RequestBody {
-    private final Compressor compressor;
-    private final RequestBody requestBody;
-
-    private CompressedRequestBody(Compressor compressor, RequestBody requestBody) {
-      this.compressor = compressor;
-      this.requestBody = requestBody;
-    }
-
-    @Override
-    public MediaType contentType() {
-      return requestBody.contentType();
-    }
-
-    @Override
-    public long contentLength() {
-      return -1;
-    }
-
-    @Override
-    public void writeTo(BufferedSink bufferedSink) throws IOException {
-      BufferedSink compressedSink =
-          Okio.buffer(Okio.sink(compressor.compress(bufferedSink.outputStream())));
-      requestBody.writeTo(compressedSink);
-      compressedSink.close();
     }
   }
 }

@@ -11,9 +11,8 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.compressor.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -48,14 +47,14 @@ public final class OtlpHttpMetricExporterBuilder {
       AggregationTemporalitySelector.alwaysCumulative();
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
-  private final HttpExporterBuilder<Marshaler> delegate;
+  private final HttpExporterBuilder delegate;
 
   private AggregationTemporalitySelector aggregationTemporalitySelector;
   private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
   OtlpHttpMetricExporterBuilder(
-      HttpExporterBuilder<Marshaler> delegate,
+      HttpExporterBuilder delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector,
       MemoryMode memoryMode) {
@@ -68,7 +67,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   OtlpHttpMetricExporterBuilder() {
     this(
-        new HttpExporterBuilder<>(
+        new HttpExporterBuilder(
             StandardComponentId.ExporterType.OTLP_HTTP_METRIC_EXPORTER, DEFAULT_ENDPOINT),
         DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
         DefaultAggregationSelector.getDefault(),

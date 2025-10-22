@@ -9,12 +9,13 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.exporter.compressor.Compressor;
+import io.opentelemetry.exporter.compressor.CompressorProvider;
+import io.opentelemetry.exporter.http.HttpSender;
+import io.opentelemetry.exporter.http.HttpSenderProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -44,7 +45,7 @@ import javax.net.ssl.X509TrustManager;
  * at any time.
  */
 @SuppressWarnings("checkstyle:JavadocMethod")
-public final class HttpExporterBuilder<T extends Marshaler> {
+public final class HttpExporterBuilder {
   public static final long DEFAULT_TIMEOUT_SECS = 10;
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
 
@@ -52,7 +53,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   private StandardComponentId.ExporterType exporterType;
 
-  private String endpoint;
+  private URI endpoint;
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   @Nullable private Compressor compressor;
@@ -74,26 +75,25 @@ public final class HttpExporterBuilder<T extends Marshaler> {
       StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
     this.exporterType = exporterType;
 
-    endpoint = defaultEndpoint;
+    endpoint = ExporterBuilderUtil.validateEndpoint(defaultEndpoint);
   }
 
-  public HttpExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
+  public HttpExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
-  public HttpExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
+  public HttpExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
-  public HttpExporterBuilder<T> setEndpoint(String endpoint) {
-    URI uri = ExporterBuilderUtil.validateEndpoint(endpoint);
-    this.endpoint = uri.toString();
+  public HttpExporterBuilder setEndpoint(String endpoint) {
+    this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 
-  public HttpExporterBuilder<T> setCompression(@Nullable Compressor compressor) {
+  public HttpExporterBuilder setCompression(@Nullable Compressor compressor) {
     this.compressor = compressor;
     return this;
   }
@@ -103,71 +103,69 @@ public final class HttpExporterBuilder<T extends Marshaler> {
    * method "gzip" and "none" are supported out of the box. Support for additional compression
    * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
    */
-  public HttpExporterBuilder<T> setCompression(String compressionMethod) {
+  public HttpExporterBuilder setCompression(String compressionMethod) {
     Compressor compressor =
         CompressorUtil.validateAndResolveCompressor(compressionMethod, componentLoader);
     return setCompression(compressor);
   }
 
-  public HttpExporterBuilder<T> addConstantHeaders(String key, String value) {
+  public HttpExporterBuilder addConstantHeaders(String key, String value) {
     constantHeaders.put(key, value);
     return this;
   }
 
-  public HttpExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
+  public HttpExporterBuilder setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
     this.headerSupplier = headerSupplier;
     return this;
   }
 
-  public HttpExporterBuilder<T> setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
+  public HttpExporterBuilder setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
     tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
-  public HttpExporterBuilder<T> setKeyManagerFromCerts(
-      byte[] privateKeyPem, byte[] certificatePem) {
+  public HttpExporterBuilder setKeyManagerFromCerts(byte[] privateKeyPem, byte[] certificatePem) {
     tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
-  public HttpExporterBuilder<T> setSslContext(
-      SSLContext sslContext, X509TrustManager trustManager) {
+  public HttpExporterBuilder setSslContext(SSLContext sslContext, X509TrustManager trustManager) {
     tlsConfigHelper.setSslContext(sslContext, trustManager);
     return this;
   }
 
-  public HttpExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
+  public HttpExporterBuilder setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
     this.meterProviderSupplier = meterProviderSupplier;
     return this;
   }
 
-  public HttpExporterBuilder<T> setInternalTelemetryVersion(
+  public HttpExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion internalTelemetryVersion) {
     this.internalTelemetryVersion = internalTelemetryVersion;
     return this;
   }
 
-  public HttpExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
+  public HttpExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
   }
 
-  public HttpExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions) {
+  public HttpExporterBuilder setProxyOptions(ProxyOptions proxyOptions) {
     this.proxyOptions = proxyOptions;
     return this;
   }
 
-  public HttpExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader) {
+  public HttpExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
     this.componentLoader = componentLoader;
     return this;
   }
 
-  public HttpExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+  public HttpExporterBuilder setExecutorService(ExecutorService executorService) {
     this.executorService = executorService;
     return this;
   }
 
-  public HttpExporterBuilder<T> exportAsJson() {
+  public HttpExporterBuilder exportAsJson() {
     this.exportAsJson = true;
     exporterType = mapToJsonTypeIfPossible(exporterType);
     return this;
@@ -188,8 +186,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   }
 
   @SuppressWarnings("BuilderReturnThis")
-  public HttpExporterBuilder<T> copy() {
-    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterType, endpoint);
+  public HttpExporterBuilder copy() {
+    HttpExporterBuilder copy = new HttpExporterBuilder(exporterType, endpoint.toString());
     copy.endpoint = endpoint;
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
@@ -208,7 +206,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return copy;
   }
 
-  public HttpExporter<T> build() {
+  public HttpExporter build() {
     Supplier<Map<String, List<String>>> headerSupplier =
         () -> {
           Map<String, List<String>> result = new HashMap<>();
@@ -230,15 +228,14 @@ public final class HttpExporterBuilder<T extends Marshaler> {
           return result;
         };
 
-    boolean isPlainHttp = endpoint.startsWith("http://");
+    boolean isPlainHttp = endpoint.toString().startsWith("http://");
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
         httpSenderProvider.createSender(
-            HttpSenderConfig.create(
+            ImmutableHttpSenderConfig.create(
                 endpoint,
-                compressor,
-                exportAsJson,
                 exportAsJson ? "application/json" : "application/x-protobuf",
+                compressor,
                 timeoutNanos,
                 connectTimeoutNanos,
                 headerSupplier,
@@ -249,12 +246,13 @@ public final class HttpExporterBuilder<T extends Marshaler> {
                 executorService));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
-    return new HttpExporter<>(
+    return new HttpExporter(
         ComponentId.generateLazy(exporterType),
         httpSender,
         meterProviderSupplier,
         internalTelemetryVersion,
-        endpoint);
+        endpoint,
+        exportAsJson);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -306,10 +304,9 @@ public final class HttpExporterBuilder<T extends Marshaler> {
    * <p>If multiple are available and..
    *
    * <ul>
-   *   <li>{@code io.opentelemetry.exporter.internal.http.HttpSenderProvider} is empty, use the
-   *       first found.
-   *   <li>{@code io.opentelemetry.exporter.internal.http.HttpSenderProvider} is set, use the
-   *       matching provider. If none match, throw {@link IllegalStateException}.
+   *   <li>{@code io.opentelemetry.exporter.http.HttpSenderProvider} is empty, use the first found.
+   *   <li>{@code io.opentelemetry.exporter.http.HttpSenderProvider} is set, use the matching
+   *       provider. If none match, throw {@link IllegalStateException}.
    * </ul>
    */
   private HttpSenderProvider resolveHttpSenderProvider() {
@@ -332,14 +329,14 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
     // If we've reached here, there are multiple HttpSenderProviders
     String configuredSender =
-        ConfigUtil.getString("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "");
+        ConfigUtil.getString("io.opentelemetry.exporter.http.HttpSenderProvider", "");
 
     // Multiple providers but none configured, use first we find and log a warning
     if (configuredSender.isEmpty()) {
       LOGGER.log(
           Level.WARNING,
           "Multiple HttpSenderProvider found. Please include only one, "
-              + "or specify preference setting io.opentelemetry.exporter.internal.http.HttpSenderProvider "
+              + "or specify preference setting io.opentelemetry.exporter.http.HttpSenderProvider "
               + "to the FQCN of the preferred provider.");
       return httpSenderProviders.values().stream().findFirst().get();
     }
@@ -351,7 +348,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
     // Multiple providers, configured does not match, throw
     throw new IllegalStateException(
-        "No HttpSenderProvider matched configured io.opentelemetry.exporter.internal.http.HttpSenderProvider: "
+        "No HttpSenderProvider matched configured io.opentelemetry.exporter.http.HttpSenderProvider: "
             + configuredSender);
   }
 }
