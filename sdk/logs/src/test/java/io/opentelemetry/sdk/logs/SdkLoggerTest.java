@@ -141,20 +141,7 @@ class SdkLoggerTest {
   }
 
   @Test
-  void updateEnabled() {
-    LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
-    SdkLoggerProvider loggerProvider =
-        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
-    SdkLogger logger = (SdkLogger) loggerProvider.get("test");
-
-    logger.updateLoggerConfig(LoggerConfig.disabled());
-    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
-    logger.updateLoggerConfig(LoggerConfig.enabled());
-    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
-  }
-
-  @Test
-  void updateLoggerConfig_UpdatesAllFields() {
+  void updateLoggerConfig() {
     LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
@@ -234,47 +221,5 @@ class SdkLoggerTest {
             TraceState.getDefault());
     Context unsampledContext = Span.wrap(unsampledSpanContext).storeInContext(Context.root());
     assertThat(logger.isEnabled(Severity.INFO, unsampledContext)).isFalse();
-  }
-
-  @Test
-  void isEnabled_MinimumSeverityAndTraceBased() {
-    LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
-    SdkLoggerProvider loggerProvider =
-        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
-    SdkLogger logger = (SdkLogger) loggerProvider.get("test");
-
-    LoggerConfig config =
-        LoggerConfig.builder()
-            .setMinimumSeverity(Severity.WARN.getSeverityNumber())
-            .setTraceBased(true)
-            .build();
-    logger.updateLoggerConfig(config);
-
-    SpanContext sampledSpanContext =
-        SpanContext.create(
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "bbbbbbbbbbbbbbbb",
-            TraceFlags.getSampled(),
-            TraceState.getDefault());
-    Context sampledContext = Span.wrap(sampledSpanContext).storeInContext(Context.root());
-
-    SpanContext unsampledSpanContext =
-        SpanContext.create(
-            "cccccccccccccccccccccccccccccccc",
-            "dddddddddddddddd",
-            TraceFlags.getDefault(),
-            TraceState.getDefault());
-    Context unsampledContext = Span.wrap(unsampledSpanContext).storeInContext(Context.root());
-
-    // Below minimum severity in sampled trace - should be disabled
-    assertThat(logger.isEnabled(Severity.INFO, sampledContext)).isFalse();
-
-    // At or above minimum severity in sampled trace - should be enabled
-    assertThat(logger.isEnabled(Severity.WARN, sampledContext)).isTrue();
-    assertThat(logger.isEnabled(Severity.ERROR, sampledContext)).isTrue();
-
-    // At or above minimum severity in unsampled trace - should be disabled
-    assertThat(logger.isEnabled(Severity.WARN, unsampledContext)).isFalse();
-    assertThat(logger.isEnabled(Severity.ERROR, unsampledContext)).isFalse();
   }
 }

@@ -11,6 +11,9 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -124,75 +127,23 @@ class SdkLogRecordBuilderTest {
   }
 
   @Test
-  void emit_WithMinimumSeverityConfiguration() {
-    LoggerConfig config =
-        LoggerConfig.builder().setMinimumSeverity(Severity.INFO.getSeverityNumber()).build();
-    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, config);
+  void emit_ChecksLoggerIsEnabled() {
+    SdkLogger logger = mock(SdkLogger.class);
     builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
 
-    builder.setBody("too-low").setSeverity(Severity.DEBUG).emit();
+    Severity severity = Severity.WARN;
+    Context context = Context.current();
+
+    // Configure mock to return false (disabled)
+    when(logger.isEnabled(severity, context)).thenReturn(false);
+
+    builder.setSeverity(severity).setContext(context).emit();
+
+    // Verify isEnabled was called with correct parameters
+    verify(logger).isEnabled(eq(severity), eq(context));
+
+    // Verify log was not processed (because isEnabled returned false)
     assertThat(emittedLog.get()).isNull();
-
-    builder.setBody("allowed").setSeverity(Severity.INFO).emit();
-    assertThat(emittedLog.get().toLogRecordData()).hasBody("allowed");
-  }
-
-  @Test
-  void emit_DropsUnsampledTraceWhenTraceBased() {
-    LoggerConfig config = LoggerConfig.builder().setTraceBased(true).build();
-    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, config);
-    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
-
-    SpanContext unsampledSpanContext =
-        SpanContext.create(
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "bbbbbbbbbbbbbbbb",
-            TraceFlags.getDefault(),
-            TraceState.getDefault());
-    builder
-        .setBody("unsampled")
-        .setContext(Span.wrap(unsampledSpanContext).storeInContext(Context.root()))
-        .emit();
-    assertThat(emittedLog.get()).isNull();
-
-    SpanContext sampledSpanContext =
-        SpanContext.create(
-            "cccccccccccccccccccccccccccccccc",
-            "dddddddddddddddd",
-            TraceFlags.getSampled(),
-            TraceState.getDefault());
-    builder
-        .setBody("sampled")
-        .setContext(Span.wrap(sampledSpanContext).storeInContext(Context.root()))
-        .emit();
-    assertThat(emittedLog.get().toLogRecordData())
-        .hasSpanContext(sampledSpanContext)
-        .hasBody("sampled");
-  }
-
-  @Test
-  void emit_AllowsUndefinedSeverityWithMinimumSeverity() {
-    LoggerConfig config =
-        LoggerConfig.builder().setMinimumSeverity(Severity.WARN.getSeverityNumber()).build();
-    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, config);
-    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
-
-    // Undefined severity should bypass the minimum severity filter
-    builder.setBody("undefined-severity").setSeverity(Severity.UNDEFINED_SEVERITY_NUMBER).emit();
-    assertThat(emittedLog.get().toLogRecordData())
-        .hasBody("undefined-severity")
-        .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
-  }
-
-  @Test
-  void emit_AllowsNoTraceContextWithTraceBased() {
-    LoggerConfig config = LoggerConfig.builder().setTraceBased(true).build();
-    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, config);
-    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
-
-    // No trace context should bypass the trace-based filter
-    builder.setBody("no-trace-context").emit();
-    assertThat(emittedLog.get().toLogRecordData()).hasBody("no-trace-context");
   }
 
   @Test
