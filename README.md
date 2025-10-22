@@ -246,6 +246,10 @@ for support or general questions. Feel free to drop us a line.
 We are also present in the [`#otel-java`](https://cloud-native.slack.com/archives/C014L2KCTE3) channel in the [CNCF slack](https://slack.cncf.io/).
 Please join us for more informal discussions.
 
+## Verifying Artifacts
+
+All artifacts published to Maven Central are signed with GPG for security purposes. You can verify the authenticity of artifacts by checking their signatures against our [published GPG key](KEYS).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for:
