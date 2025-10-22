@@ -248,7 +248,7 @@ Please join us for more informal discussions.
 
 ## Verifying Artifacts
 
-All artifacts published to Maven Central are signed with GPG for security purposes. You can verify the authenticity of artifacts by checking their signatures against our [published GPG key](KEYS).
+All artifacts published to Maven Central are signed with GPG key [`17A27CE7A60FF5F0`](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x17A27CE7A60FF5F0) (fingerprint: `3F05 DDA9 F317 301E 9271 36D4 17A2 7CE7 A60F F5F0`).
 
 ## Contributing
 
