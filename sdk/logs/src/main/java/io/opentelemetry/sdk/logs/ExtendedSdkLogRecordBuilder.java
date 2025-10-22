@@ -130,35 +130,18 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
-  public void emit() {
-    if (loggerSharedState.hasBeenShutdown()) {
-      return;
-    }
-
-    Context context = this.context == null ? Context.current() : this.context;
-    if (!logger.isEnabled(severity, context)) {
-      return;
-    }
-
-    long observedTimestampEpochNanos =
-        this.observedTimestampEpochNanos == 0
-            ? this.loggerSharedState.getClock().now()
-            : this.observedTimestampEpochNanos;
-    loggerSharedState
-        .getLogRecordProcessor()
-        .onEmit(
-            context,
-            ExtendedSdkReadWriteLogRecord.create(
-                loggerSharedState.getLogLimits(),
-                loggerSharedState.getResource(),
-                instrumentationScopeInfo,
-                eventName,
-                timestampEpochNanos,
-                observedTimestampEpochNanos,
-                Span.fromContext(context).getSpanContext(),
-                severity,
-                severityText,
-                body,
-                extendedAttributes));
+  protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+    return ExtendedSdkReadWriteLogRecord.create(
+        loggerSharedState.getLogLimits(),
+        loggerSharedState.getResource(),
+        instrumentationScopeInfo,
+        eventName,
+        timestampEpochNanos,
+        observedTimestampEpochNanos,
+        Span.fromContext(context).getSpanContext(),
+        severity,
+        severityText,
+        body,
+        extendedAttributes);
   }
 }

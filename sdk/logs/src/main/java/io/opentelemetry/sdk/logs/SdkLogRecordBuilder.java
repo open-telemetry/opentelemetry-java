@@ -134,19 +134,21 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
             : this.observedTimestampEpochNanos;
     loggerSharedState
         .getLogRecordProcessor()
-        .onEmit(
-            context,
-            SdkReadWriteLogRecord.create(
-                loggerSharedState.getLogLimits(),
-                loggerSharedState.getResource(),
-                instrumentationScopeInfo,
-                timestampEpochNanos,
-                observedTimestampEpochNanos,
-                Span.fromContext(context).getSpanContext(),
-                severity,
-                severityText,
-                body,
-                attributes,
-                eventName));
+        .onEmit(context, createLogRecord(context, observedTimestampEpochNanos));
+  }
+
+  protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+    return SdkReadWriteLogRecord.create(
+        loggerSharedState.getLogLimits(),
+        loggerSharedState.getResource(),
+        instrumentationScopeInfo,
+        timestampEpochNanos,
+        observedTimestampEpochNanos,
+        Span.fromContext(context).getSpanContext(),
+        severity,
+        severityText,
+        body,
+        attributes,
+        eventName);
   }
 }
