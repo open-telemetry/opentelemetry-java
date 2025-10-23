@@ -189,7 +189,7 @@ class CompositeSamplerTest {
   void testMaxThreshold() {
     Input input = new Input();
 
-    Sampler sampler = CompositeSampler.wrap(ComposableSampler.traceIdRatioBased(0.0));
+    Sampler sampler = CompositeSampler.wrap(ComposableSampler.probability(0.0));
 
     Output output = sample(input, sampler);
 
@@ -237,7 +237,7 @@ class CompositeSamplerTest {
     Input input = new Input();
     input.setParentRandomValue(0x7FFFFFFFFFFFFFL);
 
-    Sampler sampler = CompositeSampler.wrap(ComposableSampler.traceIdRatioBased(0.5));
+    Sampler sampler = CompositeSampler.wrap(ComposableSampler.probability(0.5));
 
     Output output = sample(input, sampler);
 
@@ -251,7 +251,7 @@ class CompositeSamplerTest {
     Input input = new Input();
     input.setParentRandomValue(0x80000000000000L);
 
-    Sampler sampler = CompositeSampler.wrap(ComposableSampler.traceIdRatioBased(0.5));
+    Sampler sampler = CompositeSampler.wrap(ComposableSampler.probability(0.5));
 
     Output output = sample(input, sampler);
 
@@ -268,7 +268,7 @@ class CompositeSamplerTest {
     input.setParentRandomValue(0x80000000000000L);
     input.setParentSampled(false);
 
-    Sampler sampler = CompositeSampler.wrap(ComposableSampler.traceIdRatioBased(1.0));
+    Sampler sampler = CompositeSampler.wrap(ComposableSampler.probability(1.0));
     Output output = sample(input, sampler);
 
     assertThat(output.samplingResult.getDecision()).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
