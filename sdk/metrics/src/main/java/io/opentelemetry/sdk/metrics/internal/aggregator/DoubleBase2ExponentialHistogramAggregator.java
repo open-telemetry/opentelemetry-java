@@ -100,7 +100,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
         int maxBuckets,
         int maxScale,
         MemoryMode memoryMode) {
-      super(reservoirFactory);
+      super(reservoirFactory, /* isDoubleType= */ true);
       this.maxBuckets = maxBuckets;
       this.maxScale = maxScale;
       this.sum = 0;
@@ -258,11 +258,6 @@ public final class DoubleBase2ExponentialHistogramAggregator
         downScale(buckets.getScaleReduction(value));
         buckets.record(value);
       }
-    }
-
-    @Override
-    protected boolean isDoubleType() {
-      return true;
     }
 
     @Override
