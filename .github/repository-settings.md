@@ -6,6 +6,8 @@ private admin repo.
 
 ## Secrets and variables > Actions
 
+### Repository secrets
+
 - `GPG_PASSWORD` - stored in OpenTelemetry-Java 1Password
 - `GPG_PRIVATE_KEY` - stored in OpenTelemetry-Java 1Password
 - `NVD_API_KEY` - stored in OpenTelemetry-Java 1Password
@@ -16,7 +18,8 @@ private admin repo.
 
 ### Organization secrets
 
-- `DEVELOCITY_ACCESS_KEY`
+- `CODECOV_TOKEN`
+- `DEVELOCITY_ACCESS_KEY` (scoped only to Java repos)
 - `FOSSA_API_KEY`
 - `OTELBOT_PRIVATE_KEY`
 
