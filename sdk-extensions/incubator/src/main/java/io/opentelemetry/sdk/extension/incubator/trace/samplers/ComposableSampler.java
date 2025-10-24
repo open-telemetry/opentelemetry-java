@@ -24,8 +24,8 @@ public interface ComposableSampler {
   }
 
   /** Returns a {@link ComposableSampler} that samples each span with a fixed ratio. */
-  static ComposableSampler traceIdRatioBased(double ratio) {
-    return new ComposableTraceIdRatioBasedSampler(ratio);
+  static ComposableSampler probability(double ratio) {
+    return new ComposableProbabilitySampler(ratio);
   }
 
   /**
