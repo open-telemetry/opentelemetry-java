@@ -95,17 +95,12 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData> 
     @Nullable private final MutableLongPointData reusablePoint;
 
     Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
-      super(reservoirFactory);
+      super(reservoirFactory, /* isDoubleType= */ false);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableLongPointData();
       } else {
         reusablePoint = null;
       }
-    }
-
-    @Override
-    protected boolean isDoubleType() {
-      return false;
     }
 
     @Override

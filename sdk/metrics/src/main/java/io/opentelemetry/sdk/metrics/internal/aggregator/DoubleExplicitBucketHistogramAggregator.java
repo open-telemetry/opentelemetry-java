@@ -110,14 +110,14 @@ public final class DoubleExplicitBucketHistogramAggregator
     private final long[] counts;
 
     // Used only when MemoryMode = REUSABLE_DATA
-    @Nullable private MutableHistogramPointData reusablePoint;
+    @Nullable private final MutableHistogramPointData reusablePoint;
 
     Handle(
         List<Double> boundaryList,
         double[] boundaries,
         ExemplarReservoirFactory reservoirFactory,
         MemoryMode memoryMode) {
-      super(reservoirFactory);
+      super(reservoirFactory, /* isDoubleType= */ true);
       this.boundaryList = boundaryList;
       this.boundaries = boundaries;
       this.counts = new long[this.boundaries.length + 1];
@@ -127,6 +127,8 @@ public final class DoubleExplicitBucketHistogramAggregator
       this.count = 0;
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         this.reusablePoint = new MutableHistogramPointData(counts.length);
+      } else {
+        this.reusablePoint = null;
       }
     }
 
@@ -136,11 +138,6 @@ public final class DoubleExplicitBucketHistogramAggregator
       // from LongHistogram, we redirect calls from #recordLong to #recordDouble. Without this, the
       // base AggregatorHandle implementation of #recordLong throws.
       super.recordDouble((double) value, attributes, context);
-    }
-
-    @Override
-    protected boolean isDoubleType() {
-      return true;
     }
 
     @Override
