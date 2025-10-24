@@ -56,7 +56,7 @@ public abstract class FailedExportException extends Exception {
 
     private static final long serialVersionUID = -6787390183017184775L;
 
-    @Nullable private final HttpSender.Response response;
+    @Nullable private final transient HttpSender.Response response;
     @Nullable private final Throwable cause;
 
     private HttpExportException(@Nullable HttpSender.Response response, @Nullable Throwable cause) {
@@ -100,7 +100,7 @@ public abstract class FailedExportException extends Exception {
 
     private static final long serialVersionUID = -9157548250286695364L;
 
-    @Nullable private final GrpcResponse response;
+    @Nullable private final transient GrpcResponse response;
     @Nullable private final Throwable cause;
 
     private GrpcExportException(@Nullable GrpcResponse response, @Nullable Throwable cause) {

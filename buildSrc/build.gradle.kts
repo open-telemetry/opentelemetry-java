@@ -5,9 +5,9 @@ plugins {
   id("com.diffplug.spotless") version "8.0.0"
 }
 
-if (!hasLauncherForJavaVersion(17)) {
+if (!hasLauncherForJavaVersion(21)) {
   throw GradleException(
-    "JDK 17 is required to build and gradle was unable to detect it on the system.  " +
+    "JDK 21 is required to build and gradle was unable to detect it on the system.  " +
         "Please install it and see https://docs.gradle.org/current/userguide/toolchains.html#sec:auto_detection " +
         "for details on how gradle detects java toolchains."
   )
@@ -73,6 +73,6 @@ dependencies {
 // target.
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion.set(JavaLanguageVersion.of(21))
   }
 }

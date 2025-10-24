@@ -49,7 +49,8 @@ import java.util.concurrent.atomic.AtomicLong;
   "MissingSummary",
   "UngroupedOverloads",
   "ThreadPriorityCheck",
-  "FieldMissingNullable"
+  "FieldMissingNullable",
+  "this-escape"
 })
 public class WeakConcurrentMap<K, V>
     extends AbstractWeakConcurrentMap<K, V, WeakConcurrentMap.LookupKey<K>> {

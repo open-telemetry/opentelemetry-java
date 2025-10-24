@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for No-op {@link Tracer}. */
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
-@SuppressWarnings("MustBeClosedChecker")
+@SuppressWarnings({"MustBeClosedChecker", "this-escape"})
 public abstract class AbstractDefaultTracerTest {
   private final Tracer defaultTracer = getTracer();
   private static final String SPAN_NAME = "MySpanName";

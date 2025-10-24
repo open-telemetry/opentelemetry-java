@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for No-op {@link Meter}. */
 @SuppressLogger
+@SuppressWarnings("this-escape")
 public abstract class AbstractDefaultMeterTest {
   private final Meter meter = getMeter();
 
