@@ -57,6 +57,16 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
     add(increment, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes) {
+    remove(attributes, Context.current());
+  }
+
+  @Override
+  public void remove(Attributes attributes, Context context) {
+    storage.remove(attributes, context);
+  }
+
   static class SdkLongCounterBuilder implements LongCounterBuilder {
 
     final InstrumentBuilder builder;
