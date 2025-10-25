@@ -34,4 +34,9 @@ public final class TraceBasedExemplarFilter implements ExemplarFilter {
   private static boolean hasSampledTrace(Context context) {
     return Span.fromContext(context).getSpanContext().isSampled();
   }
+
+  @Override
+  public String toString() {
+    return "TraceBasedExemplarFilter";
+  }
 }
