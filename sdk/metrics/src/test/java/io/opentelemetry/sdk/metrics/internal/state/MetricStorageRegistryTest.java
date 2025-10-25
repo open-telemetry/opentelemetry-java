@@ -113,6 +113,9 @@ class MetricStorageRegistryTest {
     public void recordDouble(double value, Attributes attributes, Context context) {}
 
     @Override
+    public void remove(Attributes attributes, Context context) {}
+
+    @Override
     public boolean isEnabled() {
       return true;
     }

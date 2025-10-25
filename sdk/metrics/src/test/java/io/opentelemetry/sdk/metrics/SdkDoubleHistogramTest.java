@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.IntStream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -61,6 +63,15 @@ class SdkDoubleHistogramTest {
   void collectMetrics_NoRecords() {
     sdkMeter.histogramBuilder("testHistogram").build();
     assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
+  void collectMetrics_Remove() {
+    DoubleHistogram histogram = sdkMeter.histogramBuilder("testHistogram").build();
+    Attributes attrs = Attributes.of(stringKey("key"), "value");
+    histogram.record(1, attrs);
+    histogram.remove(attrs);
+    Assertions.assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
