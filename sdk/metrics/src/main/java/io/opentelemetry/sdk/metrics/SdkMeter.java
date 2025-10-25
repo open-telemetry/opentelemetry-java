@@ -370,6 +370,13 @@ final class SdkMeter implements Meter {
     }
 
     @Override
+    public void remove(Attributes attributes, Context context) {
+      for (WriteableMetricStorage storage : storages) {
+        storage.remove(attributes, context);
+      }
+    }
+
+    @Override
     public boolean isEnabled() {
       for (WriteableMetricStorage storage : storages) {
         if (storage.isEnabled()) {
