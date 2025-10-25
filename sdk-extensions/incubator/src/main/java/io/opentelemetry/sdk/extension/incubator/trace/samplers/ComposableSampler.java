@@ -36,6 +36,15 @@ public interface ComposableSampler {
     return new ComposableParentThresholdSampler(rootSampler);
   }
 
+  /**
+   * Returns a {@link ComposableRuleBasedSamplerBuilder} to create a composable rule-based sampler.
+   * Rules will be tested in order, and the first to match will have its {@link ComposableSampler}
+   * used for a sampling decision. If no rule matches, the span will be dropped.
+   */
+  static ComposableRuleBasedSamplerBuilder ruleBasedBuilder() {
+    return new ComposableRuleBasedSamplerBuilder();
+  }
+
   /** Returns the {@link SamplingIntent} to use to make a sampling decision. */
   SamplingIntent getSamplingIntent(
       Context parentContext,
