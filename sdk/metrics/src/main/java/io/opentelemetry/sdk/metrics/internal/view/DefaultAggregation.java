@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,7 +59,7 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
   @Override
   public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      ExemplarFilter exemplarFilter,
+      ExemplarFilterInternal exemplarFilter,
       MemoryMode memoryMode) {
     return ((AggregatorFactory) resolve(instrumentDescriptor, /* withAdvice= */ true))
         .createAggregator(instrumentDescriptor, exemplarFilter, memoryMode);
