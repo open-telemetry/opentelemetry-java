@@ -141,6 +141,19 @@ public final class DefaultSynchronousMetricStorage<T extends PointData>
   }
 
   @Override
+  public void remove(Attributes attributes, Context context) {
+    if (!enabled) {
+      return;
+    }
+    AggregatorHolder<T> aggregatorHolder = getHolderForRecord();
+    try {
+      aggregatorHolder.aggregatorHandles.remove(attributes);
+    } finally {
+      releaseHolderForRecord(aggregatorHolder);
+    }
+  }
+
+  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }

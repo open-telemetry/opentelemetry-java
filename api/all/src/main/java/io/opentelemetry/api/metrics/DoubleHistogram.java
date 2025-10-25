@@ -46,4 +46,19 @@ public interface DoubleHistogram {
    * @param context The explicit context to associate with this measurement.
    */
   void record(double value, Attributes attributes, Context context);
+
+  /**
+   * Remove the instrument.
+   *
+   * @param attributes A set of attributes to identify the instrument.
+   */
+  void remove(Attributes attributes);
+
+  /**
+   * Remove the instrument.
+   *
+   * @param attributes A set of attributes to identify the instrument.
+   * @param context The explicit context to associate with this measurement.
+   */
+  void remove(Attributes attributes, Context context);
 }

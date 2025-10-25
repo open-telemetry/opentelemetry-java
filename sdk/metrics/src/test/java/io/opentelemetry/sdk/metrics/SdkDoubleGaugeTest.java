@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.stream.IntStream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SdkDoubleGauge}. */
@@ -95,6 +96,16 @@ class SdkDoubleGaugeTest {
   void collectMetrics_NoRecords() {
     sdkMeter.gaugeBuilder("testGauge").build();
     assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
+  void collectMetrics_Remove() {
+    DoubleGauge gauge = sdkMeter.gaugeBuilder("testGauge").build();
+    assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
+    Attributes attrs = Attributes.of(stringKey("key"), "value");
+    gauge.set(1, attrs);
+    gauge.remove(attrs);
+    Assertions.assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
   }
 
   @Test

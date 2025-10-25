@@ -57,6 +57,16 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
     record(value, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes) {
+    remove(attributes, Context.current());
+  }
+
+  @Override
+  public void remove(Attributes attributes, Context context) {
+    storage.remove(attributes, context);
+  }
+
   static class SdkLongHistogramBuilder implements LongHistogramBuilder {
 
     final InstrumentBuilder builder;

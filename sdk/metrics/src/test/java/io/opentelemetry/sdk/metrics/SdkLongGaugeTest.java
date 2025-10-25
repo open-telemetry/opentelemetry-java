@@ -82,6 +82,16 @@ class SdkLongGaugeTest {
   }
 
   @Test
+  void collectMetrics_Remove() {
+    LongGauge gauge = sdkMeter.gaugeBuilder("testGauge").ofLongs().build();
+    assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
+    Attributes attrs = Attributes.of(stringKey("key"), "value");
+    gauge.set(1, attrs);
+    gauge.remove(attrs);
+    Assertions.assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
   void collectMetrics_WithEmptyAttributes() {
     LongGauge longGauge =
         sdkMeter

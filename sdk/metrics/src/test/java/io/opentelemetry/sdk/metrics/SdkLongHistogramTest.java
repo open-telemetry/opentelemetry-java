@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.IntStream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -61,6 +62,15 @@ class SdkLongHistogramTest {
   void collectMetrics_NoRecords() {
     sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
     assertThat(reader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
+  void collectMetrics_Remove() {
+    LongHistogram histogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
+    Attributes attrs = Attributes.of(stringKey("key"), "value");
+    histogram.record(1, attrs);
+    histogram.remove(attrs);
+    Assertions.assertThat(reader.collectAllMetrics()).isEmpty();
   }
 
   @Test
