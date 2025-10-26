@@ -84,6 +84,10 @@ public interface Value<T> {
     return KeyValueList.createFromMap(value);
   }
 
+  static Value<List<KeyValue>> of(Attributes attributes) {
+    // TODO
+  }
+
   /** Returns the type of this {@link Value}. Useful for building switch statements. */
   ValueType getType();
 
