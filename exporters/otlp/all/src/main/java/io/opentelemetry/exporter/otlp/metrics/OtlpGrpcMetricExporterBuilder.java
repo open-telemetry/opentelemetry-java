@@ -12,9 +12,8 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.compressor.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -45,8 +44,7 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   private static final String GRPC_SERVICE_NAME =
       "opentelemetry.proto.collector.metrics.v1.MetricsService";
-  // Visible for testing
-  static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/Export";
+  private static final String GRPC_METHOD_NAME = "Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
@@ -56,14 +54,14 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   // Visible for testing
-  final GrpcExporterBuilder<Marshaler> delegate;
+  final GrpcExporterBuilder delegate;
 
   private AggregationTemporalitySelector aggregationTemporalitySelector;
   private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
   OtlpGrpcMetricExporterBuilder(
-      GrpcExporterBuilder<Marshaler> delegate,
+      GrpcExporterBuilder delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector,
       MemoryMode memoryMode) {
@@ -76,12 +74,12 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   OtlpGrpcMetricExporterBuilder() {
     this(
-        new GrpcExporterBuilder<>(
+        new GrpcExporterBuilder(
             StandardComponentId.ExporterType.OTLP_GRPC_METRIC_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
-            () -> MarshalerMetricsServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH),
+            GRPC_SERVICE_NAME,
+            GRPC_METHOD_NAME),
         DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
         DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);

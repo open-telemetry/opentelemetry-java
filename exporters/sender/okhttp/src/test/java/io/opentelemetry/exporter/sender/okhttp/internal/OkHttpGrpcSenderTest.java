@@ -8,8 +8,8 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.opentelemetry.exporter.grpc.GrpcStatusCode;
 import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import java.util.Set;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
@@ -40,7 +40,7 @@ class OkHttpGrpcSenderTest {
   @Test
   void isRetryable_NonRetryableGrpcStatus() {
     String nonRetryableGrpcStatus =
-        Integer.valueOf(GrpcExporterUtil.GRPC_STATUS_UNKNOWN).toString(); // INVALID_ARGUMENT
+        Integer.valueOf(GrpcStatusCode.UNKNOWN.getValue()).toString(); // INVALID_ARGUMENT
     Response response = createResponse(503, nonRetryableGrpcStatus, "Non-retryable");
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertFalse(isRetryable);
