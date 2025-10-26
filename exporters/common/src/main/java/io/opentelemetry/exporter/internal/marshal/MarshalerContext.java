@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
  */
 public final class MarshalerContext {
   private final boolean marshalStringNoAllocation;
-  private final boolean marshalStringUnsafe;
+  private final StringEncoder stringEncoder;
 
   private int[] sizes = new int[16];
   private int sizeReadIndex;
@@ -37,20 +37,25 @@ public final class MarshalerContext {
   private int dataWriteIndex;
 
   public MarshalerContext() {
-    this(/* marshalStringNoAllocation= */ true, /* marshalStringUnsafe= */ true);
+    this(/* marshalStringNoAllocation= */ true);
   }
 
-  public MarshalerContext(boolean marshalStringNoAllocation, boolean marshalStringUnsafe) {
+  public MarshalerContext(boolean marshalStringNoAllocation) {
     this.marshalStringNoAllocation = marshalStringNoAllocation;
-    this.marshalStringUnsafe = marshalStringUnsafe;
+    this.stringEncoder = StringEncoder.getInstance();
+  }
+
+  public MarshalerContext(boolean marshalStringNoAllocation, StringEncoder stringEncoder) {
+    this.marshalStringNoAllocation = marshalStringNoAllocation;
+    this.stringEncoder = stringEncoder;
   }
 
   public boolean marshalStringNoAllocation() {
     return marshalStringNoAllocation;
   }
 
-  public boolean marshalStringUnsafe() {
-    return marshalStringUnsafe;
+  public StringEncoder getStringEncoder() {
+    return stringEncoder;
   }
 
   public void addSize(int size) {
