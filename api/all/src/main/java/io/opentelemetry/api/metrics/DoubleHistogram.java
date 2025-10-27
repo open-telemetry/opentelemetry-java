@@ -51,14 +51,19 @@ public interface DoubleHistogram {
    * Remove the instrument.
    *
    * @param attributes A set of attributes to identify the instrument.
+   *
+   * @since 1.56.0
    */
-  void remove(Attributes attributes);
-
+  default void remove(Attributes attributes) {
+    remove(attributes, Context.current());
+  }
   /**
    * Remove the instrument.
    *
    * @param attributes A set of attributes to identify the instrument.
    * @param context The explicit context to associate with this measurement.
+   *
+   * @since 1.56.0
    */
-  void remove(Attributes attributes, Context context);
+  default void remove(Attributes attributes, Context context) {}
 }

@@ -44,11 +44,6 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
   }
 
   @Override
-  public void remove(Attributes attributes) {
-    remove(attributes, Context.current());
-  }
-
-  @Override
   public void remove(Attributes attributes, Context context) {
     storage.remove(attributes, context);
   }

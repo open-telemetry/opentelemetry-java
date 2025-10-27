@@ -109,9 +109,6 @@ class ExtendedDefaultMeter implements Meter {
     public void add(long value) {}
 
     @Override
-    public void remove(Attributes attributes) {}
-
-    @Override
     public void remove(Attributes attributes, Context context) {}
   }
 
@@ -129,9 +126,6 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
-
-    @Override
-    public void remove(Attributes attributes) {}
 
     @Override
     public void remove(Attributes attributes, Context context) {}
@@ -223,9 +217,6 @@ class ExtendedDefaultMeter implements Meter {
     public void add(long value) {}
 
     @Override
-    public void remove(Attributes attributes) {}
-
-    @Override
     public void remove(Attributes attributes, Context context) {}
   }
 
@@ -243,9 +234,6 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
-
-    @Override
-    public void remove(Attributes attributes) {}
 
     @Override
     public void remove(Attributes attributes, Context context) {}
@@ -340,9 +328,6 @@ class ExtendedDefaultMeter implements Meter {
     public void record(double value) {}
 
     @Override
-    public void remove(Attributes attributes) {}
-
-    @Override
     public void remove(Attributes attributes, Context context) {}
   }
 
@@ -360,9 +345,6 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void record(long value) {}
-
-    @Override
-    public void remove(Attributes attributes) {}
 
     @Override
     public void remove(Attributes attributes, Context context) {}
@@ -466,9 +448,6 @@ class ExtendedDefaultMeter implements Meter {
     public void set(double value, Attributes attributes, Context context) {}
 
     @Override
-    public void remove(Attributes attributes) {}
-
-    @Override
     public void remove(Attributes attributes, Context context) {}
   }
 
@@ -516,9 +495,6 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void set(long value, Attributes attributes, Context context) {}
-
-    @Override
-    public void remove(Attributes attributes) {}
 
     @Override
     public void remove(Attributes attributes, Context context) {}
