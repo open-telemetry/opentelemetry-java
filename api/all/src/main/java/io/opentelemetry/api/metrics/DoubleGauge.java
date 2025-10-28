@@ -59,7 +59,6 @@ public interface DoubleGauge {
    * Remove the instrument.
    *
    * @param attributes A set of attributes to identify the instrument.
-   *
    * @since 1.56.0
    */
   default void remove(Attributes attributes) {
@@ -71,7 +70,6 @@ public interface DoubleGauge {
    *
    * @param attributes A set of attributes to identify the instrument.
    * @param context The explicit context to associate with this measurement.
-   *
    * @since 1.56.0
    */
   default void remove(Attributes attributes, Context context) {}
