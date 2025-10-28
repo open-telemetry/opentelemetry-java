@@ -86,7 +86,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
-
   }
 
   private static class NoopLongCounterBuilder implements LongCounterBuilder {
@@ -168,7 +167,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(long value) {}
-
   }
 
   private static class NoopDoubleUpDownCounter implements DoubleUpDownCounter {
@@ -180,7 +178,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
-
   }
 
   private static class NoopLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
