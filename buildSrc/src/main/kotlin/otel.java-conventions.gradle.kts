@@ -33,7 +33,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion.set(JavaLanguageVersion.of(21))
   }
 
   withJavadocJar()
@@ -42,7 +42,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "12.0.1"
+  toolVersion = "12.1.1"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -88,6 +88,8 @@ tasks {
             "-Xlint:-processing",
             // We suppress the "options" warning because it prevents compilation on modern JDKs
             "-Xlint:-options",
+            "-Xlint:-serial",
+            "-Xlint:-this-escape",
             // Fail build on any warning
             "-Werror",
           ),

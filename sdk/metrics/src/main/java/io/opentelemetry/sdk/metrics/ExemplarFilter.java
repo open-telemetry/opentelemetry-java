@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOffFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOnFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOffExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOnExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.TraceBasedExemplarFilter;
@@ -31,11 +31,11 @@ public interface ExemplarFilter {
 
   /** A filter which makes all measurements eligible for being an exemplar. */
   static ExemplarFilter alwaysOn() {
-    return AlwaysOnFilter.getInstance();
+    return AlwaysOnExemplarFilter.getInstance();
   }
 
   /** A filter which makes no measurements eligible for being an exemplar. */
   static ExemplarFilter alwaysOff() {
-    return AlwaysOffFilter.getInstance();
+    return AlwaysOffExemplarFilter.getInstance();
   }
 }

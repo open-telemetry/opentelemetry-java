@@ -143,6 +143,10 @@ Shims for bridging data from one observability library to another.
 | [OpenTracing Shim](./opentracing-shim) | Bridge opentracing spans into the OpenTelemetry trace API    | `opentelemetry-opentracing-shim` | <!--VERSION_STABLE-->1.55.0<!--/VERSION_STABLE-->          | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-opentracing-shim.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-opentracing-shim) |
 </details>
 
+### Verifying Artifacts
+
+All artifacts published to Maven Central are signed with GPG key [`17A27CE7A60FF5F0`](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x17A27CE7A60FF5F0) (fingerprint: `3F05 DDA9 F317 301E 9271 36D4 17A2 7CE7 A60F F5F0`).
+
 ## Dependencies
 
 To take a dependency, [include a BOM][dependencies-and-boms] and specify the dependency as follows,

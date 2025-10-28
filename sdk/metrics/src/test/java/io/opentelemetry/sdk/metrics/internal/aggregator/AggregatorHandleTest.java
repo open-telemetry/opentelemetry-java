@@ -102,24 +102,14 @@ class AggregatorHandleTest {
   private static class TestDoubleAggregatorHandle extends TestAggregatorHandle {
 
     TestDoubleAggregatorHandle(DoubleExemplarReservoir reservoir) {
-      super(reservoir, null);
-    }
-
-    @Override
-    protected boolean isDoubleType() {
-      return true;
+      super(reservoir, null, /* isDoubleType= */ true);
     }
   }
 
   private static class TestLongAggregatorHandle extends TestAggregatorHandle {
 
     TestLongAggregatorHandle(LongExemplarReservoir reservoir) {
-      super(null, reservoir);
-    }
-
-    @Override
-    protected boolean isDoubleType() {
-      return false;
+      super(null, reservoir, /* isDoubleType= */ false);
     }
   }
 
@@ -130,7 +120,8 @@ class AggregatorHandleTest {
 
     TestAggregatorHandle(
         @Nullable DoubleExemplarReservoir doubleReservoir,
-        @Nullable LongExemplarReservoir longReservoir) {
+        @Nullable LongExemplarReservoir longReservoir,
+        boolean isDoubleType) {
       super(
           new ExemplarReservoirFactory() {
             @Override
@@ -142,7 +133,8 @@ class AggregatorHandleTest {
             public LongExemplarReservoir createLongExemplarReservoir() {
               return Objects.requireNonNull(longReservoir);
             }
-          });
+          },
+          isDoubleType);
     }
 
     @Nullable

@@ -99,4 +99,19 @@ class ExemplarFilterTest {
     assertThatThrownBy(() -> asExemplarFilterInternal(new ExemplarFilter() {}))
         .isInstanceOf(IllegalArgumentException.class);
   }
+
+  @Test
+  void alwaysOff_toString() {
+    assertThat(ExemplarFilter.alwaysOff().toString()).isEqualTo("AlwaysOffExemplarFilter");
+  }
+
+  @Test
+  void alwaysOn_toString() {
+    assertThat(ExemplarFilter.alwaysOn().toString()).isEqualTo("AlwaysOnExemplarFilter");
+  }
+
+  @Test
+  void traceBased_toString() {
+    assertThat(ExemplarFilter.traceBased().toString()).isEqualTo("TraceBasedExemplarFilter");
+  }
 }

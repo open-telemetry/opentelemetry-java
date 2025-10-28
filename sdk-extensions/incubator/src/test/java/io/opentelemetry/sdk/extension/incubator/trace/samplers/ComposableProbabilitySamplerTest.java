@@ -21,21 +21,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class ComposableTraceIdRatioBasedSamplerTest {
+class ComposableProbabilitySamplerTest {
   @Test
   void testDescription() {
-    assertThat(ComposableSampler.traceIdRatioBased(1.0).getDescription())
+    assertThat(ComposableSampler.probability(1.0).getDescription())
         .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=0, ratio=1.0}");
-    assertThat(ComposableSampler.traceIdRatioBased(1.0))
+    assertThat(ComposableSampler.probability(1.0))
         .hasToString("ComposableTraceIdRatioBasedSampler{threshold=0, ratio=1.0}");
 
-    assertThat(ComposableSampler.traceIdRatioBased(0.5).getDescription())
+    assertThat(ComposableSampler.probability(0.5).getDescription())
         .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=8, ratio=0.5}");
-    assertThat(ComposableSampler.traceIdRatioBased(0.25).getDescription())
+    assertThat(ComposableSampler.probability(0.25).getDescription())
         .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=c, ratio=0.25}");
-    assertThat(ComposableSampler.traceIdRatioBased(1e-300).getDescription())
+    assertThat(ComposableSampler.probability(1e-300).getDescription())
         .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=max, ratio=1.0E-300}");
-    assertThat(ComposableSampler.traceIdRatioBased(0).getDescription())
+    assertThat(ComposableSampler.probability(0).getDescription())
         .isEqualTo("ComposableTraceIdRatioBasedSampler{threshold=max, ratio=0.0}");
   }
 
@@ -53,7 +53,7 @@ class ComposableTraceIdRatioBasedSamplerTest {
   })
   void sampling(double ratio, long threshold) {
     Supplier<String> generator = traceIdGenerator();
-    Sampler sampler = CompositeSampler.wrap(ComposableSampler.traceIdRatioBased(ratio));
+    Sampler sampler = CompositeSampler.wrap(ComposableSampler.probability(ratio));
     int numSampled = 0;
     for (int i = 0; i < 10000; i++) {
       SamplingResult result =

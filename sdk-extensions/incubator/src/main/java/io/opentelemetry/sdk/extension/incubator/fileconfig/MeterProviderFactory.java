@@ -95,6 +95,12 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
       SdkMeterProviderUtil.setMeterConfigurator(builder, configuratorBuilder.build());
     }
 
+    MeterProviderModel.ExemplarFilter exemplarFilterModel = model.getExemplarFilter();
+    if (exemplarFilterModel != null) {
+      builder.setExemplarFilter(
+          ExemplarFilterFactory.getInstance().create(exemplarFilterModel, context));
+    }
+
     return builder;
   }
 

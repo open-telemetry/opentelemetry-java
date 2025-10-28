@@ -41,8 +41,8 @@ public abstract class AggregatorHandle<T extends PointData> {
   private final boolean isDoubleType;
   private volatile boolean valuesRecorded = false;
 
-  protected AggregatorHandle(ExemplarReservoirFactory reservoirFactory) {
-    this.isDoubleType = isDoubleType();
+  protected AggregatorHandle(ExemplarReservoirFactory reservoirFactory, boolean isDoubleType) {
+    this.isDoubleType = isDoubleType;
     if (isDoubleType) {
       this.doubleReservoirFactory = reservoirFactory.createDoubleExemplarReservoir();
       this.longReservoirFactory = null;
@@ -79,19 +79,6 @@ public abstract class AggregatorHandle<T extends PointData> {
             .collectAndResetLongs(attributes),
         reset);
   }
-
-  /**
-   * Indicates whether this {@link AggregatorHandle} supports double or long values.
-   *
-   * <p>If it supports doubles, it MUST implement {@link #doAggregateThenMaybeResetDoubles(long,
-   * long, Attributes, List, boolean)} and {@link #doRecordDouble(double)}.
-   *
-   * <p>If it supports long, it MUST implement {@link #doAggregateThenMaybeResetLongs(long, long,
-   * Attributes, List, boolean)} and {@link #doRecordLong(long)}.
-   *
-   * @return true if it supports doubles, false if it supports longs.
-   */
-  protected abstract boolean isDoubleType();
 
   /** Implementation of the {@link #aggregateThenMaybeReset(long, long, Attributes, boolean)} . */
   protected T doAggregateThenMaybeResetDoubles(
