@@ -24,7 +24,7 @@ public interface WriteableMetricStorage {
   void recordDouble(double value, Attributes attributes, Context context);
 
   /** Remove a measurement. */
-  void remove(Attributes attributes, Context context);
+  default void remove(Attributes attributes, Context context) {}
 
   /**
    * Returns {@code true} if the storage is actively recording measurements, and {@code false}
