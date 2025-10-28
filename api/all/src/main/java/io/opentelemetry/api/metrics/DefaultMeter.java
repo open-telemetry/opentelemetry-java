@@ -80,9 +80,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(long value) {}
-
-    @Override
-    public void remove(Attributes attributes, Context context) {}
   }
 
   private static class NoopDoubleCounter implements DoubleCounter {
@@ -100,8 +97,6 @@ class DefaultMeter implements Meter {
     @Override
     public void add(double value) {}
 
-    @Override
-    public void remove(Attributes attributes, Context context) {}
   }
 
   private static class NoopLongCounterBuilder implements LongCounterBuilder {
@@ -189,8 +184,6 @@ class DefaultMeter implements Meter {
     @Override
     public void add(long value) {}
 
-    @Override
-    public void remove(Attributes attributes, Context context) {}
   }
 
   private static class NoopDoubleUpDownCounter implements DoubleUpDownCounter {
@@ -208,8 +201,6 @@ class DefaultMeter implements Meter {
     @Override
     public void add(double value) {}
 
-    @Override
-    public void remove(Attributes attributes, Context context) {}
   }
 
   private static class NoopLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
@@ -298,9 +289,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(double value) {}
-
-    @Override
-    public void remove(Attributes attributes, Context context) {}
   }
 
   private static class NoopLongHistogram implements LongHistogram {
@@ -317,9 +305,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(long value) {}
-
-    @Override
-    public void remove(Attributes attributes, Context context) {}
   }
 
   private static class NoopDoubleHistogramBuilder implements DoubleHistogramBuilder {
@@ -418,9 +403,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public void set(double value, Attributes attributes, Context context) {}
-
-    @Override
-    public void remove(Attributes attributes, Context context) {}
   }
 
   private static class NoopLongGaugeBuilder implements LongGaugeBuilder {
@@ -467,9 +449,6 @@ class DefaultMeter implements Meter {
 
     @Override
     public void set(long value, Attributes attributes, Context context) {}
-
-    @Override
-    public void remove(Attributes attributes, Context context) {}
   }
 
   private static class NoopObservableDoubleMeasurement implements ObservableDoubleMeasurement {
