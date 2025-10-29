@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.stream.IntStream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SdkDoubleUpDownCounter}. */
@@ -55,6 +56,16 @@ class SdkDoubleUpDownCounterTest {
   void collectMetrics_NoRecords() {
     sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
     assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
+  void collectMetrics_Remove() {
+    DoubleUpDownCounter counter =
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
+    Attributes attrs = Attributes.of(stringKey("key"), "value");
+    counter.add(1, attrs);
+    counter.remove(attrs);
+    Assertions.assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test

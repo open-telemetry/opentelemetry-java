@@ -43,6 +43,11 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
     add(increment, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes, Context context) {
+    storage.remove(attributes, context);
+  }
+
   static class SdkLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
 
     final InstrumentBuilder builder;

@@ -56,6 +56,11 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
     record(value, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes, Context context) {
+    storage.remove(attributes, context);
+  }
+
   static class SdkDoubleHistogramBuilder implements DoubleHistogramBuilder {
 
     final InstrumentBuilder builder;
