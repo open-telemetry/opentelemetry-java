@@ -24,7 +24,7 @@ public interface ExemplarReservoirFactory {
    * pre-filter.
    */
   static ExemplarReservoirFactory filtered(
-      ExemplarFilter filter, ExemplarReservoirFactory original) {
+      ExemplarFilterInternal filter, ExemplarReservoirFactory original) {
     return new ExemplarReservoirFactory() {
       @Override
       public DoubleExemplarReservoir createDoubleExemplarReservoir() {
