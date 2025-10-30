@@ -12,6 +12,8 @@ import java.util.List;
 public final class ComposableRuleBasedSamplerBuilder {
   private final List<SamplingRule> rules = new ArrayList<>();
 
+  ComposableRuleBasedSamplerBuilder() {}
+
   /**
    * Adds a rule to use the given {@link ComposableSampler} if the {@link SamplingPredicate}
    * matches.
