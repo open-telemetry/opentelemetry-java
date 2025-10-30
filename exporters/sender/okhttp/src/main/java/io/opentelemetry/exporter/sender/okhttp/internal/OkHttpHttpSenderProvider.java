@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.internal.http.HttpSender;
-import io.opentelemetry.exporter.internal.http.HttpSenderConfig;
-import io.opentelemetry.exporter.internal.http.HttpSenderProvider;
+import io.opentelemetry.exporter.http.HttpSender;
+import io.opentelemetry.exporter.http.HttpSenderConfig;
+import io.opentelemetry.exporter.http.HttpSenderProvider;
 
 /**
  * {@link HttpSender} SPI implementation for {@link OkHttpHttpSender}.
@@ -21,9 +21,8 @@ public final class OkHttpHttpSenderProvider implements HttpSenderProvider {
   public HttpSender createSender(HttpSenderConfig httpSenderConfig) {
     return new OkHttpHttpSender(
         httpSenderConfig.getEndpoint(),
-        httpSenderConfig.getCompressor(),
-        httpSenderConfig.getExportAsJson(),
         httpSenderConfig.getContentType(),
+        httpSenderConfig.getCompressor(),
         httpSenderConfig.getTimeoutNanos(),
         httpSenderConfig.getConnectTimeoutNanos(),
         httpSenderConfig.getHeadersSupplier(),

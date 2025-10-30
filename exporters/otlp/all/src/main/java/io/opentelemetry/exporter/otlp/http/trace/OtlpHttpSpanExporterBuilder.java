@@ -11,9 +11,8 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.compressor.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -39,10 +38,10 @@ public final class OtlpHttpSpanExporterBuilder {
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
-  private final HttpExporterBuilder<Marshaler> delegate;
+  private final HttpExporterBuilder delegate;
   private MemoryMode memoryMode;
 
-  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpHttpSpanExporterBuilder(HttpExporterBuilder delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
@@ -50,7 +49,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   OtlpHttpSpanExporterBuilder() {
     this(
-        new HttpExporterBuilder<>(
+        new HttpExporterBuilder(
             StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, DEFAULT_ENDPOINT),
         DEFAULT_MEMORY_MODE);
   }
