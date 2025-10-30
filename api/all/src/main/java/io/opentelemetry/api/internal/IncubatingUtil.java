@@ -11,8 +11,8 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import javax.annotation.concurrent.ThreadSafe;
 import java.lang.reflect.Method;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Incubating utilities.
