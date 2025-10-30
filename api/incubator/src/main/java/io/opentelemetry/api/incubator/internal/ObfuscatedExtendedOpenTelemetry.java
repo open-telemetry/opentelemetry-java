@@ -30,7 +30,7 @@ public final class ObfuscatedExtendedOpenTelemetry implements ExtendedOpenTeleme
 
   /**
    * This constructor is called via reflection from {@link
-   * io.opentelemetry.api.internal.IncubatingUtil#obfuscatedOpenTelemetry(OpenTelemetry)}
+   * io.opentelemetry.api.internal.IncubatingUtil#obfuscatedOpenTelemetry(OpenTelemetry)}.
    */
   public ObfuscatedExtendedOpenTelemetry(ExtendedOpenTelemetry delegate) {
     this.delegate = delegate;
