@@ -25,7 +25,7 @@ final class ComposableRuleBasedSampler implements ComposableSampler {
     if (this.rules.length > 0) {
       for (SamplingRule rule : this.rules) {
         description.append('(');
-        description.append(rule.predicate().getDescription());
+        description.append(rule.predicate().toString());
         description.append(':');
         description.append(rule.sampler().getDescription());
         description.append(')');

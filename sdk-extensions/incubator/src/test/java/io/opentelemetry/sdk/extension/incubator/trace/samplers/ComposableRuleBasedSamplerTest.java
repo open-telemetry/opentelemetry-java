@@ -50,13 +50,8 @@ class ComposableRuleBasedSamplerTest {
     }
 
     @Override
-    public String getDescription() {
-      return description;
-    }
-
-    @Override
     public String toString() {
-      return getDescription();
+      return description;
     }
   }
 
@@ -75,7 +70,7 @@ class ComposableRuleBasedSamplerTest {
     }
 
     @Override
-    public String getDescription() {
+    public String toString() {
       return "isRoot";
     }
   }
