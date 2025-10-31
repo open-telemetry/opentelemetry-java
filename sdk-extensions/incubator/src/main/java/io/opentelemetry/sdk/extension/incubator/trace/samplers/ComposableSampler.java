@@ -36,6 +36,14 @@ public interface ComposableSampler {
     return new ComposableParentThresholdSampler(rootSampler);
   }
 
+  /**
+   * Returns a {@link ComposableSampler} that adds the given {@link Attributes} to all sampled
+   * spans.
+   */
+  static ComposableSampler annotating(ComposableSampler sampler, Attributes attributes) {
+    return new ComposableAnnotatingSampler(sampler, attributes);
+  }
+
   /** Returns the {@link SamplingIntent} to use to make a sampling decision. */
   SamplingIntent getSamplingIntent(
       Context parentContext,
