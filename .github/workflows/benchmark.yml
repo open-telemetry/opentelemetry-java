@@ -48,7 +48,7 @@ jobs:
           java -jar libs/opentelemetry-sdk-trace-*-jmh.jar -rf json SpanBenchmark SpanPipelineBenchmark ExporterBenchmark
 
       - name: Use CLA approved github bot
-        run: .github/scripts/use-cla-approved-github-bot.sh
+        run: .github/scripts/use-cla-approved-bot.sh
 
       - name: Store benchmark results
         uses: benchmark-action/github-action-benchmark@4bdcce38c94cec68da58d012ac24b7b1155efe8b # v1.20.7

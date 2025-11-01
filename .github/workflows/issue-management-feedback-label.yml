@@ -1,4 +1,4 @@
-name: Issue management - remove needs feedback label
+name: Issue management - remove labels as needed
 
 on:
   issue_comment:
@@ -20,9 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Remove label
+      - name: Remove labels
         env:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue edit --remove-label "needs author feedback" $ISSUE_NUMBER
+          gh issue edit --remove-label "stale" $ISSUE_NUMBER
