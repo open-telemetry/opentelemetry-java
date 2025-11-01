@@ -1,3 +1,6 @@
+# Lychee configuration file
+# See https://lychee.cli.rs/config/
+
 timeout = 30
 retry_wait_time = 5
 max_retries = 6
@@ -8,11 +11,11 @@ include_fragments = true
 
 remap = [
   # workaround for https://github.com/lycheeverse/lychee/issues/1729
-  'https://github.com/(.*?)/(.*?)/blob/(.*?)/(.*#.*)$ https://raw.githubusercontent.com/$1/$2/$3/$4',
+  "https://github.com/(.*?)/(.*?)/blob/(.*?)/(.*#.*)$ https://raw.githubusercontent.com/$1/$2/$3/$4",
 ]
 
 # excluding links to pull requests and issues is done for performance
 exclude = [
-  '^https://github.com/open-telemetry/opentelemetry-java/(issues|pull)/\d+$',
-  '^https://www.javadoc.io/badge/(.*?)/(.*?).svg$', # returns 522
+  "^https://github.com/open-telemetry/opentelemetry-java/(issues|pull)/\\d+$",
+  "^https://www.javadoc.io/badge/(.*?)/(.*?).svg$", # returns 522
 ]
