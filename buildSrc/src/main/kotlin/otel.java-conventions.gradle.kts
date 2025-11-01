@@ -1,4 +1,5 @@
 import io.opentelemetry.gradle.OtelJavaExtension
+import org.gradle.api.JavaVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
@@ -74,7 +75,7 @@ val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersi
 tasks {
   withType<JavaCompile>().configureEach {
     with(options) {
-      release.set(8)
+      release.set(otelJava.minJavaVersionSupported.map { it.majorVersion.toInt() })
 
       if (name != "jmhCompileGeneratedClasses") {
         compilerArgs.addAll(
@@ -107,14 +108,6 @@ tasks {
 
   withType<Test>().configureEach {
     useJUnitPlatform()
-
-    if (testJavaVersion != null) {
-      javaLauncher.set(
-        javaToolchains.launcherFor {
-          languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
-        },
-      )
-    }
 
     val defaultMaxRetries = if (System.getenv().containsKey("CI")) 2 else 0
     val maxTestRetries = gradle.startParameter.projectProperties["maxTestRetries"]?.toInt() ?: defaultMaxRetries
@@ -170,6 +163,19 @@ tasks {
         docTitle = title
         windowTitle = title
       }
+    }
+  }
+}
+
+afterEvaluate {
+  tasks.withType<Test>().configureEach {
+    if (testJavaVersion != null) {
+      javaLauncher.set(
+        javaToolchains.launcherFor {
+          languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
+        }
+      )
+      isEnabled = isEnabled && testJavaVersion >= otelJava.minJavaVersionSupported.get()
     }
   }
 }
