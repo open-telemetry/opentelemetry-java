@@ -153,7 +153,7 @@ class MetricReaderFactoryTest {
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
     assertThat(readerAndCardinalityLimits.getCardinalityLimitsSelector()).isNull();
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
-    verify(context).loadComponent(eq(MetricReader.class), eq("prometheus"), any());
+    verify(context).loadComponent(eq(MetricReader.class), eq("prometheus/development"), any());
   }
 
   @Test
@@ -204,7 +204,7 @@ class MetricReaderFactoryTest {
                 .getCardinalityLimit(InstrumentType.COUNTER))
         .isEqualTo(100);
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
-    verify(context).loadComponent(eq(MetricReader.class), eq("prometheus"), any());
+    verify(context).loadComponent(eq(MetricReader.class), eq("prometheus/development"), any());
   }
 
   @Test

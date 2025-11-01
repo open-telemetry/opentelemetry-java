@@ -57,7 +57,7 @@ public final class IncubatingExporterBuilderUtil {
       case "delta":
         temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
         break;
-      case "lowmemory":
+      case "low_memory":
         temporalitySelector = AggregationTemporalitySelector.lowMemory();
         break;
       default:
