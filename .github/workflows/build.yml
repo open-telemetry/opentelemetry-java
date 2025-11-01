@@ -114,7 +114,7 @@ jobs:
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
-    uses: ./.github/workflows/reusable-markdown-link-check.yml
+    uses: ./.github/workflows/reusable-link-check.yml
 
   misspell-check:
     # release branches are excluded to avoid unnecessary maintenance
