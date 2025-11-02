@@ -28,7 +28,7 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
 
   @Override
   public String getName() {
-    return "prometheus";
+    return "prometheus/development";
   }
 
   @Override
