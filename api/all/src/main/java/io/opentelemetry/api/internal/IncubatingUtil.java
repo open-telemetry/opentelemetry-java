@@ -6,13 +6,8 @@
 package io.opentelemetry.api.internal;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.logs.LoggerProvider;
-import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.trace.TracerBuilder;
-import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.Method;
-import javax.annotation.concurrent.ThreadSafe;
+import javax.annotation.Nullable;
 
 /**
  * Incubating utilities.
@@ -34,7 +29,8 @@ public class IncubatingUtil {
     }
   }
 
-  public static OpenTelemetry obfuscatedOpenTelemetry(OpenTelemetry openTelemetry) {
+  @Nullable
+  public static OpenTelemetry obfuscatedOpenTelemetryIfIncubating(OpenTelemetry openTelemetry) {
     try {
       Class<?> extendedClass =
           Class.forName("io.opentelemetry.api.incubator.ExtendedOpenTelemetry");
@@ -50,46 +46,6 @@ public class IncubatingUtil {
     } catch (Exception e) {
       // incubator not available
     }
-    return new ObfuscatedOpenTelemetry(openTelemetry);
-  }
-
-  /**
-   * Static global instances are obfuscated when they are returned from the API to prevent users
-   * from casting them to their SDK-specific implementation. For example, we do not want users to
-   * use patterns like {@code (OpenTelemetrySdk) GlobalOpenTelemetry.get()}.
-   */
-  @ThreadSafe
-  static class ObfuscatedOpenTelemetry implements OpenTelemetry {
-
-    private final OpenTelemetry delegate;
-
-    ObfuscatedOpenTelemetry(OpenTelemetry delegate) {
-      this.delegate = delegate;
-    }
-
-    @Override
-    public TracerProvider getTracerProvider() {
-      return delegate.getTracerProvider();
-    }
-
-    @Override
-    public MeterProvider getMeterProvider() {
-      return delegate.getMeterProvider();
-    }
-
-    @Override
-    public LoggerProvider getLogsBridge() {
-      return delegate.getLogsBridge();
-    }
-
-    @Override
-    public ContextPropagators getPropagators() {
-      return delegate.getPropagators();
-    }
-
-    @Override
-    public TracerBuilder tracerBuilder(String instrumentationScopeName) {
-      return delegate.tracerBuilder(instrumentationScopeName);
-    }
+    return null;
   }
 }

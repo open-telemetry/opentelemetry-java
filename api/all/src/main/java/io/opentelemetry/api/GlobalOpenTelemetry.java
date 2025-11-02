@@ -8,6 +8,7 @@ package io.opentelemetry.api;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.internal.IncubatingUtil;
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -21,6 +22,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A global singleton for the entrypoint to telemetry functionality for tracing, metrics and
@@ -111,7 +113,7 @@ public final class GlobalOpenTelemetry {
                 + "instead. Previous invocation set to cause of this exception.",
             setGlobalCaller);
       }
-      globalOpenTelemetry = IncubatingUtil.obfuscatedOpenTelemetry(openTelemetry);
+      globalOpenTelemetry = obfuscatedOpenTelemetry(openTelemetry);
       setGlobalCaller = new Throwable();
     }
   }
@@ -260,8 +262,7 @@ public final class GlobalOpenTelemetry {
       Object autoConfiguredSdk = initialize.invoke(null);
       Method getOpenTelemetrySdk =
           openTelemetrySdkAutoConfiguration.getMethod("getOpenTelemetrySdk");
-      return IncubatingUtil.obfuscatedOpenTelemetry(
-          (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk));
+      return obfuscatedOpenTelemetry((OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk));
     } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new IllegalStateException(
           "AutoConfiguredOpenTelemetrySdk detected on classpath "
@@ -273,6 +274,54 @@ public final class GlobalOpenTelemetry {
           "Error automatically configuring OpenTelemetry SDK. OpenTelemetry will not be enabled.",
           t.getTargetException());
       return null;
+    }
+  }
+
+  private static OpenTelemetry obfuscatedOpenTelemetry(OpenTelemetry openTelemetry) {
+    OpenTelemetry incubating = IncubatingUtil.obfuscatedOpenTelemetryIfIncubating(openTelemetry);
+    if (incubating != null) {
+      return incubating;
+    }
+    return new ObfuscatedOpenTelemetry(openTelemetry);
+  }
+
+  /**
+   * Static global instances are obfuscated when they are returned from the API to prevent users
+   * from casting them to their SDK-specific implementation. For example, we do not want users to
+   * use patterns like {@code (OpenTelemetrySdk) GlobalOpenTelemetry.get()}.
+   */
+  @ThreadSafe
+  static class ObfuscatedOpenTelemetry implements OpenTelemetry {
+
+    private final OpenTelemetry delegate;
+
+    ObfuscatedOpenTelemetry(OpenTelemetry delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public TracerProvider getTracerProvider() {
+      return delegate.getTracerProvider();
+    }
+
+    @Override
+    public MeterProvider getMeterProvider() {
+      return delegate.getMeterProvider();
+    }
+
+    @Override
+    public LoggerProvider getLogsBridge() {
+      return delegate.getLogsBridge();
+    }
+
+    @Override
+    public ContextPropagators getPropagators() {
+      return delegate.getPropagators();
+    }
+
+    @Override
+    public TracerBuilder tracerBuilder(String instrumentationScopeName) {
+      return delegate.tracerBuilder(instrumentationScopeName);
     }
   }
 }
