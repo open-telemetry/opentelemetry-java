@@ -21,7 +21,8 @@ public final class OtelEncodingUtils {
   private static final int NUM_ASCII_CHARACTERS = 128;
   private static final char[] ENCODING = buildEncodingArray();
   private static final byte[] DECODING = buildDecodingArray();
-  private static final boolean[] VALID_HEX = buildValidHexArray();
+
+  private static volatile boolean[] validHex = null;
 
   private static char[] buildEncodingArray() {
     char[] encoding = new char[512];
@@ -152,7 +153,15 @@ public final class OtelEncodingUtils {
 
   /** Returns whether the given {@code char} is a valid hex character. */
   public static boolean isValidBase16Character(char b) {
-    return VALID_HEX[b];
+    if (validHex == null) {
+      synchronized (OtelEncodingUtils.class) {
+        if (validHex == null) {
+          validHex = buildValidHexArray();
+        }
+      }
+    }
+
+    return validHex[b];
   }
 
   private OtelEncodingUtils() {}
