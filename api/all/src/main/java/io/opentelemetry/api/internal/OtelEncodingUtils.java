@@ -6,6 +6,7 @@
 package io.opentelemetry.api.internal;
 
 import java.util.Arrays;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -22,7 +23,7 @@ public final class OtelEncodingUtils {
   private static final char[] ENCODING = buildEncodingArray();
   private static final byte[] DECODING = buildDecodingArray();
 
-  private static volatile boolean[] validHex = null;
+  @Nullable private static volatile boolean[] validHex = null;
 
   private static char[] buildEncodingArray() {
     char[] encoding = new char[512];
