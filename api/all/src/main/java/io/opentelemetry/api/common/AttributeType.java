@@ -14,11 +14,11 @@ public enum AttributeType {
   BOOLEAN,
   LONG,
   DOUBLE,
+  MAP,
   STRING_ARRAY,
   BOOLEAN_ARRAY,
   LONG_ARRAY,
   DOUBLE_ARRAY,
-  BYTE_ARRAY,
-  VALUE_ARRAY,
-  MAP
+  MAP_ARRAY,
+  VALUE
 }

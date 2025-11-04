@@ -12,8 +12,11 @@ import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.mapArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.mapKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 
 import java.util.Arrays;
 import java.util.List;
@@ -92,6 +95,21 @@ public interface AttributesBuilder {
   }
 
   /**
+   * Puts an {@link Attributes} (Map) attribute into this.
+   *
+   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
+   * your keys, if possible.
+   *
+   * @return this Builder
+   */
+  default <T> AttributesBuilder put(String key, Attributes value) {
+    if (value == null) {
+      return this;
+    }
+    return put(mapKey(key), value);
+  }
+
+  /**
    * Puts a String array attribute into this.
    *
    * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
@@ -162,6 +180,36 @@ public interface AttributesBuilder {
       return this;
     }
     return put(booleanArrayKey(key), toList(value));
+  }
+
+  /**
+   * Puts an {@link Attributes} array (List of Maps) attribute into this.
+   *
+   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
+   * your keys, if possible.
+   *
+   * @return this Builder
+   */
+  default <T> AttributesBuilder put(String key, Attributes... value) {
+    if (value == null) {
+      return this;
+    }
+    return put(mapArrayKey(key), toList(value));
+  }
+
+  /**
+   * Puts a generic ({@link Value}) attribute into this.
+   *
+   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
+   * your keys, if possible.
+   *
+   * @return this Builder
+   */
+  default AttributesBuilder put(String key, Value<?> value) {
+    if (value == null) {
+      return this;
+    }
+    return put(valueKey(key), value);
   }
 
   /**

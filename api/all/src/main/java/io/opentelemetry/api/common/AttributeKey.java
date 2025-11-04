@@ -51,6 +51,11 @@ public interface AttributeKey<T> {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE);
   }
 
+  /** Returns a new AttributeKey for {@link Attributes} (Map) valued attributes. */
+  static AttributeKey<Attributes> mapKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.MAP);
+  }
+
   /** Returns a new AttributeKey for List&lt;String&gt; valued attributes. */
   static AttributeKey<List<String>> stringArrayKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.STRING_ARRAY);
@@ -71,15 +76,13 @@ public interface AttributeKey<T> {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
 
-  static AttributeKey<byte[]> byteArrayKey(String key) {
-    return InternalAttributeKeyImpl.create(key, AttributeType.BYTE_ARRAY);
+  /** Returns a new AttributeKey for List&lt;Attributes&gt; (List of Maps) valued attributes. */
+  static AttributeKey<List<Attributes>> mapArrayKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.MAP_ARRAY);
   }
 
-  static AttributeKey<List<Value<?>>> valueArrayKey(String key) {
-    return InternalAttributeKeyImpl.create(key, AttributeType.VALUE_ARRAY);
-  }
-
-  static AttributeKey<Attributes> mapKey(String key) {
-    return InternalAttributeKeyImpl.create(key, AttributeType.MAP);
+  /** Returns a new AttributeKey for generic {@link Value} valued attributes. */
+  static AttributeKey<Value<?>> valueKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.VALUE);
   }
 }
