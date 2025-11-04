@@ -2,6 +2,129 @@
 
 ## Unreleased
 
+## Version 1.55.0 (2025-10-13)
+
+### API
+
+#### Common
+
+* Improve GraalVM native image compatibility
+  ([#7160](https://github.com/open-telemetry/opentelemetry-java/pull/7160))
+
+#### Traces
+
+* Fix `TraceState` key validation limits to match W3C specification
+  ([#7575](https://github.com/open-telemetry/opentelemetry-java/pull/7575))
+
+#### Incubator
+
+* Add `ExtendedOpenTelemetry` API
+  ([#7496](https://github.com/open-telemetry/opentelemetry-java/pull/7496))
+* Add incubator implementation of composite sampling specification
+  ([#7626](https://github.com/open-telemetry/opentelemetry-java/pull/7626))
+
+### SDK
+
+#### Traces
+
+* Proactively avoid `Unsafe` on Java 23+ to avoid triggering JVM warning message
+  ([#7691](https://github.com/open-telemetry/opentelemetry-java/pull/7691))
+
+#### Metrics
+
+* Add `setMeterConfigurator()` support to `MeterProvider` (incubating API)
+  ([#7346](https://github.com/open-telemetry/opentelemetry-java/pull/7346))
+
+#### Exporters
+
+* OTLP: Configure metric exporter to use SDK's `MeterProvider` for internal metrics
+  ([#7541](https://github.com/open-telemetry/opentelemetry-java/pull/7541))
+* OTLP: Suppress logging of `InterruptedException` from managed OkHttp threads
+  ([#7565](https://github.com/open-telemetry/opentelemetry-java/pull/7565))
+* OTLP: Update dependency from `okhttp-jvm` back to `okhttp` for Gradle users,
+  preserving `okhttp-jvm` for Maven users
+  ([#7681](https://github.com/open-telemetry/opentelemetry-java/pull/7681))
+* Prometheus: Remove separate `otel_scope_info` metric and always add scope labels to data points
+  ([#7398](https://github.com/open-telemetry/opentelemetry-java/pull/7398))
+* Prometheus: Update exporter dependencies to use protobuf-free formats
+  ([#7664](https://github.com/open-telemetry/opentelemetry-java/pull/7664))
+
+#### Profiling
+
+* Update profiles exporter to support proto v1.8.0-alpha changes
+  ([#7638](https://github.com/open-telemetry/opentelemetry-java/pull/7638))
+* Add abstractions to assist with dictionary table assembly
+  ([#7717](https://github.com/open-telemetry/opentelemetry-java/pull/7717))
+* Add abstractions to assist with sample composition
+  ([#7727](https://github.com/open-telemetry/opentelemetry-java/pull/7727))
+
+#### Extensions
+
+* Autoconfigure: Improve exception logging when running in Maven
+  ([#7336](https://github.com/open-telemetry/opentelemetry-java/pull/7336))
+* Declarative configuration: Return `Resource`
+  ([#7639](https://github.com/open-telemetry/opentelemetry-java/pull/7639))
+* Declarative configuration: Invoke auto-configure listeners
+  ([#7654](https://github.com/open-telemetry/opentelemetry-java/pull/7654))
+* Declarative configuration: Add logging when incompatible types are found
+  ([#7693](https://github.com/open-telemetry/opentelemetry-java/pull/7693))
+
+### Shims
+
+#### OpenTracing Shim
+
+* Improve log levels in error scenarios
+  ([#6832](https://github.com/open-telemetry/opentelemetry-java/pull/6832))
+
+### Project tooling
+
+* Respect `testJavaVersion` property when running JMH benchmarks
+  ([#7697](https://github.com/open-telemetry/opentelemetry-java/pull/7697))
+
+## Version 1.54.1 (2025-09-18)
+
+### SDK
+
+#### Exporters
+
+* Prometheus: Fix regression in protobuf format export
+  ([#7664](https://github.com/open-telemetry/opentelemetry-java/pull/7664))
+
+## Version 1.54.0 (2025-09-05)
+
+### API
+
+#### Baggage
+
+* Fix guard against ArrayIndexOutOfBoundsException in BaggageCodec
+  ([#7239](https://github.com/open-telemetry/opentelemetry-java/pull/7239))
+
+### SDK
+
+#### Metrics
+
+* Fix MetricData.getDoubleSumData() ClassCastException with custom implementations
+  ([#7597](https://github.com/open-telemetry/opentelemetry-java/pull/7597))
+
+#### Exporters
+
+* Fix HttpExporterBuilder.copy() and GrpcExporterBuilder.copy() to preserve component loader
+  ([#7596](https://github.com/open-telemetry/opentelemetry-java/pull/7596))
+
+#### Extensions
+
+* Autoconfigure: Remove support for old EnvironmentResourceProvider package name
+  ([#7622](https://github.com/open-telemetry/opentelemetry-java/pull/7622))
+* Declarative config: Add DeclarativeConfigurationProvider SPI
+  ([#7472](https://github.com/open-telemetry/opentelemetry-java/pull/7472))
+* Declarative config: Pass meter provider to avoid using the global OpenTelemetry instance
+  ([#7475](https://github.com/open-telemetry/opentelemetry-java/pull/7475))
+
+### Project tooling
+
+* Update to Gradle v9
+  ([#7590](https://github.com/open-telemetry/opentelemetry-java/pull/7590))
+
 ## Version 1.53.0 (2025-08-08)
 
 ### SDK
@@ -1385,7 +1508,7 @@ the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specificat
 is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
 frameworks (e.g. JUL, Log4j, SLf4J, Logback) into OpenTelemetry. Users configure the Log SDK to
 dictate how logs are processed and exported.
-See [opentelemetry.io](https://opentelemetry.io/docs/instrumentation/java/manual/#logs) for
+See [opentelemetry.io](https://opentelemetry.io/docs/languages/java/api/#loggerprovider) for
 documentation on usage.
 
 ### API
@@ -3858,7 +3981,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 #### Breaking changes
 
-- There have been many updates to the semantic conventions constants. The constants are now auto-generated from the YAML specification files, so the names will now be consistent across languages. For more information, see the [YAML Model for Semantic Conventions](https://github.com/open-telemetry/semantic-conventions/tree/main/model#yaml-model-for-semantic-conventions).
+- There have been many updates to the semantic conventions constants. The constants are now auto-generated from the YAML specification files, so the names will now be consistent across languages. For more information, see the [YAML Model for Semantic Conventions](https://github.com/open-telemetry/semantic-conventions/blob/main/model/README.md#yaml-model-for-semantic-conventions).
 - All API classes have been moved into the `io.opentelemetry.api.` prefix to support JPMS users.
 - The API no longer uses the `grpc-context` as the context implementation. It now uses `io.opentelemetry.context.Context`. This is published in the `opentelemetry-context` artifact. Interactions with the context were mostly moved to static methods in the `Span` and `Baggage` interfaces.
 - The Baggage API has been reworked to more closely match the specification. This includes the removal of the `BaggageManager`. Baggage is fully functional within the API, without needing to install an SDK.

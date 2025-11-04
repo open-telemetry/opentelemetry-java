@@ -240,4 +240,68 @@ class MeterConfigTest {
         Arguments.of(enableStartsWithD, scopeDog, enabled()),
         Arguments.of(enableStartsWithD, scopeDuck, enabled()));
   }
+
+  @Test
+  void setScopeConfigurator() {
+    // 1. Initially, configure all meters to be enabled except meterB
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder()
+            .addMeterConfiguratorCondition(nameEquals("meterB"), disabled())
+            .registerMetricReader(reader)
+            .build();
+
+    SdkMeter meterA = (SdkMeter) meterProvider.get("meterA");
+    SdkMeter meterB = (SdkMeter) meterProvider.get("meterB");
+    SdkMeter meterC = (SdkMeter) meterProvider.get("meterC");
+
+    // verify isMeterEnabled()
+    assertThat(meterA.isMeterEnabled()).isTrue();
+    assertThat(meterB.isMeterEnabled()).isFalse();
+    assertThat(meterC.isMeterEnabled()).isTrue();
+
+    // verify metrics are emitted as expected
+    meterA.counterBuilder("meterA").build().add(1);
+    meterB.counterBuilder("meterB").build().add(2);
+    meterC.counterBuilder("meterC").build().add(3);
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData -> assertThat(metricData).hasName("meterA"),
+            metricData -> assertThat(metricData).hasName("meterC"));
+
+    // 2. Update config to disable all meters
+    meterProvider.setMeterConfigurator(
+        ScopeConfigurator.<MeterConfig>builder().setDefault(disabled()).build());
+
+    // verify isEnabled()
+    assertThat(meterA.isMeterEnabled()).isFalse();
+    assertThat(meterB.isMeterEnabled()).isFalse();
+    assertThat(meterC.isMeterEnabled()).isFalse();
+
+    // verify metrics are emitted as expected
+    meterA.counterBuilder("meterA").build().add(1);
+    meterB.counterBuilder("meterB").build().add(2);
+    meterC.counterBuilder("meterC").build().add(3);
+    assertThat(reader.collectAllMetrics()).isEmpty();
+
+    // 3. Update config to restore original
+    meterProvider.setMeterConfigurator(
+        ScopeConfigurator.<MeterConfig>builder()
+            .addCondition(nameEquals("meterB"), disabled())
+            .build());
+
+    // verify isEnabled()
+    assertThat(meterA.isMeterEnabled()).isTrue();
+    assertThat(meterB.isMeterEnabled()).isFalse();
+    assertThat(meterC.isMeterEnabled()).isTrue();
+
+    // verify metrics are emitted as expected
+    meterA.counterBuilder("meterA").build().add(1);
+    meterB.counterBuilder("meterB").build().add(2);
+    meterC.counterBuilder("meterC").build().add(3);
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData -> assertThat(metricData).hasName("meterA"),
+            metricData -> assertThat(metricData).hasName("meterC"));
+  }
 }

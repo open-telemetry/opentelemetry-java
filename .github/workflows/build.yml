@@ -32,7 +32,7 @@ jobs:
           - 11
           - 17
           - 21
-          - 23 # renovate: datasource=java-version
+          - 25 # renovate: datasource=java-version
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-latest
@@ -50,26 +50,26 @@ jobs:
           - os: macos-13
             test-java-version: 21
           - os: macos-13
-            test-java-version: 23 # renovate: datasource=java-version
+            test-java-version: 25 # renovate: datasource=java-version
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
           java-version: ${{ matrix.test-java-version }}
 
       - id: setup-java
         name: Set up Java for build
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
       - name: Build
         run: >
             ./gradlew build
@@ -78,8 +78,9 @@ jobs:
             "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
             "-Porg.gradle.java.installations.auto-download=false"
         env:
-          # JMH-based tests run only  if this environment variable is set to true
+          # JMH-based tests run only if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Check for diff
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
@@ -99,12 +100,12 @@ jobs:
             exit 1
           fi
 
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
         if: ${{ matrix.coverage }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ matrix.coverage }}
         with:
           name: coverage-report
@@ -113,7 +114,7 @@ jobs:
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
-    uses: ./.github/workflows/reusable-markdown-link-check.yml
+    uses: ./.github/workflows/reusable-link-check.yml
 
   misspell-check:
     # release branches are excluded to avoid unnecessary maintenance
@@ -135,17 +136,17 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - id: setup-java
         name: Set up Java
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 # v4.4.2
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         # skipping release branches because the versions in those branches are not snapshots
         # (also this skips pull requests)
         if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
@@ -159,6 +160,7 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
   build-graal:
     name: Build GraalVM
@@ -168,10 +170,10 @@ jobs:
       matrix:
         test-graal-version:
           - 21
-          - 23
+          - 25 # renovate: datasource=java-version
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - uses: graalvm/setup-graalvm@7f488cf82a3629ee755e4e97342c01d6bed318fa # v1.3.5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: graalvm/setup-graalvm@eec48106e0bf45f2976c2ff0c3e22395cced8243 # v1.4.2
         with:
           java-version: ${{ matrix.test-graal-version }}
           distribution: 'graalvm'
@@ -184,6 +186,8 @@ jobs:
           java --version
           native-image --version
           ./gradlew nativeTest
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
   required-status-check:
     # markdown-link-check is not required so pull requests are not blocked if external links break

@@ -28,7 +28,7 @@ public class PrometheusComponentProvider implements ComponentProvider {
 
   @Override
   public String getName() {
-    return "prometheus";
+    return "prometheus/development";
   }
 
   @Override
@@ -43,11 +43,6 @@ public class PrometheusComponentProvider implements ComponentProvider {
     String host = config.getString("host");
     if (host != null) {
       prometheusBuilder.setHost(host);
-    }
-
-    Boolean withoutScopeInfo = config.getBoolean("without_scope_info");
-    if (withoutScopeInfo != null) {
-      prometheusBuilder.setOtelScopeEnabled(!withoutScopeInfo);
     }
 
     DeclarativeConfigProperties withResourceConstantLabels =

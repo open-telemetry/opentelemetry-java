@@ -52,7 +52,9 @@ testing {
         implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:prometheus"))
-        implementation("io.prometheus:prometheus-metrics-exporter-httpserver")
+        implementation("io.prometheus:prometheus-metrics-exporter-httpserver") {
+          exclude(group = "io.prometheus", module = "prometheus-metrics-exposition-formats")
+        }
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
@@ -80,6 +82,14 @@ testing {
       }
     }
     register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":sdk:testing"))
+      }
+    }
+
+    register<JvmTestSuite>("testDeclarativeConfigSpi") {
       dependencies {
         implementation(project(":sdk-extensions:incubator"))
         implementation(project(":exporters:logging"))

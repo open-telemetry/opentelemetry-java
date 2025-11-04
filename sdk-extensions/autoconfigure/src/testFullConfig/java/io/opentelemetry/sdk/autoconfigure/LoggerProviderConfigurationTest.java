@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.trace.internal.JcTools;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -140,7 +138,8 @@ class LoggerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("queue")
                     .isInstanceOfSatisfying(
-                        Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2));
+                        ArrayBlockingQueue.class,
+                        queue -> assertThat(queue.remainingCapacity()).isEqualTo(2));
                 assertThat(worker)
                     .extracting("logRecordExporter")
                     .isInstanceOf(SystemOutLogRecordExporter.class);

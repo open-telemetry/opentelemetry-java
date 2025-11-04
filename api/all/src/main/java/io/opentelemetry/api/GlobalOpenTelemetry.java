@@ -7,6 +7,7 @@ package io.opentelemetry.api;
 
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.api.internal.IncubatingUtil;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
@@ -56,7 +57,7 @@ public final class GlobalOpenTelemetry {
 
   @SuppressWarnings("NonFinalStaticField")
   @Nullable
-  private static volatile ObfuscatedOpenTelemetry globalOpenTelemetry;
+  private static volatile OpenTelemetry globalOpenTelemetry;
 
   @SuppressWarnings("NonFinalStaticField")
   @GuardedBy("mutex")
@@ -112,7 +113,7 @@ public final class GlobalOpenTelemetry {
                 + "instead. Previous invocation set to cause of this exception.",
             setGlobalCaller);
       }
-      globalOpenTelemetry = new ObfuscatedOpenTelemetry(openTelemetry);
+      globalOpenTelemetry = obfuscatedOpenTelemetry(openTelemetry);
       setGlobalCaller = new Throwable();
     }
   }
@@ -261,8 +262,7 @@ public final class GlobalOpenTelemetry {
       Object autoConfiguredSdk = initialize.invoke(null);
       Method getOpenTelemetrySdk =
           openTelemetrySdkAutoConfiguration.getMethod("getOpenTelemetrySdk");
-      return new ObfuscatedOpenTelemetry(
-          (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk));
+      return obfuscatedOpenTelemetry((OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk));
     } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new IllegalStateException(
           "AutoConfiguredOpenTelemetrySdk detected on classpath "
@@ -275,6 +275,14 @@ public final class GlobalOpenTelemetry {
           t.getTargetException());
       return null;
     }
+  }
+
+  private static OpenTelemetry obfuscatedOpenTelemetry(OpenTelemetry openTelemetry) {
+    OpenTelemetry incubating = IncubatingUtil.obfuscatedOpenTelemetryIfIncubating(openTelemetry);
+    if (incubating != null) {
+      return incubating;
+    }
+    return new ObfuscatedOpenTelemetry(openTelemetry);
   }
 
   /**

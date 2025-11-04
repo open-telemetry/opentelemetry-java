@@ -239,6 +239,25 @@ class PrometheusHttpServerTest {
                 + "# EOF\n");
   }
 
+  @Test
+  void fetchProtobuf() {
+    AggregatedHttpResponse response =
+        client
+            .execute(
+                RequestHeaders.of(
+                    HttpMethod.GET,
+                    "/metrics",
+                    HttpHeaderNames.ACCEPT,
+                    "Accept: application/vnd.google.protobuf;proto=io.prometheus.client.MetricFamily"))
+            .aggregate()
+            .join();
+    assertThat(response.status()).isEqualTo(HttpStatus.OK);
+    assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+        .isEqualTo(
+            "application/vnd.google.protobuf; proto=io.prometheus.client.MetricFamily; encoding=delimited");
+    // don't decode the protobuf, just verify it doesn't throw an exception
+  }
+
   @SuppressWarnings("ConcatenationWithEmptyString")
   @Test
   void fetchFiltered() {
@@ -413,7 +432,6 @@ class PrometheusHttpServerTest {
             "PrometheusHttpServer{"
                 + "host=localhost,"
                 + "port=0,"
-                + "otelScopeEnabled=true,"
                 + "allowedResourceAttributesFilter=null,"
                 + "memoryMode=REUSABLE_DATA,"
                 + "defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}"
@@ -528,7 +546,6 @@ class PrometheusHttpServerTest {
     PrometheusHttpServerBuilder builder = PrometheusHttpServer.builder();
     builder.setHost("localhost");
     builder.setPort(1234);
-    builder.setOtelScopeEnabled(false);
 
     Predicate<String> resourceAttributesFilter = s -> false;
     builder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
@@ -555,7 +572,6 @@ class PrometheusHttpServerTest {
         .isInstanceOf(PrometheusHttpServerBuilder.class)
         .hasFieldOrPropertyWithValue("host", "localhost")
         .hasFieldOrPropertyWithValue("port", 1234)
-        .hasFieldOrPropertyWithValue("otelScopeEnabled", false)
         .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
         .hasFieldOrPropertyWithValue("executor", executor)
         .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry)

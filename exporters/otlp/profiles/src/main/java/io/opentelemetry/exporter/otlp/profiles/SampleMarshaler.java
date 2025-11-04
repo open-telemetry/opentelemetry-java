@@ -12,24 +12,21 @@ import io.opentelemetry.proto.profiles.v1development.internal.Sample;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 
 final class SampleMarshaler extends MarshalerWithSize {
 
   private static final SampleMarshaler[] EMPTY_REPEATED = new SampleMarshaler[0];
 
-  private final int locationsStartIndex;
-  private final int locationsLength;
+  private final int stackIndex;
   private final List<Long> values;
   private final List<Integer> attributeIndices;
-  @Nullable private final Integer linkIndex;
+  private final int linkIndex;
   private final List<Long> timestamps;
 
   static SampleMarshaler create(SampleData sampleData) {
 
     return new SampleMarshaler(
-        sampleData.getLocationsStartIndex(),
-        sampleData.getLocationsLength(),
+        sampleData.getStackIndex(),
         sampleData.getValues(),
         sampleData.getAttributeIndices(),
         sampleData.getLinkIndex(),
@@ -55,17 +52,13 @@ final class SampleMarshaler extends MarshalerWithSize {
   }
 
   private SampleMarshaler(
-      int locationsStartIndex,
-      int locationsLength,
+      int stackIndex,
       List<Long> values,
       List<Integer> attributeIndices,
-      @Nullable Integer linkIndex,
+      int linkIndex,
       List<Long> timestamps) {
-    super(
-        calculateSize(
-            locationsStartIndex, locationsLength, values, attributeIndices, linkIndex, timestamps));
-    this.locationsStartIndex = locationsStartIndex;
-    this.locationsLength = locationsLength;
+    super(calculateSize(stackIndex, values, attributeIndices, linkIndex, timestamps));
+    this.stackIndex = stackIndex;
     this.values = values;
     this.attributeIndices = attributeIndices;
     this.linkIndex = linkIndex;
@@ -74,29 +67,26 @@ final class SampleMarshaler extends MarshalerWithSize {
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt32(Sample.LOCATIONS_START_INDEX, locationsStartIndex);
-    output.serializeInt32(Sample.LOCATIONS_LENGTH, locationsLength);
-    output.serializeRepeatedInt64(Sample.VALUE, values);
+    output.serializeInt32(Sample.STACK_INDEX, stackIndex);
+    output.serializeRepeatedInt64(Sample.VALUES, values);
     output.serializeRepeatedInt32(Sample.ATTRIBUTE_INDICES, attributeIndices);
-    output.serializeInt32Optional(Sample.LINK_INDEX, linkIndex);
-    output.serializeRepeatedUInt64(Sample.TIMESTAMPS_UNIX_NANO, timestamps);
+    output.serializeInt32(Sample.LINK_INDEX, linkIndex);
+    output.serializeRepeatedFixed64(Sample.TIMESTAMPS_UNIX_NANO, timestamps);
   }
 
   private static int calculateSize(
-      int locationsStartIndex,
-      int locationsLength,
+      int stackIndex,
       List<Long> values,
       List<Integer> attributeIndices,
-      @Nullable Integer linkIndex,
+      int linkIndex,
       List<Long> timestamps) {
     int size;
     size = 0;
-    size += MarshalerUtil.sizeInt32(Sample.LOCATIONS_START_INDEX, locationsStartIndex);
-    size += MarshalerUtil.sizeInt32(Sample.LOCATIONS_LENGTH, locationsLength);
-    size += MarshalerUtil.sizeRepeatedInt64(Sample.VALUE, values);
+    size += MarshalerUtil.sizeInt32(Sample.STACK_INDEX, stackIndex);
+    size += MarshalerUtil.sizeRepeatedInt64(Sample.VALUES, values);
     size += MarshalerUtil.sizeRepeatedInt32(Sample.ATTRIBUTE_INDICES, attributeIndices);
-    size += MarshalerUtil.sizeInt32Optional(Sample.LINK_INDEX, linkIndex);
-    size += MarshalerUtil.sizeRepeatedUInt64(Sample.TIMESTAMPS_UNIX_NANO, timestamps);
+    size += MarshalerUtil.sizeInt32(Sample.LINK_INDEX, linkIndex);
+    size += MarshalerUtil.sizeRepeatedFixed64(Sample.TIMESTAMPS_UNIX_NANO, timestamps);
     return size;
   }
 }

@@ -15,7 +15,7 @@ dependencies {
   implementation("io.prometheus:prometheus-metrics-exporter-httpserver") {
     exclude(group = "io.prometheus", module = "prometheus-metrics-exposition-formats")
   }
-  implementation("io.prometheus:prometheus-metrics-exposition-textformats")
+  implementation("io.prometheus:prometheus-metrics-exposition-formats-no-protobuf")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
 
@@ -23,7 +23,6 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
-  testImplementation("io.prometheus:prometheus-metrics-exposition-formats-no-protobuf")
   testImplementation("com.sun.net.httpserver:http")
   testImplementation("com.google.guava:guava")
   testImplementation("com.linecorp.armeria:armeria")

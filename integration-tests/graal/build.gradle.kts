@@ -1,3 +1,5 @@
+import org.gradle.api.JavaVersion
+
 plugins {
   id("otel.java-conventions")
   id("org.graalvm.buildtools.native")
@@ -5,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry Graal Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.graal.integration.tests")
+otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_11)
 
 sourceSets {
   main {
@@ -23,17 +26,6 @@ dependencies {
 
 // org.graalvm.buildtools.native plugin requires java 11+ as of version 0.9.26
 // https://github.com/graalvm/native-build-tools/blob/master/docs/src/docs/asciidoc/index.adoc
-tasks {
-  withType<JavaCompile>().configureEach {
-    sourceCompatibility = "11"
-    targetCompatibility = "11"
-    options.release.set(11)
-  }
-  withType<Test>().configureEach {
-    val testJavaVersion: String? by project
-    enabled = !testJavaVersion.equals("8")
-  }
-}
 
 graalvmNative {
   binaries {

@@ -8,19 +8,14 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import java.util.List;
 
 /** A reservoir that records the latest measurement for each histogram bucket. */
-class HistogramExemplarReservoir extends FixedSizeExemplarReservoir<DoubleExemplarData> {
+class HistogramExemplarReservoir extends FixedSizeExemplarReservoir {
 
   HistogramExemplarReservoir(Clock clock, List<Double> boundaries) {
-    super(
-        clock,
-        boundaries.size() + 1,
-        new HistogramCellSelector(boundaries),
-        ReservoirCell::getAndResetDouble);
+    super(clock, boundaries.size() + 1, new HistogramCellSelector(boundaries));
   }
 
   @Override

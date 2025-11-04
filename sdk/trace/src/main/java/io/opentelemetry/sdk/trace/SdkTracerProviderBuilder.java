@@ -218,8 +218,8 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Set the exception attribute resolver, which resolves {@code exception.*} attributes when {@link
-   * Span#recordException(Throwable)}
+   * Sets the exception attribute resolver, which resolves {@code exception.*} attributes when
+   * {@link Span#recordException(Throwable)} is called.
    *
    * <p>This method is experimental so not public. You may reflectively call it using {@link
    * SdkTracerProviderUtil#setExceptionAttributeResolver(SdkTracerProviderBuilder,
