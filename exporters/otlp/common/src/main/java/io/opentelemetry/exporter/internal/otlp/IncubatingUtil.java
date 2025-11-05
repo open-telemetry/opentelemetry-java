@@ -81,7 +81,8 @@ public class IncubatingUtil {
   }
 
   // TODO(jack-berg): move to KeyValueMarshaler when ExtendedAttributes is stable
-  @SuppressWarnings("unchecked")
+  // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
+  @SuppressWarnings({"unchecked", "deprecation"})
   private static KeyValueMarshaler create(ExtendedAttributeKey<?> attributeKey, Object value) {
     byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {

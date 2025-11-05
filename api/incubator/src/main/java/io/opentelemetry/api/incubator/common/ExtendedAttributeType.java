@@ -22,6 +22,11 @@ public enum ExtendedAttributeType {
   LONG_ARRAY,
   DOUBLE_ARRAY,
   // Extended types unique to ExtendedAttributes
+  /**
+   * @deprecated Use {@link #VALUE} with {@link io.opentelemetry.api.common.Value}-based maps
+   *     instead.
+   */
+  @Deprecated
   EXTENDED_ATTRIBUTES,
   VALUE;
 }

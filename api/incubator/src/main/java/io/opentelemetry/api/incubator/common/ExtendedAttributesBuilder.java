@@ -93,8 +93,11 @@ public interface ExtendedAttributesBuilder {
    * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
    * pre-allocate your keys, if possible.
    *
+   * @deprecated Use {@link #put(String, Value)} with {@link Value#of(java.util.Map)} instead.
    * @return this Builder
    */
+  @Deprecated
+  @SuppressWarnings("deprecation")
   default <T> ExtendedAttributesBuilder put(String key, ExtendedAttributes value) {
     return put(ExtendedAttributeKey.extendedAttributesKey(key), value);
   }

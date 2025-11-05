@@ -141,7 +141,8 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
       implements StatelessMarshaler2<ExtendedAttributeKey<?>, Object> {
     static final ValueStatelessMarshaler INSTANCE = new ValueStatelessMarshaler();
 
-    @SuppressWarnings("unchecked")
+    // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
+    @SuppressWarnings({"unchecked", "deprecation"})
     @Override
     public int getBinarySerializedSize(
         ExtendedAttributeKey<?> attributeKey, Object value, MarshalerContext context) {
@@ -184,7 +185,8 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
       throw new IllegalArgumentException("Unsupported attribute type.");
     }
 
-    @SuppressWarnings("unchecked")
+    // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
+    @SuppressWarnings({"unchecked", "deprecation"})
     @Override
     public void writeTo(
         Serializer output,

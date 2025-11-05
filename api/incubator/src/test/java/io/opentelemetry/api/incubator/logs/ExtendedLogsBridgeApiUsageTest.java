@@ -104,6 +104,7 @@ class ExtendedLogsBridgeApiUsageTest {
   AttributeKey<List<Double>> doubleArrKey = AttributeKey.doubleArrayKey("acme.double_array");
 
   // Extended keys
+  @SuppressWarnings("deprecation") // Supporting deprecated EXTENDED_ATTRIBUTES until removed
   ExtendedAttributeKey<ExtendedAttributes> mapKey =
       ExtendedAttributeKey.extendedAttributesKey("acme.map");
 
