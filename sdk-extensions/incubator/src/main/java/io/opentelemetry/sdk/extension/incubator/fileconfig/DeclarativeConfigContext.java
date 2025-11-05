@@ -114,7 +114,19 @@ class DeclarativeConfigContext {
     ComponentProvider provider = matchedProviders.get(0);
 
     try {
-      return (T) provider.create(config);
+      Object component = provider.create(config);
+      if (component != null && !type.isInstance(component)) {
+        throw new DeclarativeConfigException(
+            "Error configuring "
+                + type.getName()
+                + " with name \""
+                + name
+                + "\". Component provider "
+                + provider.getClass().getName()
+                + " returned an unexpected component type: "
+                + component.getClass().getName());
+      }
+      return (T) component;
     } catch (Throwable throwable) {
       throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
