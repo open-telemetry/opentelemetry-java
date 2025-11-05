@@ -70,4 +70,9 @@ public interface AttributeKey<T> {
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
+
+  /** Returns a new AttributeKey for generic {@link Value} valued attributes. */
+  static AttributeKey<Value<?>> valueKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.VALUE);
+  }
 }
