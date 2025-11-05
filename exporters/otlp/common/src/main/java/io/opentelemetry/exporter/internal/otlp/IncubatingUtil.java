@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.incubator.internal.InternalExtendedAttributeKeyImpl;
@@ -116,6 +117,8 @@ public class IncubatingUtil {
             new KeyValueListAnyValueMarshaler(
                 new KeyValueListAnyValueMarshaler.KeyValueListMarshaler(
                     createForExtendedAttributes((ExtendedAttributes) value))));
+      case VALUE:
+        return new KeyValueMarshaler(keyUtf8, AnyValueMarshaler.create((Value<?>) value));
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.

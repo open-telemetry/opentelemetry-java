@@ -22,5 +22,6 @@ public enum ExtendedAttributeType {
   LONG_ARRAY,
   DOUBLE_ARRAY,
   // Extended types unique to ExtendedAttributes
-  EXTENDED_ATTRIBUTES;
+  EXTENDED_ATTRIBUTES,
+  VALUE;
 }

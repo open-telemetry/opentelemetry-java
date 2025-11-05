@@ -80,6 +80,8 @@ public class ExtendedAttributeKeyTest {
             ExtendedAttributeKey.extendedAttributesKey("key"),
             "key",
             ExtendedAttributeType.EXTENDED_ATTRIBUTES,
-            null));
+            null),
+        Arguments.of(
+            ExtendedAttributeKey.valueKey("key"), "key", ExtendedAttributeType.VALUE, null));
   }
 }
