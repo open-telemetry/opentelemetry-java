@@ -20,7 +20,7 @@ import java.time.Duration;
  */
 public class ZipkinSpanExporterComponentProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<SpanExporter> getType() {
     return SpanExporter.class;
   }
 

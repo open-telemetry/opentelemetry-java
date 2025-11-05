@@ -22,7 +22,7 @@ import java.util.List;
 public class PrometheusComponentProvider implements ComponentProvider {
 
   @Override
-  public Class<?> getType() {
+  public Class<MetricReader> getType() {
     return MetricReader.class;
   }
 

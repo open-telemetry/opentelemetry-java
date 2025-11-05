@@ -25,7 +25,7 @@ public class ServiceResourceDetector implements ComponentProvider {
   private static final String RANDOM_SERVICE_INSTANCE_ID = UUID.randomUUID().toString();
 
   @Override
-  public Class<?> getType() {
+  public Class<Resource> getType() {
     return Resource.class;
   }
 

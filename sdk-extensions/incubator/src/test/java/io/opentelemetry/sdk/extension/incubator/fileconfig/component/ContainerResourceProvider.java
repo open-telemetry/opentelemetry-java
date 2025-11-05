@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.resources.Resource;
 // reflect declarative config naming
 public class ContainerResourceProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<Resource> getType() {
     return Resource.class;
   }
 

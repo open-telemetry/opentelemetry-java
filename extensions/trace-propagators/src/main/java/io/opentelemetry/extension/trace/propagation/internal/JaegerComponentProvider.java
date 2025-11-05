@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 public final class JaegerComponentProvider implements ComponentProvider {
 
   @Override
-  public Class<?> getType() {
+  public Class<TextMapPropagator> getType() {
     return TextMapPropagator.class;
   }
 

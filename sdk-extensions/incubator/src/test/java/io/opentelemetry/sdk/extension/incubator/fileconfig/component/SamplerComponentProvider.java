@@ -17,7 +17,7 @@ import java.util.List;
 
 public class SamplerComponentProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<Sampler> getType() {
     return Sampler.class;
   }
 

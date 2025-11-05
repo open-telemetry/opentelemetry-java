@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 public final class ConsoleLogRecordExporterComponentProvider implements ComponentProvider {
 
   @Override
-  public Class<?> getType() {
+  public Class<LogRecordExporter> getType() {
     return LogRecordExporter.class;
   }
 

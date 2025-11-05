@@ -21,7 +21,7 @@ import java.time.Duration;
  */
 public class JaegerRemoteSamplerComponentProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<Sampler> getType() {
     return Sampler.class;
   }
 

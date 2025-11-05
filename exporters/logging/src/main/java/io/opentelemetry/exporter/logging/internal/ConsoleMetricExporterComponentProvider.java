@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 public final class ConsoleMetricExporterComponentProvider implements ComponentProvider {
 
   @Override
-  public Class<?> getType() {
+  public Class<MetricExporter> getType() {
     return MetricExporter.class;
   }
 

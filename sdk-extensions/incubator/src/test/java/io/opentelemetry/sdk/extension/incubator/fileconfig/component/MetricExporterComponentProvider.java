@@ -17,7 +17,7 @@ import java.util.Collection;
 
 public class MetricExporterComponentProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<MetricExporter> getType() {
     return MetricExporter.class;
   }
 

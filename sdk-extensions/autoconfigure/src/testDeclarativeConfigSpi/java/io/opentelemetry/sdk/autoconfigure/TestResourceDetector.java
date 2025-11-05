@@ -22,7 +22,7 @@ public class TestResourceDetector implements ComponentProvider, AutoConfigureLis
   }
 
   @Override
-  public Class<?> getType() {
+  public Class<Resource> getType() {
     return Resource.class;
   }
 

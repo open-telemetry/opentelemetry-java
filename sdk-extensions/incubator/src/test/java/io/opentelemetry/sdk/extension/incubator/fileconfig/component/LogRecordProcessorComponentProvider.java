@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 
 public class LogRecordProcessorComponentProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<LogRecordProcessor> getType() {
     return LogRecordProcessor.class;
   }
 

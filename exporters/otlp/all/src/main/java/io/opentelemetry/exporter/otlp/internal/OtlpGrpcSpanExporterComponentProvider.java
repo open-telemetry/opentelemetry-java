@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 public class OtlpGrpcSpanExporterComponentProvider implements ComponentProvider {
 
   @Override
-  public Class<?> getType() {
+  public Class<SpanExporter> getType() {
     return SpanExporter.class;
   }
 

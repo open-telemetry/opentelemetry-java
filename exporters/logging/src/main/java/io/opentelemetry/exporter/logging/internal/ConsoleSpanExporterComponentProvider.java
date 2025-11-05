@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 public final class ConsoleSpanExporterComponentProvider implements ComponentProvider {
 
   @Override
-  public Class<?> getType() {
+  public Class<SpanExporter> getType() {
     return SpanExporter.class;
   }
 

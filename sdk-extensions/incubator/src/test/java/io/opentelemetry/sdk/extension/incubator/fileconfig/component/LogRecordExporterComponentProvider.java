@@ -14,7 +14,7 @@ import java.util.Collection;
 
 public class LogRecordExporterComponentProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<LogRecordExporter> getType() {
     return LogRecordExporter.class;
   }
 

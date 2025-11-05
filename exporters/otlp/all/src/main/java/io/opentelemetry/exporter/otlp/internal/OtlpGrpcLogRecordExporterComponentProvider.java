@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 public class OtlpGrpcLogRecordExporterComponentProvider implements ComponentProvider {
 
   @Override
-  public Class<?> getType() {
+  public Class<LogRecordExporter> getType() {
     return LogRecordExporter.class;
   }
 

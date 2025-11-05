@@ -23,7 +23,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 public class OtlpHttpMetricExporterComponentProvider implements ComponentProvider {
 
   @Override
-  public Class<?> getType() {
+  public Class<MetricExporter> getType() {
     return MetricExporter.class;
   }
 

@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.resources.Resource;
 
 public class ResourceComponentProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<Resource> getType() {
     return Resource.class;
   }
 

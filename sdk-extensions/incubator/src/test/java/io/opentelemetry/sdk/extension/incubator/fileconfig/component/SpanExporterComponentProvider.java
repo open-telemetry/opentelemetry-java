@@ -14,7 +14,7 @@ import java.util.Collection;
 
 public class SpanExporterComponentProvider implements ComponentProvider {
   @Override
-  public Class<?> getType() {
+  public Class<SpanExporter> getType() {
     return SpanExporter.class;
   }
 
