@@ -46,9 +46,9 @@ public abstract class LoggerConfig {
     return DEFAULT_CONFIG;
   }
 
-  /** Returns a new {@link Builder} for creating a {@link LoggerConfig}. */
-  public static Builder builder() {
-    return new Builder();
+  /** Returns a new {@link LoggerConfigBuilder} for creating a {@link LoggerConfig}. */
+  public static LoggerConfigBuilder builder() {
+    return new LoggerConfigBuilder();
   }
 
   /**
@@ -68,65 +68,6 @@ public abstract class LoggerConfig {
   }
 
   LoggerConfig() {}
-
-  /**
-   * Builder for {@link LoggerConfig}.
-   *
-   * <p>This class is internal and experimental. Its APIs are unstable and can change at any time.
-   * Its APIs (or a version of them) may be promoted to the public stable API in the future, but no
-   * guarantees are made.
-   */
-  public static final class Builder {
-    private boolean enabled = true;
-    private int minimumSeverity = 0;
-    private boolean traceBased = false;
-
-    private Builder() {}
-
-    /**
-     * Sets whether the logger is enabled.
-     *
-     * @param enabled whether the logger is enabled
-     * @return this builder
-     */
-    public Builder setEnabled(boolean enabled) {
-      this.enabled = enabled;
-      return this;
-    }
-
-    /**
-     * Sets the minimum severity level for log records to be processed.
-     *
-     * <p>Log records with a severity number less than this value will be dropped. Log records
-     * without a specified severity are not affected by this setting.
-     *
-     * @param minimumSeverity minimum severity level for log records to be processed
-     * @return this builder
-     */
-    public Builder setMinimumSeverity(int minimumSeverity) {
-      this.minimumSeverity = minimumSeverity;
-      return this;
-    }
-
-    /**
-     * Sets whether to only process log records from traces when the trace is sampled.
-     *
-     * <p>When enabled, log records from unsampled traces will be dropped. Log records that are not
-     * associated with a trace context are unaffected.
-     *
-     * @param traceBased whether to only process log records from traces when the trace is sampled
-     * @return this builder
-     */
-    public Builder setTraceBased(boolean traceBased) {
-      this.traceBased = traceBased;
-      return this;
-    }
-
-    /** Builds and returns a {@link LoggerConfig}. */
-    public LoggerConfig build() {
-      return new AutoValue_LoggerConfig(enabled, minimumSeverity, traceBased);
-    }
-  }
 
   /** Returns {@code true} if this logger is enabled. Defaults to {@code true}. */
   public abstract boolean isEnabled();
