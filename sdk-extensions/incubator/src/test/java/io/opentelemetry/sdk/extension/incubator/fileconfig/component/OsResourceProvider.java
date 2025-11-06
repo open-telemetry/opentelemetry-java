@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.resources.Resource;
 // TODO(jack-berg): This allows DeclarativeConfigurationCreateTest to pass with kitchen-sink.yaml
 // example. Delete after resource providers from opentelemetry-java-instrumentation are renamed to
 // reflect declarative config naming
-public class OsResourceProvider implements ComponentProvider<Resource> {
+public class OsResourceProvider implements ComponentProvider {
   @Override
   public Class<Resource> getType() {
     return Resource.class;

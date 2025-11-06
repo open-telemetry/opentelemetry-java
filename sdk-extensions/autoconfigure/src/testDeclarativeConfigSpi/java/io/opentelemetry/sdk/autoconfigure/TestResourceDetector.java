@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.resources.Resource;
 
-public class TestResourceDetector implements ComponentProvider<Resource>, AutoConfigureListener {
+public class TestResourceDetector implements ComponentProvider, AutoConfigureListener {
 
   @SuppressWarnings("NonFinalStaticField")
   static boolean initialized = false;

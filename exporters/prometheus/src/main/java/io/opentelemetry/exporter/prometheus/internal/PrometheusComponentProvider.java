@@ -19,7 +19,7 @@ import java.util.List;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class PrometheusComponentProvider implements ComponentProvider<MetricReader> {
+public class PrometheusComponentProvider implements ComponentProvider {
 
   @Override
   public Class<MetricReader> getType() {
