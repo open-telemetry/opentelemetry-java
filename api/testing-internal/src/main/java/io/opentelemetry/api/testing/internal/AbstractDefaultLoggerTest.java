@@ -25,23 +25,24 @@ public abstract class AbstractDefaultLoggerTest {
   protected abstract LoggerProvider getLoggerProvider();
 
   protected abstract Logger getLogger();
+  private static final String ScopeName = "scope-name";
 
   @Test
   void noopLoggerProvider_doesNotThrow() {
     LoggerProvider provider = LoggerProvider.noop();
 
     assertThat(provider).isSameAs(getLoggerProvider());
-    assertThatCode(() -> provider.get("scope-name")).doesNotThrowAnyException();
+    assertThatCode(() -> provider.get(scpName)).doesNotThrowAnyException();
     assertThatCode(
             () ->
                 provider
-                    .loggerBuilder("scope-name")
+                    .loggerBuilder(scpName)
                     .setInstrumentationVersion("1.0")
                     .setSchemaUrl("http://schema.com")
                     .build())
         .doesNotThrowAnyException();
 
-    assertThatCode(() -> provider.loggerBuilder("scope-name").build().logRecordBuilder())
+    assertThatCode(() -> provider.loggerBuilder(scpName).build().logRecordBuilder())
         .doesNotThrowAnyException();
   }
 
