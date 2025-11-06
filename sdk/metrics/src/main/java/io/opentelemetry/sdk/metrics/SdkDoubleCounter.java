@@ -56,6 +56,11 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
     add(increment, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes, Context context) {
+    storage.remove(attributes, context);
+  }
+
   static class SdkDoubleCounterBuilder implements DoubleCounterBuilder {
 
     final InstrumentBuilder builder;

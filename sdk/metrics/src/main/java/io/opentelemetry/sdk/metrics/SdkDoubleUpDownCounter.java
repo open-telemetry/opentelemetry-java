@@ -43,6 +43,11 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
     add(increment, Attributes.empty());
   }
 
+  @Override
+  public void remove(Attributes attributes, Context context) {
+    storage.remove(attributes, context);
+  }
+
   static class SdkDoubleUpDownCounterBuilder implements DoubleUpDownCounterBuilder {
 
     final InstrumentBuilder builder;
