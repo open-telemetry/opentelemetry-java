@@ -18,6 +18,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,7 +86,7 @@ public final class GlobalOpenTelemetry {
           }
 
           set(OpenTelemetry.noop());
-          return OpenTelemetry.noop();
+          openTelemetry = Objects.requireNonNull(globalOpenTelemetry);
         }
       }
     }
@@ -130,6 +131,20 @@ public final class GlobalOpenTelemetry {
     synchronized (mutex) {
       OpenTelemetry openTelemetry = supplier.get();
       set(openTelemetry);
+    }
+  }
+
+  /**
+   * Evaluate if the global instance has been set without the side effects of {@link #get()}.
+   *
+   * <p>This is useful for evaluating if any code, like the OpenTelemetry javaagent, has previously
+   * set the global instance while preserving the ability to set it.
+   *
+   * @return true if the global instance has been set, false otherwise.
+   */
+  public static boolean isSet() {
+    synchronized (mutex) {
+      return globalOpenTelemetry != null;
     }
   }
 
