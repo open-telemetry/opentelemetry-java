@@ -100,7 +100,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoublePointDa
     @Nullable private final MutableDoublePointData reusablePoint;
 
     private Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
-      super(reservoirFactory);
+      super(reservoirFactory, /* isDoubleType= */ true);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableDoublePointData();
       } else {
@@ -125,11 +125,6 @@ public final class DoubleLastValueAggregator implements Aggregator<DoublePointDa
         return ImmutableDoublePointData.create(
             startEpochNanos, epochNanos, attributes, value, exemplars);
       }
-    }
-
-    @Override
-    protected boolean isDoubleType() {
-      return true;
     }
 
     @Override

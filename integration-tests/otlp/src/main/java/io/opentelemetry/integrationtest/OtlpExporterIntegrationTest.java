@@ -65,12 +65,10 @@ import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -115,7 +113,7 @@ abstract class OtlpExporterIntegrationTest {
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   private static final String COLLECTOR_IMAGE =
-      "otel/opentelemetry-collector-contrib:0.138.0@sha256:4a951ff0a9772f4fa8e9c7a326434370301b98b2b813933468dcb54aa6a6b5e5";
+      "otel/opentelemetry-collector-contrib:0.139.0@sha256:faf125d656fa47cea568b2f3b4494efd2525083bc75c1e96038bc23f05cd68fd";
 
   private static final Integer COLLECTOR_OTLP_GRPC_PORT = 4317;
   private static final Integer COLLECTOR_OTLP_HTTP_PORT = 4318;
@@ -461,18 +459,16 @@ abstract class OtlpExporterIntegrationTest {
   }
 
   private static void testMetricExport(MetricExporter metricExporter) {
-    SdkMeterProviderBuilder meterProviderBuilder =
+    SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             .setResource(RESOURCE)
             .registerMetricReader(
                 PeriodicMetricReader.builder(metricExporter)
                     .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
-                    .build());
-
-    // Enable alwaysOn exemplar filter, instead of default traceBased filter
-    SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOn());
-
-    SdkMeterProvider meterProvider = meterProviderBuilder.build();
+                    .build())
+            // Enable alwaysOn exemplar filter, instead of default traceBased filter
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .build();
 
     Meter meter = meterProvider.meterBuilder(OtlpExporterIntegrationTest.class.getName()).build();
 

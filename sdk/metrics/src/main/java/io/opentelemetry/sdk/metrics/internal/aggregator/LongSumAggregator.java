@@ -106,7 +106,7 @@ public final class LongSumAggregator
     @Nullable private final MutableLongPointData reusablePointData;
 
     Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
-      super(reservoirFactory);
+      super(reservoirFactory, /* isDoubleType= */ false);
       reusablePointData =
           memoryMode == MemoryMode.REUSABLE_DATA ? new MutableLongPointData() : null;
     }
@@ -126,11 +126,6 @@ public final class LongSumAggregator
         return ImmutableLongPointData.create(
             startEpochNanos, epochNanos, attributes, value, exemplars);
       }
-    }
-
-    @Override
-    protected boolean isDoubleType() {
-      return false;
     }
 
     @Override

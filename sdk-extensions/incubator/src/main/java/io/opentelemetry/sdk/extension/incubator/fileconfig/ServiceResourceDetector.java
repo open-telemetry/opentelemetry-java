@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Collections;
 import java.util.UUID;
 
-public class ServiceResourceDetector implements ComponentProvider<Resource> {
+public class ServiceResourceDetector implements ComponentProvider {
 
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
   private static final AttributeKey<String> SERVICE_INSTANCE_ID =

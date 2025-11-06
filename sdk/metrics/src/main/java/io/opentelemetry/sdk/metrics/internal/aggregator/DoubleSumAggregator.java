@@ -113,13 +113,8 @@ public final class DoubleSumAggregator
     @Nullable private final MutableDoublePointData reusablePoint;
 
     Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
-      super(reservoirFactory);
+      super(reservoirFactory, /* isDoubleType= */ true);
       reusablePoint = memoryMode == MemoryMode.REUSABLE_DATA ? new MutableDoublePointData() : null;
-    }
-
-    @Override
-    protected boolean isDoubleType() {
-      return true;
     }
 
     @Override

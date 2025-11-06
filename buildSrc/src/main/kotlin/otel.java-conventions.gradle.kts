@@ -1,4 +1,5 @@
 import io.opentelemetry.gradle.OtelJavaExtension
+import org.gradle.api.JavaVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
@@ -33,7 +34,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion.set(JavaLanguageVersion.of(21))
   }
 
   withJavadocJar()
@@ -42,7 +43,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "12.1.0"
+  toolVersion = "12.1.1"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -74,7 +75,7 @@ val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersi
 tasks {
   withType<JavaCompile>().configureEach {
     with(options) {
-      release.set(8)
+      release.set(otelJava.minJavaVersionSupported.map { it.majorVersion.toInt() })
 
       if (name != "jmhCompileGeneratedClasses") {
         compilerArgs.addAll(
@@ -88,6 +89,8 @@ tasks {
             "-Xlint:-processing",
             // We suppress the "options" warning because it prevents compilation on modern JDKs
             "-Xlint:-options",
+            "-Xlint:-serial",
+            "-Xlint:-this-escape",
             // Fail build on any warning
             "-Werror",
           ),
@@ -105,14 +108,6 @@ tasks {
 
   withType<Test>().configureEach {
     useJUnitPlatform()
-
-    if (testJavaVersion != null) {
-      javaLauncher.set(
-        javaToolchains.launcherFor {
-          languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
-        },
-      )
-    }
 
     val defaultMaxRetries = if (System.getenv().containsKey("CI")) 2 else 0
     val maxTestRetries = gradle.startParameter.projectProperties["maxTestRetries"]?.toInt() ?: defaultMaxRetries
@@ -168,6 +163,19 @@ tasks {
         docTitle = title
         windowTitle = title
       }
+    }
+  }
+}
+
+afterEvaluate {
+  tasks.withType<Test>().configureEach {
+    if (testJavaVersion != null) {
+      javaLauncher.set(
+        javaToolchains.launcherFor {
+          languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
+        }
+      )
+      isEnabled = isEnabled && testJavaVersion >= otelJava.minJavaVersionSupported.get()
     }
   }
 }

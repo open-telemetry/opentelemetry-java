@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
@@ -90,7 +91,8 @@ class MeterProviderFactoryTest {
                                 new ExperimentalMeterMatcherAndConfigModel()
                                     .withName("foo")
                                     .withConfig(
-                                        new ExperimentalMeterConfigModel().withDisabled(false))))),
+                                        new ExperimentalMeterConfigModel().withDisabled(false)))))
+                .withExemplarFilter(MeterProviderModel.ExemplarFilter.ALWAYS_ON),
             setMeterConfigurator(
                     SdkMeterProvider.builder(),
                     ScopeConfigurator.<MeterConfig>builder()
@@ -98,6 +100,7 @@ class MeterProviderFactoryTest {
                         .addCondition(
                             ScopeConfiguratorBuilder.nameMatchesGlob("foo"), MeterConfig.enabled())
                         .build())
+                .setExemplarFilter(ExemplarFilter.alwaysOn())
                 .registerMetricReader(
                     PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault()).build())
                 .registerView(

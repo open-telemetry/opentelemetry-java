@@ -16,7 +16,7 @@ automatic check once you submit a PR, but you can also sign it after opening you
 
 ## Requirements
 
-Java 17 or higher is required to build the projects in this repository. The built artifacts can be
+Java 21 or higher is required to build the projects in this repository. The built artifacts can be
 used on Java 8 or higher.
 
 ## Building opentelemetry-java

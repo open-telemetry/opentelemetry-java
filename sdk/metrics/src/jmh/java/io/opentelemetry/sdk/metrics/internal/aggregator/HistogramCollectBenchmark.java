@@ -9,15 +9,13 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,7 +62,7 @@ public class HistogramCollectBenchmark {
 
     @Setup
     public void setup() {
-      SdkMeterProviderBuilder builder =
+      SdkMeterProvider sdkMeterProvider =
           SdkMeterProvider.builder()
               .registerMetricReader(
                   PeriodicMetricReader.builder(
@@ -74,10 +72,11 @@ public class HistogramCollectBenchmark {
                               aggregationTemporality, aggregationGenerator.aggregation))
                       // Effectively disable periodic reading so reading is only done on #flush()
                       .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
-                      .build());
-      // Disable exemplars
-      SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
-      sdkMeterProvider = builder.build();
+                      .build())
+              // Disable exemplars
+              .setExemplarFilter(ExemplarFilter.alwaysOff())
+              .build();
+
       histogram = sdkMeterProvider.get("meter").histogramBuilder("histogram").build();
 
       random = new Random();

@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 
 /**
@@ -39,7 +39,7 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
   @SuppressWarnings("unchecked")
   public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      ExemplarFilter exemplarFilter,
+      ExemplarFilterInternal exemplarFilter,
       MemoryMode memoryMode) {
 
     ExemplarReservoirFactory reservoirFactory =

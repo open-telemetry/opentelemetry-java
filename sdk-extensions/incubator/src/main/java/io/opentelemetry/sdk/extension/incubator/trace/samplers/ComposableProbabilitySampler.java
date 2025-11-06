@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
 import java.util.function.Function;
 
-final class ComposableTraceIdRatioBasedSampler implements ComposableSampler {
+final class ComposableProbabilitySampler implements ComposableSampler {
   private static long calculateThreshold(double ratio) {
     return ImmutableSamplingIntent.MAX_THRESHOLD
         - Math.round(ratio * (double) ImmutableSamplingIntent.MAX_THRESHOLD);
@@ -21,7 +21,7 @@ final class ComposableTraceIdRatioBasedSampler implements ComposableSampler {
   private final SamplingIntent intent;
   private final String description;
 
-  ComposableTraceIdRatioBasedSampler(double ratio) {
+  ComposableProbabilitySampler(double ratio) {
     long threshold = calculateThreshold(ratio);
     String thresholdStr;
     if (threshold == ImmutableSamplingIntent.MAX_THRESHOLD) {

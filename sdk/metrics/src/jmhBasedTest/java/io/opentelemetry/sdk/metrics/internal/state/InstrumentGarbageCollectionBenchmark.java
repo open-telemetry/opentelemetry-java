@@ -7,12 +7,11 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.InstrumentTester;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.TestInstrumentsState;
 import java.time.Duration;
@@ -96,7 +95,7 @@ public class InstrumentGarbageCollectionBenchmark {
       attributesList = AttributesGenerator.generate(cardinality);
 
       // Disable exemplars
-      SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
+      builder.setExemplarFilter(ExemplarFilter.alwaysOff());
 
       sdkMeterProvider = builder.build();
       testInstrumentsState =

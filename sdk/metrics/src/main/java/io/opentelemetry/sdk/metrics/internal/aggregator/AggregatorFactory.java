@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 
 /**
  * An internal interface for returning an Aggregator from an Aggregation.
@@ -32,12 +32,12 @@ public interface AggregatorFactory {
    */
   <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      ExemplarFilter exemplarFilter,
+      ExemplarFilterInternal exemplarFilter,
       MemoryMode memoryMode);
 
   /**
    * Determine if the {@link Aggregator} produced by {@link #createAggregator(InstrumentDescriptor,
-   * ExemplarFilter, MemoryMode)} is compatible with the {@code instrumentDescriptor}.
+   * ExemplarFilterInternal, MemoryMode)} is compatible with the {@code instrumentDescriptor}.
    */
   boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor);
 }
