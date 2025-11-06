@@ -48,6 +48,8 @@ public class OtlpGrpcLogRecordExporterComponentProvider
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
+        builder::setThrottlingLoggerRate,
+        builder::setThrottlingLoggerTimeUnit,
         /* isHttpProtobuf= */ false);
 
     return builder.build();

@@ -48,7 +48,9 @@ public class OtlpHttpLogRecordExporterComponentProvider
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
-        /* isHttpProtobuf= */ true);
+        builder::setThrottlingLoggerRate,
+        builder::setThrottlingLoggerTimeUnit,
+        /* isHttpProtobuf= */ false);
 
     return builder.build();
   }

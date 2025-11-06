@@ -48,6 +48,8 @@ public class OtlpHttpMetricExporterComponentProvider implements ComponentProvide
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
+        builder::setThrottlingLoggerRate,
+        builder::setThrottlingLoggerTimeUnit,
         /* isHttpProtobuf= */ true);
     IncubatingExporterBuilderUtil.configureOtlpAggregationTemporality(
         config, builder::setAggregationTemporalitySelector);

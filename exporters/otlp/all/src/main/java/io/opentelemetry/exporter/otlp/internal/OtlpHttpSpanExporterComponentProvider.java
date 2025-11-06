@@ -47,6 +47,8 @@ public class OtlpHttpSpanExporterComponentProvider implements ComponentProvider<
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
+        builder::setThrottlingLoggerRate,
+        builder::setThrottlingLoggerTimeUnit,
         /* isHttpProtobuf= */ true);
 
     return builder.build();
