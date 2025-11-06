@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs.internal;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
@@ -31,10 +32,14 @@ public abstract class LoggerConfig {
 
   private static final LoggerConfig DEFAULT_CONFIG =
       new AutoValue_LoggerConfig(
-          /* enabled= */ true, /* minimumSeverity= */ 0, /* traceBased= */ false);
+          /* enabled= */ true,
+          /* minimumSeverity= */ Severity.UNDEFINED_SEVERITY_NUMBER,
+          /* traceBased= */ false);
   private static final LoggerConfig DISABLED_CONFIG =
       new AutoValue_LoggerConfig(
-          /* enabled= */ false, /* minimumSeverity= */ 0, /* traceBased= */ false);
+          /* enabled= */ false,
+          /* minimumSeverity= */ Severity.UNDEFINED_SEVERITY_NUMBER,
+          /* traceBased= */ false);
 
   /** Returns a disabled {@link LoggerConfig}. */
   public static LoggerConfig disabled() {
@@ -69,6 +74,10 @@ public abstract class LoggerConfig {
 
   LoggerConfig() {}
 
+  static LoggerConfig create(boolean enabled, Severity minimumSeverity, boolean traceBased) {
+    return new AutoValue_LoggerConfig(enabled, minimumSeverity, traceBased);
+  }
+
   /** Returns {@code true} if this logger is enabled. Defaults to {@code true}. */
   public abstract boolean isEnabled();
 
@@ -78,9 +87,9 @@ public abstract class LoggerConfig {
    * <p>Log records with a severity number less than this value will be dropped. Log records without
    * a specified severity are not affected by this setting.
    *
-   * <p>Defaults to {@code 0}.
+   * <p>Defaults to {@link Severity#UNDEFINED_SEVERITY_NUMBER}.
    */
-  public abstract int getMinimumSeverity();
+  public abstract Severity getMinimumSeverity();
 
   /**
    * Returns {@code true} if this logger should only process log records from traces when the trace

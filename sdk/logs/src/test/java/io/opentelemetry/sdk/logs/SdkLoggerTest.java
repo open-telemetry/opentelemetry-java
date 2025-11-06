@@ -149,20 +149,20 @@ class SdkLoggerTest {
 
     // Start with default config
     assertThat(logger.loggerEnabled).isTrue();
-    assertThat(logger.minimumSeverity).isEqualTo(0);
+    assertThat(logger.minimumSeverity).isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER);
     assertThat(logger.traceBased).isFalse();
 
     // Update to custom config
     LoggerConfig config =
         LoggerConfig.builder()
             .setEnabled(false)
-            .setMinimumSeverity(Severity.WARN.getSeverityNumber())
+            .setMinimumSeverity(Severity.WARN)
             .setTraceBased(true)
             .build();
     logger.updateLoggerConfig(config);
 
     assertThat(logger.loggerEnabled).isFalse();
-    assertThat(logger.minimumSeverity).isEqualTo(Severity.WARN.getSeverityNumber());
+    assertThat(logger.minimumSeverity).isEqualTo(Severity.WARN);
     assertThat(logger.traceBased).isTrue();
   }
 
@@ -174,7 +174,7 @@ class SdkLoggerTest {
     SdkLogger logger = (SdkLogger) loggerProvider.get("test");
 
     LoggerConfig config =
-        LoggerConfig.builder().setMinimumSeverity(Severity.WARN.getSeverityNumber()).build();
+        LoggerConfig.builder().setMinimumSeverity(Severity.WARN).build();
     logger.updateLoggerConfig(config);
 
     // Below minimum severity - should be disabled

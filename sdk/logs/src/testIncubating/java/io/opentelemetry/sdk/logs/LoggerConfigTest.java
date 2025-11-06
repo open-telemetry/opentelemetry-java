@@ -38,12 +38,12 @@ class LoggerConfigTest {
     LoggerConfig config =
         LoggerConfig.builder()
             .setEnabled(false)
-            .setMinimumSeverity(Severity.WARN.getSeverityNumber())
+            .setMinimumSeverity(Severity.WARN)
             .setTraceBased(true)
             .build();
 
     assertThat(config.isEnabled()).isFalse();
-    assertThat(config.getMinimumSeverity()).isEqualTo(Severity.WARN.getSeverityNumber());
+    assertThat(config.getMinimumSeverity()).isEqualTo(Severity.WARN);
     assertThat(config.isTraceBased()).isTrue();
   }
 
@@ -52,7 +52,7 @@ class LoggerConfigTest {
     LoggerConfig config = LoggerConfig.builder().build();
 
     assertThat(config.isEnabled()).isTrue();
-    assertThat(config.getMinimumSeverity()).isEqualTo(0);
+    assertThat(config.getMinimumSeverity()).isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER);
     assertThat(config.isTraceBased()).isFalse();
   }
 

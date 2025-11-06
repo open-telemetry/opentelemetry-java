@@ -36,7 +36,7 @@ class SdkLogger implements Logger {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
 
   protected volatile boolean loggerEnabled;
-  protected volatile int minimumSeverity;
+  protected volatile Severity minimumSeverity;
   protected volatile boolean traceBased;
 
   SdkLogger(
@@ -82,7 +82,7 @@ class SdkLogger implements Logger {
     }
 
     if (severity != Severity.UNDEFINED_SEVERITY_NUMBER
-        && severity.getSeverityNumber() < minimumSeverity) {
+        && severity.getSeverityNumber() < minimumSeverity.getSeverityNumber()) {
       return false;
     }
 
