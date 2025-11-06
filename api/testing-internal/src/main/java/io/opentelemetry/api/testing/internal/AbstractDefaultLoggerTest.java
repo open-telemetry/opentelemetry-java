@@ -25,7 +25,7 @@ public abstract class AbstractDefaultLoggerTest {
   protected abstract LoggerProvider getLoggerProvider();
 
   protected abstract Logger getLogger();
-  private static final String ScopeName = "scope-name";
+  private static final String ScopeName  = "scope-name";
 
   @Test
   void noopLoggerProvider_doesNotThrow() {
