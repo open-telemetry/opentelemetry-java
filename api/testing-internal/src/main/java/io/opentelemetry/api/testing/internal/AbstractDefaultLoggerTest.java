@@ -32,17 +32,17 @@ public abstract class AbstractDefaultLoggerTest {
     LoggerProvider provider = LoggerProvider.noop();
 
     assertThat(provider).isSameAs(getLoggerProvider());
-    assertThatCode(() -> provider.get(scpName)).doesNotThrowAnyException();
+    assertThatCode(() -> provider.get(ScopeName)).doesNotThrowAnyException();
     assertThatCode(
             () ->
                 provider
-                    .loggerBuilder(scpName)
+                    .loggerBuilder(ScopeName)
                     .setInstrumentationVersion("1.0")
                     .setSchemaUrl("http://schema.com")
                     .build())
         .doesNotThrowAnyException();
 
-    assertThatCode(() -> provider.loggerBuilder(scpName).build().logRecordBuilder())
+    assertThatCode(() -> provider.loggerBuilder(ScopeName).build().logRecordBuilder())
         .doesNotThrowAnyException();
   }
 
