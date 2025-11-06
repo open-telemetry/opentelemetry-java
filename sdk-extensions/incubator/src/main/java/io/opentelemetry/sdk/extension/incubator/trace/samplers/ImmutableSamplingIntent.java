@@ -20,6 +20,13 @@ abstract class ImmutableSamplingIntent implements SamplingIntent {
   static final long MAX_THRESHOLD = 1L << RANDOM_VALUE_BITS;
   static final long MAX_RANDOM_VALUE = MAX_THRESHOLD - 1;
 
+  static final SamplingIntent NON_SAMPLING_INTENT =
+      create(
+          ImmutableSamplingIntent.INVALID_THRESHOLD,
+          /* thresholdReliable= */ false,
+          Attributes.empty(),
+          Function.identity());
+
   static boolean isValidThreshold(long threshold) {
     return threshold >= MIN_THRESHOLD && threshold <= MAX_THRESHOLD;
   }

@@ -37,6 +37,15 @@ public interface ComposableSampler {
   }
 
   /**
+   * Returns a {@link ComposableRuleBasedSamplerBuilder} to create a composable rule-based sampler.
+   * Rules will be tested in order, and the first to match will have its {@link ComposableSampler}
+   * used for a sampling decision. If no rule matches, the span will be dropped.
+   */
+  static ComposableRuleBasedSamplerBuilder ruleBasedBuilder() {
+    return new ComposableRuleBasedSamplerBuilder();
+  }
+
+  /**
    * Returns a {@link ComposableSampler} that adds the given {@link Attributes} to all sampled
    * spans.
    */
