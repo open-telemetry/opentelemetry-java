@@ -173,8 +173,7 @@ class SdkLoggerTest {
         SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
     SdkLogger logger = (SdkLogger) loggerProvider.get("test");
 
-    LoggerConfig config =
-        LoggerConfig.builder().setMinimumSeverity(Severity.WARN).build();
+    LoggerConfig config = LoggerConfig.builder().setMinimumSeverity(Severity.WARN).build();
     logger.updateLoggerConfig(config);
 
     // Below minimum severity - should be disabled
