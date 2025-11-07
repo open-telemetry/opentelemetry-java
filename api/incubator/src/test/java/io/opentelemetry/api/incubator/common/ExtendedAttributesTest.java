@@ -5,7 +5,16 @@
 
 package io.opentelemetry.api.incubator.common;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.AttributeKey;
@@ -17,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -218,8 +228,8 @@ class ExtendedAttributesTest {
                 .put("key", ImmutableMap.builder().put("child", "value").build())
                 .build()),
         Arguments.of(
-            ExtendedAttributes.builder().put("key", Value.of("value")).build(),
-            ImmutableMap.builder().put("key", Value.of("value")).build()),
+            ExtendedAttributes.builder().put(valueKey("key"), Value.of("value")).build(),
+            ImmutableMap.builder().put("key", "value").build()),
         Arguments.of(
             ExtendedAttributes.builder()
                 .put(ExtendedAttributeKey.stringKey("key"), "value")
@@ -267,7 +277,7 @@ class ExtendedAttributesTest {
             ExtendedAttributes.builder()
                 .put(ExtendedAttributeKey.valueKey("key"), Value.of("value"))
                 .build(),
-            ImmutableMap.builder().put("key", Value.of("value")).build()),
+            ImmutableMap.builder().put("key", "value").build()),
         // Multiple entries
         Arguments.of(
             ExtendedAttributes.builder()
@@ -281,7 +291,7 @@ class ExtendedAttributesTest {
                 .put("key8", 1L, 2L)
                 .put("key9", 1.1, 2.2)
                 .put("key10", ExtendedAttributes.builder().put("child", "value").build())
-                .put("key11", Value.of("value"))
+                .put(valueKey("key11"), Value.of("value"))
                 .build(),
             ImmutableMap.builder()
                 .put("key1", "value1")
@@ -294,7 +304,7 @@ class ExtendedAttributesTest {
                 .put("key8", Arrays.asList(1L, 2L))
                 .put("key9", Arrays.asList(1.1, 2.2))
                 .put("key10", ImmutableMap.builder().put("child", "value").build())
-                .put("key11", Value.of("value"))
+                .put("key11", "value")
                 .build()));
   }
 
@@ -376,5 +386,108 @@ class ExtendedAttributesTest {
       return ExtendedAttributeType.VALUE;
     }
     throw new IllegalArgumentException("Unrecognized value type: " + value);
+  }
+
+  @Test
+  void complexValueStoredAsString() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), Value.of("test")).build();
+    assertThat(attributes.get(stringKey("key"))).isEqualTo("test");
+  }
+
+  @Test
+  void complexValueStoredAsLong() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), Value.of(123L)).build();
+    assertThat(attributes.get(longKey("key"))).isEqualTo(123L);
+  }
+
+  @Test
+  void complexValueStoredAsDouble() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), Value.of(1.23)).build();
+    assertThat(attributes.get(doubleKey("key"))).isEqualTo(1.23);
+  }
+
+  @Test
+  void complexValueStoredAsBoolean() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), Value.of(true)).build();
+    assertThat(attributes.get(booleanKey("key"))).isEqualTo(true);
+  }
+
+  @Test
+  void complexValueStoredAsStringArray() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of("a"), Value.of("b"))))
+            .build();
+    assertThat(attributes.get(stringArrayKey("key"))).containsExactly("a", "b");
+  }
+
+  @Test
+  void complexValueStoredAsLongArray() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(1L), Value.of(2L))))
+            .build();
+    assertThat(attributes.get(longArrayKey("key"))).containsExactly(1L, 2L);
+  }
+
+  @Test
+  void complexValueStoredAsDoubleArray() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))))
+            .build();
+    assertThat(attributes.get(doubleArrayKey("key"))).containsExactly(1.1, 2.2);
+  }
+
+  @Test
+  void complexValueStoredAsBooleanArray() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(true), Value.of(false))))
+            .build();
+    assertThat(attributes.get(booleanArrayKey("key"))).containsExactly(true, false);
+  }
+
+  @Test
+  void simpleAttributeRetrievedAsComplexValue() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put("string", "test")
+            .put("long", 123L)
+            .put("double", 1.23)
+            .put("boolean", true)
+            .put("stringArray", "a", "b")
+            .put("longArray", 1L, 2L)
+            .put("doubleArray", 1.1, 2.2)
+            .put("booleanArray", true, false)
+            .build();
+    assertThat(attributes.get(valueKey("string"))).isEqualTo(Value.of("test"));
+    assertThat(attributes.get(valueKey("long"))).isEqualTo(Value.of(123L));
+    assertThat(attributes.get(valueKey("double"))).isEqualTo(Value.of(1.23));
+    assertThat(attributes.get(valueKey("boolean"))).isEqualTo(Value.of(true));
+    assertThat(attributes.get(valueKey("stringArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of("a"), Value.of("b"))));
+    assertThat(attributes.get(valueKey("longArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1L), Value.of(2L))));
+    assertThat(attributes.get(valueKey("doubleArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))));
+    assertThat(attributes.get(valueKey("booleanArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(true), Value.of(false))));
+  }
+
+  @Test
+  void emptyValueArrayRetrievedAsAnyArrayType() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Collections.emptyList()))
+            .build();
+    assertThat(attributes.get(stringArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(longArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(doubleArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(booleanArrayKey("key"))).isEmpty();
   }
 }

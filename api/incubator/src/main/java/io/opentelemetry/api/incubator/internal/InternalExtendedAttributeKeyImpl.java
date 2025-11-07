@@ -174,9 +174,6 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
       case DOUBLE_ARRAY:
         return InternalExtendedAttributeKeyImpl.create(
             attributeKey.getKey(), ExtendedAttributeType.DOUBLE_ARRAY);
-      case VALUE:
-        return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(), ExtendedAttributeType.VALUE);
     }
     throw new IllegalArgumentException("Unrecognized attributeKey type: " + attributeKey.getType());
   }

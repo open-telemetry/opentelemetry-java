@@ -11,6 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
@@ -110,7 +111,7 @@ class ExtendedLogsBridgeApiUsageTest {
       ExtendedAttributeKey.extendedAttributesKey("acme.map");
 
   // VALUE key
-  AttributeKey<Value<?>> valueKey = AttributeKey.valueKey("acme.value");
+  ExtendedAttributeKey<Value<?>> valueKey = ExtendedAttributeKey.valueKey("acme.value");
 
   @Test
   @SuppressLogger(ExtendedLogsBridgeApiUsageTest.class)
@@ -133,8 +134,8 @@ class ExtendedLogsBridgeApiUsageTest {
             .put(
                 valueKey,
                 Value.of(
-                    Value.KeyValue.of("childStr", Value.of("value")),
-                    Value.KeyValue.of("childLong", Value.of(1L))))
+                    KeyValue.of("childStr", Value.of("value")),
+                    KeyValue.of("childLong", Value.of(1L))))
             .build();
 
     // Retrieval
@@ -152,8 +153,8 @@ class ExtendedLogsBridgeApiUsageTest {
     assertThat(extendedAttributes.get(valueKey))
         .isEqualTo(
             Value.of(
-                Value.KeyValue.of("childStr", Value.of("value")),
-                Value.KeyValue.of("childLong", Value.of(1L))));
+                KeyValue.of("childStr", Value.of("value")),
+                KeyValue.of("childLong", Value.of(1L))));
 
     // Iteration
     // Output:
@@ -166,7 +167,8 @@ class ExtendedLogsBridgeApiUsageTest {
     // acme.map(EXTENDED_ATTRIBUTES): {childLong=1, childStr="value"}
     // acme.string(STRING): value
     // acme.string_array(STRING_ARRAY): [value1, value2]
-    // acme.value(VALUE): [KeyValue{key=childStr, value=StringValue{value=value}}, KeyValue{key=childLong, value=LongValue{value=1}}]
+    // acme.value(VALUE): [KeyValue{key=childStr, value=StringValue{value=value}},
+    // KeyValue{key=childLong, value=LongValue{value=1}}]
     extendedAttributes.forEach(
         (extendedAttributeKey, object) ->
             logger.info(
@@ -203,8 +205,7 @@ class ExtendedLogsBridgeApiUsageTest {
         .setAttribute(
             valueKey,
             Value.of(
-                Value.KeyValue.of("childStr", Value.of("value")),
-                Value.KeyValue.of("childLong", Value.of(1L))))
+                KeyValue.of("childStr", Value.of("value")), KeyValue.of("childLong", Value.of(1L))))
         .setAllAttributes(Attributes.builder().put("key1", "value").build())
         .setAllAttributes(ExtendedAttributes.builder().put("key2", "value").build())
         .emit();
@@ -253,8 +254,8 @@ class ExtendedLogsBridgeApiUsageTest {
                           .put(
                               valueKey,
                               Value.of(
-                                  Value.KeyValue.of("childStr", Value.of("value")),
-                                  Value.KeyValue.of("childLong", Value.of(1L))))
+                                  KeyValue.of("childStr", Value.of("value")),
+                                  KeyValue.of("childLong", Value.of(1L))))
                           .put("key1", "value")
                           .put("key2", "value")
                           .build());

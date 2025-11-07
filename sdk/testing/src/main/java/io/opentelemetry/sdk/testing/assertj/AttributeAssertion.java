@@ -58,8 +58,6 @@ public abstract class AttributeAssertion {
       case LONG_ARRAY:
       case DOUBLE_ARRAY:
         return assertThat((List<?>) value);
-      case VALUE:
-        return assertThat(value);
     }
     throw new IllegalArgumentException("Unknown type for key " + key);
   }

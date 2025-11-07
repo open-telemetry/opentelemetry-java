@@ -60,11 +60,59 @@ public interface ExtendedAttributes {
     return get(ExtendedAttributeKey.fromAttributeKey(key));
   }
 
-  /** Returns the value for the given {@link ExtendedAttributeKey}, or {@code null} if not found. */
+  /**
+   * Returns the value for the given {@link ExtendedAttributeKey}, or {@code null} if not found.
+   *
+   * <p>Note: this method will automatically return the corresponding {@link Value} instance when
+   * passed a key of type {@link ExtendedAttributeType#VALUE} and a simple attribute is found. This
+   * is the inverse of {@link AttributesBuilder#put(ExtendedAttributeKey, Object)} when the key is
+   * {@link ExtendedAttributeType#VALUE}.
+   *
+   * <ul>
+   *   <li>If {@code put(ExtendedAttributeKey.stringKey("key"), "a")} was called, then {@code
+   *       get(ExtendedAttributeKey.valueKey("key"))} returns {@code Value.of("a")}.
+   *   <li>If {@code put(ExtendedAttributeKey.longKey("key"), 1L)} was called, then {@code
+   *       get(ExtendedAttributeKey.valueKey("key"))} returns {@code Value.of(1L)}.
+   *   <li>If {@code put(ExtendedAttributeKey.doubleKey("key"), 1.0)} was called, then {@code
+   *       get(ExtendedAttributeKey.valueKey("key"))} returns {@code Value.of(1.0)}.
+   *   <li>If {@code put(ExtendedAttributeKey.booleanKey("key"), true)} was called, then {@code
+   *       get(ExtendedAttributeKey.valueKey("key"))} returns {@code Value.of(true)}.
+   *   <li>If {@code put(ExtendedAttributeKey.stringArrayKey("key"), Arrays.asList("a", "b"))} was
+   *       called, then {@code get(ExtendedAttributeKey.valueKey("key"))} returns {@code
+   *       Value.of(Value.of("a"), Value.of("b"))}.
+   *   <li>If {@code put(ExtendedAttributeKey.longArrayKey("key"), Arrays.asList(1L, 2L))} was
+   *       called, then {@code get(ExtendedAttributeKey.valueKey("key"))} returns {@code
+   *       Value.of(Value.of(1L), Value.of(2L))}.
+   *   <li>If {@code put(ExtendedAttributeKey.doubleArrayKey("key"), Arrays.asList(1.0, 2.0))} was
+   *       called, then {@code get(ExtendedAttributeKey.valueKey("key"))} returns {@code
+   *       Value.of(Value.of(1.0), Value.of(2.0))}.
+   *   <li>If {@code put(ExtendedAttributeKey.booleanArrayKey("key"), Arrays.asList(true, false))}
+   *       was called, then {@code get(ExtendedAttributeKey.valueKey("key"))} returns {@code
+   *       Value.of(Value.of(true), Value.of(false))}.
+   * </ul>
+   *
+   * Further, if {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(emptyList()))} was
+   * called, then
+   *
+   * <ul>
+   *   <li>{@code get(ExtendedAttributeKey.stringArrayKey("key"))}
+   *   <li>{@code get(ExtendedAttributeKey.longArrayKey("key"))}
+   *   <li>{@code get(ExtendedAttributeKey.booleanArrayKey("key"))}
+   *   <li>{@code get(ExtendedAttributeKey.doubleArrayKey("key"))}
+   * </ul>
+   *
+   * all return an empty list (as opposed to {@code null}).
+   */
   @Nullable
   <T> T get(ExtendedAttributeKey<T> key);
 
-  /** Iterates over all the key-value pairs of attributes contained by this instance. */
+  /**
+   * Iterates over all the key-value pairs of attributes contained by this instance.
+   *
+   * <p>Note: {@link ExtendedAttributeType#VALUE} attributes will be represented as simple
+   * attributes if possible. See {@link ExtendedAttributesBuilder#put(ExtendedAttributeKey, Object)}
+   * for more details.
+   */
   void forEach(BiConsumer<? super ExtendedAttributeKey<?>, ? super Object> consumer);
 
   /** The number of attributes contained in this. */
@@ -73,7 +121,13 @@ public interface ExtendedAttributes {
   /** Whether there are any attributes contained in this. */
   boolean isEmpty();
 
-  /** Returns a read-only view of this {@link ExtendedAttributes} as a {@link Map}. */
+  /**
+   * Returns a read-only view of this {@link ExtendedAttributes} as a {@link Map}.
+   *
+   * <p>Note: {@link ExtendedAttributeType#VALUE} attributes will be represented as simple
+   * attributes in this map if possible. See {@link
+   * ExtendedAttributesBuilder#put(ExtendedAttributeKey, Object)} for more details.
+   */
   Map<ExtendedAttributeKey<?>, Object> asMap();
 
   /**
@@ -90,6 +144,8 @@ public interface ExtendedAttributes {
   /**
    * Returns a new {@link ExtendedAttributesBuilder} instance for creating arbitrary {@link
    * ExtendedAttributes}.
+   *
+   * @return a new {@link ExtendedAttributesBuilder} instance
    */
   static ExtendedAttributesBuilder builder() {
     return new ArrayBackedExtendedAttributesBuilder();

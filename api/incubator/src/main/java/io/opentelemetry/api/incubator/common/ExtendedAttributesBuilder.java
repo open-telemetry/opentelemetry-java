@@ -35,7 +35,45 @@ public interface ExtendedAttributesBuilder {
     return put(ExtendedAttributeKey.fromAttributeKey(key), value);
   }
 
-  /** Puts a {@link ExtendedAttributeKey} with associated value into this. */
+  /**
+   * Puts an {@link ExtendedAttributeKey} with an associated value into this if the value is
+   * non-null. Providing a null value does not remove or unset previously set values.
+   *
+   * <p>Simple attributes ({@link ExtendedAttributeType#STRING}, {@link ExtendedAttributeType#LONG},
+   * {@link ExtendedAttributeType#DOUBLE}, {@link ExtendedAttributeType#BOOLEAN}, {@link
+   * ExtendedAttributeType#STRING_ARRAY}, {@link ExtendedAttributeType#LONG_ARRAY}, {@link
+   * ExtendedAttributeType#DOUBLE_ARRAY}, {@link ExtendedAttributeType#BOOLEAN_ARRAY}) SHOULD be
+   * used whenever possible. Instrumentations SHOULD assume that backends do not index individual
+   * properties of complex attributes, that querying or aggregating on such properties is
+   * inefficient and complicated, and that reporting complex attributes carries higher performance
+   * overhead.
+   *
+   * <p>Note: This method will automatically convert complex attributes ({@link
+   * ExtendedAttributeType#VALUE}) to simple attributes when possible.
+   *
+   * <ul>
+   *   <li>Calling {@code put(ExtendedAttributeKey.valueKey("key"), Value.of("a"))} is equivalent to
+   *       calling {@code put(ExtendedAttributeKey.stringKey("key"), "a")}.
+   *   <li>Calling {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(1L))} is equivalent to
+   *       calling {@code put(ExtendedAttributeKey.longKey("key"), 1L)}.
+   *   <li>Calling {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(1.0))} is equivalent to
+   *       calling {@code put(ExtendedAttributeKey.doubleKey("key"), 1.0)}.
+   *   <li>Calling {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(true))} is equivalent
+   *       to calling {@code put(ExtendedAttributeKey.booleanKey("key"), true)}.
+   *   <li>Calling {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(Value.of("a"),
+   *       Value.of("b")))} is equivalent to calling {@code
+   *       put(ExtendedAttributeKey.stringArrayKey("key"), Arrays.asList("a", "b"))}.
+   *   <li>Calling {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(Value.of(1L),
+   *       Value.of(2L)))} is equivalent to calling {@code
+   *       put(ExtendedAttributeKey.longArrayKey("key"), Arrays.asList(1L, 2L))}.
+   *   <li>Calling {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(Value.of(1.0),
+   *       Value.of(2.0)))} is equivalent to calling {@code
+   *       put(ExtendedAttributeKey.doubleArrayKey("key"), Arrays.asList(1.0, 2.0))}.
+   *   <li>Calling {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(Value.of(true),
+   *       Value.of(false)))} is equivalent to calling {@code
+   *       put(ExtendedAttributeKey.booleanArrayKey("key"), Arrays.asList(true, false))}.
+   * </ul>
+   */
   <T> ExtendedAttributesBuilder put(ExtendedAttributeKey<T> key, T value);
 
   /**
@@ -92,8 +130,9 @@ public interface ExtendedAttributesBuilder {
    * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
    * pre-allocate your keys, if possible.
    *
-   * @deprecated Use {@link #put(ExtendedAttributeKey, Object)} with {@link Value#of(java.util.Map)} instead.
    * @return this Builder
+   * @deprecated Use {@link #put(ExtendedAttributeKey, Object)} with {@link Value#of(java.util.Map)}
+   *     instead.
    */
   @Deprecated
   @SuppressWarnings("deprecation")
