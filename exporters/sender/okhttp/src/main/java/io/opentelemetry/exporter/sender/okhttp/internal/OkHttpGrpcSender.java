@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -213,10 +214,34 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   @Override
   public CompletableResultCode shutdown() {
     client.dispatcher().cancelAll();
-    if (managedExecutor) {
-      client.dispatcher().executorService().shutdownNow();
-    }
     client.connectionPool().evictAll();
+
+    if (managedExecutor) {
+      ExecutorService executorService = client.dispatcher().executorService();
+      // Use shutdownNow() to interrupt idle threads immediately since we've cancelled all work
+      executorService.shutdownNow();
+
+      // Wait for threads to terminate in a background thread
+      CompletableResultCode result = new CompletableResultCode();
+      Thread terminationThread =
+          new Thread(
+              () -> {
+                try {
+                  // Wait up to 5 seconds for threads to terminate
+                  // Even if timeout occurs, we succeed since these are daemon threads
+                  executorService.awaitTermination(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                } finally {
+                  result.succeed();
+                }
+              },
+              "okhttp-shutdown");
+      terminationThread.setDaemon(true);
+      terminationThread.start();
+      return result;
+    }
+
     return CompletableResultCode.ofSuccess();
   }
 
