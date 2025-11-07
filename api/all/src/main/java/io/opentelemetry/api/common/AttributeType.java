@@ -18,5 +18,11 @@ public enum AttributeType {
   BOOLEAN_ARRAY,
   LONG_ARRAY,
   DOUBLE_ARRAY,
+  /**
+   * Simple attributes (i.e. anything other than {@code VALUE} attributes) SHOULD be used whenever
+   * possible. Instrumentations SHOULD assume that backends do not index individual properties of
+   * complex attributes, that querying or aggregating on such properties is inefficient and
+   * complicated, and that reporting complex attributes carries higher performance overhead.
+   */
   VALUE
 }
