@@ -7,6 +7,7 @@ package io.opentelemetry.api.common;
 
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -46,10 +47,53 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
   @Override
   @Nullable
   public <T> T get(AttributeKey<T> key) {
-    if (key != null && key.getType() == AttributeType.VALUE) {
+    if (key == null) {
+      return null;
+    }
+    if (key.getType() == AttributeType.VALUE) {
       return (T) getAsValue(key.getKey());
     }
+    // Check if we're looking for an array type but have a VALUE with empty array
+    if (isArrayType(key.getType())) {
+      T value = (T) super.get(key);
+      if (value == null) {
+        // Check if there's a VALUE with the same key that contains an empty array
+        Value<?> valueAttr = getValueAttribute(key.getKey());
+        if (valueAttr != null && isEmptyArray(valueAttr)) {
+          return (T) Collections.emptyList();
+        }
+      }
+      return value;
+    }
     return (T) super.get(key);
+  }
+
+  private static boolean isArrayType(AttributeType type) {
+    return type == AttributeType.STRING_ARRAY
+        || type == AttributeType.LONG_ARRAY
+        || type == AttributeType.DOUBLE_ARRAY
+        || type == AttributeType.BOOLEAN_ARRAY;
+  }
+
+  @Nullable
+  private Value<?> getValueAttribute(String keyName) {
+    List<Object> data = data();
+    for (int i = 0; i < data.size(); i += 2) {
+      AttributeKey<?> currentKey = (AttributeKey<?>) data.get(i);
+      if (currentKey.getKey().equals(keyName) && currentKey.getType() == AttributeType.VALUE) {
+        return (Value<?>) data.get(i + 1);
+      }
+    }
+    return null;
+  }
+
+  private static boolean isEmptyArray(Value<?> value) {
+    if (value.getType() != ValueType.ARRAY) {
+      return false;
+    }
+    @SuppressWarnings("unchecked")
+    List<Value<?>> arrayValues = (List<Value<?>>) value.getValue();
+    return arrayValues.isEmpty();
   }
 
   @Nullable

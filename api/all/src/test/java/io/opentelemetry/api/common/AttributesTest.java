@@ -808,4 +808,29 @@ class AttributesTest {
     assertThat(attributes.get(doubleKey("double"))).isEqualTo(3.14);
     assertThat(attributes.get(booleanKey("boolean"))).isEqualTo(true);
   }
+
+  @Test
+  void emptyValueArrayRetrievedAsAnyArrayType() {
+    // When putting an empty VALUE array, it should be retrievable as any array type
+    Attributes attributes =
+        Attributes.builder().put(valueKey("key"), Value.of(Collections.emptyList())).build();
+
+    // Should be able to retrieve as any array type and get an empty list
+    assertThat(attributes.get(stringArrayKey("key"))).isEqualTo(Collections.emptyList());
+    assertThat(attributes.get(longArrayKey("key"))).isEqualTo(Collections.emptyList());
+    assertThat(attributes.get(doubleArrayKey("key"))).isEqualTo(Collections.emptyList());
+    assertThat(attributes.get(booleanArrayKey("key"))).isEqualTo(Collections.emptyList());
+
+    // Should also be retrievable as VALUE
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(Collections.emptyList()));
+
+    // forEach should show VALUE type (since empty arrays are stored as VALUE)
+    Map<AttributeKey<?>, Object> entriesSeen = new LinkedHashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), Value.of(Collections.emptyList())));
+
+    // asMap should show VALUE type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(valueKey("key"), Value.of(Collections.emptyList())));
+  }
 }

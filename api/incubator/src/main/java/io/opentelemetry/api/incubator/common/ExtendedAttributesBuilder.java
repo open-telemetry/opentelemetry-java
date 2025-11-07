@@ -14,7 +14,6 @@ import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longArr
 import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longKey;
 import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringArrayKey;
 import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -93,7 +92,7 @@ public interface ExtendedAttributesBuilder {
    * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
    * pre-allocate your keys, if possible.
    *
-   * @deprecated Use {@link #put(AttributeKey, Value)} with {@link Value#of(java.util.Map)} instead.
+   * @deprecated Use {@link #put(ExtendedAttributeKey, Object)} with {@link Value#of(java.util.Map)} instead.
    * @return this Builder
    */
   @Deprecated

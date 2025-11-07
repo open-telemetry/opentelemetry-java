@@ -344,8 +344,10 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
         return hasBodyField(
             key.getKey(),
             Value.of(((List<Double>) value).stream().map(Value::of).collect(toList())));
+      case VALUE:
+        return hasBodyField(key.getKey(), (Value<?>) value);
     }
-    return this;
+    throw new IllegalArgumentException("Unknown type for key " + key);
   }
 
   /** Asserts the log has the given attributes. */
