@@ -36,9 +36,10 @@ public interface Attributes {
   /**
    * Returns the value for the given {@link AttributeKey}, or {@code null} if not found.
    *
-   * <p>Note: this method will automatically convert simple attributes to complex attributes when
-   * passed a key of type {@link AttributeType#VALUE}. This is the inverse of {@link
-   * AttributesBuilder#put(AttributeKey, Object)} when the key is {@link AttributeType#VALUE}.
+   * <p>Note: this method will automatically return the corresponding {@link Value} instance when
+   * passed a key of type {@link AttributeType#VALUE} and a simple attribute is found. This is the
+   * inverse of {@link AttributesBuilder#put(AttributeKey, Object)} when the key is {@link
+   * AttributeType#VALUE}.
    *
    * <ul>
    *   <li>If {@code put(AttributeKey.stringKey("key"), "a")} was called, then {@code
@@ -62,6 +63,17 @@ public interface Attributes {
    *       called, then {@code get(AttributeKey.valueKey("key"))} returns {@code
    *       Value.of(Value.of(true), Value.of(false))}.
    * </ul>
+   *
+   * Further, if {@code put(AttributeKey.valueKey("key"), Value.of(emptyList()))} was called, then
+   *
+   * <ul>
+   *   <li>{@code get(AttributeKey.stringArrayKey("key"))}
+   *   <li>{@code get(AttributeKey.longArrayKey("key"))}
+   *   <li>{@code get(AttributeKey.booleanArrayKey("key"))}
+   *   <li>{@code get(AttributeKey.doubleArrayKey("key"))}
+   * </ul>
+   *
+   * all return an empty list (as opposed to {@code null}).
    */
   @Nullable
   <T> T get(AttributeKey<T> key);
