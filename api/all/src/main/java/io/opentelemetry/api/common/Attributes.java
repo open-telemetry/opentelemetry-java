@@ -36,14 +36,8 @@ public interface Attributes {
   /**
    * Returns the value for the given {@link AttributeKey}, or {@code null} if not found.
    *
-   * <p>Simple attributes (i.e. anything other than {@link Value} attributes) SHOULD be used
-   * whenever possible. Instrumentations SHOULD assume that backends do not index individual
-   * properties of complex attributes, that querying or aggregating on such properties is
-   * inefficient and complicated, and that reporting complex attributes carries higher performance
-   * overhead.
-   *
-   * <p>Note: when passing a key of type {@link AttributeType#VALUE}, the returned value will match
-   * a narrower type with the given key if one exists. This is the inverse of {@link
+   * <p>Note: this method will automatically convert simple attributes to complex attributes when
+   * passed a key of type {@link AttributeType#VALUE}. This is the inverse of {@link
    * AttributesBuilder#put(AttributeKey, Object)} when the key is {@link AttributeType#VALUE}.
    *
    * <ul>
@@ -72,7 +66,12 @@ public interface Attributes {
   @Nullable
   <T> T get(AttributeKey<T> key);
 
-  /** Iterates over all the key-value pairs of attributes contained by this instance. */
+  /**
+   * Iterates over all the key-value pairs of attributes contained by this instance.
+   *
+   * <p>Note: {@link AttributeType#VALUE} attributes will be represented as simple attributes if
+   * possible. See {@link AttributesBuilder#put(AttributeKey, Object)} for more details.
+   */
   void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer);
 
   /** The number of attributes contained in this. */
@@ -81,7 +80,12 @@ public interface Attributes {
   /** Whether there are any attributes contained in this. */
   boolean isEmpty();
 
-  /** Returns a read-only view of this {@link Attributes} as a {@link Map}. */
+  /**
+   * Returns a read-only view of this {@link Attributes} as a {@link Map}.
+   *
+   * <p>Note: {@link AttributeType#VALUE} attributes will be represented as simple attributes in
+   * this map if possible. See {@link AttributesBuilder#put(AttributeKey, Object)} for more details.
+   */
   Map<AttributeKey<?>, Object> asMap();
 
   /** Returns a {@link Attributes} instance with no attributes. */
