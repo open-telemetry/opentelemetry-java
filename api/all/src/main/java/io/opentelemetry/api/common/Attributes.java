@@ -33,7 +33,42 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface Attributes {
 
-  /** Returns the value for the given {@link AttributeKey}, or {@code null} if not found. */
+  /**
+   * Returns the value for the given {@link AttributeKey}, or {@code null} if not found.
+   *
+   * <p>Simple attributes (i.e. anything other than {@link Value} attributes) SHOULD be used
+   * whenever possible. Instrumentations SHOULD assume that backends do not index individual
+   * properties of complex attributes, that querying or aggregating on such properties is
+   * inefficient and complicated, and that reporting complex attributes carries higher performance
+   * overhead.
+   *
+   * <p>Note: when passing a key of type {@link AttributeType#VALUE}, the returned value will match
+   * a narrower type with the given key if one exists. This is the inverse of {@link
+   * AttributesBuilder#put(AttributeKey, Object)} when the key is {@link AttributeType#VALUE}.
+   *
+   * <ul>
+   *   <li>If {@code put(AttributeKey.stringKey("key"), "a")} was called, then {@code
+   *       get(AttributeKey.valueKey("key"))} returns {@code Value.of("a")}.
+   *   <li>If {@code put(AttributeKey.longKey("key"), 1L)} was called, then {@code
+   *       get(AttributeKey.valueKey("key"))} returns {@code Value.of(1L)}.
+   *   <li>If {@code put(AttributeKey.doubleKey("key"), 1.0)} was called, then {@code
+   *       get(AttributeKey.valueKey("key"))} returns {@code Value.of(1.0)}.
+   *   <li>If {@code put(AttributeKey.booleanKey("key"), true)} was called, then {@code
+   *       get(AttributeKey.valueKey("key"))} returns {@code Value.of(true)}.
+   *   <li>If {@code put(AttributeKey.stringArrayKey("key"), Arrays.asList("a", "b"))} was called,
+   *       then {@code get(AttributeKey.valueKey("key"))} returns {@code Value.of(Value.of("a"),
+   *       Value.of("b"))}.
+   *   <li>If {@code put(AttributeKey.longArrayKey("key"), Arrays.asList(1L, 2L))} was called, then
+   *       {@code get(AttributeKey.valueKey("key"))} returns {@code Value.of(Value.of(1L),
+   *       Value.of(2L))}.
+   *   <li>If {@code put(AttributeKey.doubleArrayKey("key"), Arrays.asList(1.0, 2.0))} was called,
+   *       then {@code get(AttributeKey.valueKey("key"))} returns {@code Value.of(Value.of(1.0),
+   *       Value.of(2.0))}.
+   *   <li>If {@code put(AttributeKey.booleanArrayKey("key"), Arrays.asList(true, false))} was
+   *       called, then {@code get(AttributeKey.valueKey("key"))} returns {@code
+   *       Value.of(Value.of(true), Value.of(false))}.
+   * </ul>
+   */
   @Nullable
   <T> T get(AttributeKey<T> key);
 
