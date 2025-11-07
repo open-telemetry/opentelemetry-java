@@ -40,8 +40,16 @@ public interface AttributesBuilder {
    * Puts an {@link AttributeKey} with an associated value into this if the value is non-null.
    * Providing a null value does not remove or unset previously set values.
    *
-   * <p>Note: when passing a key of type {@link AttributeType#VALUE}, the call will be coerced into
-   * a narrower type if possible.
+   * <p>Simple attributes ({@link AttributeType#STRING}, {@link AttributeType#LONG}, {@link
+   * AttributeType#DOUBLE}, {@link AttributeType#BOOLEAN}, {@link AttributeType#STRING_ARRAY},
+   * {@link AttributeType#LONG_ARRAY}, {@link AttributeType#DOUBLE_ARRAY}, {@link
+   * AttributeType#BOOLEAN_ARRAY}) SHOULD be used whenever possible. Instrumentations SHOULD assume
+   * that backends do not index individual properties of complex attributes, that querying or
+   * aggregating on such properties is inefficient and complicated, and that reporting complex
+   * attributes carries higher performance overhead.
+   *
+   * <p>Note: This method will automatically convert complex attributes ({@link
+   * AttributeType#VALUE}) to simple attributes when possible.
    *
    * <ul>
    *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of("a"))} is equivalent to calling
