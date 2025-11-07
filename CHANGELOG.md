@@ -6,12 +6,12 @@
 
 #### Incubator
 
-* support ExtendedOpenTelemetry in GlobalOpenTelemetry
+* Support ExtendedOpenTelemetry in GlobalOpenTelemetry
   ([#7799](https://github.com/open-telemetry/opentelemetry-java/pull/7799))
 
 ### SDK
 
-* Changes MeterConfig, LoggerConfig, TracerConfig are guaranteed to be eventually visible
+* Changes to MeterConfig, LoggerConfig, TracerConfig are guaranteed to be eventually visible
   ([#7706](https://github.com/open-telemetry/opentelemetry-java/pull/7706))
 
 #### Metrics
