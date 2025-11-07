@@ -12,9 +12,8 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.compressor.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -35,8 +34,7 @@ public final class OtlpGrpcSpanExporterBuilder {
 
   // Visible for testing
   static final String GRPC_SERVICE_NAME = "opentelemetry.proto.collector.trace.v1.TraceService";
-  // Visible for testing
-  static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/Export";
+  private static final String GRPC_METHOD_NAME = "Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
@@ -44,10 +42,10 @@ public final class OtlpGrpcSpanExporterBuilder {
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   // Visible for testing
-  final GrpcExporterBuilder<Marshaler> delegate;
+  final GrpcExporterBuilder delegate;
   private MemoryMode memoryMode;
 
-  OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
@@ -55,12 +53,12 @@ public final class OtlpGrpcSpanExporterBuilder {
 
   OtlpGrpcSpanExporterBuilder() {
     this(
-        new GrpcExporterBuilder<>(
+        new GrpcExporterBuilder(
             StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
-            () -> MarshalerTraceServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH),
+            GRPC_SERVICE_NAME,
+            GRPC_METHOD_NAME),
         DEFAULT_MEMORY_MODE);
   }
 

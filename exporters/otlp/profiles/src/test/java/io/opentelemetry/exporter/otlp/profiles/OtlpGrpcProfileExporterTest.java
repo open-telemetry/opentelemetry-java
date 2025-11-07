@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.profiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.exporter.grpc.GrpcStatusCode;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
@@ -41,7 +42,7 @@ class OtlpGrpcProfileExporterTest
   @Override // whilst profile signal type is in development it uses a different error message
   @SuppressLogger(GrpcExporter.class)
   protected void testExport_Unimplemented() {
-    addGrpcError(12, "UNIMPLEMENTED");
+    addGrpcError(GrpcStatusCode.UNIMPLEMENTED, "UNIMPLEMENTED");
 
     TelemetryExporter<ProfileData> exporter = nonRetryingExporter();
 

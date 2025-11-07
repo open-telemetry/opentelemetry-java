@@ -5,18 +5,18 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.exporter.compressor.Compressor;
+import io.opentelemetry.exporter.compressor.CompressorProvider;
+import io.opentelemetry.exporter.grpc.GrpcSender;
+import io.opentelemetry.exporter.grpc.GrpcSenderProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,16 +46,15 @@ import javax.net.ssl.X509TrustManager;
  * at any time.
  */
 @SuppressWarnings("JavadocMethod")
-public class GrpcExporterBuilder<T extends Marshaler> {
+public class GrpcExporterBuilder {
 
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
 
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
   private final StandardComponentId.ExporterType exporterType;
-  private final String grpcEndpointPath;
-  private final Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>>
-      grpcStubFactory;
+  private final String fullServiceName;
+  private final String methodName;
 
   private long timeoutNanos;
   private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
@@ -80,40 +78,40 @@ public class GrpcExporterBuilder<T extends Marshaler> {
       StandardComponentId.ExporterType exporterType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> grpcStubFactory,
-      String grpcEndpointPath) {
+      String fullServiceName,
+      String methodName) {
     this.exporterType = exporterType;
-    this.grpcEndpointPath = grpcEndpointPath;
+    this.fullServiceName = fullServiceName;
+    this.methodName = methodName;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
-    this.grpcStubFactory = grpcStubFactory;
   }
 
-  public GrpcExporterBuilder<T> setChannel(ManagedChannel channel) {
+  public GrpcExporterBuilder setChannel(ManagedChannel channel) {
     this.grpcChannel = channel;
     return this;
   }
 
-  public GrpcExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
+  public GrpcExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
-  public GrpcExporterBuilder<T> setTimeout(Duration timeout) {
+  public GrpcExporterBuilder setTimeout(Duration timeout) {
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
-  public GrpcExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
+  public GrpcExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
-  public GrpcExporterBuilder<T> setEndpoint(String endpoint) {
+  public GrpcExporterBuilder setEndpoint(String endpoint) {
     this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 
-  public GrpcExporterBuilder<T> setCompression(@Nullable Compressor compressor) {
+  public GrpcExporterBuilder setCompression(@Nullable Compressor compressor) {
     this.compressor = compressor;
     return this;
   }
@@ -123,74 +121,72 @@ public class GrpcExporterBuilder<T extends Marshaler> {
    * method "gzip" and "none" are supported out of the box. Support for additional compression
    * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
    */
-  public GrpcExporterBuilder<T> setCompression(String compressionMethod) {
+  public GrpcExporterBuilder setCompression(String compressionMethod) {
     Compressor compressor =
         CompressorUtil.validateAndResolveCompressor(compressionMethod, componentLoader);
     return setCompression(compressor);
   }
 
-  public GrpcExporterBuilder<T> setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
+  public GrpcExporterBuilder setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
     tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
-  public GrpcExporterBuilder<T> setKeyManagerFromCerts(
-      byte[] privateKeyPem, byte[] certificatePem) {
+  public GrpcExporterBuilder setKeyManagerFromCerts(byte[] privateKeyPem, byte[] certificatePem) {
     tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
-  public GrpcExporterBuilder<T> setSslContext(
-      SSLContext sslContext, X509TrustManager trustManager) {
+  public GrpcExporterBuilder setSslContext(SSLContext sslContext, X509TrustManager trustManager) {
     tlsConfigHelper.setSslContext(sslContext, trustManager);
     return this;
   }
 
-  public GrpcExporterBuilder<T> addConstantHeader(String key, String value) {
+  public GrpcExporterBuilder addConstantHeader(String key, String value) {
     constantHeaders.put(key, value);
     return this;
   }
 
-  public GrpcExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
+  public GrpcExporterBuilder setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
     this.headerSupplier = headerSupplier;
     return this;
   }
 
-  public GrpcExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
+  public GrpcExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
   }
 
-  public GrpcExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
+  public GrpcExporterBuilder setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
     this.meterProviderSupplier = meterProviderSupplier;
     return this;
   }
 
-  public GrpcExporterBuilder<T> setInternalTelemetryVersion(
+  public GrpcExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion internalTelemetryVersion) {
     this.internalTelemetryVersion = internalTelemetryVersion;
     return this;
   }
 
-  public GrpcExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader) {
+  public GrpcExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
     this.componentLoader = componentLoader;
     return this;
   }
 
-  public GrpcExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+  public GrpcExporterBuilder setExecutorService(ExecutorService executorService) {
     this.executorService = executorService;
     return this;
   }
 
   @SuppressWarnings("BuilderReturnThis")
-  public GrpcExporterBuilder<T> copy() {
-    GrpcExporterBuilder<T> copy =
-        new GrpcExporterBuilder<>(
+  public GrpcExporterBuilder copy() {
+    GrpcExporterBuilder copy =
+        new GrpcExporterBuilder(
             exporterType,
             TimeUnit.NANOSECONDS.toSeconds(timeoutNanos),
             endpoint,
-            grpcStubFactory,
-            grpcEndpointPath);
+            fullServiceName,
+            methodName);
 
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
@@ -209,7 +205,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return copy;
   }
 
-  public GrpcExporter<T> build() {
+  public GrpcExporter build() {
     Supplier<Map<String, List<String>>> headerSupplier =
         () -> {
           Map<String, List<String>> result = new HashMap<>();
@@ -233,29 +229,29 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     boolean isPlainHttp = "http".equals(endpoint.getScheme());
     GrpcSenderProvider grpcSenderProvider = resolveGrpcSenderProvider();
-    GrpcSender<T> grpcSender =
+    GrpcSender grpcSender =
         grpcSenderProvider.createSender(
-            GrpcSenderConfig.create(
+            ImmutableGrpcSenderConfig.create(
                 endpoint,
-                grpcEndpointPath,
+                fullServiceName,
+                methodName,
                 compressor,
                 timeoutNanos,
                 connectTimeoutNanos,
                 headerSupplier,
-                grpcChannel,
-                grpcStubFactory,
                 retryPolicy,
                 isPlainHttp ? null : tlsConfigHelper.getSslContext(),
                 isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
-                executorService));
+                executorService,
+                grpcChannel));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
-    return new GrpcExporter<>(
+    return new GrpcExporter(
         grpcSender,
         internalTelemetryVersion,
         ComponentId.generateLazy(exporterType),
         meterProviderSupplier,
-        endpoint.toString());
+        endpoint);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -264,7 +260,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("endpoint=" + endpoint.toString());
-    joiner.add("endpointPath=" + grpcEndpointPath);
+    joiner.add("fullServiceName=" + fullServiceName);
+    joiner.add("methodName=" + methodName);
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("connectTimeoutNanos=" + connectTimeoutNanos);
     joiner.add(
@@ -309,10 +306,9 @@ public class GrpcExporterBuilder<T extends Marshaler> {
    * <p>If multiple are available and..
    *
    * <ul>
-   *   <li>{@code io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider} is empty, use the
-   *       first found.
-   *   <li>{@code io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider} is set, use the
-   *       matching provider. If none match, throw {@link IllegalStateException}.
+   *   <li>{@code io.opentelemetry.exporter.grpc.GrpcSenderProvider} is empty, use the first found.
+   *   <li>{@code io.opentelemetry.exporter.grpc.GrpcSenderProvider} is set, use the matching
+   *       provider. If none match, throw {@link IllegalStateException}.
    * </ul>
    */
   private GrpcSenderProvider resolveGrpcSenderProvider() {
@@ -335,14 +331,14 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     // If we've reached here, there are multiple GrpcSenderProviders
     String configuredSender =
-        ConfigUtil.getString("io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider", "");
+        ConfigUtil.getString("io.opentelemetry.exporter.grpc.GrpcSenderProvider", "");
 
     // Multiple providers but none configured, use first we find and log a warning
     if (configuredSender.isEmpty()) {
       LOGGER.log(
           Level.WARNING,
           "Multiple GrpcSenderProvider found. Please include only one, "
-              + "or specify preference setting io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider "
+              + "or specify preference setting io.opentelemetry.exporter.grpc.GrpcSenderProvider "
               + "to the FQCN of the preferred provider.");
       return grpcSenderProviders.values().stream().findFirst().get();
     }
@@ -354,7 +350,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     // Multiple providers, configured does not match, throw
     throw new IllegalStateException(
-        "No GrpcSenderProvider matched configured io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider: "
+        "No GrpcSenderProvider matched configured io.opentelemetry.exporter.grpc.GrpcSenderProvider: "
             + configuredSender);
   }
 }

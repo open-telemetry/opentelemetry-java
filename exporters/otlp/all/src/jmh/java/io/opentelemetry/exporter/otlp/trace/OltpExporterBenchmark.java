@@ -15,8 +15,6 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
@@ -71,9 +69,9 @@ public class OltpExporterBenchmark {
 
   private static ManagedChannel defaultGrpcChannel;
 
-  private static GrpcExporter<Marshaler> upstreamGrpcExporter;
-  private static GrpcExporter<TraceRequestMarshaler> okhttpGrpcSender;
-  private static HttpExporter<TraceRequestMarshaler> httpExporter;
+  private static GrpcExporter upstreamGrpcExporter;
+  private static GrpcExporter okhttpGrpcSender;
+  private static HttpExporter httpExporter;
 
   @Setup(Level.Trial)
   public void setUp() {
@@ -84,9 +82,12 @@ public class OltpExporterBenchmark {
             .usePlaintext()
             .build();
     upstreamGrpcExporter =
-        new GrpcExporter<>(
-            new UpstreamGrpcSender<>(
-                MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null),
+        new GrpcExporter(
+            new UpstreamGrpcSender(
+                defaultGrpcChannel,
+                "opentelemetry.proto.collector.trace.v1.TraceService",
+                "Export",
+                null,
                 /* shutdownChannel= */ false,
                 10,
                 Collections::emptyMap,
@@ -94,13 +95,13 @@ public class OltpExporterBenchmark {
             InternalTelemetryVersion.LATEST,
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
-            "http://localhost");
+            URI.create("http://localhost"));
 
     okhttpGrpcSender =
-        new GrpcExporter<>(
-            new OkHttpGrpcSender<>(
+        new GrpcExporter(
+            new OkHttpGrpcSender(
                 URI.create("http://localhost:" + server.activeLocalPort())
-                    .resolve(OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
+                    .resolve("opentelemetry.proto.collector.trace.v1.TraceService/Export")
                     .toString(),
                 null,
                 10,
@@ -113,10 +114,10 @@ public class OltpExporterBenchmark {
             InternalTelemetryVersion.LATEST,
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
-            "http://localhost");
+            URI.create("http://localhost"));
 
     httpExporter =
-        new HttpExporterBuilder<TraceRequestMarshaler>(
+        new HttpExporterBuilder(
                 StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
                 "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();
