@@ -100,6 +100,9 @@ public final class AttributeKeyValueStatelessMarshaler
               (List<Object>) value,
               AttributeArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
+        case VALUE:
+          return AnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
+              (io.opentelemetry.api.common.Value<?>) value, context);
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with
       // unaligned versions which are not supported.
@@ -135,6 +138,10 @@ public final class AttributeKeyValueStatelessMarshaler
               (List<Object>) value,
               AttributeArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
+          return;
+        case VALUE:
+          AnyValueStatelessMarshaler.INSTANCE.writeTo(
+              output, (io.opentelemetry.api.common.Value<?>) value, context);
           return;
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with

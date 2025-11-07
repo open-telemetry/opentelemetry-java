@@ -5,6 +5,15 @@
 
 package io.opentelemetry.api.common;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,13 +47,125 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> AttributesBuilder put(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
+      return this;
+    }
+    if (key.getType() == AttributeType.VALUE && value instanceof Value) {
+      putValue(key, (Value<?>) value);
       return this;
     }
     data.add(key);
     data.add(value);
     return this;
+  }
+
+  private void putValue(AttributeKey<?> key, Value<?> valueObj) {
+    // Convert VALUE type to narrower type when possible
+    String keyName = key.getKey();
+    switch (valueObj.getType()) {
+      case STRING:
+        data.add(stringKey(keyName));
+        data.add(valueObj.getValue());
+        return;
+      case LONG:
+        data.add(longKey(keyName));
+        data.add(valueObj.getValue());
+        return;
+      case DOUBLE:
+        data.add(doubleKey(keyName));
+        data.add(valueObj.getValue());
+        return;
+      case BOOLEAN:
+        data.add(booleanKey(keyName));
+        data.add(valueObj.getValue());
+        return;
+      case ARRAY:
+        @SuppressWarnings("unchecked")
+        List<Value<?>> arrayValues = (List<Value<?>>) valueObj.getValue();
+        AttributeType attributeType = attributeType(arrayValues);
+        switch (attributeType) {
+          case STRING_ARRAY:
+            List<String> strings = new ArrayList<>();
+            for (Value<?> v : arrayValues) {
+              strings.add((String) v.getValue());
+            }
+            data.add(stringArrayKey(keyName));
+            data.add(strings);
+            return;
+          case LONG_ARRAY:
+            List<Long> longs = new ArrayList<>();
+            for (Value<?> v : arrayValues) {
+              longs.add((Long) v.getValue());
+            }
+            data.add(longArrayKey(keyName));
+            data.add(longs);
+            return;
+          case DOUBLE_ARRAY:
+            List<Double> doubles = new ArrayList<>();
+            for (Value<?> v : arrayValues) {
+              doubles.add((Double) v.getValue());
+            }
+            data.add(doubleArrayKey(keyName));
+            data.add(doubles);
+            return;
+          case BOOLEAN_ARRAY:
+            List<Boolean> booleans = new ArrayList<>();
+            for (Value<?> v : arrayValues) {
+              booleans.add((Boolean) v.getValue());
+            }
+            data.add(booleanArrayKey(keyName));
+            data.add(booleans);
+            return;
+          case VALUE:
+            // Not coercible (empty, non-homogeneous, or unsupported element type)
+            // TODO when empty, retrieve it when asked for any kind of array?
+            data.add(key);
+            data.add(valueObj);
+            return;
+          default:
+            throw new IllegalArgumentException("Unexpected array attribute type: " + attributeType);
+        }
+      case KEY_VALUE_LIST:
+      case BYTES:
+        // Keep as VALUE type
+        data.add(key);
+        data.add(valueObj);
+        return;
+    }
+  }
+
+  /**
+   * Returns the AttributeType for a homogeneous array (STRING_ARRAY, LONG_ARRAY, DOUBLE_ARRAY, or
+   * BOOLEAN_ARRAY), or VALUE if the array is empty, non-homogeneous, or contains unsupported
+   * element types.
+   */
+  private static AttributeType attributeType(List<Value<?>> arrayValues) {
+    if (arrayValues.isEmpty()) {
+      return AttributeType.VALUE;
+    }
+    ValueType elementType = arrayValues.get(0).getType();
+    for (Value<?> v : arrayValues) {
+      if (v.getType() != elementType) {
+        return AttributeType.VALUE;
+      }
+    }
+    switch (elementType) {
+      case STRING:
+        return AttributeType.STRING_ARRAY;
+      case LONG:
+        return AttributeType.LONG_ARRAY;
+      case DOUBLE:
+        return AttributeType.DOUBLE_ARRAY;
+      case BOOLEAN:
+        return AttributeType.BOOLEAN_ARRAY;
+      case ARRAY:
+      case KEY_VALUE_LIST:
+      case BYTES:
+        return AttributeType.VALUE;
+    }
+    throw new IllegalArgumentException("Unsupported element type: " + elementType);
   }
 
   @Override

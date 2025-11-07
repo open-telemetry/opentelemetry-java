@@ -19,9 +19,7 @@ import javax.annotation.concurrent.Immutable;
  * <p>"extended" refers an extended set of allowed value types compared to standard {@link
  * Attributes}. Notably, {@link ExtendedAttributes} values can be of type {@link
  * ExtendedAttributeType#VALUE}, allowing attributes backed by {@link
- * io.opentelemetry.api.common.Value}, and the deprecated {@link
- * ExtendedAttributeType#EXTENDED_ATTRIBUTES}, allowing nested {@link ExtendedAttributes} of
- * arbitrary depth.
+ * io.opentelemetry.api.common.Value}.
  *
  * <p>Where standard {@link Attributes} are accepted everyone that OpenTelemetry represents key /
  * value pairs, {@link ExtendedAttributes} are only accepted in select places, such as log records
