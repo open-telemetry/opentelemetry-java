@@ -115,10 +115,14 @@ public final class DeclarativeConfiguration {
    */
   public static ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
-    SpiHelper spiHelper = SpiHelper.create(componentLoader);
+    return create(configurationModel, DeclarativeConfigContext.create(componentLoader));
+  }
 
+  private static ExtendedOpenTelemetrySdk create(
+      OpenTelemetryConfigurationModel configurationModel, DeclarativeConfigContext context) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
 
+    SpiHelper spiHelper = context.getSpiHelper();
     for (DeclarativeConfigurationCustomizerProvider provider :
         spiHelper.loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
       provider.customize(builder);
@@ -127,7 +131,7 @@ public final class DeclarativeConfiguration {
     ExtendedOpenTelemetrySdk sdk =
         createAndMaybeCleanup(
             OpenTelemetryConfigurationFactory.getInstance(),
-            spiHelper,
+            context,
             builder.customizeModel(configurationModel));
     callAutoConfigureListeners(spiHelper, sdk);
     return sdk;
@@ -213,7 +217,7 @@ public final class DeclarativeConfiguration {
             DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
-        SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
+        DeclarativeConfigContext.create(yamlDeclarativeConfigProperties.getComponentLoader()),
         samplerModel);
   }
 
@@ -226,8 +230,8 @@ public final class DeclarativeConfiguration {
     return (YamlDeclarativeConfigProperties) declarativeConfigProperties;
   }
 
-  static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
-    DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
+  static <M, R> R createAndMaybeCleanup(
+      Factory<M, R> factory, DeclarativeConfigContext context, M model) {
     try {
       return factory.create(model, context);
     } catch (RuntimeException e) {

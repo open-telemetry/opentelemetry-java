@@ -2,24 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "7.2.1"
-}
-
-if (!hasLauncherForJavaVersion(17)) {
-  throw GradleException(
-    "JDK 17 is required to build and gradle was unable to detect it on the system.  " +
-        "Please install it and see https://docs.gradle.org/current/userguide/toolchains.html#sec:auto_detection " +
-        "for details on how gradle detects java toolchains."
-  )
-}
-
-fun hasLauncherForJavaVersion(version: Int): Boolean {
-  return try {
-    javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(version) }.get()
-    true
-  } catch (e: Exception) {
-    false
-  }
+  id("com.diffplug.spotless") version "8.0.0"
 }
 
 spotless {
@@ -53,8 +36,8 @@ dependencies {
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.4.0"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:7.2.1")
-  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.2")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.0.0")
+  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.2.2")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
@@ -64,15 +47,7 @@ dependencies {
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.3.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.3.0")
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
-  implementation("org.owasp:dependency-check-gradle:12.1.5")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21")
+  implementation("org.owasp:dependency-check-gradle:12.1.8")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
-}
-
-// We can't apply conventions to this build so include important ones such as the Java compilation
-// target.
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
-  }
 }

@@ -31,7 +31,7 @@ public final class SdkObservableMeasurement
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentDescriptor instrumentDescriptor;
-  private final List<AsynchronousMetricStorage<?, ?>> storages;
+  private final List<AsynchronousMetricStorage<?>> storages;
 
   // These fields are set before invoking callbacks. They allow measurements to be recorded to the
   // storages for correct reader, and with the correct time.
@@ -40,7 +40,7 @@ public final class SdkObservableMeasurement
   private SdkObservableMeasurement(
       InstrumentationScopeInfo instrumentationScopeInfo,
       InstrumentDescriptor instrumentDescriptor,
-      List<AsynchronousMetricStorage<?, ?>> storages) {
+      List<AsynchronousMetricStorage<?>> storages) {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.instrumentDescriptor = instrumentDescriptor;
     this.storages = storages;
@@ -57,7 +57,7 @@ public final class SdkObservableMeasurement
   public static SdkObservableMeasurement create(
       InstrumentationScopeInfo instrumentationScopeInfo,
       InstrumentDescriptor instrumentDescriptor,
-      List<AsynchronousMetricStorage<?, ?>> storages) {
+      List<AsynchronousMetricStorage<?>> storages) {
     return new SdkObservableMeasurement(instrumentationScopeInfo, instrumentDescriptor, storages);
   }
 
@@ -73,7 +73,7 @@ public final class SdkObservableMeasurement
   public void setActiveReader(
       RegisteredReader registeredReader, long startEpochNanos, long epochNanos) {
     this.activeReader = registeredReader;
-    for (AsynchronousMetricStorage<?, ?> storage : storages) {
+    for (AsynchronousMetricStorage<?> storage : storages) {
       if (storage.getRegisteredReader().equals(activeReader)) {
         storage.setEpochInformation(startEpochNanos, epochNanos);
       }
@@ -91,7 +91,7 @@ public final class SdkObservableMeasurement
     return instrumentDescriptor;
   }
 
-  List<AsynchronousMetricStorage<?, ?>> getStorages() {
+  List<AsynchronousMetricStorage<?>> getStorages() {
     return storages;
   }
 
@@ -108,7 +108,7 @@ public final class SdkObservableMeasurement
       return;
     }
 
-    for (AsynchronousMetricStorage<?, ?> storage : storages) {
+    for (AsynchronousMetricStorage<?> storage : storages) {
       if (storage.getRegisteredReader().equals(activeReader)) {
         storage.record(attributes, value);
       }
@@ -139,7 +139,7 @@ public final class SdkObservableMeasurement
       return;
     }
 
-    for (AsynchronousMetricStorage<?, ?> storage : storages) {
+    for (AsynchronousMetricStorage<?> storage : storages) {
       if (storage.getRegisteredReader().equals(activeReader)) {
         storage.record(attributes, value);
       }

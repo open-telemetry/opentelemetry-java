@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -127,13 +126,13 @@ class DeclarativeConfigurationTest {
     cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
 
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
+    Resource resource = Resource.getDefault().toBuilder().put("service.name", "test").build();
     ExtendedOpenTelemetrySdk expectedSdk =
         ExtendedOpenTelemetrySdk.create(
             OpenTelemetrySdk.builder()
                 .setTracerProvider(
                     SdkTracerProvider.builder()
-                        .setResource(
-                            Resource.getDefault().toBuilder().put("service.name", "test").build())
+                        .setResource(resource)
                         .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                         .build())
                 .build(),
@@ -142,7 +141,7 @@ class DeclarativeConfigurationTest {
     assertThat(openTelemetrySdk.toString()).hasToString(expectedSdk.toString());
     // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from
     // file
-    assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(Resource.getDefault());
+    assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(resource);
     verify(builder, times(1)).shutdownHook(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
     assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
     logCapturer.assertContains("Autoconfiguring from configuration file: " + configFilePath);

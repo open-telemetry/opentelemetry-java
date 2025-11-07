@@ -11,38 +11,16 @@ jobs:
     permissions:
       contents: write # for git push to benchmarks branch
     name: Benchmark SDK
-    runs-on: equinix-bare-metal
-    timeout-minutes: 10
+    runs-on: oracle-bare-metal-64cpu-512gb-x86-64
+    container:
+      image: ubuntu:24.04@sha256:66460d557b25769b102175144d538d88219c077c678a49af4afca6fbfc1b5252
+    timeout-minutes: 20 # since there is only a single bare metal runner across all repos
     strategy:
       fail-fast: false
       matrix:
         tag-version:
-          - v1.6.0
-          - v1.7.0
-          - v1.7.1
-          - v1.10.0
-          - v1.10.1
-          - v1.11.0
-          - v1.12.0
-          - v1.13.0
-          - v1.14.0
-          - v1.15.0
-          - v1.16.0
-          - v1.17.0
-          - v1.18.0
-          - v1.19.0
-          - v1.21.0
-          - v1.22.0
-          - v1.23.0
-          - v1.23.1
-          - v1.24.0
-          - v1.25.0
-          - v1.26.0
-          - v1.27.0
-          - v1.28.0
           - v1.29.0
           - v1.30.0
-          - v1.30.1
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -53,12 +31,14 @@ jobs:
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
       - name: Run jmh
         run: ./gradlew jmhJar
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Run Benchmark
         run: |

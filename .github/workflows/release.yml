@@ -25,10 +25,10 @@ jobs:
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
 
       - name: Build and publish artifacts
         run: ./gradlew assemble publishToSonatype closeAndReleaseSonatypeStagingRepository
@@ -37,6 +37,7 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Set environment variables
         run: |
@@ -133,7 +134,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "prior-version=$PRIOR_VERSION" >> $GITHUB_OUTPUT
 
-  update-apidiff-baseline-and-docs-to-released-version:
+  post-release-updates:
     permissions:
       contents: write # for git push to PR branch
     runs-on: ubuntu-latest
@@ -178,10 +179,20 @@ jobs:
             sleep 60
           done
 
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
+
       - name: Update apidiff baseline
         env:
           VERSION: ${{ needs.release.outputs.version }}
           PRIOR_VERSION: ${{ needs.release.outputs.prior-version }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
         run: |
           ./gradlew japicmp -PapiBaseVersion=$PRIOR_VERSION -PapiNewVersion=$VERSION
           ./gradlew --refresh-dependencies japicmp
@@ -190,12 +201,13 @@ jobs:
       - name: Update versions in README.md
         env:
           VERSION: ${{ needs.release.outputs.version }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
         run: |
           ./gradlew updateVersionInDocs -Prelease.version=$VERSION
           git add README.md
 
       - name: Use CLA approved bot
-        run: .github/scripts/use-cla-approved-github-bot.sh
+        run: .github/scripts/use-cla-approved-bot.sh
 
       - uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: otelbot-token
@@ -209,9 +221,9 @@ jobs:
           # not using secrets.GITHUB_TOKEN since pull requests from that token do not run workflows
           GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
         run: |
-          message="Update apidiff baseline and documentation versions to released version $VERSION"
-          body="Update apidiff baseline and documentation versions to released version \`$VERSION\`."
-          branch="otelbot/update-apidiff-baseline-and-documentation-to-released-version-${VERSION}"
+          message="Post-release updates for $VERSION"
+          body="Post-release updates for \`$VERSION\`."
+          branch="otelbot/post-release-updates-${VERSION}"
 
           git checkout -b $branch
           git commit -m "$message"

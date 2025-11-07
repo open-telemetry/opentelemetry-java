@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
+import static io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal.asExemplarFilterInternal;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.Mockito.never;
@@ -23,11 +24,10 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -37,7 +37,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
@@ -84,7 +83,7 @@ public class SynchronousMetricStorageTest {
   private RegisteredReader deltaReader;
   private RegisteredReader cumulativeReader;
   private final TestClock testClock = TestClock.create();
-  private Aggregator<LongPointData, LongExemplarData> aggregator;
+  private Aggregator<LongPointData> aggregator;
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
 
   private void initialize(MemoryMode memoryMode) {
@@ -104,14 +103,15 @@ public class SynchronousMetricStorageTest {
     aggregator =
         spy(
             ((AggregatorFactory) Aggregation.sum())
-                .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff(), memoryMode));
+                .createAggregator(
+                    DESCRIPTOR, asExemplarFilterInternal(ExemplarFilter.alwaysOff()), memoryMode));
   }
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
   void recordDouble_NaN(MemoryMode memoryMode) {
     initialize(memoryMode);
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             cumulativeReader,
             METRIC_DESCRIPTOR,
@@ -162,7 +162,7 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_CumulativeDoesNotReset(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             cumulativeReader,
             METRIC_DESCRIPTOR,
@@ -211,7 +211,7 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_DeltaResets_ImmutableData() {
     initialize(IMMUTABLE_DATA);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,
@@ -265,7 +265,7 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_DeltaResets_ReusableData() {
     initialize(MemoryMode.REUSABLE_DATA);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,
@@ -368,7 +368,7 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_CumulativeAtLimit(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             cumulativeReader,
             METRIC_DESCRIPTOR,
@@ -440,7 +440,7 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_DeltaAtLimit_ImmutableDataMemoryMode() {
     initialize(IMMUTABLE_DATA);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,
@@ -541,7 +541,7 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_DeltaAtLimit_ReusableDataMemoryMode() {
     initialize(MemoryMode.REUSABLE_DATA);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,
@@ -628,7 +628,7 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_DeltaAtLimit_ReusableDataMemoryMode_ExpireUnused() {
     initialize(MemoryMode.REUSABLE_DATA);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,
@@ -771,7 +771,7 @@ public class SynchronousMetricStorageTest {
   @ParameterizedTest
   @MethodSource("concurrentStressTestArguments")
   void recordAndCollect_concurrentStressTest(
-      DefaultSynchronousMetricStorage<?, ?> storage, BiConsumer<Double, AtomicDouble> collect) {
+      DefaultSynchronousMetricStorage<?> storage, BiConsumer<Double, AtomicDouble> collect) {
     // Define record threads. Each records a value of 1.0, 2000 times
     List<Thread> threads = new ArrayList<>();
     CountDownLatch latch = new CountDownLatch(4);
@@ -826,9 +826,10 @@ public class SynchronousMetricStorageTest {
     List<Arguments> argumentsList = new ArrayList<>();
 
     for (MemoryMode memoryMode : MemoryMode.values()) {
-      Aggregator<PointData, ExemplarData> aggregator =
+      Aggregator<PointData> aggregator =
           ((AggregatorFactory) Aggregation.sum())
-              .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff(), memoryMode);
+              .createAggregator(
+                  DESCRIPTOR, asExemplarFilterInternal(ExemplarFilter.alwaysOff()), memoryMode);
 
       argumentsList.add(
           Arguments.of(
@@ -872,7 +873,7 @@ public class SynchronousMetricStorageTest {
   void enabledThenDisable_isEnabled(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,
@@ -891,7 +892,7 @@ public class SynchronousMetricStorageTest {
   void enabledThenDisableThenEnable_isEnabled(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,
@@ -911,7 +912,7 @@ public class SynchronousMetricStorageTest {
   void enabledThenDisable_recordAndCollect(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,
@@ -932,7 +933,7 @@ public class SynchronousMetricStorageTest {
   void enabledThenDisableThenEnable_recordAndCollect(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    DefaultSynchronousMetricStorage<?, ?> storage =
+    DefaultSynchronousMetricStorage<?> storage =
         new DefaultSynchronousMetricStorage<>(
             deltaReader,
             METRIC_DESCRIPTOR,

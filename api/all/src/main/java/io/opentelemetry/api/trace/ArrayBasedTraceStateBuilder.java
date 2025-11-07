@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
 
-  private static final int MAX_VENDOR_ID_SIZE = 13;
+  private static final int MAX_VENDOR_ID_SIZE = 14;
 
   // Needs to be in this class to avoid initialization deadlock because super class depends on
   // subclass (the auto-value generate class).
@@ -24,7 +24,7 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   private static final int MAX_ENTRIES = 32;
   private static final int KEY_MAX_SIZE = 256;
   private static final int VALUE_MAX_SIZE = 256;
-  private static final int MAX_TENANT_ID_SIZE = 240;
+  private static final int MAX_TENANT_ID_SIZE = 241;
 
   // Later calls to put must be at the front of trace state. We append to the list and then reverse
   // when finished.
@@ -157,11 +157,11 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
           return false;
         }
         isMultiTenantVendorKey = true;
-        // tenant id (the part to the left of the '@' sign) must be 240 characters or less
+        // tenant id (the part to the left of the '@' sign) must be 241 characters or less
         if (i > MAX_TENANT_ID_SIZE) {
           return false;
         }
-        // vendor id (the part to the right of the '@' sign) must be 1-13 characters long
+        // vendor id (the part to the right of the '@' sign) must be 1-14 characters long
         int remainingKeyChars = key.length() - i - 1;
         if (remainingKeyChars > MAX_VENDOR_ID_SIZE || remainingKeyChars == 0) {
           return false;
