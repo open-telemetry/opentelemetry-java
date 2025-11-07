@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.56.0 (2025-11-07)
 
 ### API
 
