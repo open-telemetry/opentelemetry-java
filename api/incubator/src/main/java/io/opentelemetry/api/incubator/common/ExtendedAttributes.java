@@ -92,7 +92,7 @@ public interface ExtendedAttributes {
    *       Value.of(Value.of(true), Value.of(false))}.
    * </ul>
    *
-   * Further, if {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(emptyList()))} was
+   * <p>Further, if {@code put(ExtendedAttributeKey.valueKey("key"), Value.of(emptyList()))} was
    * called, then
    *
    * <ul>
@@ -102,7 +102,7 @@ public interface ExtendedAttributes {
    *   <li>{@code get(ExtendedAttributeKey.doubleArrayKey("key"))}
    * </ul>
    *
-   * all return an empty list (as opposed to {@code null}).
+   * <p>all return an empty list (as opposed to {@code null}).
    */
   @Nullable
   <T> T get(ExtendedAttributeKey<T> key);
