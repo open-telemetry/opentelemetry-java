@@ -63,10 +63,11 @@ public interface ExtendedAttributes {
   /**
    * Returns the value for the given {@link ExtendedAttributeKey}, or {@code null} if not found.
    *
-   * <p>Note: this method will automatically return the corresponding {@link Value} instance when
-   * passed a key of type {@link ExtendedAttributeType#VALUE} and a simple attribute is found. This
-   * is the inverse of {@link AttributesBuilder#put(ExtendedAttributeKey, Object)} when the key is
-   * {@link ExtendedAttributeType#VALUE}.
+   * <p>Note: this method will automatically return the corresponding {@link
+   * io.opentelemetry.api.common.Value} instance when passed a key of type {@link
+   * ExtendedAttributeType#VALUE} and a simple attribute is found. This is the inverse of {@link
+   * ExtendedAttributesBuilder#put(ExtendedAttributeKey, Object)} when the key is {@link
+   * ExtendedAttributeType#VALUE}.
    *
    * <ul>
    *   <li>If {@code put(ExtendedAttributeKey.stringKey("key"), "a")} was called, then {@code

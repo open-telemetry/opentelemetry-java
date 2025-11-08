@@ -31,13 +31,14 @@ public enum ExtendedAttributeType {
   @Deprecated
   EXTENDED_ATTRIBUTES,
   /**
-   * Simple attributes ({@link AttributeType#STRING}, {@link AttributeType#LONG}, {@link
-   * AttributeType#DOUBLE}, {@link AttributeType#BOOLEAN}, {@link AttributeType#STRING_ARRAY},
-   * {@link AttributeType#LONG_ARRAY}, {@link AttributeType#DOUBLE_ARRAY}, {@link
-   * AttributeType#BOOLEAN_ARRAY}) SHOULD be used whenever possible. Instrumentations SHOULD assume
-   * that backends do not index individual properties of complex attributes, that querying or
-   * aggregating on such properties is inefficient and complicated, and that reporting complex
-   * attributes carries higher performance overhead.
+   * Simple attributes ({@link ExtendedAttributeType#STRING}, {@link ExtendedAttributeType#LONG},
+   * {@link ExtendedAttributeType#DOUBLE}, {@link ExtendedAttributeType#BOOLEAN}, {@link
+   * ExtendedAttributeType#STRING_ARRAY}, {@link ExtendedAttributeType#LONG_ARRAY}, {@link
+   * ExtendedAttributeType#DOUBLE_ARRAY}, {@link ExtendedAttributeType#BOOLEAN_ARRAY}) SHOULD be
+   * used whenever possible. Instrumentations SHOULD assume that backends do not index individual
+   * properties of complex attributes, that querying or aggregating on such properties is
+   * inefficient and complicated, and that reporting complex attributes carries higher performance
+   * overhead.
    */
   VALUE;
 }
