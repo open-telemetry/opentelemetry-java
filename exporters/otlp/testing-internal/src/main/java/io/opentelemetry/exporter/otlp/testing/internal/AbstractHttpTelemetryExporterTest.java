@@ -1090,7 +1090,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
               ByteArrayOutputStream bos = new ByteArrayOutputStream();
               try {
                 marshaler.writeBinaryTo(bos);
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings("unchecked") // safe cast to U
                 U result =
                     (U)
                         resourceTelemetryInstance

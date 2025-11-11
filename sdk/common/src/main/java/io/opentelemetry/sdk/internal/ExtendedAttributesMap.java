@@ -75,7 +75,7 @@ public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>
     return totalAddedValues;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to T
   @Nullable
   @Override
   public <T> T get(ExtendedAttributeKey<T> key) {

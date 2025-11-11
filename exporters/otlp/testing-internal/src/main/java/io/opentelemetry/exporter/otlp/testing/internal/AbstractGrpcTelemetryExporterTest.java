@@ -1202,7 +1202,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
               ByteArrayOutputStream bos = new ByteArrayOutputStream();
               try {
                 marshaler.writeBinaryTo(bos);
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings("unchecked") // cast to U
                 U result =
                     (U)
                         resourceTelemetryInstance

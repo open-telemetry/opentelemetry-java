@@ -119,7 +119,7 @@ final class AttributeListFactory implements Factory<List<AttributeNameValueModel
             + type.name());
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe due to type check
   @Nullable
   private static <T> List<T> checkListOfType(Object value, Class<T> expectedType) {
     if (!(value instanceof List)) {

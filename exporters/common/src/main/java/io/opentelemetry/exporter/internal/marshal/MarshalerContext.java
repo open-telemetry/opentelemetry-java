@@ -220,7 +220,7 @@ public final class MarshalerContext {
 
   private Object[] instances = new Object[16];
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to generic T
   public <T> T getInstance(Key key, Supplier<T> supplier) {
     if (key.index >= instances.length) {
       Object[] newData = new Object[instances.length * 2];

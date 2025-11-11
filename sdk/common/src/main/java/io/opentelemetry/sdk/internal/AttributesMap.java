@@ -79,7 +79,7 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
     return totalAddedValues;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to T
   @Override
   @Nullable
   public <T> T get(AttributeKey<T> key) {

@@ -192,7 +192,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
 
   @Nullable
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe due to type check
   public <T> List<T> getScalarList(String name, Class<T> scalarType) {
     if (!SUPPORTED_SCALAR_TYPES.contains(scalarType)) {
       throw new DeclarativeConfigException(

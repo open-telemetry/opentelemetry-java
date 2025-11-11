@@ -150,7 +150,7 @@ public final class ViewConfig {
   }
 
   @Nullable
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe due to isInstance check
   private static <T> T getAsType(Map<String, Object> map, String key, Class<T> type) {
     Object value = map.get(key);
     if (value != null && !type.isInstance(value)) {
@@ -222,7 +222,7 @@ public final class ViewConfig {
   }
 
   @Nullable
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe due to isInstance check
   private static List<Double> getBucketBoundaries(Map<String, Object> aggregationArgs) {
     List<Object> boundaryObjects =
         ((List<Object>) getAsType(aggregationArgs, "bucket_boundaries", List.class));

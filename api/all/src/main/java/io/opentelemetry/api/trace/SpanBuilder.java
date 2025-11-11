@@ -259,7 +259,7 @@ public interface SpanBuilder {
    * @return this.
    * @since 1.2.0
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // use of raw AttributeKey
   default SpanBuilder setAllAttributes(Attributes attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return this;
