@@ -27,7 +27,7 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
 
   private AnyValueStatelessMarshaler() {}
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe by discriminated type
   @Override
   public void writeTo(Serializer output, Value<?> value, MarshalerContext context)
       throws IOException {
@@ -71,7 +71,7 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
     throw new IllegalArgumentException("Unsupported value type.");
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe by discriminated type
   @Override
   public int getBinarySerializedSize(Value<?> value, MarshalerContext context) {
     switch (value.getType()) {

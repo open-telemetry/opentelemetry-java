@@ -186,7 +186,7 @@ final class SpanBuilderShim implements SpanBuilder {
     return this;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({"rawtypes", "unchecked"}) // use of raw AttributeKey
   @Override
   public Span start() {
     Baggage baggage;

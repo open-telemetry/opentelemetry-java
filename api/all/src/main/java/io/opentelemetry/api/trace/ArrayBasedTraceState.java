@@ -54,7 +54,7 @@ abstract class ArrayBasedTraceState implements TraceState {
   }
 
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked", "rawtypes"}) // wrap takes List<Object>
   public Map<String, String> asMap() {
     return ReadOnlyArrayMap.wrap((List) getEntries());
   }

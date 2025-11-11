@@ -25,7 +25,7 @@ public final class ArrayBasedStack<T> {
 
   private int size;
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // unchecked cast to T[]
   public ArrayBasedStack() {
     array = (T[]) new Object[DEFAULT_CAPACITY];
     size = 0;
@@ -71,7 +71,7 @@ public final class ArrayBasedStack<T> {
     return size;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // unchecked cast to T[]
   private void resizeArray(int newCapacity) {
     T[] newArray = (T[]) new Object[newCapacity];
     System.arraycopy(array, 0, newArray, 0, size);

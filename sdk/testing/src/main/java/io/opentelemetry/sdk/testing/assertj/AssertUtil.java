@@ -28,7 +28,7 @@ final class AssertUtil {
     for (Consumer<U> assertion : assertions) {
       builder.add(item -> assertion.accept(assertionFactory.apply(item)));
     }
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes", "unchecked"}) // generic array creation
     Consumer<T>[] consumers = builder.build().toArray(Consumer[]::new);
     return consumers;
   }

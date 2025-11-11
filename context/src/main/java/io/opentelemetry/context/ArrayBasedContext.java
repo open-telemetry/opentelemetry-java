@@ -56,7 +56,7 @@ final class ArrayBasedContext implements Context {
   public <V> V get(ContextKey<V> key) {
     for (int i = 0; i < entries.length; i += 2) {
       if (entries[i] == key) {
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked") // entries are typed as Object[]
         V result = (V) entries[i + 1];
         return result;
       }

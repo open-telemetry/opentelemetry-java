@@ -36,7 +36,7 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
   private LastValueAggregation() {}
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to generic Aggregator<T>
   public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilterInternal exemplarFilter,

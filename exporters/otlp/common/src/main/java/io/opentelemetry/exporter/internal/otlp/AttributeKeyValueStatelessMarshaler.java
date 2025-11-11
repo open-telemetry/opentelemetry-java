@@ -72,7 +72,7 @@ public final class AttributeKeyValueStatelessMarshaler
       implements StatelessMarshaler2<AttributeKey<?>, Object> {
     static final ValueStatelessMarshaler INSTANCE = new ValueStatelessMarshaler();
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // Safe by discriminated type
     @Override
     public int getBinarySerializedSize(
         AttributeKey<?> attributeKey, Object value, MarshalerContext context) {
@@ -106,7 +106,7 @@ public final class AttributeKeyValueStatelessMarshaler
       throw new IllegalArgumentException("Unsupported attribute type.");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // Safe by discriminated type
     @Override
     public void writeTo(
         Serializer output, AttributeKey<?> attributeKey, Object value, MarshalerContext context)

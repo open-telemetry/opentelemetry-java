@@ -71,7 +71,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
 
   /** Returns the value for the given {@code key}, or {@code null} if the key is not present. */
   @Nullable
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // data is typed as Object[]
   public final V get(K key) {
     if (key == null) {
       return null;
@@ -85,7 +85,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   }
 
   /** Iterates over all the key-value pairs of labels contained by this instance. */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // data is typed as Object[]
   public final void forEach(BiConsumer<? super K, ? super V> consumer) {
     if (consumer == null) {
       return;
@@ -150,7 +150,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
    * Left source half is sourceArray[ beginIndex:middleIndex-1]. Right source half is sourceArray[
    * middleIndex:endIndex-1]. Result is targetArray[ beginIndex:endIndex-1].
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // sourceArray and targetArray is typed as Object[]
   private static <K> void merge(
       Object[] sourceArray,
       int beginIndex,
@@ -192,7 +192,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     return keyComparator.compare(key, pivotKey);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // data is typed as Object[]
   private static <K> Object[] dedupe(Object[] data, Comparator<K> keyComparator) {
     Object previousKey = null;
     int size = 0;

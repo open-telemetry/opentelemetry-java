@@ -111,7 +111,7 @@ public final class PooledHashMap<K, V> implements Map<K, V> {
     return null;
   }
 
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings({"unchecked"}) // generic array creation
   private void rehash() {
     ArrayList<Entry<K, V>>[] oldTable = table;
     table = (ArrayList<Entry<K, V>>[]) new ArrayList<?>[2 * oldTable.length];

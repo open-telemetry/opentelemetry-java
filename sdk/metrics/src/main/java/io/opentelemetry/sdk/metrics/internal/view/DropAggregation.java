@@ -30,7 +30,7 @@ public final class DropAggregation implements Aggregation, AggregatorFactory {
   private DropAggregation() {}
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to generic Aggregator<T>
   public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilterInternal exemplarFilter,

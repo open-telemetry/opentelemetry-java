@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 public class IncubatingUtil {
   private IncubatingUtil() {}
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // casting to T
   public static <T> T incubatingApiIfAvailable(T stableApi, String incubatingClassName) {
     try {
       Class<?> incubatingClass = Class.forName(incubatingClassName);

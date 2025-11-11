@@ -22,7 +22,7 @@ final class AttributeArrayAnyValueStatelessMarshaler<T>
 
   private AttributeArrayAnyValueStatelessMarshaler() {}
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe by discriminated type
   @Override
   public void writeTo(Serializer output, AttributeType type, List<T> list, MarshalerContext context)
       throws IOException {
@@ -57,7 +57,7 @@ final class AttributeArrayAnyValueStatelessMarshaler<T>
     }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe by discriminated type
   @Override
   public int getBinarySerializedSize(AttributeType type, List<T> list, MarshalerContext context) {
     switch (type) {

@@ -21,7 +21,7 @@ public final class AnyValueMarshaler {
 
   private AnyValueMarshaler() {}
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe by discriminated type
   public static MarshalerWithSize create(Value<?> value) {
     switch (value.getType()) {
       case STRING:

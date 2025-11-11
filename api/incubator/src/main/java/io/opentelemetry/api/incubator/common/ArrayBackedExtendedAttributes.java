@@ -47,14 +47,14 @@ final class ArrayBackedExtendedAttributes
     return new ArrayBackedExtendedAttributesBuilder(new ArrayList<>(data()));
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to T
   @Override
   @Nullable
   public <T> T get(ExtendedAttributeKey<T> key) {
     return (T) super.get(key);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // use of raw ExtendedAttributeKey
   @Override
   public Attributes asAttributes() {
     if (attributes == null) {
