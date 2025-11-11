@@ -7,7 +7,9 @@ plugins {
 
 description = "OpenTelemetry Graal Integration Tests (Incubating)"
 otelJava.moduleName.set("io.opentelemetry.graal.integration.tests.incubating")
-otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_11)
+// org.graalvm.buildtools.native plugin requires java 17+ as of version 0.9.26
+// https://github.com/graalvm/native-build-tools/blob/master/docs/src/docs/asciidoc/index.adoc
+otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_17)
 
 sourceSets {
   main {
@@ -24,22 +26,6 @@ dependencies {
   implementation(project(":sdk:testing"))
   implementation(project(":exporters:otlp:all"))
   implementation(project(":api:incubator"))
-}
-
-// org.graalvm.buildtools.native plugin requires java 17+ as of version 0.11.1
-val minJavaVersionForGraalVM = 17
-
-// https://github.com/graalvm/native-build-tools/blob/master/docs/src/docs/asciidoc/index.adoc
-tasks {
-  withType<JavaCompile>().configureEach {
-    sourceCompatibility = minJavaVersionForGraalVM.toString()
-    targetCompatibility = minJavaVersionForGraalVM.toString()
-    options.release.set(minJavaVersionForGraalVM)
-  }
-  withType<Test>().configureEach {
-    val testJavaVersion: String? by project
-    enabled = (testJavaVersion?.toInt() ?: minJavaVersionForGraalVM) >= minJavaVersionForGraalVM
-  }
 }
 
 graalvmNative {
