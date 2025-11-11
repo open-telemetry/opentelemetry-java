@@ -88,7 +88,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     return keyValueMarshalers;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe by disriminated type
   private static KeyValueMarshaler create(AttributeKey<?> attributeKey, Object value) {
     byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {

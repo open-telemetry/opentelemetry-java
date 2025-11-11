@@ -79,7 +79,7 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    * log record, there is no difference between adding attributes using the standard or extended
    * attribute APIs.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // use of raw AttributeKey
   @Override
   default ExtendedLogRecordBuilder setAllAttributes(Attributes attributes) {
     if (attributes == null || attributes.isEmpty()) {
@@ -100,7 +100,7 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    * log record, there is no difference between adding attributes using the standard or extended
    * attribute APIs.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // use of raw ExtendedAttributeKey
   default ExtendedLogRecordBuilder setAllAttributes(ExtendedAttributes attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return this;

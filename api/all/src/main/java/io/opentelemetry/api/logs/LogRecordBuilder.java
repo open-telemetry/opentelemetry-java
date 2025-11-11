@@ -94,7 +94,7 @@ public interface LogRecordBuilder {
    * Sets attributes. If the {@link LogRecordBuilder} previously contained a mapping for any of the
    * keys, the old values are replaced by the specified values.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // use of raw AttributeKey
   default LogRecordBuilder setAllAttributes(Attributes attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return this;

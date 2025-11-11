@@ -64,7 +64,7 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to generic Aggregator<T>
   public <T extends PointData> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilterInternal exemplarFilter,

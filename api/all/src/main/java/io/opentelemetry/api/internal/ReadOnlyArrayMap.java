@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("unchecked") // array is typed as List<Object>
 public final class ReadOnlyArrayMap<K, V> extends AbstractMap<K, V> {
 
   /** Returns a read-only view of the given {@code array}. */
