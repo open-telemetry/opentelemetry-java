@@ -58,6 +58,7 @@ import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import java.io.Closeable;
@@ -124,7 +125,9 @@ class OpenTelemetryConfigurationFactoryTest {
         new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.1");
     ExtendedOpenTelemetrySdk expectedSdk =
         ExtendedOpenTelemetrySdk.create(
-            OpenTelemetrySdk.builder().build(), SdkConfigProvider.create(model));
+            OpenTelemetrySdk.builder().build(),
+            SdkConfigProvider.create(model),
+            Resource.getDefault());
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
@@ -155,7 +158,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                                 .withOtlpHttp(new OtlpHttpExporterModel()))))));
     ExtendedOpenTelemetrySdk expectedSdk =
         ExtendedOpenTelemetrySdk.create(
-            OpenTelemetrySdk.builder().build(), SdkConfigProvider.create(model));
+            OpenTelemetrySdk.builder().build(), SdkConfigProvider.create(model), Resource.empty());
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
@@ -312,7 +315,8 @@ class OpenTelemetryConfigurationFactoryTest {
                             View.builder().setName("stream-name").build())
                         .build())
                 .build(),
-            SdkConfigProvider.create(model));
+            SdkConfigProvider.create(model),
+            expectedResource);
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
