@@ -47,6 +47,8 @@ public class OtlpHttpLogRecordExporterComponentProvider implements ComponentProv
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
+        builder::setLogThrottlingRate,
+        builder::setLogThrottlingTimeUnit,
         /* isHttpProtobuf= */ true);
 
     return builder.build();
