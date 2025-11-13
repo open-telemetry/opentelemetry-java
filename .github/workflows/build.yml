@@ -24,7 +24,7 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - macos-13
+          - macos-15
           - ubuntu-latest
           - windows-latest
         test-java-version:
@@ -43,13 +43,13 @@ jobs:
         exclude:
           - os: macos-latest
             test-java-version: 8
-          - os: macos-13
+          - os: macos-15
             test-java-version: 11
-          - os: macos-13
+          - os: macos-15
             test-java-version: 17
-          - os: macos-13
+          - os: macos-15
             test-java-version: 21
-          - os: macos-13
+          - os: macos-15
             test-java-version: 25 # renovate: datasource=java-version
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
