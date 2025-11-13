@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+@SuppressWarnings("deprecation") // Testing deprecated EXTENDED_ATTRIBUTES until removed
 class LogsRequestMarshalerIncubatingTest {
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
