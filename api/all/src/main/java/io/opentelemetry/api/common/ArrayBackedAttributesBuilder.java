@@ -38,7 +38,6 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public <T> AttributesBuilder put(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
