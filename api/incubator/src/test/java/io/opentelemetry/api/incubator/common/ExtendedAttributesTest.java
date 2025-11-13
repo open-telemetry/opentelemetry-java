@@ -600,4 +600,111 @@ class ExtendedAttributesTest {
     assertThat(attributes.get(doubleArrayKey("key"))).isEmpty();
     assertThat(attributes.get(booleanArrayKey("key"))).isEmpty();
   }
+
+  @Test
+  void getNullKey() {
+    ExtendedAttributes attributes = ExtendedAttributes.builder().put("key", "value").build();
+    assertThat(attributes.get((ExtendedAttributeKey<?>) null)).isNull();
+  }
+
+  @Test
+  void putNullKey() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put((ExtendedAttributeKey<String>) null, "value").build();
+    assertThat(attributes.isEmpty()).isTrue();
+  }
+
+  @Test
+  void putNullValue() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(stringKey("key"), null).build();
+    assertThat(attributes.isEmpty()).isTrue();
+  }
+
+  @Test
+  void putEmptyKey() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(stringKey(""), "value").build();
+    assertThat(attributes.isEmpty()).isTrue();
+  }
+
+  @Test
+  void extendedAttributesNotConvertibleToValue() {
+    ExtendedAttributes nested = ExtendedAttributes.builder().put("child", "value").build();
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(ExtendedAttributeKey.extendedAttributesKey("key"), nested)
+            .build();
+
+    // Getting as VALUE should return null since EXTENDED_ATTRIBUTES cannot be converted to Value
+    assertThat(attributes.get(valueKey("key"))).isNull();
+  }
+
+  @Test
+  void complexValueWithKeyValueList() {
+    // KEY_VALUE_LIST should be kept as VALUE type
+    Value<?> kvListValue = Value.of(Collections.emptyMap());
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), kvListValue).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(kvListValue);
+
+    // forEach should show VALUE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), kvListValue));
+  }
+
+  @Test
+  void complexValueWithBytes() {
+    // BYTES should be kept as VALUE type
+    Value<?> bytesValue = Value.of(new byte[] {1, 2, 3});
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), bytesValue).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(bytesValue);
+
+    // forEach should show VALUE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), bytesValue));
+  }
+
+  @Test
+  void complexValueWithNonHomogeneousArray() {
+    // Non-homogeneous array should be kept as VALUE type
+    Value<?> mixedArray = Value.of(Arrays.asList(Value.of("string"), Value.of(123L)));
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), mixedArray).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(mixedArray);
+
+    // forEach should show VALUE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), mixedArray));
+  }
+
+  @Test
+  void complexValueWithNestedArray() {
+    // Array containing arrays should be kept as VALUE type
+    Value<?> nestedArray =
+        Value.of(
+            Arrays.asList(
+                Value.of(Arrays.asList(Value.of("a"), Value.of("b"))),
+                Value.of(Arrays.asList(Value.of("c"), Value.of("d")))));
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), nestedArray).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(nestedArray);
+
+    // forEach should show VALUE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), nestedArray));
+  }
 }
