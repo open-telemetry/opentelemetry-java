@@ -2,6 +2,61 @@
 
 ## Unreleased
 
+## Version 1.56.0 (2025-11-07)
+
+### API
+
+#### Incubator
+
+* Support ExtendedOpenTelemetry in GlobalOpenTelemetry
+  ([#7799](https://github.com/open-telemetry/opentelemetry-java/pull/7799))
+
+### SDK
+
+* Changes to MeterConfig, LoggerConfig, TracerConfig are guaranteed to be eventually visible
+  ([#7706](https://github.com/open-telemetry/opentelemetry-java/pull/7706))
+
+#### Metrics
+
+* Stabilize ExemplarFilter
+  ([#7768](https://github.com/open-telemetry/opentelemetry-java/pull/7768))
+* Type specific exemplar reservoirs
+  ([#7758](https://github.com/open-telemetry/opentelemetry-java/pull/7758))
+
+#### Extensions
+
+* SDK incubator: Add incubator ComposableRuleBasedSampler
+  ([#7787](https://github.com/open-telemetry/opentelemetry-java/pull/7787))
+* SDK incubator: Add incubator ComposableAnnotatingSampler
+  ([#7804](https://github.com/open-telemetry/opentelemetry-java/pull/7804))
+* SDK incubator: Rename ComposableTraceIdRatioBased to ComposableProbability
+  ([#7786](https://github.com/open-telemetry/opentelemetry-java/pull/7786))
+* Declarative config: **BREAKING** Remove component provider generic type
+  ([#7606](https://github.com/open-telemetry/opentelemetry-java/pull/7606))
+* Declarative config: Add declarative config support for ExemplarFilter
+  ([#7769](https://github.com/open-telemetry/opentelemetry-java/pull/7769))
+* Declarative config: Fix a few declarative configuration bugs
+  ([#7807](https://github.com/open-telemetry/opentelemetry-java/pull/7807))
+
+### Project tooling
+
+* Move to oracle bare metal benchmark runner
+  ([#7740](https://github.com/open-telemetry/opentelemetry-java/pull/7740))
+* Enable Develocity build scans
+  ([#7776](https://github.com/open-telemetry/opentelemetry-java/pull/7776))
+* Document GPG signing key
+  ([#7783](https://github.com/open-telemetry/opentelemetry-java/pull/7783))
+* Update build to use java 21
+  ([#7784](https://github.com/open-telemetry/opentelemetry-java/pull/7784))
+* Sync repository-settings.md documentation
+  ([#7791](https://github.com/open-telemetry/opentelemetry-java/pull/7791))
+* Fix gradle deprecation warning
+  ([#7780](https://github.com/open-telemetry/opentelemetry-java/pull/7780))
+* Small alignments of workflows across the 6 Java repos
+  ([#7806](https://github.com/open-telemetry/opentelemetry-java/pull/7806))
+* Implement min java version gradle tooling from instrumentation repo
+  ([#7801](https://github.com/open-telemetry/opentelemetry-java/pull/7801))
+
 ## Version 1.55.0 (2025-10-13)
 
 ### API

@@ -81,7 +81,11 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
-  /** Set the {@link ExemplarFilter} used for all instruments from all meters. */
+  /**
+   * Set the {@link ExemplarFilter} used for all instruments from all meters.
+   *
+   * @since 1.56.0
+   */
   public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
     this.exemplarFilter = ExemplarFilterInternal.asExemplarFilterInternal(filter);
     return this;

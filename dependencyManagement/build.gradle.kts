@@ -8,7 +8,7 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 
-val autoValueVersion = "1.11.0"
+val autoValueVersion = "1.11.1"
 val errorProneVersion = "2.43.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.20.1",
   "com.google.guava:guava-bom:33.5.0-jre",
-  "com.google.protobuf:protobuf-bom:4.33.0",
+  "com.google.protobuf:protobuf-bom:4.33.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.16.2", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.76.0",
@@ -69,7 +69,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.63.0",
+  "com.google.api.grpc:proto-google-common-protos:2.63.1",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",

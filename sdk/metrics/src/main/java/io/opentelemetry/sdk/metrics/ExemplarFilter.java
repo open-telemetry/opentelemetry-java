@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.TraceBasedExemplarFilter;
  * reservoir ({@link DoubleExemplarReservoir}, {@link LongExemplarReservoir}.
  *
  * @see SdkMeterProviderBuilder#setExemplarFilter(ExemplarFilter)
+ * @since 1.56.0
  */
 // TODO(jack-berg): Have methods when custom filters are supported.
 @SuppressWarnings("InterfaceWithOnlyStatics")
