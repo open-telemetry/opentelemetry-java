@@ -22,5 +22,23 @@ public enum ExtendedAttributeType {
   LONG_ARRAY,
   DOUBLE_ARRAY,
   // Extended types unique to ExtendedAttributes
-  EXTENDED_ATTRIBUTES;
+  /**
+   * Complex attribute type for {@link io.opentelemetry.api.common.Value}-based maps.
+   *
+   * @deprecated Use {@link #VALUE} with {@link io.opentelemetry.api.common.Value}-based maps
+   *     instead.
+   */
+  @Deprecated
+  EXTENDED_ATTRIBUTES,
+  /**
+   * Simple attributes ({@link ExtendedAttributeType#STRING}, {@link ExtendedAttributeType#LONG},
+   * {@link ExtendedAttributeType#DOUBLE}, {@link ExtendedAttributeType#BOOLEAN}, {@link
+   * ExtendedAttributeType#STRING_ARRAY}, {@link ExtendedAttributeType#LONG_ARRAY}, {@link
+   * ExtendedAttributeType#DOUBLE_ARRAY}, {@link ExtendedAttributeType#BOOLEAN_ARRAY}) SHOULD be
+   * used whenever possible. Instrumentations SHOULD assume that backends do not index individual
+   * properties of complex attributes, that querying or aggregating on such properties is
+   * inefficient and complicated, and that reporting complex attributes carries higher performance
+   * overhead.
+   */
+  VALUE;
 }

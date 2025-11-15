@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeType;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
@@ -140,7 +141,8 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
       implements StatelessMarshaler2<ExtendedAttributeKey<?>, Object> {
     static final ValueStatelessMarshaler INSTANCE = new ValueStatelessMarshaler();
 
-    @SuppressWarnings("unchecked")
+    // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
+    @SuppressWarnings({"unchecked", "deprecation"})
     @Override
     public int getBinarySerializedSize(
         ExtendedAttributeKey<?> attributeKey, Object value, MarshalerContext context) {
@@ -174,13 +176,17 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
               (ExtendedAttributes) value,
               ExtendedAttributesKeyValueListStatelessMarshaler.INSTANCE,
               context);
+        case VALUE:
+          return AnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
+              (Value<?>) value, context);
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with
       // unaligned versions which are not supported.
       throw new IllegalArgumentException("Unsupported attribute type.");
     }
 
-    @SuppressWarnings("unchecked")
+    // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
+    @SuppressWarnings({"unchecked", "deprecation"})
     @Override
     public void writeTo(
         Serializer output,
@@ -219,6 +225,9 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
               (ExtendedAttributes) value,
               ExtendedAttributesKeyValueListStatelessMarshaler.INSTANCE,
               context);
+          return;
+        case VALUE:
+          AnyValueStatelessMarshaler.INSTANCE.writeTo(output, (Value<?>) value, context);
           return;
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with
