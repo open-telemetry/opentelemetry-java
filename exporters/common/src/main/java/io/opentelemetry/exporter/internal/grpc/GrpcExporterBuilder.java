@@ -76,6 +76,10 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
 
+  private double throttlingLoggerRateLimit = 5;
+  private double throttlingLoggerThrottledRateLimit = 1;
+  private TimeUnit throttlingLoggerTimeUnit = TimeUnit.MINUTES;
+
   public GrpcExporterBuilder(
       StandardComponentId.ExporterType exporterType,
       long defaultTimeoutSecs,
@@ -182,6 +186,17 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public GrpcExporterBuilder<T> setLogThrottlingRate(double rateLimit, double throttledRateLimit) {
+    this.throttlingLoggerRateLimit = rateLimit;
+    this.throttlingLoggerThrottledRateLimit = throttledRateLimit;
+    return this;
+  }
+
+  public GrpcExporterBuilder<T> setLogThrottlingTimeUnit(TimeUnit rateTimeUnit) {
+    this.throttlingLoggerTimeUnit = rateTimeUnit;
+    return this;
+  }
+
   @SuppressWarnings("BuilderReturnThis")
   public GrpcExporterBuilder<T> copy() {
     GrpcExporterBuilder<T> copy =
@@ -206,6 +221,9 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.grpcChannel = grpcChannel;
     copy.componentLoader = componentLoader;
+    copy.throttlingLoggerRateLimit = throttlingLoggerRateLimit;
+    copy.throttlingLoggerThrottledRateLimit = throttlingLoggerThrottledRateLimit;
+    copy.throttlingLoggerTimeUnit = throttlingLoggerTimeUnit;
     return copy;
   }
 
@@ -255,7 +273,10 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         internalTelemetryVersion,
         ComponentId.generateLazy(exporterType),
         meterProviderSupplier,
-        endpoint.toString());
+        endpoint.toString(),
+        throttlingLoggerRateLimit,
+        throttlingLoggerThrottledRateLimit,
+        throttlingLoggerTimeUnit);
   }
 
   public String toString(boolean includePrefixAndSuffix) {

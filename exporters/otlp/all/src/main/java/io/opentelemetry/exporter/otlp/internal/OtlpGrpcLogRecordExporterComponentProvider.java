@@ -47,6 +47,8 @@ public class OtlpGrpcLogRecordExporterComponentProvider implements ComponentProv
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
+        builder::setLogThrottlingRate,
+        builder::setLogThrottlingTimeUnit,
         /* isHttpProtobuf= */ false);
 
     return builder.build();
