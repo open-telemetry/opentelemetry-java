@@ -44,6 +44,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -65,6 +67,8 @@ import okhttp3.Response;
  * at any time.
  */
 public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T> {
+
+  private static final Logger logger = Logger.getLogger(OkHttpGrpcSender.class.getName());
 
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
@@ -229,7 +233,12 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
                 try {
                   // Wait up to 5 seconds for threads to terminate
                   // Even if timeout occurs, we succeed since these are daemon threads
-                  executorService.awaitTermination(5, TimeUnit.SECONDS);
+                  boolean terminated = executorService.awaitTermination(5, TimeUnit.SECONDS);
+                  if (!terminated) {
+                    logger.log(
+                        Level.WARNING,
+                        "Executor did not terminate within 5 seconds, proceeding with shutdown since threads are daemon threads.");
+                  }
                 } catch (InterruptedException e) {
                   Thread.currentThread().interrupt();
                 } finally {
