@@ -14,6 +14,8 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,10 +31,6 @@ public abstract class AbstractOpenTelemetryTest {
 
   private void setOpenTelemetry() {
     GlobalOpenTelemetry.set(getOpenTelemetry());
-  }
-
-  private static OpenTelemetry getGlobalOpenTelemetry() {
-    return GlobalOpenTelemetry.get();
   }
 
   @AfterEach
@@ -90,7 +88,9 @@ public abstract class AbstractOpenTelemetryTest {
 
   @Test
   void setThenSet() {
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isSameAs(OpenTelemetry.noop());
     setOpenTelemetry();
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isNotSameAs(OpenTelemetry.noop());
     assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
@@ -99,12 +99,72 @@ public abstract class AbstractOpenTelemetryTest {
 
   @Test
   void getThenSet() {
-    assertThat(getGlobalOpenTelemetry().getClass().getName())
-        .isEqualTo("io.opentelemetry.api.DefaultOpenTelemetry");
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isSameAs(OpenTelemetry.noop());
+    // Calling GlobalOpenTelemetry.get() has the side affect of setting GlobalOpenTelemetry to an
+    // (obfuscated) noop.
+    // Call GlobalOpenTelemetry.get() using a utility method so we can later assert it was
+    // responsible for setting GlobalOpenTelemetry.
+    assertThat(getGlobalOpenTelemetry())
+        .satisfies(
+            instance ->
+                assertThat(instance.getClass().getName())
+                    .isEqualTo("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry"))
+        .extracting("delegate")
+        .isSameAs(OpenTelemetry.noop());
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isNotSameAs(OpenTelemetry.noop());
     assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
         .hasStackTraceContaining("getGlobalOpenTelemetry");
+  }
+
+  private static OpenTelemetry getGlobalOpenTelemetry() {
+    return GlobalOpenTelemetry.get();
+  }
+
+  @Test
+  void getOrNoop() {
+    // Should be able to call getOrNoop multiple times without side effect and later call set.
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isSameAs(OpenTelemetry.noop());
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isSameAs(OpenTelemetry.noop());
+    setOpenTelemetry();
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isNotSameAs(OpenTelemetry.noop());
+  }
+
+  @Test
+  void getOrSet_NotPreviouslySet() {
+    AtomicInteger supplierCallCount = new AtomicInteger();
+    Supplier<OpenTelemetry> supplier =
+        () -> {
+          supplierCallCount.incrementAndGet();
+          return OpenTelemetry.noop();
+        };
+
+    assertThat(GlobalOpenTelemetry.getOrSet(supplier)).isSameAs(OpenTelemetry.noop());
+    assertThat(supplierCallCount.get()).isEqualTo(1);
+
+    // The second time getOrSet is called, we get an obfuscated instance
+    assertThat(GlobalOpenTelemetry.getOrSet(supplier).getClass().getName())
+        .isEqualTo("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry");
+    assertThat(supplierCallCount.get()).isEqualTo(1);
+  }
+
+  @Test
+  void getOrSet_PreviouslySet() {
+    setOpenTelemetry();
+
+    AtomicInteger supplierCallCount = new AtomicInteger();
+    Supplier<OpenTelemetry> supplier =
+        () -> {
+          supplierCallCount.incrementAndGet();
+          return OpenTelemetry.noop();
+        };
+
+    assertThat(GlobalOpenTelemetry.getOrSet(supplier).getClass().getName())
+        .isEqualTo("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry");
+    assertThat(GlobalOpenTelemetry.getOrSet(supplier).getClass().getName())
+        .isEqualTo("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry");
+    assertThat(supplierCallCount.get()).isEqualTo(0);
   }
 
   @Test
