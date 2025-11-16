@@ -104,10 +104,10 @@
       customType: 'regex',
       datasourceTemplate: 'java-version',
       managerFilePatterns: [
-        '.github/workflows/**'
+        '.github/workflows/**',
       ],
       matchStrings: [
-        '(?<currentValue>\\d+) # renovate: datasource=java-version',
+        '(?<currentValue>\\d+) # renovate\\(java-version\\)',
       ],
       depNameTemplate: 'java',
       extractVersionTemplate: '^(?<version>\\d+)',
@@ -116,7 +116,7 @@
       customType: 'regex',
       datasourceTemplate: 'docker',
       managerFilePatterns: [
-        '**/*.java'
+        '**/*.java',
       ],
       matchStrings: [
         '"(?<depName>otel/opentelemetry-collector-contrib):(?<currentValue>[^@"]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"',
