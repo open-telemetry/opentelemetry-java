@@ -46,21 +46,20 @@ import javax.annotation.concurrent.ThreadSafe;
  *       not the OpenTelemetry javaagent is installed.
  * </ul>
  *
- * <p>Applications with custom instrumentation should call {@link #getOrSet(Supplier)} once during
- * initialization, and pass the resulting instance around manually (or with dependency injection) to
- * install custom instrumentation. This results in the following behavior:
+ * <p>Applications with custom instrumentation should call {@link #isSet()} once during
+ * initialization to access the javaagent instance or initialize (e.g. {@code isSet() ?
+ * GlobalOpenTelemetry.get() : initializeSdk()}), and pass the resulting instance around manually
+ * (or with dependency injection) to install custom instrumentation. This results in the following
+ * behavior:
  *
  * <ul>
  *   <li>If the OpenTelemetry javaagent is installed, custom instrumentation will use the {@link
  *       OpenTelemetry} it installs.
- *   <li>If the OpenTelemetry javaagent is not installed, custom instrumentation will use the {@link
- *       OpenTelemetry} instance returned by {@link Supplier} passed to {@link #getOrSet(Supplier)}.
+ *   <li>If the OpenTelemetry javaagent is not installed, custom instrumentation will use an {@link
+ *       OpenTelemetry} instance initialized by the application.
  * </ul>
- *
- * @see TracerProvider
- * @see ContextPropagators
  */
-// We intentionally assign to be use for error reporting.
+// We intentionally assign for error reporting.
 @SuppressWarnings("StaticAssignmentOfThrowable")
 public final class GlobalOpenTelemetry {
 
@@ -102,26 +101,14 @@ public final class GlobalOpenTelemetry {
   }
 
   /**
-   * Returns the registered global {@link OpenTelemetry} if set, or else calls {@link
-   * #set(Supplier)} with the {@code supplier}.
-   *
-   * <p>NOTE: if the global instance is set, the response is obfuscated to prevent callers from
-   * casting to SDK implementation instances and inappropriately accessing non-instrumentation APIs.
-   *
-   * <p>NOTE: This does not result in the {@link #set(OpenTelemetry)} side effects of {@link
-   * #get()}.
+   * Returns {@code true} if {@link GlobalOpenTelemetry} is set, otherwise {@code false}.
    *
    * <p>Application custom instrumentation should use this method during initialization. See class
    * javadoc for more details.
    */
-  public static OpenTelemetry getOrSet(Supplier<OpenTelemetry> supplier) {
+  public static boolean isSet() {
     synchronized (mutex) {
-      if (globalOpenTelemetry == null) {
-        OpenTelemetry openTelemetry = supplier.get();
-        set(openTelemetry);
-        return openTelemetry;
-      }
-      return globalOpenTelemetry;
+      return globalOpenTelemetry != null;
     }
   }
 
@@ -133,11 +120,11 @@ public final class GlobalOpenTelemetry {
    * <p>NOTE: all returned instanced are obfuscated to prevent callers from casting to SDK
    * implementation instances and inappropriately accessing non-instrumentation APIs.
    *
-   * <p>Native instrumentations should use {@link #getOrNoop()} instad. See class javadoc for more
+   * <p>Native instrumentations should use {@link #getOrNoop()} instead. See class javadoc for more
    * details.
    *
-   * <p>Application custom instrumentation should use {@link #getOrSet(Supplier)} instead. See class
-   * javadoc for more details.
+   * <p>Application custom instrumentation should use {@link #isSet()} and only call this if the
+   * response is {@code true}. See class javadoc for more details.
    *
    * <p>If the global instance has not been set, and {@code
    * io.opentelemetry:opentelemetry-sdk-extension-autoconfigure} is present, and {@value
