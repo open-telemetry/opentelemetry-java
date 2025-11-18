@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
@@ -67,9 +68,15 @@ class OkHttpGrpcSenderTest {
     // This test verifies that shutdown() returns a CompletableResultCode that only
     // completes AFTER threads terminate, not immediately.
 
+    // Allocate an ephemeral port and immediately close it to get a port with nothing listening
+    int port;
+    try (ServerSocket socket = new ServerSocket(0)) {
+      port = socket.getLocalPort();
+    }
+
     OkHttpGrpcSender<TestMarshaler> sender =
         new OkHttpGrpcSender<>(
-            "http://localhost:54321", // Non-existent endpoint
+            "http://localhost:" + port, // Non-existent endpoint to trigger thread creation
             null,
             Duration.ofSeconds(10).toNanos(),
             Duration.ofSeconds(10).toNanos(),
@@ -79,7 +86,6 @@ class OkHttpGrpcSenderTest {
             null,
             null);
 
-    // Send a request to trigger thread creation
     CompletableResultCode sendResult = new CompletableResultCode();
     sender.send(new TestMarshaler(), response -> sendResult.succeed(), error -> sendResult.fail());
 
@@ -88,9 +94,9 @@ class OkHttpGrpcSenderTest {
 
     CompletableResultCode shutdownResult = sender.shutdown();
 
-    // The key test: the CompletableResultCode should NOT be done immediately
+    // The key test: the CompletableResultCode should NOT be done() immediately
     // because we need to wait for threads to terminate.
-    // With the old code (immediate ofSuccess()), this would fail.
+    // Before #7840, this would fail.
     assertFalse(
         shutdownResult.isDone(),
         "CompletableResultCode should not be done immediately - it should wait for thread termination");
