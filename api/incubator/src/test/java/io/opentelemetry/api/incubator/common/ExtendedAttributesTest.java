@@ -707,4 +707,17 @@ class ExtendedAttributesTest {
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(valueKey("key"), nestedArray));
   }
+
+  @Test
+  void getNonExistentArrayType() {
+    // Test the code path where we look for an array type that doesn't exist
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put("key", "value").build();
+
+    // Looking for an array type when only a string exists should return null
+    assertThat(attributes.get(stringArrayKey("key"))).isNull();
+    assertThat(attributes.get(longArrayKey("key"))).isNull();
+    assertThat(attributes.get(doubleArrayKey("key"))).isNull();
+    assertThat(attributes.get(booleanArrayKey("key"))).isNull();
+  }
 }
