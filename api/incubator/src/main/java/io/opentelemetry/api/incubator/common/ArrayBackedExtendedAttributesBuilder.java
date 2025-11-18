@@ -56,28 +56,24 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
     return this;
   }
 
+  @SuppressWarnings("unchecked")
   private void putValue(ExtendedAttributeKey<?> key, Value<?> valueObj) {
     // Convert VALUE type to narrower type when possible
     String keyName = key.getKey();
     switch (valueObj.getType()) {
       case STRING:
-        data.add(stringKey(keyName));
-        data.add(valueObj.getValue());
+        put(stringKey(keyName), ((Value<String>) valueObj).getValue());
         return;
       case LONG:
-        data.add(longKey(keyName));
-        data.add(valueObj.getValue());
+        put(longKey(keyName), ((Value<Long>) valueObj).getValue());
         return;
       case DOUBLE:
-        data.add(doubleKey(keyName));
-        data.add(valueObj.getValue());
+        put(doubleKey(keyName), ((Value<Double>) valueObj).getValue());
         return;
       case BOOLEAN:
-        data.add(booleanKey(keyName));
-        data.add(valueObj.getValue());
+        put(booleanKey(keyName), ((Value<Boolean>) valueObj).getValue());
         return;
       case ARRAY:
-        @SuppressWarnings("unchecked")
         List<Value<?>> arrayValues = (List<Value<?>>) valueObj.getValue();
         ExtendedAttributeType attributeType = attributeType(arrayValues);
         switch (attributeType) {
@@ -86,32 +82,28 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
             for (Value<?> v : arrayValues) {
               strings.add((String) v.getValue());
             }
-            data.add(stringArrayKey(keyName));
-            data.add(strings);
+            put(stringArrayKey(keyName), strings);
             return;
           case LONG_ARRAY:
             List<Long> longs = new ArrayList<>();
             for (Value<?> v : arrayValues) {
               longs.add((Long) v.getValue());
             }
-            data.add(longArrayKey(keyName));
-            data.add(longs);
+            put(longArrayKey(keyName), longs);
             return;
           case DOUBLE_ARRAY:
             List<Double> doubles = new ArrayList<>();
             for (Value<?> v : arrayValues) {
               doubles.add((Double) v.getValue());
             }
-            data.add(doubleArrayKey(keyName));
-            data.add(doubles);
+            put(doubleArrayKey(keyName), doubles);
             return;
           case BOOLEAN_ARRAY:
             List<Boolean> booleans = new ArrayList<>();
             for (Value<?> v : arrayValues) {
               booleans.add((Boolean) v.getValue());
             }
-            data.add(booleanArrayKey(keyName));
-            data.add(booleans);
+            put(booleanArrayKey(keyName), booleans);
             return;
           case VALUE:
             // Not coercible (empty, non-homogeneous, or unsupported element type)
