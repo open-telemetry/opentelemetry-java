@@ -66,6 +66,16 @@
       ],
     },
     {
+      // snakeyaml-engine 3+ requires Java 11+
+      matchUpdateTypes: [
+        'major',
+      ],
+      enabled: false,
+      matchPackageNames: [
+        'org.snakeyaml:snakeyaml-engine'
+      ],
+    },
+    {
       // jqf-fuzz version 1.8+ requires Java 11+
       matchPackageNames: [
         'edu.berkeley.cs.jqf:jqf-fuzz',
