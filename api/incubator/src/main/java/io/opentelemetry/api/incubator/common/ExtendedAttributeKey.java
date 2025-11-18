@@ -106,7 +106,18 @@ public interface ExtendedAttributeKey<T> {
     return InternalExtendedAttributeKeyImpl.create(key, ExtendedAttributeType.EXTENDED_ATTRIBUTES);
   }
 
-  /** Returns a new ExtendedAttributeKey for {@link Value} valued attributes. */
+  /**
+   * Returns a new ExtendedAttributeKey for {@link Value} valued attributes.
+   *
+   * <p>Simple attributes ({@link ExtendedAttributeType#STRING}, {@link ExtendedAttributeType#LONG},
+   * {@link ExtendedAttributeType#DOUBLE}, {@link ExtendedAttributeType#BOOLEAN}, {@link
+   * ExtendedAttributeType#STRING_ARRAY}, {@link ExtendedAttributeType#LONG_ARRAY}, {@link
+   * ExtendedAttributeType#DOUBLE_ARRAY}, {@link ExtendedAttributeType#BOOLEAN_ARRAY}) SHOULD be
+   * used whenever possible. Instrumentations SHOULD assume that backends do not index individual
+   * properties of complex attributes, that querying or aggregating on such properties is
+   * inefficient and complicated, and that reporting complex attributes carries higher performance
+   * overhead.
+   */
   static ExtendedAttributeKey<Value<?>> valueKey(String key) {
     return InternalExtendedAttributeKeyImpl.create(key, ExtendedAttributeType.VALUE);
   }
