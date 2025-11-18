@@ -78,28 +78,28 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
         ExtendedAttributeType attributeType = attributeType(arrayValues);
         switch (attributeType) {
           case STRING_ARRAY:
-            List<String> strings = new ArrayList<>();
+            List<String> strings = new ArrayList<>(arrayValues.size());
             for (Value<?> v : arrayValues) {
               strings.add((String) v.getValue());
             }
             put(stringArrayKey(keyName), strings);
             return;
           case LONG_ARRAY:
-            List<Long> longs = new ArrayList<>();
+            List<Long> longs = new ArrayList<>(arrayValues.size());
             for (Value<?> v : arrayValues) {
               longs.add((Long) v.getValue());
             }
             put(longArrayKey(keyName), longs);
             return;
           case DOUBLE_ARRAY:
-            List<Double> doubles = new ArrayList<>();
+            List<Double> doubles = new ArrayList<>(arrayValues.size());
             for (Value<?> v : arrayValues) {
               doubles.add((Double) v.getValue());
             }
             put(doubleArrayKey(keyName), doubles);
             return;
           case BOOLEAN_ARRAY:
-            List<Boolean> booleans = new ArrayList<>();
+            List<Boolean> booleans = new ArrayList<>(arrayValues.size());
             for (Value<?> v : arrayValues) {
               booleans.add((Boolean) v.getValue());
             }
