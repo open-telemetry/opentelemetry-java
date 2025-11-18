@@ -95,7 +95,7 @@ public interface MetricData {
    * Returns the {@code double} {@link GaugeData} if type is {@link MetricDataType#DOUBLE_GAUGE},
    * otherwise a default empty data.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to GaugeData<DoublePointData>
   default GaugeData<DoublePointData> getDoubleGaugeData() {
     if (getType() == MetricDataType.DOUBLE_GAUGE) {
       return (GaugeData<DoublePointData>) getData();
@@ -107,7 +107,7 @@ public interface MetricData {
    * Returns the {@code long} {@link GaugeData} if type is {@link MetricDataType#LONG_GAUGE},
    * otherwise a default empty data.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to GaugeData<LongPointData>
   default GaugeData<LongPointData> getLongGaugeData() {
     if (getType() == MetricDataType.LONG_GAUGE) {
       return (GaugeData<LongPointData>) getData();
@@ -119,7 +119,7 @@ public interface MetricData {
    * Returns the {@code double} {@link SumData} if type is {@link MetricDataType#DOUBLE_SUM},
    * otherwise a default empty data.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to SumData<DoublePointData>
   default SumData<DoublePointData> getDoubleSumData() {
     if (getType() == MetricDataType.DOUBLE_SUM) {
       return (SumData<DoublePointData>) getData();
@@ -131,7 +131,7 @@ public interface MetricData {
    * Returns the {@code long} {@link SumData} if type is {@link MetricDataType#LONG_SUM}, otherwise
    * a default empty data.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to SumData<LongPointData>
   default SumData<LongPointData> getLongSumData() {
     if (getType() == MetricDataType.LONG_SUM) {
       return (SumData<LongPointData>) getData();

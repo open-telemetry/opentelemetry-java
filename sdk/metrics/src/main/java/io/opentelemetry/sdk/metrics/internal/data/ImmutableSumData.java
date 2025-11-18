@@ -28,8 +28,7 @@ public abstract class ImmutableSumData<T extends PointData> implements SumData<T
       ImmutableSumData.create(
           /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
-  // Type doesn't matter for an empty list.
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Type doesn't matter for an empty list.
   public static <T extends PointData> ImmutableSumData<T> empty() {
     return (ImmutableSumData<T>) EMPTY;
   }

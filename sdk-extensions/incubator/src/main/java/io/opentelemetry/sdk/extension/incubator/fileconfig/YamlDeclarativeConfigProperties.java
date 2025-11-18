@@ -73,7 +73,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
    *
    * @see DeclarativeConfiguration#toConfigProperties(Object)
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe due to type checks
   public static YamlDeclarativeConfigProperties create(
       Map<String, Object> properties, ComponentLoader componentLoader) {
     Map<String, Object> simpleEntries = new LinkedHashMap<>();

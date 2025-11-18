@@ -55,7 +55,7 @@ public class MetricStorageRegistry {
    * @return the {@code newStorage} if no compatible metric is already registered, otherwise the
    *     previously registered storage.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to I
   public <I extends MetricStorage> I register(I newStorage) {
     MetricDescriptor descriptor = newStorage.getMetricDescriptor();
     I oldOrNewStorage;

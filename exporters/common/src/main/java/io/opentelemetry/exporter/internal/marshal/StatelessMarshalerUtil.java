@@ -144,7 +144,7 @@ public final class StatelessMarshalerUtil {
    * together with {@link Serializer#serializeRepeatedMessageWithContext(ProtoFieldInfo, Collection,
    * StatelessMarshaler, MarshalerContext, MarshalerContext.Key)}.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe cast to List<T>
   public static <T> int sizeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       Collection<? extends T> messages,

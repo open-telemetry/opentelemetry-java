@@ -39,7 +39,7 @@ public interface ReadWriteLogRecord {
    * @return this.
    * @since 1.31.0
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to AttributeKey<Object>
   default ReadWriteLogRecord setAllAttributes(Attributes attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return this;

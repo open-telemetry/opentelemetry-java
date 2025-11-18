@@ -94,7 +94,7 @@ public final class ViewConfig {
   }
 
   // Visible for testing
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe due to isInstance checks
   static List<ViewConfigSpecification> loadViewConfig(InputStream inputStream) {
     LoadSettings settings = LoadSettings.builder().build();
     Load yaml = new Load(settings);

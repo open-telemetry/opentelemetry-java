@@ -518,7 +518,7 @@ public abstract class Serializer implements AutoCloseable {
    * together with {@link StatelessMarshalerUtil#sizeRepeatedMessageWithContext(ProtoFieldInfo,
    * Collection, StatelessMarshaler, MarshalerContext, MarshalerContext.Key)}.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to List<T>
   public <T> void serializeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       Collection<? extends T> messages,

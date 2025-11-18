@@ -138,7 +138,7 @@ public final class MarshalerContext {
   private final Pool<Map<?, ?>> mapPool = new Pool<>(IdentityHashMap::new, Map::clear);
 
   /** Returns a pooled identity map. */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // generic K,V
   public <K, V> Map<K, V> getIdentityMap() {
     return (Map<K, V>) mapPool.get();
   }
@@ -146,7 +146,7 @@ public final class MarshalerContext {
   private final Pool<List<?>> listPool = new Pool<>(ArrayList::new, List::clear);
 
   /** Returns a pooled list. */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // generic T
   public <T> List<T> getList() {
     return (List<T>) listPool.get();
   }

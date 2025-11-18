@@ -139,7 +139,7 @@ public final class PooledHashMap<K, V> implements Map<K, V> {
    */
   @Override
   @Nullable
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to K
   public V get(Object key) {
     requireNonNull(key, "This map does not support null keys");
 
@@ -164,7 +164,7 @@ public final class PooledHashMap<K, V> implements Map<K, V> {
    */
   @Override
   @Nullable
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to K
   public V remove(Object key) {
     requireNonNull(key, "This map does not support null keys");
 

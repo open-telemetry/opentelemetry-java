@@ -39,7 +39,7 @@ public final class JcTools {
    * @throws IllegalArgumentException consumer is {@code null}
    * @throws IllegalArgumentException if maxExportBatchSize is negative
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to MessagePassingQueue<T>
   public static <T> int drain(Queue<T> queue, int limit, Consumer<T> consumer) {
     return ((MessagePassingQueue<T>) queue).drain(consumer::accept, limit);
   }

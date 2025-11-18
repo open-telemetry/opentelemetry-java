@@ -36,7 +36,7 @@ public interface ExtendedReadWriteLogRecord extends ReadWriteLogRecord {
    * @param extendedAttributes the attributes
    * @return this.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to ExtendedAttributeKey<Object>
   default ExtendedReadWriteLogRecord setAllAttributes(ExtendedAttributes extendedAttributes) {
     if (extendedAttributes == null || extendedAttributes.isEmpty()) {
       return this;
