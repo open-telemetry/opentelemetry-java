@@ -711,8 +711,7 @@ class ExtendedAttributesTest {
   @Test
   void getNonExistentArrayType() {
     // Test the code path where we look for an array type that doesn't exist
-    ExtendedAttributes attributes =
-        ExtendedAttributes.builder().put("key", "value").build();
+    ExtendedAttributes attributes = ExtendedAttributes.builder().put("key", "value").build();
 
     // Looking for an array type when only a string exists should return null
     assertThat(attributes.get(stringArrayKey("key"))).isNull();
