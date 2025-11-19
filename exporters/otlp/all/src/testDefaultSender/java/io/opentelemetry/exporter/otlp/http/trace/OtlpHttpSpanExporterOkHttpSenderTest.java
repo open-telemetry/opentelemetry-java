@@ -35,8 +35,6 @@ class OtlpHttpSpanExporterOkHttpSenderTest
       assertThat(spanExporter.toString())
           .matches(
               "OtlpHttpSpanExporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=span, "
                   + "endpoint=http://localhost:4318/v1/traces, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
@@ -49,7 +47,10 @@ class OtlpHttpSpanExporterOkHttpSenderTest
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
                   + "retryPolicy=RetryPolicy\\{.*\\}, "
-                  + "memoryMode=IMMUTABLE_DATA"
+                  + "componentLoader=.*, "
+                  + "exporterType=OTLP_HTTP_SPAN_EXPORTER, "
+                  + "internalTelemetrySchemaVersion=LEGACY, "
+                  + "memoryMode=REUSABLE_DATA"
                   + "\\}");
     }
   }
