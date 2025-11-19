@@ -30,7 +30,9 @@ dependencies {
 graalvmNative {
   binaries {
     named("test") {
-      // JUnit initialization is now handled automatically by the GraalVM plugin 0.11+
+      // JUnit initialization is (mostly) handled automatically by the GraalVM plugin 0.11+
+      // Required as of junit 5.14.1
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.discovery.MethodSegmentResolver")
     }
   }
   toolchainDetection.set(false)
