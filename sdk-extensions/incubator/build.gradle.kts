@@ -60,7 +60,7 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 val configurationTag = "1.0.0-rc.1"
-val configurationRef = "be1a43de6745da73ce1b6339c34b1e260e5b135b" // Replace with commit SHA to point to experiment with a specific commitco
+val configurationRef = "be1a43de6745da73ce1b6339c34b1e260e5b135b" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
