@@ -111,7 +111,7 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // cast to T
   default <T> AttributesBuilder put(AttributeKey<List<T>> key, T... value) {
     if (value == null) {
       return this;

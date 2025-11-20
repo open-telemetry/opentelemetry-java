@@ -48,7 +48,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   }
 
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked", "rawtypes"}) // using "put" method with raw type AttributeKey
   public AttributesBuilder putAll(Attributes attributes) {
     if (attributes == null) {
       return this;

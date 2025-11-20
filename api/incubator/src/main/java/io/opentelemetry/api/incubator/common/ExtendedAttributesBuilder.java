@@ -117,7 +117,7 @@ public interface ExtendedAttributesBuilder {
    *
    * @return this Builder
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // use of raw AttributeKey
   default <T> ExtendedAttributesBuilder put(AttributeKey<List<T>> key, T... value) {
     if (value == null) {
       return this;

@@ -80,7 +80,7 @@ public class IncubatingUtil {
   }
 
   // TODO(jack-berg): move to KeyValueMarshaler when ExtendedAttributes is stable
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // casting to specific types based on attributeKey type
   private static KeyValueMarshaler create(ExtendedAttributeKey<?> attributeKey, Object value) {
     byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {

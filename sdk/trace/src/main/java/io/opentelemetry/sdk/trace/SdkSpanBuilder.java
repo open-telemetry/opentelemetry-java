@@ -164,7 +164,7 @@ class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked", "rawtypes"}) // use of raw AttributeKey
   public Span startSpan() {
     Context parentContext = parent == null ? Context.current() : parent;
     Span parentSpan = Span.fromContext(parentContext);

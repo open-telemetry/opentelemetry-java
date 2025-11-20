@@ -20,7 +20,7 @@ public abstract class AttributeAssertion {
 
   // This method is not type-safe! But because the constructor is private, we know it will only be
   // created through our factories, which are type-safe.
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // see comment above
   static AttributeAssertion create(
       AttributeKey<?> key, Consumer<? extends AbstractAssert<?, ?>> assertion) {
     return new AutoValue_AttributeAssertion(key, (Consumer<AbstractAssert<?, ?>>) assertion);

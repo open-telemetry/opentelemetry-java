@@ -135,7 +135,7 @@ public class WeakConcurrentMap<K, V>
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe cast to LookupKey<K>
   protected LookupKey<K> getLookupKey(K key) {
     LookupKey<K> lookupKey;
     if (reuseKeys) {

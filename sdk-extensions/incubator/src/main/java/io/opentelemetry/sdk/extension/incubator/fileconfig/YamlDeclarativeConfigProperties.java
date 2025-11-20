@@ -73,7 +73,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
    *
    * @see DeclarativeConfiguration#toConfigProperties(Object)
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe due to type checks
   public static YamlDeclarativeConfigProperties create(
       Map<String, Object> properties, ComponentLoader componentLoader) {
     Map<String, Object> simpleEntries = new LinkedHashMap<>();
@@ -192,7 +192,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
 
   @Nullable
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe due to type check
   public <T> List<T> getScalarList(String name, Class<T> scalarType) {
     if (!SUPPORTED_SCALAR_TYPES.contains(scalarType)) {
       throw new DeclarativeConfigException(

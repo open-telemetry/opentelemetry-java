@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
  * must be used for all keys in that map. You cannot mix {@link Attributes} implementations. This is
  * also true for the default attributes implementation.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("unchecked") // lots of generic casting of AttributeKey<?>
 abstract class FilteredAttributes implements Attributes {
 
   // Backing source data from ImmutableKeyValuePairs.data. This array MUST NOT be mutated.

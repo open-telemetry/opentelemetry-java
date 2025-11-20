@@ -25,8 +25,7 @@ public abstract class ImmutableGaugeData<T extends PointData> implements GaugeDa
   private static final ImmutableGaugeData<DoublePointData> EMPTY =
       ImmutableGaugeData.create(Collections.emptyList());
 
-  // Type doesn't matter for an empty list.
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Type doesn't matter for an empty list.
   public static <T extends PointData> ImmutableGaugeData<T> empty() {
     return (ImmutableGaugeData<T>) EMPTY;
   }

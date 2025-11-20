@@ -32,7 +32,7 @@ public interface AttributeKeyValue<T> {
   }
 
   /** Returns a List corresponding to the provided Map. This is a copy, not a view. */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Safe as we are just iterating over the map entries
   static <T> List<AttributeKeyValue<?>> of(Attributes attributes) {
     List<AttributeKeyValue<?>> result = new ArrayList<>(attributes.size());
     attributes.forEach(
