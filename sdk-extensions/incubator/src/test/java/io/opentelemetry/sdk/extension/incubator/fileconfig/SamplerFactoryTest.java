@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -16,9 +15,10 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SamplerComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOffSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemoteSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalJaegerRemoteSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedSamplerModel;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import java.io.Closeable;
@@ -116,8 +116,8 @@ class SamplerFactoryTest {
                 .build()),
         Arguments.of(
             new SamplerModel()
-                .withJaegerRemote(
-                    new JaegerRemoteSamplerModel()
+                .withJaegerRemoteDevelopment(
+                    new ExperimentalJaegerRemoteSamplerModel()
                         .withEndpoint("http://jaeger-remote-endpoint")
                         .withInterval(10_000)
                         .withInitialSampler(
@@ -139,7 +139,9 @@ class SamplerFactoryTest {
                     .create(
                         new SamplerModel()
                             .withAdditionalProperty(
-                                "unknown_key", ImmutableMap.of("key1", "value1")),
+                                "unknown_key",
+                                new SamplerPropertyModel()
+                                    .withAdditionalProperty("key1", "value1")),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
@@ -153,7 +155,9 @@ class SamplerFactoryTest {
         SamplerFactory.getInstance()
             .create(
                 new SamplerModel()
-                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                    .withAdditionalProperty(
+                        "test",
+                        new SamplerPropertyModel().withAdditionalProperty("key1", "value1")),
                 context);
     assertThat(sampler).isInstanceOf(SamplerComponentProvider.TestSampler.class);
     assertThat(((SamplerComponentProvider.TestSampler) sampler).config.getString("key1"))
