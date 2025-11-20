@@ -1,4 +1,5 @@
 import de.undercouch.gradle.tasks.download.Download
+import java.io.FileFilter
 
 plugins {
   id("otel.java-conventions")
@@ -59,7 +60,7 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 val configurationTag = "1.0.0-rc.1"
-val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
+val configurationRef = "be1a43de6745da73ce1b6339c34b1e260e5b135b" // Replace with commit SHA to point to experiment with a specific commitco
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
@@ -111,6 +112,10 @@ jsonSchema2Pojo {
 
   // Append Model as suffix to the generated classes.
   classNameSuffix = "Model"
+
+  fileFilter = FileFilter {
+    it.path.endsWith(".json")
+  }
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")

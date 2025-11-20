@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
@@ -17,6 +16,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordPr
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import java.io.Closeable;
@@ -148,7 +148,9 @@ class LogRecordProcessorFactoryTest {
                     .create(
                         new LogRecordProcessorModel()
                             .withAdditionalProperty(
-                                "unknown_key", ImmutableMap.of("key1", "value1")),
+                                "unknown_key",
+                                new LogRecordProcessorPropertyModel()
+                                    .withAdditionalProperty("key1", "value1")),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
@@ -161,7 +163,10 @@ class LogRecordProcessorFactoryTest {
         LogRecordProcessorFactory.getInstance()
             .create(
                 new LogRecordProcessorModel()
-                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                    .withAdditionalProperty(
+                        "test",
+                        new LogRecordProcessorPropertyModel()
+                            .withAdditionalProperty("key1", "value1")),
                 context);
     assertThat(logRecordProcessor)
         .isInstanceOf(LogRecordProcessorComponentProvider.TestLogRecordProcessor.class);

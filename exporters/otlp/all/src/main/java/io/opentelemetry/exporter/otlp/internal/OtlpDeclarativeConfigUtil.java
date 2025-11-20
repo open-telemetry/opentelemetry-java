@@ -95,9 +95,11 @@ public final class OtlpDeclarativeConfigUtil {
       setTimeout.accept(Duration.ofMillis(timeoutMs));
     }
 
-    String certificatePath = config.getString("certificate_file");
-    String clientKeyPath = config.getString("client_key_file");
-    String clientKeyChainPath = config.getString("client_certificate_file");
+    DeclarativeConfigProperties tls =
+        config.getStructured("tls", DeclarativeConfigProperties.empty());
+    String certificatePath = tls.getString("ca_file");
+    String clientKeyPath = tls.getString("key_file");
+    String clientKeyChainPath = tls.getString("cert_file");
 
     if (clientKeyPath != null && clientKeyChainPath == null) {
       throw new ConfigurationException(

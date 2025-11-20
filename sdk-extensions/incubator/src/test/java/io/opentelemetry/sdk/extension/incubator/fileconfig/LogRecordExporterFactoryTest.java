@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigTest
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
@@ -20,7 +19,10 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GrpcTlsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpTlsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
@@ -133,9 +135,11 @@ class LogRecordExporterFactoryTest {
                                         .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
-                            .withCertificateFile(certificatePath)
-                            .withClientKeyFile(clientKeyPath)
-                            .withClientCertificateFile(clientCertificatePath)),
+                            .withTls(
+                                new HttpTlsModel()
+                                    .withCaFile(certificatePath)
+                                    .withKeyFile(clientKeyPath)
+                                    .withCertFile(clientCertificatePath))),
                 context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
@@ -161,10 +165,11 @@ class LogRecordExporterFactoryTest {
             });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
-    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
-    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("client_certificate_file"))
-        .isEqualTo(clientCertificatePath);
+    DeclarativeConfigProperties tls = configProperties.getStructured("tls");
+    assertThat(tls).isNotNull();
+    assertThat(tls.getString("ca_file")).isEqualTo(certificatePath);
+    assertThat(tls.getString("key_file")).isEqualTo(clientKeyPath);
+    assertThat(tls.getString("cert_file")).isEqualTo(clientCertificatePath);
   }
 
   @Test
@@ -240,9 +245,11 @@ class LogRecordExporterFactoryTest {
                                         .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
-                            .withCertificateFile(certificatePath)
-                            .withClientKeyFile(clientKeyPath)
-                            .withClientCertificateFile(clientCertificatePath)),
+                            .withTls(
+                                new GrpcTlsModel()
+                                    .withCaFile(certificatePath)
+                                    .withKeyFile(clientKeyPath)
+                                    .withCertFile(clientCertificatePath))),
                 context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
@@ -268,10 +275,11 @@ class LogRecordExporterFactoryTest {
             });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
-    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
-    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("client_certificate_file"))
-        .isEqualTo(clientCertificatePath);
+    DeclarativeConfigProperties tls = configProperties.getStructured("tls");
+    assertThat(tls).isNotNull();
+    assertThat(tls.getString("ca_file")).isEqualTo(certificatePath);
+    assertThat(tls.getString("key_file")).isEqualTo(clientKeyPath);
+    assertThat(tls.getString("cert_file")).isEqualTo(clientCertificatePath);
   }
 
   @Test
@@ -307,7 +315,9 @@ class LogRecordExporterFactoryTest {
                     .create(
                         new LogRecordExporterModel()
                             .withAdditionalProperty(
-                                "unknown_key", ImmutableMap.of("key1", "value1")),
+                                "unknown_key",
+                                new LogRecordExporterPropertyModel()
+                                    .withAdditionalProperty("key1", "value1")),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
@@ -321,7 +331,10 @@ class LogRecordExporterFactoryTest {
         LogRecordExporterFactory.getInstance()
             .create(
                 new LogRecordExporterModel()
-                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                    .withAdditionalProperty(
+                        "test",
+                        new LogRecordExporterPropertyModel()
+                            .withAdditionalProperty("key1", "value1")),
                 context);
     assertThat(logRecordExporter)
         .isInstanceOf(LogRecordExporterComponentProvider.TestLogRecordExporter.class);
