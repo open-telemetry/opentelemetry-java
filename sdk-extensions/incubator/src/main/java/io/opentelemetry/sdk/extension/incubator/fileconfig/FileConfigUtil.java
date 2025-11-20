@@ -59,10 +59,4 @@ final class FileConfigUtil {
               + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
     }
   }
-
-  static void requireNonNullResource(@Nullable Object resource, String resourceName) {
-    if (resource == null) {
-      throw new DeclarativeConfigException(resourceName + " must be set");
-    }
-  }
 }
