@@ -10,6 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.time.Duration;
+import java.util.Collections;
 import java.util.Set;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
@@ -55,5 +61,63 @@ class OkHttpGrpcSenderTest {
         .message(message)
         .header(GRPC_STATUS, grpcStatus)
         .build();
+  }
+
+  @Test
+  void shutdown_CompletableResultCodeShouldWaitForThreads() throws Exception {
+    // This test verifies that shutdown() returns a CompletableResultCode that only
+    // completes AFTER threads terminate, not immediately.
+
+    // Allocate an ephemeral port and immediately close it to get a port with nothing listening
+    int port;
+    try (ServerSocket socket = new ServerSocket(0)) {
+      port = socket.getLocalPort();
+    }
+
+    OkHttpGrpcSender<TestMarshaler> sender =
+        new OkHttpGrpcSender<>(
+            "http://localhost:" + port, // Non-existent endpoint to trigger thread creation
+            null,
+            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10).toNanos(),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null);
+
+    CompletableResultCode sendResult = new CompletableResultCode();
+    sender.send(new TestMarshaler(), response -> sendResult.succeed(), error -> sendResult.fail());
+
+    // Give threads time to start
+    Thread.sleep(500);
+
+    CompletableResultCode shutdownResult = sender.shutdown();
+
+    // The key test: the CompletableResultCode should NOT be done() immediately
+    // because we need to wait for threads to terminate.
+    // Before #7840, this would fail.
+    assertFalse(
+        shutdownResult.isDone(),
+        "CompletableResultCode should not be done immediately - it should wait for thread termination");
+
+    // Now wait for it to complete
+    shutdownResult.join(10, java.util.concurrent.TimeUnit.SECONDS);
+    assertTrue(shutdownResult.isDone(), "CompletableResultCode should be done after waiting");
+    assertTrue(shutdownResult.isSuccess(), "Shutdown should complete successfully");
+  }
+
+  /** Simple test marshaler for testing purposes. */
+  private static class TestMarshaler extends Marshaler {
+    @Override
+    public int getBinarySerializedSize() {
+      return 0;
+    }
+
+    @Override
+    protected void writeTo(io.opentelemetry.exporter.internal.marshal.Serializer output)
+        throws IOException {
+      // Empty marshaler
+    }
   }
 }
