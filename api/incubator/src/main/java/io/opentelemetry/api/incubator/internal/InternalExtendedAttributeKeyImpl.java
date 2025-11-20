@@ -115,6 +115,7 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
    * io.opentelemetry.api.common.AttributeType}.
    */
   @Nullable
+  @SuppressWarnings("deprecation") // Supporting deprecated EXTENDED_ATTRIBUTES until removed
   public static <T> AttributeKey<T> toAttributeKey(ExtendedAttributeKey<T> extendedAttributeKey) {
     switch (extendedAttributeKey.getType()) {
       case STRING:
@@ -139,6 +140,7 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
         return InternalAttributeKeyImpl.create(
             extendedAttributeKey.getKey(), AttributeType.DOUBLE_ARRAY);
       case EXTENDED_ATTRIBUTES:
+      case VALUE:
         return null;
     }
     throw new IllegalArgumentException(

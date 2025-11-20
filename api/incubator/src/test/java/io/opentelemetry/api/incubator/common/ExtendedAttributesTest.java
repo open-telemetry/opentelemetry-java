@@ -5,21 +5,34 @@
 
 package io.opentelemetry.api.incubator.common;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressWarnings("deprecation") // Testing deprecated EXTENDED_ATTRIBUTES until removed
 class ExtendedAttributesTest {
 
   @ParameterizedTest
@@ -116,7 +129,10 @@ class ExtendedAttributesTest {
         });
 
     long expectedSize =
-        expectedMap.values().stream().filter(value -> !(value instanceof Map)).count();
+        expectedMap.values().stream()
+            .filter(value -> !(value instanceof Map))
+            .filter(value -> !(value instanceof Value))
+            .count();
     assertThat(attributes.size()).isEqualTo(expectedSize);
   }
 
@@ -213,6 +229,9 @@ class ExtendedAttributesTest {
                 .put("key", ImmutableMap.builder().put("child", "value").build())
                 .build()),
         Arguments.of(
+            ExtendedAttributes.builder().put(valueKey("key"), Value.of("value")).build(),
+            ImmutableMap.builder().put("key", "value").build()),
+        Arguments.of(
             ExtendedAttributes.builder()
                 .put(ExtendedAttributeKey.stringKey("key"), "value")
                 .build(),
@@ -255,6 +274,11 @@ class ExtendedAttributesTest {
             ImmutableMap.builder()
                 .put("key", ImmutableMap.builder().put("child", "value").build())
                 .build()),
+        Arguments.of(
+            ExtendedAttributes.builder()
+                .put(ExtendedAttributeKey.valueKey("key"), Value.of("value"))
+                .build(),
+            ImmutableMap.builder().put("key", "value").build()),
         // Multiple entries
         Arguments.of(
             ExtendedAttributes.builder()
@@ -268,6 +292,7 @@ class ExtendedAttributesTest {
                 .put("key8", 1L, 2L)
                 .put("key9", 1.1, 2.2)
                 .put("key10", ExtendedAttributes.builder().put("child", "value").build())
+                .put(valueKey("key11"), Value.of("value"))
                 .build(),
             ImmutableMap.builder()
                 .put("key1", "value1")
@@ -280,6 +305,7 @@ class ExtendedAttributesTest {
                 .put("key8", Arrays.asList(1L, 2L))
                 .put("key9", Arrays.asList(1.1, 2.2))
                 .put("key10", ImmutableMap.builder().put("child", "value").build())
+                .put("key11", "value")
                 .build()));
   }
 
@@ -316,6 +342,8 @@ class ExtendedAttributesTest {
         return ExtendedAttributeKey.doubleArrayKey(key);
       case EXTENDED_ATTRIBUTES:
         return ExtendedAttributeKey.extendedAttributesKey(key);
+      case VALUE:
+        return ExtendedAttributeKey.valueKey(key);
     }
     throw new IllegalArgumentException();
   }
@@ -355,6 +383,340 @@ class ExtendedAttributesTest {
     if ((value instanceof Map)) {
       return ExtendedAttributeType.EXTENDED_ATTRIBUTES;
     }
+    if (value instanceof Value<?>) {
+      return ExtendedAttributeType.VALUE;
+    }
     throw new IllegalArgumentException("Unrecognized value type: " + value);
+  }
+
+  @Test
+  void complexValueStoredAsString() {
+    // When putting a VALUE attribute with a string Value, it should be stored as STRING type
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), Value.of("test")).build();
+
+    // Should be stored as STRING type internally
+    assertThat(attributes.get(stringKey("key"))).isEqualTo("test");
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of("test"));
+
+    // forEach should show STRING type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(stringKey("key"), "test"));
+
+    // asMap should show STRING type
+    assertThat(attributes.asMap()).containsExactly(entry(stringKey("key"), "test"));
+  }
+
+  @Test
+  void complexValueStoredAsLong() {
+    // When putting a VALUE attribute with a long Value, it should be stored as LONG type
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), Value.of(123L)).build();
+
+    // Should be stored as LONG type internally
+    assertThat(attributes.get(longKey("key"))).isEqualTo(123L);
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(123L));
+
+    // forEach should show LONG type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(longKey("key"), 123L));
+
+    // asMap should show LONG type
+    assertThat(attributes.asMap()).containsExactly(entry(longKey("key"), 123L));
+  }
+
+  @Test
+  void complexValueStoredAsDouble() {
+    // When putting a VALUE attribute with a double Value, it should be stored as DOUBLE type
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), Value.of(1.23)).build();
+
+    // Should be stored as DOUBLE type internally
+    assertThat(attributes.get(doubleKey("key"))).isEqualTo(1.23);
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(1.23));
+
+    // forEach should show DOUBLE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(doubleKey("key"), 1.23));
+
+    // asMap should show DOUBLE type
+    assertThat(attributes.asMap()).containsExactly(entry(doubleKey("key"), 1.23));
+  }
+
+  @Test
+  void complexValueStoredAsBoolean() {
+    // When putting a VALUE attribute with a boolean Value, it should be stored as BOOLEAN type
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), Value.of(true)).build();
+
+    // Should be stored as BOOLEAN type internally
+    assertThat(attributes.get(booleanKey("key"))).isEqualTo(true);
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(true));
+
+    // forEach should show BOOLEAN type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(booleanKey("key"), true));
+
+    // asMap should show BOOLEAN type
+    assertThat(attributes.asMap()).containsExactly(entry(booleanKey("key"), true));
+  }
+
+  @Test
+  void complexValueStoredAsStringArray() {
+    // When putting a VALUE attribute with a homogeneous string array, it should be stored as
+    // STRING_ARRAY type
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of("a"), Value.of("b"))))
+            .build();
+
+    // Should be stored as STRING_ARRAY type internally
+    assertThat(attributes.get(stringArrayKey("key"))).containsExactly("a", "b");
+    assertThat(attributes.get(valueKey("key")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of("a"), Value.of("b"))));
+
+    // forEach should show STRING_ARRAY type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(stringArrayKey("key"), Arrays.asList("a", "b")));
+
+    // asMap should show STRING_ARRAY type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(stringArrayKey("key"), Arrays.asList("a", "b")));
+  }
+
+  @Test
+  void complexValueStoredAsLongArray() {
+    // When putting a VALUE attribute with a homogeneous long array, it should be stored as
+    // LONG_ARRAY type
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(1L), Value.of(2L))))
+            .build();
+
+    // Should be stored as LONG_ARRAY type internally
+    assertThat(attributes.get(longArrayKey("key"))).containsExactly(1L, 2L);
+    assertThat(attributes.get(valueKey("key")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1L), Value.of(2L))));
+
+    // forEach should show LONG_ARRAY type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(longArrayKey("key"), Arrays.asList(1L, 2L)));
+
+    // asMap should show LONG_ARRAY type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(longArrayKey("key"), Arrays.asList(1L, 2L)));
+  }
+
+  @Test
+  void complexValueStoredAsDoubleArray() {
+    // When putting a VALUE attribute with a homogeneous double array, it should be stored as
+    // DOUBLE_ARRAY type
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))))
+            .build();
+
+    // Should be stored as DOUBLE_ARRAY type internally
+    assertThat(attributes.get(doubleArrayKey("key"))).containsExactly(1.1, 2.2);
+    assertThat(attributes.get(valueKey("key")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))));
+
+    // forEach should show DOUBLE_ARRAY type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(doubleArrayKey("key"), Arrays.asList(1.1, 2.2)));
+
+    // asMap should show DOUBLE_ARRAY type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(doubleArrayKey("key"), Arrays.asList(1.1, 2.2)));
+  }
+
+  @Test
+  void complexValueStoredAsBooleanArray() {
+    // When putting a VALUE attribute with a homogeneous boolean array, it should be stored as
+    // BOOLEAN_ARRAY type
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(true), Value.of(false))))
+            .build();
+
+    // Should be stored as BOOLEAN_ARRAY type internally
+    assertThat(attributes.get(booleanArrayKey("key"))).containsExactly(true, false);
+    assertThat(attributes.get(valueKey("key")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(true), Value.of(false))));
+
+    // forEach should show BOOLEAN_ARRAY type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen)
+        .containsExactly(entry(booleanArrayKey("key"), Arrays.asList(true, false)));
+
+    // asMap should show BOOLEAN_ARRAY type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(booleanArrayKey("key"), Arrays.asList(true, false)));
+  }
+
+  @Test
+  void simpleAttributeRetrievedAsComplexValue() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put("string", "test")
+            .put("long", 123L)
+            .put("double", 1.23)
+            .put("boolean", true)
+            .put("stringArray", "a", "b")
+            .put("longArray", 1L, 2L)
+            .put("doubleArray", 1.1, 2.2)
+            .put("booleanArray", true, false)
+            .build();
+    assertThat(attributes.get(valueKey("string"))).isEqualTo(Value.of("test"));
+    assertThat(attributes.get(valueKey("long"))).isEqualTo(Value.of(123L));
+    assertThat(attributes.get(valueKey("double"))).isEqualTo(Value.of(1.23));
+    assertThat(attributes.get(valueKey("boolean"))).isEqualTo(Value.of(true));
+    assertThat(attributes.get(valueKey("stringArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of("a"), Value.of("b"))));
+    assertThat(attributes.get(valueKey("longArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1L), Value.of(2L))));
+    assertThat(attributes.get(valueKey("doubleArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))));
+    assertThat(attributes.get(valueKey("booleanArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(true), Value.of(false))));
+  }
+
+  @Test
+  void emptyValueArrayRetrievedAsAnyArrayType() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(valueKey("key"), Value.of(Collections.emptyList()))
+            .build();
+    assertThat(attributes.get(stringArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(longArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(doubleArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(booleanArrayKey("key"))).isEmpty();
+  }
+
+  @Test
+  void getNullKey() {
+    ExtendedAttributes attributes = ExtendedAttributes.builder().put("key", "value").build();
+    assertThat(attributes.get((ExtendedAttributeKey<?>) null)).isNull();
+  }
+
+  @Test
+  void putNullKey() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put((ExtendedAttributeKey<String>) null, "value").build();
+    assertThat(attributes.isEmpty()).isTrue();
+  }
+
+  @Test
+  void putNullValue() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(stringKey("key"), null).build();
+    assertThat(attributes.isEmpty()).isTrue();
+  }
+
+  @Test
+  void putEmptyKey() {
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(stringKey(""), "value").build();
+    assertThat(attributes.isEmpty()).isTrue();
+  }
+
+  @Test
+  void extendedAttributesNotConvertibleToValue() {
+    ExtendedAttributes nested = ExtendedAttributes.builder().put("child", "value").build();
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder()
+            .put(ExtendedAttributeKey.extendedAttributesKey("key"), nested)
+            .build();
+
+    // Getting as VALUE should return null since EXTENDED_ATTRIBUTES cannot be converted to Value
+    assertThat(attributes.get(valueKey("key"))).isNull();
+  }
+
+  @Test
+  void complexValueWithKeyValueList() {
+    // KEY_VALUE_LIST should be kept as VALUE type
+    Value<?> kvListValue = Value.of(Collections.emptyMap());
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), kvListValue).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(kvListValue);
+
+    // forEach should show VALUE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), kvListValue));
+  }
+
+  @Test
+  void complexValueWithBytes() {
+    // BYTES should be kept as VALUE type
+    Value<?> bytesValue = Value.of(new byte[] {1, 2, 3});
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), bytesValue).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(bytesValue);
+
+    // forEach should show VALUE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), bytesValue));
+  }
+
+  @Test
+  void complexValueWithNonHomogeneousArray() {
+    // Non-homogeneous array should be kept as VALUE type
+    Value<?> mixedArray = Value.of(Arrays.asList(Value.of("string"), Value.of(123L)));
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), mixedArray).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(mixedArray);
+
+    // forEach should show VALUE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), mixedArray));
+  }
+
+  @Test
+  void complexValueWithNestedArray() {
+    // Array containing arrays should be kept as VALUE type
+    Value<?> nestedArray =
+        Value.of(
+            Arrays.asList(
+                Value.of(Arrays.asList(Value.of("a"), Value.of("b"))),
+                Value.of(Arrays.asList(Value.of("c"), Value.of("d")))));
+    ExtendedAttributes attributes =
+        ExtendedAttributes.builder().put(valueKey("key"), nestedArray).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(nestedArray);
+
+    // forEach should show VALUE type
+    Map<ExtendedAttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), nestedArray));
+  }
+
+  @Test
+  void getNonExistentArrayType() {
+    // Test the code path where we look for an array type that doesn't exist
+    ExtendedAttributes attributes = ExtendedAttributes.builder().put("key", "value").build();
+
+    // Looking for an array type when only a string exists should return null
+    assertThat(attributes.get(stringArrayKey("key"))).isNull();
+    assertThat(attributes.get(longArrayKey("key"))).isNull();
+    assertThat(attributes.get(doubleArrayKey("key"))).isNull();
+    assertThat(attributes.get(booleanArrayKey("key"))).isNull();
   }
 }

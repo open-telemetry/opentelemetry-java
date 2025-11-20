@@ -56,11 +56,9 @@ public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>
       return null;
     }
     totalAddedValues++;
-    // TODO(jack-berg): apply capacity to nested entries
     if (size() >= capacity && !containsKey(key)) {
       return null;
     }
-    // TODO(jack-berg): apply limits to nested entries
     return super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
   }
 
