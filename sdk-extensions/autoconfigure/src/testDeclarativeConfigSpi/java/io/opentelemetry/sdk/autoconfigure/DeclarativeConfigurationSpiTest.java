@@ -28,17 +28,18 @@ class DeclarativeConfigurationSpiTest {
 
   @Test
   void configFromSpi() {
+    Resource resource = Resource.getDefault().toBuilder().put("service.name", "test").build();
     ExtendedOpenTelemetrySdk expectedSdk =
         ExtendedOpenTelemetrySdk.create(
             OpenTelemetrySdk.builder()
                 .setTracerProvider(
                     SdkTracerProvider.builder()
-                        .setResource(
-                            Resource.getDefault().toBuilder().put("service.name", "test").build())
+                        .setResource(resource)
                         .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                         .build())
                 .build(),
-            SdkConfigProvider.create(new OpenTelemetryConfigurationModel()));
+            SdkConfigProvider.create(new OpenTelemetryConfigurationModel()),
+            resource);
     cleanup.addCloseable(expectedSdk);
     AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
     Thread thread = new Thread();
