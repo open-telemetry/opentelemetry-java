@@ -268,6 +268,7 @@ For more information about the maintainer role, see the [community repository](h
 
 ### Approvers
 
+- [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
 - [Lauri Tulmin](https://github.com/laurit), Splunk
@@ -277,7 +278,7 @@ For more information about the approver role, see the [community repository](htt
 
 ### Triagers
 
-- [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
+None.
 
 For more information about the triager role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#triager).
 
