@@ -145,7 +145,55 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
   delete("$buildDirectory/generated/sources/js2p-tmp/")
 }
 
-tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
+val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
+  dependsOn(overwriteJs2p)
+
+  val targetFile = File(
+    buildDirectory,
+    "resources/main/META-INF/native-image/io.opentelemetry/io.opentelemetry.sdk.extension.incubator/reflect-config.json"
+  )
+
+  onlyIf { !targetFile.exists() }
+
+  doLast {
+    println("Generating GraalVM reflection config at: ${targetFile.absolutePath}")
+    val sourcePackagePath = "build/generated/sources/js2p/java/main/io/opentelemetry/sdk/extension/incubator/fileconfig/internal/model"
+
+    val classes = mutableListOf<String>()
+    fileTree(sourcePackagePath).forEach {
+      val path = it.path
+
+      val className = path
+        .substringAfter(sourcePackagePath)
+        .removePrefix("/")
+        .removeSuffix(".java")
+        .replace("/", ".")
+      classes.add("io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.$className")
+    }
+    classes.sort()
+
+    targetFile.parentFile.mkdirs()
+    targetFile.bufferedWriter().use { writer ->
+      writer.write("[\n")
+      classes.forEachIndexed { index, className ->
+        writer.write("  {\n")
+        writer.write("    \"name\": \"$className\",\n")
+        writer.write("    \"allDeclaredMethods\": true,\n")
+        writer.write("    \"allDeclaredFields\": true,\n")
+        writer.write("    \"allDeclaredConstructors\": true\n")
+        writer.write("  }")
+        if (index < classes.size - 1) {
+          writer.write(",\n")
+        } else {
+          writer.write("\n")
+        }
+      }
+      writer.write("]\n")
+    }
+  }
+}
+
+tasks.getByName("compileJava").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
