@@ -156,6 +156,10 @@ public final class AttributeUtil {
       return Value.of(truncated);
     } else if (type == ValueType.ARRAY) {
       List<Value<?>> array = (List<Value<?>>) value.getValue();
+      boolean allValidLength = allMatch(array, element -> isValidLengthValue(element, lengthLimit));
+      if (allValidLength) {
+        return value;
+      }
       List<Value<?>> result = new ArrayList<>(array.size());
       for (Value<?> element : array) {
         result.add(applyValueLengthLimit(element, lengthLimit));
@@ -163,6 +167,10 @@ public final class AttributeUtil {
       return Value.of(result);
     } else if (type == ValueType.KEY_VALUE_LIST) {
       List<KeyValue> kvList = (List<KeyValue>) value.getValue();
+      boolean allValidLength = allMatch(kvList, kv -> isValidLengthValue(kv.getValue(), lengthLimit));
+      if (allValidLength) {
+        return value;
+      }
       List<KeyValue> result = new ArrayList<>(kvList.size());
       for (KeyValue kv : kvList) {
         result.add(KeyValue.of(kv.getKey(), applyValueLengthLimit(kv.getValue(), lengthLimit)));
