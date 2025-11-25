@@ -146,8 +146,6 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
 }
 
 val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
-  dependsOn(overwriteJs2p)
-
   val targetFile = File(
     buildDirectory,
     "resources/main/META-INF/native-image/io.opentelemetry/io.opentelemetry.sdk.extension.incubator/reflect-config.json"
@@ -155,20 +153,30 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
 
   onlyIf { !targetFile.exists() }
 
+  dependsOn("compileJava")
+
   doLast {
     println("Generating GraalVM reflection config at: ${targetFile.absolutePath}")
-    val sourcePackagePath = "build/generated/sources/js2p/java/main/io/opentelemetry/sdk/extension/incubator/fileconfig/internal/model"
+    val sourcePackage =
+      "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
+    val sourcePackagePath = sourcePackage.replace(".", "/")
+
+    val classesDir =
+      File(
+        buildDirectory,
+        "classes/java/main/$sourcePackagePath"
+      )
 
     val classes = mutableListOf<String>()
-    fileTree(sourcePackagePath).forEach {
+    fileTree(classesDir).forEach {
       val path = it.path
 
       val className = path
         .substringAfter(sourcePackagePath)
         .removePrefix("/")
-        .removeSuffix(".java")
+        .removeSuffix(".class")
         .replace("/", ".")
-      classes.add("io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.$className")
+      classes.add("$sourcePackage.$className")
     }
     classes.sort()
 
@@ -193,8 +201,9 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
   }
 }
 
-tasks.getByName("compileJava").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
-tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp)
+tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
+tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {
