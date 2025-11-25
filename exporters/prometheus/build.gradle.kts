@@ -30,7 +30,7 @@ dependencies {
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
   testImplementation("com.fasterxml.jackson.jr:jackson-jr-objects")
-  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }
 
 tasks {

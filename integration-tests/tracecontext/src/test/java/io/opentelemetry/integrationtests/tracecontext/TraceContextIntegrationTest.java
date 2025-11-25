@@ -35,6 +35,7 @@ class TraceContextIntegrationTest {
               MountableFile.forHostPath(System.getProperty("io.opentelemetry.testArchive")),
               "/opt/app.jar");
 
+  @SuppressWarnings("UnusedVariable")
   @Container
   private static final GenericContainer<?> testSuiteContainer =
       new GenericContainer<>(
