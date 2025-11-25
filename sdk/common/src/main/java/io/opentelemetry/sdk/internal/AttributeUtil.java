@@ -167,7 +167,8 @@ public final class AttributeUtil {
       return Value.of(result);
     } else if (type == ValueType.KEY_VALUE_LIST) {
       List<KeyValue> kvList = (List<KeyValue>) value.getValue();
-      boolean allValidLength = allMatch(kvList, kv -> isValidLengthValue(kv.getValue(), lengthLimit));
+      boolean allValidLength =
+          allMatch(kvList, kv -> isValidLengthValue(kv.getValue(), lengthLimit));
       if (allValidLength) {
         return value;
       }
