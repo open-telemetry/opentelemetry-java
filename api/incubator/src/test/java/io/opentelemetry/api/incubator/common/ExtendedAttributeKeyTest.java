@@ -14,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressWarnings("deprecation") // Testing deprecated EXTENDED_ATTRIBUTES until removed
 public class ExtendedAttributeKeyTest {
 
   @ParameterizedTest
@@ -80,6 +81,8 @@ public class ExtendedAttributeKeyTest {
             ExtendedAttributeKey.extendedAttributesKey("key"),
             "key",
             ExtendedAttributeType.EXTENDED_ATTRIBUTES,
-            null));
+            null),
+        Arguments.of(
+            ExtendedAttributeKey.valueKey("key"), "key", ExtendedAttributeType.VALUE, null));
   }
 }
