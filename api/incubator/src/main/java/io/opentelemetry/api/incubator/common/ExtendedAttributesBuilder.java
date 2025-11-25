@@ -135,7 +135,6 @@ public interface ExtendedAttributesBuilder {
    *     instead.
    */
   @Deprecated
-  @SuppressWarnings("deprecation")
   default <T> ExtendedAttributesBuilder put(String key, ExtendedAttributes value) {
     return put(ExtendedAttributeKey.extendedAttributesKey(key), value);
   }
