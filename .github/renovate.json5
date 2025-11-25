@@ -66,6 +66,16 @@
       ],
     },
     {
+      // snakeyaml-engine 3+ requires Java 11+
+      matchUpdateTypes: [
+        'major',
+      ],
+      enabled: false,
+      matchPackageNames: [
+        'org.snakeyaml:snakeyaml-engine'
+      ],
+    },
+    {
       // jqf-fuzz version 1.8+ requires Java 11+
       matchPackageNames: [
         'edu.berkeley.cs.jqf:jqf-fuzz',
@@ -104,10 +114,10 @@
       customType: 'regex',
       datasourceTemplate: 'java-version',
       managerFilePatterns: [
-        '.github/workflows/**'
+        '.github/workflows/**',
       ],
       matchStrings: [
-        '(?<currentValue>\\d+) # renovate: datasource=java-version',
+        '(?<currentValue>\\d+) # renovate\\(java-version\\)',
       ],
       depNameTemplate: 'java',
       extractVersionTemplate: '^(?<version>\\d+)',
@@ -116,7 +126,7 @@
       customType: 'regex',
       datasourceTemplate: 'docker',
       managerFilePatterns: [
-        '**/*.java'
+        '**/*.java',
       ],
       matchStrings: [
         '"(?<depName>otel/opentelemetry-collector-contrib):(?<currentValue>[^@"]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"',

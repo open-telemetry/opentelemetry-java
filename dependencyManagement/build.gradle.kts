@@ -8,7 +8,7 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 
-val autoValueVersion = "1.11.0"
+val autoValueVersion = "1.11.1"
 val errorProneVersion = "2.43.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
@@ -17,8 +17,8 @@ val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
 val armeriaVersion = "1.33.4"
-val junitVersion = "5.13.4"
-val okhttpVersion = "5.3.0"
+val junitVersion = "5.14.1"
+val okhttpVersion = "5.3.2"
 
 val DEPENDENCY_BOMS = listOf(
   // for some reason boms show up as runtime dependencies in license and vulnerability scans
@@ -30,8 +30,8 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:33.5.0-jre",
   "com.google.protobuf:protobuf-bom:4.33.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
-  "com.squareup.okio:okio-bom:3.16.2", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.76.0",
+  "com.squareup.okio:okio-bom:3.16.4", // applies to transitive dependencies of okhttp
+  "io.grpc:grpc-bom:1.77.0",
   "io.netty:netty-bom:4.2.7.Final",
   "io.zipkin.brave:brave-bom:6.3.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.1",

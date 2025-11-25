@@ -8,6 +8,8 @@ package io.opentelemetry.exporter.internal.otlp;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.marshal.StringEncoder;
+import io.opentelemetry.exporter.internal.marshal.StringEncoderHolder;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -16,6 +18,10 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
@@ -24,10 +30,42 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 10, time = 1)
 @Fork(1)
+@State(Scope.Benchmark)
 public class StringMarshalBenchmark {
-  private static final TestMarshaler MARSHALER_SAFE = new TestMarshaler(/* useUnsafe= */ false);
-  private static final TestMarshaler MARSHALER_UNSAFE = new TestMarshaler(/* useUnsafe= */ true);
+
+  @Param({"FallbackStringEncoder", "UnsafeStringEncoder", "VarHandleStringEncoder"})
+  private String encoderImplementation;
+
+  private TestMarshaler marshaler;
   private static final TestOutputStream OUTPUT = new TestOutputStream();
+
+  @Setup
+  public void setup() {
+    StringEncoder encoder;
+    switch (encoderImplementation) {
+      case "FallbackStringEncoder":
+        encoder = StringEncoderHolder.createFallbackEncoder();
+        break;
+      case "UnsafeStringEncoder":
+        encoder = StringEncoderHolder.createUnsafeEncoder();
+        if (encoder == null) {
+          throw new IllegalStateException(
+              "UnsafeStringEncoder is not available (requires Java 9+)");
+        }
+        break;
+      case "VarHandleStringEncoder":
+        encoder = StringEncoderHolder.createVarHandleEncoder();
+        if (encoder == null) {
+          throw new IllegalStateException(
+              "VarHandleStringEncoder is not available (requires Java 9+"
+                  + " and -jvmArgs=\"--add-opens=java.base/java.lang=ALL-UNNAMED\"");
+        }
+        break;
+      default:
+        throw new IllegalStateException("Unknown encoder implementation: " + encoderImplementation);
+    }
+    marshaler = new TestMarshaler(encoder);
+  }
 
   @Benchmark
   @Threads(1)
@@ -56,38 +94,20 @@ public class StringMarshalBenchmark {
 
   @Benchmark
   @Threads(1)
-  public int marshalAsciiStringStatelessSafe(StringMarshalState state) throws IOException {
-    return marshalStateless(MARSHALER_SAFE, state.asciiString);
+  public int marshalAsciiStringStateless(StringMarshalState state) throws IOException {
+    return marshalStateless(marshaler, state.asciiString);
   }
 
   @Benchmark
   @Threads(1)
-  public int marshalAsciiStringStatelessUnsafe(StringMarshalState state) throws IOException {
-    return marshalStateless(MARSHALER_UNSAFE, state.asciiString);
+  public int marshalLatin1StringStateless(StringMarshalState state) throws IOException {
+    return marshalStateless(marshaler, state.latin1String);
   }
 
   @Benchmark
   @Threads(1)
-  public int marshalLatin1StringStatelessSafe(StringMarshalState state) throws IOException {
-    return marshalStateless(MARSHALER_SAFE, state.latin1String);
-  }
-
-  @Benchmark
-  @Threads(1)
-  public int marshalLatin1StringStatelessUnsafe(StringMarshalState state) throws IOException {
-    return marshalStateless(MARSHALER_UNSAFE, state.latin1String);
-  }
-
-  @Benchmark
-  @Threads(1)
-  public int marshalUnicodeStringStatelessSafe(StringMarshalState state) throws IOException {
-    return marshalStateless(MARSHALER_SAFE, state.unicodeString);
-  }
-
-  @Benchmark
-  @Threads(1)
-  public int marshalUnicodeStringStatelessUnsafe(StringMarshalState state) throws IOException {
-    return marshalStateless(MARSHALER_UNSAFE, state.unicodeString);
+  public int marshalUnicodeStringStateless(StringMarshalState state) throws IOException {
+    return marshalStateless(marshaler, state.unicodeString);
   }
 
   private static int marshalStateless(TestMarshaler marshaler, String string) throws IOException {
@@ -106,8 +126,8 @@ public class StringMarshalBenchmark {
     private int size;
     private String value;
 
-    TestMarshaler(boolean useUnsafe) {
-      context = new MarshalerContext(/* marshalStringNoAllocation= */ true, useUnsafe);
+    TestMarshaler(StringEncoder encoder) {
+      context = new MarshalerContext(/* marshalStringNoAllocation= */ true, encoder);
     }
 
     private void initialize(String string) {
