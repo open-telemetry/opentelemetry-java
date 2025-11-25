@@ -202,7 +202,7 @@ class ExtendedLogsBridgeApiUsageTest {
 
               // Optionally access standard attributes, which filters out any extended attribute
               // types
-              assertThat(extendedLogRecordData.getAttributes())
+              assertThat(logRecordData.getAttributes())
                   .isEqualTo(
                       Attributes.builder()
                           .put(strKey, "value")
