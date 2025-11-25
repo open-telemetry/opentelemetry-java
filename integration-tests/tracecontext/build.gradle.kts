@@ -15,7 +15,7 @@ dependencies {
 
   implementation("com.linecorp.armeria:armeria")
 
-  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }
 
 tasks {
