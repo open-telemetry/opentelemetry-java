@@ -17,6 +17,8 @@ import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -105,6 +107,40 @@ class OkHttpGrpcSenderTest {
     shutdownResult.join(10, java.util.concurrent.TimeUnit.SECONDS);
     assertTrue(shutdownResult.isDone(), "CompletableResultCode should be done after waiting");
     assertTrue(shutdownResult.isSuccess(), "Shutdown should complete successfully");
+  }
+
+  @Test
+  void shutdown_NonManagedExecutor_ReturnsImmediately() {
+    // This test verifies that when using a non-managed executor (custom ExecutorService),
+    // shutdown() returns an already-completed CompletableResultCode immediately.
+
+    // Create a custom ExecutorService - this makes the executor non-managed
+    ExecutorService customExecutor = Executors.newSingleThreadExecutor();
+
+    try {
+      OkHttpGrpcSender<TestMarshaler> sender =
+          new OkHttpGrpcSender<>(
+              "http://localhost:8080",
+              null,
+              Duration.ofSeconds(10).toNanos(),
+              Duration.ofSeconds(10).toNanos(),
+              Collections::emptyMap,
+              null,
+              null,
+              null,
+              customExecutor); // Pass custom executor -> managedExecutor = false
+
+      CompletableResultCode shutdownResult = sender.shutdown();
+
+      // Should complete immediately since executor is not managed
+      assertTrue(
+          shutdownResult.isDone(),
+          "CompletableResultCode should be done immediately for non-managed executor");
+      assertTrue(shutdownResult.isSuccess(), "Shutdown should complete successfully");
+    } finally {
+      // Clean up the custom executor
+      customExecutor.shutdownNow();
+    }
   }
 
   /** Simple test marshaler for testing purposes. */
