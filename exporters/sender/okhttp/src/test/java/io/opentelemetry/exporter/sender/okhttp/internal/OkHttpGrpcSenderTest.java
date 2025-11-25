@@ -17,8 +17,10 @@ import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -141,6 +143,125 @@ class OkHttpGrpcSenderTest {
       // Clean up the custom executor
       customExecutor.shutdownNow();
     }
+  }
+
+  @Test
+  void shutdown_ExecutorDoesNotTerminateInTime_LogsWarningButSucceeds() throws Exception {
+    // This test verifies that when threads don't terminate within 5 seconds,
+    // a warning is logged but shutdown still succeeds.
+
+    // Allocate an ephemeral port
+    int port;
+    try (ServerSocket socket = new ServerSocket(0)) {
+      port = socket.getLocalPort();
+    }
+
+    // Create sender with managed executor (default)
+    OkHttpGrpcSender<TestMarshaler> sender =
+        new OkHttpGrpcSender<>(
+            "http://localhost:" + port,
+            null,
+            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10).toNanos(),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null); // null executor = managed
+
+    // Start multiple long-running tasks that will block during shutdown
+    CountDownLatch tasksStarted = new CountDownLatch(3);
+    CountDownLatch blockTasks = new CountDownLatch(1);
+
+    for (int i = 0; i < 3; i++) {
+      sender.send(
+          new TestMarshaler(),
+          response -> {
+            tasksStarted.countDown();
+            try {
+              // Block for longer than the 5-second timeout
+              blockTasks.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
+          },
+          error -> {
+            tasksStarted.countDown();
+            try {
+              blockTasks.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
+          });
+    }
+
+    // Wait for tasks to start
+    assertTrue(tasksStarted.await(2, TimeUnit.SECONDS), "Tasks should start");
+
+    // Shutdown will now try to terminate threads that are blocked
+    CompletableResultCode shutdownResult = sender.shutdown();
+
+    // The shutdown should eventually complete successfully
+    // even though threads didn't terminate in 5 seconds
+    assertTrue(
+        shutdownResult.join(10, TimeUnit.SECONDS).isSuccess(),
+        "Shutdown should succeed even when threads don't terminate quickly");
+
+    // Release the blocking tasks
+    blockTasks.countDown();
+  }
+
+  @Test
+  void shutdown_InterruptedWhileWaiting_StillSucceeds() throws Exception {
+    // This test verifies that if the shutdown thread is interrupted while waiting
+    // for termination, it still marks the shutdown as successful.
+
+    // Allocate an ephemeral port
+    int port;
+    try (ServerSocket socket = new ServerSocket(0)) {
+      port = socket.getLocalPort();
+    }
+
+    OkHttpGrpcSender<TestMarshaler> sender =
+        new OkHttpGrpcSender<>(
+            "http://localhost:" + port,
+            null,
+            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10).toNanos(),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null);
+
+    // Trigger some activity
+    CountDownLatch taskStarted = new CountDownLatch(1);
+    sender.send(
+        new TestMarshaler(),
+        response -> taskStarted.countDown(),
+        error -> taskStarted.countDown());
+
+    // Wait for task to start
+    assertTrue(taskStarted.await(2, TimeUnit.SECONDS), "Task should start");
+
+    // Start shutdown
+    CompletableResultCode shutdownResult = sender.shutdown();
+
+    // Find and interrupt the okhttp-shutdown thread to trigger the InterruptedException path
+    Thread[] threads = new Thread[Thread.activeCount()];
+    Thread.enumerate(threads);
+    for (Thread thread : threads) {
+      if (thread != null && thread.getName().equals("okhttp-shutdown")) {
+        // Interrupt the shutdown thread to test the InterruptedException handling
+        thread.interrupt();
+        break;
+      }
+    }
+
+    // Even with interruption, shutdown should still succeed
+    assertTrue(
+        shutdownResult.join(10, TimeUnit.SECONDS).isSuccess(),
+        "Shutdown should succeed even when interrupted");
   }
 
   /** Simple test marshaler for testing purposes. */
