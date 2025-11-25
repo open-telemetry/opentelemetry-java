@@ -60,7 +60,7 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 val configurationTag = "1.0.0-rc.1"
-val configurationRef = "be1a43de6745da73ce1b6339c34b1e260e5b135b" // Replace with commit SHA to point to experiment with a specific commit
+val configurationRef = "8826969b88d4ec720c3ebfe5c95b27aca5c238a9" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
@@ -88,7 +88,7 @@ val deleteTypeDescriptions by tasks.registering(Delete::class) {
 }
 
 jsonSchema2Pojo {
-  sourceFiles = setOf(file("$buildDirectory/configuration/schema"))
+  sourceFiles = setOf(file("$buildDirectory/configuration/opentelemetry_configuration.json"))
   targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
 
@@ -112,10 +112,6 @@ jsonSchema2Pojo {
 
   // Append Model as suffix to the generated classes.
   classNameSuffix = "Model"
-
-  fileFilter = FileFilter {
-    it.path.endsWith(".json")
-  }
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")

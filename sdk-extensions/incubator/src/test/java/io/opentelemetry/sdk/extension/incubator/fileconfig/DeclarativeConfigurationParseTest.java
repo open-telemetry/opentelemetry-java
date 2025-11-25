@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Experi
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpClientInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpServerInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfigModel;
@@ -55,7 +56,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Explic
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GrpcTlsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpTlsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
@@ -674,8 +674,8 @@ class DeclarativeConfigurationParseTest {
     // end MeterProvider config
 
     // start instrumentation config
-    InstrumentationModel instrumentation =
-        new InstrumentationModel()
+    ExperimentalInstrumentationModel instrumentation =
+        new ExperimentalInstrumentationModel()
             .withGeneral(
                 new ExperimentalGeneralInstrumentationModel()
                     .withPeer(
@@ -830,7 +830,8 @@ class DeclarativeConfigurationParseTest {
       assertThat(configMeterProvider).isEqualTo(meterProvider);
 
       // Instrumentation config
-      InstrumentationModel configInstrumentation = config.getInstrumentationDevelopment();
+      ExperimentalInstrumentationModel configInstrumentation =
+          config.getInstrumentationDevelopment();
       assertThat(configInstrumentation).isEqualTo(instrumentation);
 
       // All configuration
