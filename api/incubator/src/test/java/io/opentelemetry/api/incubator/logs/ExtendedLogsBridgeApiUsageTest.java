@@ -105,11 +105,6 @@ class ExtendedLogsBridgeApiUsageTest {
   AttributeKey<List<Boolean>> booleanArrKey = AttributeKey.booleanArrayKey("acme.boolean_array");
   AttributeKey<List<Double>> doubleArrKey = AttributeKey.doubleArrayKey("acme.double_array");
 
-  // Extended keys
-  @SuppressWarnings("deprecation") // Supporting deprecated EXTENDED_ATTRIBUTES until removed
-  ExtendedAttributeKey<ExtendedAttributes> mapKey =
-      ExtendedAttributeKey.extendedAttributesKey("acme.map");
-
   // VALUE key
   ExtendedAttributeKey<Value<?>> valueKey = ExtendedAttributeKey.valueKey("acme.value");
 
@@ -129,9 +124,6 @@ class ExtendedLogsBridgeApiUsageTest {
             .put(booleanArrKey, Arrays.asList(true, false))
             .put(doubleArrKey, Arrays.asList(1.1, 2.2))
             .put(
-                mapKey,
-                ExtendedAttributes.builder().put("childStr", "value").put("childLong", 1L).build())
-            .put(
                 valueKey,
                 Value.of(
                     KeyValue.of("childStr", Value.of("value")),
@@ -147,9 +139,6 @@ class ExtendedLogsBridgeApiUsageTest {
     assertThat(extendedAttributes.get(longArrKey)).isEqualTo(Arrays.asList(1L, 2L));
     assertThat(extendedAttributes.get(booleanArrKey)).isEqualTo(Arrays.asList(true, false));
     assertThat(extendedAttributes.get(doubleArrKey)).isEqualTo(Arrays.asList(1.1, 2.2));
-    assertThat(extendedAttributes.get(mapKey))
-        .isEqualTo(
-            ExtendedAttributes.builder().put("childStr", "value").put("childLong", 1L).build());
     assertThat(extendedAttributes.get(valueKey))
         .isEqualTo(
             Value.of(
@@ -164,7 +153,6 @@ class ExtendedLogsBridgeApiUsageTest {
     // acme.double_array(DOUBLE_ARRAY): [1.1, 2.2]
     // acme.long(LONG): 1
     // acme.long_array(LONG_ARRAY): [1, 2]
-    // acme.map(EXTENDED_ATTRIBUTES): {childLong=1, childStr="value"}
     // acme.string(STRING): value
     // acme.string_array(STRING_ARRAY): [value1, value2]
     // acme.value(VALUE): [KeyValue{key=childStr, value=StringValue{value=value}},
@@ -178,7 +166,6 @@ class ExtendedLogsBridgeApiUsageTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // testing deprecated code
   void logRecordBuilder_ExtendedAttributes() {
     InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
     SdkLoggerProvider loggerProvider =
@@ -199,9 +186,6 @@ class ExtendedLogsBridgeApiUsageTest {
         .setAttribute(longArrKey, Arrays.asList(1L, 2L))
         .setAttribute(booleanArrKey, Arrays.asList(true, false))
         .setAttribute(doubleArrKey, Arrays.asList(1.1, 2.2))
-        .setAttribute(
-            mapKey,
-            ExtendedAttributes.builder().put("childStr", "value").put("childLong", 1L).build())
         .setAttribute(
             valueKey,
             Value.of(
@@ -245,12 +229,6 @@ class ExtendedLogsBridgeApiUsageTest {
                           .put(longArrKey, Arrays.asList(1L, 2L))
                           .put(booleanArrKey, Arrays.asList(true, false))
                           .put(doubleArrKey, Arrays.asList(1.1, 2.2))
-                          .put(
-                              mapKey,
-                              ExtendedAttributes.builder()
-                                  .put("childStr", "value")
-                                  .put("childLong", 1L)
-                                  .build())
                           .put(
                               valueKey,
                               Value.of(
