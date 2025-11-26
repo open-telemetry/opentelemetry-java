@@ -11,7 +11,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.testing.internal.AbstractDefaultMeterTest;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ExtendedDefaultMeterTest extends AbstractDefaultMeterTest {
@@ -27,44 +26,53 @@ class ExtendedDefaultMeterTest extends AbstractDefaultMeterTest {
   }
 
   @Test
-  public void incubatingApiIsLoaded() {
+  void incubatingApiIsLoaded() {
     Meter meter = MeterProvider.noop().get("test");
     assertThat(meter).isSameAs(OpenTelemetry.noop().getMeter("test"));
 
-    Assertions.assertThat(meter.gaugeBuilder("test").ofLongs())
-        .isInstanceOf(ExtendedLongGaugeBuilder.class);
-    Assertions.assertThat(meter.gaugeBuilder("test").ofLongs().build())
-        .isInstanceOf(ExtendedLongGauge.class);
-    Assertions.assertThat(meter.gaugeBuilder("test"))
-        .isInstanceOf(ExtendedDoubleGaugeBuilder.class);
-    Assertions.assertThat(meter.gaugeBuilder("test").build())
-        .isInstanceOf(ExtendedDoubleGauge.class);
+    assertThat(meter.gaugeBuilder("test").ofLongs()).isInstanceOf(ExtendedLongGaugeBuilder.class);
+    assertThat(meter.gaugeBuilder("test").ofLongs().build())
+        .isInstanceOfSatisfying(
+            ExtendedLongGauge.class, instrument -> assertThat(instrument.isEnabled()).isFalse());
+    assertThat(meter.gaugeBuilder("test")).isInstanceOf(ExtendedDoubleGaugeBuilder.class);
+    assertThat(meter.gaugeBuilder("test").build())
+        .isInstanceOfSatisfying(
+            ExtendedDoubleGauge.class, instrument -> assertThat(instrument.isEnabled()).isFalse());
 
-    Assertions.assertThat(meter.histogramBuilder("test").ofLongs())
+    assertThat(meter.histogramBuilder("test").ofLongs())
         .isInstanceOf(ExtendedLongHistogramBuilder.class);
-    Assertions.assertThat(meter.histogramBuilder("test").ofLongs().build())
-        .isInstanceOf(ExtendedLongHistogram.class);
-    Assertions.assertThat(meter.histogramBuilder("test"))
-        .isInstanceOf(ExtendedDoubleHistogramBuilder.class);
-    Assertions.assertThat(meter.histogramBuilder("test").build())
-        .isInstanceOf(ExtendedDoubleHistogram.class);
+    assertThat(meter.histogramBuilder("test").ofLongs().build())
+        .isInstanceOfSatisfying(
+            ExtendedLongHistogram.class,
+            instrument -> assertThat(instrument.isEnabled()).isFalse());
+    assertThat(meter.histogramBuilder("test")).isInstanceOf(ExtendedDoubleHistogramBuilder.class);
+    assertThat(meter.histogramBuilder("test").build())
+        .isInstanceOfSatisfying(
+            ExtendedDoubleHistogram.class,
+            instrument -> assertThat(instrument.isEnabled()).isFalse());
 
-    Assertions.assertThat(meter.counterBuilder("test"))
-        .isInstanceOf(ExtendedLongCounterBuilder.class);
-    Assertions.assertThat(meter.counterBuilder("test").build())
-        .isInstanceOf(ExtendedLongCounter.class);
-    Assertions.assertThat(meter.counterBuilder("test").ofDoubles())
+    assertThat(meter.counterBuilder("test")).isInstanceOf(ExtendedLongCounterBuilder.class);
+    assertThat(meter.counterBuilder("test").build())
+        .isInstanceOfSatisfying(
+            ExtendedLongCounter.class, instrument -> assertThat(instrument.isEnabled()).isFalse());
+    assertThat(meter.counterBuilder("test").ofDoubles())
         .isInstanceOf(ExtendedDoubleCounterBuilder.class);
-    Assertions.assertThat(meter.counterBuilder("test").ofDoubles().build())
-        .isInstanceOf(ExtendedDoubleCounter.class);
+    assertThat(meter.counterBuilder("test").ofDoubles().build())
+        .isInstanceOfSatisfying(
+            ExtendedDoubleCounter.class,
+            instrument -> assertThat(instrument.isEnabled()).isFalse());
 
-    Assertions.assertThat(meter.upDownCounterBuilder("test"))
+    assertThat(meter.upDownCounterBuilder("test"))
         .isInstanceOf(ExtendedLongUpDownCounterBuilder.class);
-    Assertions.assertThat(meter.upDownCounterBuilder("test").build())
-        .isInstanceOf(ExtendedLongUpDownCounter.class);
-    Assertions.assertThat(meter.upDownCounterBuilder("test").ofDoubles())
+    assertThat(meter.upDownCounterBuilder("test").build())
+        .isInstanceOfSatisfying(
+            ExtendedLongUpDownCounter.class,
+            instrument -> assertThat(instrument.isEnabled()).isFalse());
+    assertThat(meter.upDownCounterBuilder("test").ofDoubles())
         .isInstanceOf(ExtendedDoubleUpDownCounterBuilder.class);
-    Assertions.assertThat(meter.upDownCounterBuilder("test").ofDoubles().build())
-        .isInstanceOf(ExtendedDoubleUpDownCounter.class);
+    assertThat(meter.upDownCounterBuilder("test").ofDoubles().build())
+        .isInstanceOfSatisfying(
+            ExtendedDoubleUpDownCounter.class,
+            instrument -> assertThat(instrument.isEnabled()).isFalse());
   }
 }

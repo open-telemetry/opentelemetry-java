@@ -5,15 +5,15 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig.component;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-public class SpanProcessorComponentProvider implements ComponentProvider<SpanProcessor> {
+public class SpanProcessorComponentProvider implements ComponentProvider {
   @Override
   public Class<SpanProcessor> getType() {
     return SpanProcessor.class;
@@ -25,15 +25,15 @@ public class SpanProcessorComponentProvider implements ComponentProvider<SpanPro
   }
 
   @Override
-  public SpanProcessor create(StructuredConfigProperties config) {
+  public SpanProcessor create(DeclarativeConfigProperties config) {
     return new TestSpanProcessor(config);
   }
 
   public static class TestSpanProcessor implements SpanProcessor {
 
-    public final StructuredConfigProperties config;
+    public final DeclarativeConfigProperties config;
 
-    private TestSpanProcessor(StructuredConfigProperties config) {
+    private TestSpanProcessor(DeclarativeConfigProperties config) {
       this.config = config;
     }
 

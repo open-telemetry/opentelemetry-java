@@ -17,14 +17,12 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.Measurement;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -38,19 +36,18 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class LongLastValueAggregator implements Aggregator<LongPointData, LongExemplarData> {
-  private final Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier;
+public final class LongLastValueAggregator implements Aggregator<LongPointData> {
+  private final ExemplarReservoirFactory reservoirFactory;
   private final MemoryMode memoryMode;
 
-  public LongLastValueAggregator(
-      Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier, MemoryMode memoryMode) {
-    this.reservoirSupplier = reservoirSupplier;
+  public LongLastValueAggregator(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+    this.reservoirFactory = reservoirFactory;
     this.memoryMode = memoryMode;
   }
 
   @Override
-  public AggregatorHandle<LongPointData, LongExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get(), memoryMode);
+  public AggregatorHandle<LongPointData> createHandle() {
+    return new Handle(reservoirFactory, memoryMode);
   }
 
   @Override
@@ -61,25 +58,6 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
   @Override
   public void diffInPlace(LongPointData previousReusablePoint, LongPointData currentPoint) {
     ((MutableLongPointData) previousReusablePoint).set(currentPoint);
-  }
-
-  @Override
-  public LongPointData toPoint(Measurement measurement) {
-    return ImmutableLongPointData.create(
-        measurement.startEpochNanos(),
-        measurement.epochNanos(),
-        measurement.attributes(),
-        measurement.longValue());
-  }
-
-  @Override
-  public void toPoint(Measurement measurement, LongPointData reusablePoint) {
-    ((MutableLongPointData) reusablePoint)
-        .set(
-            measurement.startEpochNanos(),
-            measurement.epochNanos(),
-            measurement.attributes(),
-            measurement.longValue());
   }
 
   @Override
@@ -109,15 +87,15 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
         ImmutableGaugeData.create(points));
   }
 
-  static final class Handle extends AggregatorHandle<LongPointData, LongExemplarData> {
+  static final class Handle extends AggregatorHandle<LongPointData> {
     @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePoint;
 
-    Handle(ExemplarReservoir<LongExemplarData> exemplarReservoir, MemoryMode memoryMode) {
-      super(exemplarReservoir);
+    Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(reservoirFactory, /* isDoubleType= */ false);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableLongPointData();
       } else {
@@ -126,7 +104,7 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
     }
 
     @Override
-    protected LongPointData doAggregateThenMaybeReset(
+    protected LongPointData doAggregateThenMaybeResetLongs(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,

@@ -674,17 +674,17 @@ public abstract class Serializer implements AutoCloseable {
   }
 
   /** Writes start of repeated messages. */
-  protected abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;
+  public abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;
 
   /** Writes end of repeated messages. */
-  protected abstract void writeEndRepeated() throws IOException;
+  public abstract void writeEndRepeated() throws IOException;
 
   /** Writes start of a repeated message element. */
-  protected abstract void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+  public abstract void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;
 
   /** Writes end of a repeated message element. */
-  protected abstract void writeEndRepeatedElement() throws IOException;
+  public abstract void writeEndRepeatedElement() throws IOException;
 
   /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)

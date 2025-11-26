@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -20,24 +21,23 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  * configuration.
  *
  * <p>NOTE: when {@link #getType()} is {@link Resource}, the {@link #getName()} is not (currently)
- * used, and {@link #create(StructuredConfigProperties)} is (currently) called with an empty {@link
- * StructuredConfigProperties}.
+ * used, and {@link #create(DeclarativeConfigProperties)} is (currently) called with an empty {@link
+ * DeclarativeConfigProperties}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  *
- * @param <T> the type of the SDK extension component. See {@link #getType()}. Supported values
- *     include: {@link SpanExporter}, {@link MetricExporter}, {@link LogRecordExporter}, {@link
- *     SpanProcessor}, {@link LogRecordProcessor}, {@link TextMapPropagator}, {@link Sampler},
- *     {@link Resource}.
+ * <p>Supported component types include: {@link SpanExporter}, {@link MetricExporter}, {@link
+ * LogRecordExporter}, {@link SpanProcessor}, {@link LogRecordProcessor}, {@link TextMapPropagator},
+ * {@link Sampler}, {@link Resource}.
  */
-public interface ComponentProvider<T> {
+public interface ComponentProvider {
 
   /**
    * The type of SDK extension component. For example, if providing instances of a custom span
    * exporter, the type would be {@link SpanExporter}.
    */
-  Class<T> getType();
+  Class<?> getType();
 
   /**
    * The name of the exporter, to be referenced in configuration files. For example, if providing
@@ -58,5 +58,5 @@ public interface ComponentProvider<T> {
    */
   // TODO (jack-berg): consider dynamic configuration use case before stabilizing in case that
   // affects any API decisions
-  T create(StructuredConfigProperties config);
+  Object create(DeclarativeConfigProperties config);
 }

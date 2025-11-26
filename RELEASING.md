@@ -57,26 +57,16 @@ and deadlocks.
   * Review and merge the pull request that it creates for updating the change log in main
     (note that if this is not a patch release then the change log on main may already be up-to-date,
     in which case no pull request will be created).
+  * Once the release artifacts become available on Maven Central, the system will automatically
+    generate a new pull request titled `Update apidiff baseline and documentation versions to
+    released version $VERSION`. This pull request will contain updates to both the API diff baseline
+    and version references in the documentation files (README.md). Please review and merge this
+    automated pull request.
   * The [website](https://github.com/open-telemetry/opentelemetry.io) contains automation to update
     to the newly released version. Review and approve the pull request when available.
   * The [website](https://opentelemetry.io/docs/languages/java/configuration/#zero-code-sdk-autoconfigure)
   contains documentation on autoconfiguration properties. If the release has updated or modified any
   properties, open and merge a pull request to update the documentation.
-
-## Update release versions in documentations
-
-After releasing is done, you need to first update the docs. This needs to happen after artifacts have propagated
-to Maven Central so should probably be done an hour or two after the release workflow finishes.
-
-```
-./gradlew updateVersionInDocs -Prelease.version=x.y.z
-./gradlew japicmp -PapiBaseVersion=a.b.c -PapiNewVersion=x.y.z
-./gradlew --refresh-dependencies japicmp
-```
-
-Where `x.y.z` is the version just released and `a.b.c` is the previous version.
-
-Create a PR against the main branch with the changes.
 
 ## Credentials
 
@@ -86,7 +76,7 @@ The following credentials are required for building or publishing (and automatic
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
   * Each maintainer will have their own set of Sonotype credentials with permission to publish to
     the `io.opentelemetry` group prefix.
-  * [Register to publish](https://central.sonatype.org/register/central-portal/#and-publishing-is-easy)
+  * [Register to publish](https://central.sonatype.org/register/central-portal/#publishing)
     and comment on [OSSRH-63768](https://issues.sonatype.org/browse/OSSRH-63768) with confirmation
     from another maintainer.
   * To obtain `SONATYPE_USER` and `SONATYPE_KEY` for your account, login

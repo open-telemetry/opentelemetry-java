@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,26 +18,20 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 /** Base for fixed-size reservoir sampling of Exemplars. */
-abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements ExemplarReservoir<T> {
+class FixedSizeExemplarReservoir implements DoubleExemplarReservoir, LongExemplarReservoir {
 
   @Nullable private ReservoirCell[] storage;
   private final ReservoirCellSelector reservoirCellSelector;
-  private final BiFunction<ReservoirCell, Attributes, T> mapAndResetCell;
   private final int size;
   private final Clock clock;
   private volatile boolean hasMeasurements = false;
 
   /** Instantiates an exemplar reservoir of fixed size. */
-  FixedSizeExemplarReservoir(
-      Clock clock,
-      int size,
-      ReservoirCellSelector reservoirCellSelector,
-      BiFunction<ReservoirCell, Attributes, T> mapAndResetCell) {
+  FixedSizeExemplarReservoir(Clock clock, int size, ReservoirCellSelector reservoirCellSelector) {
     this.storage = null; // lazily initialize to avoid allocations
     this.size = size;
     this.clock = clock;
     this.reservoirCellSelector = reservoirCellSelector;
-    this.mapAndResetCell = mapAndResetCell;
   }
 
   @Override
@@ -48,6 +44,16 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
       this.storage[bucket].recordLongMeasurement(value, attributes, context);
       this.hasMeasurements = true;
     }
+  }
+
+  @Override
+  public List<DoubleExemplarData> collectAndResetDoubles(Attributes pointAttributes) {
+    return doCollectAndReset(pointAttributes, ReservoirCell::getAndResetDouble);
+  }
+
+  @Override
+  public List<LongExemplarData> collectAndResetLongs(Attributes pointAttributes) {
+    return doCollectAndReset(pointAttributes, ReservoirCell::getAndResetLong);
   }
 
   @Override
@@ -70,8 +76,8 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
     return storage;
   }
 
-  @Override
-  public List<T> collectAndReset(Attributes pointAttributes) {
+  public <T extends ExemplarData> List<T> doCollectAndReset(
+      Attributes pointAttributes, BiFunction<ReservoirCell, Attributes, T> mapAndResetCell) {
     if (!hasMeasurements || storage == null) {
       return Collections.emptyList();
     }

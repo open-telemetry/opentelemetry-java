@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,6 +16,18 @@ import java.util.List;
  * @since 1.14.0
  */
 public interface LongPointData extends PointData {
+
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
+  static LongPointData create(
+      long startEpochNanos, long epochNanos, Attributes attributes, long value) {
+    return ImmutableLongPointData.create(
+        startEpochNanos, epochNanos, attributes, value, Collections.emptyList());
+  }
+
   /** Returns the value of the data point. */
   long getValue();
 

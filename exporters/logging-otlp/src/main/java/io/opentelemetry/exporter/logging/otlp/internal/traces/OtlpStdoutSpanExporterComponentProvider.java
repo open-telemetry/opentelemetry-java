@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.traces;
 
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
@@ -16,8 +16,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class OtlpStdoutSpanExporterComponentProvider
-    implements ComponentProvider<SpanExporter> {
+public final class OtlpStdoutSpanExporterComponentProvider implements ComponentProvider {
 
   @Override
   public Class<SpanExporter> getType() {
@@ -26,13 +25,13 @@ public final class OtlpStdoutSpanExporterComponentProvider
 
   @Override
   public String getName() {
-    return "experimental-otlp/stdout";
+    return "otlp_file/development";
   }
 
   @Override
-  public SpanExporter create(StructuredConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutSpanExporterBuilder builder = OtlpStdoutSpanExporter.builder();
-    ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
+    IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     return builder.build();
   }
 }

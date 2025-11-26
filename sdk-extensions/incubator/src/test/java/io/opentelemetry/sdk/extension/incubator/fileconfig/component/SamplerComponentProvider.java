@@ -6,16 +6,16 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig.component;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 
-public class SamplerComponentProvider implements ComponentProvider<Sampler> {
+public class SamplerComponentProvider implements ComponentProvider {
   @Override
   public Class<Sampler> getType() {
     return Sampler.class;
@@ -27,15 +27,15 @@ public class SamplerComponentProvider implements ComponentProvider<Sampler> {
   }
 
   @Override
-  public Sampler create(StructuredConfigProperties config) {
+  public Sampler create(DeclarativeConfigProperties config) {
     return new TestSampler(config);
   }
 
   public static class TestSampler implements Sampler {
 
-    public final StructuredConfigProperties config;
+    public final DeclarativeConfigProperties config;
 
-    private TestSampler(StructuredConfigProperties config) {
+    private TestSampler(DeclarativeConfigProperties config) {
       this.config = config;
     }
 

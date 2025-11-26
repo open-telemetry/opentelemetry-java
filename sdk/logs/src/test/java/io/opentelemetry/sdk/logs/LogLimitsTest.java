@@ -29,7 +29,10 @@ class LogLimitsTest {
     // Preserves values
     LogLimits logLimitsDupe = logLimits.toBuilder().build();
     // Use reflective comparison to catch when new fields are added.
-    assertThat(logLimitsDupe).usingRecursiveComparison().isEqualTo(logLimits);
+    assertThat(logLimitsDupe)
+        .usingRecursiveComparison()
+        .withStrictTypeChecking()
+        .isEqualTo(logLimits);
   }
 
   @Test

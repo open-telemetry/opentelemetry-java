@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -13,4 +15,14 @@ import javax.annotation.concurrent.Immutable;
  * @since 1.14.0
  */
 @Immutable
-public interface SummaryData extends Data<SummaryPointData> {}
+public interface SummaryData extends Data<SummaryPointData> {
+
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
+  static SummaryData create(Collection<SummaryPointData> points) {
+    return ImmutableSummaryData.create(points);
+  }
+}

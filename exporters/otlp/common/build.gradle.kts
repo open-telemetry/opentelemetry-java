@@ -22,6 +22,7 @@ dependencies {
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:logs"))
+  compileOnly(project(":api:incubator"))
 
   testImplementation(project(":sdk:metrics"))
   testImplementation(project(":sdk:trace"))
@@ -40,6 +41,22 @@ dependencies {
   jmhImplementation("io.grpc:grpc-netty")
 }
 
+testing {
+  suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":api:incubator"))
+        implementation(project(":sdk:testing"))
+
+        implementation("com.fasterxml.jackson.core:jackson-databind")
+        implementation("com.google.protobuf:protobuf-java-util")
+        implementation("com.google.guava:guava")
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+      }
+    }
+  }
+}
+
 wire {
   root(
     "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
@@ -50,5 +67,13 @@ wire {
 
   custom {
     schemaHandlerFactoryClass = "io.opentelemetry.gradle.ProtoFieldsWireHandlerFactory"
+  }
+}
+
+// Configure JMH jar to preserve multi-release jar attribute
+// so StringMarshalBenchmark can use VarHandleStringEncoder
+tasks.named<Jar>("jmhJar") {
+  manifest {
+    attributes["Multi-Release"] = "true"
   }
 }

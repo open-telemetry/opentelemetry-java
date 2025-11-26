@@ -10,6 +10,8 @@ dependencies {
   api(project(":sdk:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
+  compileOnly(project(":api:incubator"))
+
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:trace-shaded-deps"))
@@ -45,13 +47,14 @@ testing {
     }
     register<JvmTestSuite>("testFullConfig") {
       dependencies {
-        implementation(project(":api:incubator"))
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:prometheus"))
-        implementation("io.prometheus:prometheus-metrics-exporter-httpserver")
+        implementation("io.prometheus:prometheus-metrics-exporter-httpserver") {
+          exclude(group = "io.prometheus", module = "prometheus-metrics-exposition-formats")
+        }
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
@@ -76,6 +79,21 @@ testing {
             environment("OTEL_TEST_WRAPPED", "1")
           }
         }
+      }
+    }
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":sdk:testing"))
+      }
+    }
+
+    register<JvmTestSuite>("testDeclarativeConfigSpi") {
+      dependencies {
+        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":sdk:testing"))
       }
     }
   }

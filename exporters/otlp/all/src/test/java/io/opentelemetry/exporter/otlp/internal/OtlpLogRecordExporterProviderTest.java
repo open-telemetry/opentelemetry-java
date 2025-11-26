@@ -122,6 +122,7 @@ class OtlpLogRecordExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcLogRecordExporter.class);
       verify(grpcBuilder, times(1)).build();
+      verify(grpcBuilder).setComponentLoader(any());
       verify(grpcBuilder, never()).setEndpoint(any());
       verify(grpcBuilder, never()).addHeader(any(), any());
       verify(grpcBuilder, never()).setCompression(any());
@@ -154,6 +155,7 @@ class OtlpLogRecordExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcLogRecordExporter.class);
       verify(grpcBuilder, times(1)).build();
+      verify(grpcBuilder).setComponentLoader(any());
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
       verify(grpcBuilder).addHeader("header-key", "header-value");
       verify(grpcBuilder).setCompression("gzip");
@@ -189,6 +191,7 @@ class OtlpLogRecordExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcLogRecordExporter.class);
       verify(grpcBuilder, times(1)).build();
+      verify(grpcBuilder).setComponentLoader(any());
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
       verify(grpcBuilder).addHeader("header-key", "header-value");
       verify(grpcBuilder).setCompression("gzip");

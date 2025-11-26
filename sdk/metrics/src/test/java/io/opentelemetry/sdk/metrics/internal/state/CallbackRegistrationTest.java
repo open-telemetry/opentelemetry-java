@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createDouble;
-import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createLong;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,9 +67,9 @@ class CallbackRegistrationTest {
   LogCapturer logs = LogCapturer.create().captureForType(CallbackRegistration.class);
 
   @Mock private MetricReader reader;
-  @Mock private AsynchronousMetricStorage<?, ?> storage1;
-  @Mock private AsynchronousMetricStorage<?, ?> storage2;
-  @Mock private AsynchronousMetricStorage<?, ?> storage3;
+  @Mock private AsynchronousMetricStorage<?> storage1;
+  @Mock private AsynchronousMetricStorage<?> storage2;
+  @Mock private AsynchronousMetricStorage<?> storage3;
 
   private RegisteredReader registeredReader;
   private SdkObservableMeasurement measurement1;
@@ -146,10 +146,12 @@ class CallbackRegistrationTest {
     callbackRegistration.invokeCallback(registeredReader, 0, 1);
 
     assertThat(counter.get()).isEqualTo(1.1);
-    verify(storage1)
-        .record(createDouble(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
-    verify(storage2, never()).record(any());
-    verify(storage3, never()).record(any());
+    verify(storage1).setEpochInformation(0, 1);
+    verify(storage1).record(Attributes.builder().put("key", "val").build(), 1.1);
+    verify(storage2, never()).setEpochInformation(anyLong(), anyLong());
+    verify(storage2, never()).record(any(), anyDouble());
+    verify(storage3, never()).setEpochInformation(anyLong(), anyLong());
+    verify(storage3, never()).record(any(), anyDouble());
   }
 
   @Test
@@ -165,9 +167,12 @@ class CallbackRegistrationTest {
     callbackRegistration.invokeCallback(registeredReader, 0, 1);
 
     assertThat(counter.get()).isEqualTo(1);
-    verify(storage1, never()).record(any());
-    verify(storage2).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
-    verify(storage3).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage1, never()).setEpochInformation(anyLong(), anyLong());
+    verify(storage1, never()).record(any(), anyLong());
+    verify(storage2).setEpochInformation(0, 1);
+    verify(storage2).record(Attributes.builder().put("key", "val").build(), 1);
+    verify(storage3).setEpochInformation(0, 1);
+    verify(storage3).record(Attributes.builder().put("key", "val").build(), 1);
   }
 
   @Test
@@ -188,10 +193,12 @@ class CallbackRegistrationTest {
 
     assertThat(doubleCounter.get()).isEqualTo(1.1);
     assertThat(longCounter.get()).isEqualTo(1);
-    verify(storage1)
-        .record(createDouble(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
-    verify(storage2).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
-    verify(storage3).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage1).setEpochInformation(0, 1);
+    verify(storage1).record(Attributes.builder().put("key", "val").build(), 1.1);
+    verify(storage2).setEpochInformation(0, 1);
+    verify(storage2).record(Attributes.builder().put("key", "val").build(), 1);
+    verify(storage3).setEpochInformation(0, 1);
+    verify(storage3).record(Attributes.builder().put("key", "val").build(), 1);
   }
 
   @Test
@@ -223,9 +230,12 @@ class CallbackRegistrationTest {
 
     callbackRegistration.invokeCallback(registeredReader, 0, 1);
 
-    verify(storage1, never()).record(any());
-    verify(storage2, never()).record(any());
-    verify(storage3, never()).record(any());
+    verify(storage1, never()).record(any(), anyLong());
+    verify(storage1, never()).record(any(), anyDouble());
+    verify(storage2, never()).record(any(), anyLong());
+    verify(storage2, never()).record(any(), anyDouble());
+    verify(storage3, never()).record(any(), anyLong());
+    verify(storage3, never()).record(any(), anyDouble());
     logs.assertContains("An exception occurred invoking callback");
   }
 
@@ -240,9 +250,12 @@ class CallbackRegistrationTest {
 
     callbackRegistration.invokeCallback(registeredReader, 0, 1);
 
-    verify(storage1, never()).record(any());
-    verify(storage2, never()).record(any());
-    verify(storage3, never()).record(any());
+    verify(storage1, never()).record(any(), anyLong());
+    verify(storage1, never()).record(any(), anyDouble());
+    verify(storage2, never()).record(any(), anyLong());
+    verify(storage2, never()).record(any(), anyDouble());
+    verify(storage3, never()).record(any(), anyLong());
+    verify(storage3, never()).record(any(), anyDouble());
 
     logs.assertContains("An exception occurred invoking callback");
   }

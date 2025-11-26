@@ -9,6 +9,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.testing.assertj.AttributesAssert;
@@ -25,16 +27,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressLogger(ResourceConfiguration.class)
 class ResourceConfigurationTest {
 
-  private final SpiHelper spiHelper =
-      SpiHelper.create(ResourceConfigurationTest.class.getClassLoader());
+  private final ComponentLoader componentLoader =
+      ComponentLoader.forClassLoader(ResourceConfigurationTest.class.getClassLoader());
+  private final SpiHelper spiHelper = SpiHelper.create(componentLoader);
 
   @Test
   void configureResource_EmptyClassLoader() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(Collections.emptyMap()),
+                DefaultConfigProperties.create(Collections.emptyMap(), componentLoader),
                 SpiHelper.create(new URLClassLoader(new URL[0], null)),
                 (r, c) -> r)
             .getAttributes();
@@ -64,7 +68,7 @@ class ResourceConfigurationTest {
     }
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(config), spiHelper, (r, c) -> r)
+                DefaultConfigProperties.create(config, componentLoader), spiHelper, (r, c) -> r)
             .getAttributes();
 
     attributeAssertion.accept(assertThat(attributes));
@@ -130,25 +134,6 @@ class ResourceConfigurationTest {
         Arguments.of(
             null,
             "io.opentelemetry.sdk.autoconfigure.EnvironmentResourceProvider",
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "unknown_service:java")
-                        .doesNotContainKey("cat")
-                        .containsEntry("animal", "cat")
-                        .containsEntry("color", "blue"))),
-        // old environment resource provider FQCN
-        Arguments.of(
-            "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider",
-            null,
-            attributeConsumer(
-                attr ->
-                    attr.containsEntry("service.name", "test")
-                        .containsEntry("cat", "meow")
-                        .doesNotContainKey("animal")
-                        .doesNotContainKey("color"))),
-        Arguments.of(
-            null,
-            "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider",
             attributeConsumer(
                 attr ->
                     attr.containsEntry("service.name", "unknown_service:java")

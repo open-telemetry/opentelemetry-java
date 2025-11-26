@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.logging.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
@@ -16,8 +16,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class ConsoleMetricExporterComponentProvider
-    implements ComponentProvider<MetricExporter> {
+public final class ConsoleMetricExporterComponentProvider implements ComponentProvider {
 
   @Override
   public Class<MetricExporter> getType() {
@@ -30,7 +29,7 @@ public final class ConsoleMetricExporterComponentProvider
   }
 
   @Override
-  public MetricExporter create(StructuredConfigProperties config) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     return LoggingMetricExporter.create();
   }
 }

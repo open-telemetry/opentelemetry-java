@@ -7,6 +7,7 @@ package io.opentelemetry.context;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
@@ -106,6 +107,12 @@ class ContextTest {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
     }
     assertThat(Context.current().get(ANIMAL)).isNull();
+  }
+
+  @Test
+  void keyEqualityIsInstanceCheck() {
+    Context context = Context.current().with(ContextKey.named("animal"), "cat");
+    assertNull(context.get(ContextKey.named("animal"))); // yup
   }
 
   @Test
@@ -361,6 +368,24 @@ class ContextTest {
     }
   }
 
+  @Test
+  void wrapExecutorService() {
+    // given
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    // when
+    ExecutorService firstWrap = CAT.wrap(executorService);
+    ExecutorService secondWrap = CAT.wrap(firstWrap);
+
+    // then
+    assertThat(firstWrap).isInstanceOf(ContextExecutorService.class);
+    assertThat(((ContextExecutorService) firstWrap).context()).isEqualTo(CAT);
+    assertThat(((ContextExecutorService) firstWrap).delegate()).isEqualTo(executorService);
+    assertThat(secondWrap).isInstanceOf(ContextExecutorService.class);
+    assertThat(((ContextExecutorService) secondWrap).context()).isEqualTo(CAT);
+    assertThat(((ContextExecutorService) secondWrap).delegate()).isEqualTo(executorService);
+  }
+
   @Nested
   @TestInstance(Lifecycle.PER_CLASS)
   class WrapExecutorService {
@@ -502,6 +527,25 @@ class ContextTest {
       assertThat(value1).hasValue("cat");
       assertThat(value2).hasValue("cat");
     }
+  }
+
+  @Test
+  void wrapScheduledExecutorService() {
+    // given
+    ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+    // when
+    ScheduledExecutorService firstWrap = CAT.wrap(executorService);
+    ScheduledExecutorService secondWrap = CAT.wrap(firstWrap);
+
+    // then
+    assertThat(firstWrap).isInstanceOf(ContextScheduledExecutorService.class);
+    assertThat(((ContextScheduledExecutorService) firstWrap).context()).isEqualTo(CAT);
+    assertThat(((ContextScheduledExecutorService) firstWrap).delegate()).isEqualTo(executorService);
+    assertThat(secondWrap).isInstanceOf(ContextScheduledExecutorService.class);
+    assertThat(((ContextScheduledExecutorService) secondWrap).context()).isEqualTo(CAT);
+    assertThat(((ContextScheduledExecutorService) secondWrap).delegate())
+        .isEqualTo(executorService);
   }
 
   @Nested

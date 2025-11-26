@@ -1,4 +1,5 @@
 import io.opentelemetry.gradle.OtelJavaExtension
+import org.gradle.api.JavaVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
@@ -33,7 +34,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion.set(JavaLanguageVersion.of(21))
   }
 
   withJavadocJar()
@@ -42,7 +43,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "10.21.2"
+  toolVersion = "12.1.2"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -74,7 +75,7 @@ val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersi
 tasks {
   withType<JavaCompile>().configureEach {
     with(options) {
-      release.set(8)
+      release.set(otelJava.minJavaVersionSupported.map { it.majorVersion.toInt() })
 
       if (name != "jmhCompileGeneratedClasses") {
         compilerArgs.addAll(
@@ -88,6 +89,8 @@ tasks {
             "-Xlint:-processing",
             // We suppress the "options" warning because it prevents compilation on modern JDKs
             "-Xlint:-options",
+            "-Xlint:-serial",
+            "-Xlint:-this-escape",
             // Fail build on any warning
             "-Werror",
           ),
@@ -105,14 +108,6 @@ tasks {
 
   withType<Test>().configureEach {
     useJUnitPlatform()
-
-    if (testJavaVersion != null) {
-      javaLauncher.set(
-        javaToolchains.launcherFor {
-          languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
-        },
-      )
-    }
 
     val defaultMaxRetries = if (System.getenv().containsKey("CI")) 2 else 0
     val maxTestRetries = gradle.startParameter.projectProperties["maxTestRetries"]?.toInt() ?: defaultMaxRetries
@@ -172,18 +167,32 @@ tasks {
   }
 }
 
+afterEvaluate {
+  tasks.withType<Test>().configureEach {
+    if (testJavaVersion != null) {
+      javaLauncher.set(
+        javaToolchains.launcherFor {
+          languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
+        }
+      )
+      isEnabled = isEnabled && testJavaVersion >= otelJava.minJavaVersionSupported.get()
+    }
+  }
+}
+
 // Add version information to published artifacts.
 plugins.withId("otel.publish-conventions") {
   tasks {
     register("generateVersionResource") {
       val moduleName = otelJava.moduleName
       val propertiesDir = moduleName.map { File(layout.buildDirectory.asFile.get(), "generated/properties/${it.replace('.', '/')}") }
+      val versionProperty = project.version.toString()
 
-      inputs.property("project.version", project.version.toString())
+      inputs.property("project.version", versionProperty)
       outputs.dir(propertiesDir)
 
       doLast {
-        File(propertiesDir.get(), "version.properties").writeText("sdk.version=${project.version}")
+        File(propertiesDir.get(), "version.properties").writeText("sdk.version=${versionProperty}")
       }
     }
   }
@@ -205,7 +214,6 @@ configurations.configureEach {
 val dependencyManagement by configurations.creating {
   isCanBeConsumed = false
   isCanBeResolved = false
-  isVisible = false
 }
 
 dependencies {
@@ -238,6 +246,8 @@ dependencies {
 
 testing {
   suites.withType(JvmTestSuite::class).configureEach {
+    useJUnitJupiter()
+
     dependencies {
       implementation(project(project.path))
 
@@ -247,8 +257,6 @@ testing {
       compileOnly("com.google.errorprone:error_prone_annotations")
       compileOnly("com.google.code.findbugs:jsr305")
 
-      implementation("org.junit.jupiter:junit-jupiter-api")
-      implementation("org.junit.jupiter:junit-jupiter-params")
       implementation("nl.jqno.equalsverifier:equalsverifier")
       implementation("org.mockito:mockito-core")
       implementation("org.mockito:mockito-junit-jupiter")
@@ -257,7 +265,6 @@ testing {
       implementation("org.junit-pioneer:junit-pioneer")
       implementation("io.github.netmikey.logunit:logunit-jul")
 
-      runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
       runtimeOnly("org.slf4j:slf4j-simple")
     }
 

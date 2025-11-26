@@ -5,11 +5,11 @@
 
 package io.opentelemetry.extension.trace.propagation.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 
 /**
  * Declarative configuration SPI implementation for {@link B3Propagator}.
@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigPropertie
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class OtTraceComponentProvider implements ComponentProvider<TextMapPropagator> {
+public final class OtTraceComponentProvider implements ComponentProvider {
 
   @Override
   public Class<TextMapPropagator> getType() {
@@ -30,7 +30,7 @@ public final class OtTraceComponentProvider implements ComponentProvider<TextMap
   }
 
   @Override
-  public TextMapPropagator create(StructuredConfigProperties config) {
+  public TextMapPropagator create(DeclarativeConfigProperties config) {
     return OtTracePropagator.getInstance();
   }
 }

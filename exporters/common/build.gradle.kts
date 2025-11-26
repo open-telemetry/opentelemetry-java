@@ -8,11 +8,52 @@ plugins {
 description = "OpenTelemetry Exporter Common"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal")
 
+java {
+  sourceSets {
+    create("java9") {
+      java {
+        srcDir("src/main/java9")
+      }
+      // Make java9 source set depend on main source set
+      // since VarHandleStringEncoder implements StringEncoder from the main source set
+      compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+    }
+  }
+}
+
+// Configure java9 compilation to see main source classes
+sourceSets.named("java9") {
+  compileClasspath += sourceSets.main.get().output
+}
+
+tasks.named<JavaCompile>("compileJava9Java") {
+  options.release.set(9)
+}
+
+tasks.named<Jar>("jar") {
+  manifest {
+    attributes["Multi-Release"] = "true"
+  }
+  from(sourceSets.named("java9").get().output) {
+    into("META-INF/versions/9")
+  }
+}
+
+// Configure test to include java9 classes when running on Java 9+
+// so that StringEncoderHolder.createUnsafeEncoder() can instantiate the Java 9 version
+val javaVersion = JavaVersion.current()
+if (javaVersion >= JavaVersion.VERSION_1_9) {
+  sourceSets.named("test") {
+    runtimeClasspath += sourceSets.named("java9").get().output
+  }
+}
+
 val versions: Map<String, String> by project
 dependencies {
   api(project(":api:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
+  compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk:common"))
   compileOnly(project(":exporters:common:compile-stub"))
 
@@ -28,6 +69,7 @@ dependencies {
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:common"))
+  testImplementation(project(":sdk:testing"))
 
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.linecorp.armeria:armeria-junit5")
@@ -64,6 +106,7 @@ testing {
 
         implementation("io.grpc:grpc-stub")
         implementation("io.grpc:grpc-netty")
+        implementation("com.fasterxml.jackson.core:jackson-core")
       }
     }
   }
@@ -75,6 +118,15 @@ testing {
 tasks {
   check {
     dependsOn(testing.suites)
+  }
+
+  withType<Test> {
+    // Allow VarHandle access to String internals
+    // generally users won't do this and so won't get the VarHandle implementation
+    // but the Java agent is able to automatically open these modules
+    // (see ModuleOpener.java in that repository)
+    jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED")
+    jvmArgs("-XX:+IgnoreUnrecognizedVMOptions") // needed for Java 8
   }
 }
 

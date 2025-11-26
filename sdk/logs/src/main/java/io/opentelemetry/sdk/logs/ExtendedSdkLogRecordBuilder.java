@@ -7,25 +7,49 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ExtendedAttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /** SDK implementation of {@link ExtendedLogRecordBuilder}. */
 final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     implements ExtendedLogRecordBuilder {
 
+  @Nullable private ExtendedAttributesMap extendedAttributes;
+
   ExtendedSdkLogRecordBuilder(
-      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
-    super(loggerSharedState, instrumentationScopeInfo);
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      SdkLogger logger) {
+    super(loggerSharedState, instrumentationScopeInfo, logger);
   }
 
   @Override
   public ExtendedSdkLogRecordBuilder setEventName(String eventName) {
     super.setEventName(eventName);
+    return this;
+  }
+
+  @Override
+  public ExtendedSdkLogRecordBuilder setException(Throwable throwable) {
+    if (throwable == null) {
+      return this;
+    }
+
+    loggerSharedState
+        .getExceptionAttributeResolver()
+        .setExceptionAttributes(
+            this::setAttribute,
+            throwable,
+            loggerSharedState.getLogLimits().getMaxAttributeValueLength());
+
     return this;
   }
 
@@ -84,8 +108,40 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
-  public <T> ExtendedSdkLogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
-    super.setAttribute(key, value);
+  public <T> ExtendedSdkLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return this;
+    }
+    if (this.extendedAttributes == null) {
+      this.extendedAttributes =
+          ExtendedAttributesMap.create(
+              logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+    }
+    this.extendedAttributes.put(key, value);
     return this;
+  }
+
+  @Override
+  public <T> ExtendedSdkLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return this;
+    }
+    return setAttribute(ExtendedAttributeKey.fromAttributeKey(key), value);
+  }
+
+  @Override
+  protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+    return ExtendedSdkReadWriteLogRecord.create(
+        loggerSharedState.getLogLimits(),
+        loggerSharedState.getResource(),
+        instrumentationScopeInfo,
+        eventName,
+        timestampEpochNanos,
+        observedTimestampEpochNanos,
+        Span.fromContext(context).getSpanContext(),
+        severity,
+        severityText,
+        body,
+        extendedAttributes);
   }
 }

@@ -25,6 +25,7 @@ dependencies {
   implementation("org.snakeyaml:snakeyaml-engine")
 
   // io.opentelemetry.sdk.extension.incubator.fileconfig
+  api(project(":api:incubator"))
   implementation("com.fasterxml.jackson.core:jackson-databind")
   api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
@@ -33,12 +34,13 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:logging"))
+  testImplementation(project(":exporters:logging-otlp"))
   testImplementation(project(":exporters:otlp:all"))
   testImplementation(project(":exporters:prometheus"))
   testImplementation(project(":exporters:zipkin"))
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
-  // As a part of the tests we check that we can parse examples without error. The https://github.com/open-telemetry/opentelemetry-configuration/blob/main/examples/kitchen-sink.yam contains a reference to the xray propagator
+  testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
@@ -56,11 +58,8 @@ dependencies {
 // 7. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-// TODO (trask) revert after the 0.4.0 release
-//  it was needed after 0.3.0 release because file_format in the examples weren't updated prior to the release tag
-// val configurationTag = "0.3.0"
-// val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
-val configurationRef = "cea3905ce0a542d573968c3c47d413143d473cf4"
+val configurationTag = "1.0.0-rc.1"
+val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
@@ -146,8 +145,65 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
   delete("$buildDirectory/generated/sources/js2p-tmp/")
 }
 
+val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
+  val targetFile = File(
+    buildDirectory,
+    "resources/main/META-INF/native-image/io.opentelemetry/io.opentelemetry.sdk.extension.incubator/reflect-config.json"
+  )
+
+  onlyIf { !targetFile.exists() }
+
+  dependsOn("compileJava")
+
+  doLast {
+    println("Generating GraalVM reflection config at: ${targetFile.absolutePath}")
+    val sourcePackage =
+      "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
+    val sourcePackagePath = sourcePackage.replace(".", "/")
+
+    val classesDir =
+      File(
+        buildDirectory,
+        "classes/java/main/$sourcePackagePath"
+      )
+
+    val classes = mutableListOf<String>()
+    fileTree(classesDir).forEach {
+      val path = it.path
+
+      val className = path
+        .substringAfter(sourcePackagePath)
+        .removePrefix("/")
+        .removeSuffix(".class")
+        .replace("/", ".")
+      classes.add("$sourcePackage.$className")
+    }
+    classes.sort()
+
+    targetFile.parentFile.mkdirs()
+    targetFile.bufferedWriter().use { writer ->
+      writer.write("[\n")
+      classes.forEachIndexed { index, className ->
+        writer.write("  {\n")
+        writer.write("    \"name\": \"$className\",\n")
+        writer.write("    \"allDeclaredMethods\": true,\n")
+        writer.write("    \"allDeclaredFields\": true,\n")
+        writer.write("    \"allDeclaredConstructors\": true\n")
+        writer.write("  }")
+        if (index < classes.size - 1) {
+          writer.write(",\n")
+        } else {
+          writer.write("\n")
+        }
+      }
+      writer.write("]\n")
+    }
+  }
+}
+
 tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
-tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp)
+tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {

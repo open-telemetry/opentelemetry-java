@@ -9,8 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -32,9 +33,11 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -47,7 +50,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 @ExtendWith(MockitoExtension.class)
 class RetryInterceptorTest {
@@ -55,7 +60,7 @@ class RetryInterceptorTest {
   @RegisterExtension static final MockWebServerExtension server = new MockWebServerExtension();
 
   @Mock private RetryInterceptor.Sleeper sleeper;
-  @Mock private RetryInterceptor.BoundedLongGenerator random;
+  @Mock private Supplier<Double> random;
   private Predicate<IOException> retryExceptionPredicate;
 
   private RetryInterceptor retrier;
@@ -92,6 +97,24 @@ class RetryInterceptorTest {
   }
 
   @Test
+  void noRetryOnNullResponse() throws IOException {
+    Interceptor.Chain chain = mock(Interceptor.Chain.class);
+    when(chain.proceed(any())).thenReturn(null);
+    when(chain.request())
+        .thenReturn(new Request.Builder().url(server.httpUri().toString()).build());
+    assertThatThrownBy(
+            () -> {
+              retrier.intercept(chain);
+            })
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("response cannot be null.");
+
+    verifyNoInteractions(retryExceptionPredicate);
+    verifyNoInteractions(random);
+    verifyNoInteractions(sleeper);
+  }
+
+  @Test
   void noRetry() throws Exception {
     server.enqueue(HttpResponse.of(HttpStatus.OK));
 
@@ -109,17 +132,8 @@ class RetryInterceptorTest {
   @ValueSource(ints = {5, 6})
   void backsOff(int attempts) throws Exception {
     succeedOnAttempt(attempts);
-
-    // Will backoff 4 times
-    when(random.get((long) (TimeUnit.SECONDS.toNanos(1) * Math.pow(1.6, 0)))).thenReturn(100L);
-    when(random.get((long) (TimeUnit.SECONDS.toNanos(1) * Math.pow(1.6, 1)))).thenReturn(50L);
-    // Capped
-    when(random.get(TimeUnit.SECONDS.toNanos(2))).thenReturn(500L).thenReturn(510L);
-
-    doNothing().when(sleeper).sleep(100);
-    doNothing().when(sleeper).sleep(50);
-    doNothing().when(sleeper).sleep(500);
-    doNothing().when(sleeper).sleep(510);
+    when(random.get()).thenReturn(1.0d);
+    doNothing().when(sleeper).sleep(anyLong());
 
     try (Response response = sendRequest()) {
       if (attempts <= 5) {
@@ -139,16 +153,26 @@ class RetryInterceptorTest {
     succeedOnAttempt(5);
 
     // Backs off twice, second is interrupted
-    when(random.get((long) (TimeUnit.SECONDS.toNanos(1) * Math.pow(1.6, 0)))).thenReturn(100L);
-    when(random.get((long) (TimeUnit.SECONDS.toNanos(1) * Math.pow(1.6, 1)))).thenReturn(50L);
+    when(random.get()).thenReturn(1.0d).thenReturn(1.0d);
+    doAnswer(
+            new Answer<Void>() {
+              int counter = 0;
 
-    doNothing().when(sleeper).sleep(100);
-    doThrow(new InterruptedException()).when(sleeper).sleep(50);
+              @Override
+              public Void answer(InvocationOnMock invocation) throws Throwable {
+                if (counter++ == 1) {
+                  throw new InterruptedException();
+                }
+                return null;
+              }
+            })
+        .when(sleeper)
+        .sleep(anyLong());
 
     try (Response response = sendRequest()) {
       assertThat(response.isSuccessful()).isFalse();
     }
-
+    verify(sleeper, times(2)).sleep(anyLong());
     for (int i = 0; i < 2; i++) {
       server.takeRequest(0, TimeUnit.NANOSECONDS);
     }
@@ -157,14 +181,14 @@ class RetryInterceptorTest {
   @Test
   void connectTimeout() throws Exception {
     client = connectTimeoutClient();
-    when(random.get(anyLong())).thenReturn(1L);
+    when(random.get()).thenReturn(1.0d);
     doNothing().when(sleeper).sleep(anyLong());
 
     // Connecting to a non-routable IP address to trigger connection error
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
-        .isInstanceOf(SocketTimeoutException.class);
+        .isInstanceOfAny(SocketTimeoutException.class, SocketException.class);
 
     verify(retryExceptionPredicate, times(5)).test(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
@@ -174,7 +198,7 @@ class RetryInterceptorTest {
   @Test
   void connectException() throws Exception {
     client = connectTimeoutClient();
-    when(random.get(anyLong())).thenReturn(1L);
+    when(random.get()).thenReturn(1.0d);
     doNothing().when(sleeper).sleep(anyLong());
 
     // Connecting to localhost on an unused port address to trigger java.net.ConnectException
@@ -209,7 +233,7 @@ class RetryInterceptorTest {
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
-        .isInstanceOf(SocketTimeoutException.class);
+        .isInstanceOfAny(SocketTimeoutException.class, SocketException.class);
 
     verify(retryExceptionPredicate, times(1)).test(any());
     verify(sleeper, never()).sleep(anyLong());

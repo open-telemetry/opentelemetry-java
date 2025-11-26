@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
@@ -52,8 +52,9 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private final List<MetricProducer> metricProducers;
   private final MeterProviderSharedState sharedState;
   private final ComponentRegistry<SdkMeter> registry;
-  private final ScopeConfigurator<MeterConfig> meterConfigurator;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
+
+  private ScopeConfigurator<MeterConfig> meterConfigurator;
 
   /** Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}. */
   public static SdkMeterProviderBuilder builder() {
@@ -66,7 +67,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       List<MetricProducer> metricProducers,
       Clock clock,
       Resource resource,
-      ExemplarFilter exemplarFilter,
+      ExemplarFilterInternal exemplarFilter,
       ScopeConfigurator<MeterConfig> meterConfigurator) {
     long startEpochNanos = clock.now();
     this.registeredViews = registeredViews;
@@ -103,6 +104,15 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private MeterConfig getMeterConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
     MeterConfig meterConfig = meterConfigurator.apply(instrumentationScopeInfo);
     return meterConfig == null ? MeterConfig.defaultConfig() : meterConfig;
+  }
+
+  void setMeterConfigurator(ScopeConfigurator<MeterConfig> meterConfigurator) {
+    this.meterConfigurator = meterConfigurator;
+    this.registry
+        .getComponents()
+        .forEach(
+            sdkMeter ->
+                sdkMeter.updateMeterConfig(getMeterConfig(sdkMeter.getInstrumentationScopeInfo())));
   }
 
   @Override
@@ -180,6 +190,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
         + metricProducers
         + ", views="
         + registeredViews
+        + ", meterConfigurator="
+        + meterConfigurator
         + "}";
   }
 

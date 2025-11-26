@@ -160,7 +160,7 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
     output.writeUInt32NoTag(field.getTag());
     output.writeUInt32NoTag(utf8Length);
 
-    StatelessMarshalerUtil.writeUtf8(output, string, utf8Length, context);
+    context.getStringEncoder().writeUtf8(output, string, utf8Length);
   }
 
   @Override
@@ -249,23 +249,23 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
-  protected void writeStartRepeated(ProtoFieldInfo field) {
+  public void writeStartRepeated(ProtoFieldInfo field) {
     // Do nothing
   }
 
   @Override
-  protected void writeEndRepeated() {
+  public void writeEndRepeated() {
     // Do nothing
   }
 
   @Override
-  protected void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+  public void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
       throws IOException {
     writeStartMessage(field, protoMessageSize);
   }
 
   @Override
-  protected void writeEndRepeatedElement() {
+  public void writeEndRepeatedElement() {
     writeEndMessage();
   }
 

@@ -10,14 +10,9 @@ package io.opentelemetry.sdk.autoconfigure.internal;
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
+ *
+ * @deprecated Use {@link io.opentelemetry.common.ComponentLoader} instead
  */
-public interface ComponentLoader {
-  /**
-   * Load implementations of an SPI.
-   *
-   * @param spiClass the SPI class
-   * @param <T> the SPI type
-   * @return iterable of SPI implementations
-   */
-  <T> Iterable<T> load(Class<T> spiClass);
-}
+@Deprecated
+// TODO(jack-berg): delete after 1.54.0 release
+public interface ComponentLoader extends io.opentelemetry.common.ComponentLoader {}

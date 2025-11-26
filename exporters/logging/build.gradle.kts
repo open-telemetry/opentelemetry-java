@@ -12,6 +12,7 @@ dependencies {
   api(project(":sdk:all"))
 
   implementation(project(":sdk-extensions:autoconfigure-spi"))
+  compileOnly(project(":api:incubator"))
 
   testImplementation(project(":sdk:testing"))
 }

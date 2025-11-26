@@ -15,11 +15,15 @@ import io.opentelemetry.context.Context;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class TraceBasedExemplarFilter implements ExemplarFilter {
+public final class TraceBasedExemplarFilter implements ExemplarFilterInternal {
 
-  static final ExemplarFilter INSTANCE = new TraceBasedExemplarFilter();
+  private static final ExemplarFilterInternal INSTANCE = new TraceBasedExemplarFilter();
 
   private TraceBasedExemplarFilter() {}
+
+  public static ExemplarFilterInternal getInstance() {
+    return INSTANCE;
+  }
 
   @Override
   public boolean shouldSampleMeasurement(long value, Attributes attributes, Context context) {
@@ -33,5 +37,10 @@ public final class TraceBasedExemplarFilter implements ExemplarFilter {
 
   private static boolean hasSampledTrace(Context context) {
     return Span.fromContext(context).getSpanContext().isSampled();
+  }
+
+  @Override
+  public String toString() {
+    return "TraceBasedExemplarFilter";
   }
 }

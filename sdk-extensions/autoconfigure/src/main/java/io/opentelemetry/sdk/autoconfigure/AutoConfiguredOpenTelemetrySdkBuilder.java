@@ -8,11 +8,11 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -36,17 +35,14 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -65,6 +61,21 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private static final Logger logger =
       Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName(
+          "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration",
+          false,
+          AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
 
   @Nullable private ConfigProperties config;
 
@@ -106,7 +117,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Function.identity();
 
   private ComponentLoader componentLoader =
-      SpiHelper.serviceComponentLoader(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
+      ComponentLoader.forClassLoader(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
 
   private boolean registerShutdownHook = true;
 
@@ -399,12 +410,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   public AutoConfiguredOpenTelemetrySdkBuilder setServiceClassLoader(
       ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
-    this.componentLoader = SpiHelper.serviceComponentLoader(serviceClassLoader);
+    this.componentLoader = ComponentLoader.forClassLoader(serviceClassLoader);
     return this;
   }
 
   /** Sets the {@link ComponentLoader} to be used to load SPI implementations. */
-  AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
+  public AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
     requireNonNull(componentLoader, "componentLoader");
     this.componentLoader = componentLoader;
     return this;
@@ -415,6 +426,40 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
   public AutoConfiguredOpenTelemetrySdk build() {
+    if (!setResultAsGlobal) {
+      return buildImpl();
+    }
+    AtomicReference<AutoConfiguredOpenTelemetrySdk> autoConfiguredRef = new AtomicReference<>();
+    GlobalOpenTelemetry.set(
+        () -> {
+          AutoConfiguredOpenTelemetrySdk sdk = buildImpl();
+          autoConfiguredRef.set(sdk);
+          return sdk.getOpenTelemetrySdk();
+        });
+    AutoConfiguredOpenTelemetrySdk sdk = Objects.requireNonNull(autoConfiguredRef.get());
+    logger.log(
+        Level.FINE,
+        "Global OpenTelemetry set to {0} by autoconfiguration",
+        sdk.getOpenTelemetrySdk());
+    return sdk;
+  }
+
+  private AutoConfiguredOpenTelemetrySdk buildImpl() {
+    AutoConfiguredOpenTelemetrySdk fromFileConfiguration =
+        maybeConfigureFromFile(
+            this.config != null
+                ? this.config
+                : DefaultConfigProperties.create(Collections.emptyMap(), componentLoader),
+            componentLoader);
+    if (fromFileConfiguration != null) {
+      maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
+      Object configProvider = fromFileConfiguration.getConfigProvider();
+      if (setResultAsGlobal && INCUBATOR_AVAILABLE && configProvider != null) {
+        IncubatingUtil.setGlobalConfigProvider(configProvider);
+      }
+      return fromFileConfiguration;
+    }
+
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
     if (!customized) {
       customized = true;
@@ -424,16 +469,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         customizer.customize(this);
       }
     }
-
     ConfigProperties config = getConfig();
-
-    AutoConfiguredOpenTelemetrySdk fromFileConfiguration =
-        maybeConfigureFromFile(config, componentLoader);
-    if (fromFileConfiguration != null) {
-      maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
-      maybeSetAsGlobal(fromFileConfiguration.getOpenTelemetrySdk());
-      return fromFileConfiguration;
-    }
 
     Resource resource =
         ResourceConfiguration.configureResource(config, spiHelper, resourceCustomizer);
@@ -457,7 +493,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
       OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
       maybeRegisterShutdownHook(openTelemetrySdk);
-      maybeSetAsGlobal(openTelemetrySdk);
       callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
       return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config, null);
@@ -539,6 +574,14 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   @Nullable
   private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(
       ConfigProperties config, ComponentLoader componentLoader) {
+    if (INCUBATOR_AVAILABLE) {
+      AutoConfiguredOpenTelemetrySdk sdk = IncubatingUtil.configureFromSpi(componentLoader);
+      if (sdk != null) {
+        logger.fine("Autoconfigured from SPI by opentelemetry-sdk-extension-incubator");
+        return sdk;
+      }
+    }
+
     String otelConfigFile = config.getString("otel.config.file");
     if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
       logger.warning(
@@ -548,44 +591,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
-    logger.fine("Autoconfiguring from configuration file: " + configurationFile);
-    try (FileInputStream fis = new FileInputStream(configurationFile)) {
-      Class<?> configurationFactory =
-          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration");
-      Method parse = configurationFactory.getMethod("parse", InputStream.class);
-      Object model = parse.invoke(null, fis);
-      Class<?> openTelemetryConfiguration =
-          Class.forName(
-              "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel");
-      Method create =
-          configurationFactory.getMethod(
-              "create", openTelemetryConfiguration, ComponentLoader.class);
-      OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, componentLoader);
-      Method toConfigProperties =
-          configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
-      StructuredConfigProperties structuredConfigProperties =
-          (StructuredConfigProperties) toConfigProperties.invoke(null, model);
-      // Note: can't access declarative configuration resource without reflection so setting a dummy
-      // resource
-      return AutoConfiguredOpenTelemetrySdk.create(
-          sdk, Resource.getDefault(), null, structuredConfigProperties);
-    } catch (FileNotFoundException e) {
-      throw new ConfigurationException("Configuration file not found", e);
-    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
+    if (!INCUBATOR_AVAILABLE) {
       throw new ConfigurationException(
-          "Error configuring from file. Is opentelemetry-sdk-extension-incubator on the classpath?",
-          e);
-    } catch (InvocationTargetException e) {
-      Throwable cause = e.getCause();
-      if (cause instanceof ConfigurationException) {
-        throw (ConfigurationException) cause;
-      }
-      throw new ConfigurationException("Unexpected error configuring from file", e);
-    } catch (IOException e) {
-      // IOException (other than FileNotFoundException which is caught above) is only thrown
-      // above by FileInputStream.close()
-      throw new ConfigurationException("Error closing file", e);
+          "Cannot autoconfigure from config file without opentelemetry-sdk-extension-incubator on the classpath");
     }
+    return IncubatingUtil.configureFromFile(logger, configurationFile, componentLoader);
   }
 
   private void maybeRegisterShutdownHook(OpenTelemetrySdk openTelemetrySdk) {
@@ -593,15 +603,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return;
     }
     Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
-  }
-
-  private void maybeSetAsGlobal(OpenTelemetrySdk openTelemetrySdk) {
-    if (!setResultAsGlobal) {
-      return;
-    }
-    GlobalOpenTelemetry.set(openTelemetrySdk);
-    logger.log(
-        Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
   }
 
   // Visible for testing
@@ -638,7 +639,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   private ConfigProperties computeConfigProperties() {
-    DefaultConfigProperties properties = DefaultConfigProperties.create(propertiesSupplier.get());
+    DefaultConfigProperties properties =
+        DefaultConfigProperties.create(propertiesSupplier.get(), componentLoader);
     for (Function<ConfigProperties, Map<String, String>> customizer : propertiesCustomizers) {
       Map<String, String> overrides = customizer.apply(properties);
       properties = properties.withOverrides(overrides);
@@ -647,8 +649,18 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   // Visible for testing
+  @SuppressWarnings("SystemOut")
   Thread shutdownHook(OpenTelemetrySdk sdk) {
-    return new Thread(sdk::close);
+    return new Thread(
+        () -> {
+          try {
+            sdk.close();
+          } catch (Throwable e) {
+            // https://github.com/open-telemetry/opentelemetry-java/issues/6827
+            // logging deps might not be on the classpath at this point
+            System.out.printf("%s Flush failed during shutdown: %s%n", Level.WARNING, e);
+          }
+        });
   }
 
   private static <I, O1, O2> BiFunction<I, ConfigProperties, O2> mergeCustomizer(

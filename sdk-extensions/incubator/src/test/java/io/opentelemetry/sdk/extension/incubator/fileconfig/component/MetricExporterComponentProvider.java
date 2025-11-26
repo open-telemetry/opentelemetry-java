@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig.component;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 
-public class MetricExporterComponentProvider implements ComponentProvider<MetricExporter> {
+public class MetricExporterComponentProvider implements ComponentProvider {
   @Override
   public Class<MetricExporter> getType() {
     return MetricExporter.class;
@@ -27,15 +27,15 @@ public class MetricExporterComponentProvider implements ComponentProvider<Metric
   }
 
   @Override
-  public MetricExporter create(StructuredConfigProperties config) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     return new TestMetricExporter(config);
   }
 
   public static class TestMetricExporter implements MetricExporter {
 
-    public final StructuredConfigProperties config;
+    public final DeclarativeConfigProperties config;
 
-    private TestMetricExporter(StructuredConfigProperties config) {
+    private TestMetricExporter(DeclarativeConfigProperties config) {
       this.config = config;
     }
 

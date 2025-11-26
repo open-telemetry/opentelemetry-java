@@ -5,19 +5,14 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createDouble;
-import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createLong;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -36,21 +31,16 @@ public final class SdkObservableMeasurement
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentDescriptor instrumentDescriptor;
-  private final List<AsynchronousMetricStorage<?, ?>> storages;
-
-  /** Only used when {@code activeReader}'s memoryMode is {@link MemoryMode#REUSABLE_DATA}. */
-  private final MutableMeasurement mutableMeasurement = new MutableMeasurement();
+  private final List<AsynchronousMetricStorage<?>> storages;
 
   // These fields are set before invoking callbacks. They allow measurements to be recorded to the
   // storages for correct reader, and with the correct time.
   @Nullable private volatile RegisteredReader activeReader;
-  private volatile long startEpochNanos;
-  private volatile long epochNanos;
 
   private SdkObservableMeasurement(
       InstrumentationScopeInfo instrumentationScopeInfo,
       InstrumentDescriptor instrumentDescriptor,
-      List<AsynchronousMetricStorage<?, ?>> storages) {
+      List<AsynchronousMetricStorage<?>> storages) {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.instrumentDescriptor = instrumentDescriptor;
     this.storages = storages;
@@ -67,7 +57,7 @@ public final class SdkObservableMeasurement
   public static SdkObservableMeasurement create(
       InstrumentationScopeInfo instrumentationScopeInfo,
       InstrumentDescriptor instrumentDescriptor,
-      List<AsynchronousMetricStorage<?, ?>> storages) {
+      List<AsynchronousMetricStorage<?>> storages) {
     return new SdkObservableMeasurement(instrumentationScopeInfo, instrumentDescriptor, storages);
   }
 
@@ -83,8 +73,11 @@ public final class SdkObservableMeasurement
   public void setActiveReader(
       RegisteredReader registeredReader, long startEpochNanos, long epochNanos) {
     this.activeReader = registeredReader;
-    this.startEpochNanos = startEpochNanos;
-    this.epochNanos = epochNanos;
+    for (AsynchronousMetricStorage<?> storage : storages) {
+      if (storage.getRegisteredReader().equals(activeReader)) {
+        storage.setEpochInformation(startEpochNanos, epochNanos);
+      }
+    }
   }
 
   /**
@@ -98,7 +91,7 @@ public final class SdkObservableMeasurement
     return instrumentDescriptor;
   }
 
-  List<AsynchronousMetricStorage<?, ?>> getStorages() {
+  List<AsynchronousMetricStorage<?>> getStorages() {
     return storages;
   }
 
@@ -109,23 +102,17 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(long value, Attributes attributes) {
+    RegisteredReader activeReader = this.activeReader;
     if (activeReader == null) {
       logNoActiveReader();
       return;
     }
 
-    Measurement measurement;
-
-    MemoryMode memoryMode = activeReader.getReader().getMemoryMode();
-    if (Objects.requireNonNull(memoryMode) == MemoryMode.IMMUTABLE_DATA) {
-      measurement = createLong(startEpochNanos, epochNanos, value, attributes);
-    } else {
-      MutableMeasurement.setLongMeasurement(
-          mutableMeasurement, startEpochNanos, epochNanos, value, attributes);
-      measurement = mutableMeasurement;
+    for (AsynchronousMetricStorage<?> storage : storages) {
+      if (storage.getRegisteredReader().equals(activeReader)) {
+        storage.record(attributes, value);
+      }
     }
-
-    doRecord(measurement);
   }
 
   @Override
@@ -135,10 +122,12 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(double value, Attributes attributes) {
+    RegisteredReader activeReader = this.activeReader;
     if (activeReader == null) {
       logNoActiveReader();
       return;
     }
+
     if (Double.isNaN(value)) {
       logger.log(
           Level.FINE,
@@ -150,24 +139,9 @@ public final class SdkObservableMeasurement
       return;
     }
 
-    Measurement measurement;
-    MemoryMode memoryMode = activeReader.getReader().getMemoryMode();
-    if (Objects.requireNonNull(memoryMode) == MemoryMode.IMMUTABLE_DATA) {
-      measurement = createDouble(startEpochNanos, epochNanos, value, attributes);
-    } else {
-      MutableMeasurement.setDoubleMeasurement(
-          mutableMeasurement, startEpochNanos, epochNanos, value, attributes);
-      measurement = mutableMeasurement;
-    }
-
-    doRecord(measurement);
-  }
-
-  private void doRecord(Measurement measurement) {
-    RegisteredReader activeReader = this.activeReader;
-    for (AsynchronousMetricStorage<?, ?> storage : storages) {
+    for (AsynchronousMetricStorage<?> storage : storages) {
       if (storage.getRegisteredReader().equals(activeReader)) {
-        storage.record(measurement);
+        storage.record(attributes, value);
       }
     }
   }

@@ -7,14 +7,14 @@ package io.opentelemetry.exporter.logging.otlp;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -81,7 +81,7 @@ class OtlpStdoutMetricExporterTest
 
   @Test
   void componentProviderMetricConfig() {
-    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
+    DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
     when(properties.getString("temporality_preference")).thenReturn("DELTA");
     when(properties.getString("default_histogram_aggregation"))
         .thenReturn("BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
