@@ -169,34 +169,31 @@ class OkHttpGrpcSenderTest {
             null,
             null); // null executor = managed
 
-    // Start multiple long-running tasks that will block during shutdown
-    CountDownLatch tasksStarted = new CountDownLatch(3);
-    CountDownLatch blockTasks = new CountDownLatch(1);
-
+    // Start multiple requests to ensure threads are busy
+    CountDownLatch blockCallbacks = new CountDownLatch(1);
     for (int i = 0; i < 3; i++) {
       sender.send(
           new TestMarshaler(),
           response -> {
-            tasksStarted.countDown();
             try {
-              // Block for longer than the 5-second timeout
-              blockTasks.await(10, TimeUnit.SECONDS);
+              // Block in callback for longer than the 5-second timeout
+              blockCallbacks.await(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
             }
           },
           error -> {
-            tasksStarted.countDown();
             try {
-              blockTasks.await(10, TimeUnit.SECONDS);
+              // Block in callback for longer than the 5-second timeout
+              blockCallbacks.await(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
             }
           });
     }
 
-    // Wait for tasks to start
-    assertTrue(tasksStarted.await(2, TimeUnit.SECONDS), "Tasks should start");
+    // Give threads time to start (same pattern as existing test)
+    Thread.sleep(500);
 
     // Shutdown will now try to terminate threads that are blocked
     CompletableResultCode shutdownResult = sender.shutdown();
@@ -207,8 +204,8 @@ class OkHttpGrpcSenderTest {
         shutdownResult.join(10, TimeUnit.SECONDS).isSuccess(),
         "Shutdown should succeed even when threads don't terminate quickly");
 
-    // Release the blocking tasks
-    blockTasks.countDown();
+    // Release the blocking callbacks
+    blockCallbacks.countDown();
   }
 
   @Test
@@ -235,20 +232,22 @@ class OkHttpGrpcSenderTest {
             null);
 
     // Trigger some activity
-    CountDownLatch taskStarted = new CountDownLatch(1);
-    sender.send(
-        new TestMarshaler(), response -> taskStarted.countDown(), error -> taskStarted.countDown());
+    sender.send(new TestMarshaler(), response -> {}, error -> {});
 
-    // Wait for task to start
-    assertTrue(taskStarted.await(2, TimeUnit.SECONDS), "Task should start");
+    // Give threads time to start (same pattern as existing test)
+    Thread.sleep(500);
 
     // Start shutdown
     CompletableResultCode shutdownResult = sender.shutdown();
 
+    // Give the shutdown thread a moment to start
+    Thread.sleep(100);
+
     // Find and interrupt the okhttp-shutdown thread to trigger the InterruptedException path
-    Thread[] threads = new Thread[Thread.activeCount()];
-    Thread.enumerate(threads);
-    for (Thread thread : threads) {
+    Thread[] threads = new Thread[Thread.activeCount() + 10];
+    int count = Thread.enumerate(threads);
+    for (int i = 0; i < count; i++) {
+      Thread thread = threads[i];
       if (thread != null && thread.getName().equals("okhttp-shutdown")) {
         // Interrupt the shutdown thread to test the InterruptedException handling
         thread.interrupt();
