@@ -237,9 +237,7 @@ class OkHttpGrpcSenderTest {
     // Trigger some activity
     CountDownLatch taskStarted = new CountDownLatch(1);
     sender.send(
-        new TestMarshaler(),
-        response -> taskStarted.countDown(),
-        error -> taskStarted.countDown());
+        new TestMarshaler(), response -> taskStarted.countDown(), error -> taskStarted.countDown());
 
     // Wait for task to start
     assertTrue(taskStarted.await(2, TimeUnit.SECONDS), "Task should start");
