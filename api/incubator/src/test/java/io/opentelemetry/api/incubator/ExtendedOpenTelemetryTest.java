@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -60,7 +61,8 @@ class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
     GlobalOpenTelemetry.set(
         ExtendedOpenTelemetrySdk.create(
             OpenTelemetrySdk.builder().build(),
-            SdkConfigProvider.create(new OpenTelemetryConfigurationModel())));
+            SdkConfigProvider.create(new OpenTelemetryConfigurationModel()),
+            Resource.empty()));
     assertThat(GlobalOpenTelemetry.get()).isInstanceOf(ExtendedOpenTelemetry.class);
   }
 
