@@ -27,7 +27,7 @@ public class JaegerRemoteSamplerComponentProvider implements ComponentProvider {
 
   @Override
   public String getName() {
-    return "jaeger_remote";
+    return "jaeger_remote/development";
   }
 
   @Override

@@ -190,8 +190,10 @@ class MetricReaderFactoryTest {
                                                     .withIncluded(singletonList("foo"))
                                                     .withExcluded(singletonList("bar")))
                                             .withWithoutScopeInfo(true)
-                                            .withWithoutTypeSuffix(true)
-                                            .withWithoutUnits(true)))),
+                                            .withTranslationStrategy(
+                                                ExperimentalPrometheusMetricExporterModel
+                                                    .ExperimentalPrometheusTranslationStrategy
+                                                    .UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES)))),
                 context);
     MetricReader reader = readerAndCardinalityLimits.getMetricReader();
     cleanup.addCloseable(reader);
