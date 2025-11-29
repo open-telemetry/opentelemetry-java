@@ -334,6 +334,20 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  public OtlpHttpMetricExporterBuilder setLogThrottlingRate(
+      double rateLimit, double throttledRateLimit) {
+    checkArgument(rateLimit > 0, "rateLimit invalid");
+    checkArgument(throttledRateLimit > 0, "throttledRateLimit invalid");
+    delegate.setLogThrottlingRate(rateLimit, throttledRateLimit);
+    return this;
+  }
+
+  public OtlpHttpMetricExporterBuilder setLogThrottlingTimeUnit(TimeUnit timeUnit) {
+    requireNonNull(timeUnit, "logTimeUnit");
+    delegate.setLogThrottlingTimeUnit(timeUnit);
+    return this;
+  }
+
   OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
     return this;

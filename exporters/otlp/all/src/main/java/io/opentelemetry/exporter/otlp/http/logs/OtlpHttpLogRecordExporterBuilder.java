@@ -275,6 +275,20 @@ public final class OtlpHttpLogRecordExporterBuilder {
     return this;
   }
 
+  public OtlpHttpLogRecordExporterBuilder setLogThrottlingRate(
+      double rateLimit, double throttledRateLimit) {
+    checkArgument(rateLimit > 0, "rateLimit invalid");
+    checkArgument(throttledRateLimit > 0, "throttledRateLimit invalid");
+    delegate.setLogThrottlingRate(rateLimit, throttledRateLimit);
+    return this;
+  }
+
+  public OtlpHttpLogRecordExporterBuilder setLogThrottlingTimeUnit(TimeUnit timeUnit) {
+    requireNonNull(timeUnit, "logTimeUnit");
+    delegate.setLogThrottlingTimeUnit(timeUnit);
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *

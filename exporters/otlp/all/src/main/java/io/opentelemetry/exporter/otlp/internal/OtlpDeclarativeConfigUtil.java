@@ -22,6 +22,8 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -57,6 +59,8 @@ public final class OtlpDeclarativeConfigUtil {
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
       Consumer<MemoryMode> setMemoryMode,
+      BiConsumer<Double, Double> setLogThrottlingRate,
+      Consumer<TimeUnit> setLogTimeUnit,
       boolean isHttpProtobuf) {
     setComponentLoader.accept(config.getComponentLoader());
 
@@ -117,6 +121,20 @@ public final class OtlpDeclarativeConfigUtil {
     }
 
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
+
+    Double throttlingLoggerRateLimit = config.getDouble("log_rate");
+    Double throttlingLoggerThrottledRateLimit = config.getDouble("throttled_log_rate");
+
+    if (throttlingLoggerRateLimit != null && throttlingLoggerThrottledRateLimit != null) {
+      setLogThrottlingRate.accept(throttlingLoggerRateLimit, throttlingLoggerThrottledRateLimit);
+    }
+
+    String throttlingLoggerTimeUnitStr = config.getString("log_rate_unit");
+    if (throttlingLoggerTimeUnitStr != null) {
+      TimeUnit throttlingLoggerTimeUnit =
+          TimeUnit.valueOf(throttlingLoggerTimeUnitStr.toUpperCase(Locale.ROOT));
+      setLogTimeUnit.accept(throttlingLoggerTimeUnit);
+    }
   }
 
   private OtlpDeclarativeConfigUtil() {}
