@@ -326,7 +326,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     if (grpcSenderProviders.isEmpty()) {
       throw new IllegalStateException(
           "No GrpcSenderProvider found on classpath. Please add dependency on "
-              + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-grpc-upstream");
+              + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-grpc-managed-channel");
     }
 
     // Exactly one provider on classpath, use it
