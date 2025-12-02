@@ -14,6 +14,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -30,6 +32,29 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class LoggerConfigTest {
+
+  @Test
+  void builder_AllFields() {
+    LoggerConfig config =
+        LoggerConfig.builder()
+            .setEnabled(false)
+            .setMinimumSeverity(Severity.WARN)
+            .setTraceBased(true)
+            .build();
+
+    assertThat(config.isEnabled()).isFalse();
+    assertThat(config.getMinimumSeverity()).isEqualTo(Severity.WARN);
+    assertThat(config.isTraceBased()).isTrue();
+  }
+
+  @Test
+  void builder_Defaults() {
+    LoggerConfig config = LoggerConfig.builder().build();
+
+    assertThat(config.isEnabled()).isTrue();
+    assertThat(config.getMinimumSeverity()).isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER);
+    assertThat(config.isTraceBased()).isFalse();
+  }
 
   @Test
   void disableScopes() {
@@ -62,9 +87,9 @@ class LoggerConfigTest {
               assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerC"))).hasSize(1);
             });
     // loggerA and loggerC are enabled, loggerB is disabled.
-    assertThat(((ExtendedLogger) loggerA).isEnabled()).isTrue();
-    assertThat(((ExtendedLogger) loggerB).isEnabled()).isFalse();
-    assertThat(((ExtendedLogger) loggerC).isEnabled()).isTrue();
+    assertThat(((ExtendedLogger) loggerA).isEnabled(Severity.INFO)).isTrue();
+    assertThat(((ExtendedLogger) loggerB).isEnabled(Severity.INFO)).isFalse();
+    assertThat(((ExtendedLogger) loggerC).isEnabled(Severity.INFO)).isTrue();
   }
 
   @ParameterizedTest
@@ -144,9 +169,9 @@ class LoggerConfigTest {
     ExtendedSdkLogger loggerC = (ExtendedSdkLogger) loggerProvider.get("loggerC");
 
     // verify isEnabled()
-    assertThat(loggerA.isEnabled()).isTrue();
-    assertThat(loggerB.isEnabled()).isFalse();
-    assertThat(loggerC.isEnabled()).isTrue();
+    assertThat(loggerA.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
+    assertThat(loggerB.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
+    assertThat(loggerC.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
 
     // verify logs are emitted as expected
     loggerA.logRecordBuilder().setBody("logA").emit();
@@ -162,9 +187,9 @@ class LoggerConfigTest {
         ScopeConfigurator.<LoggerConfig>builder().setDefault(disabled()).build());
 
     // verify isEnabled()
-    assertThat(loggerA.isEnabled()).isFalse();
-    assertThat(loggerB.isEnabled()).isFalse();
-    assertThat(loggerC.isEnabled()).isFalse();
+    assertThat(loggerA.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
+    assertThat(loggerB.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
+    assertThat(loggerC.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
 
     // verify logs are emitted as expected
     loggerA.logRecordBuilder().setBody("logA").emit();
@@ -179,9 +204,9 @@ class LoggerConfigTest {
             .build());
 
     // verify isEnabled()
-    assertThat(loggerA.isEnabled()).isTrue();
-    assertThat(loggerB.isEnabled()).isFalse();
-    assertThat(loggerC.isEnabled()).isTrue();
+    assertThat(loggerA.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
+    assertThat(loggerB.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isFalse();
+    assertThat(loggerC.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
 
     // verify logs are emitted as expected
     loggerA.logRecordBuilder().setBody("logA").emit();

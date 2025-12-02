@@ -8,9 +8,12 @@ package io.opentelemetry.exporter.internal.http;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.internal.compression.CompressorProvider;
+import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -24,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -62,9 +64,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
-  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private Supplier<MeterProvider> meterProviderSupplier =
+      () -> GlobalOpenTelemetry.getOrNoop().getMeterProvider();
   private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
-  private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
+  private ComponentLoader componentLoader =
+      ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
 
   public HttpExporterBuilder(
@@ -93,6 +97,17 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   public HttpExporterBuilder<T> setCompression(@Nullable Compressor compressor) {
     this.compressor = compressor;
     return this;
+  }
+
+  /**
+   * Sets the method used to compress payloads. If unset, compression is disabled. Compression
+   * method "gzip" and "none" are supported out of the box. Support for additional compression
+   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   */
+  public HttpExporterBuilder<T> setCompression(String compressionMethod) {
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, componentLoader);
+    return setCompression(compressor);
   }
 
   public HttpExporterBuilder<T> addConstantHeaders(String key, String value) {
@@ -143,8 +158,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setServiceClassLoader(ClassLoader servieClassLoader) {
-    this.serviceClassLoader = servieClassLoader;
+  public HttpExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader) {
+    this.componentLoader = componentLoader;
     return this;
   }
 
@@ -190,6 +205,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     copy.meterProviderSupplier = meterProviderSupplier;
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
+    copy.componentLoader = componentLoader;
     return copy;
   }
 
@@ -265,7 +281,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }
-    joiner.add("serviceClassLoader=" + serviceClassLoader);
+    joiner.add("componentLoader=" + componentLoader);
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
@@ -299,8 +315,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
    */
   private HttpSenderProvider resolveHttpSenderProvider() {
     Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
-    for (HttpSenderProvider spi :
-        ServiceLoader.load(HttpSenderProvider.class, serviceClassLoader)) {
+    for (HttpSenderProvider spi : componentLoader.load(HttpSenderProvider.class)) {
       httpSenderProviders.put(spi.getClass().getName(), spi);
     }
 

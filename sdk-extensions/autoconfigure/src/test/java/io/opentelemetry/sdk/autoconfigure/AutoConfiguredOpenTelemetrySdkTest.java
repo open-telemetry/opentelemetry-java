@@ -10,6 +10,7 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -28,6 +29,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -35,7 +37,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -65,6 +66,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -255,22 +257,28 @@ class AutoConfiguredOpenTelemetrySdkTest {
     SpiHelper spiHelper =
         SpiHelper.create(AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
 
-    AutoConfigureUtil.setComponentLoader(
-            builder,
-            new ComponentLoader() {
-              @SuppressWarnings("unchecked")
-              @Override
-              public <T> Iterable<T> load(Class<T> spiClass) {
-                if (spiClass.equals(AutoConfigurationCustomizerProvider.class)) {
-                  return Collections.singletonList((T) customizerProvider);
-                }
-                return spiHelper.load(spiClass);
-              }
-            })
-        .build();
+    ComponentLoader componentLoader =
+        new ComponentLoader() {
+          @SuppressWarnings("unchecked")
+          @Override
+          public <T> Iterable<T> load(Class<T> spiClass) {
+            if (spiClass.equals(AutoConfigurationCustomizerProvider.class)) {
+              return Collections.singletonList((T) customizerProvider);
+            }
+            return spiHelper.load(spiClass);
+          }
+        };
 
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        builder.setComponentLoader(componentLoader).build();
+
+    assertThat(
+            Objects.requireNonNull(autoConfiguredOpenTelemetrySdk.getConfig()).getComponentLoader())
+        .isSameAs(componentLoader);
     verify(customizerProvider).customize(any());
     verifyNoMoreInteractions(customizerProvider);
+
+    autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Test
@@ -436,6 +444,22 @@ class AutoConfiguredOpenTelemetrySdkTest {
     builder.callAutoConfigureListeners(spiHelper, sdk);
 
     verify(listener).afterAutoConfigure(sdk);
+  }
+
+  @Test
+  void builder_catchesException() throws InterruptedException {
+    OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
+    doThrow(NoClassDefFoundError.class).when(sdk).close();
+
+    try {
+      Thread thread = builder.shutdownHook(sdk);
+      thread.start();
+      thread.join();
+    } catch (NoClassDefFoundError e) {
+      fail("shutdownHook threw unexpected NoClassDefFoundError", e);
+    }
+
+    verify(sdk).close();
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {

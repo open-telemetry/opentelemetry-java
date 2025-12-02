@@ -14,17 +14,18 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
@@ -45,15 +46,14 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarData>
-    implements MetricStorage {
+public final class AsynchronousMetricStorage<T extends PointData> implements MetricStorage {
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
-  private final Aggregator<T, U> aggregator;
+  private final Aggregator<T> aggregator;
   private final AttributesProcessor attributesProcessor;
   private final MemoryMode memoryMode;
 
@@ -64,16 +64,16 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private final int maxCardinality;
 
   // Handles responsible for aggregating data recorded during callbacks
-  private final Map<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
+  private final Map<Attributes, AggregatorHandle<T>> aggregatorHandles;
 
   // Only populated if aggregationTemporality == DELTA
   private Map<Attributes, T> lastPoints;
 
   // Only populated if memoryMode == REUSABLE_DATA
   private final ObjectPool<T> reusablePointsPool;
-  private final ObjectPool<AggregatorHandle<T, U>> reusableHandlesPool;
-  private final Function<Attributes, AggregatorHandle<T, U>> handleBuilder;
-  private final BiConsumer<Attributes, AggregatorHandle<T, U>> handleReleaser;
+  private final ObjectPool<AggregatorHandle<T>> reusableHandlesPool;
+  private final Function<Attributes, AggregatorHandle<T>> handleBuilder;
+  private final BiConsumer<Attributes, AggregatorHandle<T>> handleReleaser;
   private final BiConsumer<Attributes, T> pointReleaser;
 
   private final List<T> reusablePointsList = new ArrayList<>();
@@ -86,12 +86,15 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private long startEpochNanos;
   private long epochNanos;
 
+  private volatile boolean enabled;
+
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
-      Aggregator<T, U> aggregator,
+      Aggregator<T> aggregator,
       AttributesProcessor attributesProcessor,
-      int maxCardinality) {
+      int maxCardinality,
+      boolean enabled) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     this.aggregationTemporality =
@@ -102,6 +105,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
+    this.enabled = enabled;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
     this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
     this.handleBuilder = ignored -> reusableHandlesPool.borrowObject();
@@ -121,39 +125,40 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
    * Create an asynchronous storage instance for the {@link View} and {@link InstrumentDescriptor}.
    */
   // TODO(anuraaga): The cast to generic type here looks suspicious.
-  public static <T extends PointData, U extends ExemplarData>
-      AsynchronousMetricStorage<T, U> create(
-          RegisteredReader registeredReader,
-          RegisteredView registeredView,
-          InstrumentDescriptor instrumentDescriptor) {
+  public static <T extends PointData> AsynchronousMetricStorage<T> create(
+      RegisteredReader registeredReader,
+      RegisteredView registeredView,
+      InstrumentDescriptor instrumentDescriptor,
+      boolean enabled) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
-    Aggregator<T, U> aggregator =
+    Aggregator<T> aggregator =
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(
                 instrumentDescriptor,
-                ExemplarFilter.alwaysOff(),
+                ExemplarFilterInternal.asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
                 registeredReader.getReader().getMemoryMode());
     return new AsynchronousMetricStorage<>(
         registeredReader,
         metricDescriptor,
         aggregator,
         registeredView.getViewAttributesProcessor(),
-        registeredView.getCardinalityLimit());
+        registeredView.getCardinalityLimit(),
+        enabled);
   }
 
   /** Record callback measurement from {@link ObservableLongMeasurement}. */
   void record(Attributes attributes, long value) {
     attributes = validateAndProcessAttributes(attributes);
-    AggregatorHandle<T, U> handle = aggregatorHandles.computeIfAbsent(attributes, handleBuilder);
+    AggregatorHandle<T> handle = aggregatorHandles.computeIfAbsent(attributes, handleBuilder);
     handle.recordLong(value, attributes, Context.current());
   }
 
   /** Record callback measurement from {@link ObservableDoubleMeasurement}. */
   void record(Attributes attributes, double value) {
     attributes = validateAndProcessAttributes(attributes);
-    AggregatorHandle<T, U> handle = aggregatorHandles.computeIfAbsent(attributes, handleBuilder);
+    AggregatorHandle<T> handle = aggregatorHandles.computeIfAbsent(attributes, handleBuilder);
     handle.recordDouble(value, attributes, Context.current());
   }
 
@@ -207,8 +212,10 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     aggregatorHandles.forEach(handleReleaser);
     aggregatorHandles.clear();
 
-    return aggregator.toMetricData(
-        resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality);
+    return enabled
+        ? aggregator.toMetricData(
+            resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality)
+        : EmptyMetricData.getInstance();
   }
 
   private Collection<T> collectWithDeltaAggregationTemporality() {
@@ -310,7 +317,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   }
 
   @Override
-  public boolean isEmpty() {
-    return aggregator == Aggregator.drop();
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 }

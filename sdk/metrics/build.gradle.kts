@@ -1,5 +1,3 @@
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
-
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
@@ -64,12 +62,6 @@ testing {
 }
 
 tasks {
-  named<AnimalSniffer>("animalsnifferMain") {
-    // We cannot use IgnoreJreRequirement since it does not work correctly for fields.
-    // https://github.com/mojohaus/animal-sniffer/issues/131
-    exclude("**/concurrent/Jre*Adder*")
-  }
-
   check {
     dependsOn(testing.suites)
   }

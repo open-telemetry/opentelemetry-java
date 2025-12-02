@@ -128,16 +128,16 @@ class InstrumentationConfigUtilTest {
   @Test
   void httpServerResponseCapturedHeaders() {
     assertThat(
-            InstrumentationConfigUtil.httpSeverResponseCapturedHeaders(kitchenSinkConfigProvider))
+            InstrumentationConfigUtil.httpServerResponseCapturedHeaders(kitchenSinkConfigProvider))
         .isEqualTo(Arrays.asList("server-response-header1", "server-response-header2"));
     assertThat(
-            InstrumentationConfigUtil.httpSeverResponseCapturedHeaders(
+            InstrumentationConfigUtil.httpServerResponseCapturedHeaders(
                 emptyInstrumentationConfigProvider))
         .isNull();
     assertThat(
-            InstrumentationConfigUtil.httpSeverResponseCapturedHeaders(emptyGeneralConfigProvider))
+            InstrumentationConfigUtil.httpServerResponseCapturedHeaders(emptyGeneralConfigProvider))
         .isNull();
-    assertThat(InstrumentationConfigUtil.httpSeverResponseCapturedHeaders(emptyHttpConfigProvider))
+    assertThat(InstrumentationConfigUtil.httpServerResponseCapturedHeaders(emptyHttpConfigProvider))
         .isNull();
   }
 
@@ -150,7 +150,8 @@ class InstrumentationConfigUtilTest {
         .isInstanceOfSatisfying(
             YamlDeclarativeConfigProperties.class,
             exampleConfig ->
-                assertThat(exampleConfig.toMap()).isEqualTo(ImmutableMap.of("property", "value")));
+                assertThat(DeclarativeConfigProperties.toMap(exampleConfig))
+                    .isEqualTo(ImmutableMap.of("property", "value")));
     assertThat(
             InstrumentationConfigUtil.javaInstrumentationConfig(kitchenSinkConfigProvider, "foo"))
         .isNull();

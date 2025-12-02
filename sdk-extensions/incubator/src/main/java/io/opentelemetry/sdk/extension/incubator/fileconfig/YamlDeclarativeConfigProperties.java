@@ -10,11 +10,9 @@ import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.common.ComponentLoader;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,6 +20,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -37,6 +37,9 @@ import javax.annotation.Nullable;
  *     configuration model to properties
  */
 public final class YamlDeclarativeConfigProperties implements DeclarativeConfigProperties {
+
+  private static final Logger logger =
+      Logger.getLogger(YamlDeclarativeConfigProperties.class.getName());
 
   private static final Set<Class<?>> SUPPORTED_SCALAR_TYPES =
       Collections.unmodifiableSet(
@@ -68,10 +71,10 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
    * com.fasterxml.jackson.databind.ObjectMapper}), and have values which are scalars, lists of
    * scalars, lists of maps, and maps.
    *
-   * @see DeclarativeConfiguration#toConfigProperties(OpenTelemetryConfigurationModel)
+   * @see DeclarativeConfiguration#toConfigProperties(Object)
    */
   @SuppressWarnings("unchecked")
-  static YamlDeclarativeConfigProperties create(
+  public static YamlDeclarativeConfigProperties create(
       Map<String, Object> properties, ComponentLoader componentLoader) {
     Map<String, Object> simpleEntries = new LinkedHashMap<>();
     Map<String, List<YamlDeclarativeConfigProperties>> listEntries = new LinkedHashMap<>();
@@ -153,13 +156,13 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   @Nullable
   @Override
   public String getString(String name) {
-    return stringOrNull(simpleEntries.get(name));
+    return stringOrNull(simpleEntries.get(name), name);
   }
 
   @Nullable
   @Override
   public Boolean getBoolean(String name) {
-    return booleanOrNull(simpleEntries.get(name));
+    return booleanOrNull(simpleEntries.get(name), name);
   }
 
   @Nullable
@@ -172,19 +175,22 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     if (value instanceof Long) {
       return ((Long) value).intValue();
     }
+    if (value != null) {
+      logTypeWarning(name, value, Integer.class);
+    }
     return null;
   }
 
   @Nullable
   @Override
   public Long getLong(String name) {
-    return longOrNull(simpleEntries.get(name));
+    return longOrNull(simpleEntries.get(name), name);
   }
 
   @Nullable
   @Override
   public Double getDouble(String name) {
-    return doubleOrNull(simpleEntries.get(name));
+    return doubleOrNull(simpleEntries.get(name), name);
   }
 
   @Nullable
@@ -202,62 +208,82 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     }
     Object value = simpleEntries.get(name);
     if (value instanceof List) {
-      return (List<T>)
-          ((List<Object>) value)
-              .stream()
+      List<Object> objectList = ((List<Object>) value);
+      if (objectList.isEmpty()) {
+        return Collections.emptyList();
+      }
+      List<T> result =
+          (List<T>)
+              objectList.stream()
                   .map(
                       entry -> {
                         if (scalarType == String.class) {
-                          return stringOrNull(entry);
+                          return stringOrNull(entry, name);
                         } else if (scalarType == Boolean.class) {
-                          return booleanOrNull(entry);
+                          return booleanOrNull(entry, name);
                         } else if (scalarType == Long.class) {
-                          return longOrNull(entry);
+                          return longOrNull(entry, name);
                         } else if (scalarType == Double.class) {
-                          return doubleOrNull(entry);
+                          return doubleOrNull(entry, name);
                         }
                         return null;
                       })
                   .filter(Objects::nonNull)
                   .collect(toList());
+      if (result.isEmpty()) {
+        return null;
+      }
+      return result;
     }
     return null;
   }
 
   @Nullable
-  private static String stringOrNull(@Nullable Object value) {
+  private static String stringOrNull(@Nullable Object value, String name) {
     if (value instanceof String) {
       return (String) value;
     }
-    return null;
-  }
-
-  @Nullable
-  private static Boolean booleanOrNull(@Nullable Object value) {
-    if (value instanceof Boolean) {
-      return (Boolean) value;
+    if (value != null) {
+      logTypeWarning(name, value, String.class);
     }
     return null;
   }
 
   @Nullable
-  private static Long longOrNull(@Nullable Object value) {
+  private static Boolean booleanOrNull(@Nullable Object value, String name) {
+    if (value instanceof Boolean) {
+      return (Boolean) value;
+    }
+    if (value != null) {
+      logTypeWarning(name, value, Boolean.class);
+    }
+    return null;
+  }
+
+  @Nullable
+  private static Long longOrNull(@Nullable Object value, String name) {
     if (value instanceof Integer) {
       return ((Integer) value).longValue();
     }
     if (value instanceof Long) {
       return (Long) value;
     }
+    if (value != null) {
+      logTypeWarning(name, value, Long.class);
+    }
     return null;
   }
 
   @Nullable
-  private static Double doubleOrNull(@Nullable Object value) {
+  private static Double doubleOrNull(@Nullable Object value, String name) {
     if (value instanceof Float) {
       return ((Float) value).doubleValue();
     }
     if (value instanceof Double) {
       return (Double) value;
+    }
+    if (value != null) {
+      logTypeWarning(name, value, Double.class);
     }
     return null;
   }
@@ -296,19 +322,16 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     return joiner.toString();
   }
 
-  /** Return a map representation of the data. */
-  public Map<String, Object> toMap() {
-    Map<String, Object> result = new HashMap<>(simpleEntries);
-    listEntries.forEach(
-        (key, value) ->
-            result.put(
-                key, value.stream().map(YamlDeclarativeConfigProperties::toMap).collect(toList())));
-    mapEntries.forEach((key, value) -> result.put(key, value.toMap()));
-    return Collections.unmodifiableMap(result);
-  }
-
   /** Return the {@link ComponentLoader}. */
+  @Override
   public ComponentLoader getComponentLoader() {
     return componentLoader;
+  }
+
+  private static void logTypeWarning(String key, Object value, Class<?> expected) {
+    logger.log(
+        Level.WARNING,
+        "Ignoring value for key [{0}] because it is {1} instead of {2}: {3}",
+        new Object[] {key, value.getClass().getSimpleName(), expected.getSimpleName(), value});
   }
 }

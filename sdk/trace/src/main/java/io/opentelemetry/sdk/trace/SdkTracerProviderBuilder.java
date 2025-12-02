@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
@@ -38,7 +37,7 @@ public final class SdkTracerProviderBuilder {
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
       TracerConfig.configuratorBuilder();
   private ExceptionAttributeResolver exceptionAttributeResolver =
-      DefaultExceptionAttributeResolver.getInstance();
+      ExceptionAttributeResolver.getDefault();
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link Span} is started, ended
@@ -219,8 +218,8 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Set the exception attribute resolver, which resolves {@code exception.*} attributes when {@link
-   * Span#recordException(Throwable)}
+   * Sets the exception attribute resolver, which resolves {@code exception.*} attributes when
+   * {@link Span#recordException(Throwable)} is called.
    *
    * <p>This method is experimental so not public. You may reflectively call it using {@link
    * SdkTracerProviderUtil#setExceptionAttributeResolver(SdkTracerProviderBuilder,

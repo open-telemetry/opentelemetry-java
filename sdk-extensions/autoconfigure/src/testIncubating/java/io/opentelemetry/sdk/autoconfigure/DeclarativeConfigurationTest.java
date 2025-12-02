@@ -23,6 +23,7 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -31,6 +32,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -40,7 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import org.assertj.core.api.Assertions;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -94,10 +96,9 @@ class DeclarativeConfigurationTest {
     assertThatThrownBy(
             () ->
                 AutoConfiguredOpenTelemetrySdk.builder()
-                    .addPropertiesSupplier(() -> singletonMap("otel.config.file", "foo"))
-                    .addPropertiesSupplier(
-                        () -> singletonMap("otel.experimental.config.file", "foo"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                    .setConfig(
+                        DefaultConfigProperties.createFromMap(
+                            Collections.singletonMap("otel.experimental.config.file", "foo")))
                     .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Configuration file not found");
@@ -116,16 +117,6 @@ class DeclarativeConfigurationTest {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
-    OpenTelemetrySdk expectedSdk =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                    .setResource(
-                        Resource.getDefault().toBuilder().put("service.name", "test").build())
-                    .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
-                    .build())
-            .build();
-    cleanup.addCloseable(expectedSdk);
     AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
     Thread thread = new Thread();
     doReturn(thread).when(builder).shutdownHook(any());
@@ -134,15 +125,49 @@ class DeclarativeConfigurationTest {
         builder.setConfig(config).build();
     cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
 
-    Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
-        .isEqualTo(expectedSdk.toString());
+    OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
+    Resource resource = Resource.getDefault().toBuilder().put("service.name", "test").build();
+    ExtendedOpenTelemetrySdk expectedSdk =
+        ExtendedOpenTelemetrySdk.create(
+            OpenTelemetrySdk.builder()
+                .setTracerProvider(
+                    SdkTracerProvider.builder()
+                        .setResource(resource)
+                        .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
+                        .build())
+                .build(),
+            ((ExtendedOpenTelemetrySdk) openTelemetrySdk).getSdkConfigProvider());
+    cleanup.addCloseable(expectedSdk);
+    assertThat(openTelemetrySdk.toString()).hasToString(expectedSdk.toString());
     // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from
     // file
-    Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getResource())
-        .isEqualTo(Resource.getDefault());
+    assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(resource);
     verify(builder, times(1)).shutdownHook(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
-    Assertions.assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
+    assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
     logCapturer.assertContains("Autoconfiguring from configuration file: " + configFilePath);
+  }
+
+  @Test
+  void configFile_setComponentLoader() {
+    ComponentLoader componentLoader =
+        ComponentLoader.forClassLoader(DeclarativeConfigurationTest.class.getClassLoader());
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .setConfig(config)
+            .setComponentLoader(componentLoader)
+            .build();
+    cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
+
+    assertThat(
+            Optional.ofNullable(AutoConfigureUtil.getConfigProvider(autoConfiguredOpenTelemetrySdk))
+                .map(ConfigProvider::getInstrumentationConfig)
+                .map(DeclarativeConfigProperties::getComponentLoader)
+                .orElse(null))
+        .isSameAs(componentLoader);
   }
 
   @Test
@@ -171,9 +196,7 @@ class DeclarativeConfigurationTest {
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     cleanup.addCloseable(openTelemetrySdk);
 
-    Assertions.assertThat(GlobalOpenTelemetry.get())
-        .extracting("delegate")
-        .isNotSameAs(openTelemetrySdk);
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetrySdk);
     assertThat(GlobalConfigProvider.get())
         .isNotSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
@@ -189,9 +212,7 @@ class DeclarativeConfigurationTest {
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     cleanup.addCloseable(openTelemetrySdk);
 
-    Assertions.assertThat(GlobalOpenTelemetry.get())
-        .extracting("delegate")
-        .isSameAs(openTelemetrySdk);
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetrySdk);
     assertThat(GlobalConfigProvider.get())
         .isSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }

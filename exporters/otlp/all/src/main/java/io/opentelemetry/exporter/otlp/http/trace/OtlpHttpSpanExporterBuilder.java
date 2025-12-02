@@ -10,9 +10,8 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
-import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
@@ -112,13 +111,12 @@ public final class OtlpHttpSpanExporterBuilder {
 
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
-   * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * method "gzip" and "none" are supported out of the box. Additional compression methods can be
+   * supported by providing custom {@link Compressor} implementations via the service loader.
    */
   public OtlpHttpSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
-    delegate.setCompression(compressor);
+    delegate.setCompression(compressionMethod);
     return this;
   }
 
@@ -246,13 +244,20 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Set the {@link ClassLoader} used to load the sender API.
+   * Set the {@link ClassLoader} used to load the sender API. Variant of {@link
+   * #setComponentLoader(ComponentLoader)}.
    *
    * @since 1.48.0
    */
   public OtlpHttpSpanExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
-    delegate.setServiceClassLoader(serviceClassLoader);
+    return setComponentLoader(ComponentLoader.forClassLoader(serviceClassLoader));
+  }
+
+  /** Set the {@link ComponentLoader} used to load the sender API. */
+  public OtlpHttpSpanExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    delegate.setComponentLoader(componentLoader);
     return this;
   }
 

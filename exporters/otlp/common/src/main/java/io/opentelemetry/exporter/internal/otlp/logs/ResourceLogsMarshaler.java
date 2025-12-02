@@ -42,12 +42,12 @@ public final class ResourceLogsMarshaler extends MarshalerWithSize {
     int posResource = 0;
     for (Map.Entry<Resource, Map<InstrumentationScopeInfo, List<Marshaler>>> entry :
         resourceAndScopeMap.entrySet()) {
-      InstrumentationScopeLogsMarshaler[] instrumentationLibrarySpansMarshalers =
+      InstrumentationScopeLogsMarshaler[] instrumentationScopeLogsMarshalers =
           new InstrumentationScopeLogsMarshaler[entry.getValue().size()];
       int posInstrumentation = 0;
       for (Map.Entry<InstrumentationScopeInfo, List<Marshaler>> entryIs :
           entry.getValue().entrySet()) {
-        instrumentationLibrarySpansMarshalers[posInstrumentation++] =
+        instrumentationScopeLogsMarshalers[posInstrumentation++] =
             new InstrumentationScopeLogsMarshaler(
                 InstrumentationScopeMarshaler.create(entryIs.getKey()),
                 MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
@@ -57,7 +57,7 @@ public final class ResourceLogsMarshaler extends MarshalerWithSize {
           new ResourceLogsMarshaler(
               ResourceMarshaler.create(entry.getKey()),
               MarshalerUtil.toBytes(entry.getKey().getSchemaUrl()),
-              instrumentationLibrarySpansMarshalers);
+              instrumentationScopeLogsMarshalers);
     }
 
     return resourceLogsMarshalers;

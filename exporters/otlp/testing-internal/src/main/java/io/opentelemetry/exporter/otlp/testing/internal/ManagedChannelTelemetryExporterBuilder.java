@@ -13,6 +13,7 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
@@ -165,6 +166,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader) {
     delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader) {
+    delegate.setComponentLoader(componentLoader);
     return this;
   }
 

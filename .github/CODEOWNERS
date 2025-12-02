@@ -1,5 +1,6 @@
-# Code owners file.
-# This file controls who is tagged for review for any given pull request.
+#
+# Learn about membership in OpenTelemetry community:
+#  https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md
+#
 
- # For anything not explicitly taken by someone else:
 * @open-telemetry/java-approvers

@@ -38,7 +38,8 @@ public class SpanPipelineBenchmark {
   @State(Scope.Benchmark)
   public abstract static class AbstractProcessorBenchmark {
     private static final DockerImageName OTLP_COLLECTOR_IMAGE =
-        DockerImageName.parse("otel/opentelemetry-collector-contrib:latest");
+        DockerImageName.parse(
+            "otel/opentelemetry-collector-contrib:0.140.1@sha256:5901567d6f684547bafee53f02403869b5655e13a4e0af65aa6ae9f6301075d9");
     private static final int EXPOSED_PORT = 5678;
     private static final int HEALTH_CHECK_PORT = 13133;
     private Tracer tracer;

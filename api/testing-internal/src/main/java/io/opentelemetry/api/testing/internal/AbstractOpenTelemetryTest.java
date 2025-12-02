@@ -31,10 +31,6 @@ public abstract class AbstractOpenTelemetryTest {
     GlobalOpenTelemetry.set(getOpenTelemetry());
   }
 
-  private static OpenTelemetry getGlobalOpenTelemetry() {
-    return GlobalOpenTelemetry.get();
-  }
-
   @AfterEach
   public void after() {
     GlobalOpenTelemetry.resetForTest();
@@ -90,7 +86,9 @@ public abstract class AbstractOpenTelemetryTest {
 
   @Test
   void setThenSet() {
+    assertThat(GlobalOpenTelemetry.isSet()).isFalse();
     setOpenTelemetry();
+    assertThat(GlobalOpenTelemetry.isSet()).isTrue();
     assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
@@ -99,12 +97,41 @@ public abstract class AbstractOpenTelemetryTest {
 
   @Test
   void getThenSet() {
-    assertThat(getGlobalOpenTelemetry().getClass().getName())
-        .isEqualTo("io.opentelemetry.api.DefaultOpenTelemetry");
+    assertThat(GlobalOpenTelemetry.isSet()).isFalse();
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isSameAs(OpenTelemetry.noop());
+
+    // Calling GlobalOpenTelemetry.get() has the side affect of setting GlobalOpenTelemetry to an
+    // (obfuscated) noop.
+    // Call GlobalOpenTelemetry.get() using a utility method so we can later assert it was
+    // responsible for setting GlobalOpenTelemetry.
+    assertThat(getGlobalOpenTelemetry())
+        .satisfies(
+            instance ->
+                assertThat(instance.getClass().getName())
+                    .isEqualTo("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry"))
+        .extracting("delegate")
+        .isSameAs(OpenTelemetry.noop());
+
+    assertThat(GlobalOpenTelemetry.isSet()).isTrue();
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isNotSameAs(OpenTelemetry.noop());
+
     assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
         .hasStackTraceContaining("getGlobalOpenTelemetry");
+  }
+
+  private static OpenTelemetry getGlobalOpenTelemetry() {
+    return GlobalOpenTelemetry.get();
+  }
+
+  @Test
+  void getOrNoop() {
+    // Should be able to call getOrNoop multiple times without side effect and later call set.
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isSameAs(OpenTelemetry.noop());
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isSameAs(OpenTelemetry.noop());
+    setOpenTelemetry();
+    assertThat(GlobalOpenTelemetry.getOrNoop()).isNotSameAs(OpenTelemetry.noop());
   }
 
   @Test

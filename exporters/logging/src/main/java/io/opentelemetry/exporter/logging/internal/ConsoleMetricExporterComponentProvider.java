@@ -16,8 +16,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class ConsoleMetricExporterComponentProvider
-    implements ComponentProvider<MetricExporter> {
+public final class ConsoleMetricExporterComponentProvider implements ComponentProvider {
 
   @Override
   public Class<MetricExporter> getType() {

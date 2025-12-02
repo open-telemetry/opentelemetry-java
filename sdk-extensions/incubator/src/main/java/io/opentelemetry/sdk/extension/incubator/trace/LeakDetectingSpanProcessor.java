@@ -87,6 +87,7 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
       thread.setName("weak-ref-cleaner-leakingspandetector");
       thread.setPriority(Thread.MIN_PRIORITY);
       thread.setDaemon(true);
+      thread.setContextClassLoader(null);
       thread.start();
       return pendingSpans;
     }

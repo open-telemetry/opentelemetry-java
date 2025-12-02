@@ -27,6 +27,7 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
@@ -99,6 +100,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockserver.integration.ClientAndServer;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
@@ -475,7 +477,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   private static class ClientPrivateKeyProvider implements ArgumentsProvider {
     @Override
     @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+    public Stream<? extends Arguments> provideArguments(
+        ParameterDeclarations parameters, ExtensionContext context) throws Exception {
       return Stream.of(
           arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
           arguments(named("DER", clientCertificate.privateKey().getEncoded())));
@@ -837,6 +840,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
+            .setComponentLoader(ComponentLoader.forClassLoader(new ClassLoader() {}))
             .build()) {
       Object unwrapped = exporter.unwrap();
       Field builderField = unwrapped.getClass().getDeclaredField("builder");
@@ -848,6 +852,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         assertThat(copy.unwrap())
             .extracting("builder")
             .usingRecursiveComparison()
+            .withStrictTypeChecking()
             .ignoringFields("tlsConfigHelper")
             .isEqualTo(builderField.get(unwrapped));
       } finally {
@@ -860,6 +865,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         assertThat(copy.unwrap())
             .extracting("builder")
             .usingRecursiveComparison()
+            .withStrictTypeChecking()
             .ignoringFields("tlsConfigHelper")
             .isNotEqualTo(builderField.get(unwrapped));
       } finally {

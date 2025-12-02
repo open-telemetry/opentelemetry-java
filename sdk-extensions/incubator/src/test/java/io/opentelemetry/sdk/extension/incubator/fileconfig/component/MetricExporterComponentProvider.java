@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 
-public class MetricExporterComponentProvider implements ComponentProvider<MetricExporter> {
+public class MetricExporterComponentProvider implements ComponentProvider {
   @Override
   public Class<MetricExporter> getType() {
     return MetricExporter.class;

@@ -8,6 +8,10 @@ package io.opentelemetry.sdk.internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.common.ValueType;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +64,27 @@ public final class AttributeUtil {
       return allMatch((List<?>) value, entry -> isValidLength(entry, lengthLimit));
     } else if (value instanceof String) {
       return ((String) value).length() < lengthLimit;
+    } else if (value instanceof Value) {
+      return isValidLengthValue((Value<?>) value, lengthLimit);
+    }
+    return true;
+  }
+
+  private static boolean isValidLengthValue(Value<?> value, int lengthLimit) {
+    ValueType type = value.getType();
+    if (type == ValueType.STRING) {
+      return ((String) value.getValue()).length() < lengthLimit;
+    } else if (type == ValueType.BYTES) {
+      ByteBuffer buffer = (ByteBuffer) value.getValue();
+      return buffer.remaining() <= lengthLimit;
+    } else if (type == ValueType.ARRAY) {
+      @SuppressWarnings("unchecked")
+      List<Value<?>> array = (List<Value<?>>) value.getValue();
+      return allMatch(array, element -> isValidLengthValue(element, lengthLimit));
+    } else if (type == ValueType.KEY_VALUE_LIST) {
+      @SuppressWarnings("unchecked")
+      List<KeyValue> kvList = (List<KeyValue>) value.getValue();
+      return allMatch(kvList, kv -> isValidLengthValue(kv.getValue(), lengthLimit));
     }
     return true;
   }
@@ -74,8 +99,19 @@ public final class AttributeUtil {
   }
 
   /**
-   * Apply the {@code lengthLimit} to the attribute {@code value}. Strings and strings in lists
-   * which exceed the length limit are truncated.
+   * Apply the {@code lengthLimit} to the attribute {@code value}. Strings, byte arrays, and nested
+   * values which exceed the length limit are truncated.
+   *
+   * <p>Applies to:
+   *
+   * <ul>
+   *   <li>String values
+   *   <li>Each string within an array of strings
+   *   <li>String values within {@link Value} objects
+   *   <li>Byte array values within {@link Value} objects
+   *   <li>Recursively, each element in an array of {@link Value}s
+   *   <li>Recursively, each value in a {@link Value} key-value list
+   * </ul>
    */
   public static Object applyAttributeLengthLimit(Object value, int lengthLimit) {
     if (lengthLimit == Integer.MAX_VALUE) {
@@ -93,6 +129,57 @@ public final class AttributeUtil {
       String str = (String) value;
       return str.length() < lengthLimit ? value : str.substring(0, lengthLimit);
     }
+    if (value instanceof Value) {
+      return applyValueLengthLimit((Value<?>) value, lengthLimit);
+    }
+    return value;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Value<?> applyValueLengthLimit(Value<?> value, int lengthLimit) {
+    ValueType type = value.getType();
+
+    if (type == ValueType.STRING) {
+      String str = (String) value.getValue();
+      if (str.length() <= lengthLimit) {
+        return value;
+      }
+      return Value.of(str.substring(0, lengthLimit));
+    } else if (type == ValueType.BYTES) {
+      ByteBuffer buffer = (ByteBuffer) value.getValue();
+      int length = buffer.remaining();
+      if (length <= lengthLimit) {
+        return value;
+      }
+      byte[] truncated = new byte[lengthLimit];
+      buffer.get(truncated);
+      return Value.of(truncated);
+    } else if (type == ValueType.ARRAY) {
+      List<Value<?>> array = (List<Value<?>>) value.getValue();
+      boolean allValidLength = allMatch(array, element -> isValidLengthValue(element, lengthLimit));
+      if (allValidLength) {
+        return value;
+      }
+      List<Value<?>> result = new ArrayList<>(array.size());
+      for (Value<?> element : array) {
+        result.add(applyValueLengthLimit(element, lengthLimit));
+      }
+      return Value.of(result);
+    } else if (type == ValueType.KEY_VALUE_LIST) {
+      List<KeyValue> kvList = (List<KeyValue>) value.getValue();
+      boolean allValidLength =
+          allMatch(kvList, kv -> isValidLengthValue(kv.getValue(), lengthLimit));
+      if (allValidLength) {
+        return value;
+      }
+      List<KeyValue> result = new ArrayList<>(kvList.size());
+      for (KeyValue kv : kvList) {
+        result.add(KeyValue.of(kv.getKey(), applyValueLengthLimit(kv.getValue(), lengthLimit)));
+      }
+      return Value.of(result.toArray(new KeyValue[0]));
+    }
+
+    // For BOOLEAN, LONG, DOUBLE - no truncation needed
     return value;
   }
 }

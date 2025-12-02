@@ -1,3 +1,5 @@
+import org.gradle.api.JavaVersion
+
 plugins {
   id("otel.java-conventions")
   id("org.graalvm.buildtools.native")
@@ -5,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry Graal Integration Tests (Incubating)"
 otelJava.moduleName.set("io.opentelemetry.graal.integration.tests.incubating")
+otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_17)
 
 sourceSets {
   main {
@@ -21,28 +24,18 @@ dependencies {
   implementation(project(":sdk:testing"))
   implementation(project(":exporters:otlp:all"))
   implementation(project(":api:incubator"))
+  implementation(project(":sdk-extensions:incubator"))
 }
 
-// org.graalvm.buildtools.native pluging requires java 11+ as of version 0.9.26
+// org.graalvm.buildtools.native plugin requires java 17+ as of version 0.11.0
 // https://github.com/graalvm/native-build-tools/blob/master/docs/src/docs/asciidoc/index.adoc
-tasks {
-  withType<JavaCompile>().configureEach {
-    sourceCompatibility = "11"
-    targetCompatibility = "11"
-    options.release.set(11)
-  }
-  withType<Test>().configureEach {
-    val testJavaVersion: String? by project
-    enabled = !testJavaVersion.equals("8")
-  }
-}
 
 graalvmNative {
   binaries {
     named("test") {
-      // Required as of junit 5.10.0: https://junit.org/junit5/docs/5.10.0/release-notes/#deprecations-and-breaking-changes
-      buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.LauncherConfig")
-      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.config.InstantiatingConfigurationParameterConverter")
+      // JUnit initialization is (mostly) handled automatically by the GraalVM plugin 0.11+
+      // Required as of junit 5.14.1
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.discovery.MethodSegmentResolver")
     }
   }
   toolchainDetection.set(false)

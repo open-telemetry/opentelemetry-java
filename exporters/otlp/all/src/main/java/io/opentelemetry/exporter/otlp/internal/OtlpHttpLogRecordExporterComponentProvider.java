@@ -19,8 +19,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpHttpLogRecordExporterComponentProvider
-    implements ComponentProvider<LogRecordExporter> {
+public class OtlpHttpLogRecordExporterComponentProvider implements ComponentProvider {
 
   @Override
   public Class<LogRecordExporter> getType() {
@@ -39,6 +38,7 @@ public class OtlpHttpLogRecordExporterComponentProvider
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_LOGS,
         config,
+        builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
         builder::setCompression,
