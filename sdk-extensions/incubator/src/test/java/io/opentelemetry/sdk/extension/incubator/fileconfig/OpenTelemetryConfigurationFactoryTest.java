@@ -62,6 +62,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import java.io.Closeable;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -342,9 +344,19 @@ class OpenTelemetryConfigurationFactoryTest {
         .extracting("delegate")
         .extracting("sharedState")
         .extracting("activeSpanProcessor")
-        .extracting("worker")
-        .extracting("processedSpansCounter")
-        .extracting("sdkMeter")
+        .extracting("metrics")
+        .extracting(
+            spanProcessorMetrics -> {
+              try {
+                Method meterAccessor = spanProcessorMetrics.getClass().getDeclaredMethod("meter");
+                meterAccessor.setAccessible(true);
+                return meterAccessor.invoke(spanProcessorMetrics);
+              } catch (NoSuchMethodException
+                  | InvocationTargetException
+                  | IllegalAccessException e) {
+                throw new RuntimeException(e);
+              }
+            })
         .extracting("meterProviderSharedState")
         .isEqualTo(sharedState);
   }
