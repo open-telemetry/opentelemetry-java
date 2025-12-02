@@ -7,7 +7,6 @@ package io.opentelemetry.api.common;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +136,7 @@ public interface Value<T> {
       for (Object entry : list) {
         valueList.add(Value.convert(entry));
       }
-      return Value.of(Collections.unmodifiableList(valueList));
+      return Value.of(valueList);
     }
     if (object instanceof Map) {
       Map<?, ?> map = (Map<?, ?>) object;
@@ -152,7 +151,7 @@ public interface Value<T> {
             }
             valueMap.put((String) key, Value.convert(value));
           });
-      return Value.of(Collections.unmodifiableMap(valueMap));
+      return Value.of(valueMap);
     }
     throw new IllegalArgumentException(
         "Cannot convert object of type " + object.getClass().getSimpleName() + " to value");
