@@ -22,6 +22,8 @@ class SemConvAttributesTest {
         .isEqualTo(OtelIncubatingAttributes.OTEL_COMPONENT_NAME);
     assertThat(SemConvAttributes.OTEL_COMPONENT_TYPE)
         .isEqualTo(OtelIncubatingAttributes.OTEL_COMPONENT_TYPE);
+    assertThat(SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT)
+        .isEqualTo(OtelIncubatingAttributes.OTEL_SPAN_SAMPLING_RESULT);
 
     assertThat(SemConvAttributes.ERROR_TYPE).isEqualTo(ErrorAttributes.ERROR_TYPE);
 

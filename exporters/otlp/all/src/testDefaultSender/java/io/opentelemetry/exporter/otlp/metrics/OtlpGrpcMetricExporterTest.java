@@ -100,7 +100,7 @@ class OtlpGrpcMetricExporterTest
                   + "retryPolicy=RetryPolicy\\{.*\\}, "
                   + "componentLoader=.*, "
                   + "exporterType=OTLP_GRPC_METRIC_EXPORTER, "
-                  + "internalTelemetrySchemaVersion=LEGACY, "
+                  + "internalTelemetryVersion=LEGACY, "
                   + "aggregationTemporalitySelector=AggregationTemporalitySelector\\{.*\\}, "
                   + "defaultAggregationSelector=DefaultAggregationSelector\\{.*\\}, "
                   + "memoryMode=REUSABLE_DATA"

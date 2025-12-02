@@ -49,7 +49,7 @@ class OtlpHttpSpanExporterOkHttpSenderTest
                   + "retryPolicy=RetryPolicy\\{.*\\}, "
                   + "componentLoader=.*, "
                   + "exporterType=OTLP_HTTP_SPAN_EXPORTER, "
-                  + "internalTelemetrySchemaVersion=LEGACY, "
+                  + "internalTelemetryVersion=LEGACY, "
                   + "memoryMode=REUSABLE_DATA"
                   + "\\}");
     }

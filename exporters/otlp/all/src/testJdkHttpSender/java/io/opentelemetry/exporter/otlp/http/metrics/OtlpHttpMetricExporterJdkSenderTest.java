@@ -101,7 +101,7 @@ class OtlpHttpMetricExporterJdkSenderTest
                   + "retryPolicy=RetryPolicy\\{.*\\}, "
                   + "componentLoader=.*, "
                   + "exporterType=OTLP_HTTP_METRIC_EXPORTER, "
-                  + "internalTelemetrySchemaVersion=LEGACY, "
+                  + "internalTelemetryVersion=LEGACY, "
                   + "aggregationTemporalitySelector=AggregationTemporalitySelector\\{.*\\}, "
                   + "defaultAggregationSelector=DefaultAggregationSelector\\{.*\\}, "
                   + "memoryMode=REUSABLE_DATA"
