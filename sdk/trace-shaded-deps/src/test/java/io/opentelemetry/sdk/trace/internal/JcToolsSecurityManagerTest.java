@@ -11,7 +11,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+import org.jctools.queues.atomic.MpscAtomicArrayQueue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.junit.jupiter.api.condition.JRE;
@@ -19,6 +19,7 @@ import org.junit.jupiter.api.condition.JRE;
 public class JcToolsSecurityManagerTest {
 
   @Test
+  // System.setSecurityManager throws UnsupportedOperationException in Java 18+
   @EnabledOnJre({JRE.JAVA_8, JRE.JAVA_11, JRE.JAVA_17})
   @SuppressLogger(JcTools.class)
   void newFixedSizeQueue_SunMiscProhibited() {
@@ -30,7 +31,7 @@ public class JcToolsSecurityManagerTest {
       Queue<Object> queue =
           AccessController.doPrivileged(
               (PrivilegedAction<Queue<Object>>) () -> JcTools.newFixedSizeQueue(10));
-      assertThat(queue).isInstanceOf(ArrayBlockingQueue.class);
+      assertThat(queue).isInstanceOf(MpscAtomicArrayQueue.class);
     } finally {
       System.setSecurityManager(null);
     }

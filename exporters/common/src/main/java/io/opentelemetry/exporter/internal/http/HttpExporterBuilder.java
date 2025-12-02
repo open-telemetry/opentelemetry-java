@@ -64,7 +64,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
-  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private Supplier<MeterProvider> meterProviderSupplier =
+      () -> GlobalOpenTelemetry.getOrNoop().getMeterProvider();
   private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
   private ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
@@ -204,6 +205,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     copy.meterProviderSupplier = meterProviderSupplier;
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
+    copy.componentLoader = componentLoader;
     return copy;
   }
 

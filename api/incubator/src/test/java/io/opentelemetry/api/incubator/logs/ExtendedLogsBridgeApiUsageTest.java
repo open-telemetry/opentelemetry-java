@@ -11,6 +11,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Logger;
@@ -103,9 +105,8 @@ class ExtendedLogsBridgeApiUsageTest {
   AttributeKey<List<Boolean>> booleanArrKey = AttributeKey.booleanArrayKey("acme.boolean_array");
   AttributeKey<List<Double>> doubleArrKey = AttributeKey.doubleArrayKey("acme.double_array");
 
-  // Extended keys
-  ExtendedAttributeKey<ExtendedAttributes> mapKey =
-      ExtendedAttributeKey.extendedAttributesKey("acme.map");
+  // VALUE key
+  ExtendedAttributeKey<Value<?>> valueKey = ExtendedAttributeKey.valueKey("acme.value");
 
   @Test
   @SuppressLogger(ExtendedLogsBridgeApiUsageTest.class)
@@ -123,8 +124,10 @@ class ExtendedLogsBridgeApiUsageTest {
             .put(booleanArrKey, Arrays.asList(true, false))
             .put(doubleArrKey, Arrays.asList(1.1, 2.2))
             .put(
-                mapKey,
-                ExtendedAttributes.builder().put("childStr", "value").put("childLong", 1L).build())
+                valueKey,
+                Value.of(
+                    KeyValue.of("childStr", Value.of("value")),
+                    KeyValue.of("childLong", Value.of(1L))))
             .build();
 
     // Retrieval
@@ -136,9 +139,11 @@ class ExtendedLogsBridgeApiUsageTest {
     assertThat(extendedAttributes.get(longArrKey)).isEqualTo(Arrays.asList(1L, 2L));
     assertThat(extendedAttributes.get(booleanArrKey)).isEqualTo(Arrays.asList(true, false));
     assertThat(extendedAttributes.get(doubleArrKey)).isEqualTo(Arrays.asList(1.1, 2.2));
-    assertThat(extendedAttributes.get(mapKey))
+    assertThat(extendedAttributes.get(valueKey))
         .isEqualTo(
-            ExtendedAttributes.builder().put("childStr", "value").put("childLong", 1L).build());
+            Value.of(
+                KeyValue.of("childStr", Value.of("value")),
+                KeyValue.of("childLong", Value.of(1L))));
 
     // Iteration
     // Output:
@@ -148,9 +153,10 @@ class ExtendedLogsBridgeApiUsageTest {
     // acme.double_array(DOUBLE_ARRAY): [1.1, 2.2]
     // acme.long(LONG): 1
     // acme.long_array(LONG_ARRAY): [1, 2]
-    // acme.map(EXTENDED_ATTRIBUTES): {childLong=1, childStr="value"}
     // acme.string(STRING): value
     // acme.string_array(STRING_ARRAY): [value1, value2]
+    // acme.value(VALUE): [KeyValue{key=childStr, value=StringValue{value=value}},
+    // KeyValue{key=childLong, value=LongValue{value=1}}]
     extendedAttributes.forEach(
         (extendedAttributeKey, object) ->
             logger.info(
@@ -160,7 +166,6 @@ class ExtendedLogsBridgeApiUsageTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // testing deprecated code
   void logRecordBuilder_ExtendedAttributes() {
     InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
     SdkLoggerProvider loggerProvider =
@@ -182,8 +187,9 @@ class ExtendedLogsBridgeApiUsageTest {
         .setAttribute(booleanArrKey, Arrays.asList(true, false))
         .setAttribute(doubleArrKey, Arrays.asList(1.1, 2.2))
         .setAttribute(
-            mapKey,
-            ExtendedAttributes.builder().put("childStr", "value").put("childLong", 1L).build())
+            valueKey,
+            Value.of(
+                KeyValue.of("childStr", Value.of("value")), KeyValue.of("childLong", Value.of(1L))))
         .setAllAttributes(Attributes.builder().put("key1", "value").build())
         .setAllAttributes(ExtendedAttributes.builder().put("key2", "value").build())
         .emit();
@@ -196,7 +202,7 @@ class ExtendedLogsBridgeApiUsageTest {
 
               // Optionally access standard attributes, which filters out any extended attribute
               // types
-              assertThat(extendedLogRecordData.getAttributes())
+              assertThat(logRecordData.getAttributes())
                   .isEqualTo(
                       Attributes.builder()
                           .put(strKey, "value")
@@ -224,11 +230,10 @@ class ExtendedLogsBridgeApiUsageTest {
                           .put(booleanArrKey, Arrays.asList(true, false))
                           .put(doubleArrKey, Arrays.asList(1.1, 2.2))
                           .put(
-                              mapKey,
-                              ExtendedAttributes.builder()
-                                  .put("childStr", "value")
-                                  .put("childLong", 1L)
-                                  .build())
+                              valueKey,
+                              Value.of(
+                                  KeyValue.of("childStr", Value.of("value")),
+                                  KeyValue.of("childLong", Value.of(1L))))
                           .put("key1", "value")
                           .put("key2", "value")
                           .build());

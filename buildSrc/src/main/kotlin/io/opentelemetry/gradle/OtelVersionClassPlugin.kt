@@ -18,7 +18,7 @@ class OtelVersionClassPlugin : Plugin<Project> {
   override fun apply(project: Project) {
     project.plugins.apply(JavaPlugin::class.java)
 
-    project.task("generateOtelVersionClass") {
+    project.tasks.register("generateOtelVersionClass") {
       doLast {
         writeFile(project)
       }

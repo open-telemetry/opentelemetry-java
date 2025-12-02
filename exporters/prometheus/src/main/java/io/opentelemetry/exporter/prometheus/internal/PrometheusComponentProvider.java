@@ -19,7 +19,7 @@ import java.util.List;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class PrometheusComponentProvider implements ComponentProvider<MetricReader> {
+public class PrometheusComponentProvider implements ComponentProvider {
 
   @Override
   public Class<MetricReader> getType() {
@@ -28,7 +28,7 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
 
   @Override
   public String getName() {
-    return "prometheus";
+    return "prometheus/development";
   }
 
   @Override
@@ -43,11 +43,6 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
     String host = config.getString("host");
     if (host != null) {
       prometheusBuilder.setHost(host);
-    }
-
-    Boolean withoutScopeInfo = config.getBoolean("without_scope_info");
-    if (withoutScopeInfo != null) {
-      prometheusBuilder.setOtelScopeEnabled(!withoutScopeInfo);
     }
 
     DeclarativeConfigProperties withResourceConstantLabels =

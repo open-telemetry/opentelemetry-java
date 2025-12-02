@@ -24,7 +24,6 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - macos-13
           - ubuntu-latest
           - windows-latest
         test-java-version:
@@ -32,44 +31,33 @@ jobs:
           - 11
           - 17
           - 21
-          - 23
+          - 25 # renovate(java-version)
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-latest
             test-java-version: 21
             coverage: true
             jmh-based-tests: true
-        # macos-latest drops support for java 8 temurin. Run java 8 on macos-13. Run java 11, 17, 21 on macos-latest.
-        exclude:
-          - os: macos-latest
-            test-java-version: 8
-          - os: macos-13
-            test-java-version: 11
-          - os: macos-13
-            test-java-version: 17
-          - os: macos-13
-            test-java-version: 21
-          - os: macos-13
-            test-java-version: 23
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
-          distribution: temurin
+          # use corretto for testing, since it supports java 8 on more OS versions, including macos-latest
+          distribution: corretto
           java-version: ${{ matrix.test-java-version }}
 
       - id: setup-java
         name: Set up Java for build
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@ac638b010cf58a27ee6c972d7336334ccaf61c96 # v4.4.1
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
       - name: Build
         run: >
             ./gradlew build
@@ -78,8 +66,9 @@ jobs:
             "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
             "-Porg.gradle.java.installations.auto-download=false"
         env:
-          # JMH-based tests run only  if this environment variable is set to true
+          # JMH-based tests run only if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Check for diff
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
@@ -99,12 +88,12 @@ jobs:
             exit 1
           fi
 
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
         if: ${{ matrix.coverage }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ matrix.coverage }}
         with:
           name: coverage-report
@@ -113,12 +102,7 @@ jobs:
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
-    uses: ./.github/workflows/reusable-markdown-link-check.yml
-
-  misspell-check:
-    # release branches are excluded to avoid unnecessary maintenance
-    if: ${{ !startsWith(github.ref_name, 'release/') }}
-    uses: ./.github/workflows/reusable-misspell-check.yml
+    uses: ./.github/workflows/reusable-link-check.yml
 
   publish-snapshots:
     # the condition is on the steps below instead of here on the job, because skipping the job
@@ -131,21 +115,21 @@ jobs:
     # note: the condition below has to be written so that '' is last since it resolves to false
     # and so would not short-circuit if used in the second-last position
     name: publish-snapshots${{ (github.ref_name != 'main' || github.repository != 'open-telemetry/opentelemetry-java') && ' (skipped)' || '' }}
-    # intentionally not blocking snapshot publishing on markdown-link-check or misspell-check
+    # intentionally not blocking snapshot publishing on markdown-link-check
     needs: build
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - id: setup-java
         name: Set up Java
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@ac638b010cf58a27ee6c972d7336334ccaf61c96 # v4.4.1
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         # skipping release branches because the versions in those branches are not snapshots
         # (also this skips pull requests)
         if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
@@ -159,6 +143,7 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
   build-graal:
     name: Build GraalVM
@@ -168,10 +153,10 @@ jobs:
       matrix:
         test-graal-version:
           - 21
-          - 23
+          - 25 # renovate(java-version)
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: graalvm/setup-graalvm@e1df20a713a4cc6ab5b0eb03f0e0dcdc0199b805 # v1.3.4
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: graalvm/setup-graalvm@dec5790292b7b36d7ad368abe856887749c6c520 # v1.4.3
         with:
           java-version: ${{ matrix.test-graal-version }}
           distribution: 'graalvm'
@@ -184,11 +169,11 @@ jobs:
           java --version
           native-image --version
           ./gradlew nativeTest
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
   required-status-check:
     # markdown-link-check is not required so pull requests are not blocked if external links break
-    # misspell-check is not required so pull requests are not blocked if the misspell dictionary is
-    # updated
     needs:
       - build
       - build-graal

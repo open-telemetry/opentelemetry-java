@@ -30,7 +30,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Implementation of the Jaeger propagation protocol. See <a
- * href=https://www.jaegertracing.io/docs/client-libraries/#propagation-format>Jaeger Propagation
+ * href="https://www.jaegertracing.io/docs/client-libraries/#propagation-format">Jaeger Propagation
  * Format</a>.
  */
 @Immutable

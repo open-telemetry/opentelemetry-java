@@ -9,41 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import org.jctools.queues.MpscArrayQueue;
+import org.jctools.queues.MessagePassingQueue;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class JcToolsTest {
 
   ArrayList<String> batch = new ArrayList<>(10);
 
   @Test
-  void drain_ArrayBlockingQueue() {
-    // Arrange
-    batch.add("Test3");
-    Queue<String> queue = new ArrayBlockingQueue<>(10);
-    queue.add("Test1");
-    queue.add("Test2");
-
-    // Act
-    JcTools.drain(queue, 5, batch::add);
-
-    // Assert
-    assertThat(batch).hasSize(3);
-    assertThat(queue).hasSize(0);
-  }
-
-  @Test
   void drain_MessagePassingQueue() {
     // Arrange
     batch.add("Test3");
-    Queue<String> queue = new MpscArrayQueue<>(10);
+    Queue<String> queue = JcTools.newFixedSizeQueue(10);
     queue.add("Test1");
     queue.add("Test2");
 
@@ -58,7 +35,7 @@ class JcToolsTest {
   @Test
   void drain_MaxBatch() {
     // Arrange
-    Queue<String> queue = new MpscArrayQueue<>(10);
+    Queue<String> queue = JcTools.newFixedSizeQueue(10);
     queue.add("Test1");
     queue.add("Test2");
 
@@ -79,7 +56,7 @@ class JcToolsTest {
     Queue<Object> objects = JcTools.newFixedSizeQueue(capacity);
 
     // Assert
-    assertThat(objects).isInstanceOf(MpscArrayQueue.class);
+    assertThat(objects).isInstanceOf(MessagePassingQueue.class);
   }
 
   @Test
@@ -93,17 +70,5 @@ class JcToolsTest {
 
     // Assert
     assertThat(queueSize).isGreaterThan(capacity);
-  }
-
-  @Test
-  void capacity_ArrayBlockingQueue() {
-    // Arrange
-    Queue<String> queue = new ArrayBlockingQueue<>(10);
-
-    // Act
-    long queueSize = JcTools.capacity(queue);
-
-    // Assert
-    assertThat(queueSize).isEqualTo(10);
   }
 }

@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 
-public class SamplerComponentProvider implements ComponentProvider<Sampler> {
+public class SamplerComponentProvider implements ComponentProvider {
   @Override
   public Class<Sampler> getType() {
     return Sampler.class;

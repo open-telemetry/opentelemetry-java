@@ -22,10 +22,6 @@ final class MappingMarshaler extends MarshalerWithSize {
   private final long fileOffset;
   private final int filenameIndex;
   private final List<Integer> attributeIndices;
-  private final boolean hasFunctions;
-  private final boolean hasFilenames;
-  private final boolean hasLineNumbers;
-  private final boolean hasInlineFrames;
 
   static MappingMarshaler create(MappingData mappingData) {
     return new MappingMarshaler(
@@ -33,11 +29,7 @@ final class MappingMarshaler extends MarshalerWithSize {
         mappingData.getMemoryLimit(),
         mappingData.getFileOffset(),
         mappingData.getFilenameStringIndex(),
-        mappingData.getAttributeIndices(),
-        mappingData.hasFunctions(),
-        mappingData.hasFilenames(),
-        mappingData.hasLineNumbers(),
-        mappingData.hasInlineFrames());
+        mappingData.getAttributeIndices());
   }
 
   static MappingMarshaler[] createRepeated(List<MappingData> items) {
@@ -63,31 +55,13 @@ final class MappingMarshaler extends MarshalerWithSize {
       long memoryLimit,
       long fileOffset,
       int filenameIndex,
-      List<Integer> attributeIndices,
-      boolean hasFunctions,
-      boolean hasFilenames,
-      boolean hasLineNumbers,
-      boolean hasInlineFrames) {
-    super(
-        calculateSize(
-            memoryStart,
-            memoryLimit,
-            fileOffset,
-            filenameIndex,
-            attributeIndices,
-            hasFunctions,
-            hasFilenames,
-            hasLineNumbers,
-            hasInlineFrames));
+      List<Integer> attributeIndices) {
+    super(calculateSize(memoryStart, memoryLimit, fileOffset, filenameIndex, attributeIndices));
     this.memoryStart = memoryStart;
     this.memoryLimit = memoryLimit;
     this.fileOffset = fileOffset;
     this.filenameIndex = filenameIndex;
     this.attributeIndices = attributeIndices;
-    this.hasFunctions = hasFunctions;
-    this.hasFilenames = hasFilenames;
-    this.hasLineNumbers = hasLineNumbers;
-    this.hasInlineFrames = hasInlineFrames;
   }
 
   @Override
@@ -97,10 +71,6 @@ final class MappingMarshaler extends MarshalerWithSize {
     output.serializeUInt64(Mapping.FILE_OFFSET, fileOffset);
     output.serializeInt32(Mapping.FILENAME_STRINDEX, filenameIndex);
     output.serializeRepeatedInt32(Mapping.ATTRIBUTE_INDICES, attributeIndices);
-    output.serializeBool(Mapping.HAS_FUNCTIONS, hasFunctions);
-    output.serializeBool(Mapping.HAS_FILENAMES, hasFilenames);
-    output.serializeBool(Mapping.HAS_LINE_NUMBERS, hasLineNumbers);
-    output.serializeBool(Mapping.HAS_INLINE_FRAMES, hasInlineFrames);
   }
 
   private static int calculateSize(
@@ -108,21 +78,13 @@ final class MappingMarshaler extends MarshalerWithSize {
       long memoryLimit,
       long fileOffset,
       int filenameIndex,
-      List<Integer> attributeIndices,
-      boolean hasFunctions,
-      boolean hasFilenames,
-      boolean hasLineNumbers,
-      boolean hasInlineFrames) {
+      List<Integer> attributeIndices) {
     int size = 0;
     size += MarshalerUtil.sizeUInt64(Mapping.MEMORY_START, memoryStart);
     size += MarshalerUtil.sizeUInt64(Mapping.MEMORY_LIMIT, memoryLimit);
     size += MarshalerUtil.sizeUInt64(Mapping.FILE_OFFSET, fileOffset);
     size += MarshalerUtil.sizeInt32(Mapping.FILENAME_STRINDEX, filenameIndex);
     size += MarshalerUtil.sizeRepeatedInt32(Mapping.ATTRIBUTE_INDICES, attributeIndices);
-    size += MarshalerUtil.sizeBool(Mapping.HAS_FUNCTIONS, hasFunctions);
-    size += MarshalerUtil.sizeBool(Mapping.HAS_FILENAMES, hasFilenames);
-    size += MarshalerUtil.sizeBool(Mapping.HAS_LINE_NUMBERS, hasLineNumbers);
-    size += MarshalerUtil.sizeBool(Mapping.HAS_INLINE_FRAMES, hasInlineFrames);
     return size;
   }
 }

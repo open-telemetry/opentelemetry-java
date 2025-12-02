@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal.asExemplarFilterInternal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -21,7 +21,10 @@ class InstrumentBuilderTest {
 
   public static final MeterProviderSharedState PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(
-          TestClock.create(), Resource.getDefault(), ExemplarFilter.alwaysOff(), 0);
+          TestClock.create(),
+          Resource.getDefault(),
+          asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
+          0);
   static final InstrumentationScopeInfo SCOPE = InstrumentationScopeInfo.create("scope-name");
   public static final SdkMeter SDK_METER =
       new SdkMeter(

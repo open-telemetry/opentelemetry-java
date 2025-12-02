@@ -33,7 +33,8 @@ public final class ZipkinSpanExporterBuilder {
   // which is created when no custom sender is set (see OkHttpSender.Builder)
   private boolean compressionEnabled = true;
   private int readTimeoutMillis = (int) TimeUnit.SECONDS.toMillis(10);
-  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private Supplier<MeterProvider> meterProviderSupplier =
+      () -> GlobalOpenTelemetry.getOrNoop().getMeterProvider();
   private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
 
   /**

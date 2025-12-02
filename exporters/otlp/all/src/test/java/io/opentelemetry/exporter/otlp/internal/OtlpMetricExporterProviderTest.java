@@ -5,31 +5,38 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -94,7 +101,7 @@ class OtlpMetricExporterProviderTest {
             () ->
                 provider.createExporter(
                     DefaultConfigProperties.createFromMap(
-                        Collections.singletonMap("otel.exporter.otlp.protocol", "foo"))))
+                        singletonMap("otel.exporter.otlp.protocol", "foo"))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
   }
@@ -104,13 +111,13 @@ class OtlpMetricExporterProviderTest {
     // Verifies createExporter after resetting the spy overrides
     Mockito.reset(provider);
     try (MetricExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
     }
     try (MetricExporter exporter =
         provider.createExporter(
             DefaultConfigProperties.createFromMap(
-                Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf")))) {
+                singletonMap("otel.exporter.otlp.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
     }
   }
@@ -118,7 +125,7 @@ class OtlpMetricExporterProviderTest {
   @Test
   void createExporter_GrpcDefaults() {
     try (MetricExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder).setComponentLoader(any());
@@ -204,8 +211,7 @@ class OtlpMetricExporterProviderTest {
     try (MetricExporter exporter =
         provider.createExporter(
             DefaultConfigProperties.createFromMap(
-                Collections.singletonMap(
-                    "otel.exporter.otlp.metrics.protocol", "http/protobuf")))) {
+                singletonMap("otel.exporter.otlp.metrics.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
       verify(httpBuilder, times(1)).build();
       verify(httpBuilder).setComponentLoader(any());
@@ -287,5 +293,108 @@ class OtlpMetricExporterProviderTest {
       assertThat(exporter.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
     Mockito.verifyNoInteractions(grpcBuilder);
+  }
+
+  @Test
+  void meterProviderRef_InitializedWithNoop() throws Exception {
+    AtomicReference<MeterProvider> meterProviderRef = getMeterProviderRef(provider);
+
+    assertThat(meterProviderRef.get()).isSameAs(MeterProvider.noop());
+  }
+
+  @Test
+  void afterAutoConfigure_UpdatesMeterProviderRef() throws Exception {
+    OpenTelemetrySdk sdk = OpenTelemetrySdk.builder().build();
+
+    AtomicReference<MeterProvider> meterProviderRef = getMeterProviderRef(provider);
+    assertThat(meterProviderRef.get()).isSameAs(MeterProvider.noop());
+
+    provider.afterAutoConfigure(sdk);
+
+    assertThat(meterProviderRef.get()).isSameAs(sdk.getMeterProvider());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void createExporter_GrpcSetsMeterProviderSupplier() {
+    AtomicReference<Supplier<MeterProvider>> capturedSupplier = new AtomicReference<>();
+
+    OpenTelemetrySdk sdk = OpenTelemetrySdk.builder().build();
+    provider.afterAutoConfigure(sdk);
+
+    doAnswer(
+            invocation -> {
+              capturedSupplier.set(invocation.getArgument(0));
+              return grpcBuilder;
+            })
+        .when(grpcBuilder)
+        .setMeterProvider(any(Supplier.class));
+
+    try (MetricExporter exporter =
+        provider.createExporter(DefaultConfigProperties.createFromMap(emptyMap()))) {
+
+      assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
+      assertThat(capturedSupplier.get()).isNotNull();
+      assertThat(capturedSupplier.get().get()).isSameAs(sdk.getMeterProvider());
+    }
+    Mockito.verifyNoInteractions(httpBuilder);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void createExporter_HttpSetsMeterProviderSupplier() {
+    AtomicReference<Supplier<MeterProvider>> capturedSupplier = new AtomicReference<>();
+
+    OpenTelemetrySdk sdk = OpenTelemetrySdk.builder().build();
+    provider.afterAutoConfigure(sdk);
+
+    doAnswer(
+            invocation -> {
+              capturedSupplier.set(invocation.getArgument(0));
+              return httpBuilder;
+            })
+        .when(httpBuilder)
+        .setMeterProvider(any(Supplier.class));
+
+    try (MetricExporter exporter =
+        provider.createExporter(
+            DefaultConfigProperties.createFromMap(
+                singletonMap("otel.exporter.otlp.metrics.protocol", "http/protobuf")))) {
+
+      assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
+      assertThat(capturedSupplier.get()).isNotNull();
+      assertThat(capturedSupplier.get().get()).isSameAs(sdk.getMeterProvider());
+    }
+    Mockito.verifyNoInteractions(grpcBuilder);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void meterProviderSupplier_ReturnsNoopBeforeAutoConfigure() {
+    AtomicReference<Supplier<MeterProvider>> capturedSupplier = new AtomicReference<>();
+
+    doAnswer(
+            invocation -> {
+              capturedSupplier.set(invocation.getArgument(0));
+              return grpcBuilder;
+            })
+        .when(grpcBuilder)
+        .setMeterProvider(any(Supplier.class));
+
+    try (MetricExporter exporter =
+        provider.createExporter(DefaultConfigProperties.createFromMap(emptyMap()))) {
+
+      assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
+      assertThat(capturedSupplier.get()).isNotNull();
+      assertThat(capturedSupplier.get().get()).isSameAs(MeterProvider.noop());
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static AtomicReference<MeterProvider> getMeterProviderRef(
+      OtlpMetricExporterProvider provider) throws Exception {
+    Field field = OtlpMetricExporterProvider.class.getDeclaredField("meterProviderRef");
+    field.setAccessible(true);
+    return (AtomicReference<MeterProvider>) field.get(provider);
   }
 }

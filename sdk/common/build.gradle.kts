@@ -19,6 +19,7 @@ dependencies {
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
+  testImplementation(project(":api:incubator")) // for ExtendedAttributesValueTest
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava-testlib")
   testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")

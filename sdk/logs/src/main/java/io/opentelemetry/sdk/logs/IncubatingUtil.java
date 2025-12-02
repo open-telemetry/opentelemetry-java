@@ -25,7 +25,9 @@ final class IncubatingUtil {
   }
 
   static SdkLogRecordBuilder createExtendedLogRecordBuilder(
-      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
-    return new ExtendedSdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      SdkLogger logger) {
+    return new ExtendedSdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo, logger);
   }
 }

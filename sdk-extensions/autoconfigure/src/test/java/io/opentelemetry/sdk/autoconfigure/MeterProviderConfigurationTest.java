@@ -12,9 +12,9 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOffFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOnFilter;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOffExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOnExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.exemplar.TraceBasedExemplarFilter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,16 +36,17 @@ class MeterProviderConfigurationTest {
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "Trace_based"))
         .isInstanceOf(TraceBasedExemplarFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "always_off"))
-        .isInstanceOf(AlwaysOffFilter.class);
+        .isInstanceOf(AlwaysOffExemplarFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "always_Off"))
-        .isInstanceOf(AlwaysOffFilter.class);
+        .isInstanceOf(AlwaysOffExemplarFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "always_on"))
-        .isInstanceOf(AlwaysOnFilter.class);
+        .isInstanceOf(AlwaysOnExemplarFilter.class);
     assertExemplarFilter(Collections.singletonMap("otel.metrics.exemplar.filter", "ALWAYS_ON"))
-        .isInstanceOf(AlwaysOnFilter.class);
+        .isInstanceOf(AlwaysOnExemplarFilter.class);
   }
 
-  private static ObjectAssert<ExemplarFilter> assertExemplarFilter(Map<String, String> config) {
+  private static ObjectAssert<ExemplarFilterInternal> assertExemplarFilter(
+      Map<String, String> config) {
     Map<String, String> configWithDefault = new HashMap<>(config);
     configWithDefault.put("otel.metrics.exporter", "none");
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
@@ -57,6 +58,7 @@ class MeterProviderConfigurationTest {
         (a, b) -> a,
         new ArrayList<>());
     return assertThat(builder)
-        .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)));
+        .extracting(
+            "exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilterInternal.class)));
   }
 }

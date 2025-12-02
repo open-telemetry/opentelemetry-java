@@ -333,9 +333,8 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
                 properties.getComponentLoader().load(ComponentProvider.class).spliterator(), false)
             .filter(
                 p -> {
-                  ComponentProvider<?> c = p;
-                  return "otlp_file/development".equals(c.getName())
-                      && c.getType().equals(componentProviderType);
+                  return "otlp_file/development".equals(p.getName())
+                      && p.getType().equals(componentProviderType);
                 })
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No provider found"))

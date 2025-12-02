@@ -22,5 +22,5 @@ dependencies {
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.linecorp.armeria:armeria")
-  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }

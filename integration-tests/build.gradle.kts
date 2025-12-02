@@ -12,5 +12,5 @@ dependencies {
 
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter-params")
-  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }
