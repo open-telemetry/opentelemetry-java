@@ -49,7 +49,7 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
                   + "retryPolicy=RetryPolicy\\{.*\\}, "
                   + "componentLoader=.*, "
                   + "exporterType=OTLP_GRPC_SPAN_EXPORTER, "
-                  + "internalTelemetrySchemaVersion=LEGACY, "
+                  + "internalTelemetryVersion=LEGACY, "
                   + "memoryMode=REUSABLE_DATA"
                   + "\\}");
     }
