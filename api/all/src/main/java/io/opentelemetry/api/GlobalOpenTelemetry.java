@@ -93,6 +93,8 @@ public final class GlobalOpenTelemetry {
    *
    * <p>Native instrumentation should use this method to initialize their default {@link
    * OpenTelemetry} instance. See class javadoc for more details.
+   *
+   * @since 1.57.0
    */
   public static OpenTelemetry getOrNoop() {
     synchronized (mutex) {
@@ -105,6 +107,8 @@ public final class GlobalOpenTelemetry {
    *
    * <p>Application custom instrumentation should use this method during initialization. See class
    * javadoc for more details.
+   *
+   * @since 1.57.0
    */
   public static boolean isSet() {
     synchronized (mutex) {
