@@ -33,14 +33,8 @@ class OtelVersionClassPlugin : Plugin<Project> {
       outputDirectory.set(outDir)
     }
     // Add dependency on this task
-    project.tasks.getByName("compileJava") {
+    project.tasks.matching { it.name == "compileJava" || it.name == "sourcesJar" }.configureEach {
       dependsOn("generateOtelVersionClass")
-    }
-    // sourcesJar also needs to depend on this task
-    project.tasks.configureEach {
-      if (name == "sourcesJar") {
-        dependsOn("generateOtelVersionClass")
-      }
     }
     // Add new source dir to the "main" source set
     val java = project.the<JavaPluginExtension>()
