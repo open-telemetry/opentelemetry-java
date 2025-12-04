@@ -171,16 +171,11 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
     println("Generating GraalVM reflection config at: ${targetFile.absolutePath}")
 
     val classes = mutableListOf<String>()
-    classesDir.walkTopDown().filter { it.isFile && it.extension == "class" }.forEach {
-      val path = it.path
-
-      val className = path
-        .substringAfter(sourcePackagePath)
-        .removePrefix("/")
-        .removePrefix("\\")
+    classesDir.walkTopDown().filter { it.isFile && it.extension == "class" }.forEach { file ->
+      val relativePath = file.toRelativeString(classesDir)
+      val className = relativePath
         .removeSuffix(".class")
-        .replace("/", ".")
-        .replace("\\", ".")
+        .replace(File.separatorChar, '.')
       classes.add("$sourcePackage.$className")
     }
     classes.sort()
