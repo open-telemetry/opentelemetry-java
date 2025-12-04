@@ -1,9 +1,15 @@
 package io.opentelemetry.gradle
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.the
 import java.io.File
 
@@ -18,31 +24,54 @@ class OtelVersionClassPlugin : Plugin<Project> {
   override fun apply(project: Project) {
     project.plugins.apply(JavaPlugin::class.java)
 
-    project.tasks.register("generateOtelVersionClass") {
-      doLast {
-        writeFile(project)
-      }
+    val outDir = project.layout.buildDirectory.dir("generated/sources/version/java/main")
+
+    project.tasks.register("generateOtelVersionClass", GenerateOtelVersionClassTask::class.java) {
+      projectGroup.set("${project.group}")
+      projectName.set(project.name)
+      projectVersion.set("${project.version}")
+      outputDirectory.set(outDir)
     }
     // Add dependency on this task
     project.tasks.getByName("compileJava") {
       dependsOn("generateOtelVersionClass")
     }
+    // sourcesJar also needs to depend on this task
+    project.tasks.configureEach {
+      if (name == "sourcesJar") {
+        dependsOn("generateOtelVersionClass")
+      }
+    }
     // Add new source dir to the "main" source set
-    val outDir = buildOutDir(project)
     val java = project.the<JavaPluginExtension>()
     java.sourceSets.getByName("main").java {
       srcDir(outDir)
     }
   }
+}
 
-  private fun writeFile(project: Project) {
-    val group = "${project.group}".replace('.', '/')
-    val projectName = project.name.replace('-', '/')
-    val outDir = buildOutDir(project)
-    val filename = "$group/$projectName/internal/OtelVersion.java"
+abstract class GenerateOtelVersionClassTask : DefaultTask() {
+  @get:Input
+  abstract val projectGroup: Property<String>
+
+  @get:Input
+  abstract val projectName: Property<String>
+
+  @get:Input
+  abstract val projectVersion: Property<String>
+
+  @get:OutputDirectory
+  abstract val outputDirectory: DirectoryProperty
+
+  @TaskAction
+  fun generate() {
+    val group = projectGroup.get().replace('.', '/')
+    val name = projectName.get().replace('-', '/')
+    val outDir = outputDirectory.get().asFile
+    val filename = "$group/$name/internal/OtelVersion.java"
     val outFile = File(outDir, filename)
-    val packageName = "${project.group}.${project.name.replace('-', '.')}.internal"
-    val classBody = getClassBody("${project.version}", packageName)
+    val packageName = "${projectGroup.get()}.${projectName.get().replace('-', '.')}.internal"
+    val classBody = getClassBody(projectVersion.get(), packageName)
 
     outFile.parentFile.mkdirs()
     outFile.writeText(classBody)
@@ -62,9 +91,5 @@ class OtelVersionClassPlugin : Plugin<Project> {
         private OtelVersion() {}
       }
     """.trimIndent()
-  }
-
-  private fun buildOutDir(project: Project): File {
-    return File(project.layout.buildDirectory.asFile.get(), "generated/sources/version/java/main")
   }
 }
