@@ -28,7 +28,7 @@ public class ExporterInstrumentation {
   public ExporterInstrumentation(
       InternalTelemetryVersion schema,
       Supplier<MeterProvider> meterProviderSupplier,
-      StandardComponentId componentId,
+      StandardComponentId<StandardComponentId.ExporterType> componentId,
       String endpoint) {
 
     Signal signal = componentId.getStandardType().signal();
