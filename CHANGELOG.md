@@ -9,14 +9,14 @@
 
 #### Incubating
 
-* Complex attributes incubating implementation
+* Logs: Complex attributes incubating implementation
   ([#7814](https://github.com/open-telemetry/opentelemetry-java/pull/7814))
 
 ### SDK
 
 #### Logs
 
-* Add minimum severity and trace-based logger configuration
+* Add minimum severity and trace-based logger configuration (incubating API)
   ([#7529](https://github.com/open-telemetry/opentelemetry-java/pull/7529))
 
 #### Exporters
