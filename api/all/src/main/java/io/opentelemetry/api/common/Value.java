@@ -6,6 +6,8 @@
 package io.opentelemetry.api.common;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,6 +84,77 @@ public interface Value<T> {
   /** Returns an {@link Value} for the {@link Map} of key, {@link Value}. */
   static Value<List<KeyValue>> of(Map<String, Value<?>> value) {
     return KeyValueList.createFromMap(value);
+  }
+
+  /**
+   * Convert a generic object to {@link Value}.
+   *
+   * <p>The following types are supported. If the {@code object} (or any nested data structures)
+   * contains an unsupported type, an {@link IllegalArgumentException} is thrown.
+   *
+   * <ul>
+   *   <li>{@link Long}
+   *   <li>{@link Integer}
+   *   <li>{@link Float}
+   *   <li>{@link Double}
+   *   <li>{@link Boolean}
+   *   <li>{@code byte[]}
+   *   <li>{@code List<?>}, where each list entry is a supported type
+   *   <li>{@code Map<String, ?>}, where each value is a supported type
+   * </ul>
+   *
+   * @param object the object to convert
+   * @return the equivalent {@link Value}
+   * @throws IllegalArgumentException if not able to convert the object to {@link Value}
+   */
+  @SuppressWarnings("ThrowsUncheckedException")
+  static Value<?> convert(Object object) throws IllegalArgumentException {
+    if (object instanceof Integer) {
+      return Value.of((Integer) object);
+    }
+    if (object instanceof Long) {
+      return Value.of((Long) object);
+    }
+    if (object instanceof Float) {
+      return Value.of((Float) object);
+    }
+    if (object instanceof Double) {
+      return Value.of((Double) object);
+    }
+    if (object instanceof Boolean) {
+      return Value.of((Boolean) object);
+    }
+    if (object instanceof String) {
+      return Value.of((String) object);
+    }
+    if (object instanceof byte[]) {
+      return Value.of((byte[]) object);
+    }
+    if (object instanceof List) {
+      List<?> list = (List<?>) object;
+      List<Value<?>> valueList = new ArrayList<>(list.size());
+      for (Object entry : list) {
+        valueList.add(Value.convert(entry));
+      }
+      return Value.of(valueList);
+    }
+    if (object instanceof Map) {
+      Map<?, ?> map = (Map<?, ?>) object;
+      Map<String, Value<?>> valueMap = new HashMap<>(map.size());
+      map.forEach(
+          (key, value) -> {
+            if (!(key instanceof String)) {
+              throw new IllegalArgumentException(
+                  "Cannot convert map with key type "
+                      + key.getClass().getSimpleName()
+                      + " to value");
+            }
+            valueMap.put((String) key, Value.convert(value));
+          });
+      return Value.of(valueMap);
+    }
+    throw new IllegalArgumentException(
+        "Cannot convert object of type " + object.getClass().getSimpleName() + " to value");
   }
 
   /** Returns the type of this {@link Value}. Useful for building switch statements. */
