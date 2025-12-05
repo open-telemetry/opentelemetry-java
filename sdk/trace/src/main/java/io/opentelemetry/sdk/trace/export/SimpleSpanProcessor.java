@@ -7,8 +7,11 @@ package io.opentelemetry.sdk.trace.export;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -33,6 +36,8 @@ import java.util.logging.Logger;
  */
 public final class SimpleSpanProcessor implements SpanProcessor {
 
+  private static final ComponentId COMPONENT_ID = ComponentId.generateLazy("simple_span_processor");
+
   private static final Logger logger = Logger.getLogger(SimpleSpanProcessor.class.getName());
 
   private final SpanExporter spanExporter;
@@ -40,6 +45,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   private final Set<CompletableResultCode> pendingExports =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+  private final SpanProcessorMetrics spanProcessorMetrics;
 
   private final Object exporterLock = new Object();
 
@@ -68,9 +74,12 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     return new SimpleSpanProcessorBuilder(exporter);
   }
 
-  SimpleSpanProcessor(SpanExporter spanExporter, boolean exportUnsampledSpans) {
+  SimpleSpanProcessor(
+      SpanExporter spanExporter, boolean exportUnsampledSpans, MeterProvider meterProvider) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
     this.exportUnsampledSpans = exportUnsampledSpans;
+    spanProcessorMetrics =
+        SpanProcessorMetrics.get(InternalTelemetryVersion.LATEST, COMPONENT_ID, meterProvider);
   }
 
   @Override
@@ -98,9 +107,12 @@ public final class SimpleSpanProcessor implements SpanProcessor {
         result.whenComplete(
             () -> {
               pendingExports.remove(result);
+              String error = null;
               if (!result.isSuccess()) {
                 logger.log(Level.FINE, "Exporter failed");
+                error = "export_failed";
               }
+              spanProcessorMetrics.finishSpans(1, error);
             });
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);

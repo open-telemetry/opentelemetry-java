@@ -61,6 +61,9 @@ final class SdkSpan implements ReadWriteSpan {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   // The start time of the span.
   private final long startEpochNanos;
+  // Callback to run when span ends.
+  private final Runnable onEnd;
+
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
 
@@ -132,7 +135,8 @@ final class SdkSpan implements ReadWriteSpan {
       @Nullable AttributesMap attributes,
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
-      long startEpochNanos) {
+      long startEpochNanos,
+      Runnable onEnd) {
     this.context = context;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.parentSpanContext = parentSpanContext;
@@ -148,6 +152,7 @@ final class SdkSpan implements ReadWriteSpan {
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
     this.spanLimits = spanLimits;
+    this.onEnd = onEnd;
   }
 
   /**
@@ -163,6 +168,7 @@ final class SdkSpan implements ReadWriteSpan {
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
    * @param links the links set during span creation, may be truncated. The list MUST be immutable.
+   * @param onEnd a {@link Runnable} to run when the span is ended.
    * @return a new and started span.
    */
   static SdkSpan startSpan(
@@ -180,7 +186,8 @@ final class SdkSpan implements ReadWriteSpan {
       @Nullable AttributesMap attributes,
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
-      long userStartEpochNanos) {
+      long userStartEpochNanos,
+      Runnable onEnd) {
     boolean createdAnchoredClock;
     AnchoredClock clock;
     if (parentSpan instanceof SdkSpan) {
@@ -219,7 +226,8 @@ final class SdkSpan implements ReadWriteSpan {
             attributes,
             links,
             totalRecordedLinks,
-            startEpochNanos);
+            startEpochNanos,
+            onEnd);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     if (spanProcessor.isStartRequired()) {
@@ -557,6 +565,7 @@ final class SdkSpan implements ReadWriteSpan {
       spanEndingThread = Thread.currentThread();
       hasEnded = EndState.ENDING;
     }
+    onEnd.run();
     if (spanProcessor instanceof ExtendedSpanProcessor) {
       ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
       if (extendedSpanProcessor.isOnEndingRequired()) {

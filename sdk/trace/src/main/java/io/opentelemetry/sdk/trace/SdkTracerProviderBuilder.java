@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -38,6 +39,7 @@ public final class SdkTracerProviderBuilder {
       TracerConfig.configuratorBuilder();
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
+  private MeterProvider meterProvider = MeterProvider.noop();
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link Span} is started, ended
@@ -233,6 +235,20 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Sets the {@link MeterProvider} to use to generate <a
+   * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
+   * Metrics</a>.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setMeterProvider(SdkTracerProviderBuilder, MeterProvider)}.
+   */
+  SdkTracerProviderBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /**
    * Create a new {@link SdkTracerProvider} instance with the configuration.
    *
    * @return The instance.
@@ -246,7 +262,8 @@ public final class SdkTracerProviderBuilder {
         sampler,
         spanProcessors,
         tracerConfiguratorBuilder.build(),
-        exceptionAttributeResolver);
+        exceptionAttributeResolver,
+        meterProvider);
   }
 
   SdkTracerProviderBuilder() {}
