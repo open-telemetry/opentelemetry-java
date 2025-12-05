@@ -30,25 +30,30 @@ class SdkTracer implements Tracer {
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  private final SdkTracerMetrics tracerProviderMetrics;
 
   protected volatile boolean tracerEnabled;
 
   SdkTracer(
       TracerSharedState sharedState,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      TracerConfig tracerConfig) {
+      TracerConfig tracerConfig,
+      SdkTracerMetrics tracerProviderMetrics) {
     this.sharedState = sharedState;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.tracerEnabled = tracerConfig.isEnabled();
+    this.tracerProviderMetrics = tracerProviderMetrics;
   }
 
   static SdkTracer create(
       TracerSharedState sharedState,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      TracerConfig tracerConfig) {
+      TracerConfig tracerConfig,
+      SdkTracerMetrics tracerProviderMetrics) {
     return INCUBATOR_AVAILABLE
-        ? IncubatingUtil.createExtendedTracer(sharedState, instrumentationScopeInfo, tracerConfig)
-        : new SdkTracer(sharedState, instrumentationScopeInfo, tracerConfig);
+        ? IncubatingUtil.createExtendedTracer(
+            sharedState, instrumentationScopeInfo, tracerConfig, tracerProviderMetrics)
+        : new SdkTracer(sharedState, instrumentationScopeInfo, tracerConfig, tracerProviderMetrics);
   }
 
   /**
@@ -68,9 +73,17 @@ class SdkTracer implements Tracer {
     }
     return INCUBATOR_AVAILABLE
         ? IncubatingUtil.createExtendedSpanBuilder(
-            spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits())
+            spanName,
+            instrumentationScopeInfo,
+            sharedState,
+            sharedState.getSpanLimits(),
+            tracerProviderMetrics)
         : new SdkSpanBuilder(
-            spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits());
+            spanName,
+            instrumentationScopeInfo,
+            sharedState,
+            sharedState.getSpanLimits(),
+            tracerProviderMetrics);
   }
 
   // Visible for testing

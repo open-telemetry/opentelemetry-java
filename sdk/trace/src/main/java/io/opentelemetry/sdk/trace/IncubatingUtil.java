@@ -20,16 +20,19 @@ final class IncubatingUtil {
   static SdkTracer createExtendedTracer(
       TracerSharedState sharedState,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      TracerConfig tracerConfig) {
-    return new ExtendedSdkTracer(sharedState, instrumentationScopeInfo, tracerConfig);
+      TracerConfig tracerConfig,
+      SdkTracerMetrics tracerProviderMetrics) {
+    return new ExtendedSdkTracer(
+        sharedState, instrumentationScopeInfo, tracerConfig, tracerProviderMetrics);
   }
 
   static SdkSpanBuilder createExtendedSpanBuilder(
       String spanName,
       InstrumentationScopeInfo instrumentationScopeInfo,
       TracerSharedState tracerSharedState,
-      SpanLimits spanLimits) {
+      SpanLimits spanLimits,
+      SdkTracerMetrics tracerProviderMetrics) {
     return new ExtendedSdkSpanBuilder(
-        spanName, instrumentationScopeInfo, tracerSharedState, spanLimits);
+        spanName, instrumentationScopeInfo, tracerSharedState, spanLimits, tracerProviderMetrics);
   }
 }

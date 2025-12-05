@@ -16,8 +16,9 @@ final class ExtendedSdkTracer extends SdkTracer implements ExtendedTracer {
   ExtendedSdkTracer(
       TracerSharedState sharedState,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      TracerConfig tracerConfig) {
-    super(sharedState, instrumentationScopeInfo, tracerConfig);
+      TracerConfig tracerConfig,
+      SdkTracerMetrics tracerProviderMetrics) {
+    super(sharedState, instrumentationScopeInfo, tracerConfig, tracerProviderMetrics);
   }
 
   @Override

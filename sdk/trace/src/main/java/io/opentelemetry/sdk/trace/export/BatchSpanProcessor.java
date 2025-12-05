@@ -5,13 +5,11 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.internal.ThrowableUtil;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -43,15 +41,13 @@ import java.util.logging.Logger;
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
+  private static final ComponentId COMPONENT_ID =
+      ComponentId.generateLazy("batching_span_processor");
+
   private static final Logger logger = Logger.getLogger(BatchSpanProcessor.class.getName());
 
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
-  private static final AttributeKey<String> SPAN_PROCESSOR_TYPE_LABEL =
-      AttributeKey.stringKey("processorType");
-  private static final AttributeKey<Boolean> SPAN_PROCESSOR_DROPPED_LABEL =
-      AttributeKey.booleanKey("dropped");
-  private static final String SPAN_PROCESSOR_TYPE_VALUE = BatchSpanProcessor.class.getSimpleName();
 
   private final boolean exportUnsampledSpans;
   private final Worker worker;
@@ -72,6 +68,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       SpanExporter spanExporter,
       boolean exportUnsampledSpans,
       MeterProvider meterProvider,
+      InternalTelemetryVersion telemetryVersion,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -81,10 +78,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
         new Worker(
             spanExporter,
             meterProvider,
+            telemetryVersion,
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            JcTools.newFixedSizeQueue(maxQueueSize));
+            JcTools.newFixedSizeQueue(maxQueueSize),
+            maxQueueSize);
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
   }
@@ -161,9 +160,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   // the data.
   private static final class Worker implements Runnable {
 
-    private final LongCounter processedSpansCounter;
-    private final Attributes droppedAttrs;
-    private final Attributes exportedAttrs;
+    private final SpanProcessorMetrics spanProcessorMetrics;
 
     private final SpanExporter spanExporter;
     private final long scheduleDelayNanos;
@@ -189,54 +186,30 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private Worker(
         SpanExporter spanExporter,
         MeterProvider meterProvider,
+        InternalTelemetryVersion telemetryVersion,
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        Queue<ReadableSpan> queue) {
+        Queue<ReadableSpan> queue,
+        long maxQueueSize) {
       this.spanExporter = spanExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
       this.signal = new ArrayBlockingQueue<>(1);
-      Meter meter = meterProvider.meterBuilder("io.opentelemetry.sdk.trace").build();
-      meter
-          .gaugeBuilder("queueSize")
-          .ofLongs()
-          .setDescription("The number of items queued")
-          .setUnit("1")
-          .buildWithCallback(
-              result ->
-                  result.record(
-                      queue.size(),
-                      Attributes.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE)));
-      processedSpansCounter =
-          meter
-              .counterBuilder("processedSpans")
-              .setUnit("1")
-              .setDescription(
-                  "The number of spans processed by the BatchSpanProcessor. "
-                      + "[dropped=true if they were dropped due to high throughput]")
-              .build();
-      droppedAttrs =
-          Attributes.of(
-              SPAN_PROCESSOR_TYPE_LABEL,
-              SPAN_PROCESSOR_TYPE_VALUE,
-              SPAN_PROCESSOR_DROPPED_LABEL,
-              true);
-      exportedAttrs =
-          Attributes.of(
-              SPAN_PROCESSOR_TYPE_LABEL,
-              SPAN_PROCESSOR_TYPE_VALUE,
-              SPAN_PROCESSOR_DROPPED_LABEL,
-              false);
+
+      spanProcessorMetrics =
+          SpanProcessorMetrics.get(telemetryVersion, COMPONENT_ID, meterProvider);
+      spanProcessorMetrics.buildQueueCapacityMetric(maxQueueSize);
+      spanProcessorMetrics.buildQueueSizeMetric(queue::size);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
     private void addSpan(ReadableSpan span) {
       if (!queue.offer(span)) {
-        processedSpansCounter.add(1, droppedAttrs);
+        spanProcessorMetrics.dropSpans(1);
       } else {
         if (queueSize.incrementAndGet() >= spansNeeded.get()) {
           signal.offer(true);
@@ -340,18 +313,20 @@ public final class BatchSpanProcessor implements SpanProcessor {
         return;
       }
 
+      String error = null;
       try {
         CompletableResultCode result = spanExporter.export(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
-        if (result.isSuccess()) {
-          processedSpansCounter.add(batch.size(), exportedAttrs);
-        } else {
+        if (!result.isSuccess()) {
           logger.log(Level.FINE, "Exporter failed");
+          error = "export_failed";
         }
       } catch (Throwable t) {
         ThrowableUtil.propagateIfFatal(t);
         logger.log(Level.WARNING, "Exporter threw an Exception", t);
+        error = t.getClass().getName();
       } finally {
+        spanProcessorMetrics.finishSpans(batch.size(), error);
         batch.clear();
       }
     }

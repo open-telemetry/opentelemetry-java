@@ -7,6 +7,10 @@ package io.opentelemetry.sdk.trace.export;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
+
 /**
  * Builder class for {@link SimpleSpanProcessor}.
  *
@@ -14,6 +18,7 @@ import static java.util.Objects.requireNonNull;
  */
 public final class SimpleSpanProcessorBuilder {
   private final SpanExporter spanExporter;
+  private MeterProvider meterProvider = MeterProvider.noop();
   private boolean exportUnsampledSpans = false;
 
   SimpleSpanProcessorBuilder(SpanExporter spanExporter) {
@@ -30,11 +35,25 @@ public final class SimpleSpanProcessorBuilder {
   }
 
   /**
+   * Sets the {@link MeterProvider} to use to generate <a
+   * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
+   * Metrics</a>.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setMeterProvider(SdkTracerProviderBuilder, MeterProvider)}.
+   */
+  SimpleSpanProcessorBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /**
    * Returns a new {@link SimpleSpanProcessor} with the configuration of this builder.
    *
    * @return a new {@link SimpleSpanProcessor}.
    */
   public SimpleSpanProcessor build() {
-    return new SimpleSpanProcessor(spanExporter, exportUnsampledSpans);
+    return new SimpleSpanProcessor(spanExporter, exportUnsampledSpans, meterProvider);
   }
 }
