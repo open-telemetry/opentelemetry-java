@@ -9,6 +9,7 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorPropertyModel;
 import java.util.Collections;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ final class TextMapPropagatorFactory
       return getPropagator(context, "ottrace");
     }
 
-    Map.Entry<String, Object> keyValue =
+    Map.Entry<String, TextMapPropagatorPropertyModel> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "propagator");
     TextMapPropagator propagator =
         context.loadComponent(TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());

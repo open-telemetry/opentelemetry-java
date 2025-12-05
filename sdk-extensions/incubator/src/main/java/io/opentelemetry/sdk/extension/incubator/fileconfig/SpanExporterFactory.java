@@ -5,11 +5,15 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNullResource;
+
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Map;
 
 final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExporter> {
+
+  private static final String RESOURCE_NAME = "span exporter";
 
   private static final SpanExporterFactory INSTANCE = new SpanExporterFactory();
 
@@ -22,18 +26,41 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
   @Override
   public SpanExporter create(SpanExporterModel model, DeclarativeConfigContext context) {
 
-    model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
-    model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
-    model
-        .getAdditionalProperties()
-        .compute("otlp_file/development", (k, v) -> model.getOtlpFileDevelopment());
-    model.getAdditionalProperties().compute("console", (k, v) -> model.getConsole());
-    model.getAdditionalProperties().compute("zipkin", (k, v) -> model.getZipkin());
+    String key = null;
+    Object resource = null;
 
-    Map.Entry<String, Object> keyValue =
-        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span exporter");
-    SpanExporter spanExporter =
-        context.loadComponent(SpanExporter.class, keyValue.getKey(), keyValue.getValue());
+    if (model.getOtlpHttp() != null) {
+      key = "otlp_http";
+      resource = model.getOtlpHttp();
+    }
+    if (model.getOtlpGrpc() != null) {
+      requireNullResource(resource, RESOURCE_NAME, model.getAdditionalProperties());
+      key = "otlp_grpc";
+      resource = model.getOtlpGrpc();
+    }
+    if (model.getOtlpFileDevelopment() != null) {
+      requireNullResource(resource, RESOURCE_NAME, model.getAdditionalProperties());
+      key = "otlp_file/development";
+      resource = model.getOtlpFileDevelopment();
+    }
+    if (model.getConsole() != null) {
+      requireNullResource(resource, RESOURCE_NAME, model.getAdditionalProperties());
+      key = "console";
+      resource = model.getConsole();
+    }
+    if (model.getZipkin() != null) {
+      requireNullResource(resource, RESOURCE_NAME, model.getAdditionalProperties());
+      key = "zipkin";
+      resource = model.getZipkin();
+    }
+    if (key == null || resource == null) {
+      Map.Entry<String, ?> keyValue =
+          FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), RESOURCE_NAME);
+      key = keyValue.getKey();
+      resource = keyValue.getValue();
+    }
+
+    SpanExporter spanExporter = context.loadComponent(SpanExporter.class, key, resource);
     return context.addCloseable(spanExporter);
   }
 }

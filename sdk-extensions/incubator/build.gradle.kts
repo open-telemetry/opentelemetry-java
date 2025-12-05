@@ -1,4 +1,5 @@
 import de.undercouch.gradle.tasks.download.Download
+import java.io.FileFilter
 
 plugins {
   id("otel.java-conventions")
@@ -59,7 +60,7 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 val configurationTag = "1.0.0-rc.1"
-val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
+val configurationRef = "8826969b88d4ec720c3ebfe5c95b27aca5c238a9" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
@@ -87,7 +88,7 @@ val deleteTypeDescriptions by tasks.registering(Delete::class) {
 }
 
 jsonSchema2Pojo {
-  sourceFiles = setOf(file("$buildDirectory/configuration/schema"))
+  sourceFiles = setOf(file("$buildDirectory/configuration/opentelemetry_configuration.json"))
   targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
 
