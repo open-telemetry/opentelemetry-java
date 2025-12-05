@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.57.0 (2025-12-05)
+
 ### API
 
 * Add `GlobalOpenTelemetry#getOrNoop`, `#isSet`. Update `#get` to always returns obfuscated instance
