@@ -20,9 +20,6 @@ import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
  * SDK metrics exported for started and ended spans as defined in the <a
  * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">semantic
  * conventions</a>.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
  */
 final class SdkTracerMetrics {
 
