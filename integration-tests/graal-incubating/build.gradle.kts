@@ -39,4 +39,17 @@ graalvmNative {
     }
   }
   toolchainDetection.set(false)
+  // Disable metadata repository to work around configuration cache incompatibility
+  // https://github.com/graalvm/native-build-tools/issues/477
+  metadataRepository {
+    enabled.set(false)
+  }
+}
+
+// GraalVM Native Build Tools plugin is not yet compatible with configuration cache
+// https://github.com/graalvm/native-build-tools/issues/477
+tasks.configureEach {
+  if (name.startsWith("native")) {
+    notCompatibleWithConfigurationCache("GraalVM Native Build Tools plugin is not compatible with configuration cache")
+  }
 }

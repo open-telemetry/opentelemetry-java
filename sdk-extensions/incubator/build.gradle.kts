@@ -146,10 +146,22 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
 }
 
 val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
+  val buildDir = buildDirectory
   val targetFile = File(
-    buildDirectory,
+    buildDir,
     "resources/main/META-INF/native-image/io.opentelemetry/io.opentelemetry.sdk.extension.incubator/reflect-config.json"
   )
+  val sourcePackage =
+    "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
+  val sourcePackagePath = sourcePackage.replace(".", "/")
+  val classesDir =
+    File(
+      buildDir,
+      "classes/java/main/$sourcePackagePath"
+    )
+
+  inputs.dir(classesDir)
+  outputs.file(targetFile)
 
   onlyIf { !targetFile.exists() }
 
@@ -157,25 +169,13 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
 
   doLast {
     println("Generating GraalVM reflection config at: ${targetFile.absolutePath}")
-    val sourcePackage =
-      "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
-    val sourcePackagePath = sourcePackage.replace(".", "/")
-
-    val classesDir =
-      File(
-        buildDirectory,
-        "classes/java/main/$sourcePackagePath"
-      )
 
     val classes = mutableListOf<String>()
-    fileTree(classesDir).forEach {
-      val path = it.path
-
-      val className = path
-        .substringAfter(sourcePackagePath)
-        .removePrefix("/")
+    classesDir.walkTopDown().filter { it.isFile && it.extension == "class" }.forEach { file ->
+      val relativePath = file.toRelativeString(classesDir)
+      val className = relativePath
         .removeSuffix(".class")
-        .replace("/", ".")
+        .replace(File.separatorChar, '.')
       classes.add("$sourcePackage.$className")
     }
     classes.sort()
