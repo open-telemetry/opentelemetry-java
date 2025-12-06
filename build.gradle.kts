@@ -45,13 +45,13 @@ subprojects {
 tasks {
   register("updateVersionInDocs") {
     group = "documentation"
+    val version = findProperty("release.version")
+    val readme = file("README.md")
     doLast {
-      val version = findProperty("release.version")
       val versionParts = version.toString().split('.')
       val minorVersionNumber = Integer.parseInt(versionParts[1])
       val nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
 
-      val readme = file("README.md")
       if (readme.exists()) {
         val readmeText = readme.readText()
         val updatedText = readmeText
