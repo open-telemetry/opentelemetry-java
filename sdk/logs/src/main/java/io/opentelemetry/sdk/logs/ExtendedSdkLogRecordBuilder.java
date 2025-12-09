@@ -19,8 +19,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** SDK implementation of {@link ExtendedLogRecordBuilder}. */
-final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
-    implements ExtendedLogRecordBuilder {
+class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
 
   @Nullable private ExtendedAttributesMap extendedAttributes;
 

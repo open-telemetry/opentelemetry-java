@@ -32,8 +32,8 @@ class SdkLogger implements Logger {
     INCUBATOR_AVAILABLE = incubatorAvailable;
   }
 
-  private final LoggerSharedState loggerSharedState;
-  private final InstrumentationScopeInfo instrumentationScopeInfo;
+  protected final LoggerSharedState loggerSharedState;
+  protected final InstrumentationScopeInfo instrumentationScopeInfo;
 
   protected volatile boolean loggerEnabled;
   protected volatile Severity minimumSeverity;

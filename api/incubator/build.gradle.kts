@@ -25,6 +25,9 @@ dependencies {
 
   testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 
+  testImplementation("org.slf4j:slf4j-api")
+  testImplementation("org.apache.logging.log4j:log4j-api:2.25.2")
+
   testImplementation("com.google.guava:guava")
 }
 
