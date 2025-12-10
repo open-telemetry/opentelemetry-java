@@ -87,10 +87,10 @@ public interface Value<T> {
   }
 
   /**
-   * Convert a generic object to {@link Value}.
+   * Convert an object of primitives, Lists, and Maps (nested in any manner) to {@link Value}.
    *
-   * <p>The following types are supported. If the {@code object} (or any nested data structures)
-   * contains an unsupported type, an {@link IllegalArgumentException} is thrown.
+   * <p>Specifically, the following types are supported. If the {@code object} (or any nested data
+   * structures) contains an unsupported type, an {@link IllegalArgumentException} is thrown.
    *
    * <ul>
    *   <li>{@link Long}
