@@ -48,16 +48,16 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
       key = "console";
       resource = model.getConsole();
     }
-    if (model.getZipkin() != null) {
-      requireNullResource(resource, RESOURCE_NAME, model.getAdditionalProperties());
-      key = "zipkin";
-      resource = model.getZipkin();
-    }
     if (key == null || resource == null) {
       Map.Entry<String, ?> keyValue =
           FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), RESOURCE_NAME);
       key = keyValue.getKey();
       resource = keyValue.getValue();
+    }
+    // TODO: remove after merging
+    // https://github.com/open-telemetry/opentelemetry-configuration/pull/460
+    if ("zipkin".equals(key)) {
+      return SpanExporter.composite();
     }
 
     SpanExporter spanExporter = context.loadComponent(SpanExporter.class, key, resource);

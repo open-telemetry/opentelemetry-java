@@ -22,7 +22,15 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchS
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DistributionModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DistributionPropertyModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableAlwaysOffSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableAlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalContainerResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalGeneralInstrumentationModel;
@@ -49,6 +57,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Experi
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalServiceResourceDetectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalSpanParent;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerMatcherAndConfigModel;
@@ -83,6 +92,8 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sample
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterPropertyModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanKind;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
@@ -92,7 +103,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Tracer
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinSpanExporterModel;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -127,7 +137,7 @@ class DeclarativeConfigurationParseTest {
 
     expected.withFileFormat("1.0-rc.2");
     expected.withDisabled(false);
-    expected.withLogLevel("info");
+    expected.withLogLevel(OpenTelemetryConfigurationModel.SeverityNumber.INFO);
 
     // General config
     ResourceModel resource =
@@ -238,9 +248,53 @@ class DeclarativeConfigurationParseTest {
                         new SamplerModel()
                             .withCompositeDevelopment(
                                 new ExperimentalComposableSamplerModel()
-                                    .withProbability(
-                                        new ExperimentalComposableProbabilitySamplerModel()
-                                            .withRatio(0.001))))
+                                    .withRuleBased(
+                                        new ExperimentalComposableRuleBasedSamplerModel()
+                                            .withRules(
+                                                Arrays.asList(
+                                                    new ExperimentalComposableRuleBasedSamplerRuleModel()
+                                                        .withAttributeValues(
+                                                            new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
+                                                                .withKey("http.route")
+                                                                .withValues(
+                                                                    Arrays.asList(
+                                                                        "/healthz", "/livez")))
+                                                        .withSampler(
+                                                            new ExperimentalComposableSamplerModel()
+                                                                .withAlwaysOff(
+                                                                    new ExperimentalComposableAlwaysOffSamplerModel())),
+                                                    new ExperimentalComposableRuleBasedSamplerRuleModel()
+                                                        .withAttributePatterns(
+                                                            new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                                                .withKey("http.path")
+                                                                .withIncluded(
+                                                                    Collections.singletonList(
+                                                                        "/internal/*"))
+                                                                .withExcluded(
+                                                                    Collections.singletonList(
+                                                                        "/internal/special/*")))
+                                                        .withSampler(
+                                                            new ExperimentalComposableSamplerModel()
+                                                                .withAlwaysOn(
+                                                                    new ExperimentalComposableAlwaysOnSamplerModel())),
+                                                    new ExperimentalComposableRuleBasedSamplerRuleModel()
+                                                        .withParent(
+                                                            Collections.singletonList(
+                                                                ExperimentalSpanParent.NONE))
+                                                        .withSpanKinds(
+                                                            Collections.singletonList(
+                                                                SpanKind.CLIENT))
+                                                        .withSampler(
+                                                            new ExperimentalComposableSamplerModel()
+                                                                .withProbability(
+                                                                    new ExperimentalComposableProbabilitySamplerModel()
+                                                                        .withRatio(0.05))),
+                                                    new ExperimentalComposableRuleBasedSamplerRuleModel()
+                                                        .withSampler(
+                                                            new ExperimentalComposableSamplerModel()
+                                                                .withProbability(
+                                                                    new ExperimentalComposableProbabilitySamplerModel()
+                                                                        .withRatio(0.001))))))))
                     .withLocalParentNotSampled(
                         new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel())));
     tracerProvider.withSampler(sampler);
@@ -330,10 +384,12 @@ class DeclarativeConfigurationParseTest {
                 new BatchSpanProcessorModel()
                     .withExporter(
                         new SpanExporterModel()
-                            .withZipkin(
-                                new ZipkinSpanExporterModel()
-                                    .withEndpoint("http://localhost:9411/api/v2/spans")
-                                    .withTimeout(10_000))));
+                            .withAdditionalProperty(
+                                "zipkin",
+                                new SpanExporterPropertyModel()
+                                    .withAdditionalProperty(
+                                        "endpoint", "http://localhost:9411/api/v2/spans")
+                                    .withAdditionalProperty("timeout", 10_000))));
     SpanProcessorModel spanProcessor6 =
         new SpanProcessorModel()
             .withSimple(
@@ -369,7 +425,8 @@ class DeclarativeConfigurationParseTest {
                             new ExperimentalLoggerConfigModel()
                                 .withDisabled(false)
                                 .withMinimumSeverity(
-                                    ExperimentalLoggerConfigModel.ExperimentalSeverityNumber.INFO)
+                                    // TODO: SeverityNumber should not be nested
+                                    OpenTelemetryConfigurationModel.SeverityNumber.INFO)
                                 .withTraceBased(true))));
     loggerProvider.withLoggerConfiguratorDevelopment(loggerConfigurator);
 
@@ -771,6 +828,13 @@ class DeclarativeConfigurationParseTest {
     expected.withInstrumentationDevelopment(instrumentation);
     // end instrumentation config
 
+    DistributionModel distribution =
+        new DistributionModel()
+            .withAdditionalProperty(
+                "example",
+                new DistributionPropertyModel().withAdditionalProperty("property", "value"));
+    expected.withDistribution(distribution);
+
     try (FileInputStream configExampleFile =
         new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
       OpenTelemetryConfigurationModel config = DeclarativeConfiguration.parse(configExampleFile);
@@ -833,6 +897,10 @@ class DeclarativeConfigurationParseTest {
       ExperimentalInstrumentationModel configInstrumentation =
           config.getInstrumentationDevelopment();
       assertThat(configInstrumentation).isEqualTo(instrumentation);
+
+      // Distribution config
+      DistributionModel configDistribution = config.getDistribution();
+      assertThat(configDistribution).isEqualTo(distribution);
 
       // All configuration
       assertThat(config).isEqualTo(expected);

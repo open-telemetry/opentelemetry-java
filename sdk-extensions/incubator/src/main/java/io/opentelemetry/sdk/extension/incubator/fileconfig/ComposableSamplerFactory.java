@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import java.util.Map;
@@ -37,6 +38,11 @@ final class ComposableSamplerFactory
         ratio = 1.0d;
       }
       return ComposableSampler.probability(ratio);
+    }
+    ExperimentalComposableRuleBasedSamplerModel ruleBased = model.getRuleBased();
+    if (ruleBased != null) {
+      // TODO: interpret model
+      return ComposableSampler.ruleBasedBuilder().build();
     }
     Map.Entry<String, ?> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "composable sampler");

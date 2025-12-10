@@ -16,7 +16,6 @@ import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider;
@@ -29,7 +28,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGr
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterPropertyModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinSpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -297,61 +295,6 @@ class SpanExporterFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
-  }
-
-  @Test
-  void create_ZipkinDefaults() {
-    List<Closeable> closeables = new ArrayList<>();
-    ZipkinSpanExporter expectedExporter = ZipkinSpanExporter.builder().build();
-
-    cleanup.addCloseable(expectedExporter);
-
-    SpanExporter exporter =
-        SpanExporterFactory.getInstance()
-            .create(new SpanExporterModel().withZipkin(new ZipkinSpanExporterModel()), context);
-    cleanup.addCloseable(exporter);
-    cleanup.addCloseables(closeables);
-
-    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
-
-    // Verify the configuration passed to the component provider
-    DeclarativeConfigProperties configProperties =
-        capturingComponentLoader.getCapturedConfig("zipkin");
-    assertThat(configProperties).isNotNull();
-    assertThat(configProperties.getString("endpoint")).isNull();
-    assertThat(configProperties.getLong("timeout")).isNull();
-  }
-
-  @Test
-  void create_ZipkinConfigured() {
-    List<Closeable> closeables = new ArrayList<>();
-    ZipkinSpanExporter expectedExporter =
-        ZipkinSpanExporter.builder()
-            .setEndpoint("http://zipkin:9411/v1/v2/spans")
-            .setReadTimeout(Duration.ofSeconds(15))
-            .build();
-    cleanup.addCloseable(expectedExporter);
-
-    SpanExporter exporter =
-        SpanExporterFactory.getInstance()
-            .create(
-                new SpanExporterModel()
-                    .withZipkin(
-                        new ZipkinSpanExporterModel()
-                            .withEndpoint("http://zipkin:9411/v1/v2/spans")
-                            .withTimeout(15_000)),
-                context);
-    cleanup.addCloseable(exporter);
-    cleanup.addCloseables(closeables);
-
-    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
-
-    // Verify the configuration passed to the component provider
-    DeclarativeConfigProperties configProperties =
-        capturingComponentLoader.getCapturedConfig("zipkin");
-    assertThat(configProperties).isNotNull();
-    assertThat(configProperties.getString("endpoint")).isEqualTo("http://zipkin:9411/v1/v2/spans");
-    assertThat(configProperties.getLong("timeout")).isEqualTo(15_000);
   }
 
   @Test
