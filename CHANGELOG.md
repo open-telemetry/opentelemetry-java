@@ -2,6 +2,60 @@
 
 ## Unreleased
 
+## Version 1.57.0 (2025-12-05)
+
+### API
+
+* Add `GlobalOpenTelemetry#getOrNoop`, `#isSet`. Update `#get` to always returns obfuscated instance
+  ([#7819](https://github.com/open-telemetry/opentelemetry-java/pull/7819))
+
+#### Incubating
+
+* Logs: Complex attributes incubating implementation
+  ([#7814](https://github.com/open-telemetry/opentelemetry-java/pull/7814))
+
+### SDK
+
+#### Logs
+
+* Add minimum severity and trace-based logger configuration (incubating API)
+  ([#7529](https://github.com/open-telemetry/opentelemetry-java/pull/7529))
+
+#### Exporters
+
+* OTLP: VarHandle string encoder
+  ([#7701](https://github.com/open-telemetry/opentelemetry-java/pull/7701))
+* OTLP: Fix OkHttpGrpcSender to properly await executor shutdown
+  ([#7840](https://github.com/open-telemetry/opentelemetry-java/pull/7840))
+* OTLP: avoid auto-config warning
+  ([#7881](https://github.com/open-telemetry/opentelemetry-java/pull/7881))
+* OTLP: update error message for missing GrpcSenderProvider dependency
+  ([#7884](https://github.com/open-telemetry/opentelemetry-java/pull/7884))
+
+#### Extensions
+
+* Declarative config: add runtime hints for graal VM
+  ([#7866](https://github.com/open-telemetry/opentelemetry-java/pull/7866))
+* Declarative config: add missing warning about discarded value
+  ([#7821](https://github.com/open-telemetry/opentelemetry-java/pull/7821))
+
+### Project tooling
+
+* Update macos version to latest and switch to corretto for testing
+  ([#7841](https://github.com/open-telemetry/opentelemetry-java/pull/7841))
+* Sync Java worflows: Allow re-running prepare release branch workflow
+  ([#7845](https://github.com/open-telemetry/opentelemetry-java/pull/7845))
+* Simplify and standardize renovate custom managers across Java repos
+  ([#7846](https://github.com/open-telemetry/opentelemetry-java/pull/7846))
+* Remove misspell workflow
+  ([#7852](https://github.com/open-telemetry/opentelemetry-java/pull/7852))
+* Fix link checks on main
+  ([#7867](https://github.com/open-telemetry/opentelemetry-java/pull/7867))
+* Add zeitlinger as approver
+  ([#7868](https://github.com/open-telemetry/opentelemetry-java/pull/7868))
+* Move snapshot publishing to daily build
+  ([#7886](https://github.com/open-telemetry/opentelemetry-java/pull/7886))
+
 ## Version 1.56.0 (2025-11-07)
 
 ### API

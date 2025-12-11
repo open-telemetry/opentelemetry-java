@@ -16,7 +16,7 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
-val armeriaVersion = "1.34.0"
+val armeriaVersion = "1.34.1"
 val junitVersion = "5.14.1"
 val okhttpVersion = "5.3.2"
 
@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.20.1",
   "com.google.guava:guava-bom:33.5.0-jre",
-  "com.google.protobuf:protobuf-bom:4.33.1",
+  "com.google.protobuf:protobuf-bom:4.33.2",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.16.4", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.77.0",
@@ -75,7 +75,7 @@ val DEPENDENCIES = listOf(
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.4.1",
-  "com.uber.nullaway:nullaway:0.12.13",
+  "com.uber.nullaway:nullaway:0.12.14",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.11",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
