@@ -92,7 +92,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sample
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanKind;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
@@ -135,7 +134,7 @@ class DeclarativeConfigurationParseTest {
   void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfigurationModel expected = new OpenTelemetryConfigurationModel();
 
-    expected.withFileFormat("1.0-rc.2");
+    expected.withFileFormat("1.0-rc.3");
     expected.withDisabled(false);
     expected.withLogLevel(OpenTelemetryConfigurationModel.SeverityNumber.INFO);
 
@@ -380,29 +379,12 @@ class DeclarativeConfigurationParseTest {
                                     .withOutputStream("stdout"))));
     SpanProcessorModel spanProcessor5 =
         new SpanProcessorModel()
-            .withBatch(
-                new BatchSpanProcessorModel()
-                    .withExporter(
-                        new SpanExporterModel()
-                            .withAdditionalProperty(
-                                "zipkin",
-                                new SpanExporterPropertyModel()
-                                    .withAdditionalProperty(
-                                        "endpoint", "http://localhost:9411/api/v2/spans")
-                                    .withAdditionalProperty("timeout", 10_000))));
-    SpanProcessorModel spanProcessor6 =
-        new SpanProcessorModel()
             .withSimple(
                 new SimpleSpanProcessorModel()
                     .withExporter(new SpanExporterModel().withConsole(new ConsoleExporterModel())));
     tracerProvider.withProcessors(
         Arrays.asList(
-            spanProcessor1,
-            spanProcessor2,
-            spanProcessor3,
-            spanProcessor4,
-            spanProcessor5,
-            spanProcessor6));
+            spanProcessor1, spanProcessor2, spanProcessor3, spanProcessor4, spanProcessor5));
 
     expected.withTracerProvider(tracerProvider);
     // end TracerProvider config
@@ -840,7 +822,7 @@ class DeclarativeConfigurationParseTest {
       OpenTelemetryConfigurationModel config = DeclarativeConfiguration.parse(configExampleFile);
 
       // General config
-      assertThat(config.getFileFormat()).isEqualTo("1.0-rc.2");
+      assertThat(config.getFileFormat()).isEqualTo("1.0-rc.3");
       assertThat(config.getResource()).isEqualTo(resource);
       assertThat(config.getAttributeLimits()).isEqualTo(attributeLimits);
       assertThat(config.getPropagator()).isEqualTo(propagator);
@@ -854,12 +836,7 @@ class DeclarativeConfigurationParseTest {
       assertThat(configTracerProvider.getProcessors())
           .isEqualTo(
               Arrays.asList(
-                  spanProcessor1,
-                  spanProcessor2,
-                  spanProcessor3,
-                  spanProcessor4,
-                  spanProcessor5,
-                  spanProcessor6));
+                  spanProcessor1, spanProcessor2, spanProcessor3, spanProcessor4, spanProcessor5));
       assertThat(configTracerProvider).isEqualTo(tracerProvider);
 
       // LoggerProvider config
