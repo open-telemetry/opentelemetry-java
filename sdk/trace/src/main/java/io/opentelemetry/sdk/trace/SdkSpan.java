@@ -168,7 +168,7 @@ final class SdkSpan implements ReadWriteSpan {
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
    * @param links the links set during span creation, may be truncated. The list MUST be immutable.
-   * @param onEnd a {@link Runnable} to run when the span is ended.
+   * @param recordEndMetrics a {@link Runnable} to run when the span is ended to record metrics.
    * @return a new and started span.
    */
   static SdkSpan startSpan(
@@ -187,7 +187,7 @@ final class SdkSpan implements ReadWriteSpan {
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
       long userStartEpochNanos,
-      Runnable onEnd) {
+      Runnable recordEndMetrics) {
     boolean createdAnchoredClock;
     AnchoredClock clock;
     if (parentSpan instanceof SdkSpan) {
@@ -227,7 +227,7 @@ final class SdkSpan implements ReadWriteSpan {
             links,
             totalRecordedLinks,
             startEpochNanos,
-            onEnd);
+            recordEndMetrics);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     if (spanProcessor.isStartRequired()) {
