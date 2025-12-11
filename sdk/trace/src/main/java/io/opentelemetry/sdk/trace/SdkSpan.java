@@ -61,8 +61,8 @@ final class SdkSpan implements ReadWriteSpan {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   // The start time of the span.
   private final long startEpochNanos;
-  // Callback to run when span ends.
-  private final Runnable onEnd;
+  // Callback to run when span ends to record metrics.
+  private final Runnable recordEndMetrics;
 
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
@@ -136,7 +136,7 @@ final class SdkSpan implements ReadWriteSpan {
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
       long startEpochNanos,
-      Runnable onEnd) {
+      Runnable recordEndMetrics) {
     this.context = context;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.parentSpanContext = parentSpanContext;
@@ -152,7 +152,7 @@ final class SdkSpan implements ReadWriteSpan {
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
     this.spanLimits = spanLimits;
-    this.onEnd = onEnd;
+    this.recordEndMetrics = recordEndMetrics;
   }
 
   /**
@@ -565,7 +565,7 @@ final class SdkSpan implements ReadWriteSpan {
       spanEndingThread = Thread.currentThread();
       hasEnded = EndState.ENDING;
     }
-    onEnd.run();
+    recordEndMetrics.run();
     if (spanProcessor instanceof ExtendedSpanProcessor) {
       ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
       if (extendedSpanProcessor.isOnEndingRequired()) {
