@@ -39,11 +39,11 @@ jobs:
             coverage: true
             jmh-based-tests: true
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
           # use corretto for testing, since it supports java 8 on more OS versions, including macos-latest
           distribution: corretto
@@ -51,7 +51,7 @@ jobs:
 
       - id: setup-java
         name: Set up Java for build
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
           distribution: temurin
           java-version: 21
@@ -104,47 +104,6 @@ jobs:
     if: ${{ !startsWith(github.ref_name, 'release/') }}
     uses: ./.github/workflows/reusable-link-check.yml
 
-  publish-snapshots:
-    # the condition is on the steps below instead of here on the job, because skipping the job
-    # causes the job to show up as canceled in the GitHub UI which prevents the build section from
-    # collapsing when everything (else) is green
-    #
-    # and the name is updated when the steps below are skipped which makes what's happening clearer
-    # in the GitHub UI
-    #
-    # note: the condition below has to be written so that '' is last since it resolves to false
-    # and so would not short-circuit if used in the second-last position
-    name: publish-snapshots${{ (github.ref_name != 'main' || github.repository != 'open-telemetry/opentelemetry-java') && ' (skipped)' || '' }}
-    # intentionally not blocking snapshot publishing on markdown-link-check
-    needs: build
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
-      - id: setup-java
-        name: Set up Java
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Set up gradle
-        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
-        # skipping release branches because the versions in those branches are not snapshots
-        # (also this skips pull requests)
-        if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
-      - name: Publish to Sonatype
-        run: ./gradlew assemble publishToSonatype
-        # skipping release branches because the versions in those branches are not snapshots
-        # (also this skips pull requests)
-        if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
-        env:
-          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
-
   build-graal:
     name: Build GraalVM
     runs-on: ubuntu-latest
@@ -155,8 +114,8 @@ jobs:
           - 21
           - 25 # renovate(java-version)
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - uses: graalvm/setup-graalvm@eec48106e0bf45f2976c2ff0c3e22395cced8243 # v1.4.2
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: graalvm/setup-graalvm@790e28947b79a9c09c3391c0f18bf8d0f102ed69 # v1.4.4
         with:
           java-version: ${{ matrix.test-graal-version }}
           distribution: 'graalvm'

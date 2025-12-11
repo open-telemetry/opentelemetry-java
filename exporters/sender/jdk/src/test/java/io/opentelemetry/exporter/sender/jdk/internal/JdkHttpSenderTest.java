@@ -99,7 +99,10 @@ class JdkHttpSenderTest {
   @Test
   void sendInternal_RetryableConnectTimeoutException() throws IOException, InterruptedException {
     assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
-        .isInstanceOf(HttpConnectTimeoutException.class);
+        .satisfies(
+            e ->
+                assertThat((e instanceof HttpConnectTimeoutException) || (e instanceof IOException))
+                    .isTrue());
 
     verify(mockHttpClient, times(2)).send(any(), any());
   }

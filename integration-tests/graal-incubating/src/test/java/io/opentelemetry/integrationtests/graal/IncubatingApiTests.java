@@ -23,6 +23,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -31,6 +32,8 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 class IncubatingApiTests {
@@ -99,5 +102,29 @@ class IncubatingApiTests {
     ExtendedLongGauge longGauge =
         (ExtendedLongGauge) meter.gaugeBuilder("longGauge").ofLongs().build();
     longGauge.isEnabled();
+  }
+
+  @Test
+  void parseDeclarativeConfiguration() {
+    // make sure to test enums too: "instrument_type: histogram"
+    String string =
+        """
+      file_format: "1.0-rc.1"
+      tracer_provider:
+        processors:
+          - batch:
+              exporter:
+                console: {}
+      meter_provider:
+        views:
+          - selector:
+              instrument_type: histogram
+            stream:
+              aggregation:
+                drop: {}
+      """;
+    // should not throw
+    DeclarativeConfiguration.parse(
+        new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
   }
 }

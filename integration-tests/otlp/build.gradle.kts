@@ -6,7 +6,7 @@ description = "OTLP Exporter Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.integration.tests.otlp")
 
 dependencies {
-  api("org.testcontainers:junit-jupiter")
+  api("org.testcontainers:testcontainers-junit-jupiter")
 
   implementation(project(":exporters:otlp:all"))
   implementation(project(":api:incubator"))

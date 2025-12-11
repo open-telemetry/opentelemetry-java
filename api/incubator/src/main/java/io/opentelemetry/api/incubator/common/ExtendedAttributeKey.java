@@ -6,6 +6,7 @@
 package io.opentelemetry.api.incubator.common;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.internal.InternalExtendedAttributeKeyImpl;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -93,8 +94,31 @@ public interface ExtendedAttributeKey<T> {
     return fromAttributeKey(AttributeKey.doubleArrayKey(key));
   }
 
-  /** Returns a new ExtendedAttributeKey for Map valued attributes. */
+  /**
+   * Returns a new ExtendedAttributeKey for {@link ExtendedAttributes} valued attributes.
+   *
+   * @deprecated Use {@link #valueKey(String)} in combination with {@link Value#of(java.util.Map)}
+   *     instead.
+   */
+  @Deprecated
+  @SuppressWarnings("deprecation")
   static ExtendedAttributeKey<ExtendedAttributes> extendedAttributesKey(String key) {
     return InternalExtendedAttributeKeyImpl.create(key, ExtendedAttributeType.EXTENDED_ATTRIBUTES);
+  }
+
+  /**
+   * Returns a new ExtendedAttributeKey for {@link Value} valued attributes.
+   *
+   * <p>Simple attributes ({@link ExtendedAttributeType#STRING}, {@link ExtendedAttributeType#LONG},
+   * {@link ExtendedAttributeType#DOUBLE}, {@link ExtendedAttributeType#BOOLEAN}, {@link
+   * ExtendedAttributeType#STRING_ARRAY}, {@link ExtendedAttributeType#LONG_ARRAY}, {@link
+   * ExtendedAttributeType#DOUBLE_ARRAY}, {@link ExtendedAttributeType#BOOLEAN_ARRAY}) SHOULD be
+   * used whenever possible. Instrumentations SHOULD assume that backends do not index individual
+   * properties of complex attributes, that querying or aggregating on such properties is
+   * inefficient and complicated, and that reporting complex attributes carries higher performance
+   * overhead.
+   */
+  static ExtendedAttributeKey<Value<?>> valueKey(String key) {
+    return InternalExtendedAttributeKeyImpl.create(key, ExtendedAttributeType.VALUE);
   }
 }

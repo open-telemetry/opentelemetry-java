@@ -140,8 +140,65 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
   delete("$buildDirectory/generated/sources/js2p-tmp/")
 }
 
+val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
+  val buildDir = buildDirectory
+  val targetFile = File(
+    buildDir,
+    "resources/main/META-INF/native-image/io.opentelemetry/io.opentelemetry.sdk.extension.incubator/reflect-config.json"
+  )
+  val sourcePackage =
+    "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
+  val sourcePackagePath = sourcePackage.replace(".", "/")
+  val classesDir =
+    File(
+      buildDir,
+      "classes/java/main/$sourcePackagePath"
+    )
+
+  inputs.dir(classesDir)
+  outputs.file(targetFile)
+
+  onlyIf { !targetFile.exists() }
+
+  dependsOn("compileJava")
+
+  doLast {
+    println("Generating GraalVM reflection config at: ${targetFile.absolutePath}")
+
+    val classes = mutableListOf<String>()
+    classesDir.walkTopDown().filter { it.isFile && it.extension == "class" }.forEach { file ->
+      val relativePath = file.toRelativeString(classesDir)
+      val className = relativePath
+        .removeSuffix(".class")
+        .replace(File.separatorChar, '.')
+      classes.add("$sourcePackage.$className")
+    }
+    classes.sort()
+
+    targetFile.parentFile.mkdirs()
+    targetFile.bufferedWriter().use { writer ->
+      writer.write("[\n")
+      classes.forEachIndexed { index, className ->
+        writer.write("  {\n")
+        writer.write("    \"name\": \"$className\",\n")
+        writer.write("    \"allDeclaredMethods\": true,\n")
+        writer.write("    \"allDeclaredFields\": true,\n")
+        writer.write("    \"allDeclaredConstructors\": true\n")
+        writer.write("  }")
+        if (index < classes.size - 1) {
+          writer.write(",\n")
+        } else {
+          writer.write("\n")
+        }
+      }
+      writer.write("]\n")
+    }
+  }
+}
+
 tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
-tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp)
+tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {
