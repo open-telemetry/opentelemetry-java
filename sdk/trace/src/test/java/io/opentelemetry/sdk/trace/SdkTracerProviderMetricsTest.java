@@ -12,6 +12,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.trace.SdkTracerMetrics.OTEL_SPAN_PARENT_ORIGIN;
 import static io.opentelemetry.sdk.trace.SdkTracerMetrics.OTEL_SPAN_SAMPLING_RESULT;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
@@ -910,7 +911,7 @@ class SdkTracerProviderMetricsTest {
                                             Attributes.of(
                                                 OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE")))));
 
-    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    lenient().when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     processor.shutdown();
   }
 
