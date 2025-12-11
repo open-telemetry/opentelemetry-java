@@ -41,8 +41,7 @@ final class ComposableSamplerFactory
     }
     ExperimentalComposableRuleBasedSamplerModel ruleBased = model.getRuleBased();
     if (ruleBased != null) {
-      // TODO: interpret model
-      return ComposableSampler.ruleBasedBuilder().build();
+      return ComposableRuleBasedSamplerFactory.getInstance().create(ruleBased, context);
     }
     Map.Entry<String, ?> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "composable sampler");
