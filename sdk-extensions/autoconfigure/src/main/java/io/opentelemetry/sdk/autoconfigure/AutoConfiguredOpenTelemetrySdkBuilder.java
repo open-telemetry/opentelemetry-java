@@ -453,10 +453,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             componentLoader);
     if (fromFileConfiguration != null) {
       maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
-      Object configProvider = fromFileConfiguration.getConfigProvider();
-      if (setResultAsGlobal && INCUBATOR_AVAILABLE && configProvider != null) {
-        IncubatingUtil.setGlobalConfigProvider(configProvider);
-      }
       return fromFileConfiguration;
     }
 
@@ -495,7 +491,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       maybeRegisterShutdownHook(openTelemetrySdk);
       callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
-      return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config, null);
+      return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
     } catch (RuntimeException e) {
       logger.info(
           "Error encountered during autoconfiguration. Closing partially configured components.");
