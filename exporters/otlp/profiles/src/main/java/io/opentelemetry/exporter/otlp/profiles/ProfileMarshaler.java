@@ -101,7 +101,6 @@ final class ProfileMarshaler extends MarshalerWithSize {
     output.serializeInt64(Profile.DURATION_NANO, durationNanos);
     output.serializeMessage(Profile.PERIOD_TYPE, periodTypeMarshaler);
     output.serializeInt64(Profile.PERIOD, period);
-    output.serializeRepeatedInt32(Profile.COMMENT_STRINDICES, comment);
 
     output.serializeBytes(Profile.PROFILE_ID, profileId);
     output.serializeRepeatedInt32(Profile.ATTRIBUTE_INDICES, attributeIndices);
@@ -131,7 +130,6 @@ final class ProfileMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeInt64(Profile.DURATION_NANO, durationNanos);
     size += MarshalerUtil.sizeMessage(Profile.PERIOD_TYPE, periodTypeMarshaler);
     size += MarshalerUtil.sizeInt64(Profile.PERIOD, period);
-    size += MarshalerUtil.sizeRepeatedInt32(Profile.COMMENT_STRINDICES, comment);
 
     size += MarshalerUtil.sizeBytes(Profile.PROFILE_ID, profileId);
     size += MarshalerUtil.sizeRepeatedInt32(Profile.ATTRIBUTE_INDICES, attributeIndices);
