@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**

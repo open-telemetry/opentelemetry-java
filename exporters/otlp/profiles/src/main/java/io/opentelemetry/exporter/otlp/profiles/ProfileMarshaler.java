@@ -21,7 +21,6 @@ final class ProfileMarshaler extends MarshalerWithSize {
   private final long durationNanos;
   private final ValueTypeMarshaler periodTypeMarshaler;
   private final long period;
-  private final List<Integer> comment;
   private final byte[] profileId;
   private final List<Integer> attributeIndices;
   private final int droppedAttributesCount;
@@ -44,7 +43,6 @@ final class ProfileMarshaler extends MarshalerWithSize {
         profileData.getDurationNanos(),
         periodTypeMarshaler,
         profileData.getPeriod(),
-        profileData.getCommentStrIndices(),
         profileData.getProfileIdBytes(),
         profileData.getAttributeIndices(),
         droppedAttributesCount,
@@ -59,7 +57,6 @@ final class ProfileMarshaler extends MarshalerWithSize {
       long durationNanos,
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
-      List<Integer> comment,
       byte[] profileId,
       List<Integer> attributeIndices,
       int droppedAttributesCount,
@@ -73,7 +70,6 @@ final class ProfileMarshaler extends MarshalerWithSize {
             durationNanos,
             periodTypeMarshaler,
             period,
-            comment,
             profileId,
             attributeIndices,
             droppedAttributesCount,
@@ -85,7 +81,6 @@ final class ProfileMarshaler extends MarshalerWithSize {
     this.durationNanos = durationNanos;
     this.periodTypeMarshaler = periodTypeMarshaler;
     this.period = period;
-    this.comment = comment;
     this.profileId = profileId;
     this.attributeIndices = attributeIndices;
     this.droppedAttributesCount = droppedAttributesCount;
@@ -116,7 +111,6 @@ final class ProfileMarshaler extends MarshalerWithSize {
       long durationNanos,
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
-      List<Integer> comment,
       byte[] profileId,
       List<Integer> attributeIndices,
       int droppedAttributesCount,

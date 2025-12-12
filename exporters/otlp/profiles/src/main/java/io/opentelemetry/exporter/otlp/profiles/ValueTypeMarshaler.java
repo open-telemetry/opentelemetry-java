@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.profiles;
 
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
-import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.profiles.v1development.internal.ValueType;
 import java.io.IOException;
@@ -23,8 +22,7 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
 
   static ValueTypeMarshaler create(ValueTypeData valueTypeData) {
     return new ValueTypeMarshaler(
-        valueTypeData.getTypeStringIndex(),
-        valueTypeData.getUnitStringIndex());
+        valueTypeData.getTypeStringIndex(), valueTypeData.getUnitStringIndex());
   }
 
   static ValueTypeMarshaler[] createRepeated(List<ValueTypeData> items) {
