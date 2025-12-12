@@ -345,11 +345,11 @@ public class ProfilesRequestMarshalerTest {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList()),
-            ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
+            ImmutableValueTypeData.create(1, 2),
             Collections.emptyList(),
             5L,
             6L,
-            ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
+            ImmutableValueTypeData.create(1, 2),
             7L,
             listOf(8, 9),
             profileId,
@@ -363,14 +363,7 @@ public class ProfilesRequestMarshalerTest {
 
     Profile profileContainer =
         Profile.newBuilder()
-            .setSampleType(
-                ValueType.newBuilder()
-                    .setTypeStrindex(1)
-                    .setUnitStrindex(2)
-                    .setAggregationTemporality(
-                        io.opentelemetry.proto.profiles.v1development.AggregationTemporality
-                            .AGGREGATION_TEMPORALITY_CUMULATIVE)
-                    .build())
+            .setSampleType(ValueType.newBuilder().setTypeStrindex(1).setUnitStrindex(2).build())
             .setProfileId(ByteString.fromHex(profileId))
             .setDroppedAttributesCount(3)
             .setOriginalPayloadFormat("format")
@@ -378,15 +371,7 @@ public class ProfilesRequestMarshalerTest {
             .setTimeUnixNano(5)
             .setDurationNano(6)
             .setPeriod(7)
-            .setPeriodType(
-                ValueType.newBuilder()
-                    .setTypeStrindex(1)
-                    .setUnitStrindex(2)
-                    .setAggregationTemporality(
-                        io.opentelemetry.proto.profiles.v1development.AggregationTemporality
-                            .AGGREGATION_TEMPORALITY_CUMULATIVE)
-                    .build())
-            .addAllCommentStrindices(listOf(8, 9))
+            .setPeriodType(ValueType.newBuilder().setTypeStrindex(1).setUnitStrindex(2).build())
             .build();
 
     ResourceProfiles builderResult =
@@ -457,15 +442,8 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareValueTypeMarshaling() {
-    ValueTypeData input = ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE);
-    ValueType builderResult =
-        ValueType.newBuilder()
-            .setTypeStrindex(1)
-            .setUnitStrindex(2)
-            .setAggregationTemporality(
-                io.opentelemetry.proto.profiles.v1development.AggregationTemporality
-                    .AGGREGATION_TEMPORALITY_CUMULATIVE)
-            .build();
+    ValueTypeData input = ImmutableValueTypeData.create(1, 2);
+    ValueType builderResult = ValueType.newBuilder().setTypeStrindex(1).setUnitStrindex(2).build();
 
     ValueType roundTripResult =
         parse(ValueType.getDefaultInstance(), ValueTypeMarshaler.create(input));
@@ -475,26 +453,12 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedValueTypeMarshaling() {
     List<ValueTypeData> inputs = new ArrayList<>();
-    inputs.add(ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE));
-    inputs.add(ImmutableValueTypeData.create(3, 4, AggregationTemporality.CUMULATIVE));
+    inputs.add(ImmutableValueTypeData.create(1, 2));
+    inputs.add(ImmutableValueTypeData.create(3, 4));
 
     List<ValueType> builderResults = new ArrayList<>();
-    builderResults.add(
-        ValueType.newBuilder()
-            .setTypeStrindex(1)
-            .setUnitStrindex(2)
-            .setAggregationTemporality(
-                io.opentelemetry.proto.profiles.v1development.AggregationTemporality
-                    .AGGREGATION_TEMPORALITY_CUMULATIVE)
-            .build());
-    builderResults.add(
-        ValueType.newBuilder()
-            .setTypeStrindex(3)
-            .setUnitStrindex(4)
-            .setAggregationTemporality(
-                io.opentelemetry.proto.profiles.v1development.AggregationTemporality
-                    .AGGREGATION_TEMPORALITY_CUMULATIVE)
-            .build());
+    builderResults.add(ValueType.newBuilder().setTypeStrindex(1).setUnitStrindex(2).build());
+    builderResults.add(ValueType.newBuilder().setTypeStrindex(3).setUnitStrindex(4).build());
 
     ValueTypeMarshaler[] marshalers = ValueTypeMarshaler.createRepeated(inputs);
 
