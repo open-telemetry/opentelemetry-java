@@ -39,7 +39,6 @@ class SdkSpanBuilder implements SpanBuilder {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final TracerSharedState tracerSharedState;
   private final SpanLimits spanLimits;
-  private final SdkTracerMetrics tracerProviderMetrics;
 
   @Nullable private Context parent; // null means: Use current context.
   private SpanKind spanKind = SpanKind.INTERNAL;
@@ -52,13 +51,11 @@ class SdkSpanBuilder implements SpanBuilder {
       String spanName,
       InstrumentationScopeInfo instrumentationScopeInfo,
       TracerSharedState tracerSharedState,
-      SpanLimits spanLimits,
-      SdkTracerMetrics tracerProviderMetrics) {
+      SpanLimits spanLimits) {
     this.spanName = spanName;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.tracerSharedState = tracerSharedState;
     this.spanLimits = spanLimits;
-    this.tracerProviderMetrics = tracerProviderMetrics;
   }
 
   @Override
@@ -208,7 +205,7 @@ class SdkSpanBuilder implements SpanBuilder {
             tracerSharedState.isIdGeneratorSafeToSkipIdValidation());
 
     Runnable recordEndSpanMetrics =
-        tracerProviderMetrics.startSpan(parentSpanContext, samplingDecision);
+        tracerSharedState.getTracerMetrics().startSpan(parentSpanContext, samplingDecision);
 
     if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);

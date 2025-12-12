@@ -53,7 +53,6 @@ final class LegacySpanProcessorMetrics implements SpanProcessorMetrics {
             true);
   }
 
-  /** Records metrics for spans dropped because a queue is full. */
   @Override
   public void dropSpans(int count) {
     processedSpans.add(count, droppedAttrs);
@@ -72,7 +71,6 @@ final class LegacySpanProcessorMetrics implements SpanProcessorMetrics {
     // No capacity metric when legacy.
   }
 
-  /** Registers a metric for processor queue size. */
   @Override
   public void buildQueueSizeMetric(LongCallable queueSize) {
     meter

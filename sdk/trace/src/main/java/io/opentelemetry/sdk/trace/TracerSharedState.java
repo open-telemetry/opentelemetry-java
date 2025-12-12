@@ -28,6 +28,7 @@ final class TracerSharedState {
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
+  private final SdkTracerMetrics tracerMetrics;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
@@ -38,7 +39,8 @@ final class TracerSharedState {
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
-      ExceptionAttributeResolver exceptionAttributeResolver) {
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      SdkTracerMetrics tracerMetrics) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
@@ -47,6 +49,7 @@ final class TracerSharedState {
     this.sampler = sampler;
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
     this.exceptionAttributeResolver = exceptionAttributeResolver;
+    this.tracerMetrics = tracerMetrics;
   }
 
   Clock getClock() {
@@ -96,6 +99,10 @@ final class TracerSharedState {
   /** Return the {@link ExceptionAttributeResolver}. */
   ExceptionAttributeResolver getExceptionAttributesResolver() {
     return exceptionAttributeResolver;
+  }
+
+  SdkTracerMetrics getTracerMetrics() {
+    return tracerMetrics;
   }
 
   /**

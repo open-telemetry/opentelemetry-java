@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.time.Duration;
@@ -50,7 +49,7 @@ final class TracerProviderConfiguration {
       List<Closeable> closeables) {
 
     tracerProviderBuilder.setSpanLimits(configureSpanLimits(config));
-    SdkTracerProviderUtil.setMeterProvider(tracerProviderBuilder, meterProvider);
+    tracerProviderBuilder.setMeterProvider(meterProvider);
 
     String sampler = config.getString("otel.traces.sampler", PARENTBASED_ALWAYS_ON);
     tracerProviderBuilder.setSampler(
@@ -83,9 +82,7 @@ final class TracerProviderConfiguration {
       SpanExporter exporter = exportersByNameCopy.remove(simpleProcessorExporterNames);
       if (exporter != null) {
         SpanProcessor spanProcessor =
-            SdkTracerProviderUtil.setMeterProvider(
-                    SimpleSpanProcessor.builder(exporter), meterProvider)
-                .build();
+            SimpleSpanProcessor.builder(exporter).setMeterProvider(meterProvider).build();
         closeables.add(spanProcessor);
         spanProcessors.add(spanProcessor);
       }

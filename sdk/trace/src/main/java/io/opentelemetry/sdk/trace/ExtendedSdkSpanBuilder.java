@@ -30,9 +30,8 @@ final class ExtendedSdkSpanBuilder extends SdkSpanBuilder implements ExtendedSpa
       String spanName,
       InstrumentationScopeInfo instrumentationScopeInfo,
       TracerSharedState tracerSharedState,
-      SpanLimits spanLimits,
-      SdkTracerMetrics tracerProviderMetrics) {
-    super(spanName, instrumentationScopeInfo, tracerSharedState, spanLimits, tracerProviderMetrics);
+      SpanLimits spanLimits) {
+    super(spanName, instrumentationScopeInfo, tracerSharedState, spanLimits);
   }
 
   @Override

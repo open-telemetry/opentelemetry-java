@@ -29,6 +29,65 @@ final class SdkTracerMetrics {
   static final AttributeKey<String> OTEL_SPAN_SAMPLING_RESULT =
       stringKey("otel.span.sampling_result");
 
+  private static final Attributes noParentDrop =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN, "none", OTEL_SPAN_SAMPLING_RESULT, SamplingDecision.DROP.name());
+  private static final Attributes noParentRecordOnly =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN,
+          "none",
+          OTEL_SPAN_SAMPLING_RESULT,
+          SamplingDecision.RECORD_ONLY.name());
+  private static final Attributes noParentRecordAndSample =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN,
+          "none",
+          OTEL_SPAN_SAMPLING_RESULT,
+          SamplingDecision.RECORD_AND_SAMPLE.name());
+
+  private static final Attributes remoteParentDrop =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN,
+          "remote",
+          OTEL_SPAN_SAMPLING_RESULT,
+          SamplingDecision.DROP.name());
+  private static final Attributes remoteParentRecordOnly =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN,
+          "remote",
+          OTEL_SPAN_SAMPLING_RESULT,
+          SamplingDecision.RECORD_ONLY.name());
+  private static final Attributes remoteParentRecordAndSample =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN,
+          "remote",
+          OTEL_SPAN_SAMPLING_RESULT,
+          SamplingDecision.RECORD_AND_SAMPLE.name());
+
+  private static final Attributes localParentDrop =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN,
+          "local",
+          OTEL_SPAN_SAMPLING_RESULT,
+          SamplingDecision.DROP.name());
+  private static final Attributes localParentRecordOnly =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN,
+          "local",
+          OTEL_SPAN_SAMPLING_RESULT,
+          SamplingDecision.RECORD_ONLY.name());
+  private static final Attributes localParentRecordAndSample =
+      Attributes.of(
+          OTEL_SPAN_PARENT_ORIGIN,
+          "local",
+          OTEL_SPAN_SAMPLING_RESULT,
+          SamplingDecision.RECORD_AND_SAMPLE.name());
+
+  private static final Attributes recordOnly =
+      Attributes.of(OTEL_SPAN_SAMPLING_RESULT, SamplingDecision.RECORD_ONLY.name());
+  private static final Attributes recordAndSample =
+      Attributes.of(OTEL_SPAN_SAMPLING_RESULT, SamplingDecision.RECORD_AND_SAMPLE.name());
+
   private final LongCounter startedSpans;
   private final LongUpDownCounter liveSpans;
 
@@ -55,31 +114,61 @@ final class SdkTracerMetrics {
    * the span.
    */
   Runnable startSpan(SpanContext parentSpanContext, SamplingDecision samplingDecision) {
-    startedSpans.add(
-        1,
-        Attributes.of(
-            OTEL_SPAN_PARENT_ORIGIN,
-            parentOrigin(parentSpanContext),
-            OTEL_SPAN_SAMPLING_RESULT,
-            samplingDecision.name()));
-
-    if (samplingDecision == SamplingDecision.DROP) {
-      return () -> {};
+    if (!parentSpanContext.isValid()) {
+      switch (samplingDecision) {
+        case DROP:
+          startedSpans.add(1, noParentDrop);
+          return SdkTracerMetrics::noop;
+        case RECORD_ONLY:
+          startedSpans.add(1, noParentRecordOnly);
+          liveSpans.add(1, recordOnly);
+          return this::decrementRecordOnly;
+        case RECORD_AND_SAMPLE:
+          startedSpans.add(1, noParentRecordAndSample);
+          liveSpans.add(1, recordAndSample);
+          return this::decrementRecordAndSample;
+      }
+      throw new IllegalArgumentException("Unrecognized sampling decision: " + samplingDecision);
+    } else if (parentSpanContext.isRemote()) {
+      switch (samplingDecision) {
+        case DROP:
+          startedSpans.add(1, remoteParentDrop);
+          return SdkTracerMetrics::noop;
+        case RECORD_ONLY:
+          startedSpans.add(1, remoteParentRecordOnly);
+          liveSpans.add(1, recordOnly);
+          return this::decrementRecordOnly;
+        case RECORD_AND_SAMPLE:
+          startedSpans.add(1, remoteParentRecordAndSample);
+          liveSpans.add(1, recordAndSample);
+          return this::decrementRecordAndSample;
+      }
+      throw new IllegalArgumentException("Unrecognized sampling decision: " + samplingDecision);
     }
-
-    Attributes liveSpansAttributes =
-        Attributes.of(OTEL_SPAN_SAMPLING_RESULT, samplingDecision.name());
-    liveSpans.add(1, liveSpansAttributes);
-    return () -> liveSpans.add(-1, liveSpansAttributes);
+    // local parent
+    switch (samplingDecision) {
+      case DROP:
+        startedSpans.add(1, localParentDrop);
+        return SdkTracerMetrics::noop;
+      case RECORD_ONLY:
+        startedSpans.add(1, localParentRecordOnly);
+        liveSpans.add(1, recordOnly);
+        return this::decrementRecordOnly;
+      case RECORD_AND_SAMPLE:
+        startedSpans.add(1, localParentRecordAndSample);
+        liveSpans.add(1, recordAndSample);
+        return this::decrementRecordAndSample;
+    }
+    throw new IllegalArgumentException("Unrecognized sampling decision: " + samplingDecision);
   }
 
-  private static String parentOrigin(SpanContext parentSpanContext) {
-    if (!parentSpanContext.isValid()) {
-      return "none";
-    }
-    if (parentSpanContext.isRemote()) {
-      return "remote";
-    }
-    return "local";
+  private static void noop() {}
+
+  private void decrementRecordOnly() {
+    liveSpans.add(-1, recordOnly);
+  }
+
+  private void decrementRecordAndSample() {
+    liveSpans.add(-1, recordAndSample);
   }
 }

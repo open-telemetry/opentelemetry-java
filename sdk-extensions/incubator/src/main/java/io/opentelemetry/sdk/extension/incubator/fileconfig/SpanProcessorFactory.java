@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import java.time.Duration;
 import java.util.Map;
 
@@ -67,7 +66,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       SimpleSpanProcessorBuilder builder = SimpleSpanProcessor.builder(spanExporter);
       MeterProvider meterProvider = context.getMeterProvider();
       if (meterProvider != null) {
-        SdkTracerProviderUtil.setMeterProvider(builder, meterProvider);
+        builder.setMeterProvider(meterProvider);
       }
       return context.addCloseable(builder.build());
     }

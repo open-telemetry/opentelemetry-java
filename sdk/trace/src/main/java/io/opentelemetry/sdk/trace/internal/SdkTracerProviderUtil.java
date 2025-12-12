@@ -5,13 +5,11 @@
 
 package io.opentelemetry.sdk.trace.internal;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
@@ -89,37 +87,6 @@ public final class SdkTracerProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling setExceptionAttributeResolver on SdkTracerProviderBuilder", e);
-    }
-  }
-
-  /** Reflectively set meter provider to the {@link SdkTracerProviderBuilder}. */
-  public static SdkTracerProviderBuilder setMeterProvider(
-      SdkTracerProviderBuilder sdkTracerProviderBuilder, MeterProvider meterProvider) {
-    try {
-      Method method =
-          SdkTracerProviderBuilder.class.getDeclaredMethod("setMeterProvider", MeterProvider.class);
-      method.setAccessible(true);
-      method.invoke(sdkTracerProviderBuilder, meterProvider);
-      return sdkTracerProviderBuilder;
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling setMeterProvider on SdkTracerProviderBuilder", e);
-    }
-  }
-
-  /** Reflectively set meter provider to the {@link SdkTracerProviderBuilder}. */
-  public static SimpleSpanProcessorBuilder setMeterProvider(
-      SimpleSpanProcessorBuilder simpleSpanProcessorBuilder, MeterProvider meterProvider) {
-    try {
-      Method method =
-          SimpleSpanProcessorBuilder.class.getDeclaredMethod(
-              "setMeterProvider", MeterProvider.class);
-      method.setAccessible(true);
-      method.invoke(simpleSpanProcessorBuilder, meterProvider);
-      return simpleSpanProcessorBuilder;
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling setMeterProvider on SimpleSpanProcessorBuilder", e);
     }
   }
 }

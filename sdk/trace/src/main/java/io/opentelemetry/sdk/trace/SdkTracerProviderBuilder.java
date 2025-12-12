@@ -238,11 +238,8 @@ public final class SdkTracerProviderBuilder {
    * Sets the {@link MeterProvider} to use to generate <a
    * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
    * Metrics</a>.
-   *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkTracerProviderUtil#setMeterProvider(SdkTracerProviderBuilder, MeterProvider)}.
    */
-  SdkTracerProviderBuilder setMeterProvider(MeterProvider meterProvider) {
+  public SdkTracerProviderBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
     this.meterProvider = meterProvider;
     return this;

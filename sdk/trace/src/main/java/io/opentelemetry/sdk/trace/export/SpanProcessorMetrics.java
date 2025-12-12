@@ -34,10 +34,6 @@ interface SpanProcessorMetrics {
   /** Registers a metric for processor queue capacity. */
   void buildQueueCapacityMetric(long capacity);
 
-  interface LongCallable {
-    long get();
-  }
-
   /** Registers a metric for processor queue size. */
   void buildQueueSizeMetric(LongCallable queueSize);
 }

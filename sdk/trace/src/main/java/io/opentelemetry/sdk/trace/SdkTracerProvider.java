@@ -57,7 +57,6 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       ScopeConfigurator<TracerConfig> tracerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
       MeterProvider meterProvider) {
-    SdkTracerMetrics tracerProviderMetrics = new SdkTracerMetrics(meterProvider);
     this.sharedState =
         new TracerSharedState(
             clock,
@@ -66,15 +65,15 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             spanLimitsSupplier,
             sampler,
             spanProcessors,
-            exceptionAttributeResolver);
+            exceptionAttributeResolver,
+            new SdkTracerMetrics(meterProvider));
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->
                 SdkTracer.create(
                     sharedState,
                     instrumentationScopeInfo,
-                    getTracerConfig(instrumentationScopeInfo),
-                    tracerProviderMetrics));
+                    getTracerConfig(instrumentationScopeInfo)));
     this.tracerConfigurator = tracerConfigurator;
   }
 

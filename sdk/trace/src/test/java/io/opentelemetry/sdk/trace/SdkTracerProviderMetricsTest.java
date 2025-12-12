@@ -34,7 +34,6 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -61,9 +60,7 @@ class SdkTracerProviderMetricsTest {
     TracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
-                SdkTracerProviderUtil.setMeterProvider(
-                        SimpleSpanProcessor.builder(exporter), meterProvider)
-                    .build())
+                SimpleSpanProcessor.builder(exporter).setMeterProvider(meterProvider).build())
             .setMeterProvider(meterProvider)
             .setSampler(sampler)
             .build();
@@ -924,9 +921,7 @@ class SdkTracerProviderMetricsTest {
     TracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
-                SdkTracerProviderUtil.setMeterProvider(
-                        SimpleSpanProcessor.builder(mockExporter), meterProvider)
-                    .build())
+                SimpleSpanProcessor.builder(mockExporter).setMeterProvider(meterProvider).build())
             .setMeterProvider(meterProvider)
             .setSampler(Sampler.alwaysOn())
             .build();

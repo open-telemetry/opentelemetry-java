@@ -30,30 +30,25 @@ class SdkTracer implements Tracer {
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-  private final SdkTracerMetrics tracerProviderMetrics;
 
   protected volatile boolean tracerEnabled;
 
   SdkTracer(
       TracerSharedState sharedState,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      TracerConfig tracerConfig,
-      SdkTracerMetrics tracerProviderMetrics) {
+      TracerConfig tracerConfig) {
     this.sharedState = sharedState;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.tracerEnabled = tracerConfig.isEnabled();
-    this.tracerProviderMetrics = tracerProviderMetrics;
   }
 
   static SdkTracer create(
       TracerSharedState sharedState,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      TracerConfig tracerConfig,
-      SdkTracerMetrics tracerProviderMetrics) {
+      TracerConfig tracerConfig) {
     return INCUBATOR_AVAILABLE
-        ? IncubatingUtil.createExtendedTracer(
-            sharedState, instrumentationScopeInfo, tracerConfig, tracerProviderMetrics)
-        : new SdkTracer(sharedState, instrumentationScopeInfo, tracerConfig, tracerProviderMetrics);
+        ? IncubatingUtil.createExtendedTracer(sharedState, instrumentationScopeInfo, tracerConfig)
+        : new SdkTracer(sharedState, instrumentationScopeInfo, tracerConfig);
   }
 
   /**
@@ -73,17 +68,9 @@ class SdkTracer implements Tracer {
     }
     return INCUBATOR_AVAILABLE
         ? IncubatingUtil.createExtendedSpanBuilder(
-            spanName,
-            instrumentationScopeInfo,
-            sharedState,
-            sharedState.getSpanLimits(),
-            tracerProviderMetrics)
+            spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits())
         : new SdkSpanBuilder(
-            spanName,
-            instrumentationScopeInfo,
-            sharedState,
-            sharedState.getSpanLimits(),
-            tracerProviderMetrics);
+            spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits());
   }
 
   // Visible for testing

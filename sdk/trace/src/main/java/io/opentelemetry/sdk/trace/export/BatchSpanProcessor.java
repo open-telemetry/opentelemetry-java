@@ -319,7 +319,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (!result.isSuccess()) {
           logger.log(Level.FINE, "Exporter failed");
-          error = "export_failed";
+          if (result.getFailureThrowable() != null) {
+            error = result.getFailureThrowable().getClass().getName();
+          } else {
+            error = "export_failed";
+          }
         }
       } catch (Throwable t) {
         ThrowableUtil.propagateIfFatal(t);
