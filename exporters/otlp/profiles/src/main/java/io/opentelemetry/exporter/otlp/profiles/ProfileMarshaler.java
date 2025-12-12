@@ -96,7 +96,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
   @Override
   protected void writeTo(Serializer output) throws IOException {
     output.serializeMessage(Profile.SAMPLE_TYPE, sampleTypeMarshaler);
-    output.serializeRepeatedMessage(Profile.SAMPLE, sampleMarshalers);
+    output.serializeRepeatedMessage(Profile.SAMPLES, sampleMarshalers);
     output.serializeFixed64(Profile.TIME_UNIX_NANO, timeNanos);
     output.serializeInt64(Profile.DURATION_NANO, durationNanos);
     output.serializeMessage(Profile.PERIOD_TYPE, periodTypeMarshaler);
@@ -126,7 +126,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     int size;
     size = 0;
     size += MarshalerUtil.sizeMessage(Profile.SAMPLE_TYPE, sampleTypeMarshaler);
-    size += MarshalerUtil.sizeRepeatedMessage(Profile.SAMPLE, sampleMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.SAMPLES, sampleMarshalers);
     size += MarshalerUtil.sizeFixed64(Profile.TIME_UNIX_NANO, timeNanos);
     size += MarshalerUtil.sizeInt64(Profile.DURATION_NANO, durationNanos);
     size += MarshalerUtil.sizeMessage(Profile.PERIOD_TYPE, periodTypeMarshaler);
