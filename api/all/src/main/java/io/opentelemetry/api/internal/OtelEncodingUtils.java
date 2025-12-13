@@ -21,16 +21,7 @@ public final class OtelEncodingUtils {
   private static final int NUM_ASCII_CHARACTERS = 128;
   private static final char[] ENCODING = buildEncodingArray();
   private static final byte[] DECODING = buildDecodingArray();
-
-  /**
-   * Stores whether the character at that index is a valid HEX character. We lazy init the array
-   * values to minimize impact during process startup esp. on mobile. A value of 0 means the
-   * character validity has not been determined yet. A value of 1 means the character is a valid HEX
-   * character. A value of -1 means the character is an invalid HEX character.
-   *
-   * @see #isValidBase16Character(char)
-   */
-  private static final int[] VALID_HEX = new int[Character.MAX_VALUE];
+  private static final boolean[] VALID_HEX = buildValidHexArray();
 
   private static char[] buildEncodingArray() {
     char[] encoding = new char[512];
@@ -49,6 +40,17 @@ public final class OtelEncodingUtils {
       decoding[c] = (byte) i;
     }
     return decoding;
+  }
+
+  private static boolean[] buildValidHexArray() {
+    boolean[] validHex = new boolean[Character.MAX_VALUE];
+    // Use the fact that the default initial boolean value is false
+    // and only explicitly init the values between the extreme HEX values
+    // This minimized impact during process startup esp. on mobile.
+    for (int i = 48; i < 103; i++) {
+      validHex[i] = i <= 57 || 97 <= i;
+    }
+    return validHex;
   }
 
   /**
@@ -153,12 +155,7 @@ public final class OtelEncodingUtils {
 
   /** Returns whether the given {@code char} is a valid hex character. */
   public static boolean isValidBase16Character(char b) {
-    int isValid = VALID_HEX[b];
-    if (isValid == 0) {
-      isValid = (48 <= b && b <= 57) || (97 <= b && b <= 102) ? 1 : -1;
-      VALID_HEX[b] = isValid;
-    }
-    return isValid == 1;
+    return VALID_HEX[b];
   }
 
   private OtelEncodingUtils() {}
