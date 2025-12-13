@@ -21,14 +21,14 @@ public final class OtelEncodingUtils {
   private static final int NUM_ASCII_CHARACTERS = 128;
   private static final char[] ENCODING = buildEncodingArray();
   private static final byte[] DECODING = buildDecodingArray();
+
   /**
-   * Stores whether the character at that index is a valid HEX character. 
-   * We lazy init the array values to minimize impact during process startup esp. on mobile.
-   * A value of 0 means the character validity has not been determined yet.
-   * A value of 1 means the character is a valid HEX character.
-   * A value of -1 means the character is an invalid HEX character.
-   * 
-   * @see #isValidBase16Character(char) 
+   * Stores whether the character at that index is a valid HEX character. We lazy init the array
+   * values to minimize impact during process startup esp. on mobile. A value of 0 means the
+   * character validity has not been determined yet. A value of 1 means the character is a valid HEX
+   * character. A value of -1 means the character is an invalid HEX character.
+   *
+   * @see #isValidBase16Character(char)
    */
   private static final int[] VALID_HEX = new int[Character.MAX_VALUE];
 
