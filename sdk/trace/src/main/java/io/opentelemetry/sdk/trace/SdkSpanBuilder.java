@@ -204,6 +204,9 @@ class SdkSpanBuilder implements SpanBuilder {
             /* remote= */ false,
             tracerSharedState.isIdGeneratorSafeToSkipIdValidation());
 
+    Runnable recordEndSpanMetrics =
+        tracerSharedState.getTracerMetrics().startSpan(parentSpanContext, samplingDecision);
+
     if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
     }
@@ -232,7 +235,8 @@ class SdkSpanBuilder implements SpanBuilder {
         recordedAttributes,
         currentLinks,
         totalNumberOfLinksAdded,
-        startEpochNanos);
+        startEpochNanos,
+        recordEndSpanMetrics);
   }
 
   private AttributesMap attributes() {

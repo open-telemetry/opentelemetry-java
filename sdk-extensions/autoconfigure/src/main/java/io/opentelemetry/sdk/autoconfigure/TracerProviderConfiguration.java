@@ -49,6 +49,7 @@ final class TracerProviderConfiguration {
       List<Closeable> closeables) {
 
     tracerProviderBuilder.setSpanLimits(configureSpanLimits(config));
+    tracerProviderBuilder.setMeterProvider(meterProvider);
 
     String sampler = config.getString("otel.traces.sampler", PARENTBASED_ALWAYS_ON);
     tracerProviderBuilder.setSampler(
@@ -80,7 +81,8 @@ final class TracerProviderConfiguration {
     for (String simpleProcessorExporterNames : simpleProcessorExporterNames) {
       SpanExporter exporter = exportersByNameCopy.remove(simpleProcessorExporterNames);
       if (exporter != null) {
-        SpanProcessor spanProcessor = SimpleSpanProcessor.create(exporter);
+        SpanProcessor spanProcessor =
+            SimpleSpanProcessor.builder(exporter).setMeterProvider(meterProvider).build();
         closeables.add(spanProcessor);
         spanProcessors.add(spanProcessor);
       }

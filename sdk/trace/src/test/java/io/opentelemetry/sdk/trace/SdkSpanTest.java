@@ -1040,7 +1040,8 @@ class SdkSpanTest {
             null,
             null, // exercises the fault-in path
             0,
-            0);
+            0,
+            () -> {});
     SdkSpan linkedSpan = createTestSpan(SpanKind.INTERNAL);
     span.addLink(linkedSpan.getSpanContext());
 
@@ -1386,7 +1387,8 @@ class SdkSpanTest {
                 spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength()),
             Collections.emptyList(),
             1,
-            0);
+            0,
+            () -> {});
     verify(spanProcessor, never()).onStart(any(), any());
 
     span.end();
@@ -1524,7 +1526,8 @@ class SdkSpanTest {
             attributes,
             linksCopy,
             linksCopy.size(),
-            0);
+            0,
+            () -> {});
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(Context.root(), span);
     return span;
   }
@@ -1612,7 +1615,8 @@ class SdkSpanTest {
             attributesWithCapacity,
             singletonList(link1),
             1,
-            0);
+            0,
+            () -> {});
     long startEpochNanos = clock.now();
     clock.advance(Duration.ofMillis(4));
     long firstEventEpochNanos = clock.now();

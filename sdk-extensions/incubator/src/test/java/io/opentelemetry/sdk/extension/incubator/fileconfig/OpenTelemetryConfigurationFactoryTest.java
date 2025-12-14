@@ -343,7 +343,8 @@ class OpenTelemetryConfigurationFactoryTest {
         .extracting("sharedState")
         .extracting("activeSpanProcessor")
         .extracting("worker")
-        .extracting("processedSpansCounter")
+        .extracting("spanProcessorMetrics")
+        .extracting("processedSpans")
         .extracting("sdkMeter")
         .extracting("meterProviderSharedState")
         .isEqualTo(sharedState);
