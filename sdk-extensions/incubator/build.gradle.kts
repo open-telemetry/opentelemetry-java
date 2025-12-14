@@ -31,6 +31,9 @@ dependencies {
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
   implementation(project(":sdk-extensions:autoconfigure"))
 
+  // io.opentelemetry.sdk.extension.incubator.slf4j
+  implementation("org.slf4j:slf4j-api:2.0.17")
+
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:logging"))
