@@ -29,8 +29,8 @@ final class FileConfigUtil {
     return object;
   }
 
-  static Map.Entry<String, Object> getSingletonMapEntry(
-      Map<String, Object> additionalProperties, String resourceName) {
+  static <T> Map.Entry<String, T> getSingletonMapEntry(
+      Map<String, T> additionalProperties, String resourceName) {
     if (additionalProperties.isEmpty()) {
       throw new DeclarativeConfigException(resourceName + " must be set");
     }
@@ -47,5 +47,16 @@ final class FileConfigUtil {
             () ->
                 new IllegalStateException(
                     "Missing " + resourceName + ". This is a programming error."));
+  }
+
+  static void requireNullResource(
+      @Nullable Object resource, String resourceName, Map<String, ?> additionalProperties) {
+    if (resource != null) {
+      throw new DeclarativeConfigException(
+          "Invalid configuration - multiple "
+              + resourceName
+              + "s set: "
+              + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
+    }
   }
 }

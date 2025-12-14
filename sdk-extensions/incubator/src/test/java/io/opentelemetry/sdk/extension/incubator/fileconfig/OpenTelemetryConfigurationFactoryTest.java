@@ -114,6 +114,7 @@ class OpenTelemetryConfigurationFactoryTest {
         Arguments.of("0.4", true),
         Arguments.of("1.0-rc.1", true),
         Arguments.of("1.0-rc.2", true),
+        Arguments.of("1.0-rc.3", true),
         Arguments.of("1.0", true));
   }
 

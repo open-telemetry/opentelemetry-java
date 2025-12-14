@@ -20,11 +20,27 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Baggag
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.CardinalityLimitsModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ClientModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DistributionModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DistributionPropertyModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableAlwaysOffSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableAlwaysOnSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalContainerResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalGeneralInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHostResourceDetectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpClientInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpServerInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerMatcherAndConfigModel;
@@ -34,15 +50,21 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Experi
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPeerInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPeerServiceMappingModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalProbabilitySamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalProcessResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalServiceResourceDetectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalSpanParent;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerMatcherAndConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GrpcTlsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpTlsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
@@ -67,11 +89,10 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ServerModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ServiceMappingModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanKind;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
@@ -81,7 +102,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Tracer
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinSpanExporterModel;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -114,9 +134,9 @@ class DeclarativeConfigurationParseTest {
   void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfigurationModel expected = new OpenTelemetryConfigurationModel();
 
-    expected.withFileFormat("1.0-rc.1");
+    expected.withFileFormat("1.0-rc.3");
     expected.withDisabled(false);
-    expected.withLogLevel("info");
+    expected.withLogLevel(OpenTelemetryConfigurationModel.SeverityNumber.INFO);
 
     // General config
     ResourceModel resource =
@@ -168,13 +188,13 @@ class DeclarativeConfigurationParseTest {
                     .withDetectors(
                         Arrays.asList(
                             new ExperimentalResourceDetectorModel()
-                                .withAdditionalProperty("container", null),
+                                .withContainer(new ExperimentalContainerResourceDetectorModel()),
                             new ExperimentalResourceDetectorModel()
-                                .withAdditionalProperty("host", null),
+                                .withHost(new ExperimentalHostResourceDetectorModel()),
                             new ExperimentalResourceDetectorModel()
-                                .withAdditionalProperty("process", null),
+                                .withProcess(new ExperimentalProcessResourceDetectorModel()),
                             new ExperimentalResourceDetectorModel()
-                                .withAdditionalProperty("service", null))))
+                                .withService(new ExperimentalServiceResourceDetectorModel()))))
             .withSchemaUrl("https://opentelemetry.io/schemas/1.16.0");
     expected.withResource(resource);
 
@@ -220,9 +240,60 @@ class DeclarativeConfigurationParseTest {
                     .withRemoteParentSampled(
                         new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
                     .withRemoteParentNotSampled(
-                        new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel()))
+                        new SamplerModel()
+                            .withProbabilityDevelopment(
+                                new ExperimentalProbabilitySamplerModel().withRatio(0.01)))
                     .withLocalParentSampled(
-                        new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
+                        new SamplerModel()
+                            .withCompositeDevelopment(
+                                new ExperimentalComposableSamplerModel()
+                                    .withRuleBased(
+                                        new ExperimentalComposableRuleBasedSamplerModel()
+                                            .withRules(
+                                                Arrays.asList(
+                                                    new ExperimentalComposableRuleBasedSamplerRuleModel()
+                                                        .withAttributeValues(
+                                                            new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
+                                                                .withKey("http.route")
+                                                                .withValues(
+                                                                    Arrays.asList(
+                                                                        "/healthz", "/livez")))
+                                                        .withSampler(
+                                                            new ExperimentalComposableSamplerModel()
+                                                                .withAlwaysOff(
+                                                                    new ExperimentalComposableAlwaysOffSamplerModel())),
+                                                    new ExperimentalComposableRuleBasedSamplerRuleModel()
+                                                        .withAttributePatterns(
+                                                            new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                                                .withKey("http.path")
+                                                                .withIncluded(
+                                                                    Collections.singletonList(
+                                                                        "/internal/*"))
+                                                                .withExcluded(
+                                                                    Collections.singletonList(
+                                                                        "/internal/special/*")))
+                                                        .withSampler(
+                                                            new ExperimentalComposableSamplerModel()
+                                                                .withAlwaysOn(
+                                                                    new ExperimentalComposableAlwaysOnSamplerModel())),
+                                                    new ExperimentalComposableRuleBasedSamplerRuleModel()
+                                                        .withParent(
+                                                            Collections.singletonList(
+                                                                ExperimentalSpanParent.NONE))
+                                                        .withSpanKinds(
+                                                            Collections.singletonList(
+                                                                SpanKind.CLIENT))
+                                                        .withSampler(
+                                                            new ExperimentalComposableSamplerModel()
+                                                                .withProbability(
+                                                                    new ExperimentalComposableProbabilitySamplerModel()
+                                                                        .withRatio(0.05))),
+                                                    new ExperimentalComposableRuleBasedSamplerRuleModel()
+                                                        .withSampler(
+                                                            new ExperimentalComposableSamplerModel()
+                                                                .withProbability(
+                                                                    new ExperimentalComposableProbabilitySamplerModel()
+                                                                        .withRatio(0.001))))))))
                     .withLocalParentNotSampled(
                         new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel())));
     tracerProvider.withSampler(sampler);
@@ -250,9 +321,11 @@ class DeclarativeConfigurationParseTest {
                             .withOtlpHttp(
                                 new OtlpHttpExporterModel()
                                     .withEndpoint("http://localhost:4318/v1/traces")
-                                    .withCertificateFile("/app/cert.pem")
-                                    .withClientKeyFile("/app/cert.pem")
-                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withTls(
+                                        new HttpTlsModel()
+                                            .withCaFile("/app/cert.pem")
+                                            .withKeyFile("/app/cert.pem")
+                                            .withCertFile("/app/cert.pem"))
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()
@@ -272,9 +345,12 @@ class DeclarativeConfigurationParseTest {
                             .withOtlpGrpc(
                                 new OtlpGrpcExporterModel()
                                     .withEndpoint("http://localhost:4317")
-                                    .withCertificateFile("/app/cert.pem")
-                                    .withClientKeyFile("/app/cert.pem")
-                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withTls(
+                                        new GrpcTlsModel()
+                                            .withCaFile("/app/cert.pem")
+                                            .withKeyFile("/app/cert.pem")
+                                            .withCertFile("/app/cert.pem")
+                                            .withInsecure(false))
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()
@@ -282,8 +358,7 @@ class DeclarativeConfigurationParseTest {
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
-                                    .withTimeout(10_000)
-                                    .withInsecure(false))));
+                                    .withTimeout(10_000))));
     SpanProcessorModel spanProcessor3 =
         new SpanProcessorModel()
             .withBatch(
@@ -304,27 +379,12 @@ class DeclarativeConfigurationParseTest {
                                     .withOutputStream("stdout"))));
     SpanProcessorModel spanProcessor5 =
         new SpanProcessorModel()
-            .withBatch(
-                new BatchSpanProcessorModel()
-                    .withExporter(
-                        new SpanExporterModel()
-                            .withZipkin(
-                                new ZipkinSpanExporterModel()
-                                    .withEndpoint("http://localhost:9411/api/v2/spans")
-                                    .withTimeout(10_000))));
-    SpanProcessorModel spanProcessor6 =
-        new SpanProcessorModel()
             .withSimple(
                 new SimpleSpanProcessorModel()
                     .withExporter(new SpanExporterModel().withConsole(new ConsoleExporterModel())));
     tracerProvider.withProcessors(
         Arrays.asList(
-            spanProcessor1,
-            spanProcessor2,
-            spanProcessor3,
-            spanProcessor4,
-            spanProcessor5,
-            spanProcessor6));
+            spanProcessor1, spanProcessor2, spanProcessor3, spanProcessor4, spanProcessor5));
 
     expected.withTracerProvider(tracerProvider);
     // end TracerProvider config
@@ -343,7 +403,13 @@ class DeclarativeConfigurationParseTest {
                 Collections.singletonList(
                     new ExperimentalLoggerMatcherAndConfigModel()
                         .withName("io.opentelemetry.contrib.*")
-                        .withConfig(new ExperimentalLoggerConfigModel().withDisabled(false))));
+                        .withConfig(
+                            new ExperimentalLoggerConfigModel()
+                                .withDisabled(false)
+                                .withMinimumSeverity(
+                                    // TODO: SeverityNumber should not be nested
+                                    OpenTelemetryConfigurationModel.SeverityNumber.INFO)
+                                .withTraceBased(true))));
     loggerProvider.withLoggerConfiguratorDevelopment(loggerConfigurator);
 
     LogRecordProcessorModel logRecordProcessor1 =
@@ -359,9 +425,11 @@ class DeclarativeConfigurationParseTest {
                             .withOtlpHttp(
                                 new OtlpHttpExporterModel()
                                     .withEndpoint("http://localhost:4318/v1/logs")
-                                    .withCertificateFile("/app/cert.pem")
-                                    .withClientKeyFile("/app/cert.pem")
-                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withTls(
+                                        new HttpTlsModel()
+                                            .withCaFile("/app/cert.pem")
+                                            .withKeyFile("/app/cert.pem")
+                                            .withCertFile("/app/cert.pem"))
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()
@@ -381,9 +449,12 @@ class DeclarativeConfigurationParseTest {
                             .withOtlpGrpc(
                                 new OtlpGrpcExporterModel()
                                     .withEndpoint("http://localhost:4317")
-                                    .withCertificateFile("/app/cert.pem")
-                                    .withClientKeyFile("/app/cert.pem")
-                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withTls(
+                                        new GrpcTlsModel()
+                                            .withCaFile("/app/cert.pem")
+                                            .withKeyFile("/app/cert.pem")
+                                            .withCertFile("/app/cert.pem")
+                                            .withInsecure(false))
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()
@@ -391,8 +462,7 @@ class DeclarativeConfigurationParseTest {
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
-                                    .withTimeout(10_000)
-                                    .withInsecure(false))));
+                                    .withTimeout(10_000))));
     LogRecordProcessorModel logRecordProcessor3 =
         new LogRecordProcessorModel()
             .withBatch(
@@ -441,14 +511,17 @@ class DeclarativeConfigurationParseTest {
                                 new ExperimentalPrometheusMetricExporterModel()
                                     .withHost("localhost")
                                     .withPort(9464)
-                                    .withWithoutUnits(false)
-                                    .withWithoutTypeSuffix(false)
                                     .withWithoutScopeInfo(false)
+                                    .withWithoutTargetInfo(false)
                                     .withWithResourceConstantLabels(
                                         new IncludeExcludeModel()
                                             .withIncluded(Collections.singletonList("service*"))
                                             .withExcluded(
-                                                Collections.singletonList("service.attr1")))))
+                                                Collections.singletonList("service.attr1")))
+                                    .withTranslationStrategy(
+                                        ExperimentalPrometheusMetricExporterModel
+                                            .ExperimentalPrometheusTranslationStrategy
+                                            .UNDERSCORE_ESCAPING_WITH_SUFFIXES)))
                     .withProducers(
                         Collections.singletonList(
                             new MetricProducerModel()
@@ -474,9 +547,11 @@ class DeclarativeConfigurationParseTest {
                             .withOtlpHttp(
                                 new OtlpHttpMetricExporterModel()
                                     .withEndpoint("http://localhost:4318/v1/metrics")
-                                    .withCertificateFile("/app/cert.pem")
-                                    .withClientKeyFile("/app/cert.pem")
-                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withTls(
+                                        new HttpTlsModel()
+                                            .withCaFile("/app/cert.pem")
+                                            .withKeyFile("/app/cert.pem")
+                                            .withCertFile("/app/cert.pem"))
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()
@@ -495,7 +570,8 @@ class DeclarativeConfigurationParseTest {
                                             .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)))
                     .withProducers(
                         Collections.singletonList(
-                            new MetricProducerModel().withAdditionalProperty("prometheus", null)))
+                            new MetricProducerModel()
+                                .withOpencensus(new OpenCensusMetricProducerModel())))
                     .withCardinalityLimits(
                         new CardinalityLimitsModel()
                             .withDefault(2000)
@@ -515,9 +591,12 @@ class DeclarativeConfigurationParseTest {
                             .withOtlpGrpc(
                                 new OtlpGrpcMetricExporterModel()
                                     .withEndpoint("http://localhost:4317")
-                                    .withCertificateFile("/app/cert.pem")
-                                    .withClientKeyFile("/app/cert.pem")
-                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withTls(
+                                        new GrpcTlsModel()
+                                            .withCaFile("/app/cert.pem")
+                                            .withKeyFile("/app/cert.pem")
+                                            .withCertFile("/app/cert.pem")
+                                            .withInsecure(false))
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()
@@ -526,7 +605,6 @@ class DeclarativeConfigurationParseTest {
                                     .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
-                                    .withInsecure(false)
                                     .withTemporalityPreference(
                                         OtlpHttpMetricExporterModel.ExporterTemporalityPreference
                                             .DELTA)
@@ -571,7 +649,16 @@ class DeclarativeConfigurationParseTest {
             .withPeriodic(
                 new PeriodicMetricReaderModel()
                     .withExporter(
-                        new PushMetricExporterModel().withConsole(new ConsoleExporterModel())));
+                        new PushMetricExporterModel()
+                            .withConsole(
+                                new ConsoleMetricExporterModel()
+                                    .withTemporalityPreference(
+                                        OtlpHttpMetricExporterModel.ExporterTemporalityPreference
+                                            .DELTA)
+                                    .withDefaultHistogramAggregation(
+                                        OtlpHttpMetricExporterModel
+                                            .ExporterDefaultHistogramAggregation
+                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))));
     meterProvider.withReaders(
         Arrays.asList(
             metricReader1,
@@ -626,30 +713,30 @@ class DeclarativeConfigurationParseTest {
     // end MeterProvider config
 
     // start instrumentation config
-    InstrumentationModel instrumentation =
-        new InstrumentationModel()
+    ExperimentalInstrumentationModel instrumentation =
+        new ExperimentalInstrumentationModel()
             .withGeneral(
                 new ExperimentalGeneralInstrumentationModel()
                     .withPeer(
                         new ExperimentalPeerInstrumentationModel()
                             .withServiceMapping(
                                 Arrays.asList(
-                                    new ServiceMappingModel()
+                                    new ExperimentalPeerServiceMappingModel()
                                         .withPeer("1.2.3.4")
                                         .withService("FooService"),
-                                    new ServiceMappingModel()
+                                    new ExperimentalPeerServiceMappingModel()
                                         .withPeer("2.3.4.5")
                                         .withService("BarService"))))
                     .withHttp(
                         new ExperimentalHttpInstrumentationModel()
                             .withClient(
-                                new ClientModel()
+                                new ExperimentalHttpClientInstrumentationModel()
                                     .withRequestCapturedHeaders(
                                         Arrays.asList("Content-Type", "Accept"))
                                     .withResponseCapturedHeaders(
                                         Arrays.asList("Content-Type", "Content-Encoding")))
                             .withServer(
-                                new ServerModel()
+                                new ExperimentalHttpServerInstrumentationModel()
                                     .withRequestCapturedHeaders(
                                         Arrays.asList("Content-Type", "Accept"))
                                     .withResponseCapturedHeaders(
@@ -657,56 +744,85 @@ class DeclarativeConfigurationParseTest {
             .withCpp(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withDotnet(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withErlang(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withGo(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withJava(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withJs(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withPhp(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withPython(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withRuby(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withRust(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")))
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")))
             .withSwift(
                 new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
-                        "example", Collections.singletonMap("property", "value")));
+                        "example",
+                        new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                            .withAdditionalProperty("property", "value")));
     expected.withInstrumentationDevelopment(instrumentation);
     // end instrumentation config
+
+    DistributionModel distribution =
+        new DistributionModel()
+            .withAdditionalProperty(
+                "example",
+                new DistributionPropertyModel().withAdditionalProperty("property", "value"));
+    expected.withDistribution(distribution);
 
     try (FileInputStream configExampleFile =
         new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
       OpenTelemetryConfigurationModel config = DeclarativeConfiguration.parse(configExampleFile);
 
       // General config
-      assertThat(config.getFileFormat()).isEqualTo("1.0-rc.1");
+      assertThat(config.getFileFormat()).isEqualTo("1.0-rc.3");
       assertThat(config.getResource()).isEqualTo(resource);
       assertThat(config.getAttributeLimits()).isEqualTo(attributeLimits);
       assertThat(config.getPropagator()).isEqualTo(propagator);
@@ -720,12 +836,7 @@ class DeclarativeConfigurationParseTest {
       assertThat(configTracerProvider.getProcessors())
           .isEqualTo(
               Arrays.asList(
-                  spanProcessor1,
-                  spanProcessor2,
-                  spanProcessor3,
-                  spanProcessor4,
-                  spanProcessor5,
-                  spanProcessor6));
+                  spanProcessor1, spanProcessor2, spanProcessor3, spanProcessor4, spanProcessor5));
       assertThat(configTracerProvider).isEqualTo(tracerProvider);
 
       // LoggerProvider config
@@ -760,8 +871,13 @@ class DeclarativeConfigurationParseTest {
       assertThat(configMeterProvider).isEqualTo(meterProvider);
 
       // Instrumentation config
-      InstrumentationModel configInstrumentation = config.getInstrumentationDevelopment();
+      ExperimentalInstrumentationModel configInstrumentation =
+          config.getInstrumentationDevelopment();
       assertThat(configInstrumentation).isEqualTo(instrumentation);
+
+      // Distribution config
+      DistributionModel configDistribution = config.getDistribution();
+      assertThat(configDistribution).isEqualTo(distribution);
 
       // All configuration
       assertThat(config).isEqualTo(expected);
