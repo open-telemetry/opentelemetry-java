@@ -7,9 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -114,18 +112,11 @@ final class IncubatingUtil {
     create.setAccessible(true);
     OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, context);
 
-    Class<?> providerClass =
-        Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider");
-    Object provider =
-        providerClass
-            .getDeclaredMethod("create", openTelemetryConfiguration, ComponentLoader.class)
-            .invoke(null, model, componentLoader);
-
     Method getResource = contextClass.getDeclaredMethod("getResource");
     getResource.setAccessible(true);
     Resource resource = (Resource) getResource.invoke(context);
 
-    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, null, provider);
+    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, null);
   }
 
   // Visible for testing
@@ -152,9 +143,5 @@ final class IncubatingUtil {
       DeclarativeConfigException exception) {
     String message = requireNonNull(exception.getMessage());
     return new ConfigurationException(message, exception);
-  }
-
-  static void setGlobalConfigProvider(Object configProvider) {
-    GlobalConfigProvider.set((ConfigProvider) configProvider);
   }
 }
