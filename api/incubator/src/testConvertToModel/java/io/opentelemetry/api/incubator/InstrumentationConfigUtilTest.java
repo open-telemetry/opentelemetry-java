@@ -61,7 +61,7 @@ class InstrumentationConfigUtilTest {
 
   @Test
   void getInstrumentationConfigModel_UnsetConfig() {
-    ConfigProvider configProvider = () -> null;
+    ConfigProvider configProvider = DeclarativeConfigProperties::empty;
 
     assertThat(
             InstrumentationConfigUtil.getInstrumentationConfigModel(

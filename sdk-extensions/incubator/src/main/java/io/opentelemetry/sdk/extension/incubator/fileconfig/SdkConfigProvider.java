@@ -9,18 +9,22 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
-import javax.annotation.Nullable;
 
 /** SDK implementation of {@link ConfigProvider}. */
 public final class SdkConfigProvider implements ConfigProvider {
 
-  @Nullable private final DeclarativeConfigProperties instrumentationConfig;
+  private final DeclarativeConfigProperties instrumentationConfig;
 
   private SdkConfigProvider(
       OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
     DeclarativeConfigProperties configProperties =
         DeclarativeConfiguration.toConfigProperties(model, componentLoader);
-    this.instrumentationConfig = configProperties.getStructured("instrumentation/development");
+    DeclarativeConfigProperties instrumentationConfigOrNull =
+        configProperties.getStructured("instrumentation/development");
+    this.instrumentationConfig =
+        instrumentationConfigOrNull == null
+            ? DeclarativeConfigProperties.empty()
+            : instrumentationConfigOrNull;
   }
 
   /**
@@ -45,7 +49,6 @@ public final class SdkConfigProvider implements ConfigProvider {
     return new SdkConfigProvider(model, componentLoader);
   }
 
-  @Nullable
   @Override
   public DeclarativeConfigProperties getInstrumentationConfig() {
     return instrumentationConfig;

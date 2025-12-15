@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.incubator.config;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -23,15 +22,14 @@ public interface ConfigProvider {
   /**
    * Returns the {@link DeclarativeConfigProperties} corresponding to <a
    * href="https://github.com/open-telemetry/opentelemetry-configuration/blob/main/schema/instrumentation.json">instrumentation
-   * config</a>, or {@code null} if unavailable.
+   * config</a>. Returns {@link DeclarativeConfigProperties#empty()} if unavailable.
    *
    * @return the instrumentation {@link DeclarativeConfigProperties}
    */
-  @Nullable
   DeclarativeConfigProperties getInstrumentationConfig();
 
   /** Returns a no-op {@link ConfigProvider}. */
   static ConfigProvider noop() {
-    return () -> null;
+    return DeclarativeConfigProperties::empty;
   }
 }
