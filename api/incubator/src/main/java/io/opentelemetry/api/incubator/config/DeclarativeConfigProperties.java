@@ -209,7 +209,7 @@ public interface DeclarativeConfigProperties {
    * @throws DeclarativeConfigException if the property is not a mapping
    */
   default DeclarativeConfigProperties get(String name) {
-    return defaultIfNull(getStructured(name), empty());
+    return getStructured(name, empty());
   }
 
   /**
