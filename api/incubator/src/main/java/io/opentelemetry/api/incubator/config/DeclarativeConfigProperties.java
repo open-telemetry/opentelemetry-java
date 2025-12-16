@@ -202,6 +202,17 @@ public interface DeclarativeConfigProperties {
   }
 
   /**
+   * Returns a {@link DeclarativeConfigProperties} configuration property.
+   *
+   * @return a map-valued configuration property, or an empty {@link DeclarativeConfigProperties}
+   *     instance if {@code name} has not been configured
+   * @throws DeclarativeConfigException if the property is not a mapping
+   */
+  default DeclarativeConfigProperties get(String name) {
+    return defaultIfNull(getStructured(name), empty());
+  }
+
+  /**
    * Returns a list of {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a list of map-valued configuration property, or {@code null} if {@code name} has not
