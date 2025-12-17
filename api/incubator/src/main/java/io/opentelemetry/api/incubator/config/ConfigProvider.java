@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.incubator.config;
 
+import static io.opentelemetry.api.incubator.config.DeclarativeConfigProperties.empty;
+
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -27,6 +29,22 @@ public interface ConfigProvider {
    * @return the instrumentation {@link DeclarativeConfigProperties}
    */
   DeclarativeConfigProperties getInstrumentationConfig();
+
+  /**
+   * Returns the {@link DeclarativeConfigProperties} for a specific instrumentation by name. If no
+   * configuration is available for the given name, an empty {@link DeclarativeConfigProperties} is
+   * returned.
+   *
+   * @param name the name of the instrumentation
+   * @return the {@link DeclarativeConfigProperties} for the given instrumentation name
+   */
+  default DeclarativeConfigProperties get(String name) {
+    DeclarativeConfigProperties config = getInstrumentationConfig();
+    if (config == null) {
+      return empty();
+    }
+    return config.getStructured("java", empty()).getStructured(name, empty());
+  }
 
   /** Returns a no-op {@link ConfigProvider}. */
   static ConfigProvider noop() {
