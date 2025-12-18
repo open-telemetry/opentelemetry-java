@@ -51,7 +51,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       }
       MeterProvider meterProvider = context.getMeterProvider();
       if (meterProvider != null) {
-        builder.setMeterProvider(meterProvider);
+        builder.setMeterProvider(() -> meterProvider);
       }
 
       return context.addCloseable(builder.build());
@@ -66,7 +66,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       SimpleSpanProcessorBuilder builder = SimpleSpanProcessor.builder(spanExporter);
       MeterProvider meterProvider = context.getMeterProvider();
       if (meterProvider != null) {
-        builder.setMeterProvider(meterProvider);
+        builder.setMeterProvider(() -> meterProvider);
       }
       return context.addCloseable(builder.build());
     }

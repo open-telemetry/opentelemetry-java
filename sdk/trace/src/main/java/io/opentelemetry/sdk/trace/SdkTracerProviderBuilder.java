@@ -39,7 +39,7 @@ public final class SdkTracerProviderBuilder {
       TracerConfig.configuratorBuilder();
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
-  private MeterProvider meterProvider = MeterProvider.noop();
+  private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link Span} is started, ended
@@ -239,7 +239,7 @@ public final class SdkTracerProviderBuilder {
    * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
    * Metrics</a>.
    */
-  public SdkTracerProviderBuilder setMeterProvider(MeterProvider meterProvider) {
+  public SdkTracerProviderBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
     this.meterProvider = meterProvider;
     return this;

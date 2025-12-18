@@ -15,6 +15,8 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /**
  * SDK metrics exported for started and ended spans as defined in the <a
@@ -88,25 +90,16 @@ final class SdkTracerMetrics {
   private static final Attributes recordAndSample =
       Attributes.of(OTEL_SPAN_SAMPLING_RESULT, SamplingDecision.RECORD_AND_SAMPLE.name());
 
-  private final LongCounter startedSpans;
-  private final LongUpDownCounter liveSpans;
+  private final Object lock = new Object();
 
-  SdkTracerMetrics(MeterProvider meterProvider) {
-    Meter meter = meterProvider.get("io.opentelemetry.sdk.trace");
+  private final Supplier<MeterProvider> meterProvider;
 
-    startedSpans =
-        meter
-            .counterBuilder("otel.sdk.span.started")
-            .setUnit("{span}")
-            .setDescription("The number of created spans.")
-            .build();
-    liveSpans =
-        meter
-            .upDownCounterBuilder("otel.sdk.span.live")
-            .setUnit("{span}")
-            .setDescription(
-                "The number of created spans with recording=true for which the end operation has not been called yet.")
-            .build();
+  @Nullable private Meter meter;
+  @Nullable private volatile LongCounter startedSpans;
+  @Nullable private volatile LongUpDownCounter liveSpans;
+
+  SdkTracerMetrics(Supplier<MeterProvider> meterProvider) {
+    this.meterProvider = meterProvider;
   }
 
   /**
@@ -117,30 +110,30 @@ final class SdkTracerMetrics {
     if (!parentSpanContext.isValid()) {
       switch (samplingDecision) {
         case DROP:
-          startedSpans.add(1, noParentDrop);
+          startedSpans().add(1, noParentDrop);
           return SdkTracerMetrics::noop;
         case RECORD_ONLY:
-          startedSpans.add(1, noParentRecordOnly);
-          liveSpans.add(1, recordOnly);
+          startedSpans().add(1, noParentRecordOnly);
+          liveSpans().add(1, recordOnly);
           return this::decrementRecordOnly;
         case RECORD_AND_SAMPLE:
-          startedSpans.add(1, noParentRecordAndSample);
-          liveSpans.add(1, recordAndSample);
+          startedSpans().add(1, noParentRecordAndSample);
+          liveSpans().add(1, recordAndSample);
           return this::decrementRecordAndSample;
       }
       throw new IllegalArgumentException("Unrecognized sampling decision: " + samplingDecision);
     } else if (parentSpanContext.isRemote()) {
       switch (samplingDecision) {
         case DROP:
-          startedSpans.add(1, remoteParentDrop);
+          startedSpans().add(1, remoteParentDrop);
           return SdkTracerMetrics::noop;
         case RECORD_ONLY:
-          startedSpans.add(1, remoteParentRecordOnly);
-          liveSpans.add(1, recordOnly);
+          startedSpans().add(1, remoteParentRecordOnly);
+          liveSpans().add(1, recordOnly);
           return this::decrementRecordOnly;
         case RECORD_AND_SAMPLE:
-          startedSpans.add(1, remoteParentRecordAndSample);
-          liveSpans.add(1, recordAndSample);
+          startedSpans().add(1, remoteParentRecordAndSample);
+          liveSpans().add(1, recordAndSample);
           return this::decrementRecordAndSample;
       }
       throw new IllegalArgumentException("Unrecognized sampling decision: " + samplingDecision);
@@ -148,15 +141,15 @@ final class SdkTracerMetrics {
     // local parent
     switch (samplingDecision) {
       case DROP:
-        startedSpans.add(1, localParentDrop);
+        startedSpans().add(1, localParentDrop);
         return SdkTracerMetrics::noop;
       case RECORD_ONLY:
-        startedSpans.add(1, localParentRecordOnly);
-        liveSpans.add(1, recordOnly);
+        startedSpans().add(1, localParentRecordOnly);
+        liveSpans().add(1, recordOnly);
         return this::decrementRecordOnly;
       case RECORD_AND_SAMPLE:
-        startedSpans.add(1, localParentRecordAndSample);
-        liveSpans.add(1, recordAndSample);
+        startedSpans().add(1, localParentRecordAndSample);
+        liveSpans().add(1, recordAndSample);
         return this::decrementRecordAndSample;
     }
     throw new IllegalArgumentException("Unrecognized sampling decision: " + samplingDecision);
@@ -165,10 +158,57 @@ final class SdkTracerMetrics {
   private static void noop() {}
 
   private void decrementRecordOnly() {
-    liveSpans.add(-1, recordOnly);
+    liveSpans().add(-1, recordOnly);
   }
 
   private void decrementRecordAndSample() {
-    liveSpans.add(-1, recordAndSample);
+    liveSpans().add(-1, recordAndSample);
+  }
+
+  private LongCounter startedSpans() {
+    LongCounter startedSpans = this.startedSpans;
+    if (startedSpans == null) {
+      synchronized (lock) {
+        startedSpans = this.startedSpans;
+        if (startedSpans == null) {
+          startedSpans =
+              meter()
+                  .counterBuilder("otel.sdk.span.started")
+                  .setUnit("{span}")
+                  .setDescription("The number of created spans.")
+                  .build();
+          this.startedSpans = startedSpans;
+        }
+      }
+    }
+    return startedSpans;
+  }
+
+  private LongUpDownCounter liveSpans() {
+    LongUpDownCounter liveSpans = this.liveSpans;
+    if (liveSpans == null) {
+      synchronized (lock) {
+        liveSpans = this.liveSpans;
+        if (liveSpans == null) {
+          liveSpans =
+              meter()
+                  .upDownCounterBuilder("otel.sdk.span.live")
+                  .setUnit("{span}")
+                  .setDescription(
+                      "The number of created spans with recording=true for which the end operation has not been called yet.")
+                  .build();
+          this.liveSpans = liveSpans;
+        }
+      }
+    }
+    return liveSpans;
+  }
+
+  private Meter meter() {
+    if (meter == null) {
+      // Safe to call from multiple threads.
+      meter = meterProvider.get().get("io.opentelemetry.sdk.trace");
+    }
+    return meter;
   }
 }

@@ -337,6 +337,7 @@ class OpenTelemetryConfigurationFactoryTest {
         .extracting("meterProviderSharedState")
         .isEqualTo(sharedState);
 
+    // Lazily initialized
     assertThat(sdk)
         .extracting("tracerProvider")
         .extracting("delegate")
@@ -345,8 +346,6 @@ class OpenTelemetryConfigurationFactoryTest {
         .extracting("worker")
         .extracting("spanProcessorMetrics")
         .extracting("processedSpans")
-        .extracting("sdkMeter")
-        .extracting("meterProviderSharedState")
-        .isEqualTo(sharedState);
+        .isNull();
   }
 }

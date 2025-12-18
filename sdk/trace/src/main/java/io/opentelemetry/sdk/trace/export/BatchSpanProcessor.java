@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,7 +68,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   BatchSpanProcessor(
       SpanExporter spanExporter,
       boolean exportUnsampledSpans,
-      MeterProvider meterProvider,
+      Supplier<MeterProvider> meterProvider,
       InternalTelemetryVersion telemetryVersion,
       long scheduleDelayNanos,
       int maxQueueSize,
@@ -182,10 +183,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
+    private final long maxQueueSize;
 
     private Worker(
         SpanExporter spanExporter,
-        MeterProvider meterProvider,
+        Supplier<MeterProvider> meterProvider,
         InternalTelemetryVersion telemetryVersion,
         long scheduleDelayNanos,
         int maxExportBatchSize,
@@ -201,13 +203,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
       spanProcessorMetrics =
           SpanProcessorMetrics.get(telemetryVersion, COMPONENT_ID, meterProvider);
-      spanProcessorMetrics.buildQueueCapacityMetric(maxQueueSize);
-      spanProcessorMetrics.buildQueueSizeMetric(queue::size);
+      this.maxQueueSize = maxQueueSize;
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
     private void addSpan(ReadableSpan span) {
+      spanProcessorMetrics.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(span)) {
         spanProcessorMetrics.dropSpans(1);
       } else {

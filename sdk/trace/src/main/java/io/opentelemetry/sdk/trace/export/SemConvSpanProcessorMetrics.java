@@ -11,6 +11,8 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -20,14 +22,18 @@ import javax.annotation.Nullable;
  */
 final class SemConvSpanProcessorMetrics implements SpanProcessorMetrics {
 
-  private final Meter meter;
+  private final Object lock = new Object();
+  private final AtomicBoolean builtQueueMetrics = new AtomicBoolean(false);
+
+  private final Supplier<MeterProvider> meterProvider;
   private final Attributes standardAttrs;
   private final Attributes droppedAttrs;
 
-  private final LongCounter processedSpans;
+  @Nullable private Meter meter;
+  @Nullable private volatile LongCounter processedSpans;
 
-  SemConvSpanProcessorMetrics(ComponentId componentId, MeterProvider meterProvider) {
-    meter = meterProvider.get("io.opentelemetry.sdk.trace");
+  SemConvSpanProcessorMetrics(ComponentId componentId, Supplier<MeterProvider> meterProvider) {
+    this.meterProvider = meterProvider;
 
     standardAttrs =
         Attributes.of(
@@ -43,53 +49,69 @@ final class SemConvSpanProcessorMetrics implements SpanProcessorMetrics {
             componentId.getComponentName(),
             SemConvAttributes.ERROR_TYPE,
             "queue_full");
-
-    processedSpans =
-        meter
-            .counterBuilder("otel.sdk.processor.span.processed")
-            .setUnit("span")
-            .setDescription(
-                "The number of spans for which the processing has finished, either successful or failed.")
-            .build();
   }
 
   @Override
   public void dropSpans(int count) {
-    processedSpans.add(count, droppedAttrs);
+    processedSpans().add(count, droppedAttrs);
   }
 
-  /** Record metrics for spans processed, possibly with an error. */
   @Override
   public void finishSpans(int count, @Nullable String error) {
     if (error == null) {
-      processedSpans.add(count, standardAttrs);
+      processedSpans().add(count, standardAttrs);
       return;
     }
 
     Attributes attributes =
         standardAttrs.toBuilder().put(SemConvAttributes.ERROR_TYPE, error).build();
-    processedSpans.add(count, attributes);
+    processedSpans().add(count, attributes);
   }
 
-  /** Registers a metric for processor queue capacity. */
   @Override
-  public void buildQueueCapacityMetric(long capacity) {
-    meter
+  public void buildQueueMetricsOnce(long capacity, LongCallable getSize) {
+    if (!builtQueueMetrics.compareAndSet(false, true)) {
+      return;
+    }
+    meter()
         .upDownCounterBuilder("otel.sdk.processor.span.queue.capacity")
         .setUnit("span")
         .setDescription(
             "The maximum number of spans the queue of a given instance of an SDK span processor can hold. ")
         .buildWithCallback(m -> m.record(capacity, standardAttrs));
-  }
-
-  /** Registers a metric for processor queue size. */
-  @Override
-  public void buildQueueSizeMetric(LongCallable getSize) {
-    meter
+    meter()
         .upDownCounterBuilder("otel.sdk.processor.span.queue.size")
         .setUnit("span")
         .setDescription(
             "The number of spans in the queue of a given instance of an SDK span processor.")
         .buildWithCallback(m -> m.record(getSize.get(), standardAttrs));
+  }
+
+  private LongCounter processedSpans() {
+    LongCounter processedSpans = this.processedSpans;
+    if (processedSpans == null) {
+      synchronized (lock) {
+        processedSpans = this.processedSpans;
+        if (processedSpans == null) {
+          processedSpans =
+              meter()
+                  .counterBuilder("otel.sdk.processor.span.processed")
+                  .setUnit("span")
+                  .setDescription(
+                      "The number of spans for which the processing has finished, either successful or failed.")
+                  .build();
+          this.processedSpans = processedSpans;
+        }
+      }
+    }
+    return processedSpans;
+  }
+
+  private Meter meter() {
+    if (meter == null) {
+      // Safe to call from multiple threads.
+      meter = meterProvider.get().get("io.opentelemetry.sdk.trace");
+    }
+    return meter;
   }
 }

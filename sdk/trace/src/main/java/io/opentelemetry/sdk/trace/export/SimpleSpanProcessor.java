@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -75,7 +76,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   }
 
   SimpleSpanProcessor(
-      SpanExporter spanExporter, boolean exportUnsampledSpans, MeterProvider meterProvider) {
+      SpanExporter spanExporter,
+      boolean exportUnsampledSpans,
+      Supplier<MeterProvider> meterProvider) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
     this.exportUnsampledSpans = exportUnsampledSpans;
     spanProcessorMetrics =
@@ -110,7 +113,11 @@ public final class SimpleSpanProcessor implements SpanProcessor {
               String error = null;
               if (!result.isSuccess()) {
                 logger.log(Level.FINE, "Exporter failed");
-                error = "export_failed";
+                if (result.getFailureThrowable() != null) {
+                  error = result.getFailureThrowable().getClass().getName();
+                } else {
+                  error = "export_failed";
+                }
               }
               spanProcessorMetrics.finishSpans(1, error);
             });

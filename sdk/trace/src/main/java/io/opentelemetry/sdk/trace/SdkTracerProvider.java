@@ -56,7 +56,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       List<SpanProcessor> spanProcessors,
       ScopeConfigurator<TracerConfig> tracerConfigurator,
       ExceptionAttributeResolver exceptionAttributeResolver,
-      MeterProvider meterProvider) {
+      Supplier<MeterProvider> meterProvider) {
     this.sharedState =
         new TracerSharedState(
             clock,

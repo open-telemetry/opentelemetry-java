@@ -60,8 +60,8 @@ class SdkTracerProviderMetricsTest {
     TracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
-                SimpleSpanProcessor.builder(exporter).setMeterProvider(meterProvider).build())
-            .setMeterProvider(meterProvider)
+                SimpleSpanProcessor.builder(exporter).setMeterProvider(() -> meterProvider).build())
+            .setMeterProvider(() -> meterProvider)
             .setSampler(sampler)
             .build();
 
@@ -719,12 +719,12 @@ class SdkTracerProviderMetricsTest {
             // Manually flush
             .setScheduleDelay(Duration.ofDays(1))
             .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
-            .setMeterProvider(meterProvider)
+            .setMeterProvider(() -> meterProvider)
             .build();
     TracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(processor)
-            .setMeterProvider(meterProvider)
+            .setMeterProvider(() -> meterProvider)
             .setSampler(Sampler.alwaysOn())
             .build();
 
@@ -921,8 +921,10 @@ class SdkTracerProviderMetricsTest {
     TracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
-                SimpleSpanProcessor.builder(mockExporter).setMeterProvider(meterProvider).build())
-            .setMeterProvider(meterProvider)
+                SimpleSpanProcessor.builder(mockExporter)
+                    .setMeterProvider(() -> meterProvider)
+                    .build())
+            .setMeterProvider(() -> meterProvider)
             .setSampler(Sampler.alwaysOn())
             .build();
 

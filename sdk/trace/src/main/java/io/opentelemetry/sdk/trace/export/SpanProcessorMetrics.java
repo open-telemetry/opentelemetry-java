@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace.export;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /** Metrics exported by span processors. */
@@ -16,7 +17,7 @@ interface SpanProcessorMetrics {
   static SpanProcessorMetrics get(
       InternalTelemetryVersion telemetryVersion,
       ComponentId componentId,
-      MeterProvider meterProvider) {
+      Supplier<MeterProvider> meterProvider) {
     switch (telemetryVersion) {
       case LEGACY:
         return new LegacySpanProcessorMetrics(meterProvider);
@@ -31,9 +32,6 @@ interface SpanProcessorMetrics {
   /** Record metrics for spans processed, possibly with an error. */
   void finishSpans(int count, @Nullable String error);
 
-  /** Registers a metric for processor queue capacity. */
-  void buildQueueCapacityMetric(long capacity);
-
-  /** Registers a metric for processor queue size. */
-  void buildQueueSizeMetric(LongCallable queueSize);
+  /** Registers metrics for processor queue capacity and size. */
+  void buildQueueMetricsOnce(long capacity, LongCallable getSize);
 }
