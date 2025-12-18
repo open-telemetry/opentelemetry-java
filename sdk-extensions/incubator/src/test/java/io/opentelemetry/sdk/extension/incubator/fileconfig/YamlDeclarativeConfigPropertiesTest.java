@@ -183,7 +183,7 @@ class YamlDeclarativeConfigPropertiesTest {
     // Access string at .foo.bar.baz without null checking and without exception.
     assertThat(
             structuredConfigProps
-                .getStructured("foo", empty())
+                .get("foo") // short for getStructured("foo", empty())
                 .getStructured("bar", empty())
                 .getString("baz"))
         .isNull();
