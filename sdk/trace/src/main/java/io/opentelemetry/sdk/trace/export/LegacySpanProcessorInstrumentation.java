@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /** Span processor metrics defined before they were standardized in semconv. */
-final class LegacySpanProcessorMetrics implements SpanProcessorMetrics {
+final class LegacySpanProcessorInstrumentation implements SpanProcessorInstrumentation {
   private static final AttributeKey<String> SPAN_PROCESSOR_TYPE_LABEL =
       AttributeKey.stringKey("processorType");
   private static final AttributeKey<Boolean> SPAN_PROCESSOR_DROPPED_LABEL =
@@ -33,7 +33,7 @@ final class LegacySpanProcessorMetrics implements SpanProcessorMetrics {
   @Nullable private Meter meter;
   @Nullable private volatile LongCounter processedSpans;
 
-  LegacySpanProcessorMetrics(Supplier<MeterProvider> meterProvider) {
+  LegacySpanProcessorInstrumentation(Supplier<MeterProvider> meterProvider) {
     this.meterProvider = meterProvider;
 
     standardAttrs =

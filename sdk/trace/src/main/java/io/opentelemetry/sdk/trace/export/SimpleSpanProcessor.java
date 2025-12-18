@@ -46,7 +46,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   private final Set<CompletableResultCode> pendingExports =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
-  private final SpanProcessorMetrics spanProcessorMetrics;
+  private final SpanProcessorInstrumentation spanProcessorInstrumentation;
 
   private final Object exporterLock = new Object();
 
@@ -81,8 +81,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
       Supplier<MeterProvider> meterProvider) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
     this.exportUnsampledSpans = exportUnsampledSpans;
-    spanProcessorMetrics =
-        SpanProcessorMetrics.get(InternalTelemetryVersion.LATEST, COMPONENT_ID, meterProvider);
+    spanProcessorInstrumentation =
+        SpanProcessorInstrumentation.get(
+            InternalTelemetryVersion.LATEST, COMPONENT_ID, meterProvider);
   }
 
   @Override
@@ -119,7 +120,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
                   error = "export_failed";
                 }
               }
-              spanProcessorMetrics.finishSpans(1, error);
+              spanProcessorInstrumentation.finishSpans(1, error);
             });
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);

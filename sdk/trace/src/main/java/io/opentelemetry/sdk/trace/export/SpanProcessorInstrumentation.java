@@ -12,17 +12,17 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /** Metrics exported by span processors. */
-interface SpanProcessorMetrics {
+interface SpanProcessorInstrumentation {
 
-  static SpanProcessorMetrics get(
+  static SpanProcessorInstrumentation get(
       InternalTelemetryVersion telemetryVersion,
       ComponentId componentId,
       Supplier<MeterProvider> meterProvider) {
     switch (telemetryVersion) {
       case LEGACY:
-        return new LegacySpanProcessorMetrics(meterProvider);
+        return new LegacySpanProcessorInstrumentation(meterProvider);
       default:
-        return new SemConvSpanProcessorMetrics(componentId, meterProvider);
+        return new SemConvSpanProcessorInstrumentation(componentId, meterProvider);
     }
   }
 

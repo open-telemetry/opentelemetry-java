@@ -161,7 +161,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   // the data.
   private static final class Worker implements Runnable {
 
-    private final SpanProcessorMetrics spanProcessorMetrics;
+    private final SpanProcessorInstrumentation spanProcessorInstrumentation;
 
     private final SpanExporter spanExporter;
     private final long scheduleDelayNanos;
@@ -201,17 +201,17 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.queue = queue;
       this.signal = new ArrayBlockingQueue<>(1);
 
-      spanProcessorMetrics =
-          SpanProcessorMetrics.get(telemetryVersion, COMPONENT_ID, meterProvider);
+      spanProcessorInstrumentation =
+          SpanProcessorInstrumentation.get(telemetryVersion, COMPONENT_ID, meterProvider);
       this.maxQueueSize = maxQueueSize;
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
     private void addSpan(ReadableSpan span) {
-      spanProcessorMetrics.buildQueueMetricsOnce(maxQueueSize, queue::size);
+      spanProcessorInstrumentation.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(span)) {
-        spanProcessorMetrics.dropSpans(1);
+        spanProcessorInstrumentation.dropSpans(1);
       } else {
         if (queueSize.incrementAndGet() >= spansNeeded.get()) {
           signal.offer(true);
@@ -332,7 +332,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         logger.log(Level.WARNING, "Exporter threw an Exception", t);
         error = t.getClass().getName();
       } finally {
-        spanProcessorMetrics.finishSpans(batch.size(), error);
+        spanProcessorInstrumentation.finishSpans(batch.size(), error);
         batch.clear();
       }
     }

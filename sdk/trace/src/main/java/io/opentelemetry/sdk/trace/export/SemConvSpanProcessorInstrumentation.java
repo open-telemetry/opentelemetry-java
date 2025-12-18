@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
  * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">semantic
  * conventions</a>.
  */
-final class SemConvSpanProcessorMetrics implements SpanProcessorMetrics {
+final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrumentation {
 
   private final Object lock = new Object();
   private final AtomicBoolean builtQueueMetrics = new AtomicBoolean(false);
@@ -32,7 +32,8 @@ final class SemConvSpanProcessorMetrics implements SpanProcessorMetrics {
   @Nullable private Meter meter;
   @Nullable private volatile LongCounter processedSpans;
 
-  SemConvSpanProcessorMetrics(ComponentId componentId, Supplier<MeterProvider> meterProvider) {
+  SemConvSpanProcessorInstrumentation(
+      ComponentId componentId, Supplier<MeterProvider> meterProvider) {
     this.meterProvider = meterProvider;
 
     standardAttrs =
