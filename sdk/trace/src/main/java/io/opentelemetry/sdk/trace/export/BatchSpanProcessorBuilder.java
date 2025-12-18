@@ -9,8 +9,10 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,7 +35,8 @@ public final class BatchSpanProcessorBuilder {
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
-  private MeterProvider meterProvider = MeterProvider.noop();
+  private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
+  private InternalTelemetryVersion telemetryVersion = InternalTelemetryVersion.LEGACY;
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
@@ -145,7 +148,25 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessorBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = () -> meterProvider;
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
+   * metrics will not be collected.
+   */
+  public BatchSpanProcessorBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
     this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /** Sets the {@link InternalTelemetryVersion} defining which metrics this processor records. */
+  public BatchSpanProcessorBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion telemetryVersion) {
+    requireNonNull(telemetryVersion, "telemetryVersion");
+    this.telemetryVersion = telemetryVersion;
     return this;
   }
 
@@ -172,6 +193,7 @@ public final class BatchSpanProcessorBuilder {
         spanExporter,
         exportUnsampledSpans,
         meterProvider,
+        telemetryVersion,
         scheduleDelayNanos,
         maxQueueSize,
         maxExportBatchSize,

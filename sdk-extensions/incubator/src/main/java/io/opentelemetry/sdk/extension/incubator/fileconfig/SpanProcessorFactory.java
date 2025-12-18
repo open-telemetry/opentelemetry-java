@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Map;
@@ -50,7 +51,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       }
       MeterProvider meterProvider = context.getMeterProvider();
       if (meterProvider != null) {
-        builder.setMeterProvider(meterProvider);
+        builder.setMeterProvider(() -> meterProvider);
       }
 
       return context.addCloseable(builder.build());
@@ -62,7 +63,12 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
           FileConfigUtil.requireNonNull(
               simpleModel.getExporter(), "simple span processor exporter");
       SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
-      return context.addCloseable(SimpleSpanProcessor.create(spanExporter));
+      SimpleSpanProcessorBuilder builder = SimpleSpanProcessor.builder(spanExporter);
+      MeterProvider meterProvider = context.getMeterProvider();
+      if (meterProvider != null) {
+        builder.setMeterProvider(() -> meterProvider);
+      }
+      return context.addCloseable(builder.build());
     }
 
     Map.Entry<String, Object> keyValue =

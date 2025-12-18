@@ -33,4 +33,9 @@ public class SemConvAttributes {
       AttributeKey.longKey("rpc.grpc.status_code");
   public static final AttributeKey<Long> HTTP_RESPONSE_STATUS_CODE =
       AttributeKey.longKey("http.response.status_code");
+
+  public static final AttributeKey<String> OTEL_SPAN_PARENT_ORIGIN =
+      AttributeKey.stringKey("otel.span.parent.origin");
+  public static final AttributeKey<String> OTEL_SPAN_SAMPLING_RESULT =
+      AttributeKey.stringKey("otel.span.sampling_result");
 }
