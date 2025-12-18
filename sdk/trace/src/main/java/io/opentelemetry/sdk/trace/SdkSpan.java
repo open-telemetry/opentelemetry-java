@@ -565,6 +565,7 @@ final class SdkSpan implements ReadWriteSpan {
     }
     synchronized (lock) {
       hasEnded = EndState.ENDED;
+      spanEndingThread = null;
     }
     if (spanProcessor.isEndRequired()) {
       spanProcessor.onEnd(this);
