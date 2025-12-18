@@ -344,7 +344,7 @@ class OpenTelemetryConfigurationFactoryTest {
         .extracting("sharedState")
         .extracting("activeSpanProcessor")
         .extracting("worker")
-        .extracting("spanProcessorMetrics")
+        .extracting("spanProcessorInstrumentation")
         .extracting("processedSpans")
         .isNull();
   }

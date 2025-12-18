@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
+import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
@@ -24,12 +24,6 @@ import javax.annotation.Nullable;
  * conventions</a>.
  */
 final class SdkTracerMetrics {
-
-  // Visible for testing
-  static final AttributeKey<String> OTEL_SPAN_PARENT_ORIGIN = stringKey("otel.span.parent.origin");
-  // Visible for testing
-  static final AttributeKey<String> OTEL_SPAN_SAMPLING_RESULT =
-      stringKey("otel.span.sampling_result");
 
   private static final Attributes noParentDrop =
       Attributes.of(

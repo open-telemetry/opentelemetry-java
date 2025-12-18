@@ -31,5 +31,10 @@ class SemConvAttributesTest {
         .isEqualTo(RpcIncubatingAttributes.RPC_GRPC_STATUS_CODE);
     assertThat(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE)
         .isEqualTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE);
+
+    assertThat(SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN)
+        .isEqualTo(OtelIncubatingAttributes.OTEL_SPAN_PARENT_ORIGIN);
+    assertThat(SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT)
+        .isEqualTo(OtelIncubatingAttributes.OTEL_SPAN_SAMPLING_RESULT);
   }
 }
