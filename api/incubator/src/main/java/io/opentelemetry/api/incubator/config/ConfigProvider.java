@@ -38,7 +38,7 @@ public interface ConfigProvider {
    * @param name the name of the instrumentation
    * @return the {@link DeclarativeConfigProperties} for the given instrumentation name
    */
-  default DeclarativeConfigProperties get(String name) {
+  default DeclarativeConfigProperties getJavaInstrumentationConfig(String name) {
     DeclarativeConfigProperties config = getInstrumentationConfig();
     if (config == null) {
       return empty();
