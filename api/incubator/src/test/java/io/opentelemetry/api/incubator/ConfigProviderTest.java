@@ -23,6 +23,6 @@ class ConfigProviderTest {
     ConfigProvider configProvider = ConfigProvider.noop();
     assertThat(configProvider.getInstrumentationConfig()).isNull();
     assertThat(configProvider.getJavaInstrumentationConfig("servlet")).isNotNull();
-    assertThat(configProvider.getGeneralInstrumentationConfig("http")).isNotNull();
+    assertThat(configProvider.getGeneralInstrumentationConfig()).isNotNull();
   }
 }

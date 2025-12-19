@@ -230,7 +230,8 @@ class DeclarativeConfigurationTest {
         .isEqualTo("value");
     assertThat(
             globalConfigProvider
-                .getGeneralInstrumentationConfig("http")
+                .getGeneralInstrumentationConfig()
+                .get("http")
                 .get("client")
                 .getScalarList("request_captured_headers", String.class))
         .isEqualTo(Arrays.asList("Content-Type", "Accept"));

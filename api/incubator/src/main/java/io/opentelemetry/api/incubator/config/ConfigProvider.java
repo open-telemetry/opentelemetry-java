@@ -44,17 +44,15 @@ public interface ConfigProvider {
   }
 
   /**
-   * Returns the {@link DeclarativeConfigProperties} for general instrumentation config by name. If
-   * no configuration is available for the given name, an empty {@link DeclarativeConfigProperties}
-   * is returned.
+   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration. If
+   * the general configuration is not available, an empty {@link DeclarativeConfigProperties} is
+   * returned.
    *
-   * @param name the name of the general instrumentation config
-   * @return the {@link DeclarativeConfigProperties} for the given general instrumentation config
-   *     name
+   * @return the {@link DeclarativeConfigProperties} for the general instrumentation configuration
    */
-  default DeclarativeConfigProperties getGeneralInstrumentationConfig(String name) {
+  default DeclarativeConfigProperties getGeneralInstrumentationConfig() {
     DeclarativeConfigProperties config = getInstrumentationConfig();
-    return config == null ? empty() : config.get("general").get(name);
+    return config == null ? empty() : config.get("general");
   }
 
   /** Returns a no-op {@link ConfigProvider}. */
