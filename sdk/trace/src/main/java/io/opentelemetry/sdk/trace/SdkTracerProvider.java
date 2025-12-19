@@ -66,7 +66,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             sampler,
             spanProcessors,
             exceptionAttributeResolver,
-            new SdkTracerMetrics(meterProvider));
+            new SdkTracerInstrumentation(meterProvider));
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->

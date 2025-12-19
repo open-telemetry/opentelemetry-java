@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
  * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">semantic
  * conventions</a>.
  */
-final class SdkTracerMetrics {
+final class SdkTracerInstrumentation {
 
   private static final Attributes noParentDrop =
       Attributes.of(
@@ -92,7 +92,7 @@ final class SdkTracerMetrics {
   @Nullable private volatile LongCounter startedSpans;
   @Nullable private volatile LongUpDownCounter liveSpans;
 
-  SdkTracerMetrics(Supplier<MeterProvider> meterProvider) {
+  SdkTracerInstrumentation(Supplier<MeterProvider> meterProvider) {
     this.meterProvider = meterProvider;
   }
 
@@ -105,7 +105,7 @@ final class SdkTracerMetrics {
       switch (samplingDecision) {
         case DROP:
           startedSpans().add(1, noParentDrop);
-          return SdkTracerMetrics::noop;
+          return SdkTracerInstrumentation::noop;
         case RECORD_ONLY:
           startedSpans().add(1, noParentRecordOnly);
           liveSpans().add(1, recordOnly);
@@ -120,7 +120,7 @@ final class SdkTracerMetrics {
       switch (samplingDecision) {
         case DROP:
           startedSpans().add(1, remoteParentDrop);
-          return SdkTracerMetrics::noop;
+          return SdkTracerInstrumentation::noop;
         case RECORD_ONLY:
           startedSpans().add(1, remoteParentRecordOnly);
           liveSpans().add(1, recordOnly);
@@ -136,7 +136,7 @@ final class SdkTracerMetrics {
     switch (samplingDecision) {
       case DROP:
         startedSpans().add(1, localParentDrop);
-        return SdkTracerMetrics::noop;
+        return SdkTracerInstrumentation::noop;
       case RECORD_ONLY:
         startedSpans().add(1, localParentRecordOnly);
         liveSpans().add(1, recordOnly);

@@ -205,7 +205,7 @@ class SdkSpanBuilder implements SpanBuilder {
             tracerSharedState.isIdGeneratorSafeToSkipIdValidation());
 
     Runnable recordEndSpanMetrics =
-        tracerSharedState.getTracerMetrics().startSpan(parentSpanContext, samplingDecision);
+        tracerSharedState.getTracerInstrumentation().startSpan(parentSpanContext, samplingDecision);
 
     if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
