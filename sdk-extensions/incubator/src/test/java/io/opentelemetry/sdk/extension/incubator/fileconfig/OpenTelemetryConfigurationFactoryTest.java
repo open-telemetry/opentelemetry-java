@@ -325,17 +325,17 @@ class OpenTelemetryConfigurationFactoryTest {
     // test that the meter provider is wired through to the tracer and logger providers
     Field field = SdkMeterProvider.class.getDeclaredField("sharedState");
     field.setAccessible(true);
-    Object sharedState = field.get(sdk.getSdkMeterProvider());
+
+    // Lazily initialized
     assertThat(sdk)
         .extracting("loggerProvider")
         .extracting("delegate")
         .extracting("sharedState")
         .extracting("logRecordProcessor")
         .extracting("worker")
-        .extracting("processedLogsCounter")
-        .extracting("sdkMeter")
-        .extracting("meterProviderSharedState")
-        .isEqualTo(sharedState);
+        .extracting("logProcessorInstrumentation")
+        .extracting("processedLogs")
+        .isNull();
 
     // Lazily initialized
     assertThat(sdk)

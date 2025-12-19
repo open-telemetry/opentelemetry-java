@@ -44,6 +44,7 @@ final class LoggerProviderConfiguration {
       List<Closeable> closeables) {
 
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
+    loggerProviderBuilder.setMeterProvider(() -> meterProvider);
 
     Map<String, LogRecordExporter> exportersByName =
         configureLogRecordExporters(config, spiHelper, logRecordExporterCustomizer, closeables);
@@ -71,7 +72,10 @@ final class LoggerProviderConfiguration {
     for (String simpleProcessorExporterName : simpleProcessorExporterNames) {
       LogRecordExporter exporter = exportersByNameCopy.remove(simpleProcessorExporterName);
       if (exporter != null) {
-        LogRecordProcessor logRecordProcessor = SimpleLogRecordProcessor.create(exporter);
+        LogRecordProcessor logRecordProcessor =
+            SimpleLogRecordProcessor.builder(exporter)
+                .setMeterProvider(() -> meterProvider)
+                .build();
         closeables.add(logRecordProcessor);
         logRecordProcessors.add(logRecordProcessor);
       }
