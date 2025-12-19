@@ -1,4 +1,5 @@
 import de.undercouch.gradle.tasks.download.Download
+import java.io.FileFilter
 
 plugins {
   id("otel.java-conventions")
@@ -37,7 +38,6 @@ dependencies {
   testImplementation(project(":exporters:logging-otlp"))
   testImplementation(project(":exporters:otlp:all"))
   testImplementation(project(":exporters:prometheus"))
-  testImplementation(project(":exporters:zipkin"))
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
@@ -51,14 +51,13 @@ dependencies {
 // The sequence of tasks is:
 // 1. downloadConfigurationSchema - download configuration schema from open-telemetry/opentelemetry-configuration
 // 2. unzipConfigurationSchema - unzip the configuration schema archive contents to $buildDir/configuration/
-// 3. deleteTypeDescriptions - delete type_descriptions.yaml $buildDir/configuration/schema, which is not part of core schema and causes problems resolving type refs
-// 4. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
-// 5. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
-// 6. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
-// 7. deleteJs2pTmp - delete tmp directory
+// 3. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
+// 4. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
+// 5. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
+// 6. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-val configurationTag = "1.0.0-rc.1"
+val configurationTag = "1.0.0-rc.3"
 val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
@@ -81,13 +80,8 @@ val unzipConfigurationSchema by tasks.registering(Copy::class) {
   into("$buildDirectory/configuration/")
 }
 
-val deleteTypeDescriptions by tasks.registering(Delete::class) {
-  dependsOn(unzipConfigurationSchema)
-  delete("$buildDirectory/configuration/schema/type_descriptions.yaml")
-}
-
 jsonSchema2Pojo {
-  sourceFiles = setOf(file("$buildDirectory/configuration/schema"))
+  sourceFiles = setOf(file("$buildDirectory/configuration/opentelemetry_configuration.json"))
   targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
 
@@ -114,7 +108,7 @@ jsonSchema2Pojo {
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
-generateJsonSchema2Pojo.dependsOn(deleteTypeDescriptions)
+generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
 
 val jsonSchema2PojoPostProcessing by tasks.registering(Copy::class) {
   dependsOn(generateJsonSchema2Pojo)
@@ -204,9 +198,11 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
 tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
 tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("javadoc").dependsOn(buildGraalVmReflectionJson)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {
+  dependsOn(buildGraalVmReflectionJson)
   exclude("**/fileconfig/internal/model/**")
 }
 

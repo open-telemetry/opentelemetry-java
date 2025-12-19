@@ -60,4 +60,9 @@ final class ComposableRuleBasedSampler implements ComposableSampler {
   public String getDescription() {
     return description;
   }
+
+  @Override
+  public String toString() {
+    return this.getDescription();
+  }
 }

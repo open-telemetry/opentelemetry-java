@@ -16,8 +16,9 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -72,7 +73,9 @@ class InstrumentationConfigUtilTest {
   @Test
   void getInstrumentationConfigModel_EmptyConfig() {
     ConfigProvider configProvider =
-        withInstrumentationConfig("my_instrumentation_library", Collections.emptyMap());
+        withInstrumentationConfig(
+            "my_instrumentation_library",
+            new ExperimentalLanguageSpecificInstrumentationPropertyModel());
 
     assertThat(
             InstrumentationConfigUtil.getInstrumentationConfigModel(
@@ -85,21 +88,20 @@ class InstrumentationConfigUtilTest {
     ConfigProvider configProvider =
         withInstrumentationConfig(
             "my_instrumentation_library",
-            ImmutableMap.<String, Object>builder()
-                .put("string_property", "value")
-                .put("boolean_property", true)
-                .put("long_property", 1L)
-                .put("double_property", 1.1d)
-                .put("string_list_property", Arrays.asList("val1", "val2"))
-                .put("boolean_list_property", Arrays.asList(true, false))
-                .put("long_list_property", Arrays.asList(1L, 2L))
-                .put("double_list_property", Arrays.asList(1.1d, 2.2d))
-                .put("map_property", Collections.singletonMap("childKey", "val"))
-                .put(
+            new ExperimentalLanguageSpecificInstrumentationPropertyModel()
+                .withAdditionalProperty("string_property", "value")
+                .withAdditionalProperty("boolean_property", true)
+                .withAdditionalProperty("long_property", 1L)
+                .withAdditionalProperty("double_property", 1.1d)
+                .withAdditionalProperty("string_list_property", Arrays.asList("val1", "val2"))
+                .withAdditionalProperty("boolean_list_property", Arrays.asList(true, false))
+                .withAdditionalProperty("long_list_property", Arrays.asList(1L, 2L))
+                .withAdditionalProperty("double_list_property", Arrays.asList(1.1d, 2.2d))
+                .withAdditionalProperty("map_property", Collections.singletonMap("childKey", "val"))
+                .withAdditionalProperty(
                     "structured_list_property",
                     Collections.singletonList(
-                        ImmutableMap.of("key", "the_key", "value", "the_value")))
-                .build());
+                        ImmutableMap.of("key", "the_key", "value", "the_value"))));
 
     Model expected = new Model();
     expected.stringProperty = "value";
@@ -123,14 +125,16 @@ class InstrumentationConfigUtilTest {
   }
 
   private static ConfigProvider withInstrumentationConfig(
-      String instrumentationName, Map<String, Object> instrumentationConfig) {
+      String instrumentationName,
+      ExperimentalLanguageSpecificInstrumentationPropertyModel instrumentationConfig) {
     ExperimentalLanguageSpecificInstrumentationModel javaConfig =
         new ExperimentalLanguageSpecificInstrumentationModel();
     javaConfig.setAdditionalProperty(instrumentationName, instrumentationConfig);
 
     return SdkConfigProvider.create(
         new OpenTelemetryConfigurationModel()
-            .withInstrumentationDevelopment(new InstrumentationModel().withJava(javaConfig)));
+            .withInstrumentationDevelopment(
+                new ExperimentalInstrumentationModel().withJava(javaConfig)));
   }
 
   private static class Model {

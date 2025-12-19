@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExporter> {
@@ -21,17 +22,24 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
 
   @Override
   public SpanExporter create(SpanExporterModel model, DeclarativeConfigContext context) {
+    Map<String, Object> exporterResourceByName = new LinkedHashMap<>();
 
-    model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
-    model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
-    model
-        .getAdditionalProperties()
-        .compute("otlp_file/development", (k, v) -> model.getOtlpFileDevelopment());
-    model.getAdditionalProperties().compute("console", (k, v) -> model.getConsole());
-    model.getAdditionalProperties().compute("zipkin", (k, v) -> model.getZipkin());
+    if (model.getOtlpHttp() != null) {
+      exporterResourceByName.put("otlp_http", model.getOtlpHttp());
+    }
+    if (model.getOtlpGrpc() != null) {
+      exporterResourceByName.put("otlp_grpc", model.getOtlpGrpc());
+    }
+    if (model.getOtlpFileDevelopment() != null) {
+      exporterResourceByName.put("otlp_file/development", model.getOtlpFileDevelopment());
+    }
+    if (model.getConsole() != null) {
+      exporterResourceByName.put("console", model.getConsole());
+    }
+    exporterResourceByName.putAll(model.getAdditionalProperties());
 
     Map.Entry<String, Object> keyValue =
-        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span exporter");
+        FileConfigUtil.getSingletonMapEntry(exporterResourceByName, "span exporter");
     SpanExporter spanExporter =
         context.loadComponent(SpanExporter.class, keyValue.getKey(), keyValue.getValue());
     return context.addCloseable(spanExporter);

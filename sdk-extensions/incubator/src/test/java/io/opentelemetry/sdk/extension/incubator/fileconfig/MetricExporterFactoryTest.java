@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigTest
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
@@ -20,12 +19,15 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GrpcTlsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpTlsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterPropertyModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -146,9 +148,11 @@ class MetricExporterFactoryTest {
                                         .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
-                            .withCertificateFile(certificatePath)
-                            .withClientKeyFile(clientKeyPath)
-                            .withClientCertificateFile(clientCertificatePath)
+                            .withTls(
+                                new HttpTlsModel()
+                                    .withCaFile(certificatePath)
+                                    .withKeyFile(clientKeyPath)
+                                    .withCertFile(clientCertificatePath))
                             .withTemporalityPreference(
                                 OtlpHttpMetricExporterModel.ExporterTemporalityPreference.DELTA)
                             .withDefaultHistogramAggregation(
@@ -179,13 +183,14 @@ class MetricExporterFactoryTest {
             });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
-    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
-    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("client_certificate_file"))
-        .isEqualTo(clientCertificatePath);
     assertThat(configProperties.getString("temporality_preference")).isEqualTo("delta");
     assertThat(configProperties.getString("default_histogram_aggregation"))
         .isEqualTo("base2_exponential_bucket_histogram");
+    DeclarativeConfigProperties tls = configProperties.getStructured("tls");
+    assertThat(tls).isNotNull();
+    assertThat(tls.getString("ca_file")).isEqualTo(certificatePath);
+    assertThat(tls.getString("key_file")).isEqualTo(clientKeyPath);
+    assertThat(tls.getString("cert_file")).isEqualTo(clientCertificatePath);
   }
 
   @Test
@@ -268,9 +273,11 @@ class MetricExporterFactoryTest {
                                         .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
-                            .withCertificateFile(certificatePath)
-                            .withClientKeyFile(clientKeyPath)
-                            .withClientCertificateFile(clientCertificatePath)
+                            .withTls(
+                                new GrpcTlsModel()
+                                    .withCaFile(certificatePath)
+                                    .withKeyFile(clientKeyPath)
+                                    .withCertFile(clientCertificatePath))
                             .withTemporalityPreference(
                                 OtlpHttpMetricExporterModel.ExporterTemporalityPreference.DELTA)
                             .withDefaultHistogramAggregation(
@@ -301,13 +308,14 @@ class MetricExporterFactoryTest {
             });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
-    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
-    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("client_certificate_file"))
-        .isEqualTo(clientCertificatePath);
     assertThat(configProperties.getString("temporality_preference")).isEqualTo("delta");
     assertThat(configProperties.getString("default_histogram_aggregation"))
         .isEqualTo("base2_exponential_bucket_histogram");
+    DeclarativeConfigProperties tls = configProperties.getStructured("tls");
+    assertThat(tls).isNotNull();
+    assertThat(tls.getString("ca_file")).isEqualTo(certificatePath);
+    assertThat(tls.getString("key_file")).isEqualTo(clientKeyPath);
+    assertThat(tls.getString("cert_file")).isEqualTo(clientCertificatePath);
   }
 
   @Test
@@ -318,7 +326,9 @@ class MetricExporterFactoryTest {
 
     io.opentelemetry.sdk.metrics.export.MetricExporter exporter =
         MetricExporterFactory.getInstance()
-            .create(new PushMetricExporterModel().withConsole(new ConsoleExporterModel()), context);
+            .create(
+                new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -356,7 +366,9 @@ class MetricExporterFactoryTest {
                     .create(
                         new PushMetricExporterModel()
                             .withAdditionalProperty(
-                                "unknown_key", ImmutableMap.of("key1", "value1")),
+                                "unknown_key",
+                                new PushMetricExporterPropertyModel()
+                                    .withAdditionalProperty("key1", "value1")),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
@@ -369,7 +381,10 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new PushMetricExporterModel()
-                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                    .withAdditionalProperty(
+                        "test",
+                        new PushMetricExporterPropertyModel()
+                            .withAdditionalProperty("key1", "value1")),
                 context);
     assertThat(metricExporter)
         .isInstanceOf(MetricExporterComponentProvider.TestMetricExporter.class);

@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchS
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorPropertyModel;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
@@ -71,7 +72,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       return context.addCloseable(builder.build());
     }
 
-    Map.Entry<String, Object> keyValue =
+    Map.Entry<String, SpanProcessorPropertyModel> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span processor");
     SpanProcessor spanProcessor =
         context.loadComponent(SpanProcessor.class, keyValue.getKey(), keyValue.getValue());
