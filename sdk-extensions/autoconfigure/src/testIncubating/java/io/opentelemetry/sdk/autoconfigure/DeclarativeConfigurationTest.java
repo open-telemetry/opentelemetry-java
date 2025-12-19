@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.api.incubator.config.DeclarativeConfigProperties.empty;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -232,7 +231,7 @@ class DeclarativeConfigurationTest {
     assertThat(
             globalConfigProvider
                 .getGeneralInstrumentationConfig("http")
-                .getStructured("client", empty())
+                .get("client")
                 .getScalarList("request_captured_headers", String.class))
         .isEqualTo(Arrays.asList("Content-Type", "Accept"));
   }

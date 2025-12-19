@@ -40,10 +40,7 @@ public interface ConfigProvider {
    */
   default DeclarativeConfigProperties getJavaInstrumentationConfig(String name) {
     DeclarativeConfigProperties config = getInstrumentationConfig();
-    if (config == null) {
-      return empty();
-    }
-    return config.getStructured("java", empty()).getStructured(name, empty());
+    return config == null ? empty() : config.get("java").get(name);
   }
 
   /**
@@ -57,10 +54,7 @@ public interface ConfigProvider {
    */
   default DeclarativeConfigProperties getGeneralInstrumentationConfig(String name) {
     DeclarativeConfigProperties config = getInstrumentationConfig();
-    if (config == null) {
-      return empty();
-    }
-    return config.getStructured("general", empty()).getStructured(name, empty());
+    return config == null ? empty() : config.get("general").get(name);
   }
 
   /** Returns a no-op {@link ConfigProvider}. */
