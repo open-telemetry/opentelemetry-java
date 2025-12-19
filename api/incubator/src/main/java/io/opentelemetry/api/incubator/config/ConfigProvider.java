@@ -46,6 +46,23 @@ public interface ConfigProvider {
     return config.getStructured("java", empty()).getStructured(name, empty());
   }
 
+  /**
+   * Returns the {@link DeclarativeConfigProperties} for general instrumentation config by name. If
+   * no configuration is available for the given name, an empty {@link DeclarativeConfigProperties}
+   * is returned.
+   *
+   * @param name the name of the general instrumentation config
+   * @return the {@link DeclarativeConfigProperties} for the given general instrumentation config
+   *     name
+   */
+  default DeclarativeConfigProperties getGeneralInstrumentationConfig(String name) {
+    DeclarativeConfigProperties config = getInstrumentationConfig();
+    if (config == null) {
+      return empty();
+    }
+    return config.getStructured("general", empty()).getStructured(name, empty());
+  }
+
   /** Returns a no-op {@link ConfigProvider}. */
   static ConfigProvider noop() {
     return DeclarativeConfigProperties::empty;

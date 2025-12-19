@@ -17,4 +17,12 @@ class ConfigProviderTest {
     ConfigProvider noop = ConfigProvider.noop();
     assertThat(ConfigProvider.noop()).isSameAs(noop);
   }
+
+  @Test
+  void instrumentationConfigFallback() {
+    ConfigProvider configProvider = ConfigProvider.noop();
+    assertThat(configProvider.getInstrumentationConfig()).isNull();
+    assertThat(configProvider.getJavaInstrumentationConfig("servlet")).isNotNull();
+    assertThat(configProvider.getGeneralInstrumentationConfig("http")).isNotNull();
+  }
 }
