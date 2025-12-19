@@ -132,6 +132,8 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         this.observedTimestampEpochNanos == 0
             ? this.loggerSharedState.getClock().now()
             : this.observedTimestampEpochNanos;
+
+    loggerSharedState.getLoggerInstrumentation().emitLog();
     loggerSharedState
         .getLogRecordProcessor()
         .onEmit(context, createLogRecord(context, observedTimestampEpochNanos));

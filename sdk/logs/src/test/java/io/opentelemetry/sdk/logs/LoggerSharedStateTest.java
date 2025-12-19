@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
@@ -29,7 +30,8 @@ class LoggerSharedStateTest {
             LogLimits::getDefault,
             logRecordProcessor,
             Clock.getDefault(),
-            ExceptionAttributeResolver.getDefault());
+            ExceptionAttributeResolver.getDefault(),
+            new SdkLoggerInstrumentation(MeterProvider::noop));
     state.shutdown();
     state.shutdown();
     verify(logRecordProcessor, times(1)).shutdown();
