@@ -31,10 +31,12 @@ class ComposableRuleBasedSamplerTest {
   private static final class AttributePredicate<T> implements SamplingPredicate {
 
     private final AttributeKey<T> key;
+    private final T value;
     private final String description;
 
     private AttributePredicate(AttributeKey<T> key, T value) {
       this.key = key;
+      this.value = value;
       this.description = key.getKey() + "=" + value;
     }
 
@@ -46,7 +48,7 @@ class ComposableRuleBasedSamplerTest {
         SpanKind spanKind,
         Attributes attributes,
         List<LinkData> parentLinks) {
-      return "/health".equals(attributes.get(key));
+      return value.equals(attributes.get(key));
     }
 
     @Override
@@ -116,7 +118,7 @@ class ComposableRuleBasedSamplerTest {
     Sampler sampler =
         CompositeSampler.wrap(
             ComposableSampler.ruleBasedBuilder()
-                .add(new AttributePredicate<>(HTTP_ROUTE, "/health"), ComposableSampler.alwaysOff())
+                .add(new AttributePredicate<>(HTTP_ROUTE, "/check"), ComposableSampler.alwaysOff())
                 .add(IsRootPredicate.INSTANCE, ComposableSampler.alwaysOn())
                 .build());
 
@@ -128,7 +130,7 @@ class ComposableRuleBasedSamplerTest {
                     TraceId.fromLongs(1, 2),
                     SpanId.fromLong(3),
                     SpanKind.SERVER,
-                    Attributes.of(HTTP_ROUTE, "/health"),
+                    Attributes.of(HTTP_ROUTE, "/check"),
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(SamplingDecision.DROP);
