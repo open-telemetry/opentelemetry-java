@@ -38,7 +38,6 @@ dependencies {
   testImplementation(project(":exporters:logging-otlp"))
   testImplementation(project(":exporters:otlp:all"))
   testImplementation(project(":exporters:prometheus"))
-  testImplementation(project(":exporters:zipkin"))
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
@@ -199,9 +198,11 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
 tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
 tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("javadoc").dependsOn(buildGraalVmReflectionJson)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {
+  dependsOn(buildGraalVmReflectionJson)
   exclude("**/fileconfig/internal/model/**")
 }
 

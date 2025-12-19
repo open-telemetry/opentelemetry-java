@@ -5,17 +5,13 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNullResource;
-
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorPropertyModel;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 final class ResourceDetectorFactory
     implements Factory<ExperimentalResourceDetectorModel, Resource> {
-  private static final String RESOURCE_NAME = "resource detector";
-
   private static final ResourceDetectorFactory INSTANCE = new ResourceDetectorFactory();
 
   private ResourceDetectorFactory() {}
@@ -27,35 +23,24 @@ final class ResourceDetectorFactory
   @Override
   public Resource create(
       ExperimentalResourceDetectorModel model, DeclarativeConfigContext context) {
-    String key = null;
-    Object value = null;
+    Map<String, Object> detectorResourceByName = new LinkedHashMap<>();
 
     if (model.getContainer() != null) {
-      key = "container";
-      value = model.getContainer();
+      detectorResourceByName.put("container", model.getContainer());
     }
     if (model.getHost() != null) {
-      requireNullResource(value, RESOURCE_NAME, model.getAdditionalProperties());
-      key = "host";
-      value = model.getHost();
+      detectorResourceByName.put("host", model.getHost());
     }
     if (model.getProcess() != null) {
-      requireNullResource(value, RESOURCE_NAME, model.getAdditionalProperties());
-      key = "process";
-      value = model.getProcess();
+      detectorResourceByName.put("process", model.getProcess());
     }
     if (model.getService() != null) {
-      requireNullResource(value, RESOURCE_NAME, model.getAdditionalProperties());
-      key = "service";
-      value = model.getService();
+      detectorResourceByName.put("service", model.getService());
     }
-    if (key == null || value == null) {
-      Map.Entry<String, ExperimentalResourceDetectorPropertyModel> keyValue =
-          FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "resource detector");
-      key = keyValue.getKey();
-      value = keyValue.getValue();
-    }
+    detectorResourceByName.putAll(model.getAdditionalProperties());
 
-    return context.loadComponent(Resource.class, key, value);
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(detectorResourceByName, "resource detector");
+    return context.loadComponent(Resource.class, keyValue.getKey(), keyValue.getValue());
   }
 }
