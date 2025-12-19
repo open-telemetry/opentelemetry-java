@@ -20,6 +20,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -60,6 +61,8 @@ class SdkLogRecordBuilderTest {
         .thenReturn((context, logRecord) -> emittedLog.set(logRecord));
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
     when(loggerSharedState.getClock()).thenReturn(clock);
+    when(loggerSharedState.getLoggerInstrumentation())
+        .thenReturn(new SdkLoggerInstrumentation(MeterProvider::noop));
 
     SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, LoggerConfig.enabled());
     builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);

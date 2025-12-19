@@ -9,8 +9,10 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +39,8 @@ public final class BatchLogRecordProcessorBuilder {
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
-  private MeterProvider meterProvider = MeterProvider.noop();
+  private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
+  private InternalTelemetryVersion telemetryVersion = InternalTelemetryVersion.LEGACY;
 
   BatchLogRecordProcessorBuilder(LogRecordExporter logRecordExporter) {
     this.logRecordExporter = requireNonNull(logRecordExporter, "logRecordExporter");
@@ -138,7 +141,25 @@ public final class BatchLogRecordProcessorBuilder {
    */
   public BatchLogRecordProcessorBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = () -> meterProvider;
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
+   * metrics will not be collected.
+   */
+  public BatchLogRecordProcessorBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
     this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /** Sets the {@link InternalTelemetryVersion} defining which metrics this processor records. */
+  public BatchLogRecordProcessorBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion telemetryVersion) {
+    requireNonNull(telemetryVersion, "telemetryVersion");
+    this.telemetryVersion = telemetryVersion;
     return this;
   }
 
@@ -164,6 +185,7 @@ public final class BatchLogRecordProcessorBuilder {
     return new BatchLogRecordProcessor(
         logRecordExporter,
         meterProvider,
+        telemetryVersion,
         scheduleDelayNanos,
         maxQueueSize,
         maxExportBatchSize,

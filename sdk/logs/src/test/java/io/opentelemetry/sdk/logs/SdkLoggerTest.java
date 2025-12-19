@@ -22,6 +22,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -50,6 +51,8 @@ class SdkLoggerTest {
     when(state.getResource()).thenReturn(Resource.getDefault());
     when(state.getLogRecordProcessor()).thenReturn(logRecordProcessor);
     when(state.getClock()).thenReturn(clock);
+    when(state.getLoggerInstrumentation())
+        .thenReturn(new SdkLoggerInstrumentation(MeterProvider::noop));
 
     SdkLogger logger = new SdkLogger(state, info, LoggerConfig.defaultConfig());
     LogRecordBuilder logRecordBuilder = logger.logRecordBuilder();

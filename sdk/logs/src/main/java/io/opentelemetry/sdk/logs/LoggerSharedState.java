@@ -23,6 +23,7 @@ final class LoggerSharedState {
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
+  private final SdkLoggerInstrumentation loggerInstrumentation;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
@@ -30,12 +31,14 @@ final class LoggerSharedState {
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
       Clock clock,
-      ExceptionAttributeResolver exceptionAttributeResolver) {
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      SdkLoggerInstrumentation loggerInstrumentation) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
     this.exceptionAttributeResolver = exceptionAttributeResolver;
+    this.loggerInstrumentation = loggerInstrumentation;
   }
 
   Resource getResource() {
@@ -56,6 +59,10 @@ final class LoggerSharedState {
 
   ExceptionAttributeResolver getExceptionAttributeResolver() {
     return exceptionAttributeResolver;
+  }
+
+  SdkLoggerInstrumentation getLoggerInstrumentation() {
+    return loggerInstrumentation;
   }
 
   boolean hasBeenShutdown() {

@@ -68,7 +68,11 @@ final class LogRecordProcessorFactory
               simpleModel.getExporter(), "simple log record processor exporter");
       LogRecordExporter logRecordExporter =
           LogRecordExporterFactory.getInstance().create(exporterModel, context);
-      return context.addCloseable(SimpleLogRecordProcessor.create(logRecordExporter));
+      MeterProvider meterProvider = context.getMeterProvider();
+      return context.addCloseable(
+          SimpleLogRecordProcessor.builder(logRecordExporter)
+              .setMeterProvider(() -> meterProvider)
+              .build());
     }
 
     Map.Entry<String, Object> keyValue =
