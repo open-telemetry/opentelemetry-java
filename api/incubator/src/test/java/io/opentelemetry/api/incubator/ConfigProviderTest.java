@@ -22,7 +22,7 @@ class ConfigProviderTest {
   void instrumentationConfigFallback() {
     ConfigProvider configProvider = ConfigProvider.noop();
     assertThat(configProvider.getInstrumentationConfig()).isNull();
-    assertThat(configProvider.getJavaInstrumentationConfig("servlet")).isNotNull();
+    assertThat(configProvider.getInstrumentationConfig("servlet")).isNotNull();
     assertThat(configProvider.getGeneralInstrumentationConfig()).isNotNull();
   }
 }

@@ -226,7 +226,7 @@ class DeclarativeConfigurationTest {
         .satisfies(exampleConfig -> assertThat(exampleConfig.getString("key")).isEqualTo("value"));
 
     // shortcuts to get specific instrumentation config
-    assertThat(globalConfigProvider.getJavaInstrumentationConfig("example").getString("key"))
+    assertThat(globalConfigProvider.getInstrumentationConfig("example").getString("key"))
         .isEqualTo("value");
     assertThat(
             globalConfigProvider
