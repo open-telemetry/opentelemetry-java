@@ -30,6 +30,8 @@ public final class PrometheusHttpServerBuilder {
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
+  private boolean otelScopeLabelsEnabled = true;
+  private boolean otelTargetInfoMetricEnabled = true;
   @Nullable private Predicate<String> allowedResourceAttributesFilter;
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
@@ -44,6 +46,8 @@ public final class PrometheusHttpServerBuilder {
     this.host = builder.host;
     this.port = builder.port;
     this.prometheusRegistry = builder.prometheusRegistry;
+    this.otelScopeLabelsEnabled = builder.otelScopeLabelsEnabled;
+    this.otelTargetInfoMetricEnabled = builder.otelTargetInfoMetricEnabled;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
@@ -83,12 +87,19 @@ public final class PrometheusHttpServerBuilder {
 
   /**
    * Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}.
-   *
-   * @deprecated {@code otel_scope_*} attributes are always generated.
    */
   @SuppressWarnings("UnusedReturnValue")
-  @Deprecated
-  public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
+  public PrometheusHttpServerBuilder setOtelScopeLabelsEnabled(boolean otelScopeLabelsEnabled) {
+    this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
+    return this;
+  }
+
+  /**
+   * Set if the {@code otel_target_info} metric is generated. Default is {@code true}.
+   */
+  @SuppressWarnings("UnusedReturnValue")
+  public PrometheusHttpServerBuilder setOtelTargetInfoMetricEnabled(boolean otelTargetInfoMetricEnabled) {
+    this.otelTargetInfoMetricEnabled = otelTargetInfoMetricEnabled;
     return this;
   }
 
@@ -178,6 +189,8 @@ public final class PrometheusHttpServerBuilder {
         port,
         executor,
         prometheusRegistry,
+        otelScopeLabelsEnabled,
+        otelTargetInfoMetricEnabled,
         allowedResourceAttributesFilter,
         memoryMode,
         defaultHandler,

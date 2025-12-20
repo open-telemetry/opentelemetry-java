@@ -42,6 +42,8 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final String host;
   private final int port;
+  private final boolean otelScopeLabelsEnabled;
+  private final boolean otelTargetInfoMetricEnabled;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
   private final MemoryMode memoryMode;
   private final DefaultAggregationSelector defaultAggregationSelector;
@@ -71,6 +73,8 @@ public final class PrometheusHttpServer implements MetricReader {
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
+      boolean otelScopeLabelsEnabled,
+      boolean otelTargetInfoMetricEnabled,
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode,
       @Nullable HttpHandler defaultHandler,
@@ -78,11 +82,14 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable Authenticator authenticator) {
     this.host = host;
     this.port = port;
+    this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
+    this.otelTargetInfoMetricEnabled = otelTargetInfoMetricEnabled;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.memoryMode = memoryMode;
     this.defaultAggregationSelector = defaultAggregationSelector;
     this.builder = builder;
-    this.prometheusMetricReader = new PrometheusMetricReader(allowedResourceAttributesFilter);
+    this.prometheusMetricReader =
+        new PrometheusMetricReader(otelScopeLabelsEnabled, otelTargetInfoMetricEnabled, allowedResourceAttributesFilter);
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
     // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,
@@ -167,6 +174,8 @@ public final class PrometheusHttpServer implements MetricReader {
     StringJoiner joiner = new StringJoiner(",", "PrometheusHttpServer{", "}");
     joiner.add("host=" + host);
     joiner.add("port=" + port);
+    joiner.add("otelScopeLabelsEnabled=" + otelScopeLabelsEnabled);
+    joiner.add("otelTargetInfoMetricEnabled=" + otelTargetInfoMetricEnabled);
     joiner.add("allowedResourceAttributesFilter=" + allowedResourceAttributesFilter);
     joiner.add("memoryMode=" + memoryMode);
     joiner.add(

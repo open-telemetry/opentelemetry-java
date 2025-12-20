@@ -36,7 +36,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   @Deprecated
   @SuppressWarnings({"unused", "InconsistentOverloads"})
   public PrometheusMetricReader(
-      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
+      boolean otelScopeLabelsEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.converter = new Otel2PrometheusConverter(allowedResourceAttributesFilter);
   }
 
