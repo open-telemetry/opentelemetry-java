@@ -89,7 +89,11 @@ public final class PrometheusHttpServer implements MetricReader {
     this.defaultAggregationSelector = defaultAggregationSelector;
     this.builder = builder;
     this.prometheusMetricReader =
-        new PrometheusMetricReader(otelScopeLabelsEnabled, otelTargetInfoMetricEnabled, allowedResourceAttributesFilter);
+        PrometheusMetricReader.builder()
+            .setOtelScopeLabelsEnabled(otelScopeLabelsEnabled)
+            .setOtelTargetInfoMetricEnabled(otelTargetInfoMetricEnabled)
+            .setAllowedResourceAttributesFilter(allowedResourceAttributesFilter)
+            .build();
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
     // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,

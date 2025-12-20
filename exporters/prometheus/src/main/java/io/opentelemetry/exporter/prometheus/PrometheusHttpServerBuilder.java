@@ -85,20 +85,17 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
-  /**
-   * Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}.
-   */
+  /** Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}. */
   @SuppressWarnings("UnusedReturnValue")
   public PrometheusHttpServerBuilder setOtelScopeLabelsEnabled(boolean otelScopeLabelsEnabled) {
     this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
     return this;
   }
 
-  /**
-   * Set if the {@code otel_target_info} metric is generated. Default is {@code true}.
-   */
+  /** Set if the {@code otel_target_info} metric is generated. Default is {@code true}. */
   @SuppressWarnings("UnusedReturnValue")
-  public PrometheusHttpServerBuilder setOtelTargetInfoMetricEnabled(boolean otelTargetInfoMetricEnabled) {
+  public PrometheusHttpServerBuilder setOtelTargetInfoMetricEnabled(
+      boolean otelTargetInfoMetricEnabled) {
     this.otelTargetInfoMetricEnabled = otelTargetInfoMetricEnabled;
     return this;
   }

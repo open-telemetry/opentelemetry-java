@@ -61,7 +61,7 @@ class PrometheusMetricReaderTest {
   void setUp() {
     this.testClock.setTime(Instant.ofEpochMilli((System.currentTimeMillis() / 100) * 100));
     this.createdTimestamp = convertTimestamp(testClock.now());
-    this.reader = new PrometheusMetricReader(/* allowedResourceAttributesFilter= */ null);
+    this.reader = PrometheusMetricReader.create();
     this.meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -775,8 +775,7 @@ class PrometheusMetricReaderTest {
     for (int i = 0; i < 100_000; i++) {
       int otelScale = random.nextInt(24) - 4;
       int prometheusScale = Math.min(otelScale, 8);
-      PrometheusMetricReader reader =
-          new PrometheusMetricReader(/* allowedResourceAttributesFilter= */ null);
+      PrometheusMetricReader reader = PrometheusMetricReader.create();
       Meter meter =
           SdkMeterProvider.builder()
               .registerMetricReader(reader)
@@ -1028,8 +1027,7 @@ class PrometheusMetricReaderTest {
 
   @Test
   void otelScopeLabelsOnly() throws IOException {
-    PrometheusMetricReader reader =
-        new PrometheusMetricReader(/* allowedResourceAttributesFilter= */ null);
+    PrometheusMetricReader reader = PrometheusMetricReader.create();
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1059,7 +1057,9 @@ class PrometheusMetricReaderTest {
   @Test
   void addResourceAttributesWorks() throws IOException {
     PrometheusMetricReader reader =
-        new PrometheusMetricReader(/* allowedResourceAttributesFilter= */ Predicates.is("cluster"));
+        PrometheusMetricReader.builder()
+            .setAllowedResourceAttributesFilter(Predicates.is("cluster"))
+            .build();
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1093,8 +1093,11 @@ class PrometheusMetricReaderTest {
   @SuppressWarnings("deprecation") // test deprecated constructor
   @Test
   void deprecatedConstructor() {
-    assertThat(new PrometheusMetricReader(false, null))
+    // The 2-arg deprecated constructor should behave the same as the 1-arg constructor
+    // when otelScopeLabelsEnabled=true (which is also the default for the builder)
+    assertThat(new PrometheusMetricReader(/* otelScopeLabelsEnabled= */ true, null))
         .usingRecursiveComparison()
+        .ignoringFields("builder")
         .isEqualTo(new PrometheusMetricReader(null));
   }
 

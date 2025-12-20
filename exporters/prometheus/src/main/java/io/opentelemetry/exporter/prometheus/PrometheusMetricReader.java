@@ -27,22 +27,66 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
 
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
   private final Otel2PrometheusConverter converter;
+  private final PrometheusMetricReaderBuilder builder;
+
+  /** Returns a new {@link PrometheusMetricReader} with default configuration. */
+  public static PrometheusMetricReader create() {
+    return builder().build();
+  }
+
+  /** Returns a new {@link PrometheusMetricReaderBuilder}. */
+  public static PrometheusMetricReaderBuilder builder() {
+    return new PrometheusMetricReaderBuilder();
+  }
 
   /**
-   * Deprecated. Use {@link #PrometheusMetricReader(Predicate)}.
+   * Deprecated. Use {@link #builder()}.
    *
-   * @deprecated use {@link #PrometheusMetricReader(Predicate)}.
+   * @deprecated use {@link #builder()}.
    */
   @Deprecated
   @SuppressWarnings({"unused", "InconsistentOverloads"})
   public PrometheusMetricReader(
       boolean otelScopeLabelsEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this.converter = new Otel2PrometheusConverter(allowedResourceAttributesFilter);
+    this.builder =
+        new PrometheusMetricReaderBuilder()
+            .setOtelScopeLabelsEnabled(otelScopeLabelsEnabled)
+            .setAllowedResourceAttributesFilter(allowedResourceAttributesFilter);
+    this.converter =
+        new Otel2PrometheusConverter(
+            otelScopeLabelsEnabled,
+            /* otelTargetInfoMetricEnabled= */ true,
+            allowedResourceAttributesFilter);
   }
 
-  // TODO: refactor to public static create or builder pattern to align with project style
+  /**
+   * Deprecated. Use {@link #builder()}.
+   *
+   * @deprecated use {@link #builder()}.
+   */
+  @Deprecated
   public PrometheusMetricReader(@Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this.converter = new Otel2PrometheusConverter(allowedResourceAttributesFilter);
+    this.builder =
+        new PrometheusMetricReaderBuilder()
+            .setAllowedResourceAttributesFilter(allowedResourceAttributesFilter);
+    this.converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ true,
+            /* otelTargetInfoMetricEnabled= */ true,
+            allowedResourceAttributesFilter);
+  }
+
+  // Package-private constructor used by builder
+  @SuppressWarnings("InconsistentOverloads")
+  PrometheusMetricReader(
+      @Nullable Predicate<String> allowedResourceAttributesFilter,
+      PrometheusMetricReaderBuilder builder,
+      boolean otelScopeLabelsEnabled,
+      boolean otelTargetInfoMetricEnabled) {
+    this.builder = builder;
+    this.converter =
+        new Otel2PrometheusConverter(
+            otelScopeLabelsEnabled, otelTargetInfoMetricEnabled, allowedResourceAttributesFilter);
   }
 
   @Override
@@ -68,5 +112,13 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   @Override
   public MetricSnapshots collect() {
     return converter.convert(collectionRegistration.collectAllMetrics());
+  }
+
+  /**
+   * Returns a new {@link PrometheusMetricReaderBuilder} with the same configuration as this
+   * instance.
+   */
+  public PrometheusMetricReaderBuilder toBuilder() {
+    return new PrometheusMetricReaderBuilder(builder);
   }
 }
