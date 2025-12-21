@@ -1095,9 +1095,12 @@ class PrometheusMetricReaderTest {
   void deprecatedConstructor() {
     // The 2-arg deprecated constructor should behave the same as the 1-arg constructor
     // when otelScopeLabelsEnabled=true (which is also the default for the builder)
-    assertThat(new PrometheusMetricReader(/* otelScopeLabelsEnabled= */ true, null))
+    assertThat(new PrometheusMetricReader(/* otelScopeEnabled= */ false, null))
         .usingRecursiveComparison()
-        .ignoringFields("builder")
+        .isEqualTo(new PrometheusMetricReader(null));
+    // The 3-arg constructor should behave the same as the 2-arg deprecated constructor
+    assertThat(new PrometheusMetricReader(null, /* otelScopeLabelsEnabled= */ true, /* otelTargetInfoMetricEnabled */ true))
+        .usingRecursiveComparison()
         .isEqualTo(new PrometheusMetricReader(null));
   }
 

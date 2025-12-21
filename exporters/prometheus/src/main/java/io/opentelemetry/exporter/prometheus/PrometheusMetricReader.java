@@ -46,10 +46,11 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   @Deprecated
   @SuppressWarnings({"unused", "InconsistentOverloads"})
   public PrometheusMetricReader(
-      boolean otelScopeLabelsEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
+      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    // otelScopeEnabled parameter was used to control the scope info metric, not scope labels.
     this(
         allowedResourceAttributesFilter,
-        otelScopeLabelsEnabled,
+        /* otelScopeLabelsEnabled= */ true,
         /* otelTargetInfoMetricEnabled= */ true);
   }
 
