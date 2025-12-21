@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.prometheus.metrics.expositionformats.OpenMetricsTextFormatWriter;
@@ -997,25 +998,30 @@ class PrometheusMetricReaderTest {
   }
 
   @Test
-  void otelScopeComplete() throws IOException {
-    // There is currently no API for adding scope attributes.
-    // However, we can at least test the otel_scope_version attribute.
-    Meter meter =
-        SdkMeterProvider.builder()
-            .setClock(testClock)
-            .registerMetricReader(this.reader)
-            .setResource(
-                Resource.getDefault().toBuilder().put("telemetry.sdk.version", "1.x.x").build())
-            .build()
-            .meterBuilder("test-scope")
-            .setInstrumentationVersion("a.b.c")
-            .build();
-    LongCounter counter = meter.counterBuilder("test.count").build();
-    counter.add(1);
+  void withoutScopeLabels() throws IOException {
+    PrometheusMetricReader reader =
+        PrometheusMetricReader.builder().setOtelScopeLabelsEnabled(false).build();
+    addCounter(reader, Resource.getDefault().toBuilder());
     String expected =
         ""
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
+            + "# TYPE test_count counter\n"
+            + "test_count_total 1.0\n"
+            + "test_count_created "
+            + createdTimestamp
+            + "\n"
+            + "# EOF\n";
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
+  }
+
+  @Test
+  void withoutTargetInfoMetric() throws IOException {
+    PrometheusMetricReader reader =
+        PrometheusMetricReader.builder().setOtelTargetInfoMetricEnabled(false).build();
+    addCounter(reader, Resource.getDefault().toBuilder());
+    String expected =
+        ""
             + "# TYPE test_count counter\n"
             + "test_count_total{otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} 1.0\n"
             + "test_count_created{otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} "
@@ -1025,32 +1031,18 @@ class PrometheusMetricReaderTest {
     assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
-  @Test
-  void otelScopeLabelsOnly() throws IOException {
-    PrometheusMetricReader reader = PrometheusMetricReader.create();
+  private void addCounter(PrometheusMetricReader reader, ResourceBuilder builder) {
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
             .registerMetricReader(reader)
-            .setResource(
-                Resource.getDefault().toBuilder().put("telemetry.sdk.version", "1.x.x").build())
+            .setResource(builder.put("telemetry.sdk.version", "1.x.x").build())
             .build()
             .meterBuilder("test-scope")
             .setInstrumentationVersion("a.b.c")
             .build();
     LongCounter counter = meter.counterBuilder("test.count").build();
     counter.add(1);
-    String expected =
-        ""
-            + "# TYPE target info\n"
-            + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
-            + "# TYPE test_count counter\n"
-            + "test_count_total{otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} 1.0\n"
-            + "test_count_created{otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} "
-            + createdTimestamp
-            + "\n"
-            + "# EOF\n";
-    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
   @SuppressWarnings("resource")
@@ -1060,21 +1052,7 @@ class PrometheusMetricReaderTest {
         PrometheusMetricReader.builder()
             .setAllowedResourceAttributesFilter(Predicates.is("cluster"))
             .build();
-    Meter meter =
-        SdkMeterProvider.builder()
-            .setClock(testClock)
-            .registerMetricReader(reader)
-            .setResource(
-                Resource.getDefault().toBuilder()
-                    .put("cluster", "my.cluster")
-                    .put("telemetry.sdk.version", "1.x.x")
-                    .build())
-            .build()
-            .meterBuilder("test-scope")
-            .setInstrumentationVersion("a.b.c")
-            .build();
-    LongCounter counter = meter.counterBuilder("test.count").build();
-    counter.add(1);
+    addCounter(reader, Resource.getDefault().toBuilder().put("cluster", "my.cluster"));
     String expected =
         ""
             + "# TYPE target info\n"
@@ -1099,7 +1077,9 @@ class PrometheusMetricReaderTest {
         .usingRecursiveComparison()
         .isEqualTo(new PrometheusMetricReader(null));
     // The 3-arg constructor should behave the same as the 2-arg deprecated constructor
-    assertThat(new PrometheusMetricReader(null, /* otelScopeLabelsEnabled= */ true, /* otelTargetInfoMetricEnabled */ true))
+    assertThat(
+            new PrometheusMetricReader(
+                null, /* otelScopeLabelsEnabled= */ true, /* otelTargetInfoMetricEnabled */ true))
         .usingRecursiveComparison()
         .isEqualTo(new PrometheusMetricReader(null));
   }
