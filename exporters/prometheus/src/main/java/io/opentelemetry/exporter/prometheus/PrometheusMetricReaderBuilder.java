@@ -65,6 +65,6 @@ public final class PrometheusMetricReaderBuilder {
   /** Builds a new {@link PrometheusMetricReader}. */
   public PrometheusMetricReader build() {
     return new PrometheusMetricReader(
-        allowedResourceAttributesFilter, this, otelScopeLabelsEnabled, otelTargetInfoMetricEnabled);
+        allowedResourceAttributesFilter, otelScopeLabelsEnabled, otelTargetInfoMetricEnabled);
   }
 }
