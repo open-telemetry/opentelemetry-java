@@ -17,13 +17,6 @@ public final class PrometheusMetricReaderBuilder {
 
   PrometheusMetricReaderBuilder() {}
 
-  // Copy constructor for toBuilder()
-  PrometheusMetricReaderBuilder(PrometheusMetricReaderBuilder builder) {
-    this.otelScopeLabelsEnabled = builder.otelScopeLabelsEnabled;
-    this.otelTargetInfoMetricEnabled = builder.otelTargetInfoMetricEnabled;
-    this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
-  }
-
   /**
    * Sets whether to add OpenTelemetry scope labels (otel_scope_name, otel_scope_version, etc.) to
    * exported metrics. Default is {@code true}.
