@@ -12,17 +12,13 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A Sampler that uses the sampled flag of the parent Span, if present. If the
- * span has no parent,
- * this Sampler will use the "root" sampler that it is built with. See
- * documentation on the {@link
- * ParentBasedSamplerBuilder} methods for the details on the various
- * configurable options.
+ * A Sampler that uses the sampled flag of the parent Span, if present. If the span has no parent,
+ * this Sampler will use the "root" sampler that it is built with. See documentation on the {@link
+ * ParentBasedSamplerBuilder} methods for the details on the various configurable options.
  */
 @Immutable
 final class ParentBasedSampler implements Sampler {
@@ -32,7 +28,6 @@ final class ParentBasedSampler implements Sampler {
   private final Sampler remoteParentNotSampled;
   private final Sampler localParentSampled;
   private final Sampler localParentNotSampled;
-  private static final Logger logger = Logger.getLogger(ParentBasedSampler.class.getName());
 
   ParentBasedSampler(
       Sampler root,
@@ -41,28 +36,17 @@ final class ParentBasedSampler implements Sampler {
       @Nullable Sampler localParentSampled,
       @Nullable Sampler localParentNotSampled) {
     this.root = root;
-    this.remoteParentSampled = remoteParentSampled == null ? Sampler.alwaysOn() : remoteParentSampled;
-    this.remoteParentNotSampled = remoteParentNotSampled == null ? Sampler.alwaysOff() : remoteParentNotSampled;
+    this.remoteParentSampled =
+        remoteParentSampled == null ? Sampler.alwaysOn() : remoteParentSampled;
+    this.remoteParentNotSampled =
+        remoteParentNotSampled == null ? Sampler.alwaysOff() : remoteParentNotSampled;
     this.localParentSampled = localParentSampled == null ? Sampler.alwaysOn() : localParentSampled;
-    this.localParentNotSampled = localParentNotSampled == null ? Sampler.alwaysOff() : localParentNotSampled;
-    warnIfTraceIdRatioBased(this.remoteParentSampled, "remoteParentSampled");
-    warnIfTraceIdRatioBased(this.remoteParentNotSampled, "remoteParentNotSampled");
-    warnIfTraceIdRatioBased(this.localParentSampled, "localParentSampled");
-    warnIfTraceIdRatioBased(this.localParentNotSampled, "localParentNotSampled");
-  }
-
-  private static void warnIfTraceIdRatioBased(Sampler sampler, String role) {
-    if (sampler instanceof TraceIdRatioBasedSampler) {
-      logger.warning(
-          "TraceIdRatioBasedSampler is being used as a child sampler (" + role + "). "
-              + "This configuration is discouraged per the OpenTelemetry specification "
-              + "and may lead to unexpected sampling behavior.");
-    }
+    this.localParentNotSampled =
+        localParentNotSampled == null ? Sampler.alwaysOff() : localParentNotSampled;
   }
 
   // If a parent is set, always follows the same sampling decision as the parent.
-  // Otherwise, uses the delegateSampler provided at initialization to make a
-  // decision.
+  // Otherwise, uses the delegateSampler provided at initialization to make a decision.
   @Override
   public SamplingResult shouldSample(
       Context parentContext,

@@ -100,7 +100,11 @@ public final class ParentBasedSamplerBuilder {
     return this;
   }
 
-  /** Builds the {@link ParentBasedSampler}. */
+  /**
+   * Builds the {@link ParentBasedSampler}.
+   *
+   * @return the ParentBased sampler.
+   */
   public Sampler build() {
     return new ParentBasedSampler(
         this.root,
