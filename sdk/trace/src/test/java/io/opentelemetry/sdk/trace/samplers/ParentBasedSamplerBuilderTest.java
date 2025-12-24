@@ -25,14 +25,13 @@ class ParentBasedSamplerBuilderTest {
 
     try {
       Sampler ratioSampler = Sampler.traceIdRatioBased(0.5);
+      ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(Sampler.alwaysOn());
 
-      Sampler.parentBasedBuilder(Sampler.alwaysOn()).setRemoteParentSampled(ratioSampler).build();
+      builder.setRemoteParentSampled(ratioSampler);
+      builder.setRemoteParentSampled(ratioSampler);
+      builder.build();
 
-      assertTrue(
-          handler.warnings.stream()
-              .anyMatch(
-                  msg ->
-                      msg.contains("TraceIdRatioBasedSampler is being used as a child sampler")));
+      assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("remoteParentSampled")));
     } finally {
       logger.removeHandler(handler);
     }
@@ -46,12 +45,18 @@ class ParentBasedSamplerBuilderTest {
 
     try {
       Sampler ratioSampler = Sampler.traceIdRatioBased(0.5);
+      ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(Sampler.alwaysOn());
 
-      Sampler.parentBasedBuilder(Sampler.alwaysOn())
-          .setRemoteParentNotSampled(ratioSampler)
-          .setLocalParentSampled(ratioSampler)
-          .setLocalParentNotSampled(ratioSampler)
-          .build();
+      builder.setRemoteParentNotSampled(ratioSampler);
+      builder.setRemoteParentNotSampled(ratioSampler);
+
+      builder.setLocalParentSampled(ratioSampler);
+      builder.setLocalParentSampled(ratioSampler);
+
+      builder.setLocalParentNotSampled(ratioSampler);
+      builder.setLocalParentNotSampled(ratioSampler);
+
+      builder.build();
 
       assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("remoteParentNotSampled")));
       assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("localParentSampled")));
@@ -61,7 +66,7 @@ class ParentBasedSamplerBuilderTest {
     }
   }
 
-  static class TestLogHandler extends Handler {
+  static final class TestLogHandler extends Handler {
 
     final List<String> warnings = new ArrayList<>();
 
