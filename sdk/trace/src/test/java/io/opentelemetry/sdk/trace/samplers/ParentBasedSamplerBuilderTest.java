@@ -38,12 +38,36 @@ class ParentBasedSamplerBuilderTest {
     }
   }
 
+  @Test
+  void emitsWarningForAllChildSamplerSetters() {
+    Logger logger = Logger.getLogger(ParentBasedSamplerBuilder.class.getName());
+    TestLogHandler handler = new TestLogHandler();
+    logger.addHandler(handler);
+
+    try {
+      Sampler ratioSampler = Sampler.traceIdRatioBased(0.5);
+
+      Sampler.parentBasedBuilder(Sampler.alwaysOn())
+          .setRemoteParentNotSampled(ratioSampler)
+          .setLocalParentSampled(ratioSampler)
+          .setLocalParentNotSampled(ratioSampler)
+          .build();
+
+      assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("remoteParentNotSampled")));
+      assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("localParentSampled")));
+      assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("localParentNotSampled")));
+    } finally {
+      logger.removeHandler(handler);
+    }
+  }
+
   static class TestLogHandler extends Handler {
+
     final List<String> warnings = new ArrayList<>();
 
     @Override
     public void publish(LogRecord record) {
-      if (record.getLevel().equals(Level.WARNING)) {
+      if (Level.WARNING.equals(record.getLevel())) {
         warnings.add(record.getMessage());
       }
     }
