@@ -108,70 +108,64 @@ final class LoggerProviderFactory
         configBuilder.setTraceBased(true);
       }
       if (model.getMinimumSeverity() != null) {
-        configBuilder.setMinimumSeverity(
-            SeverityNumberFactory.INSTANCE.create(model.getMinimumSeverity(), context));
+        configBuilder.setMinimumSeverity(severityNumberToSeverity(model.getMinimumSeverity()));
       }
       return configBuilder.build();
     }
   }
 
   // Visible for testing
-  static class SeverityNumberFactory implements Factory<SeverityNumber, Severity> {
-    static final SeverityNumberFactory INSTANCE = new SeverityNumberFactory();
-
-    @Override
-    public Severity create(SeverityNumber model, DeclarativeConfigContext context) {
-      switch (model) {
-        case TRACE:
-          return Severity.TRACE;
-        case TRACE_2:
-          return Severity.TRACE2;
-        case TRACE_3:
-          return Severity.TRACE3;
-        case TRACE_4:
-          return Severity.TRACE4;
-        case DEBUG:
-          return Severity.DEBUG;
-        case DEBUG_2:
-          return Severity.DEBUG2;
-        case DEBUG_3:
-          return Severity.DEBUG3;
-        case DEBUG_4:
-          return Severity.DEBUG4;
-        case INFO:
-          return Severity.INFO;
-        case INFO_2:
-          return Severity.INFO2;
-        case INFO_3:
-          return Severity.INFO3;
-        case INFO_4:
-          return Severity.INFO4;
-        case WARN:
-          return Severity.WARN;
-        case WARN_2:
-          return Severity.WARN2;
-        case WARN_3:
-          return Severity.WARN3;
-        case WARN_4:
-          return Severity.WARN4;
-        case ERROR:
-          return Severity.ERROR;
-        case ERROR_2:
-          return Severity.ERROR2;
-        case ERROR_3:
-          return Severity.ERROR3;
-        case ERROR_4:
-          return Severity.ERROR4;
-        case FATAL:
-          return Severity.FATAL;
-        case FATAL_2:
-          return Severity.FATAL2;
-        case FATAL_3:
-          return Severity.FATAL3;
-        case FATAL_4:
-          return Severity.FATAL4;
-      }
-      throw new IllegalArgumentException("Unrecognized severity number: " + model);
+  static Severity severityNumberToSeverity(SeverityNumber model) {
+    switch (model) {
+      case TRACE:
+        return Severity.TRACE;
+      case TRACE_2:
+        return Severity.TRACE2;
+      case TRACE_3:
+        return Severity.TRACE3;
+      case TRACE_4:
+        return Severity.TRACE4;
+      case DEBUG:
+        return Severity.DEBUG;
+      case DEBUG_2:
+        return Severity.DEBUG2;
+      case DEBUG_3:
+        return Severity.DEBUG3;
+      case DEBUG_4:
+        return Severity.DEBUG4;
+      case INFO:
+        return Severity.INFO;
+      case INFO_2:
+        return Severity.INFO2;
+      case INFO_3:
+        return Severity.INFO3;
+      case INFO_4:
+        return Severity.INFO4;
+      case WARN:
+        return Severity.WARN;
+      case WARN_2:
+        return Severity.WARN2;
+      case WARN_3:
+        return Severity.WARN3;
+      case WARN_4:
+        return Severity.WARN4;
+      case ERROR:
+        return Severity.ERROR;
+      case ERROR_2:
+        return Severity.ERROR2;
+      case ERROR_3:
+        return Severity.ERROR3;
+      case ERROR_4:
+        return Severity.ERROR4;
+      case FATAL:
+        return Severity.FATAL;
+      case FATAL_2:
+        return Severity.FATAL2;
+      case FATAL_3:
+        return Severity.FATAL3;
+      case FATAL_4:
+        return Severity.FATAL4;
     }
+    throw new IllegalArgumentException("Unrecognized severity number: " + model);
   }
 }

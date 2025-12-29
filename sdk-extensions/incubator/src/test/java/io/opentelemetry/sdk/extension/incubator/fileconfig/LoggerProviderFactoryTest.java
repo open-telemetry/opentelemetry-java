@@ -125,8 +125,7 @@ class LoggerProviderFactoryTest {
   @ParameterizedTest
   @MethodSource("severityNumberArguments")
   void severityNumber(SeverityNumber model, Severity expectedSeverity) {
-    assertThat(LoggerProviderFactory.SeverityNumberFactory.INSTANCE.create(model, context))
-        .isEqualTo(expectedSeverity);
+    assertThat(LoggerProviderFactory.severityNumberToSeverity(model)).isEqualTo(expectedSeverity);
   }
 
   private static Stream<Arguments> severityNumberArguments() {
