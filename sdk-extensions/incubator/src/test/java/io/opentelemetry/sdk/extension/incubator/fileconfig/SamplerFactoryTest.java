@@ -129,6 +129,29 @@ class SamplerFactoryTest {
                 .build()));
   }
 
+  @ParameterizedTest
+  @MethodSource("createInvalidArguments")
+  void createInvalid(SamplerModel model, String expectedMessage) {
+    assertThatThrownBy(() -> SamplerFactory.getInstance().create(model, context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .cause()
+        .hasMessage(expectedMessage);
+  }
+
+  private static Stream<Arguments> createInvalidArguments() {
+    return Stream.of(
+        Arguments.of(
+            new SamplerModel()
+                .withJaegerRemoteDevelopment(new ExperimentalJaegerRemoteSamplerModel()),
+            "jaeger remote sampler endpoint is required"),
+        Arguments.of(
+            new SamplerModel()
+                .withJaegerRemoteDevelopment(
+                    new ExperimentalJaegerRemoteSamplerModel()
+                        .withEndpoint("http://jaeger-remote-endpoint")),
+            "jaeger remote sampler initial_sampler is required"));
+  }
+
   @Test
   void create_SpiExporter_Unknown() {
     List<Closeable> closeables = new ArrayList<>();
