@@ -199,6 +199,7 @@ tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
 tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 tasks.getByName("javadoc").dependsOn(buildGraalVmReflectionJson)
+tasks.getByName("compileTestJava").dependsOn(buildGraalVmReflectionJson)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {

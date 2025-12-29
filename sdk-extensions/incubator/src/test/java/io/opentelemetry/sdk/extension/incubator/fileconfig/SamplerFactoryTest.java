@@ -165,6 +165,27 @@ class SamplerFactoryTest {
                 ComposableSampler.parentThreshold(ComposableSampler.alwaysOn()))));
   }
 
+  @ParameterizedTest
+  @MethodSource("createInvalidArguments")
+  void createInvalid(SamplerModel model, String expectedMessage) {
+    assertThatThrownBy(() -> SamplerFactory.getInstance().create(model, context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .extracting(throwable -> throwable.getCause() == null ? throwable : throwable.getCause())
+        .extracting(Throwable::getMessage)
+        .isEqualTo(expectedMessage);
+  }
+
+  private static Stream<Arguments> createInvalidArguments() {
+    return Stream.of(
+        Arguments.of(
+            new SamplerModel()
+                .withCompositeDevelopment(
+                    new ExperimentalComposableSamplerModel()
+                        .withParentThreshold(
+                            new ExperimentalComposableParentThresholdSamplerModel())),
+            "parent threshold sampler root is required but is null"));
+  }
+
   @Test
   void create_SpiExporter_Unknown() {
     List<Closeable> closeables = new ArrayList<>();
