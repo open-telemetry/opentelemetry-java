@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableParentThresholdSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableProbabilitySamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableSamplerModel;
@@ -42,6 +43,13 @@ final class ComposableSamplerFactory
     ExperimentalComposableRuleBasedSamplerModel ruleBased = model.getRuleBased();
     if (ruleBased != null) {
       return ComposableRuleBasedSamplerFactory.getInstance().create(ruleBased, context);
+    }
+    ExperimentalComposableParentThresholdSamplerModel parentThreshold = model.getParentThreshold();
+    if (parentThreshold != null) {
+      ExperimentalComposableSamplerModel rootModel =
+          FileConfigUtil.requireNonNull(parentThreshold.getRoot(), "parent threshold sampler root");
+      ComposableSampler rootSampler = INSTANCE.create(rootModel, context);
+      return ComposableSampler.parentThreshold(rootSampler);
     }
     Map.Entry<String, ?> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "composable sampler");
