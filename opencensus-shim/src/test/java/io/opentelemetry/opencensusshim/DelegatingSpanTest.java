@@ -63,9 +63,9 @@ class DelegatingSpanTest {
     assertThat(methods)
         .describedAs("all interface methods are being tested")
         .containsAll(allInterfaceMethods(Span.class));
-    //    assertThat(allInterfaceMethods(Span.class))
-    //        .describedAs("all tested methods are on the Span interface")
-    //        .containsAll(methods);
+    assertThat(allInterfaceMethods(Span.class))
+        .describedAs("all tested methods are on the Span interface")
+        .containsAll(methods);
   }
 
   @ParameterizedTest

@@ -1,9 +1,2 @@
 Comparing source compatibility of opentelemetry-api-1.58.0-SNAPSHOT.jar against opentelemetry-api-1.57.0.jar
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.Span  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW INTERFACE: io.opentelemetry.api.trace.SpanParent
-	---  REMOVED METHOD: PUBLIC(-) ABSTRACT(-) io.opentelemetry.api.trace.Span recordException(java.lang.Throwable, io.opentelemetry.api.common.Attributes)
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.SpanParent  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.Span recordException(java.lang.Throwable, io.opentelemetry.api.common.Attributes)
+No changes.

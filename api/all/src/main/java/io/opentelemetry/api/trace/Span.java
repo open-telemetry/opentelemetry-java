@@ -26,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>{@code Span} <b>must</b> be ended by calling {@link #end()}.
  */
 @ThreadSafe
-public interface Span extends ImplicitContextKeyed, SpanParent {
+public interface Span extends ImplicitContextKeyed {
 
   /**
    * Returns the {@link Span} from the current {@link Context}, falling back to a default, no-op
@@ -338,6 +338,15 @@ public interface Span extends ImplicitContextKeyed, SpanParent {
   default Span recordException(Throwable exception) {
     return recordException(exception, Attributes.empty());
   }
+
+  /**
+   * Records information about the {@link Throwable} to the {@link Span}.
+   *
+   * @param exception the {@link Throwable} to record.
+   * @param additionalAttributes the additional {@link Attributes} to record.
+   * @return this.
+   */
+  Span recordException(Throwable exception, Attributes additionalAttributes);
 
   /**
    * Updates the {@code Span} name.
