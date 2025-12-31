@@ -6,11 +6,10 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorPropertyModel;
-import java.util.Collections;
 import java.util.Map;
 
 final class TextMapPropagatorFactory
@@ -27,41 +26,20 @@ final class TextMapPropagatorFactory
   @Override
   public TextMapPropagatorAndName create(
       TextMapPropagatorModel model, DeclarativeConfigContext context) {
-    if (model.getTracecontext() != null) {
-      return getPropagator(context, "tracecontext");
-    }
-    if (model.getBaggage() != null) {
-      return getPropagator(context, "baggage");
-    }
-    if (model.getB3() != null) {
-      return getPropagator(context, "b3");
-    }
-    if (model.getB3multi() != null) {
-      return getPropagator(context, "b3multi");
-    }
-    if (model.getJaeger() != null) {
-      return getPropagator(context, "jaeger");
-    }
-    if (model.getOttrace() != null) {
-      return getPropagator(context, "ottrace");
-    }
-
-    Map.Entry<String, TextMapPropagatorPropertyModel> keyValue =
-        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "propagator");
-    TextMapPropagator propagator =
-        context.loadComponent(TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());
-    return TextMapPropagatorAndName.create(propagator, keyValue.getKey());
+    Map.Entry<String, DeclarativeConfigProperties> propagatorKeyValue =
+        FileConfigUtil.validateSingleKeyValue(context, model, "propagator");
+    return getPropagator(context, propagatorKeyValue.getKey(), propagatorKeyValue.getValue());
   }
 
-  static TextMapPropagatorAndName getPropagator(DeclarativeConfigContext context, String name) {
+  static TextMapPropagatorAndName getPropagator(
+      DeclarativeConfigContext context, String name, DeclarativeConfigProperties configProperties) {
     TextMapPropagator textMapPropagator;
     if (name.equals("tracecontext")) {
       textMapPropagator = W3CTraceContextPropagator.getInstance();
     } else if (name.equals("baggage")) {
       textMapPropagator = W3CBaggagePropagator.getInstance();
     } else {
-      textMapPropagator =
-          context.loadComponent(TextMapPropagator.class, name, Collections.emptyMap());
+      textMapPropagator = context.loadComponent(TextMapPropagator.class, name, configProperties);
     }
     return TextMapPropagatorAndName.create(textMapPropagator, name);
   }

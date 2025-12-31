@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.time.Duration;
+import java.util.Map;
 
 final class MetricReaderFactory
     implements Factory<MetricReaderModel, MetricReaderAndCardinalityLimits> {
@@ -35,14 +36,13 @@ final class MetricReaderFactory
   @Override
   public MetricReaderAndCardinalityLimits create(
       MetricReaderModel model, DeclarativeConfigContext context) {
-    PeriodicMetricReaderModel periodicModel = model.getPeriodic();
-    if (periodicModel != null) {
-      return PeriodicMetricReaderFactory.INSTANCE.create(periodicModel, context);
-    }
+    FileConfigUtil.validateSingleKeyValue(context, model, "metric reader");
 
-    PullMetricReaderModel pullModel = model.getPull();
-    if (pullModel != null) {
-      return PullMetricReaderFactory.INSTANCE.create(pullModel, context);
+    if (model.getPeriodic() != null) {
+      return PeriodicMetricReaderFactory.INSTANCE.create(model.getPeriodic(), context);
+    }
+    if (model.getPull() != null) {
+      return PullMetricReaderFactory.INSTANCE.create(model.getPull(), context);
     }
 
     throw new DeclarativeConfigException("reader must be set");
@@ -92,26 +92,19 @@ final class MetricReaderFactory
         PullMetricReaderModel model, DeclarativeConfigContext context) {
       PullMetricExporterModel exporterModel =
           requireNonNull(model.getExporter(), "pull metric reader exporter");
-
-      ExperimentalPrometheusMetricExporterModel prometheusModel =
-          exporterModel.getPrometheusDevelopment();
-
-      if (prometheusModel != null) {
-        MetricReader metricReader =
-            context.addCloseable(
-                context.loadComponent(
-                    MetricReader.class, "prometheus/development", prometheusModel));
-        CardinalityLimitSelector cardinalityLimitSelector = null;
-        if (model.getCardinalityLimits() != null) {
-          cardinalityLimitSelector =
-              CardinalityLimitsFactory.getInstance().create(model.getCardinalityLimits(), context);
-        }
-
-        return MetricReaderAndCardinalityLimits.create(metricReader, cardinalityLimitSelector);
+      CardinalityLimitSelector cardinalityLimitSelector = null;
+      if (model.getCardinalityLimits() != null) {
+        cardinalityLimitSelector =
+            CardinalityLimitsFactory.getInstance().create(model.getCardinalityLimits(), context);
       }
 
-      throw new DeclarativeConfigException(
-          "prometheus is the only currently supported pull reader");
+      Map.Entry<String, DeclarativeConfigProperties> metricReaderKeyValue =
+          FileConfigUtil.validateSingleKeyValue(context, exporterModel, "metric reader");
+      MetricReader metricReader =
+          context.loadComponent(
+              MetricReader.class, metricReaderKeyValue.getKey(), metricReaderKeyValue.getValue());
+      return MetricReaderAndCardinalityLimits.create(
+          context.addCloseable(metricReader), cardinalityLimitSelector);
     }
   }
 }

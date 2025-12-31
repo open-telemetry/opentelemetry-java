@@ -8,19 +8,15 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 final class FileConfigUtil {
 
   private FileConfigUtil() {}
-
-  static <T> T assertNotNull(@Nullable T object, String description) {
-    if (object == null) {
-      throw new NullPointerException(description + " is null");
-    }
-    return object;
-  }
 
   static <T> T requireNonNull(@Nullable T object, String description) {
     if (object == null) {
@@ -29,34 +25,22 @@ final class FileConfigUtil {
     return object;
   }
 
-  static <T> Map.Entry<String, T> getSingletonMapEntry(
-      Map<String, T> additionalProperties, String resourceName) {
-    if (additionalProperties.isEmpty()) {
-      throw new DeclarativeConfigException(resourceName + " must be set");
-    }
-    if (additionalProperties.size() > 1) {
+  static Map.Entry<String, DeclarativeConfigProperties> validateSingleKeyValue(
+      DeclarativeConfigContext context, Object model, String resourceName) {
+    DeclarativeConfigProperties modelConfigProperties =
+        DeclarativeConfiguration.toConfigProperties(
+            model, context.getSpiHelper().getComponentLoader());
+    Set<String> propertyKeys = modelConfigProperties.getPropertyKeys();
+    if (propertyKeys.size() != 1) {
+      String suffix =
+          propertyKeys.isEmpty()
+              ? ""
+              : ": " + propertyKeys.stream().collect(joining(",", "[", "]"));
       throw new DeclarativeConfigException(
-          "Invalid configuration - multiple "
-              + resourceName
-              + "s set: "
-              + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
+          resourceName + " must have exactly one entry but has " + propertyKeys.size() + suffix);
     }
-    return additionalProperties.entrySet().stream()
-        .findFirst()
-        .orElseThrow(
-            () ->
-                new IllegalStateException(
-                    "Missing " + resourceName + ". This is a programming error."));
-  }
-
-  static void requireNullResource(
-      @Nullable Object resource, String resourceName, Map<String, ?> additionalProperties) {
-    if (resource != null) {
-      throw new DeclarativeConfigException(
-          "Invalid configuration - multiple "
-              + resourceName
-              + "s set: "
-              + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-    }
+    String key = propertyKeys.iterator().next();
+    DeclarativeConfigProperties value = modelConfigProperties.getStructured(key);
+    return new AbstractMap.SimpleEntry<>(key, value);
   }
 }

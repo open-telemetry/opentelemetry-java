@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExporter> {
@@ -22,26 +22,11 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
 
   @Override
   public SpanExporter create(SpanExporterModel model, DeclarativeConfigContext context) {
-    Map<String, Object> exporterResourceByName = new LinkedHashMap<>();
-
-    if (model.getOtlpHttp() != null) {
-      exporterResourceByName.put("otlp_http", model.getOtlpHttp());
-    }
-    if (model.getOtlpGrpc() != null) {
-      exporterResourceByName.put("otlp_grpc", model.getOtlpGrpc());
-    }
-    if (model.getOtlpFileDevelopment() != null) {
-      exporterResourceByName.put("otlp_file/development", model.getOtlpFileDevelopment());
-    }
-    if (model.getConsole() != null) {
-      exporterResourceByName.put("console", model.getConsole());
-    }
-    exporterResourceByName.putAll(model.getAdditionalProperties());
-
-    Map.Entry<String, Object> keyValue =
-        FileConfigUtil.getSingletonMapEntry(exporterResourceByName, "span exporter");
+    Map.Entry<String, DeclarativeConfigProperties> spanExporterKeyValue =
+        FileConfigUtil.validateSingleKeyValue(context, model, "span exporter");
     SpanExporter spanExporter =
-        context.loadComponent(SpanExporter.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(
+            SpanExporter.class, spanExporterKeyValue.getKey(), spanExporterKeyValue.getValue());
     return context.addCloseable(spanExporter);
   }
 }

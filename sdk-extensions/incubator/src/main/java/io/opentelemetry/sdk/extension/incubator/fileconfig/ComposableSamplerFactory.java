@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableParentThresholdSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableProbabilitySamplerModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import java.util.Map;
@@ -26,33 +26,47 @@ final class ComposableSamplerFactory
   @Override
   public ComposableSampler create(
       ExperimentalComposableSamplerModel model, DeclarativeConfigContext context) {
+    // We don't use the variable till later but call validate first to confirm there are not
+    // multiple samplers.
+    Map.Entry<String, DeclarativeConfigProperties> samplerKeyValue =
+        FileConfigUtil.validateSingleKeyValue(context, model, "composable sampler");
+
     if (model.getAlwaysOn() != null) {
       return ComposableSampler.alwaysOn();
     }
     if (model.getAlwaysOff() != null) {
       return ComposableSampler.alwaysOff();
     }
-    ExperimentalComposableProbabilitySamplerModel probability = model.getProbability();
-    if (probability != null) {
-      Double ratio = probability.getRatio();
-      if (ratio == null) {
-        ratio = 1.0d;
-      }
-      return ComposableSampler.probability(ratio);
+    if (model.getProbability() != null) {
+      return createProbabilitySampler(model.getProbability());
     }
-    ExperimentalComposableRuleBasedSamplerModel ruleBased = model.getRuleBased();
-    if (ruleBased != null) {
-      return ComposableRuleBasedSamplerFactory.getInstance().create(ruleBased, context);
+    if (model.getRuleBased() != null) {
+      return ComposableRuleBasedSamplerFactory.getInstance().create(model.getRuleBased(), context);
     }
-    ExperimentalComposableParentThresholdSamplerModel parentThreshold = model.getParentThreshold();
-    if (parentThreshold != null) {
-      ExperimentalComposableSamplerModel rootModel =
-          FileConfigUtil.requireNonNull(parentThreshold.getRoot(), "parent threshold sampler root");
-      ComposableSampler rootSampler = INSTANCE.create(rootModel, context);
-      return ComposableSampler.parentThreshold(rootSampler);
+    if (model.getParentThreshold() != null) {
+      return createParentThresholdSampler(model.getParentThreshold(), context);
     }
-    Map.Entry<String, ?> keyValue =
-        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "composable sampler");
-    return context.loadComponent(ComposableSampler.class, keyValue.getKey(), keyValue.getValue());
+
+    return context.loadComponent(
+        ComposableSampler.class, samplerKeyValue.getKey(), samplerKeyValue.getValue());
+  }
+
+  private static ComposableSampler createProbabilitySampler(
+      ExperimentalComposableProbabilitySamplerModel probabilityModel) {
+    Double ratio = probabilityModel.getRatio();
+    if (ratio == null) {
+      ratio = 1.0d;
+    }
+    return ComposableSampler.probability(ratio);
+  }
+
+  private static ComposableSampler createParentThresholdSampler(
+      ExperimentalComposableParentThresholdSamplerModel parentThresholdModel,
+      DeclarativeConfigContext context) {
+    ExperimentalComposableSamplerModel rootModel =
+        FileConfigUtil.requireNonNull(
+            parentThresholdModel.getRoot(), "parent threshold sampler root");
+    ComposableSampler rootSampler = INSTANCE.create(rootModel, context);
+    return ComposableSampler.parentThreshold(rootSampler);
   }
 }

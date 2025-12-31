@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableSamplerModel;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalProbabilitySamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
@@ -28,71 +28,75 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
 
   @Override
   public Sampler create(SamplerModel model, DeclarativeConfigContext context) {
+    // We don't use the variable till later but call validate first to confirm there are not
+    // multiple samplers.
+    Map.Entry<String, DeclarativeConfigProperties> samplerKeyValue =
+        FileConfigUtil.validateSingleKeyValue(context, model, "sampler");
+
     if (model.getAlwaysOn() != null) {
       return Sampler.alwaysOn();
     }
     if (model.getAlwaysOff() != null) {
       return Sampler.alwaysOff();
     }
-    TraceIdRatioBasedSamplerModel traceIdRatioBasedModel = model.getTraceIdRatioBased();
-    if (traceIdRatioBasedModel != null) {
-      Double ratio = traceIdRatioBasedModel.getRatio();
-      if (ratio == null) {
-        ratio = 1.0d;
-      }
-      return Sampler.traceIdRatioBased(ratio);
+    if (model.getTraceIdRatioBased() != null) {
+      return createTraceIdRatioBasedSampler(model.getTraceIdRatioBased());
     }
-    ParentBasedSamplerModel parentBasedModel = model.getParentBased();
-    if (parentBasedModel != null) {
-      Sampler root =
-          parentBasedModel.getRoot() == null
-              ? Sampler.alwaysOn()
-              : create(parentBasedModel.getRoot(), context);
-      ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(root);
-      if (parentBasedModel.getRemoteParentSampled() != null) {
-        Sampler sampler = create(parentBasedModel.getRemoteParentSampled(), context);
-        builder.setRemoteParentSampled(sampler);
-      }
-      if (parentBasedModel.getRemoteParentNotSampled() != null) {
-        Sampler sampler = create(parentBasedModel.getRemoteParentNotSampled(), context);
-        builder.setRemoteParentNotSampled(sampler);
-      }
-      if (parentBasedModel.getLocalParentSampled() != null) {
-        Sampler sampler = create(parentBasedModel.getLocalParentSampled(), context);
-        builder.setLocalParentSampled(sampler);
-      }
-      if (parentBasedModel.getLocalParentNotSampled() != null) {
-        Sampler sampler = create(parentBasedModel.getLocalParentNotSampled(), context);
-        builder.setLocalParentNotSampled(sampler);
-      }
-      return builder.build();
+    if (model.getParentBased() != null) {
+      return createParedBasedSampler(model.getParentBased(), context);
     }
-    ExperimentalProbabilitySamplerModel probability = model.getProbabilityDevelopment();
-    if (probability != null) {
-      Double ratio = probability.getRatio();
-      if (ratio == null) {
-        ratio = 1.0d;
-      }
-      return CompositeSampler.wrap(ComposableSampler.probability(ratio));
+    if (model.getProbabilityDevelopment() != null) {
+      return createProbabilitySampler(model.getProbabilityDevelopment());
     }
-    ExperimentalComposableSamplerModel composite = model.getCompositeDevelopment();
-    if (composite != null) {
+    if (model.getCompositeDevelopment() != null) {
       return CompositeSampler.wrap(
-          ComposableSamplerFactory.getInstance().create(composite, context));
+          ComposableSamplerFactory.getInstance().create(model.getCompositeDevelopment(), context));
     }
 
-    String key = null;
-    Object value = null;
-    if (model.getJaegerRemoteDevelopment() != null) {
-      key = "jaeger_remote/development";
-      value = model.getJaegerRemoteDevelopment();
+    return context.loadComponent(
+        Sampler.class, samplerKeyValue.getKey(), samplerKeyValue.getValue());
+  }
+
+  private static Sampler createTraceIdRatioBasedSampler(TraceIdRatioBasedSamplerModel model) {
+    Double ratio = model.getRatio();
+    if (ratio == null) {
+      ratio = 1.0d;
     }
-    if (key == null || value == null) {
-      Map.Entry<String, ?> keyValue =
-          FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "sampler");
-      key = keyValue.getKey();
-      value = keyValue.getValue();
+    return Sampler.traceIdRatioBased(ratio);
+  }
+
+  private static Sampler createParedBasedSampler(
+      ParentBasedSamplerModel parentBasedModel, DeclarativeConfigContext context) {
+    Sampler root =
+        parentBasedModel.getRoot() == null
+            ? Sampler.alwaysOn()
+            : INSTANCE.create(parentBasedModel.getRoot(), context);
+    ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(root);
+    if (parentBasedModel.getRemoteParentSampled() != null) {
+      Sampler sampler = INSTANCE.create(parentBasedModel.getRemoteParentSampled(), context);
+      builder.setRemoteParentSampled(sampler);
     }
-    return context.loadComponent(Sampler.class, key, value);
+    if (parentBasedModel.getRemoteParentNotSampled() != null) {
+      Sampler sampler = INSTANCE.create(parentBasedModel.getRemoteParentNotSampled(), context);
+      builder.setRemoteParentNotSampled(sampler);
+    }
+    if (parentBasedModel.getLocalParentSampled() != null) {
+      Sampler sampler = INSTANCE.create(parentBasedModel.getLocalParentSampled(), context);
+      builder.setLocalParentSampled(sampler);
+    }
+    if (parentBasedModel.getLocalParentNotSampled() != null) {
+      Sampler sampler = INSTANCE.create(parentBasedModel.getLocalParentNotSampled(), context);
+      builder.setLocalParentNotSampled(sampler);
+    }
+    return builder.build();
+  }
+
+  private static Sampler createProbabilitySampler(
+      ExperimentalProbabilitySamplerModel probabilityModel) {
+    Double ratio = probabilityModel.getRatio();
+    if (ratio == null) {
+      ratio = 1.0d;
+    }
+    return CompositeSampler.wrap(ComposableSampler.probability(ratio));
   }
 }

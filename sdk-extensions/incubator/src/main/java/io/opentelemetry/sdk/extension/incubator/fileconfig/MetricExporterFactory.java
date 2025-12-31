@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 final class MetricExporterFactory implements Factory<PushMetricExporterModel, MetricExporter> {
@@ -21,26 +21,13 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
 
   @Override
   public MetricExporter create(PushMetricExporterModel model, DeclarativeConfigContext context) {
-    Map<String, Object> exporterResourceByName = new LinkedHashMap<>();
-
-    if (model.getOtlpHttp() != null) {
-      exporterResourceByName.put("otlp_http", model.getOtlpHttp());
-    }
-    if (model.getOtlpGrpc() != null) {
-      exporterResourceByName.put("otlp_grpc", model.getOtlpGrpc());
-    }
-    if (model.getOtlpFileDevelopment() != null) {
-      exporterResourceByName.put("otlp_file/development", model.getOtlpFileDevelopment());
-    }
-    if (model.getConsole() != null) {
-      exporterResourceByName.put("console", model.getConsole());
-    }
-    exporterResourceByName.putAll(model.getAdditionalProperties());
-
-    Map.Entry<String, ?> keyValue =
-        FileConfigUtil.getSingletonMapEntry(exporterResourceByName, "metric exporter");
+    Map.Entry<String, DeclarativeConfigProperties> metricExporterKeyValue =
+        FileConfigUtil.validateSingleKeyValue(context, model, "metric exporter");
     MetricExporter metricExporter =
-        context.loadComponent(MetricExporter.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(
+            MetricExporter.class,
+            metricExporterKeyValue.getKey(),
+            metricExporterKeyValue.getValue());
     return context.addCloseable(metricExporter);
   }
 }

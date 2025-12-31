@@ -228,7 +228,7 @@ class MetricReaderFactoryTest {
                                     .withExporter(new PullMetricExporterModel())),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage("prometheus is the only currently supported pull reader");
+        .hasMessage("metric reader must have exactly one entry but has 0");
   }
 
   /**
