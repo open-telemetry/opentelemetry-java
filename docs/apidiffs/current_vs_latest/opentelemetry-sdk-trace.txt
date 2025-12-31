@@ -6,6 +6,10 @@ Comparing source compatibility of opentelemetry-sdk-trace-1.58.0-SNAPSHOT.jar ag
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.ReadWriteSpan  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===! UNCHANGED INTERFACE: io.opentelemetry.api.trace.Span
+	+++  NEW INTERFACE: io.opentelemetry.api.trace.SpanParent
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.SdkTracerProviderBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.SdkTracerProviderBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
