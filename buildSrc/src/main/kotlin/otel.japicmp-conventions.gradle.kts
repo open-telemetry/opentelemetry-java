@@ -1,4 +1,5 @@
 import com.google.auto.value.AutoValue
+import com.google.common.io.Files
 import japicmp.model.*
 import me.champeau.gradle.japicmp.JapicmpTask
 import me.champeau.gradle.japicmp.report.Violation
@@ -22,7 +23,8 @@ val latestReleasedVersion: String by lazy {
   }
   // pick the api, since it's always there.
   dependencies.add(temp.name, "io.opentelemetry:opentelemetry-api:latest.release")
-  val moduleVersion = configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
+  val moduleVersion =
+    configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
   configurations.remove(temp)
   logger.debug("Discovered latest release version: " + moduleVersion)
   moduleVersion
@@ -30,15 +32,20 @@ val latestReleasedVersion: String by lazy {
 
 class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
-    val allowableAutovalueChanges = setOf(JApiCompatibilityChangeType.METHOD_ABSTRACT_ADDED_TO_CLASS,
-      JApiCompatibilityChangeType.METHOD_ADDED_TO_PUBLIC_CLASS, JApiCompatibilityChangeType.ANNOTATION_ADDED)
-    if (member.compatibilityChanges.filter { !allowableAutovalueChanges.contains(it.type) }.isEmpty() &&
-      member is JApiMethod && isAutoValueClass(member.getjApiClass()))
-    {
+    val allowableAutovalueChanges = setOf(
+      JApiCompatibilityChangeType.METHOD_ABSTRACT_ADDED_TO_CLASS,
+      JApiCompatibilityChangeType.METHOD_ADDED_TO_PUBLIC_CLASS,
+      JApiCompatibilityChangeType.ANNOTATION_ADDED
+    )
+    if (member.compatibilityChanges.filter { !allowableAutovalueChanges.contains(it.type) }
+        .isEmpty() &&
+      member is JApiMethod && isAutoValueClass(member.getjApiClass())
+    ) {
       return Violation.accept(member, "Autovalue will automatically add implementation")
     }
     if (member.compatibilityChanges.isEmpty() &&
-      member is JApiClass && isAutoValueClass(member)) {
+      member is JApiClass && isAutoValueClass(member)
+    ) {
       return Violation.accept(member, "Autovalue class modification is allowed")
     }
     return null
@@ -59,26 +66,40 @@ class SourceIncompatibleRule : AbstractRecordingSeenMembers() {
   }
 }
 
-/**
- * Locate the project's artifact of a particular version.
- */
-fun findArtifact(version: String): File {
+fun getAllPublishedModules(): List<Project> {
+  return project.rootProject.allprojects.filter {
+    it.plugins.hasPlugin("otel.publish-conventions") && !it.hasProperty("otel.release") && it.tasks.findByName(
+      "jar"
+    ) != null
+  }.toList()
+}
+
+fun getOldClassPath(version: String): List<File> {
+  // Temporarily change the group name because we want to fetch an artifact with the same
+  // Maven coordinates as the project, which Gradle would not allow otherwise.
   val existingGroup = group
+  group = "virtual_group"
   try {
-    // Temporarily change the group name because we want to fetch an artifact with the same
-    // Maven coordinates as the project, which Gradle would not allow otherwise.
-    group = "virtual_group"
-    val depModule = "io.opentelemetry:${base.archivesName.get()}:$version@jar"
-    val depJar = "${base.archivesName.get()}-$version.jar"
-    val configuration: Configuration = configurations.detachedConfiguration(
-      dependencies.create(depModule),
-    )
-    return files(configuration.files).filter {
-      it.name.equals(depJar)
-    }.singleFile
+    return getAllPublishedModules().map {
+      val depModule = "io.opentelemetry:${it.base.archivesName.get()}:$version@jar"
+      val depJar = "${it.base.archivesName.get()}-$version.jar"
+      val configuration: Configuration = configurations.detachedConfiguration(
+        dependencies.create(depModule),
+      )
+      files(configuration.files).filter { file ->
+        file.name.equals(depJar)
+      }.singleFile
+    }.toList()
   } finally {
     group = existingGroup
   }
+}
+
+fun getNewClassPath(): List<File> {
+  return getAllPublishedModules().map {
+    val archiveFile = it.tasks.getByName<Jar>("jar").archiveFile
+    archiveFile.get().asFile
+  }.toList()
 }
 
 // generate the api diff report for any module that is stable and publishes a jar.
@@ -86,30 +107,36 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
   afterEvaluate {
     tasks {
       val jApiCmp by registering(JapicmpTask::class) {
-        dependsOn("jar")
+        // Depends on jar task for all published modules. See notes below.
+        getAllPublishedModules().forEach {
+          dependsOn(it.tasks.getByName("jar"))
+        }
 
         // the japicmp "new" version is either the user-specified one, or the locally built jar.
         val apiNewVersion: String? by project
-        val newArtifact = apiNewVersion?.let { findArtifact(it) }
-          ?: file(getByName<Jar>("jar").archiveFile)
-        newClasspath.from(files(newArtifact))
-
-        // only output changes, not everything
-        onlyModified.set(true)
-
         // the japicmp "old" version is either the user-specified one, or the latest release.
         val apiBaseVersion: String? by project
         val baselineVersion = apiBaseVersion ?: latestReleasedVersion
-        oldClasspath.from(
-          try {
-            files(findArtifact(baselineVersion))
-          } catch (e: Exception) {
-            // if we can't find the baseline artifact, this is probably one that's never been published before,
-            // so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
-            onlyModified.set(false)
-            files()
-          },
-        )
+
+        // Setup new and old classpath, new and old archives.
+        // New and old classpaths are set to the set of all artifacts published by this project, at
+        // the appropriate version. Without this, japicmp is unable to resolve inheritance across module
+        // boundaries (i.e. Span from opentelemetry-api extends ImplicitContextKeyed from opentelemetry-context)
+        // and generates false positive compatibility errors when methods are lifted into superclasses,
+        // superinterfaces.
+        val archiveName = base.archivesName.get()
+        val newClassPath = getNewClassPath()
+        val oldClassPath = getOldClassPath(baselineVersion)
+        val pattern = (archiveName + "-([0-9\\.]*)(-SNAPSHOT)?.jar").toRegex()
+        val newArchive = newClassPath.singleOrNull { it.name.matches(pattern) }
+        val oldArchive = oldClassPath.singleOrNull { it.name.matches(pattern) }
+        newClasspath.from(newClassPath)
+        oldClasspath.from(oldClassPath)
+        newArchives.from(newArchive)
+        oldArchives.from(oldArchive)
+
+        // Only generate API diff for changes.
+        onlyModified.set(true)
 
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
         // with some changes.
