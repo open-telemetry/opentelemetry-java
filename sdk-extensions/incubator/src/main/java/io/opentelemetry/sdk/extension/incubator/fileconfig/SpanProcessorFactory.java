@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
@@ -18,7 +17,6 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
-import java.util.Map;
 
 final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProcessor> {
 
@@ -34,7 +32,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
   public SpanProcessor create(SpanProcessorModel model, DeclarativeConfigContext context) {
     // We don't use the variable till later but call validate first to confirm there are not
     // multiple samplers.
-    Map.Entry<String, DeclarativeConfigProperties> processorKeyValue =
+    ConfigKeyValue processorKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "span processor");
 
     if (model.getBatch() != null) {

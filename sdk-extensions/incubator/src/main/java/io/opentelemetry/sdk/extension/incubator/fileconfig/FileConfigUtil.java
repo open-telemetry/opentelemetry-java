@@ -9,8 +9,6 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import java.util.AbstractMap;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -25,7 +23,7 @@ final class FileConfigUtil {
     return object;
   }
 
-  static Map.Entry<String, DeclarativeConfigProperties> validateSingleKeyValue(
+  static ConfigKeyValue validateSingleKeyValue(
       DeclarativeConfigContext context, Object model, String resourceName) {
     DeclarativeConfigProperties modelConfigProperties =
         DeclarativeConfiguration.toConfigProperties(
@@ -41,6 +39,6 @@ final class FileConfigUtil {
     }
     String key = propertyKeys.iterator().next();
     DeclarativeConfigProperties value = modelConfigProperties.getStructured(key);
-    return new AbstractMap.SimpleEntry<>(key, value);
+    return ConfigKeyValue.of(key, value == null ? DeclarativeConfigProperties.empty() : value);
   }
 }

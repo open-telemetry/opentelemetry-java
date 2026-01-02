@@ -10,7 +10,6 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
-import java.util.Map;
 
 final class TextMapPropagatorFactory
     implements Factory<TextMapPropagatorModel, TextMapPropagatorAndName> {
@@ -26,7 +25,7 @@ final class TextMapPropagatorFactory
   @Override
   public TextMapPropagatorAndName create(
       TextMapPropagatorModel model, DeclarativeConfigContext context) {
-    Map.Entry<String, DeclarativeConfigProperties> propagatorKeyValue =
+    ConfigKeyValue propagatorKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "propagator");
     return getPropagator(context, propagatorKeyValue.getKey(), propagatorKeyValue.getValue());
   }

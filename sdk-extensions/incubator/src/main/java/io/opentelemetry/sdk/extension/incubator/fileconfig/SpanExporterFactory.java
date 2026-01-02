@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.Map;
 
 final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExporter> {
 
@@ -22,7 +20,7 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
 
   @Override
   public SpanExporter create(SpanExporterModel model, DeclarativeConfigContext context) {
-    Map.Entry<String, DeclarativeConfigProperties> spanExporterKeyValue =
+    ConfigKeyValue spanExporterKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "span exporter");
     return context.loadComponent(
         SpanExporter.class, spanExporterKeyValue.getKey(), spanExporterKeyValue.getValue());

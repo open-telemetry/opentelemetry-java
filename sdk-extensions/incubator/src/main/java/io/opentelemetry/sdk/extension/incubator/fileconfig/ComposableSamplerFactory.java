@@ -5,12 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableParentThresholdSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableProbabilitySamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
-import java.util.Map;
 
 final class ComposableSamplerFactory
     implements Factory<ExperimentalComposableSamplerModel, ComposableSampler> {
@@ -28,7 +26,7 @@ final class ComposableSamplerFactory
       ExperimentalComposableSamplerModel model, DeclarativeConfigContext context) {
     // We don't use the variable till later but call validate first to confirm there are not
     // multiple samplers.
-    Map.Entry<String, DeclarativeConfigProperties> samplerKeyValue =
+    ConfigKeyValue samplerKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "composable sampler");
 
     if (model.getAlwaysOn() != null) {

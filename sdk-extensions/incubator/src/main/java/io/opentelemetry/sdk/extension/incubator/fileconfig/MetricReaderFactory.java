@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
@@ -20,7 +19,6 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.time.Duration;
-import java.util.Map;
 
 final class MetricReaderFactory
     implements Factory<MetricReaderModel, MetricReaderAndCardinalityLimits> {
@@ -97,7 +95,7 @@ final class MetricReaderFactory
             CardinalityLimitsFactory.getInstance().create(model.getCardinalityLimits(), context);
       }
 
-      Map.Entry<String, DeclarativeConfigProperties> metricReaderKeyValue =
+      ConfigKeyValue metricReaderKeyValue =
           FileConfigUtil.validateSingleKeyValue(context, exporterModel, "metric reader");
       MetricReader metricReader =
           context.loadComponent(

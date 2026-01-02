@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import java.util.Map;
 
 final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, LogRecordExporter> {
   private static final LogRecordExporterFactory INSTANCE = new LogRecordExporterFactory();
@@ -21,7 +19,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
 
   @Override
   public LogRecordExporter create(LogRecordExporterModel model, DeclarativeConfigContext context) {
-    Map.Entry<String, DeclarativeConfigProperties> logRecordExporterKeyValue =
+    ConfigKeyValue logRecordExporterKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "log record exporter");
     return context.loadComponent(
         LogRecordExporter.class,

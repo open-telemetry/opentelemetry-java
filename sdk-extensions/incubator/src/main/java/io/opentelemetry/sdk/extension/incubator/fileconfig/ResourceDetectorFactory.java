@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Map;
 
 final class ResourceDetectorFactory
     implements Factory<ExperimentalResourceDetectorModel, Resource> {
@@ -23,7 +21,7 @@ final class ResourceDetectorFactory
   @Override
   public Resource create(
       ExperimentalResourceDetectorModel model, DeclarativeConfigContext context) {
-    Map.Entry<String, DeclarativeConfigProperties> detectorKeyValue =
+    ConfigKeyValue detectorKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "resource detector");
     return context.loadComponent(
         Resource.class, detectorKeyValue.getKey(), detectorKeyValue.getValue());
