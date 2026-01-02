@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceI
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.CompositeSampler;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
+import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.time.Duration;
@@ -45,6 +46,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 // Suppress logs from JaegerRemoteSampler
 @SuppressLogger(
     loggerName = "io.opentelemetry.sdk.extension.trace.jaeger.sampler.OkHttpGrpcService")
+@SuppressLogger(ParentBasedSamplerBuilder.class)
 class SamplerFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();

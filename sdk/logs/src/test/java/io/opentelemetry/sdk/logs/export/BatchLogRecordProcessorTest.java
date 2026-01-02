@@ -122,6 +122,7 @@ class BatchLogRecordProcessorTest {
   }
 
   @Test
+  @SuppressLogger(BatchLogRecordProcessorBuilder.class)
   void builderAdjustMaxBatchSize() {
     LogRecordExporter dummyExporter = new CompletableLogRecordExporter();
 
@@ -136,6 +137,7 @@ class BatchLogRecordProcessorTest {
   }
 
   @Test
+  @SuppressLogger(BatchLogRecordProcessorBuilder.class)
   void maxExportBatchSizeExceedsQueueSize() throws InterruptedException {
     // Given a processor configured with a maxExportBatchSize > maxQueueSize, ensure that after n =
     // maxQueueSize logs are emitted, export is triggered and that the queue is fully drained and

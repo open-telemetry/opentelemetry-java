@@ -20,6 +20,7 @@ public final class ParentBasedSamplerBuilder {
   @Nullable private Sampler localParentNotSampled;
 
   ParentBasedSamplerBuilder(Sampler root) {
+    maybeLogTraceIdSamplerWarning(root, "root");
     this.root = root;
   }
 
@@ -30,12 +31,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setRemoteParentSampled(Sampler remoteParentSampled) {
-    if (remoteParentSampled instanceof TraceIdRatioBasedSampler) {
-      logger.warning(
-          "TraceIdRatioBasedSampler is being used as a child sampler (remoteParentSampled). "
-              + "This configuration is discouraged per the OpenTelemetry specification "
-              + "and may lead to unexpected sampling behavior.");
-    }
+    maybeLogTraceIdSamplerWarning(remoteParentSampled, "remoteParentSampled");
     this.remoteParentSampled = remoteParentSampled;
     return this;
   }
@@ -47,12 +43,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setRemoteParentNotSampled(Sampler remoteParentNotSampled) {
-    if (remoteParentNotSampled instanceof TraceIdRatioBasedSampler) {
-      logger.warning(
-          "TraceIdRatioBasedSampler is being used as a child sampler (remoteParentNotSampled). "
-              + "This configuration is discouraged per the OpenTelemetry specification "
-              + "and may lead to unexpected sampling behavior.");
-    }
+    maybeLogTraceIdSamplerWarning(remoteParentNotSampled, "remoteParentNotSampled");
     this.remoteParentNotSampled = remoteParentNotSampled;
     return this;
   }
@@ -64,12 +55,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setLocalParentSampled(Sampler localParentSampled) {
-    if (localParentSampled instanceof TraceIdRatioBasedSampler) {
-      logger.warning(
-          "TraceIdRatioBasedSampler is being used as a child sampler (localParentSampled). "
-              + "This configuration is discouraged per the OpenTelemetry specification "
-              + "and may lead to unexpected sampling behavior.");
-    }
+    maybeLogTraceIdSamplerWarning(localParentSampled, "localParentSampled");
     this.localParentSampled = localParentSampled;
     return this;
   }
@@ -81,14 +67,20 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setLocalParentNotSampled(Sampler localParentNotSampled) {
-    if (localParentNotSampled instanceof TraceIdRatioBasedSampler) {
+    maybeLogTraceIdSamplerWarning(localParentNotSampled, "localParentNotSampled");
+    this.localParentNotSampled = localParentNotSampled;
+    return this;
+  }
+
+  private static void maybeLogTraceIdSamplerWarning(Sampler sampler, String field) {
+    if (sampler instanceof TraceIdRatioBasedSampler) {
       logger.warning(
-          "TraceIdRatioBasedSampler is being used as a child sampler (localParentNotSampled). "
+          "TraceIdRatioBasedSampler is being used as a child sampler ("
+              + field
+              + "). "
               + "This configuration is discouraged per the OpenTelemetry specification "
               + "and may lead to unexpected sampling behavior.");
     }
-    this.localParentNotSampled = localParentNotSampled;
-    return this;
   }
 
   /**

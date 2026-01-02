@@ -216,6 +216,10 @@ val dependencyManagement by configurations.creating {
   isCanBeResolved = false
 }
 
+val mockitoAgent by configurations.creating {
+  extendsFrom(dependencyManagement)
+}
+
 dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
   afterEvaluate {
@@ -225,6 +229,8 @@ dependencies {
       }
     }
   }
+
+  mockitoAgent("org.mockito:mockito-core")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   compileOnly("com.google.code.findbugs:jsr305")
@@ -272,6 +278,19 @@ testing {
       all {
         testTask.configure {
           systemProperty("java.util.logging.config.class", "io.opentelemetry.internal.testing.slf4j.JulBridgeInitializer")
+
+          // Starting in java 21, dynamically attaching agents triggers warnings. Mockito depends on
+          // agents to redefine classes. Hence, on java 21+ we get warnings of the form:
+          //    WARNING: A Java agent has been loaded dynamically (/Users/jberg/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.12.19/450917cf3b358b691a824acf4c67aa89c826f67e/byte-buddy-agent-1.12.19.jar)
+          //    WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+          //    WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+          //    WARNING: Dynamic loading of agents will be disallowed by default in a future release
+          // To remove these warnings, we attach the byte-buddy-agent used by mockito directly.
+          val mockitoAgent: FileCollection = mockitoAgent
+          doFirst {
+            val mockitoAgentJar = mockitoAgent.files.single { it.name.contains("byte-buddy-agent")}
+            jvmArgs("-javaagent:${mockitoAgentJar}")
+          }
         }
       }
     }
