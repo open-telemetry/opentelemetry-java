@@ -23,11 +23,7 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
   public MetricExporter create(PushMetricExporterModel model, DeclarativeConfigContext context) {
     Map.Entry<String, DeclarativeConfigProperties> metricExporterKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "metric exporter");
-    MetricExporter metricExporter =
-        context.loadComponent(
-            MetricExporter.class,
-            metricExporterKeyValue.getKey(),
-            metricExporterKeyValue.getValue());
-    return context.addCloseable(metricExporter);
+    return context.loadComponent(
+        MetricExporter.class, metricExporterKeyValue.getKey(), metricExporterKeyValue.getValue());
   }
 }

@@ -112,6 +112,9 @@ class DeclarativeConfigContext {
 
     try {
       Object component = provider.create(config);
+      if (component instanceof Closeable) {
+        closeables.add((Closeable) component);
+      }
       if (component != null && !type.isInstance(component)) {
         throw new DeclarativeConfigException(
             "Error configuring "

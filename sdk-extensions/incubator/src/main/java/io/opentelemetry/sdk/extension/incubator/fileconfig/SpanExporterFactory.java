@@ -24,9 +24,7 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
   public SpanExporter create(SpanExporterModel model, DeclarativeConfigContext context) {
     Map.Entry<String, DeclarativeConfigProperties> spanExporterKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "span exporter");
-    SpanExporter spanExporter =
-        context.loadComponent(
-            SpanExporter.class, spanExporterKeyValue.getKey(), spanExporterKeyValue.getValue());
-    return context.addCloseable(spanExporter);
+    return context.loadComponent(
+        SpanExporter.class, spanExporterKeyValue.getKey(), spanExporterKeyValue.getValue());
   }
 }

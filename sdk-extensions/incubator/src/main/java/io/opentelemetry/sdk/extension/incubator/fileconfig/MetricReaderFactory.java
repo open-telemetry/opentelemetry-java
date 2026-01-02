@@ -63,8 +63,7 @@ final class MetricReaderFactory
       MetricExporter metricExporter =
           MetricExporterFactory.getInstance().create(exporterModel, context);
 
-      PeriodicMetricReaderBuilder builder =
-          PeriodicMetricReader.builder(context.addCloseable(metricExporter));
+      PeriodicMetricReaderBuilder builder = PeriodicMetricReader.builder(metricExporter);
 
       if (model.getInterval() != null) {
         builder.setInterval(Duration.ofMillis(model.getInterval()));
@@ -103,8 +102,7 @@ final class MetricReaderFactory
       MetricReader metricReader =
           context.loadComponent(
               MetricReader.class, metricReaderKeyValue.getKey(), metricReaderKeyValue.getValue());
-      return MetricReaderAndCardinalityLimits.create(
-          context.addCloseable(metricReader), cardinalityLimitSelector);
+      return MetricReaderAndCardinalityLimits.create(metricReader, cardinalityLimitSelector);
     }
   }
 }

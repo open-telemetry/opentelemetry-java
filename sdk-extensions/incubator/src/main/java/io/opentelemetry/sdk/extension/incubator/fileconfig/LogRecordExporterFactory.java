@@ -23,11 +23,9 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
   public LogRecordExporter create(LogRecordExporterModel model, DeclarativeConfigContext context) {
     Map.Entry<String, DeclarativeConfigProperties> logRecordExporterKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "log record exporter");
-    LogRecordExporter logRecordExporter =
-        context.loadComponent(
-            LogRecordExporter.class,
-            logRecordExporterKeyValue.getKey(),
-            logRecordExporterKeyValue.getValue());
-    return context.addCloseable(logRecordExporter);
+    return context.loadComponent(
+        LogRecordExporter.class,
+        logRecordExporterKeyValue.getKey(),
+        logRecordExporterKeyValue.getValue());
   }
 }
