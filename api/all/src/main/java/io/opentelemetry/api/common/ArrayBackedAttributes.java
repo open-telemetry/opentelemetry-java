@@ -41,7 +41,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     return new ArrayBackedAttributesBuilder(new ArrayList<>(data()));
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe cast: values are stored internally keyed by AttributeKey<T>
   @Override
   @Nullable
   public <T> T get(AttributeKey<T> key) {
