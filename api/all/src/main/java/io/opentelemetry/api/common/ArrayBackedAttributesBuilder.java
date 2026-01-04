@@ -49,12 +49,11 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
+  // Safe: Attributes guarantees iteration over matching AttributeKey<T> / value pairs.
   public AttributesBuilder putAll(Attributes attributes) {
     if (attributes == null) {
       return this;
     }
-    // Attributes must iterate over their entries with matching types for key / value, so this
-    // downcast to the raw type is safe.
     attributes.forEach((key, value) -> put((AttributeKey) key, value));
     return this;
   }
