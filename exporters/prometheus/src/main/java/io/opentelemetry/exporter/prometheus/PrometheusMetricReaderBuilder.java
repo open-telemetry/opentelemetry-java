@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -24,6 +25,7 @@ public final class PrometheusMetricReaderBuilder {
    * @param otelScopeLabelsEnabled whether to add scope labels
    * @return this builder
    */
+  @CanIgnoreReturnValue
   public PrometheusMetricReaderBuilder setOtelScopeLabelsEnabled(boolean otelScopeLabelsEnabled) {
     this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
     return this;
@@ -36,6 +38,7 @@ public final class PrometheusMetricReaderBuilder {
    * @param otelTargetInfoMetricEnabled whether to export target_info metric
    * @return this builder
    */
+  @CanIgnoreReturnValue
   public PrometheusMetricReaderBuilder setOtelTargetInfoMetricEnabled(
       boolean otelTargetInfoMetricEnabled) {
     this.otelTargetInfoMetricEnabled = otelTargetInfoMetricEnabled;
@@ -49,6 +52,7 @@ public final class PrometheusMetricReaderBuilder {
    * @param allowedResourceAttributesFilter predicate to filter resource attributes, or {@code null}
    * @return this builder
    */
+  @CanIgnoreReturnValue
   public PrometheusMetricReaderBuilder setAllowedResourceAttributesFilter(
       @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;

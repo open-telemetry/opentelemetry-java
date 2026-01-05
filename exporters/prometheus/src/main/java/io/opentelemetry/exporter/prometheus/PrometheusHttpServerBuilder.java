@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.prometheus;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -56,6 +57,7 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setHost(String host) {
     requireNonNull(host, "host");
     checkArgument(!host.isEmpty(), "host must not be empty");
@@ -64,6 +66,7 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Sets the port to bind to. If unset, defaults to {@value #DEFAULT_PORT}. */
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setPort(int port) {
     checkArgument(port >= 0, "port must be positive");
     this.port = port;
@@ -71,6 +74,7 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Sets the {@link ExecutorService} to be used for {@link PrometheusHttpServer}. */
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setExecutor(ExecutorService executor) {
     requireNonNull(executor, "executor");
     this.executor = executor;
@@ -78,7 +82,7 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Sets the {@link PrometheusRegistry} to be used for {@link PrometheusHttpServer}. */
-  @SuppressWarnings("UnusedReturnValue")
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setPrometheusRegistry(PrometheusRegistry prometheusRegistry) {
     requireNonNull(prometheusRegistry, "prometheusRegistry");
     this.prometheusRegistry = prometheusRegistry;
@@ -86,14 +90,14 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}. */
-  @SuppressWarnings("UnusedReturnValue")
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setOtelScopeLabelsEnabled(boolean otelScopeLabelsEnabled) {
     this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
     return this;
   }
 
   /** Set if the {@code otel_target_info} metric is generated. Default is {@code true}. */
-  @SuppressWarnings("UnusedReturnValue")
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setOtelTargetInfoMetricEnabled(
       boolean otelTargetInfoMetricEnabled) {
     this.otelTargetInfoMetricEnabled = otelTargetInfoMetricEnabled;
@@ -110,6 +114,7 @@ public final class PrometheusHttpServerBuilder {
    *     be added as a label on each exported metric. The predicates input is the resource attribute
    *     key.
    */
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setAllowedResourceAttributesFilter(
       Predicate<String> resourceAttributesFilter) {
     this.allowedResourceAttributesFilter = requireNonNull(resourceAttributesFilter);
@@ -123,6 +128,7 @@ public final class PrometheusHttpServerBuilder {
    * accomplished by overriding {@link #setExecutor(ExecutorService)} to {@link
    * Executors#newSingleThreadExecutor()}.
    */
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
@@ -140,6 +146,7 @@ public final class PrometheusHttpServerBuilder {
    *     .build()
    * </code>
    */
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setDefaultHandler(HttpHandler defaultHandler) {
     requireNonNull(defaultHandler, "defaultHandler");
     this.defaultHandler = defaultHandler;
@@ -152,6 +159,7 @@ public final class PrometheusHttpServerBuilder {
    *
    * <p>If unset, defaults to {@link DefaultAggregationSelector#getDefault()}.
    */
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setDefaultAggregationSelector(
       DefaultAggregationSelector defaultAggregationSelector) {
     requireNonNull(defaultAggregationSelector, "defaultAggregationSelector");
@@ -164,6 +172,7 @@ public final class PrometheusHttpServerBuilder {
    *
    * <p>If unset, no authentication will be performed.
    */
+  @CanIgnoreReturnValue
   public PrometheusHttpServerBuilder setAuthenticator(Authenticator authenticator) {
     requireNonNull(authenticator, "authenticator");
     this.authenticator = authenticator;
