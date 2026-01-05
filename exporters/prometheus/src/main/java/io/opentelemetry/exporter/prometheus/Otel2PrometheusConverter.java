@@ -81,7 +81,7 @@ final class Otel2PrometheusConverter {
   static final int MAX_CACHE_SIZE = 10;
 
   private final boolean otelScopeLabelsEnabled;
-  private final boolean otelTargetInfoMetricEnabled;
+  private final boolean targetInfoMetricEnabled;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -94,17 +94,17 @@ final class Otel2PrometheusConverter {
    * Constructor with feature flag parameters.
    *
    * @param otelScopeLabelsEnabled whether to add OpenTelemetry scope labels to exported metrics
-   * @param otelTargetInfoMetricEnabled whether to export the target_info metric with resource
+   * @param targetInfoMetricEnabled whether to export the target_info metric with resource
    *     attributes
    * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
    *     matching this predicate will be added as labels on each exported metric
    */
   Otel2PrometheusConverter(
       boolean otelScopeLabelsEnabled,
-      boolean otelTargetInfoMetricEnabled,
+      boolean targetInfoMetricEnabled,
       @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
-    this.otelTargetInfoMetricEnabled = otelTargetInfoMetricEnabled;
+    this.targetInfoMetricEnabled = targetInfoMetricEnabled;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
@@ -128,7 +128,7 @@ final class Otel2PrometheusConverter {
         resource = metricData.getResource();
       }
     }
-    if (resource != null && otelTargetInfoMetricEnabled) {
+    if (resource != null && targetInfoMetricEnabled) {
       putOrMerge(snapshotsByName, makeTargetInfo(resource));
     }
     return new MetricSnapshots(snapshotsByName.values());

@@ -51,7 +51,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
     this(
         allowedResourceAttributesFilter,
         /* otelScopeLabelsEnabled= */ true,
-        /* otelTargetInfoMetricEnabled= */ true);
+        /* targetInfoMetricEnabled= */ true);
   }
 
   /**
@@ -64,7 +64,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
     this(
         allowedResourceAttributesFilter,
         /* otelScopeLabelsEnabled= */ true,
-        /* otelTargetInfoMetricEnabled= */ true);
+        /* targetInfoMetricEnabled= */ true);
   }
 
   // Package-private constructor used by builder
@@ -72,10 +72,10 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   PrometheusMetricReader(
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       boolean otelScopeLabelsEnabled,
-      boolean otelTargetInfoMetricEnabled) {
+      boolean targetInfoMetricEnabled) {
     this.converter =
         new Otel2PrometheusConverter(
-            otelScopeLabelsEnabled, otelTargetInfoMetricEnabled, allowedResourceAttributesFilter);
+            otelScopeLabelsEnabled, targetInfoMetricEnabled, allowedResourceAttributesFilter);
   }
 
   @Override

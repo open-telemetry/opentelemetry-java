@@ -47,7 +47,7 @@ public class PrometheusComponentProvider implements ComponentProvider {
 
     Boolean withoutTargetInfo = config.getBoolean("without_target_info");
     if (withoutTargetInfo != null) {
-      prometheusBuilder.setOtelTargetInfoMetricEnabled(!withoutTargetInfo);
+      prometheusBuilder.setTargetInfoMetricEnabled(!withoutTargetInfo);
     }
     Boolean withoutScopeInfo = config.getBoolean("without_scope_info");
     if (withoutScopeInfo != null) {

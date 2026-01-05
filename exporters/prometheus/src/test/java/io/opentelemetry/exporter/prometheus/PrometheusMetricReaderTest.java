@@ -1018,7 +1018,7 @@ class PrometheusMetricReaderTest {
   @Test
   void withoutTargetInfoMetric() throws IOException {
     PrometheusMetricReader reader =
-        PrometheusMetricReader.builder().setOtelTargetInfoMetricEnabled(false).build();
+        PrometheusMetricReader.builder().setTargetInfoMetricEnabled(false).build();
     addCounter(reader, Resource.getDefault().toBuilder());
     String expected =
         ""
@@ -1079,7 +1079,7 @@ class PrometheusMetricReaderTest {
     // The 3-arg constructor should behave the same as the 2-arg deprecated constructor
     assertThat(
             new PrometheusMetricReader(
-                null, /* otelScopeLabelsEnabled= */ true, /* otelTargetInfoMetricEnabled */ true))
+                null, /* otelScopeLabelsEnabled= */ true, /* targetInfoMetricEnabled */ true))
         .usingRecursiveComparison()
         .isEqualTo(new PrometheusMetricReader(null));
   }

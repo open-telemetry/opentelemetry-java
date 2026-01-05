@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public final class PrometheusMetricReaderBuilder {
 
   private boolean otelScopeLabelsEnabled = true;
-  private boolean otelTargetInfoMetricEnabled = true;
+  private boolean targetInfoMetricEnabled = true;
   @Nullable private Predicate<String> allowedResourceAttributesFilter;
 
   PrometheusMetricReaderBuilder() {}
@@ -35,13 +35,13 @@ public final class PrometheusMetricReaderBuilder {
    * Sets whether to export the target_info metric with resource attributes. Default is {@code
    * true}.
    *
-   * @param otelTargetInfoMetricEnabled whether to export target_info metric
+   * @param targetInfoMetricEnabled whether to export target_info metric
    * @return this builder
    */
   @CanIgnoreReturnValue
-  public PrometheusMetricReaderBuilder setOtelTargetInfoMetricEnabled(
-      boolean otelTargetInfoMetricEnabled) {
-    this.otelTargetInfoMetricEnabled = otelTargetInfoMetricEnabled;
+  public PrometheusMetricReaderBuilder setTargetInfoMetricEnabled(
+      boolean targetInfoMetricEnabled) {
+    this.targetInfoMetricEnabled = targetInfoMetricEnabled;
     return this;
   }
 
@@ -62,6 +62,6 @@ public final class PrometheusMetricReaderBuilder {
   /** Builds a new {@link PrometheusMetricReader}. */
   public PrometheusMetricReader build() {
     return new PrometheusMetricReader(
-        allowedResourceAttributesFilter, otelScopeLabelsEnabled, otelTargetInfoMetricEnabled);
+        allowedResourceAttributesFilter, otelScopeLabelsEnabled, targetInfoMetricEnabled);
   }
 }

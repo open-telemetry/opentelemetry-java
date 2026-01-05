@@ -32,7 +32,7 @@ public final class PrometheusHttpServerBuilder {
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
   private boolean otelScopeLabelsEnabled = true;
-  private boolean otelTargetInfoMetricEnabled = true;
+  private boolean targetInfoMetricEnabled = true;
   @Nullable private Predicate<String> allowedResourceAttributesFilter;
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
@@ -48,7 +48,7 @@ public final class PrometheusHttpServerBuilder {
     this.port = builder.port;
     this.prometheusRegistry = builder.prometheusRegistry;
     this.otelScopeLabelsEnabled = builder.otelScopeLabelsEnabled;
-    this.otelTargetInfoMetricEnabled = builder.otelTargetInfoMetricEnabled;
+    this.targetInfoMetricEnabled = builder.targetInfoMetricEnabled;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
@@ -98,9 +98,9 @@ public final class PrometheusHttpServerBuilder {
 
   /** Set if the {@code otel_target_info} metric is generated. Default is {@code true}. */
   @CanIgnoreReturnValue
-  public PrometheusHttpServerBuilder setOtelTargetInfoMetricEnabled(
-      boolean otelTargetInfoMetricEnabled) {
-    this.otelTargetInfoMetricEnabled = otelTargetInfoMetricEnabled;
+  public PrometheusHttpServerBuilder setTargetInfoMetricEnabled(
+      boolean targetInfoMetricEnabled) {
+    this.targetInfoMetricEnabled = targetInfoMetricEnabled;
     return this;
   }
 
@@ -196,7 +196,7 @@ public final class PrometheusHttpServerBuilder {
         executor,
         prometheusRegistry,
         otelScopeLabelsEnabled,
-        otelTargetInfoMetricEnabled,
+        targetInfoMetricEnabled,
         allowedResourceAttributesFilter,
         memoryMode,
         defaultHandler,
