@@ -62,12 +62,12 @@ class InstrumentationConfigUtilTest {
 
   @Test
   void getInstrumentationConfigModel_UnsetConfig() {
-    ConfigProvider configProvider = () -> null;
+    ConfigProvider configProvider = DeclarativeConfigProperties::empty;
 
     assertThat(
             InstrumentationConfigUtil.getInstrumentationConfigModel(
                 configProvider, "my_instrumentation_library", MAPPER, Model.class))
-        .isEqualTo(null);
+        .isNull();
   }
 
   @Test
