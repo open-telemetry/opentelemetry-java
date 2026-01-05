@@ -79,7 +79,7 @@ class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
   }
 
   @Test
-  void configProvider() {
+  void instrumentationConfig() {
     String configYaml =
         "instrumentation/development:\n"
             + "  general:\n"
