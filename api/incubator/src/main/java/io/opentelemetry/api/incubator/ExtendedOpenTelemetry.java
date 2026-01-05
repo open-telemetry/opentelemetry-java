@@ -5,13 +5,43 @@
 
 package io.opentelemetry.api.incubator;
 
+import static io.opentelemetry.api.incubator.config.DeclarativeConfigProperties.empty;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 
 /** Extension to {@link OpenTelemetry} with experimental APIs. */
 public interface ExtendedOpenTelemetry extends OpenTelemetry {
   /** Returns the {@link ConfigProvider} for this {@link OpenTelemetry}. */
   default ConfigProvider getConfigProvider() {
     return ConfigProvider.noop();
+  }
+
+  /**
+   * Returns the {@link DeclarativeConfigProperties} for a specific instrumentation by name. If no
+   * configuration is available for the given name, an empty {@link DeclarativeConfigProperties} is
+   * returned.
+   *
+   * @param name the name of the instrumentation
+   * @return the {@link DeclarativeConfigProperties} for the given instrumentation name
+   */
+  default DeclarativeConfigProperties getInstrumentationConfig(String name) {
+    // getConfigProvider() will be nullable once stability is reached
+    DeclarativeConfigProperties config = getConfigProvider().getInstrumentationConfig();
+    return config == null ? empty() : config.get("java").get(name);
+  }
+
+  /**
+   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration. If
+   * the general configuration is not available, an empty {@link DeclarativeConfigProperties} is
+   * returned.
+   *
+   * @return the {@link DeclarativeConfigProperties} for the general instrumentation configuration
+   */
+  default DeclarativeConfigProperties getGeneralInstrumentationConfig() {
+    // getConfigProvider() will be nullable once stability is reached
+    DeclarativeConfigProperties config = getConfigProvider().getInstrumentationConfig();
+    return config == null ? empty() : config.get("general");
   }
 }
