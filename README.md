@@ -262,7 +262,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 ### Maintainers
 
 - [Jack Berg](https://github.com/jack-berg), Grafana Labs
-- [John Watson](https://github.com/jkwatson), Cloudera
+- [John Watson](https://github.com/jkwatson), Sublime Security
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
