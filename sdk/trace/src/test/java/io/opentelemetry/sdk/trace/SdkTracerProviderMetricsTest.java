@@ -716,6 +716,7 @@ class SdkTracerProviderMetricsTest {
     BatchSpanProcessor processor =
         BatchSpanProcessor.builder(mockExporter)
             .setMaxQueueSize(1)
+            .setMaxExportBatchSize(1)
             // Manually flush
             .setScheduleDelay(Duration.ofDays(1))
             .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)

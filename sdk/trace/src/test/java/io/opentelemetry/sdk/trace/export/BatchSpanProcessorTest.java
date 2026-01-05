@@ -130,6 +130,7 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  @SuppressLogger(BatchSpanProcessorBuilder.class)
   void builderAdjustMaxBatchSize() {
     SpanExporter dummyExporter = new CompletableSpanExporter();
 
@@ -142,6 +143,7 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  @SuppressLogger(BatchSpanProcessorBuilder.class)
   void maxExportBatchSizeExceedsQueueSize() throws InterruptedException {
     // Given a processor configured with a maxExportBatchSize > maxQueueSize, ensure that after n =
     // maxQueueSize spans are ended, export is triggered and that the queue is fully drained and

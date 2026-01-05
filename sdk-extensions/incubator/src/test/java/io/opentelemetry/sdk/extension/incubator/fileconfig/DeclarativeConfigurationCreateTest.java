@@ -17,12 +17,14 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +60,7 @@ class DeclarativeConfigurationCreateTest {
    * can pass {@link DeclarativeConfiguration#parseAndCreate(InputStream)}.
    */
   @Test
+  @SuppressLogger(ParentBasedSamplerBuilder.class)
   void parseAndCreate_Examples(@TempDir Path tempDir)
       throws IOException, CertificateEncodingException {
     // Write certificates to temp files
@@ -175,6 +178,7 @@ class DeclarativeConfigurationCreateTest {
   }
 
   @Test
+  @SuppressLogger(DeclarativeConfiguration.class)
   void callAutoConfigureListeners_exceptionIsCaught() {
     SpiHelper spiHelper = mock(SpiHelper.class);
     when(spiHelper.getListeners())

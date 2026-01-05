@@ -5,82 +5,42 @@
 
 package io.opentelemetry.sdk.trace.samplers;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class ParentBasedSamplerBuilderTest {
 
-  @Test
-  void emitsWarningWhenTraceIdRatioBasedUsedAsChildSampler() {
-    Logger logger = Logger.getLogger(ParentBasedSamplerBuilder.class.getName());
-    TestLogHandler handler = new TestLogHandler();
-    logger.addHandler(handler);
-
-    try {
-      Sampler ratioSampler = Sampler.traceIdRatioBased(0.5);
-      ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(Sampler.alwaysOn());
-
-      builder.setRemoteParentSampled(ratioSampler);
-      builder.setRemoteParentSampled(ratioSampler);
-      builder.build();
-
-      assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("remoteParentSampled")));
-    } finally {
-      logger.removeHandler(handler);
-    }
-  }
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(ParentBasedSamplerBuilder.class);
 
   @Test
+  @SuppressLogger(ParentBasedSamplerBuilder.class)
   void emitsWarningForAllChildSamplerSetters() {
-    Logger logger = Logger.getLogger(ParentBasedSamplerBuilder.class.getName());
-    TestLogHandler handler = new TestLogHandler();
-    logger.addHandler(handler);
+    Sampler ratioSampler = Sampler.traceIdRatioBased(0.5);
+    Sampler.parentBasedBuilder(ratioSampler)
+        .setRemoteParentNotSampled(ratioSampler)
+        .setRemoteParentSampled(ratioSampler)
+        .setLocalParentSampled(ratioSampler)
+        .setLocalParentNotSampled(ratioSampler)
+        .build();
 
-    try {
-      Sampler ratioSampler = Sampler.traceIdRatioBased(0.5);
-      ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(Sampler.alwaysOn());
-
-      builder.setRemoteParentNotSampled(ratioSampler);
-      builder.setRemoteParentNotSampled(ratioSampler);
-
-      builder.setLocalParentSampled(ratioSampler);
-      builder.setLocalParentSampled(ratioSampler);
-
-      builder.setLocalParentNotSampled(ratioSampler);
-      builder.setLocalParentNotSampled(ratioSampler);
-
-      builder.build();
-
-      assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("remoteParentNotSampled")));
-      assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("localParentSampled")));
-      assertTrue(handler.warnings.stream().anyMatch(msg -> msg.contains("localParentNotSampled")));
-    } finally {
-      logger.removeHandler(handler);
-    }
-  }
-
-  static final class TestLogHandler extends Handler {
-
-    final List<String> warnings = new ArrayList<>();
-
-    @Override
-    public void publish(LogRecord record) {
-      if (Level.WARNING.equals(record.getLevel())) {
-        warnings.add(record.getMessage());
-      }
-    }
-
-    @Override
-    public void flush() {}
-
-    @Override
-    public void close() {}
+    assertThat(logs.getEvents()).hasSize(5);
+    assertThat(logs.getEvents().get(0).getMessage())
+        .contains("TraceIdRatioBasedSampler is being used as a child sampler (root)");
+    assertThat(logs.getEvents().get(1).getMessage())
+        .contains(
+            "TraceIdRatioBasedSampler is being used as a child sampler (remoteParentNotSampled)");
+    assertThat(logs.getEvents().get(2).getMessage())
+        .contains(
+            "TraceIdRatioBasedSampler is being used as a child sampler (remoteParentSampled)");
+    assertThat(logs.getEvents().get(3).getMessage())
+        .contains("TraceIdRatioBasedSampler is being used as a child sampler (localParentSampled)");
+    assertThat(logs.getEvents().get(4).getMessage())
+        .contains(
+            "TraceIdRatioBasedSampler is being used as a child sampler (localParentNotSampled)");
   }
 }

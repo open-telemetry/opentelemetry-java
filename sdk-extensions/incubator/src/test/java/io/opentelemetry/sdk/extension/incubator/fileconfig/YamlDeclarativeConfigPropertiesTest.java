@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableSet;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressLogger(YamlDeclarativeConfigProperties.class)
 class YamlDeclarativeConfigPropertiesTest {
 
   @RegisterExtension
