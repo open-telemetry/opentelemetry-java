@@ -20,7 +20,6 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
@@ -40,7 +39,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -160,12 +158,10 @@ class DeclarativeConfigurationTest {
     cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
 
     assertThat(
-            Optional.ofNullable(
-                    ((ExtendedOpenTelemetry) autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk())
-                        .getConfigProvider()
-                        .getInstrumentationConfig())
-                .map(DeclarativeConfigProperties::getComponentLoader)
-                .orElse(null))
+            ((ExtendedOpenTelemetry) autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk())
+                .getConfigProvider()
+                .getInstrumentationConfig()
+                .getComponentLoader())
         .isSameAs(componentLoader);
   }
 
@@ -221,9 +217,6 @@ class DeclarativeConfigurationTest {
 
     ConfigProvider globalConfigProvider =
         ((ExtendedOpenTelemetry) GlobalOpenTelemetry.get()).getConfigProvider();
-    DeclarativeConfigProperties instrumentationConfig =
-        globalConfigProvider.getInstrumentationConfig();
-    assertThat(instrumentationConfig).isNotNull();
 
     // Extract instrumentation config from ConfigProvider
     assertThat(InstrumentationConfigUtil.httpClientRequestCapturedHeaders(globalConfigProvider))
