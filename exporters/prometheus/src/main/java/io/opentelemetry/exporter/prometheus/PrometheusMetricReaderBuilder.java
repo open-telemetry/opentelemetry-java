@@ -18,6 +18,12 @@ public final class PrometheusMetricReaderBuilder {
 
   PrometheusMetricReaderBuilder() {}
 
+  PrometheusMetricReaderBuilder(PrometheusMetricReaderBuilder metricReaderBuilder) {
+    this.otelScopeLabelsEnabled = metricReaderBuilder.otelScopeLabelsEnabled;
+    this.targetInfoMetricEnabled = metricReaderBuilder.targetInfoMetricEnabled;
+    this.allowedResourceAttributesFilter = metricReaderBuilder.allowedResourceAttributesFilter;
+  }
+
   /**
    * Sets whether to add OpenTelemetry scope labels (otel_scope_name, otel_scope_version, etc.) to
    * exported metrics. Default is {@code true}.
@@ -39,8 +45,7 @@ public final class PrometheusMetricReaderBuilder {
    * @return this builder
    */
   @CanIgnoreReturnValue
-  public PrometheusMetricReaderBuilder setTargetInfoMetricEnabled(
-      boolean targetInfoMetricEnabled) {
+  public PrometheusMetricReaderBuilder setTargetInfoMetricEnabled(boolean targetInfoMetricEnabled) {
     this.targetInfoMetricEnabled = targetInfoMetricEnabled;
     return this;
   }
@@ -63,5 +68,17 @@ public final class PrometheusMetricReaderBuilder {
   public PrometheusMetricReader build() {
     return new PrometheusMetricReader(
         allowedResourceAttributesFilter, otelScopeLabelsEnabled, targetInfoMetricEnabled);
+  }
+
+  @Override
+  public String toString() {
+    return "PrometheusMetricReaderBuilder{"
+        + "otelScopeLabelsEnabled="
+        + otelScopeLabelsEnabled
+        + ", targetInfoMetricEnabled="
+        + targetInfoMetricEnabled
+        + ", allowedResourceAttributesFilter="
+        + allowedResourceAttributesFilter
+        + '}';
   }
 }

@@ -574,7 +574,10 @@ class PrometheusHttpServerTest {
         .isInstanceOf(PrometheusHttpServerBuilder.class)
         .hasFieldOrPropertyWithValue("host", "localhost")
         .hasFieldOrPropertyWithValue("port", 1234)
-        .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
+        .hasFieldOrPropertyWithValue(
+            "metricReaderBuilder",
+            PrometheusMetricReader.builder()
+                .setAllowedResourceAttributesFilter(resourceAttributesFilter))
         .hasFieldOrPropertyWithValue("executor", executor)
         .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry)
         .hasFieldOrPropertyWithValue("authenticator", authenticator);
