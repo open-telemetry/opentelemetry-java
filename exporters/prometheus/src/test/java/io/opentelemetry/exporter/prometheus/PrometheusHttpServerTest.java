@@ -432,9 +432,7 @@ class PrometheusHttpServerTest {
             "PrometheusHttpServer{"
                 + "host=localhost,"
                 + "port=0,"
-                + "otelScopeLabelsEnabled=true,"
-                + "targetInfoMetricEnabled=true,"
-                + "allowedResourceAttributesFilter=null,"
+                + "metricReader=PrometheusMetricReaderBuilder{otelScopeLabelsEnabled=true, targetInfoMetricEnabled=true, allowedResourceAttributesFilter=null},"
                 + "memoryMode=REUSABLE_DATA,"
                 + "defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}"
                 + "}");
@@ -574,13 +572,14 @@ class PrometheusHttpServerTest {
         .isInstanceOf(PrometheusHttpServerBuilder.class)
         .hasFieldOrPropertyWithValue("host", "localhost")
         .hasFieldOrPropertyWithValue("port", 1234)
-        .hasFieldOrPropertyWithValue(
-            "metricReaderBuilder",
-            PrometheusMetricReader.builder()
-                .setAllowedResourceAttributesFilter(resourceAttributesFilter))
         .hasFieldOrPropertyWithValue("executor", executor)
         .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry)
-        .hasFieldOrPropertyWithValue("authenticator", authenticator);
+        .hasFieldOrPropertyWithValue("authenticator", authenticator)
+        .extracting("metricReaderBuilder")
+        .usingRecursiveComparison()
+        .isEqualTo(
+            PrometheusMetricReader.builder()
+                .setAllowedResourceAttributesFilter(resourceAttributesFilter));
   }
 
   /**
