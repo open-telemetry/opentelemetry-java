@@ -5,8 +5,6 @@
 
 package io.opentelemetry.api.incubator;
 
-import static io.opentelemetry.api.incubator.config.DeclarativeConfigProperties.empty;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
@@ -27,9 +25,7 @@ public interface ExtendedOpenTelemetry extends OpenTelemetry {
    * @return the {@link DeclarativeConfigProperties} for the given instrumentation name
    */
   default DeclarativeConfigProperties getInstrumentationConfig(String name) {
-    // getConfigProvider() will be nullable once stability is reached
-    DeclarativeConfigProperties config = getConfigProvider().getInstrumentationConfig();
-    return config == null ? empty() : config.get("java").get(name);
+    return getConfigProvider().getInstrumentationConfig(name);
   }
 
   /**
@@ -40,8 +36,6 @@ public interface ExtendedOpenTelemetry extends OpenTelemetry {
    * @return the {@link DeclarativeConfigProperties} for the general instrumentation configuration
    */
   default DeclarativeConfigProperties getGeneralInstrumentationConfig() {
-    // getConfigProvider() will be nullable once stability is reached
-    DeclarativeConfigProperties config = getConfigProvider().getInstrumentationConfig();
-    return config == null ? empty() : config.get("general");
+    return getConfigProvider().getGeneralInstrumentationConfig();
   }
 }

@@ -7,7 +7,6 @@ package io.opentelemetry.api.incubator.config;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-
 /**
  * A registry for accessing declarative configuration.
  *
@@ -28,6 +27,29 @@ public interface ConfigProvider {
    * @return the instrumentation {@link DeclarativeConfigProperties}
    */
   DeclarativeConfigProperties getInstrumentationConfig();
+
+  /**
+   * Returns the {@link DeclarativeConfigProperties} for a specific instrumentation by name. If no
+   * configuration is available for the given name, an empty {@link DeclarativeConfigProperties} is
+   * returned.
+   *
+   * @param name the name of the instrumentation
+   * @return the {@link DeclarativeConfigProperties} for the given instrumentation name
+   */
+  default DeclarativeConfigProperties getInstrumentationConfig(String name) {
+    return getInstrumentationConfig().get("java").get(name);
+  }
+
+  /**
+   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration. If
+   * the general configuration is not available, an empty {@link DeclarativeConfigProperties} is
+   * returned.
+   *
+   * @return the {@link DeclarativeConfigProperties} for the general instrumentation configuration
+   */
+  default DeclarativeConfigProperties getGeneralInstrumentationConfig() {
+    return getInstrumentationConfig().get("general");
+  }
 
   /** Returns a no-op {@link ConfigProvider}. */
   static ConfigProvider noop() {

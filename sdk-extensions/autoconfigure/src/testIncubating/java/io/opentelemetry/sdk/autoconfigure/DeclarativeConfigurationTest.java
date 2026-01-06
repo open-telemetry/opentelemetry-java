@@ -224,5 +224,16 @@ class DeclarativeConfigurationTest {
     assertThat(InstrumentationConfigUtil.javaInstrumentationConfig(globalConfigProvider, "example"))
         .isNotNull()
         .satisfies(exampleConfig -> assertThat(exampleConfig.getString("key")).isEqualTo("value"));
+
+    // shortcuts to get specific instrumentation config
+    assertThat(globalConfigProvider.getInstrumentationConfig("example").getString("key"))
+        .isEqualTo("value");
+    assertThat(
+            globalConfigProvider
+                .getGeneralInstrumentationConfig()
+                .get("http")
+                .get("client")
+                .getScalarList("request_captured_headers", String.class))
+        .isEqualTo(Arrays.asList("Content-Type", "Accept"));
   }
 }
