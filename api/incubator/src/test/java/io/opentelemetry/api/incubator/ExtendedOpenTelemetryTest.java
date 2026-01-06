@@ -119,7 +119,7 @@ class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
     ExtendedOpenTelemetry openTelemetry = spy(ExtendedOpenTelemetry.class);
     when(openTelemetry.getConfigProvider()).thenReturn(configProvider);
 
-    assertThat(configProvider.getInstrumentationConfig()).isNull();
+    assertThat(configProvider.getInstrumentationConfig()).isNotNull();
     assertThat(openTelemetry.getInstrumentationConfig("servlet")).isNotNull();
     assertThat(openTelemetry.getGeneralInstrumentationConfig()).isNotNull();
   }
