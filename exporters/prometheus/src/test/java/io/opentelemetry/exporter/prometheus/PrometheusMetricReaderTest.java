@@ -57,7 +57,6 @@ class PrometheusMetricReaderTest {
   private Meter meter;
   private Tracer tracer;
 
-  @SuppressWarnings("resource")
   @BeforeEach
   void setUp() {
     this.testClock.setTime(Instant.ofEpochMilli((System.currentTimeMillis() / 100) * 100));
@@ -1045,7 +1044,6 @@ class PrometheusMetricReaderTest {
     counter.add(1);
   }
 
-  @SuppressWarnings("resource")
   @Test
   void addResourceAttributesWorks() throws IOException {
     PrometheusMetricReader reader =
