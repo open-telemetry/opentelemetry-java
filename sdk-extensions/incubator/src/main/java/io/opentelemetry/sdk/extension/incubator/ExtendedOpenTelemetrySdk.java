@@ -11,7 +11,6 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import java.io.Closeable;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A new interface for creating OpenTelemetrySdk that supports getting {@link ConfigProvider}. */
@@ -74,7 +73,6 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
     }
 
     @Override
-    @Nullable
     public DeclarativeConfigProperties getInstrumentationConfig() {
       return delegate.getInstrumentationConfig();
     }
