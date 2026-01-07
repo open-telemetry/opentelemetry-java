@@ -56,8 +56,8 @@ public interface ConfigProvider {
    *   general:
    * }</pre>
    *
-   * If the general configuration is not available, an empty {@link DeclarativeConfigProperties} is
-   * returned.
+   * <p>If the general configuration is not available, an empty {@link DeclarativeConfigProperties}
+   * is returned.
    *
    * @return the {@link DeclarativeConfigProperties} for the general instrumentation configuration
    */
