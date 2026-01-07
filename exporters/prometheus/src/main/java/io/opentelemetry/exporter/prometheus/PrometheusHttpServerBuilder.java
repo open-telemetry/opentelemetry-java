@@ -104,8 +104,8 @@ public final class PrometheusHttpServerBuilder {
    */
   public PrometheusHttpServerBuilder setAllowedResourceAttributesFilter(
       Predicate<String> resourceAttributesFilter) {
-    metricReaderBuilder.setAllowedResourceAttributesFilter(
-        requireNonNull(resourceAttributesFilter, "resourceAttributesFilter"));
+    requireNonNull(resourceAttributesFilter, "resourceAttributesFilter");
+    metricReaderBuilder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
     return this;
   }
 
