@@ -33,6 +33,14 @@ public interface ConfigProvider {
    * configuration is available for the given name, an empty {@link DeclarativeConfigProperties} is
    * returned.
    *
+   * <p>For example, {@code getInstrumentationConfig("foo")} returns the node:
+   *
+   * <pre>{@code
+   * instrumentation/development:
+   *   java:
+   *     foo:
+   * }</pre>
+   *
    * @param name the name of the instrumentation
    * @return the {@link DeclarativeConfigProperties} for the given instrumentation name
    */
@@ -41,8 +49,14 @@ public interface ConfigProvider {
   }
 
   /**
-   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration. If
-   * the general configuration is not available, an empty {@link DeclarativeConfigProperties} is
+   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration:
+   *
+   * <pre>{@code
+   * instrumentation/development:
+   *   general:
+   * }</pre>
+   *
+   * If the general configuration is not available, an empty {@link DeclarativeConfigProperties} is
    * returned.
    *
    * @return the {@link DeclarativeConfigProperties} for the general instrumentation configuration
