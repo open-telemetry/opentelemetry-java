@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.FileInputStream;
@@ -136,6 +137,25 @@ final class IncubatingUtil {
         throw toConfigurationException((DeclarativeConfigException) cause);
       }
       throw new ConfigurationException("Unexpected error configuring from " + name, e);
+    }
+  }
+
+  public static Object toSdkConfigProvider(ConfigProperties configProperties) {
+    try {
+      Class<?> sdkConfigProviderClass =
+          Class.forName(
+              "io.opentelemetry.sdk.extension.incubator.fileconfig.ConfigPropertiesBackedDeclarativeConfigProperties");
+      Class<?> configPropertiesClass =
+          Class.forName("io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties");
+
+      Method createMethod =
+          sdkConfigProviderClass.getMethod("createInstrumentationConfig", configPropertiesClass);
+      return createMethod.invoke(null, configProperties);
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | IllegalAccessException
+        | InvocationTargetException e) {
+      throw new IllegalStateException("Error creating SdkConfigProvider from ConfigProperties", e);
     }
   }
 
