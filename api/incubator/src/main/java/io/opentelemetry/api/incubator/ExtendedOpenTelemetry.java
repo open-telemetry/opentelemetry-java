@@ -37,7 +37,7 @@ public interface ExtendedOpenTelemetry extends OpenTelemetry {
   }
 
   /**
-   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration:
+   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration.
    *
    * <pre>{@code
    * instrumentation/development:

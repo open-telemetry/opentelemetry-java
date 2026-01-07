@@ -49,7 +49,7 @@ public interface ConfigProvider {
   }
 
   /**
-   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration:
+   * Returns the {@link DeclarativeConfigProperties} for general instrumentation configuration.
    *
    * <pre>{@code
    * instrumentation/development:
