@@ -112,6 +112,19 @@ final class Otel2PrometheusConverter {
             : Collections.emptyMap();
   }
 
+  public boolean isOtelScopeLabelsEnabled() {
+    return otelScopeLabelsEnabled;
+  }
+
+  public boolean isTargetInfoMetricEnabled() {
+    return targetInfoMetricEnabled;
+  }
+
+  @Nullable
+  public Predicate<String> getAllowedResourceAttributesFilter() {
+    return allowedResourceAttributesFilter;
+  }
+
   MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
     if (metricDataCollection == null || metricDataCollection.isEmpty()) {
       return MetricSnapshots.of();

@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.prometheus.metrics.model.registry.MultiCollector;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
+import java.util.StringJoiner;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -101,5 +102,14 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   @Override
   public MetricSnapshots collect() {
     return converter.convert(collectionRegistration.collectAllMetrics());
+  }
+
+  @Override
+  public String toString() {
+    StringJoiner joiner = new StringJoiner(",", "PrometheusMetricReader{", "}");
+    joiner.add("otelScopeLabelsEnabled=" + converter.isOtelScopeLabelsEnabled());
+    joiner.add("targetInfoMetricEnabled=" + converter.isTargetInfoMetricEnabled());
+    joiner.add("allowedResourceAttributesFilter=" + converter.getAllowedResourceAttributesFilter());
+    return joiner.toString();
   }
 }

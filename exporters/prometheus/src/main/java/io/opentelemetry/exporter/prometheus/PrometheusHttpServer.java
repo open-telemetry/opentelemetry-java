@@ -41,7 +41,6 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final String host;
   private final int port;
-  private final PrometheusMetricReaderBuilder metricReaderBuilder;
   private final MemoryMode memoryMode;
   private final DefaultAggregationSelector defaultAggregationSelector;
 
@@ -70,18 +69,17 @@ public final class PrometheusHttpServer implements MetricReader {
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
-      PrometheusMetricReaderBuilder metricReaderBuilder,
       MemoryMode memoryMode,
       @Nullable HttpHandler defaultHandler,
       DefaultAggregationSelector defaultAggregationSelector,
-      @Nullable Authenticator authenticator) {
+      @Nullable Authenticator authenticator,
+      PrometheusMetricReader prometheusMetricReader) {
     this.host = host;
     this.port = port;
-    this.metricReaderBuilder = metricReaderBuilder;
     this.memoryMode = memoryMode;
     this.defaultAggregationSelector = defaultAggregationSelector;
     this.builder = builder;
-    this.prometheusMetricReader = metricReaderBuilder.build();
+    this.prometheusMetricReader = prometheusMetricReader;
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
     // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,
@@ -166,7 +164,7 @@ public final class PrometheusHttpServer implements MetricReader {
     StringJoiner joiner = new StringJoiner(",", "PrometheusHttpServer{", "}");
     joiner.add("host=" + host);
     joiner.add("port=" + port);
-    joiner.add("metricReader=" + metricReaderBuilder);
+    joiner.add("metricReader=" + prometheusMetricReader.toString());
     joiner.add("memoryMode=" + memoryMode);
     joiner.add(
         "defaultAggregationSelector="

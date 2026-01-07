@@ -179,10 +179,10 @@ public final class PrometheusHttpServerBuilder {
         port,
         executor,
         prometheusRegistry,
-        metricReaderBuilder,
         memoryMode,
         defaultHandler,
         defaultAggregationSelector,
-        authenticator);
+        authenticator,
+        metricReaderBuilder.build());
   }
 }

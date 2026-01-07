@@ -65,16 +65,4 @@ public final class PrometheusMetricReaderBuilder {
     return new PrometheusMetricReader(
         allowedResourceAttributesFilter, otelScopeLabelsEnabled, targetInfoMetricEnabled);
   }
-
-  @Override
-  public String toString() {
-    return "PrometheusMetricReaderBuilder{"
-        + "otelScopeLabelsEnabled="
-        + otelScopeLabelsEnabled
-        + ", targetInfoMetricEnabled="
-        + targetInfoMetricEnabled
-        + ", allowedResourceAttributesFilter="
-        + allowedResourceAttributesFilter
-        + '}';
-  }
 }
