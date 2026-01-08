@@ -27,7 +27,12 @@ configurations.all {
 }
 
 dependencies {
-  testImplementation(project(":context"))
+  testImplementation(project(":sdk:all"))
+  // TODO: should be able to remove these and everything functions
+  testImplementation(project(":api:incubator"))
+  testImplementation(project(":sdk-extensions:autoconfigure"))
+  testImplementation(project(":sdk-extensions:incubator"))
+  testImplementation("com.fasterxml.jackson.core:jackson-databind")
 
   // For some reason, changing this to testImplementation causes the tests to pass even when failures are present.
   // Probably some dependency resolution interplay with otel.java-conventions but I couldn't figure it out.
