@@ -164,12 +164,19 @@ public final class OkHttpGrpcSender implements GrpcSender {
                       @Override
                       public void onResponse(Call call, Response response) {
                         try (ResponseBody body = response.body()) {
+                          // Must consume body before accessing trailers
+                          byte[] bodyBytes = null;
+                          try {
+                            bodyBytes = body.bytes();
+                          } catch (IOException e) {
+                            bodyBytes = new byte[0];
+                            logger.log(Level.WARNING, "Failed to read response body", e);
+                          }
+                          byte[] resolvedBodyBytes = bodyBytes;
                           GrpcStatusCode status = grpcStatus(response);
                           String description = grpcMessage(response);
                           onResponse.accept(
                               new GrpcResponse() {
-                                @Nullable private byte[] bodyBytes;
-
                                 @Override
                                 public GrpcStatusCode getStatusCode() {
                                   return status;
@@ -182,15 +189,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
                                 @Override
                                 public byte[] getResponseMessage() {
-                                  if (bodyBytes == null) {
-                                    try {
-                                      bodyBytes = body.bytes();
-                                    } catch (IOException e) {
-                                      bodyBytes = new byte[0];
-                                      logger.log(Level.WARNING, "Failed to read response body", e);
-                                    }
-                                  }
-                                  return bodyBytes;
+                                  return resolvedBodyBytes;
                                 }
                               });
                         }
