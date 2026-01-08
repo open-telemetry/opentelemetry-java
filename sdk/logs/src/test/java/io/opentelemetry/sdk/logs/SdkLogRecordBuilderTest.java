@@ -11,12 +11,16 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -24,6 +28,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -56,8 +61,11 @@ class SdkLogRecordBuilderTest {
         .thenReturn((context, logRecord) -> emittedLog.set(logRecord));
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
     when(loggerSharedState.getClock()).thenReturn(clock);
+    when(loggerSharedState.getLoggerInstrumentation())
+        .thenReturn(new SdkLoggerInstrumentation(MeterProvider::noop));
 
-    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO);
+    SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, LoggerConfig.enabled());
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
   }
 
   @Test
@@ -119,6 +127,26 @@ class SdkLogRecordBuilderTest {
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
         .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
+  }
+
+  @Test
+  void emit_ChecksLoggerIsEnabled() {
+    SdkLogger logger = mock(SdkLogger.class);
+    builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
+
+    Severity severity = Severity.WARN;
+    Context context = Context.current();
+
+    // Configure mock to return false (disabled)
+    when(logger.isEnabled(severity, context)).thenReturn(false);
+
+    builder.setSeverity(severity).setContext(context).emit();
+
+    // Verify isEnabled was called with correct parameters
+    verify(logger).isEnabled(eq(severity), eq(context));
+
+    // Verify log was not processed (because isEnabled returned false)
+    assertThat(emittedLog.get()).isNull();
   }
 
   @Test

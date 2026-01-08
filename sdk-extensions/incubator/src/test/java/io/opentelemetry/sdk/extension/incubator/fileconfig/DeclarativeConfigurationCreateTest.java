@@ -17,12 +17,14 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +60,7 @@ class DeclarativeConfigurationCreateTest {
    * can pass {@link DeclarativeConfiguration#parseAndCreate(InputStream)}.
    */
   @Test
+  @SuppressLogger(ParentBasedSamplerBuilder.class)
   void parseAndCreate_Examples(@TempDir Path tempDir)
       throws IOException, CertificateEncodingException {
     // Write certificates to temp files
@@ -80,18 +83,14 @@ class DeclarativeConfigurationCreateTest {
       String rewrittenExampleContent =
           exampleContent
               .replaceAll(
-                  "certificate_file: .*\n",
-                  "certificate_file: "
-                      + certificatePath.replace("\\", "\\\\")
-                      + System.lineSeparator())
+                  "ca_file: .*\n",
+                  "ca_file: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
               .replaceAll(
-                  "client_key_file: .*\n",
-                  "client_key_file: "
-                      + clientKeyPath.replace("\\", "\\\\")
-                      + System.lineSeparator())
+                  "key_file: .*\n",
+                  "key_file: " + clientKeyPath.replace("\\", "\\\\") + System.lineSeparator())
               .replaceAll(
-                  "client_certificate_file: .*\n",
-                  "client_certificate_file: "
+                  "cert_file: .*\n",
+                  "cert_file: "
                       + clientCertificatePath.replace("\\", "\\\\")
                       + System.lineSeparator());
       InputStream is =
@@ -179,6 +178,7 @@ class DeclarativeConfigurationCreateTest {
   }
 
   @Test
+  @SuppressLogger(DeclarativeConfiguration.class)
   void callAutoConfigureListeners_exceptionIsCaught() {
     SpiHelper spiHelper = mock(SpiHelper.class);
     when(spiHelper.getListeners())

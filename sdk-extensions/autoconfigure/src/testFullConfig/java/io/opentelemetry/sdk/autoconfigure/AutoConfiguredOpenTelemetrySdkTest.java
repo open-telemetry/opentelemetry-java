@@ -73,7 +73,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Test
   void globalOpenTelemetry_AutoConfigureDisabled() {
     // Autoconfigure is disabled by default and enabled via otel.java.global-autoconfigure.enabled
-    assertThat(GlobalOpenTelemetry.get()).isSameAs(OpenTelemetry.noop());
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(OpenTelemetry.noop());
 
     logs.assertContains(
         "AutoConfiguredOpenTelemetrySdk found on classpath but automatic configuration is disabled."

@@ -136,9 +136,6 @@ public class InstrumentationConfigUtil {
       Function<DeclarativeConfigProperties, T> accessor,
       String... segments) {
     DeclarativeConfigProperties config = configProvider.getInstrumentationConfig();
-    if (config == null) {
-      return null;
-    }
     for (String segment : segments) {
       config = config.getStructured(segment);
       if (config == null) {

@@ -5,10 +5,13 @@
 
 package io.opentelemetry.sdk.trace.samplers;
 
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** A builder for creating ParentBased sampler instances. */
 public final class ParentBasedSamplerBuilder {
+
+  private static final Logger logger = Logger.getLogger(ParentBasedSamplerBuilder.class.getName());
 
   private final Sampler root;
   @Nullable private Sampler remoteParentSampled;
@@ -17,6 +20,7 @@ public final class ParentBasedSamplerBuilder {
   @Nullable private Sampler localParentNotSampled;
 
   ParentBasedSamplerBuilder(Sampler root) {
+    maybeLogTraceIdSamplerWarning(root, "root");
     this.root = root;
   }
 
@@ -27,6 +31,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setRemoteParentSampled(Sampler remoteParentSampled) {
+    maybeLogTraceIdSamplerWarning(remoteParentSampled, "remoteParentSampled");
     this.remoteParentSampled = remoteParentSampled;
     return this;
   }
@@ -38,6 +43,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setRemoteParentNotSampled(Sampler remoteParentNotSampled) {
+    maybeLogTraceIdSamplerWarning(remoteParentNotSampled, "remoteParentNotSampled");
     this.remoteParentNotSampled = remoteParentNotSampled;
     return this;
   }
@@ -49,6 +55,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setLocalParentSampled(Sampler localParentSampled) {
+    maybeLogTraceIdSamplerWarning(localParentSampled, "localParentSampled");
     this.localParentSampled = localParentSampled;
     return this;
   }
@@ -60,8 +67,20 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setLocalParentNotSampled(Sampler localParentNotSampled) {
+    maybeLogTraceIdSamplerWarning(localParentNotSampled, "localParentNotSampled");
     this.localParentNotSampled = localParentNotSampled;
     return this;
+  }
+
+  private static void maybeLogTraceIdSamplerWarning(Sampler sampler, String field) {
+    if (sampler instanceof TraceIdRatioBasedSampler) {
+      logger.warning(
+          "TraceIdRatioBasedSampler is being used as a child sampler ("
+              + field
+              + "). "
+              + "This configuration is discouraged per the OpenTelemetry specification "
+              + "and may lead to unexpected sampling behavior.");
+    }
   }
 
   /**

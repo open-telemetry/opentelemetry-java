@@ -62,7 +62,17 @@
       ],
       enabled: false,
       matchPackageNames: [
-        'org.mockito:{/,}**',
+        'org.mockito:**',
+      ],
+    },
+    {
+      // snakeyaml-engine 3+ requires Java 11+
+      matchUpdateTypes: [
+        'major',
+      ],
+      enabled: false,
+      matchPackageNames: [
+        'org.snakeyaml:snakeyaml-engine'
       ],
     },
     {
@@ -87,7 +97,8 @@
     {
       groupName: 'spotless packages',
       matchPackageNames: [
-        'com.diffplug.spotless{/,}**',
+        'com.diffplug.spotless',
+        'com.diffplug.spotless:**',
       ],
     },
     {
@@ -103,10 +114,10 @@
       customType: 'regex',
       datasourceTemplate: 'java-version',
       managerFilePatterns: [
-        '.github/workflows/**'
+        '.github/workflows/**',
       ],
       matchStrings: [
-        '(?<currentValue>\\d+) # renovate: datasource=java-version',
+        '(?<currentValue>\\d+) # renovate\\(java-version\\)',
       ],
       depNameTemplate: 'java',
       extractVersionTemplate: '^(?<version>\\d+)',
@@ -115,7 +126,7 @@
       customType: 'regex',
       datasourceTemplate: 'docker',
       managerFilePatterns: [
-        '**/*.java'
+        '**/*.java',
       ],
       matchStrings: [
         '"(?<depName>otel/opentelemetry-collector-contrib):(?<currentValue>[^@"]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"',

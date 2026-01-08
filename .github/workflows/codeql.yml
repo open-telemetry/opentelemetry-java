@@ -31,21 +31,21 @@ jobs:
           - language: java
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - name: Set up Java 17
+      - name: Set up Java 21
         if: matrix.language == 'java'
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Set up gradle
         if: matrix.language == 'java'
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@f443b600d91635bebf5b0d9ebc620189c0d6fba5 # v4.30.8
+        uses: github/codeql-action/init@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9
         with:
           languages: ${{ matrix.language }}
           # using "linked" helps to keep up with the latest Kotlin support
@@ -58,8 +58,10 @@ jobs:
         # --no-daemon is required for codeql to observe the compilation
         # (see https://docs.github.com/en/code-security/codeql-cli/getting-started-with-the-codeql-cli/preparing-your-code-for-codeql-analysis#specifying-build-commands)
         run: ./gradlew assemble --no-build-cache --no-daemon
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@f443b600d91635bebf5b0d9ebc620189c0d6fba5 # v4.30.8
+        uses: github/codeql-action/analyze@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9
         with:
           category: "/language:${{matrix.language}}"

@@ -32,7 +32,7 @@ dependencies {
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
-  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }
 
 testing {
@@ -44,7 +44,7 @@ testing {
         implementation("com.google.protobuf:protobuf-java")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")
-        implementation("org.testcontainers:junit-jupiter")
+        implementation("org.testcontainers:testcontainers-junit-jupiter")
         implementation("io.grpc:grpc-netty")
         implementation("io.grpc:grpc-stub")
       }

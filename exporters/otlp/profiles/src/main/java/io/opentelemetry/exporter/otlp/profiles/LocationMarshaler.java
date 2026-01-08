@@ -64,7 +64,7 @@ final class LocationMarshaler extends MarshalerWithSize {
   protected void writeTo(Serializer output) throws IOException {
     output.serializeInt32(Location.MAPPING_INDEX, mappingIndex);
     output.serializeUInt64(Location.ADDRESS, address);
-    output.serializeRepeatedMessage(Location.LINE, lineMarshalers);
+    output.serializeRepeatedMessage(Location.LINES, lineMarshalers);
     output.serializeRepeatedInt32(Location.ATTRIBUTE_INDICES, attributeIndices);
   }
 
@@ -76,7 +76,7 @@ final class LocationMarshaler extends MarshalerWithSize {
     int size = 0;
     size += MarshalerUtil.sizeInt32(Location.MAPPING_INDEX, mappingIndex);
     size += MarshalerUtil.sizeUInt64(Location.ADDRESS, address);
-    size += MarshalerUtil.sizeRepeatedMessage(Location.LINE, lineMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(Location.LINES, lineMarshalers);
     size += MarshalerUtil.sizeRepeatedInt32(Location.ATTRIBUTE_INDICES, attributeIndices);
     return size;
   }

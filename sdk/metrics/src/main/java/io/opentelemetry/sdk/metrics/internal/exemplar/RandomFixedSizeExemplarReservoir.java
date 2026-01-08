@@ -8,13 +8,9 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.concurrent.AdderUtil;
 import io.opentelemetry.sdk.metrics.internal.concurrent.LongAdder;
 import java.util.Random;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -22,30 +18,19 @@ import java.util.function.Supplier;
  * where the probability of sampling decrease as the number of observations continue.
  *
  * <p>When measurements are collected via {@link
- * FixedSizeExemplarReservoir#collectAndReset(Attributes)}, the observation count is reset, making
- * the probability of samplings effectively 1.0.
+ * FixedSizeExemplarReservoir#collectAndResetDoubles(Attributes)} (Attributes)} and {@link
+ * FixedSizeExemplarReservoir#collectAndResetLongs(Attributes)}, the observation count is reset,
+ * making the probability of samplings effectively 1.0.
  */
-class RandomFixedSizeExemplarReservoir<T extends ExemplarData>
-    extends FixedSizeExemplarReservoir<T> {
+class RandomFixedSizeExemplarReservoir extends FixedSizeExemplarReservoir {
 
-  private RandomFixedSizeExemplarReservoir(
-      Clock clock,
-      int size,
-      Supplier<Random> randomSupplier,
-      BiFunction<ReservoirCell, Attributes, T> mapAndResetCell) {
-    super(clock, size, new RandomCellSelector(randomSupplier), mapAndResetCell);
+  private RandomFixedSizeExemplarReservoir(Clock clock, int size, Supplier<Random> randomSupplier) {
+    super(clock, size, new RandomCellSelector(randomSupplier));
   }
 
-  static RandomFixedSizeExemplarReservoir<LongExemplarData> createLong(
+  static RandomFixedSizeExemplarReservoir create(
       Clock clock, int size, Supplier<Random> randomSupplier) {
-    return new RandomFixedSizeExemplarReservoir<>(
-        clock, size, randomSupplier, ReservoirCell::getAndResetLong);
-  }
-
-  static RandomFixedSizeExemplarReservoir<DoubleExemplarData> createDouble(
-      Clock clock, int size, Supplier<Random> randomSupplier) {
-    return new RandomFixedSizeExemplarReservoir<>(
-        clock, size, randomSupplier, ReservoirCell::getAndResetDouble);
+    return new RandomFixedSizeExemplarReservoir(clock, size, randomSupplier);
   }
 
   static class RandomCellSelector implements ReservoirCellSelector {

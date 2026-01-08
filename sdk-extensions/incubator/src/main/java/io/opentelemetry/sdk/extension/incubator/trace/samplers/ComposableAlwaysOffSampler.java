@@ -5,22 +5,16 @@
 
 package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 
+import static io.opentelemetry.sdk.extension.incubator.trace.samplers.ImmutableSamplingIntent.NON_SAMPLING_INTENT;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
-import java.util.function.Function;
 
 enum ComposableAlwaysOffSampler implements ComposableSampler {
   INSTANCE;
-
-  private static final SamplingIntent INTENT =
-      SamplingIntent.create(
-          ImmutableSamplingIntent.INVALID_THRESHOLD,
-          /* thresholdReliable= */ false,
-          Attributes.empty(),
-          Function.identity());
 
   @Override
   public SamplingIntent getSamplingIntent(
@@ -30,7 +24,7 @@ enum ComposableAlwaysOffSampler implements ComposableSampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-    return INTENT;
+    return NON_SAMPLING_INTENT;
   }
 
   @Override

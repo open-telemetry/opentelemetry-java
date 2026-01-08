@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 
-public class SpanExporterComponentProvider implements ComponentProvider<SpanExporter> {
+public class SpanExporterComponentProvider implements ComponentProvider {
   @Override
   public Class<SpanExporter> getType() {
     return SpanExporter.class;

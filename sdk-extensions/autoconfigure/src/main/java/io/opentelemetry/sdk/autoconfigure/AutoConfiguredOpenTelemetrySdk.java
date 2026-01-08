@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -46,11 +46,8 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   }
 
   static AutoConfiguredOpenTelemetrySdk create(
-      OpenTelemetrySdk sdk,
-      Resource resource,
-      @Nullable ConfigProperties config,
-      @Nullable Object configProvider) {
-    return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config, configProvider);
+      OpenTelemetrySdk sdk, Resource resource, @Nullable ConfigProperties config) {
+    return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config);
   }
 
   /**
@@ -73,21 +70,12 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
    * <p>This method is experimental so not public. You may reflectively call it using {@link
    * AutoConfigureUtil#getConfig(AutoConfiguredOpenTelemetrySdk)}.
    *
-   * @see #getConfigProvider()
+   * <p>If declarative config was used, {@link #getOpenTelemetrySdk()} will return an instance of
+   * {@link ExtendedOpenTelemetry} and you can use {@link ExtendedOpenTelemetry#getConfigProvider()}
+   * to access the configuration.
    */
   @Nullable
   abstract ConfigProperties getConfig();
-
-  /**
-   * Returns the {@link ConfigProvider}, or {@code null} if declarative configuration was not used.
-   *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * AutoConfigureUtil#getConfigProvider(AutoConfiguredOpenTelemetrySdk)}.
-   *
-   * @see #getConfig()
-   */
-  @Nullable
-  abstract Object getConfigProvider();
 
   AutoConfiguredOpenTelemetrySdk() {}
 }

@@ -9,6 +9,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -40,6 +41,7 @@ public final class SdkLoggerProviderBuilder {
       LoggerConfig.configuratorBuilder();
   private ExceptionAttributeResolver exceptionAttributeResolver =
       ExceptionAttributeResolver.getDefault();
+  private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
 
   SdkLoggerProviderBuilder() {}
 
@@ -187,6 +189,17 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Sets the {@link MeterProvider} to use to generate <a
+   * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
+   * Metrics</a>.
+   */
+  public SdkLoggerProviderBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /**
    * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
@@ -198,6 +211,7 @@ public final class SdkLoggerProviderBuilder {
         logRecordProcessors,
         clock,
         loggerConfiguratorBuilder.build(),
-        exceptionAttributeResolver);
+        exceptionAttributeResolver,
+        meterProvider);
   }
 }

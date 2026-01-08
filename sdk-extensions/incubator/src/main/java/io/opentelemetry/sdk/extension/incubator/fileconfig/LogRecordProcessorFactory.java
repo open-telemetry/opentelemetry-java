@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
@@ -68,10 +69,14 @@ final class LogRecordProcessorFactory
               simpleModel.getExporter(), "simple log record processor exporter");
       LogRecordExporter logRecordExporter =
           LogRecordExporterFactory.getInstance().create(exporterModel, context);
-      return context.addCloseable(SimpleLogRecordProcessor.create(logRecordExporter));
+      MeterProvider meterProvider = context.getMeterProvider();
+      return context.addCloseable(
+          SimpleLogRecordProcessor.builder(logRecordExporter)
+              .setMeterProvider(() -> meterProvider)
+              .build());
     }
 
-    Map.Entry<String, Object> keyValue =
+    Map.Entry<String, LogRecordProcessorPropertyModel> keyValue =
         FileConfigUtil.getSingletonMapEntry(
             model.getAdditionalProperties(), "log record processor");
     LogRecordProcessor logRecordProcessor =

@@ -63,7 +63,8 @@ public class GrpcExporterBuilder {
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
-  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private Supplier<MeterProvider> meterProviderSupplier =
+      () -> GlobalOpenTelemetry.getOrNoop().getMeterProvider();
   private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
 
   private ComponentLoader componentLoader =
@@ -315,7 +316,7 @@ public class GrpcExporterBuilder {
     if (grpcSenderProviders.isEmpty()) {
       throw new IllegalStateException(
           "No GrpcSenderProvider found on classpath. Please add dependency on "
-              + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-grpc-upstream");
+              + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-grpc-managed-channel");
     }
 
     // Exactly one provider on classpath, use it

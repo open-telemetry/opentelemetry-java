@@ -7,6 +7,7 @@ package io.opentelemetry.api;
 
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.api.internal.IncubatingUtil;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
@@ -17,6 +18,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,26 +26,40 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A global singleton for the entrypoint to telemetry functionality for tracing, metrics and
- * baggage.
+ * Provides access to a global singleton {@link OpenTelemetry} instance.
  *
- * <p>If using the OpenTelemetry SDK, you may want to instantiate the {@link OpenTelemetry} to
- * provide configuration, for example of {@code Resource} or {@code Sampler}. See {@code
- * OpenTelemetrySdk} and {@code OpenTelemetrySdk.builder} for information on how to construct the
- * SDK's {@link OpenTelemetry} implementation.
+ * <p>WARNING: To avoid inherent complications around initialization ordering, it's best-practice to
+ * pass around instances of {@link OpenTelemetry} rather than using {@link GlobalOpenTelemetry}.
+ * However, the OpenTelemetry javagent makes the {@link OpenTelemetry} instance it installs
+ * available via {@link GlobalOpenTelemetry}. As a result, {@link GlobalOpenTelemetry} plays an
+ * important role in native instrumentation and application custom instrumentation.
  *
- * <p>WARNING: Due to the inherent complications around initialization order involving this class
- * and its single global instance, we strongly recommend *not* using GlobalOpenTelemetry unless you
- * have a use-case that absolutely requires it. Please favor using instances of OpenTelemetry
- * wherever possible.
+ * <p>Native instrumentation should use {@link #getOrNoop()} as the default {@link OpenTelemetry}
+ * instance, and expose APIs for setting a custom instance. This results in the following behavior:
  *
- * <p>If you are using the OpenTelemetry javaagent, it is generally best to only call
- * GlobalOpenTelemetry.get() once, and then pass the resulting reference where you need to use it.
+ * <ul>
+ *   <li>If the OpenTelemetry javaagent is installed, the native instrumentation will default to the
+ *       {@link OpenTelemetry} it installs.
+ *   <li>If the OpenTelemetry javaagent is not installed, the native instrumentation will default to
+ *       a noop instance.
+ *   <li>If the user explicitly sets a custom instance, it will be used, regardless of whether or
+ *       not the OpenTelemetry javaagent is installed.
+ * </ul>
  *
- * @see TracerProvider
- * @see ContextPropagators
+ * <p>Applications with custom instrumentation should call {@link #isSet()} once during
+ * initialization to access the javaagent instance or initialize (e.g. {@code isSet() ?
+ * GlobalOpenTelemetry.get() : initializeSdk()}), and pass the resulting instance around manually
+ * (or with dependency injection) to install custom instrumentation. This results in the following
+ * behavior:
+ *
+ * <ul>
+ *   <li>If the OpenTelemetry javaagent is installed, custom instrumentation will use the {@link
+ *       OpenTelemetry} it installs.
+ *   <li>If the OpenTelemetry javaagent is not installed, custom instrumentation will use an {@link
+ *       OpenTelemetry} instance initialized by the application.
+ * </ul>
  */
-// We intentionally assign to be use for error reporting.
+// We intentionally assign for error reporting.
 @SuppressWarnings("StaticAssignmentOfThrowable")
 public final class GlobalOpenTelemetry {
 
@@ -56,7 +72,7 @@ public final class GlobalOpenTelemetry {
 
   @SuppressWarnings("NonFinalStaticField")
   @Nullable
-  private static volatile ObfuscatedOpenTelemetry globalOpenTelemetry;
+  private static volatile OpenTelemetry globalOpenTelemetry;
 
   @SuppressWarnings("NonFinalStaticField")
   @GuardedBy("mutex")
@@ -66,10 +82,60 @@ public final class GlobalOpenTelemetry {
   private GlobalOpenTelemetry() {}
 
   /**
-   * Returns the registered global {@link OpenTelemetry}.
+   * Returns the registered global {@link OpenTelemetry} if set, or else {@link
+   * OpenTelemetry#noop()}.
    *
-   * @throws IllegalStateException if a provider has been specified by system property using the
-   *     interface FQCN but the specified provider cannot be found.
+   * <p>NOTE: if the global instance is set, the response is obfuscated to prevent callers from
+   * casting to SDK implementation instances and inappropriately accessing non-instrumentation APIs.
+   *
+   * <p>NOTE: This does not result in the {@link #set(OpenTelemetry)} side effects of {@link
+   * #get()}.
+   *
+   * <p>Native instrumentation should use this method to initialize their default {@link
+   * OpenTelemetry} instance. See class javadoc for more details.
+   *
+   * @since 1.57.0
+   */
+  public static OpenTelemetry getOrNoop() {
+    synchronized (mutex) {
+      return globalOpenTelemetry != null ? globalOpenTelemetry : OpenTelemetry.noop();
+    }
+  }
+
+  /**
+   * Returns {@code true} if {@link GlobalOpenTelemetry} is set, otherwise {@code false}.
+   *
+   * <p>Application custom instrumentation should use this method during initialization. See class
+   * javadoc for more details.
+   *
+   * @since 1.57.0
+   */
+  public static boolean isSet() {
+    synchronized (mutex) {
+      return globalOpenTelemetry != null;
+    }
+  }
+
+  /**
+   * Returns the registered global {@link OpenTelemetry} if set, else calls {@link
+   * GlobalOpenTelemetry#set(OpenTelemetry)} with a no-op {@link OpenTelemetry} instance and returns
+   * that.
+   *
+   * <p>NOTE: all returned instanced are obfuscated to prevent callers from casting to SDK
+   * implementation instances and inappropriately accessing non-instrumentation APIs.
+   *
+   * <p>Native instrumentations should use {@link #getOrNoop()} instead. See class javadoc for more
+   * details.
+   *
+   * <p>Application custom instrumentation should use {@link #isSet()} and only call this if the
+   * response is {@code true}. See class javadoc for more details.
+   *
+   * <p>If the global instance has not been set, and {@code
+   * io.opentelemetry:opentelemetry-sdk-extension-autoconfigure} is present, and {@value
+   * GLOBAL_AUTOCONFIGURE_ENABLED_PROPERTY} is {@code true}, the global instance will be set to an
+   * autoconfigured instance instead of {@link OpenTelemetry#noop()}.
+   *
+   * @throws IllegalStateException if autoconfigure initialization is triggered and fails.
    */
   public static OpenTelemetry get() {
     OpenTelemetry openTelemetry = globalOpenTelemetry;
@@ -84,7 +150,7 @@ public final class GlobalOpenTelemetry {
           }
 
           set(OpenTelemetry.noop());
-          return OpenTelemetry.noop();
+          openTelemetry = Objects.requireNonNull(globalOpenTelemetry);
         }
       }
     }
@@ -112,7 +178,7 @@ public final class GlobalOpenTelemetry {
                 + "instead. Previous invocation set to cause of this exception.",
             setGlobalCaller);
       }
-      globalOpenTelemetry = new ObfuscatedOpenTelemetry(openTelemetry);
+      globalOpenTelemetry = obfuscatedOpenTelemetry(openTelemetry);
       setGlobalCaller = new Throwable();
     }
   }
@@ -261,8 +327,7 @@ public final class GlobalOpenTelemetry {
       Object autoConfiguredSdk = initialize.invoke(null);
       Method getOpenTelemetrySdk =
           openTelemetrySdkAutoConfiguration.getMethod("getOpenTelemetrySdk");
-      return new ObfuscatedOpenTelemetry(
-          (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk));
+      return obfuscatedOpenTelemetry((OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk));
     } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new IllegalStateException(
           "AutoConfiguredOpenTelemetrySdk detected on classpath "
@@ -275,6 +340,14 @@ public final class GlobalOpenTelemetry {
           t.getTargetException());
       return null;
     }
+  }
+
+  private static OpenTelemetry obfuscatedOpenTelemetry(OpenTelemetry openTelemetry) {
+    OpenTelemetry incubating = IncubatingUtil.obfuscatedOpenTelemetryIfIncubating(openTelemetry);
+    if (incubating != null) {
+      return incubating;
+    }
+    return new ObfuscatedOpenTelemetry(openTelemetry);
   }
 
   /**

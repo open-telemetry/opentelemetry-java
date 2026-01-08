@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -58,11 +59,17 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
       List<LogRecordProcessor> processors,
       Clock clock,
       ScopeConfigurator<LoggerConfig> loggerConfigurator,
-      ExceptionAttributeResolver exceptionAttributeResolver) {
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      Supplier<MeterProvider> meterProvider) {
     LogRecordProcessor logRecordProcessor = LogRecordProcessor.composite(processors);
     this.sharedState =
         new LoggerSharedState(
-            resource, logLimitsSupplier, logRecordProcessor, clock, exceptionAttributeResolver);
+            resource,
+            logLimitsSupplier,
+            logRecordProcessor,
+            clock,
+            exceptionAttributeResolver,
+            new SdkLoggerInstrumentation(meterProvider));
     this.loggerComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->

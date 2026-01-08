@@ -16,6 +16,7 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -276,6 +277,7 @@ class TracerShimTest {
   }
 
   @Test
+  @SuppressLogger(TracerShim.class)
   void inject_nullContext() {
     Map<String, String> map = new HashMap<>();
     tracerShim.inject(null, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
@@ -283,6 +285,7 @@ class TracerShimTest {
   }
 
   @Test
+  @SuppressLogger(TracerShim.class)
   void inject_invalid() {
     Map<String, String> map = new HashMap<>();
     tracerShim.inject(mock(SpanContext.class), Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
@@ -358,6 +361,7 @@ class TracerShimTest {
   }
 
   @Test
+  @SuppressLogger(TracerShim.class)
   void close_OpenTelemetrySdk() {
     SdkTracerProvider sdkProvider = mock(SdkTracerProvider.class);
     doThrow(new RuntimeException("testing error")).when(sdkProvider).close();
@@ -375,6 +379,7 @@ class TracerShimTest {
   }
 
   @Test
+  @SuppressLogger(TracerShim.class)
   void close_GlobalOpenTelemetry() {
     GlobalOpenTelemetry.resetForTest();
     SdkTracerProvider sdkProvider = mock(SdkTracerProvider.class);

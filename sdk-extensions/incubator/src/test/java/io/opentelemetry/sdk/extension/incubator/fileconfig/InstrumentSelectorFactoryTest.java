@@ -35,6 +35,7 @@ class InstrumentSelectorFactoryTest {
                     new ViewSelectorModel()
                         .withInstrumentName("instrument-name")
                         .withInstrumentType(ViewSelectorModel.InstrumentType.COUNTER)
+                        .withUnit("ms")
                         .withMeterName("meter-name")
                         .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
                         .withMeterVersion("1.0.0"),
@@ -43,6 +44,7 @@ class InstrumentSelectorFactoryTest {
             InstrumentSelector.builder()
                 .setName("instrument-name")
                 .setType(InstrumentType.COUNTER)
+                .setUnit("ms")
                 .setMeterName("meter-name")
                 .setMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
                 .setMeterVersion("1.0.0")

@@ -230,7 +230,7 @@ class OpenTelemetryExtensionTest {
     assertThat(extension.getSpans()).isNotEmpty();
 
     extension.afterAll(null);
-    assertThat(GlobalOpenTelemetry.get()).isSameAs(OpenTelemetry.noop());
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(OpenTelemetry.noop());
 
     meter.counterBuilder("counter").build().add(10);
     tracer.spanBuilder("span").startSpan().end();

@@ -37,6 +37,9 @@ final class InstrumentSelectorFactory implements Factory<ViewSelectorModel, Inst
       }
       builder.setType(instrumentType);
     }
+    if (model.getUnit() != null) {
+      builder.setUnit(model.getUnit());
+    }
     if (model.getMeterName() != null) {
       builder.setMeterName(model.getMeterName());
     }

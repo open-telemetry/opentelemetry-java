@@ -34,6 +34,29 @@ import org.junit.jupiter.params.provider.MethodSource;
 class LoggerConfigTest {
 
   @Test
+  void builder_AllFields() {
+    LoggerConfig config =
+        LoggerConfig.builder()
+            .setEnabled(false)
+            .setMinimumSeverity(Severity.WARN)
+            .setTraceBased(true)
+            .build();
+
+    assertThat(config.isEnabled()).isFalse();
+    assertThat(config.getMinimumSeverity()).isEqualTo(Severity.WARN);
+    assertThat(config.isTraceBased()).isTrue();
+  }
+
+  @Test
+  void builder_Defaults() {
+    LoggerConfig config = LoggerConfig.builder().build();
+
+    assertThat(config.isEnabled()).isTrue();
+    assertThat(config.getMinimumSeverity()).isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER);
+    assertThat(config.isTraceBased()).isFalse();
+  }
+
+  @Test
   void disableScopes() {
     InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
     SdkLoggerProvider loggerProvider =

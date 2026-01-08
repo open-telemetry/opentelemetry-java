@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 
-public class LogRecordExporterComponentProvider implements ComponentProvider<LogRecordExporter> {
+public class LogRecordExporterComponentProvider implements ComponentProvider {
   @Override
   public Class<LogRecordExporter> getType() {
     return LogRecordExporter.class;

@@ -202,6 +202,22 @@ public interface DeclarativeConfigProperties {
   }
 
   /**
+   * Returns a {@link DeclarativeConfigProperties} configuration property, or {@link #empty()} if a
+   * property with {@code name} has not been configured.
+   *
+   * <p>This is syntactic sugar for the common operation of calling {@code
+   * config.getStructured(name, empty())}. If you need to distinguish between a property being set
+   * but empty vs. not set, use {@link #getStructured(String)}.
+   *
+   * @return a map-valued configuration property, or an empty {@link DeclarativeConfigProperties}
+   *     instance if {@code name} has not been configured
+   * @throws DeclarativeConfigException if the property is not a mapping
+   */
+  default DeclarativeConfigProperties get(String name) {
+    return getStructured(name, empty());
+  }
+
+  /**
    * Returns a list of {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a list of map-valued configuration property, or {@code null} if {@code name} has not

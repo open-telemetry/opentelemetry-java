@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 
-public class LogRecordProcessorComponentProvider implements ComponentProvider<LogRecordProcessor> {
+public class LogRecordProcessorComponentProvider implements ComponentProvider {
   @Override
   public Class<LogRecordProcessor> getType() {
     return LogRecordProcessor.class;

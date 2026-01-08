@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
@@ -67,7 +67,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       List<MetricProducer> metricProducers,
       Clock clock,
       Resource resource,
-      ExemplarFilter exemplarFilter,
+      ExemplarFilterInternal exemplarFilter,
       ScopeConfigurator<MeterConfig> meterConfigurator) {
     long startEpochNanos = clock.now();
     this.registeredViews = registeredViews;

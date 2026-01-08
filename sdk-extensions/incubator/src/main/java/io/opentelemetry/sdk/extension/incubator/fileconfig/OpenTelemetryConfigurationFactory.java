@@ -32,7 +32,8 @@ final class OpenTelemetryConfigurationFactory
   @Override
   public ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
-    SdkConfigProvider sdkConfigProvider = SdkConfigProvider.create(model);
+    SdkConfigProvider sdkConfigProvider =
+        SdkConfigProvider.create(model, context.getSpiHelper().getComponentLoader());
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
     String fileFormat = model.getFileFormat();
     if (fileFormat == null || !SUPPORTED_FILE_FORMATS.matcher(fileFormat).matches()) {

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -54,7 +55,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
       ScopeConfigurator<TracerConfig> tracerConfigurator,
-      ExceptionAttributeResolver exceptionAttributeResolver) {
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      Supplier<MeterProvider> meterProvider) {
     this.sharedState =
         new TracerSharedState(
             clock,
@@ -63,7 +65,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             spanLimitsSupplier,
             sampler,
             spanProcessors,
-            exceptionAttributeResolver);
+            exceptionAttributeResolver,
+            new SdkTracerInstrumentation(meterProvider));
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->

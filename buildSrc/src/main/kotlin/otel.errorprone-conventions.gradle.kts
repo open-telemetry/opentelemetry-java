@@ -51,7 +51,6 @@ tasks {
 
         // We use animal sniffer
         disable("Java8ApiChecker")
-        disable("AndroidJdkLibsChecker")
 
         // apparently disabling android doesn't disable this
         disable("StaticOrDefaultInterfaceMethod")
@@ -89,6 +88,9 @@ tasks {
         // We annotate packages with @ParametersAreNonnullByDefault from com.google.code.findbugs:jsr305.
         // @NullMarked is the equivalent from jspecify.
         disable("AddNullMarkedToPackageInfo")
+
+        // This check causes too many changes to be introduced at once to be manageable.
+        disable("SuppressWarningsWithoutExplanation")
 
         if ((name.contains("Jmh") || name.contains("Test") || project.name.contains("testing-internal")) && !project.name.equals("custom-checks")) {
           // Allow underscore in test-type method names

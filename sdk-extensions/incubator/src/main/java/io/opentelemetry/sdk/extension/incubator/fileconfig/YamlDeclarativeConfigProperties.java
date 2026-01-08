@@ -175,6 +175,9 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     if (value instanceof Long) {
       return ((Long) value).intValue();
     }
+    if (value != null) {
+      logTypeWarning(name, value, Integer.class);
+    }
     return null;
   }
 

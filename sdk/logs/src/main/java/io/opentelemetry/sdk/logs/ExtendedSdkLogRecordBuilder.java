@@ -25,8 +25,10 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   @Nullable private ExtendedAttributesMap extendedAttributes;
 
   ExtendedSdkLogRecordBuilder(
-      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
-    super(loggerSharedState, instrumentationScopeInfo);
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      SdkLogger logger) {
+    super(loggerSharedState, instrumentationScopeInfo, logger);
   }
 
   @Override
@@ -128,30 +130,18 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
-  public void emit() {
-    if (loggerSharedState.hasBeenShutdown()) {
-      return;
-    }
-    Context context = this.context == null ? Context.current() : this.context;
-    long observedTimestampEpochNanos =
-        this.observedTimestampEpochNanos == 0
-            ? this.loggerSharedState.getClock().now()
-            : this.observedTimestampEpochNanos;
-    loggerSharedState
-        .getLogRecordProcessor()
-        .onEmit(
-            context,
-            ExtendedSdkReadWriteLogRecord.create(
-                loggerSharedState.getLogLimits(),
-                loggerSharedState.getResource(),
-                instrumentationScopeInfo,
-                eventName,
-                timestampEpochNanos,
-                observedTimestampEpochNanos,
-                Span.fromContext(context).getSpanContext(),
-                severity,
-                severityText,
-                body,
-                extendedAttributes));
+  protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
+    return ExtendedSdkReadWriteLogRecord.create(
+        loggerSharedState.getLogLimits(),
+        loggerSharedState.getResource(),
+        instrumentationScopeInfo,
+        eventName,
+        timestampEpochNanos,
+        observedTimestampEpochNanos,
+        Span.fromContext(context).getSpanContext(),
+        severity,
+        severityText,
+        body,
+        extendedAttributes);
   }
 }

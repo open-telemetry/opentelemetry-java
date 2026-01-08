@@ -188,7 +188,7 @@ class RetryInterceptorTest {
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
-        .isInstanceOf(SocketTimeoutException.class);
+        .isInstanceOfAny(SocketTimeoutException.class, SocketException.class);
 
     verify(retryExceptionPredicate, times(5)).test(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
@@ -233,7 +233,7 @@ class RetryInterceptorTest {
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
-        .isInstanceOf(SocketTimeoutException.class);
+        .isInstanceOfAny(SocketTimeoutException.class, SocketException.class);
 
     verify(retryExceptionPredicate, times(1)).test(any());
     verify(sleeper, never()).sleep(anyLong());

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs.internal;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
@@ -30,9 +31,15 @@ import javax.annotation.concurrent.Immutable;
 public abstract class LoggerConfig {
 
   private static final LoggerConfig DEFAULT_CONFIG =
-      new AutoValue_LoggerConfig(/* enabled= */ true);
+      new AutoValue_LoggerConfig(
+          /* enabled= */ true,
+          /* minimumSeverity= */ Severity.UNDEFINED_SEVERITY_NUMBER,
+          /* traceBased= */ false);
   private static final LoggerConfig DISABLED_CONFIG =
-      new AutoValue_LoggerConfig(/* enabled= */ false);
+      new AutoValue_LoggerConfig(
+          /* enabled= */ false,
+          /* minimumSeverity= */ Severity.UNDEFINED_SEVERITY_NUMBER,
+          /* traceBased= */ false);
 
   /** Returns a disabled {@link LoggerConfig}. */
   public static LoggerConfig disabled() {
@@ -42,6 +49,11 @@ public abstract class LoggerConfig {
   /** Returns an enabled {@link LoggerConfig}. */
   public static LoggerConfig enabled() {
     return DEFAULT_CONFIG;
+  }
+
+  /** Returns a new {@link LoggerConfigBuilder} for creating a {@link LoggerConfig}. */
+  public static LoggerConfigBuilder builder() {
+    return new LoggerConfigBuilder();
   }
 
   /**
@@ -62,6 +74,31 @@ public abstract class LoggerConfig {
 
   LoggerConfig() {}
 
+  static LoggerConfig create(boolean enabled, Severity minimumSeverity, boolean traceBased) {
+    return new AutoValue_LoggerConfig(enabled, minimumSeverity, traceBased);
+  }
+
   /** Returns {@code true} if this logger is enabled. Defaults to {@code true}. */
   public abstract boolean isEnabled();
+
+  /**
+   * Returns the minimum severity level for log records to be processed.
+   *
+   * <p>Log records with a severity number less than this value will be dropped. Log records without
+   * a specified severity are not affected by this setting.
+   *
+   * <p>Defaults to {@link Severity#UNDEFINED_SEVERITY_NUMBER}.
+   */
+  public abstract Severity getMinimumSeverity();
+
+  /**
+   * Returns {@code true} if this logger should only process log records from traces when the trace
+   * is sampled.
+   *
+   * <p>When enabled, log records from unsampled traces will be dropped. Log records that are not
+   * associated with a trace context are unaffected.
+   *
+   * <p>Defaults to {@code false}.
+   */
+  public abstract boolean isTraceBased();
 }

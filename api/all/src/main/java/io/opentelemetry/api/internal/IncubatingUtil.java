@@ -5,7 +5,9 @@
 
 package io.opentelemetry.api.internal;
 
+import io.opentelemetry.api.OpenTelemetry;
 import java.lang.reflect.Method;
+import javax.annotation.Nullable;
 
 /**
  * Incubating utilities.
@@ -25,5 +27,25 @@ public class IncubatingUtil {
     } catch (Exception e) {
       return stableApi;
     }
+  }
+
+  @Nullable
+  public static OpenTelemetry obfuscatedOpenTelemetryIfIncubating(OpenTelemetry openTelemetry) {
+    try {
+      Class<?> extendedClass =
+          Class.forName("io.opentelemetry.api.incubator.ExtendedOpenTelemetry");
+      if (extendedClass.isInstance(openTelemetry)) {
+        Class<?> incubatingClass =
+            Class.forName(
+                "io.opentelemetry.api.incubator.internal.ObfuscatedExtendedOpenTelemetry");
+        return (OpenTelemetry)
+            incubatingClass
+                .getDeclaredConstructor(extendedClass)
+                .newInstance(extendedClass.cast(openTelemetry));
+      }
+    } catch (Exception e) {
+      // incubator not available
+    }
+    return null;
   }
 }

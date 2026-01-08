@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -24,7 +25,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,7 @@ class LongLastValueAggregatorTest {
   private LongLastValueAggregator aggregator;
 
   private void init(MemoryMode memoryMode) {
-    aggregator = new LongLastValueAggregator(ExemplarReservoir::longNoSamples, memoryMode);
+    aggregator = new LongLastValueAggregator(ExemplarReservoirFactory.noSamples(), memoryMode);
   }
 
   @ParameterizedTest
@@ -56,15 +57,15 @@ class LongLastValueAggregatorTest {
   @EnumSource(MemoryMode.class)
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordLong(12);
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(12L);
-    aggregatorHandle.recordLong(13);
-    aggregatorHandle.recordLong(14);
+    aggregatorHandle.recordLong(13, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(14, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
@@ -76,16 +77,16 @@ class LongLastValueAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
 
-    aggregatorHandle.recordLong(13);
+    aggregatorHandle.recordLong(13, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
                 .getValue())
         .isEqualTo(13L);
 
-    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
                 .aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true)
@@ -189,8 +190,8 @@ class LongLastValueAggregatorTest {
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
 
-    AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordLong(10);
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    aggregatorHandle.recordLong(10, Attributes.empty(), Context.current());
 
     MetricData metricData =
         aggregator.toMetricData(
@@ -217,12 +218,12 @@ class LongLastValueAggregatorTest {
   @Test
   void testReusablePointOnCollect() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<LongPointData, LongExemplarData> handle = aggregator.createHandle();
-    handle.recordLong(1);
+    AggregatorHandle<LongPointData> handle = aggregator.createHandle();
+    handle.recordLong(1, Attributes.empty(), Context.current());
     LongPointData pointData =
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
 
-    handle.recordLong(1);
+    handle.recordLong(1, Attributes.empty(), Context.current());
     LongPointData pointData2 =
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
 

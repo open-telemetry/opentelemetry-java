@@ -47,7 +47,7 @@ class GrpcExporterTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
             "No GrpcSenderProvider found on classpath. Please add dependency on "
-                + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-grpc-upstream");
+                + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-grpc-managed-channel");
   }
 
   @ParameterizedTest

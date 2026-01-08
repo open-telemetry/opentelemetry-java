@@ -24,8 +24,8 @@ public interface ComposableSampler {
   }
 
   /** Returns a {@link ComposableSampler} that samples each span with a fixed ratio. */
-  static ComposableSampler traceIdRatioBased(double ratio) {
-    return new ComposableTraceIdRatioBasedSampler(ratio);
+  static ComposableSampler probability(double ratio) {
+    return new ComposableProbabilitySampler(ratio);
   }
 
   /**
@@ -34,6 +34,23 @@ public interface ComposableSampler {
    */
   static ComposableSampler parentThreshold(ComposableSampler rootSampler) {
     return new ComposableParentThresholdSampler(rootSampler);
+  }
+
+  /**
+   * Returns a {@link ComposableRuleBasedSamplerBuilder} to create a composable rule-based sampler.
+   * Rules will be tested in order, and the first to match will have its {@link ComposableSampler}
+   * used for a sampling decision. If no rule matches, the span will be dropped.
+   */
+  static ComposableRuleBasedSamplerBuilder ruleBasedBuilder() {
+    return new ComposableRuleBasedSamplerBuilder();
+  }
+
+  /**
+   * Returns a {@link ComposableSampler} that adds the given {@link Attributes} to all sampled
+   * spans.
+   */
+  static ComposableSampler annotating(ComposableSampler sampler, Attributes attributes) {
+    return new ComposableAnnotatingSampler(sampler, attributes);
   }
 
   /** Returns the {@link SamplingIntent} to use to make a sampling decision. */

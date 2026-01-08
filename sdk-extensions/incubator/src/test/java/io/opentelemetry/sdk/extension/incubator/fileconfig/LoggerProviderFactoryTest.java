@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil.setLoggerConfigurator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -20,6 +21,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRec
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel.SeverityNumber;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
@@ -92,13 +94,20 @@ class LoggerProviderFactoryTest {
                                         .withName("foo")
                                         .withConfig(
                                             new ExperimentalLoggerConfigModel()
-                                                .withDisabled(false)))))),
+                                                .withDisabled(false)
+                                                .withTraceBased(true)
+                                                .withMinimumSeverity(SeverityNumber.INFO)))))),
             setLoggerConfigurator(
                     SdkLoggerProvider.builder(),
                     ScopeConfigurator.<LoggerConfig>builder()
                         .setDefault(LoggerConfig.disabled())
                         .addCondition(
-                            ScopeConfiguratorBuilder.nameMatchesGlob("foo"), LoggerConfig.enabled())
+                            ScopeConfiguratorBuilder.nameMatchesGlob("foo"),
+                            LoggerConfig.builder()
+                                .setEnabled(true)
+                                .setTraceBased(true)
+                                .setMinimumSeverity(Severity.INFO)
+                                .build())
                         .build())
                 .setLogLimits(
                     () ->
@@ -111,5 +120,39 @@ class LoggerProviderFactoryTest {
                             OtlpHttpLogRecordExporter.getDefault())
                         .build())
                 .build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("severityNumberArguments")
+  void severityNumber(SeverityNumber model, Severity expectedSeverity) {
+    assertThat(LoggerProviderFactory.severityNumberToSeverity(model)).isEqualTo(expectedSeverity);
+  }
+
+  private static Stream<Arguments> severityNumberArguments() {
+    return Stream.of(
+        Arguments.of(SeverityNumber.TRACE, Severity.TRACE),
+        Arguments.of(SeverityNumber.TRACE_2, Severity.TRACE2),
+        Arguments.of(SeverityNumber.TRACE_3, Severity.TRACE3),
+        Arguments.of(SeverityNumber.TRACE_4, Severity.TRACE4),
+        Arguments.of(SeverityNumber.DEBUG, Severity.DEBUG),
+        Arguments.of(SeverityNumber.DEBUG_2, Severity.DEBUG2),
+        Arguments.of(SeverityNumber.DEBUG_3, Severity.DEBUG3),
+        Arguments.of(SeverityNumber.DEBUG_4, Severity.DEBUG4),
+        Arguments.of(SeverityNumber.INFO, Severity.INFO),
+        Arguments.of(SeverityNumber.INFO_2, Severity.INFO2),
+        Arguments.of(SeverityNumber.INFO_3, Severity.INFO3),
+        Arguments.of(SeverityNumber.INFO_4, Severity.INFO4),
+        Arguments.of(SeverityNumber.WARN, Severity.WARN),
+        Arguments.of(SeverityNumber.WARN_2, Severity.WARN2),
+        Arguments.of(SeverityNumber.WARN_3, Severity.WARN3),
+        Arguments.of(SeverityNumber.WARN_4, Severity.WARN4),
+        Arguments.of(SeverityNumber.ERROR, Severity.ERROR),
+        Arguments.of(SeverityNumber.ERROR_2, Severity.ERROR2),
+        Arguments.of(SeverityNumber.ERROR_3, Severity.ERROR3),
+        Arguments.of(SeverityNumber.ERROR_4, Severity.ERROR4),
+        Arguments.of(SeverityNumber.FATAL, Severity.FATAL),
+        Arguments.of(SeverityNumber.FATAL_2, Severity.FATAL2),
+        Arguments.of(SeverityNumber.FATAL_3, Severity.FATAL3),
+        Arguments.of(SeverityNumber.FATAL_4, Severity.FATAL4));
   }
 }

@@ -155,6 +155,7 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  @SuppressLogger(PeriodicMetricReader.class)
   void forceflush_callsFlush() {
     MetricExporter metricExporter = mock(MetricExporter.class);
     when(metricExporter.export(any()))
