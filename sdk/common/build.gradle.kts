@@ -10,6 +10,7 @@ apply<OtelVersionClassPlugin>()
 
 description = "OpenTelemetry SDK Common"
 otelJava.moduleName.set("io.opentelemetry.sdk.common")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
 dependencies {
   api(project(":api:all"))

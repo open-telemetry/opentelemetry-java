@@ -47,7 +47,7 @@ public class OpenTelemetryOsgiTest {
   }
 
   @Test
-  public void contextApiAvailable() {
+  public void vanillaSdkInitializes() {
     OpenTelemetrySdk sdk =
         OpenTelemetrySdk.builder()
             .setMeterProvider(
@@ -126,8 +126,5 @@ public class OpenTelemetryOsgiTest {
     // Verify Context API is available
     Context current = Context.current();
     assertThat(current).isNotNull();
-
-    // Intentionally fail to verify test execution works
-    assertThat(1).isEqualTo(2);
   }
 }
