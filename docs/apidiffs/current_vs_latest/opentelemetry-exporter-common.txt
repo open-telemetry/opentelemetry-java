@@ -9,23 +9,17 @@ Comparing source compatibility of opentelemetry-exporter-common-1.58.0-SNAPSHOT.
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.compressor.Compressor getInstance()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.grpc.GrpcMessageWriter  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getContentLength()
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void writeMessage(java.io.OutputStream)
-		+++  NEW EXCEPTION: java.io.IOException
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.grpc.GrpcResponse  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) byte[] getResponseMessage()
+	+++  NEW METHOD: PUBLIC(+) byte[] getResponseMessage()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.grpc.GrpcStatusCode getStatusCode()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getStatusDescription()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.grpc.GrpcSender  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void send(io.opentelemetry.exporter.grpc.GrpcMessageWriter, java.util.function.Consumer<io.opentelemetry.exporter.grpc.GrpcResponse>, java.util.function.Consumer<java.lang.Throwable>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void send(io.opentelemetry.exporter.marshal.MessageWriter, java.util.function.Consumer<io.opentelemetry.exporter.grpc.GrpcResponse>, java.util.function.Consumer<java.lang.Throwable>)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.grpc.GrpcSenderConfig  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
@@ -76,22 +70,16 @@ Comparing source compatibility of opentelemetry-exporter-common-1.58.0-SNAPSHOT.
 	+++  NEW METHOD: PUBLIC(+) int getValue()
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.grpc.GrpcStatusCode valueOf(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.grpc.GrpcStatusCode[] values()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.http.HttpRequestBodyWriter  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int contentLength()
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void writeRequestBody(java.io.OutputStream)
-		+++  NEW EXCEPTION: java.io.IOException
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.http.HttpResponse  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) byte[] getResponseBody()
+	+++  NEW METHOD: PUBLIC(+) byte[] getResponseBody()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getStatusCode()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getStatusMessage()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.http.HttpSender  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void send(io.opentelemetry.exporter.http.HttpRequestBodyWriter, java.util.function.Consumer<io.opentelemetry.exporter.http.HttpResponse>, java.util.function.Consumer<java.lang.Throwable>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void send(io.opentelemetry.exporter.marshal.MessageWriter, java.util.function.Consumer<io.opentelemetry.exporter.http.HttpResponse>, java.util.function.Consumer<java.lang.Throwable>)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.http.HttpSenderConfig  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
@@ -117,3 +105,9 @@ Comparing source compatibility of opentelemetry-exporter-common-1.58.0-SNAPSHOT.
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.http.HttpSender createSender(io.opentelemetry.exporter.http.HttpSenderConfig)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.marshal.MessageWriter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getContentLength()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void writeMessage(java.io.OutputStream)
+		+++  NEW EXCEPTION: java.io.IOException

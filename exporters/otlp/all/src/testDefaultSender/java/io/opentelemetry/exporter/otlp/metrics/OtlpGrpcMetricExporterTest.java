@@ -88,7 +88,7 @@ class OtlpGrpcMetricExporterTest
           .matches(
               "OtlpGrpcMetricExporter\\{"
                   + "endpoint=http://localhost:4317, "
-                  + "endpointPath=.*, "
+                  + "serviceAndMethodName=.*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "

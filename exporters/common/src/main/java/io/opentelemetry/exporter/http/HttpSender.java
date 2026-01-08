@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.http;
 
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.function.Consumer;
 
@@ -26,14 +27,12 @@ public interface HttpSender {
    * called when the request could not be executed due to cancellation, connectivity problems, or
    * timeout.
    *
-   * @param requestBodyWriter the request body writer
+   * @param messageWriter the request body message writer
    * @param onResponse the callback to invoke with the HTTP response
    * @param onError the callback to invoke when the HTTP request could not be executed
    */
   void send(
-      HttpRequestBodyWriter requestBodyWriter,
-      Consumer<HttpResponse> onResponse,
-      Consumer<Throwable> onError);
+      MessageWriter messageWriter, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError);
 
   /** Shutdown the sender. */
   CompletableResultCode shutdown();

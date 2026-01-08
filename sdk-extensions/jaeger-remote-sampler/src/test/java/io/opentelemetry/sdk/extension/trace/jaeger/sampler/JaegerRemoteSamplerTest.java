@@ -362,7 +362,7 @@ class JaegerRemoteSamplerTest {
           .untilAsserted(
               () -> {
                 LoggingEvent log =
-                    logs.assertContains(" Server responded with gRPC status code 13");
+                    logs.assertContains(" Server responded with gRPC status code INTERNAL");
                 assertThat(log.getLevel()).isEqualTo(Level.WARN);
               });
     }

@@ -5,8 +5,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.grpc.GrpcMessageWriter;
-import java.io.IOException;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import java.io.OutputStream;
 import java.util.Collections;
 
@@ -15,9 +14,9 @@ class OkHttpGrpcSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpGrpc
   @Override
   void send(OkHttpGrpcSender sender, Runnable onSuccess, Runnable onFailure) {
     sender.send(
-        new GrpcMessageWriter() {
+        new MessageWriter() {
           @Override
-          public void writeMessage(OutputStream output) throws IOException {}
+          public void writeMessage(OutputStream output) {}
 
           @Override
           public int getContentLength() {

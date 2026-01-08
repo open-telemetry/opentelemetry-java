@@ -36,8 +36,7 @@ class GrpcExporterTest {
                         StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
-                        "io.opentelemetry.Dummy",
-                        "Method")
+                        "io.opentelemetry.Dummy/Method")
                     .setChannel(ManagedChannelBuilder.forTarget("localhost").build())
                     .build())
         .doesNotThrowAnyException();
@@ -59,8 +58,7 @@ class GrpcExporterTest {
                     StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                     10,
                     new URI("http://localhost"),
-                    "io.opentelemetry.Dummy",
-                    "Method")
+                    "io.opentelemetry.Dummy/Method")
                 .setChannel(ManagedChannelBuilder.forTarget("localhost").build())
                 .build())
         .extracting("grpcSender")
@@ -79,8 +77,7 @@ class GrpcExporterTest {
                     StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                     10,
                     new URI("http://localhost"),
-                    "io.opentelemetry.Dummy",
-                    "Method")
+                    "io.opentelemetry.Dummy/Method")
                 .setChannel(ManagedChannelBuilder.forTarget("localhost").build())
                 .build())
         .extracting("grpcSender")
@@ -98,8 +95,7 @@ class GrpcExporterTest {
                         StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
-                        "io.opentelemetry.Dummy",
-                        "Method")
+                        "io.opentelemetry.Dummy/Method")
                     .setChannel(ManagedChannelBuilder.forTarget("localhost").build())
                     .build())
         .isInstanceOf(IllegalStateException.class)

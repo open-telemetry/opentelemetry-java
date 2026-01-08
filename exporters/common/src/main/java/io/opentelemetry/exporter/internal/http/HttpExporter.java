@@ -69,7 +69,7 @@ public final class HttpExporter {
     CompletableResultCode result = new CompletableResultCode();
 
     httpSender.send(
-        exportRequest.toHttpRequestBodyWriter(exportAsJson),
+        exportRequest.toMessageWriter(exportAsJson),
         httpResponse -> onResponse(result, metricRecording, httpResponse),
         throwable -> onError(result, metricRecording, throwable));
 

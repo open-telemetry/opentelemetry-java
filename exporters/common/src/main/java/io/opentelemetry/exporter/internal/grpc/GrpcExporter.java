@@ -67,7 +67,7 @@ public final class GrpcExporter {
     CompletableResultCode result = new CompletableResultCode();
 
     grpcSender.send(
-        exportRequest.toGrpcRequestBodyWriter(),
+        exportRequest.toMessageWriter(false),
         grpcResponse -> onResponse(result, metricRecording, grpcResponse),
         throwable -> onError(result, metricRecording, throwable));
 

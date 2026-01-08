@@ -85,8 +85,7 @@ public class OltpExporterBenchmark {
         new GrpcExporter(
             new UpstreamGrpcSender(
                 defaultGrpcChannel,
-                "opentelemetry.proto.collector.trace.v1.TraceService",
-                "Export",
+                "opentelemetry.proto.collector.trace.v1.TraceService/Export",
                 null,
                 /* shutdownChannel= */ false,
                 10,

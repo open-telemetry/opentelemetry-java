@@ -21,12 +21,12 @@ import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ClientCalls;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.exporter.grpc.GrpcMessageWriter;
 import io.opentelemetry.exporter.grpc.GrpcResponse;
 import io.opentelemetry.exporter.grpc.GrpcSender;
 import io.opentelemetry.exporter.grpc.GrpcStatusCode;
 import io.opentelemetry.exporter.internal.grpc.ImmutableGrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,15 +48,15 @@ import javax.annotation.Nullable;
  */
 public final class UpstreamGrpcSender implements GrpcSender {
 
-  private static final MethodDescriptor.Marshaller<GrpcMessageWriter> REQUEST_MARSHALER =
-      new MethodDescriptor.Marshaller<GrpcMessageWriter>() {
+  private static final MethodDescriptor.Marshaller<MessageWriter> REQUEST_MARSHALER =
+      new MethodDescriptor.Marshaller<MessageWriter>() {
         @Override
-        public InputStream stream(GrpcMessageWriter value) {
+        public InputStream stream(MessageWriter value) {
           return new MarshalerInputStream(value);
         }
 
         @Override
-        public GrpcMessageWriter parse(InputStream stream) {
+        public MessageWriter parse(InputStream stream) {
           throw new UnsupportedOperationException("Only for serializing");
         }
       };
@@ -75,7 +75,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
       };
 
   private final ManagedChannel channel;
-  private final MethodDescriptor<GrpcMessageWriter, byte[]> methodDescriptor;
+  private final MethodDescriptor<MessageWriter, byte[]> methodDescriptor;
   @Nullable private final String compressorName;
   private final boolean shutdownChannel;
   private final long timeoutNanos;
@@ -93,7 +93,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
       @Nullable ExecutorService executorService) {
     this.channel = channel;
     this.methodDescriptor =
-        MethodDescriptor.<GrpcMessageWriter, byte[]>newBuilder()
+        MethodDescriptor.<MessageWriter, byte[]>newBuilder()
             .setType(MethodDescriptor.MethodType.UNARY)
             .setFullMethodName(serviceAndMethodName)
             .setRequestMarshaller(REQUEST_MARSHALER)
@@ -125,9 +125,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
 
   @Override
   public void send(
-      GrpcMessageWriter messageWriter,
-      Consumer<GrpcResponse> onResponse,
-      Consumer<Throwable> onError) {
+      MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     CallOptions requestCallOptions = CallOptions.DEFAULT;
     Channel requestChannel = channel;
     if (timeoutNanos > 0) {

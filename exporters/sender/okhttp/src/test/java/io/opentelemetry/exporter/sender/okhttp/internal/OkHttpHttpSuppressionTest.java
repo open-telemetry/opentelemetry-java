@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.http.HttpRequestBodyWriter;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -17,15 +17,15 @@ class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttp
   @Override
   void send(OkHttpHttpSender sender, Runnable onSuccess, Runnable onFailure) {
     byte[] content = "A".getBytes(StandardCharsets.UTF_8);
-    HttpRequestBodyWriter requestBodyWriter =
-        new HttpRequestBodyWriter() {
+    MessageWriter requestBodyWriter =
+        new MessageWriter() {
           @Override
-          public void writeRequestBody(OutputStream output) throws IOException {
+          public void writeMessage(OutputStream output) throws IOException {
             output.write(content);
           }
 
           @Override
-          public int contentLength() {
+          public int getContentLength() {
             return content.length;
           }
         };

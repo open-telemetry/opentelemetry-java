@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.grpc;
 
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -12,7 +13,7 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A gRPC response.
  *
- * @see GrpcSender#send(GrpcMessageWriter, Consumer, Consumer)
+ * @see GrpcSender#send(MessageWriter, Consumer, Consumer)
  */
 @Immutable
 public interface GrpcResponse {
@@ -26,5 +27,7 @@ public interface GrpcResponse {
 
   /** The gRPC response message bytes. */
   @SuppressWarnings("mutable")
-  byte[] getResponseMessage();
+  default byte[] getResponseMessage() {
+    return new byte[0];
+  }
 }

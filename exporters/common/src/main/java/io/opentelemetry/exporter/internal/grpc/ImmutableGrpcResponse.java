@@ -23,4 +23,8 @@ public abstract class ImmutableGrpcResponse implements GrpcResponse {
       GrpcStatusCode grpcStatusCode, @Nullable String grpcStatusDescription, byte[] responseBody) {
     return new AutoValue_ImmutableGrpcResponse(grpcStatusCode, grpcStatusDescription, responseBody);
   }
+
+  @SuppressWarnings("mutable")
+  @Override
+  public abstract byte[] getResponseMessage();
 }

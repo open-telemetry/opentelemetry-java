@@ -22,7 +22,7 @@ class MarshallerRemoteSamplerServiceGrpc {
           new MethodDescriptor.Marshaller<SamplingStrategyParametersMarshaler>() {
             @Override
             public InputStream stream(SamplingStrategyParametersMarshaler value) {
-              return new MarshalerInputStream(value.toGrpcRequestBodyWriter());
+              return new MarshalerInputStream(value.toMessageWriter(false));
             }
 
             @Override

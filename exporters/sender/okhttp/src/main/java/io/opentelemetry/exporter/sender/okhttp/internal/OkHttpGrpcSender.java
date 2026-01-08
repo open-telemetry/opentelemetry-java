@@ -25,11 +25,11 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.grpc.GrpcMessageWriter;
 import io.opentelemetry.exporter.grpc.GrpcResponse;
 import io.opentelemetry.exporter.grpc.GrpcSender;
 import io.opentelemetry.exporter.grpc.GrpcStatusCode;
 import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
@@ -135,9 +135,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
   @Override
   public void send(
-      GrpcMessageWriter messageWriter,
-      Consumer<GrpcResponse> onResponse,
-      Consumer<Throwable> onError) {
+      MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
     Map<String, List<String>> headers = headersSupplier.get();

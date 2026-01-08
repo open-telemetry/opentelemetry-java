@@ -25,7 +25,7 @@ package io.opentelemetry.exporter.internal.grpc;
 import com.google.common.io.ByteStreams;
 import io.grpc.Drainable;
 import io.grpc.KnownLength;
-import io.opentelemetry.exporter.grpc.GrpcMessageWriter;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,7 +34,7 @@ import java.io.OutputStream;
 import javax.annotation.Nullable;
 
 /**
- * Adapter from {@link GrpcMessageWriter} to gRPC types.
+ * Adapter from {@link MessageWriter} to gRPC types.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -43,11 +43,11 @@ import javax.annotation.Nullable;
 // https://github.com/grpc/grpc-java/blob/2c2ebaebd5a93acec92fbd2708faac582db99371/protobuf-lite/src/main/java/io/grpc/protobuf/lite/ProtoInputStream.java
 public final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {
 
-  @Nullable private GrpcMessageWriter message;
+  @Nullable private MessageWriter message;
   @Nullable private ByteArrayInputStream partial;
 
   /** Creates a new {@link MarshalerInputStream}. */
-  public MarshalerInputStream(GrpcMessageWriter message) {
+  public MarshalerInputStream(MessageWriter message) {
     this.message = message;
   }
 
@@ -103,7 +103,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
     return -1;
   }
 
-  private static byte[] toByteArray(GrpcMessageWriter message) throws IOException {
+  private static byte[] toByteArray(MessageWriter message) throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getContentLength());
     message.writeMessage(bos);
     return bos.toByteArray();

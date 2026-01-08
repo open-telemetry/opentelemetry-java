@@ -7,10 +7,10 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.http.HttpRequestBodyWriter;
 import io.opentelemetry.exporter.http.HttpResponse;
 import io.opentelemetry.exporter.http.HttpSender;
 import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -116,9 +116,7 @@ public final class OkHttpHttpSender implements HttpSender {
 
   @Override
   public void send(
-      HttpRequestBodyWriter requestBodyWriter,
-      Consumer<HttpResponse> onResponse,
-      Consumer<Throwable> onError) {
+      MessageWriter messageWriter, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
     Map<String, List<String>> headers = headerSupplier.get();
@@ -129,7 +127,7 @@ public final class OkHttpHttpSender implements HttpSender {
     if (compressor != null) {
       requestBuilder.addHeader("Content-Encoding", compressor.getEncoding());
     }
-    requestBuilder.post(new RequestBodyImpl(requestBodyWriter, compressor, mediaType));
+    requestBuilder.post(new RequestBodyImpl(messageWriter, compressor, mediaType));
 
     InstrumentationUtil.suppressInstrumentation(
         () ->
@@ -193,14 +191,12 @@ public final class OkHttpHttpSender implements HttpSender {
 
   private static class RequestBodyImpl extends RequestBody {
 
-    private final HttpRequestBodyWriter requestBodyWriter;
+    private final MessageWriter requestBodyWriter;
     @Nullable private final Compressor compressor;
     private final MediaType mediaType;
 
     private RequestBodyImpl(
-        HttpRequestBodyWriter requestBodyWriter,
-        @Nullable Compressor compressor,
-        MediaType mediaType) {
+        MessageWriter requestBodyWriter, @Nullable Compressor compressor, MediaType mediaType) {
       this.requestBodyWriter = requestBodyWriter;
       this.compressor = compressor;
       this.mediaType = mediaType;
@@ -208,7 +204,7 @@ public final class OkHttpHttpSender implements HttpSender {
 
     @Override
     public long contentLength() {
-      return compressor == null ? requestBodyWriter.contentLength() : -1;
+      return compressor == null ? requestBodyWriter.getContentLength() : -1;
     }
 
     @Override
@@ -221,10 +217,10 @@ public final class OkHttpHttpSender implements HttpSender {
       if (compressor != null) {
         BufferedSink compressedSink =
             Okio.buffer(Okio.sink(compressor.compress(bufferedSink.outputStream())));
-        requestBodyWriter.writeRequestBody(compressedSink.outputStream());
+        requestBodyWriter.writeMessage(compressedSink.outputStream());
         compressedSink.close();
       } else {
-        requestBodyWriter.writeRequestBody(bufferedSink.outputStream());
+        requestBodyWriter.writeMessage(bufferedSink.outputStream());
       }
     }
   }

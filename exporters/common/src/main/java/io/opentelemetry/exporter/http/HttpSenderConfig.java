@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.http;
 
 import io.opentelemetry.exporter.compressor.Compressor;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.OutputStream;
@@ -36,9 +37,9 @@ public interface HttpSenderConfig {
   /**
    * The compressor, or {@code null} if no compression is used. If present, {@link
    * Compressor#compress(OutputStream)} must be applied to {@link
-   * HttpRequestBodyWriter#writeRequestBody(OutputStream)} when {@link
-   * HttpSender#send(HttpRequestBodyWriter, Consumer, Consumer)} is called and {@link
-   * Compressor#getEncoding()} must be set as the {@code Content-Encoding} header.
+   * MessageWriter#writeMessage(OutputStream)} when {@link HttpSender#send(MessageWriter, Consumer,
+   * Consumer)} is called and {@link Compressor#getEncoding()} must be set as the {@code
+   * Content-Encoding} header.
    */
   @Nullable
   Compressor getCompressor();

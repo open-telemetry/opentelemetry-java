@@ -8,8 +8,8 @@ package io.opentelemetry.exporter.sender.jdk.internal;
 import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.http.HttpRequestBodyWriter;
 import io.opentelemetry.exporter.http.HttpSender;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -152,14 +152,14 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public void send(
-      HttpRequestBodyWriter requestBodyWriter,
+      MessageWriter messageWriter,
       Consumer<io.opentelemetry.exporter.http.HttpResponse> onResponse,
       Consumer<Throwable> onError) {
     CompletableFuture<HttpResponse<byte[]>> unused =
         CompletableFuture.supplyAsync(
                 () -> {
                   try {
-                    return sendInternal(requestBodyWriter);
+                    return sendInternal(messageWriter);
                   } catch (IOException e) {
                     throw new UncheckedIOException(e);
                   }
@@ -176,7 +176,7 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   // Visible for testing
-  HttpResponse<byte[]> sendInternal(HttpRequestBodyWriter requestBodyWriter) throws IOException {
+  HttpResponse<byte[]> sendInternal(MessageWriter requestBodyWriter) throws IOException {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder =
         HttpRequest.newBuilder().uri(endpoint).timeout(Duration.ofNanos(timeoutNanos));
@@ -191,12 +191,12 @@ public final class JdkHttpSender implements HttpSender {
     if (compressor != null) {
       requestBuilder.header("Content-Encoding", compressor.getEncoding());
       try (OutputStream compressed = compressor.compress(os)) {
-        requestBodyWriter.writeRequestBody(compressed);
+        requestBodyWriter.writeMessage(compressed);
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }
     } else {
-      requestBodyWriter.writeRequestBody(os);
+      requestBodyWriter.writeMessage(os);
     }
 
     ByteBufferPool byteBufferPool = threadLocalByteBufPool.get();

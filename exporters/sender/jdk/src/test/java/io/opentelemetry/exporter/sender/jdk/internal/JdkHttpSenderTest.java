@@ -14,7 +14,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.exporter.http.HttpRequestBodyWriter;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
@@ -186,12 +186,12 @@ class JdkHttpSenderTest {
                 assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
   }
 
-  private static class NoOpRequestBodyWriter implements HttpRequestBodyWriter {
+  private static class NoOpRequestBodyWriter implements MessageWriter {
     @Override
-    public void writeRequestBody(OutputStream output) {}
+    public void writeMessage(OutputStream output) {}
 
     @Override
-    public int contentLength() {
+    public int getContentLength() {
       return 0;
     }
   }

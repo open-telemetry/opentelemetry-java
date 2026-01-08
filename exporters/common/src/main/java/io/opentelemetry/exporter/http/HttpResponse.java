@@ -5,13 +5,14 @@
 
 package io.opentelemetry.exporter.http;
 
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * A HTTP response.
  *
- * @see HttpSender#send(HttpRequestBodyWriter, Consumer, Consumer)
+ * @see HttpSender#send(MessageWriter, Consumer, Consumer)
  */
 @Immutable
 public interface HttpResponse {
@@ -23,5 +24,8 @@ public interface HttpResponse {
   String getStatusMessage();
 
   /** The HTTP response body bytes. */
-  byte[] getResponseBody();
+  @SuppressWarnings("mutable")
+  default byte[] getResponseBody() {
+    return new byte[0];
+  }
 }

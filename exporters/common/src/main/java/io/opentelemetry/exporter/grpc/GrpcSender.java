@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.grpc;
 
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.function.Consumer;
 
@@ -31,9 +32,7 @@ public interface GrpcSender {
    * @param onError the callback to invoke when the gRPC call could not be executed
    */
   void send(
-      GrpcMessageWriter messageWriter,
-      Consumer<GrpcResponse> onResponse,
-      Consumer<Throwable> onError);
+      MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError);
 
   /** Shutdown the sender. */
   CompletableResultCode shutdown();
