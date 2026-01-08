@@ -189,7 +189,8 @@ class MetricReaderFactoryTest {
                                                 new IncludeExcludeModel()
                                                     .withIncluded(singletonList("foo"))
                                                     .withExcluded(singletonList("bar")))
-                                            .withWithoutScopeInfo(true)
+                                            .withWithoutScopeInfo(false)
+                                            .withWithoutTargetInfo(false)
                                             .withTranslationStrategy(
                                                 ExperimentalPrometheusMetricExporterModel
                                                     .ExperimentalPrometheusTranslationStrategy

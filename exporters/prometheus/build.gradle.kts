@@ -18,6 +18,7 @@ dependencies {
   implementation("io.prometheus:prometheus-metrics-exposition-formats-no-protobuf")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
+  compileOnly("com.google.errorprone:error_prone_annotations")
 
   annotationProcessor("com.google.auto.value:auto-value")
 

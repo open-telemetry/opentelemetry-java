@@ -31,7 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 /**
@@ -42,7 +41,6 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final String host;
   private final int port;
-  @Nullable private final Predicate<String> allowedResourceAttributesFilter;
   private final MemoryMode memoryMode;
   private final DefaultAggregationSelector defaultAggregationSelector;
 
@@ -71,18 +69,17 @@ public final class PrometheusHttpServer implements MetricReader {
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
-      @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode,
       @Nullable HttpHandler defaultHandler,
       DefaultAggregationSelector defaultAggregationSelector,
-      @Nullable Authenticator authenticator) {
+      @Nullable Authenticator authenticator,
+      PrometheusMetricReader prometheusMetricReader) {
     this.host = host;
     this.port = port;
-    this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.memoryMode = memoryMode;
     this.defaultAggregationSelector = defaultAggregationSelector;
     this.builder = builder;
-    this.prometheusMetricReader = new PrometheusMetricReader(allowedResourceAttributesFilter);
+    this.prometheusMetricReader = prometheusMetricReader;
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
     // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,
@@ -167,7 +164,7 @@ public final class PrometheusHttpServer implements MetricReader {
     StringJoiner joiner = new StringJoiner(",", "PrometheusHttpServer{", "}");
     joiner.add("host=" + host);
     joiner.add("port=" + port);
-    joiner.add("allowedResourceAttributesFilter=" + allowedResourceAttributesFilter);
+    joiner.add("metricReader=" + prometheusMetricReader.toString());
     joiner.add("memoryMode=" + memoryMode);
     joiner.add(
         "defaultAggregationSelector="
