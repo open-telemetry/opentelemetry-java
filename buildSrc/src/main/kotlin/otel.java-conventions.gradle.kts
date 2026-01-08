@@ -9,6 +9,7 @@ plugins {
   eclipse
   idea
 
+  id("biz.aQute.bnd.builder")
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
   id("otel.spotless-conventions")
@@ -139,6 +140,17 @@ tasks {
 
       addBooleanOption("html5", true)
       addBooleanOption("Xdoclint:all,-missing", true)
+    }
+  }
+
+  named<Jar>("jar") {
+    // Configure OSGi metadata
+    bundle {
+      bnd(mapOf(
+        // Once https://github.com/open-telemetry/opentelemetry-java/issues/6970 is resolved, exclude .internal packages
+        "-exportcontents" to "io.opentelemetry.*",
+        "Import-Package" to "javax.annotation.*;resolution:=optional;version=\"\${@}\",*",
+      ))
     }
   }
 
