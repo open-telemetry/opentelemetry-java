@@ -112,16 +112,16 @@ final class Otel2PrometheusConverter {
             : Collections.emptyMap();
   }
 
-  public boolean isOtelScopeLabelsEnabled() {
+  boolean isOtelScopeLabelsEnabled() {
     return otelScopeLabelsEnabled;
   }
 
-  public boolean isTargetInfoMetricEnabled() {
+  boolean isTargetInfoMetricEnabled() {
     return targetInfoMetricEnabled;
   }
 
   @Nullable
-  public Predicate<String> getAllowedResourceAttributesFilter() {
+  Predicate<String> getAllowedResourceAttributesFilter() {
     return allowedResourceAttributesFilter;
   }
 
