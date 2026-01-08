@@ -27,12 +27,16 @@ configurations.all {
 }
 
 dependencies {
+  // Testing the "kitchen sink" hides OSGi configuration issues. For example, opentelemetry-api has
+  // optional dependencies on :sdk-extensions:autoconfigure and :api:incubator. If we only test a
+  // bundle which includes those, then mask the fact that OSGi fails when using a bundle without those
+  // until opentelemetry-api OSGi configuration is updated to indicate that they are optional.
+
+  // TODO (jack-berg): Add additional test bundles with dependency combinations reflecting popular use cases:
+  // - with OTLP exporters
+  // - with autoconfigure
+  // - with file configuration
   testImplementation(project(":sdk:all"))
-  // TODO: should be able to remove these and everything functions
-  testImplementation(project(":api:incubator"))
-  testImplementation(project(":sdk-extensions:autoconfigure"))
-  testImplementation(project(":sdk-extensions:incubator"))
-  testImplementation("com.fasterxml.jackson.core:jackson-databind")
 
   // For some reason, changing this to testImplementation causes the tests to pass even when failures are present.
   // Probably some dependency resolution interplay with otel.java-conventions but I couldn't figure it out.
@@ -44,6 +48,8 @@ dependencies {
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
   testRuntimeOnly("org.apache.felix:org.apache.felix.framework")
 }
+
+
 
 val testingBundleTask = tasks.register<Bundle>("testingBundle") {
   archiveClassifier.set("testing")
