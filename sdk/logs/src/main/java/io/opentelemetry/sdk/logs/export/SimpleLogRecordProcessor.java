@@ -65,7 +65,11 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
     return builder(exporter).build();
   }
 
-  /** Returns a new Builder for {@link SimpleLogRecordProcessor}. */
+  /**
+   * Returns a new Builder for {@link SimpleLogRecordProcessor}.
+   *
+   * @since 1.58.0
+   */
   public static SimpleLogRecordProcessorBuilder builder(LogRecordExporter exporter) {
     requireNonNull(exporter, "exporter");
     return new SimpleLogRecordProcessorBuilder(exporter);
