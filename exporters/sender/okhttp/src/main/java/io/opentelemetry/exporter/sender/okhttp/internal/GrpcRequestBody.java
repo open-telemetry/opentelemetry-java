@@ -41,7 +41,7 @@ public final class GrpcRequestBody extends RequestBody {
     this.requestBodyWriter = requestBodyWriter;
     this.compressor = compressor;
 
-    messageSize = requestBodyWriter.contentLength();
+    messageSize = requestBodyWriter.getContentLength();
     if (compressor != null) {
       // Content length not known since we want to compress on the I/O thread.
       contentLength = -1;

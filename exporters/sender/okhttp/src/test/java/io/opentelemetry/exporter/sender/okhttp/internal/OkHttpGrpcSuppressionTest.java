@@ -20,7 +20,7 @@ class OkHttpGrpcSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpGrpc
           public void writeMessage(OutputStream output) throws IOException {}
 
           @Override
-          public int contentLength() {
+          public int getContentLength() {
             return 0;
           }
         },

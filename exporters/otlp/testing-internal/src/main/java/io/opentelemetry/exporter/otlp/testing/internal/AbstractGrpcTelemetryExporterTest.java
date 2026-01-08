@@ -1069,8 +1069,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
                   + "endpoint=http://localhost:4317, "
-                  + "fullServiceName=.*, "
-                  + "methodName=.*, "
+                  + "serviceAndMethodName=.*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
@@ -1106,8 +1105,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
                   + "endpoint=http://example:4317, "
-                  + "fullServiceName=.*, "
-                  + "methodName=.*, "
+                  + "serviceAndMethodName=.*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
                   + ", "

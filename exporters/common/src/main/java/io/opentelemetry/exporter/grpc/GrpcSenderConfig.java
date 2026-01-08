@@ -27,19 +27,16 @@ import javax.net.ssl.X509TrustManager;
 public interface GrpcSenderConfig {
 
   /**
-   * The gRPC endpoint to send to, including scheme. Omits path, which must be constructed from
-   * {@link #getFullServiceName()} and {@link #getMethodName()}.
+   * The gRPC endpoint to send to, including scheme. Omits path, which must be obtained from {@link
+   * #getServiceAndMethodName()}.
    */
   URI getEndpoint();
 
   /**
    * The fully qualified gRPC service name, e.g. {@code
-   * opentelemetry.proto.collector.trace.v1.TraceService}.
+   * opentelemetry.proto.collector.trace.v1.TraceService/Export}.
    */
-  String getFullServiceName();
-
-  /** The gRPC method name, e.g. {@code Export}. */
-  String getMethodName();
+  String getServiceAndMethodName();
 
   /**
    * The compressor, or {@code null} if no compression is used. If present, {@link

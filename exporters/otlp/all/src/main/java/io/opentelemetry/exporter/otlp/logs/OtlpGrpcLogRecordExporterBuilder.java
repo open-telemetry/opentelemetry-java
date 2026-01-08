@@ -36,9 +36,8 @@ import javax.net.ssl.X509TrustManager;
  */
 public final class OtlpGrpcLogRecordExporterBuilder {
 
-  private static final String GRPC_SERVICE_NAME =
-      "opentelemetry.proto.collector.logs.v1.LogsService";
-  private static final String GRPC_METHOD_NAME = "Export";
+  private static final String GRPC_SERVICE_AND_METHOD_NAME =
+      "opentelemetry.proto.collector.logs.v1.LogsService/Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
@@ -61,8 +60,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
             StandardComponentId.ExporterType.OTLP_GRPC_LOG_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
-            GRPC_SERVICE_NAME,
-            GRPC_METHOD_NAME),
+            GRPC_SERVICE_AND_METHOD_NAME),
         DEFAULT_MEMORY_MODE);
   }
 

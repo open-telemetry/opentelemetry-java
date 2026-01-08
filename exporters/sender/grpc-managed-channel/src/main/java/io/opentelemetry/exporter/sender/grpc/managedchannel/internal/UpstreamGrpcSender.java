@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
-import static io.grpc.MethodDescriptor.generateFullMethodName;
-
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -87,8 +85,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
   /** Creates a new {@link UpstreamGrpcSender}. */
   public UpstreamGrpcSender(
       ManagedChannel channel,
-      String fullServiceName,
-      String methodName,
+      String serviceAndMethodName,
       @Nullable io.opentelemetry.exporter.compressor.Compressor compressor,
       boolean shutdownChannel,
       long timeoutNanos,
@@ -98,7 +95,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
     this.methodDescriptor =
         MethodDescriptor.<GrpcMessageWriter, byte[]>newBuilder()
             .setType(MethodDescriptor.MethodType.UNARY)
-            .setFullMethodName(generateFullMethodName(fullServiceName, methodName))
+            .setFullMethodName(serviceAndMethodName)
             .setRequestMarshaller(REQUEST_MARSHALER)
             .setResponseMarshaller(RESPONSE_MARSHALER)
             .build();
@@ -163,7 +160,6 @@ public final class UpstreamGrpcSender implements GrpcSender {
         new FutureCallback<byte[]>() {
           @Override
           public void onSuccess(@Nullable byte[] result) {
-            // TODO: evaluate null case
             onResponse.accept(
                 ImmutableGrpcResponse.create(
                     GrpcStatusCode.OK,

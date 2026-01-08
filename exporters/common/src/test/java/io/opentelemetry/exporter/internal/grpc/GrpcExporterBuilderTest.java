@@ -29,8 +29,7 @@ class GrpcExporterBuilderTest {
             StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
             0,
             URI.create("http://localhost:4317"),
-            null,
-            "/test");
+            "service/method");
   }
 
   @Test

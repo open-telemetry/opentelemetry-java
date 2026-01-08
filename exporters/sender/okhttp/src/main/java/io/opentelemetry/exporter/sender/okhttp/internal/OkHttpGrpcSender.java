@@ -43,6 +43,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -65,6 +67,8 @@ import okhttp3.ResponseBody;
  * at any time.
  */
 public final class OkHttpGrpcSender implements GrpcSender {
+
+  private static final Logger logger = Logger.getLogger(OkHttpGrpcSender.class.getName());
 
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
@@ -183,8 +187,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
                                     try {
                                       bodyBytes = body.bytes();
                                     } catch (IOException e) {
-                                      // TODO: suspicious ignored exception
                                       bodyBytes = new byte[0];
+                                      logger.log(Level.WARNING, "Failed to read response body", e);
                                     }
                                   }
                                   return bodyBytes;

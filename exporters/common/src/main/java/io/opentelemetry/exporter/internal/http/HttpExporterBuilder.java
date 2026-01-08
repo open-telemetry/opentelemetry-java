@@ -73,9 +73,12 @@ public final class HttpExporterBuilder {
 
   public HttpExporterBuilder(
       StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
-    this.exporterType = exporterType;
+    this(exporterType, ExporterBuilderUtil.validateEndpoint(defaultEndpoint));
+  }
 
-    endpoint = ExporterBuilderUtil.validateEndpoint(defaultEndpoint);
+  HttpExporterBuilder(StandardComponentId.ExporterType exporterType, URI endpoint) {
+    this.exporterType = exporterType;
+    this.endpoint = endpoint;
   }
 
   public HttpExporterBuilder setTimeout(long timeout, TimeUnit unit) {
@@ -187,8 +190,7 @@ public final class HttpExporterBuilder {
 
   @SuppressWarnings("BuilderReturnThis")
   public HttpExporterBuilder copy() {
-    HttpExporterBuilder copy = new HttpExporterBuilder(exporterType, endpoint.toString());
-    copy.endpoint = endpoint;
+    HttpExporterBuilder copy = new HttpExporterBuilder(exporterType, endpoint);
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
     copy.exportAsJson = exportAsJson;
@@ -228,7 +230,7 @@ public final class HttpExporterBuilder {
           return result;
         };
 
-    boolean isPlainHttp = endpoint.toString().startsWith("http://");
+    boolean isPlainHttp = endpoint.getScheme().equals("http");
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
         httpSenderProvider.createSender(

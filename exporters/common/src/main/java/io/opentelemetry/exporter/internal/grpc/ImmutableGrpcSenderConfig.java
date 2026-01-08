@@ -23,8 +23,7 @@ abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderConfig {
   @SuppressWarnings("TooManyParameters")
   static ImmutableGrpcSenderConfig create(
       URI endpoint,
-      String fullServiceName,
-      String methodName,
+      String serviceAndMethodName,
       @Nullable Compressor compressor,
       long timeoutNanos,
       long connectTimeoutNanos,
@@ -36,8 +35,7 @@ abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderConfig {
       @Nullable Object managedChannel) {
     return new AutoValue_ImmutableGrpcSenderConfig(
         endpoint,
-        fullServiceName,
-        methodName,
+        serviceAndMethodName,
         compressor,
         timeoutNanos,
         connectTimeoutNanos,

@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.grpc;
 import java.io.IOException;
 import java.io.OutputStream;
 
+// TODO: have a single message writer abstraction
 /** Writes gRPC messages to an {@link OutputStream}. */
 public interface GrpcMessageWriter {
 
@@ -15,5 +16,5 @@ public interface GrpcMessageWriter {
   void writeMessage(OutputStream output) throws IOException;
 
   /** Returns the message length in bytes. */
-  int contentLength();
+  int getContentLength();
 }

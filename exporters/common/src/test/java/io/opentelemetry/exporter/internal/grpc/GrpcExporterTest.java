@@ -42,8 +42,7 @@ class GrpcExporterTest {
                         StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
-                        null,
-                        "/path")
+                        "service/method")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(

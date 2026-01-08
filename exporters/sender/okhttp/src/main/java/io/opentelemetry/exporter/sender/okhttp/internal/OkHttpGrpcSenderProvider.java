@@ -22,7 +22,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
     return new OkHttpGrpcSender(
         grpcSenderConfig
             .getEndpoint()
-            .resolve(grpcSenderConfig.getFullServiceName() + "/" + grpcSenderConfig.getMethodName())
+            .resolve(grpcSenderConfig.getServiceAndMethodName())
             .toString(),
         grpcSenderConfig.getCompressor(),
         grpcSenderConfig.getTimeoutNanos(),

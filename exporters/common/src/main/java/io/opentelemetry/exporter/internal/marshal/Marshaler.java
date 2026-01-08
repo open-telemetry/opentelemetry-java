@@ -82,7 +82,7 @@ public abstract class Marshaler {
       }
 
       @Override
-      public int contentLength() {
+      public int getContentLength() {
         return getBinarySerializedSize();
       }
     };

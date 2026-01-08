@@ -24,7 +24,8 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
   @Override
   public GrpcSender createSender(GrpcSenderConfig grpcSenderConfig) {
     if (!(grpcSenderConfig instanceof ExtendedGrpcSenderConfig)) {
-      throw new IllegalStateException("TODO");
+      throw new IllegalStateException(
+          "grpcSenderConfig must be an instance of ExtendedGrpcSenderConfig for UpstreamGrpcSenderProvider");
     }
     ExtendedGrpcSenderConfig extendedSenderConfig = (ExtendedGrpcSenderConfig) grpcSenderConfig;
 
@@ -33,7 +34,8 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
     ManagedChannel managedChannel;
     if (configManagedChannel != null) {
       if (!(configManagedChannel instanceof ManagedChannel)) {
-        throw new IllegalStateException("TODO");
+        throw new IllegalStateException(
+            "managedChannel must be an instance of ManagedChannel for UpstreamGrpcSenderProvider");
       }
       managedChannel = (ManagedChannel) configManagedChannel;
     } else {
@@ -44,8 +46,7 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
 
     return new UpstreamGrpcSender(
         managedChannel,
-        extendedSenderConfig.getFullServiceName(),
-        extendedSenderConfig.getMethodName(),
+        extendedSenderConfig.getServiceAndMethodName(),
         extendedSenderConfig.getCompressor(),
         shutdownChannel,
         extendedSenderConfig.getTimeoutNanos(),

@@ -55,7 +55,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   public int drainTo(OutputStream target) throws IOException {
     int written;
     if (message != null) {
-      written = message.contentLength();
+      written = message.getContentLength();
       message.writeMessage(target);
       message = null;
     } else if (partial != null) {
@@ -82,7 +82,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   @Override
   public int read(byte[] b, int off, int len) throws IOException {
     if (message != null) {
-      int size = message.contentLength();
+      int size = message.getContentLength();
       if (size == 0) {
         message = null;
         partial = null;
@@ -104,7 +104,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   }
 
   private static byte[] toByteArray(GrpcMessageWriter message) throws IOException {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.contentLength());
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getContentLength());
     message.writeMessage(bos);
     return bos.toByteArray();
   }
@@ -112,7 +112,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   @Override
   public int available() {
     if (message != null) {
-      return message.contentLength();
+      return message.getContentLength();
     } else if (partial != null) {
       return partial.available();
     }

@@ -1,2 +1,5 @@
-Comparing source compatibility of opentelemetry-api-1.56.0-SNAPSHOT.jar against opentelemetry-api-1.55.0.jar
-No changes.
+Comparing source compatibility of opentelemetry-api-1.56.0-SNAPSHOT.jar against opentelemetry-api-1.57.0.jar
+***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.api.GlobalOpenTelemetry  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) STATIC(-) io.opentelemetry.api.OpenTelemetry getOrNoop()
+	---! REMOVED METHOD: PUBLIC(-) STATIC(-) boolean isSet()

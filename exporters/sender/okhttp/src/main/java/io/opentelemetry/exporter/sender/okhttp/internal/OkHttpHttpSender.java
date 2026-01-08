@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -46,6 +48,8 @@ import okio.Okio;
  * at any time.
  */
 public final class OkHttpHttpSender implements HttpSender {
+
+  private static final Logger logger = Logger.getLogger(OkHttpHttpSender.class.getName());
 
   private final boolean managedExecutor;
   private final OkHttpClient client;
@@ -96,7 +100,7 @@ public final class OkHttpHttpSender implements HttpSender {
       builder.addInterceptor(new RetryInterceptor(retryPolicy, OkHttpHttpSender::isRetryable));
     }
 
-    boolean isPlainHttp = endpoint.toString().startsWith("http://");
+    boolean isPlainHttp = endpoint.getScheme().equals("http");
     if (isPlainHttp) {
       builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
     } else if (sslContext != null && trustManager != null) {
@@ -161,8 +165,8 @@ public final class OkHttpHttpSender implements HttpSender {
                                     try {
                                       bodyBytes = body.bytes();
                                     } catch (IOException e) {
-                                      // TODO: suspicious ignored exception
                                       bodyBytes = new byte[0];
+                                      logger.log(Level.WARNING, "Failed to read response body", e);
                                     }
                                   }
                                   return bodyBytes;

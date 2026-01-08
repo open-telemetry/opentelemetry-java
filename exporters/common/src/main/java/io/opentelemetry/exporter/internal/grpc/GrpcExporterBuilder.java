@@ -53,8 +53,7 @@ public class GrpcExporterBuilder {
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
   private final StandardComponentId.ExporterType exporterType;
-  private final String fullServiceName;
-  private final String methodName;
+  private final String serviceAndMethodName;
 
   private long timeoutNanos;
   private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
@@ -78,11 +77,9 @@ public class GrpcExporterBuilder {
       StandardComponentId.ExporterType exporterType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      String fullServiceName,
-      String methodName) {
+      String serviceAndMethodName) {
     this.exporterType = exporterType;
-    this.fullServiceName = fullServiceName;
-    this.methodName = methodName;
+    this.serviceAndMethodName = serviceAndMethodName;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
   }
@@ -185,8 +182,7 @@ public class GrpcExporterBuilder {
             exporterType,
             TimeUnit.NANOSECONDS.toSeconds(timeoutNanos),
             endpoint,
-            fullServiceName,
-            methodName);
+            serviceAndMethodName);
 
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
@@ -233,8 +229,7 @@ public class GrpcExporterBuilder {
         grpcSenderProvider.createSender(
             ImmutableGrpcSenderConfig.create(
                 endpoint,
-                fullServiceName,
-                methodName,
+                serviceAndMethodName,
                 compressor,
                 timeoutNanos,
                 connectTimeoutNanos,
@@ -260,8 +255,7 @@ public class GrpcExporterBuilder {
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("endpoint=" + endpoint.toString());
-    joiner.add("fullServiceName=" + fullServiceName);
-    joiner.add("methodName=" + methodName);
+    joiner.add("serviceAndMethodName=" + serviceAndMethodName);
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("connectTimeoutNanos=" + connectTimeoutNanos);
     joiner.add(
