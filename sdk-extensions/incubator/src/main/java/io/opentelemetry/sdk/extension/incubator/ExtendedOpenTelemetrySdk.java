@@ -10,6 +10,7 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -19,9 +20,10 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
 
   private final OpenTelemetrySdk openTelemetrySdk;
   private final ObfuscatedConfigProvider configProvider;
+  private final Resource resource;
 
   private ExtendedOpenTelemetrySdk(
-      OpenTelemetrySdk openTelemetrySdk, SdkConfigProvider configProvider) {
+      OpenTelemetrySdk openTelemetrySdk, SdkConfigProvider configProvider, Resource resource) {
     super(
         openTelemetrySdk.getSdkTracerProvider(),
         openTelemetrySdk.getSdkMeterProvider(),
@@ -29,16 +31,21 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
         openTelemetrySdk.getPropagators());
     this.openTelemetrySdk = openTelemetrySdk;
     this.configProvider = new ObfuscatedConfigProvider(configProvider);
+    this.resource = resource;
   }
 
   public static ExtendedOpenTelemetrySdk create(
-      OpenTelemetrySdk openTelemetrySdk, SdkConfigProvider sdkConfigProvider) {
-    return new ExtendedOpenTelemetrySdk(openTelemetrySdk, sdkConfigProvider);
+      OpenTelemetrySdk openTelemetrySdk, SdkConfigProvider sdkConfigProvider, Resource resource) {
+    return new ExtendedOpenTelemetrySdk(openTelemetrySdk, sdkConfigProvider, resource);
   }
 
   @Override
   public ConfigProvider getConfigProvider() {
     return configProvider;
+  }
+
+  public Resource getResource() {
+    return resource;
   }
 
   /** Returns the {@link SdkConfigProvider} for this {@link ExtendedOpenTelemetrySdk}. */
@@ -53,6 +60,8 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
         + openTelemetrySdk
         + ", configProvider="
         + configProvider.unobfuscate()
+        + ", resource="
+        + resource
         + "}";
   }
 

@@ -131,7 +131,8 @@ class DeclarativeConfigurationTest {
                         .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                         .build())
                 .build(),
-            ((ExtendedOpenTelemetrySdk) openTelemetrySdk).getSdkConfigProvider());
+            ((ExtendedOpenTelemetrySdk) openTelemetrySdk).getSdkConfigProvider(),
+            resource);
     cleanup.addCloseable(expectedSdk);
     assertThat(openTelemetrySdk.toString()).hasToString(expectedSdk.toString());
     // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from

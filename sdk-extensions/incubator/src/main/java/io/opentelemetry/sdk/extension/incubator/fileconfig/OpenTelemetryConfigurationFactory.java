@@ -44,7 +44,7 @@ final class OpenTelemetryConfigurationFactory
     // behavior for experimental properties.
 
     if (Objects.equals(true, model.getDisabled())) {
-      return ExtendedOpenTelemetrySdk.create(builder.build(), sdkConfigProvider);
+      return ExtendedOpenTelemetrySdk.create(builder.build(), sdkConfigProvider, Resource.empty());
     }
 
     if (model.getPropagator() != null) {
@@ -93,6 +93,6 @@ final class OpenTelemetryConfigurationFactory
     }
 
     OpenTelemetrySdk openTelemetrySdk = context.addCloseable(builder.build());
-    return ExtendedOpenTelemetrySdk.create(openTelemetrySdk, sdkConfigProvider);
+    return ExtendedOpenTelemetrySdk.create(openTelemetrySdk, sdkConfigProvider, resource);
   }
 }
