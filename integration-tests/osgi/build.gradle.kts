@@ -49,6 +49,8 @@ dependencies {
   testRuntimeOnly("org.apache.felix:org.apache.felix.framework")
 }
 
+
+
 val testingBundleTask = tasks.register<Bundle>("testingBundle") {
   archiveClassifier.set("testing")
   from(sourceSets.test.get().output)
