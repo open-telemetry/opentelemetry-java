@@ -97,9 +97,7 @@ final class MetricReaderFactory
 
       ConfigKeyValue metricReaderKeyValue =
           FileConfigUtil.validateSingleKeyValue(context, exporterModel, "metric reader");
-      MetricReader metricReader =
-          context.loadComponent(
-              MetricReader.class, metricReaderKeyValue.getKey(), metricReaderKeyValue.getValue());
+      MetricReader metricReader = context.loadComponent(MetricReader.class, metricReaderKeyValue);
       return MetricReaderAndCardinalityLimits.create(metricReader, cardinalityLimitSelector);
     }
   }

@@ -43,8 +43,7 @@ final class LogRecordProcessorFactory
       return createSimpleLogRecordProcessor(model.getSimple(), context);
     }
 
-    return context.loadComponent(
-        LogRecordProcessor.class, processorKeyValue.getKey(), processorKeyValue.getValue());
+    return context.loadComponent(LogRecordProcessor.class, processorKeyValue);
   }
 
   private static LogRecordProcessor createBatchLogRecordProcessor(

@@ -51,8 +51,7 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
           ComposableSamplerFactory.getInstance().create(model.getCompositeDevelopment(), context));
     }
 
-    return context.loadComponent(
-        Sampler.class, samplerKeyValue.getKey(), samplerKeyValue.getValue());
+    return context.loadComponent(Sampler.class, samplerKeyValue);
   }
 
   private static Sampler createTraceIdRatioBasedSampler(TraceIdRatioBasedSamplerModel model) {

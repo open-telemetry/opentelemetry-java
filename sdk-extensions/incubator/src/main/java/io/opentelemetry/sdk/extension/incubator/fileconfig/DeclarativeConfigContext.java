@@ -83,7 +83,10 @@ class DeclarativeConfigContext {
    *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
    */
   @SuppressWarnings({"unchecked"})
-  <T> T loadComponent(Class<T> type, String name, DeclarativeConfigProperties config) {
+  <T> T loadComponent(Class<T> type, ConfigKeyValue configKeyValue) {
+    String name = configKeyValue.getKey();
+    DeclarativeConfigProperties config = configKeyValue.getValue();
+
     // TODO(jack-berg): cache loaded component providers
     List<ComponentProvider> componentProviders = spiHelper.load(ComponentProvider.class);
     List<ComponentProvider> matchedProviders =

@@ -57,7 +57,8 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
         if (propagatorNames.add(propagatorName)) {
           textMapPropagators.add(
               TextMapPropagatorFactory.getPropagator(
-                      context, propagatorName, DeclarativeConfigProperties.empty())
+                      context,
+                      ConfigKeyValue.of(propagatorName, DeclarativeConfigProperties.empty()))
                   .getTextMapPropagator());
         }
       }

@@ -45,8 +45,7 @@ final class ComposableSamplerFactory
       return createParentThresholdSampler(model.getParentThreshold(), context);
     }
 
-    return context.loadComponent(
-        ComposableSampler.class, samplerKeyValue.getKey(), samplerKeyValue.getValue());
+    return context.loadComponent(ComposableSampler.class, samplerKeyValue);
   }
 
   private static ComposableSampler createProbabilitySampler(

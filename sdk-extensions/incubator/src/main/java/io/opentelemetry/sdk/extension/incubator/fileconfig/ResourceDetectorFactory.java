@@ -23,7 +23,6 @@ final class ResourceDetectorFactory
       ExperimentalResourceDetectorModel model, DeclarativeConfigContext context) {
     ConfigKeyValue detectorKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "resource detector");
-    return context.loadComponent(
-        Resource.class, detectorKeyValue.getKey(), detectorKeyValue.getValue());
+    return context.loadComponent(Resource.class, detectorKeyValue);
   }
 }

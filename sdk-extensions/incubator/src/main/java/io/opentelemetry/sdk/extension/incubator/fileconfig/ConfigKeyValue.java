@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 
+/** A key value pair for a YAML mapping node. */
 class ConfigKeyValue {
 
   private final String key;

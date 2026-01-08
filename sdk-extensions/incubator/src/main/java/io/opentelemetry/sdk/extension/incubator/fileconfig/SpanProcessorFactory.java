@@ -42,8 +42,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       return createSimpleLogRecordProcessor(model.getSimple(), context);
     }
 
-    return context.loadComponent(
-        SpanProcessor.class, processorKeyValue.getKey(), processorKeyValue.getValue());
+    return context.loadComponent(SpanProcessor.class, processorKeyValue);
   }
 
   private static SpanProcessor createBatchLogRecordProcessor(
