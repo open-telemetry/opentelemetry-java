@@ -30,6 +30,11 @@
 * Implement SDK metrics for logs
   ([#7931](https://github.com/open-telemetry/opentelemetry-java/pull/7931))
 
+#### Exporters
+
+* Prom exporter update
+  ([#7934](https://github.com/open-telemetry/opentelemetry-java/pull/7934))
+
 #### Extensions
 
 * Declarative config: update to opentelemetry-configuration 1.0.0-rc.3
@@ -40,8 +45,10 @@
   ([#7942](https://github.com/open-telemetry/opentelemetry-java/pull/7942))
 * Declarative config: add support for new logger config minimum_severity and trace_based properties
   ([#7940](https://github.com/open-telemetry/opentelemetry-java/pull/7940))
-* Declarative config: add declarative support for composable parent threshold sampler
+* Declarative config: add support for composable parent threshold sampler
   ([#7941](https://github.com/open-telemetry/opentelemetry-java/pull/7941))
+* Declarative config: improve pattern for validating and loading SDK extension plugins
+  ([#7947](https://github.com/open-telemetry/opentelemetry-java/pull/7947))
 
 ### Project tooling
 
