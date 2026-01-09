@@ -1,16 +1,2 @@
-Comparing source compatibility of opentelemetry-sdk-logs-1.59.0-SNAPSHOT.jar against opentelemetry-sdk-logs-1.57.0.jar
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder setInternalTelemetryVersion(io.opentelemetry.sdk.common.InternalTelemetryVersion)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessorBuilder builder(io.opentelemetry.sdk.logs.export.LogRecordExporter)
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessorBuilder  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessorBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
+Comparing source compatibility of opentelemetry-sdk-logs-1.59.0-SNAPSHOT.jar against opentelemetry-sdk-logs-1.58.0.jar
+No changes.
