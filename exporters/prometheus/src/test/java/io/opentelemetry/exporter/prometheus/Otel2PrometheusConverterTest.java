@@ -17,9 +17,6 @@ import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
@@ -71,7 +68,6 @@ class Otel2PrometheusConverterTest {
           "(.|\\n)*# HELP (?<help>.*)\n# TYPE (?<type>.*)\n(?<metricName>.*)\\{"
               + "otel_scope_foo=\"bar\",otel_scope_name=\"scope\","
               + "otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\"}(.|\\n)*");
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final Otel2PrometheusConverter converter =
       new Otel2PrometheusConverter(
@@ -322,7 +318,7 @@ class Otel2PrometheusConverterTest {
 
   @ParameterizedTest
   @MethodSource("labelValueSerializationArgs")
-  void labelValueSerialization(Attributes attributes) {
+  void labelValueSerialization(Attributes attributes, String expectedValue) {
     MetricData metricData =
         createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
 
@@ -333,46 +329,43 @@ class Otel2PrometheusConverterTest {
     assertThat(metricSnapshot).isPresent();
 
     Labels labels = metricSnapshot.get().getDataPoints().get(0).getLabels();
-    attributes.forEach(
-        (key, value) -> {
-          String labelValue = labels.get(key.getKey());
-          try {
-            String expectedValue;
-            if (key.getType() == AttributeType.STRING) {
-              expectedValue = (String) value;
-            } else if (key.getType() == AttributeType.VALUE) {
-              expectedValue = ((Value<?>) value).asString();
-            } else {
-              expectedValue = OBJECT_MAPPER.writeValueAsString(value);
-            }
-            assertThat(labelValue).isEqualTo(expectedValue);
-          } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-          }
-        });
+    String labelValue = labels.get("key");
+    assertThat(labelValue).isEqualTo(expectedValue);
   }
 
   private static Stream<Arguments> labelValueSerializationArgs() {
     return Stream.of(
-        Arguments.of(Attributes.of(stringKey("key"), "stringValue")),
-        Arguments.of(Attributes.of(booleanKey("key"), true)),
-        Arguments.of(Attributes.of(longKey("key"), Long.MAX_VALUE)),
-        Arguments.of(Attributes.of(doubleKey("key"), 0.12345)),
+        Arguments.of(Attributes.of(stringKey("key"), "stringValue"), "stringValue"),
+        Arguments.of(Attributes.of(booleanKey("key"), true), "true"),
+        Arguments.of(Attributes.of(longKey("key"), Long.MAX_VALUE), "9223372036854775807"),
+        Arguments.of(Attributes.of(doubleKey("key"), 0.12345), "0.12345"),
         Arguments.of(
             Attributes.of(
                 stringArrayKey("key"),
-                Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0))),
-        Arguments.of(Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false))),
+                Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0)),
+            "[\"stringValue1\",\"\\\"+\\\\\\\\\\\\+\\b+\\f+\\n+\\r+\\t+\\u0000\"]"),
         Arguments.of(
-            Attributes.of(longArrayKey("key"), Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE))),
+            Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false)),
+            "[true,false]"),
+        Arguments.of(
+            Attributes.of(longArrayKey("key"), Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE)),
+            "[-9223372036854775808,9223372036854775807]"),
         Arguments.of(
             Attributes.of(
-                doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE))),
-        Arguments.of(Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3}))),
+                doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE)),
+            "[4.9E-324,1.7976931348623157E308]"),
         Arguments.of(
-            Attributes.of(valueKey("key"), Value.of(KeyValue.of("nested", Value.of("value"))))),
-        Arguments.of(Attributes.of(valueKey("key"), Value.of(Value.of("string"), Value.of(123L)))),
-        Arguments.of(Attributes.of(valueKey("key"), Value.empty())));
+            Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})),
+            "AQID"),
+        Arguments.of(
+            Attributes.of(valueKey("key"), Value.of(KeyValue.of("nested", Value.of("value")))),
+            "[nested=value]"),
+        Arguments.of(
+            Attributes.of(valueKey("key"), Value.of(Value.of("string"), Value.of(123L))),
+            "[string, 123]"),
+        Arguments.of(
+            Attributes.of(valueKey("key"), Value.empty()),
+            ""));
   }
 
   static MetricData createSampleMetricData(

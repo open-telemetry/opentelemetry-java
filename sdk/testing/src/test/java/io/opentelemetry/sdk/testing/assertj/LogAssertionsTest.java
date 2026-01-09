@@ -318,7 +318,8 @@ public class LogAssertionsTest {
                 KeyValue.of(
                     "fooboola",
                     Value.of(Value.of(true), Value.of(true), Value.of(true), Value.of(false))),
-                KeyValue.of("fooany", Value.of("grim"))))
+                KeyValue.of("fooany", Value.of("grim")),
+                KeyValue.of("foobytes", Value.of(new byte[] {1, 2, 3}))))
         .emit();
     List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
     assertThat(logs).hasSize(1);
@@ -331,6 +332,7 @@ public class LogAssertionsTest {
         .hasBodyField("foolonga", 9, 0, 2, 1, 0)
         .hasBodyField("foodbla", 9.1, 0.2, 2.3, 1.4, 0.5)
         .hasBodyField("fooboola", true, true, true, false)
-        .hasBodyField("fooany", Value.of("grim"));
+        .hasBodyField("fooany", Value.of("grim"))
+        .hasBodyField("foobytes", Value.of(new byte[] {1, 2, 3}));
   }
 }

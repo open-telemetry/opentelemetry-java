@@ -12,7 +12,6 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -100,7 +99,11 @@ final class OtelToZipkinSpanTransformer {
 
     Attributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
-        (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
+        (key, value) -> {
+          if (key.getType() != AttributeType.VALUE) {
+            spanBuilder.putTag(key.getKey(), valueToString(key, value));
+          }
+        });
     int droppedAttributes = spanData.getTotalAttributeCount() - spanAttributes.size();
     if (droppedAttributes > 0) {
       spanBuilder.putTag(OTEL_DROPPED_ATTRIBUTES_COUNT, String.valueOf(droppedAttributes));
@@ -225,8 +228,7 @@ final class OtelToZipkinSpanTransformer {
       case DOUBLE_ARRAY:
         return commaSeparated((List<?>) attributeValue);
       case VALUE:
-        // TODO this should be json representation
-        return ((Value<?>) attributeValue).asString();
+        throw new IllegalArgumentException("Unsupported attribute type: VALUE");
     }
     throw new IllegalStateException("Unknown attribute type: " + type);
   }

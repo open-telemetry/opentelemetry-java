@@ -52,7 +52,6 @@ final class AttributeArrayAnyValueStatelessMarshaler<T>
             DoubleAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
-      // TODO this class is named *ArrayAnyValue*, does that mean it covers List<Value<?>> as well?
       default:
         throw new IllegalArgumentException("Unsupported attribute type.");
     }
@@ -83,7 +82,6 @@ final class AttributeArrayAnyValueStatelessMarshaler<T>
             (List<Double>) list,
             DoubleAnyValueStatelessMarshaler.INSTANCE,
             context);
-      // TODO this class is named *ArrayAnyValue*, does that mean it covers List<Value<?>> as well?
       default:
         throw new IllegalArgumentException("Unsupported attribute type.");
     }

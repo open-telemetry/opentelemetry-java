@@ -359,90 +359,273 @@ class AttributesTest {
   }
 
   @Test
-  void builder_valueTypes() {
-    // Test Value type attributes with various Value kinds
-    // Note: simple Value types (string, long, double, boolean) are coerced to their
-    // corresponding primitive AttributeTypes for consistent storage
+  void valueStoredAsString() {
+    // When putting a VALUE attribute with a string Value, it should be stored as STRING type
+    Attributes attributes = Attributes.builder().put(valueKey("key"), Value.of("test")).build();
 
-    // These Value types should be coerced to primitive types
-    AttributeKey<Value<?>> stringValueKey = valueKey("stringValue");
-    AttributeKey<Value<?>> longValueKey = valueKey("longValue");
-    AttributeKey<Value<?>> doubleValueKey = valueKey("doubleValue");
-    AttributeKey<Value<?>> booleanValueKey = valueKey("booleanValue");
+    // Should be stored as STRING type internally
+    assertThat(attributes.get(stringKey("key"))).isEqualTo("test");
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of("test"));
 
-    // These Value types cannot be coerced and remain as VALUE type
-    AttributeKey<Value<?>> bytesValueKey = valueKey("bytesValue");
-    AttributeKey<Value<?>> kvListValueKey = valueKey("kvListValue");
-    AttributeKey<Value<?>> heterogeneousArrayKey = valueKey("heterogeneousArray");
-    AttributeKey<Value<?>> emptyValueKey = valueKey("emptyValue");
+    // forEach should show STRING type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(stringKey("key"), "test"));
 
+    // asMap should show STRING type
+    assertThat(attributes.asMap()).containsExactly(entry(stringKey("key"), "test"));
+  }
+
+  @Test
+  void valueStoredAsLong() {
+    // When putting a VALUE attribute with a long Value, it should be stored as LONG type
+    Attributes attributes = Attributes.builder().put(valueKey("key"), Value.of(123L)).build();
+
+    // Should be stored as LONG type internally
+    assertThat(attributes.get(longKey("key"))).isEqualTo(123L);
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(123L));
+
+    // forEach should show LONG type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(longKey("key"), 123L));
+
+    // asMap should show LONG type
+    assertThat(attributes.asMap()).containsExactly(entry(longKey("key"), 123L));
+  }
+
+  @Test
+  void valueStoredAsDouble() {
+    // When putting a VALUE attribute with a double Value, it should be stored as DOUBLE type
+    Attributes attributes = Attributes.builder().put(valueKey("key"), Value.of(1.23)).build();
+
+    // Should be stored as DOUBLE type internally
+    assertThat(attributes.get(doubleKey("key"))).isEqualTo(1.23);
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(1.23));
+
+    // forEach should show DOUBLE type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(doubleKey("key"), 1.23));
+
+    // asMap should show DOUBLE type
+    assertThat(attributes.asMap()).containsExactly(entry(doubleKey("key"), 1.23));
+  }
+
+  @Test
+  void valueStoredAsBoolean() {
+    // When putting a VALUE attribute with a boolean Value, it should be stored as BOOLEAN type
+    Attributes attributes = Attributes.builder().put(valueKey("key"), Value.of(true)).build();
+
+    // Should be stored as BOOLEAN type internally
+    assertThat(attributes.get(booleanKey("key"))).isEqualTo(true);
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(true));
+
+    // forEach should show BOOLEAN type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(booleanKey("key"), true));
+
+    // asMap should show BOOLEAN type
+    assertThat(attributes.asMap()).containsExactly(entry(booleanKey("key"), true));
+  }
+
+  @Test
+  void valueStoredAsStringArray() {
+    // When putting a VALUE attribute with a homogeneous string array, it should be stored as
+    // STRING_ARRAY type
     Attributes attributes =
         Attributes.builder()
-            .put(stringValueKey, Value.of("stringVal"))
-            .put(longValueKey, Value.of(100L))
-            .put(doubleValueKey, Value.of(3.14))
-            .put(booleanValueKey, Value.of(true))
-            .put(bytesValueKey, Value.of(new byte[] {1, 2, 3}))
-            .put(kvListValueKey, Value.of(KeyValue.of("nested", Value.of("value"))))
-            .put(heterogeneousArrayKey, Value.of(Value.of("elem1"), Value.of(42L)))
-            .put(emptyValueKey, Value.empty())
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of("a"), Value.of("b"))))
             .build();
 
-    // Verify coerced values can be retrieved with primitive keys
-    assertThat(attributes.get(stringKey("stringValue"))).isEqualTo("stringVal");
-    assertThat(attributes.get(longKey("longValue"))).isEqualTo(100L);
-    assertThat(attributes.get(doubleKey("doubleValue"))).isEqualTo(3.14);
-    assertThat(attributes.get(booleanKey("booleanValue"))).isEqualTo(true);
+    // Should be stored as STRING_ARRAY type internally
+    assertThat(attributes.get(stringArrayKey("key"))).containsExactly("a", "b");
+    assertThat(attributes.get(valueKey("key")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of("a"), Value.of("b"))));
 
-    // Verify complex Value types that remain as VALUE type
-    assertThat(attributes.get(bytesValueKey)).isNotNull();
-    assertThat(attributes.get(bytesValueKey).getType()).isEqualTo(ValueType.BYTES);
-
-    assertThat(attributes.get(kvListValueKey)).isNotNull();
-    assertThat(attributes.get(kvListValueKey).getType()).isEqualTo(ValueType.KEY_VALUE_LIST);
-
-    assertThat(attributes.get(heterogeneousArrayKey)).isNotNull();
-    assertThat(attributes.get(heterogeneousArrayKey).getType()).isEqualTo(ValueType.ARRAY);
-
-    assertThat(attributes.get(emptyValueKey)).isNotNull();
-    assertThat(attributes.get(emptyValueKey).getType()).isEqualTo(ValueType.EMPTY);
-    assertThat(attributes.get(emptyValueKey).getValue()).isNull();
-
-    // Verify the total size
-    assertThat(attributes.size()).isEqualTo(8);
-
-    // Verify forEach sees the correct types
-    Map<AttributeKey, Object> entriesSeen = new LinkedHashMap<>();
+    // forEach should show STRING_ARRAY type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
-    assertThat(entriesSeen).hasSize(8);
+    assertThat(entriesSeen).containsExactly(entry(stringArrayKey("key"), Arrays.asList("a", "b")));
 
-    // Verify coerced keys have primitive types
-    assertThat(entriesSeen.keySet())
-        .filteredOn(key -> key.getKey().equals("stringValue"))
-        .allMatch(key -> key.getType() == AttributeType.STRING);
-    assertThat(entriesSeen.keySet())
-        .filteredOn(key -> key.getKey().equals("longValue"))
-        .allMatch(key -> key.getType() == AttributeType.LONG);
-    assertThat(entriesSeen.keySet())
-        .filteredOn(key -> key.getKey().equals("doubleValue"))
-        .allMatch(key -> key.getType() == AttributeType.DOUBLE);
-    assertThat(entriesSeen.keySet())
-        .filteredOn(key -> key.getKey().equals("booleanValue"))
-        .allMatch(key -> key.getType() == AttributeType.BOOLEAN);
+    // asMap should show STRING_ARRAY type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(stringArrayKey("key"), Arrays.asList("a", "b")));
+  }
 
-    // Verify complex types remain as VALUE type
-    assertThat(entriesSeen.keySet())
-        .filteredOn(key -> key.getKey().equals("bytesValue"))
-        .allMatch(key -> key.getType() == AttributeType.VALUE);
-    assertThat(entriesSeen.keySet())
-        .filteredOn(key -> key.getKey().equals("kvListValue"))
-        .allMatch(key -> key.getType() == AttributeType.VALUE);
-    assertThat(entriesSeen.keySet())
-        .filteredOn(key -> key.getKey().equals("heterogeneousArray"))
-        .allMatch(key -> key.getType() == AttributeType.VALUE);
-    assertThat(entriesSeen.keySet())
-        .filteredOn(key -> key.getKey().equals("emptyValue"))
-        .allMatch(key -> key.getType() == AttributeType.VALUE);
+  @Test
+  void valueStoredAsLongArray() {
+    // When putting a VALUE attribute with a homogeneous long array, it should be stored as
+    // LONG_ARRAY type
+    Attributes attributes =
+        Attributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(1L), Value.of(2L))))
+            .build();
+
+    // Should be stored as LONG_ARRAY type internally
+    assertThat(attributes.get(longArrayKey("key"))).containsExactly(1L, 2L);
+    assertThat(attributes.get(valueKey("key")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1L), Value.of(2L))));
+
+    // forEach should show LONG_ARRAY type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(longArrayKey("key"), Arrays.asList(1L, 2L)));
+
+    // asMap should show LONG_ARRAY type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(longArrayKey("key"), Arrays.asList(1L, 2L)));
+  }
+
+  @Test
+  void valueStoredAsDoubleArray() {
+    // When putting a VALUE attribute with a homogeneous double array, it should be stored as
+    // DOUBLE_ARRAY type
+    Attributes attributes =
+        Attributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))))
+            .build();
+
+    // Should be stored as DOUBLE_ARRAY type internally
+    assertThat(attributes.get(doubleArrayKey("key"))).containsExactly(1.1, 2.2);
+    assertThat(attributes.get(valueKey("key")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))));
+
+    // forEach should show DOUBLE_ARRAY type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(doubleArrayKey("key"), Arrays.asList(1.1, 2.2)));
+
+    // asMap should show DOUBLE_ARRAY type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(doubleArrayKey("key"), Arrays.asList(1.1, 2.2)));
+  }
+
+  @Test
+  void valueStoredAsBooleanArray() {
+    // When putting a VALUE attribute with a homogeneous boolean array, it should be stored as
+    // BOOLEAN_ARRAY type
+    Attributes attributes =
+        Attributes.builder()
+            .put(valueKey("key"), Value.of(Arrays.asList(Value.of(true), Value.of(false))))
+            .build();
+
+    // Should be stored as BOOLEAN_ARRAY type internally
+    assertThat(attributes.get(booleanArrayKey("key"))).containsExactly(true, false);
+    assertThat(attributes.get(valueKey("key")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(true), Value.of(false))));
+
+    // forEach should show BOOLEAN_ARRAY type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen)
+        .containsExactly(entry(booleanArrayKey("key"), Arrays.asList(true, false)));
+
+    // asMap should show BOOLEAN_ARRAY type
+    assertThat(attributes.asMap())
+        .containsExactly(entry(booleanArrayKey("key"), Arrays.asList(true, false)));
+  }
+
+  @Test
+  void simpleAttributeRetrievedAsValue() {
+    Attributes attributes =
+        Attributes.builder()
+            .put("string", "test")
+            .put("long", 123L)
+            .put("double", 1.23)
+            .put("boolean", true)
+            .put("stringArray", "a", "b")
+            .put("longArray", 1L, 2L)
+            .put("doubleArray", 1.1, 2.2)
+            .put("booleanArray", true, false)
+            .build();
+    assertThat(attributes.get(valueKey("string"))).isEqualTo(Value.of("test"));
+    assertThat(attributes.get(valueKey("long"))).isEqualTo(Value.of(123L));
+    assertThat(attributes.get(valueKey("double"))).isEqualTo(Value.of(1.23));
+    assertThat(attributes.get(valueKey("boolean"))).isEqualTo(Value.of(true));
+    assertThat(attributes.get(valueKey("stringArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of("a"), Value.of("b"))));
+    assertThat(attributes.get(valueKey("longArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1L), Value.of(2L))));
+    assertThat(attributes.get(valueKey("doubleArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))));
+    assertThat(attributes.get(valueKey("booleanArray")))
+        .isEqualTo(Value.of(Arrays.asList(Value.of(true), Value.of(false))));
+  }
+
+  @Test
+  void emptyValueArrayRetrievedAsAnyArrayType() {
+    Attributes attributes =
+        Attributes.builder().put(valueKey("key"), Value.of(Collections.emptyList())).build();
+    assertThat(attributes.get(stringArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(longArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(doubleArrayKey("key"))).isEmpty();
+    assertThat(attributes.get(booleanArrayKey("key"))).isEmpty();
+  }
+
+  @Test
+  void valueWithKeyValueList() {
+    // KEY_VALUE_LIST should be kept as VALUE type
+    Value<?> kvListValue = Value.of(Collections.emptyMap());
+    Attributes attributes = Attributes.builder().put(valueKey("key"), kvListValue).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(kvListValue);
+
+    // forEach should show VALUE type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), kvListValue));
+  }
+
+  @Test
+  void valueWithBytes() {
+    // BYTES should be kept as VALUE type
+    Value<?> bytesValue = Value.of(new byte[] {1, 2, 3});
+    Attributes attributes = Attributes.builder().put(valueKey("key"), bytesValue).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(bytesValue);
+
+    // forEach should show VALUE type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), bytesValue));
+  }
+
+  @Test
+  void valueWithNonHomogeneousArray() {
+    // Non-homogeneous array should be kept as VALUE type
+    Value<?> mixedArray = Value.of(Arrays.asList(Value.of("string"), Value.of(123L)));
+    Attributes attributes = Attributes.builder().put(valueKey("key"), mixedArray).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(mixedArray);
+
+    // forEach should show VALUE type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), mixedArray));
+  }
+
+  @Test
+  void valueWithNestedArray() {
+    // Array containing arrays should be kept as VALUE type
+    Value<?> nestedArray =
+        Value.of(
+            Arrays.asList(
+                Value.of(Arrays.asList(Value.of("a"), Value.of("b"))),
+                Value.of(Arrays.asList(Value.of("c"), Value.of("d")))));
+    Attributes attributes = Attributes.builder().put(valueKey("key"), nestedArray).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(nestedArray);
+
+    // forEach should show VALUE type
+    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), nestedArray));
   }
 
   @Test
