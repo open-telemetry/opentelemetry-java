@@ -5,14 +5,14 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
+import io.opentelemetry.exporter.zipkin.internal.copied.ComponentId;
+import io.opentelemetry.exporter.zipkin.internal.copied.ExporterInstrumentation;
+import io.opentelemetry.exporter.zipkin.internal.copied.InstrumentationUtil;
+import io.opentelemetry.exporter.zipkin.internal.copied.StandardComponentId;
+import io.opentelemetry.exporter.zipkin.internal.copied.ThrottlingLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.internal.ComponentId;
-import io.opentelemetry.sdk.internal.StandardComponentId;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
@@ -32,7 +32,12 @@ import zipkin2.reporter.Encoding;
  * This class was based on the <a
  * href="https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin">OpenCensus
  * zipkin exporter</a> code.
+ *
+ * @deprecated Zipkin exporter is deprecated in OpenTelemetry spec (see the <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/4715">PR</a>).
+ *     Expect this artifact to no longer be published in approximately 6 months (mid 2026).
  */
+@Deprecated
 public final class ZipkinSpanExporter implements SpanExporter {
 
   public static final Logger baseLogger = Logger.getLogger(ZipkinSpanExporter.class.getName());

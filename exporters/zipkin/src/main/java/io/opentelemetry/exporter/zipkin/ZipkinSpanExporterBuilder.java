@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -23,7 +22,14 @@ import zipkin2.reporter.BytesMessageSender;
 import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
-/** Builder class for {@link ZipkinSpanExporter}. */
+/**
+ * Builder class for {@link ZipkinSpanExporter}.
+ *
+ * @deprecated Zipkin exporter is deprecated in OpenTelemetry spec (see the <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/4715">PR</a>).
+ *     Expect this artifact to no longer be published in approximately 6 months (mid 2026).
+ */
+@Deprecated
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
   private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.getInstance();
@@ -242,5 +248,13 @@ public final class ZipkinSpanExporterBuilder {
         internalTelemetryVersion,
         endpoint,
         transformer);
+  }
+
+  // Copied from io.opentelemetry.api.internal.Utils to remove internal dependencies as part of
+  // https://github.com/open-telemetry/opentelemetry-java/issues/7863
+  private static void checkArgument(boolean isValid, String errorMessage) {
+    if (!isValid) {
+      throw new IllegalArgumentException(errorMessage);
+    }
   }
 }

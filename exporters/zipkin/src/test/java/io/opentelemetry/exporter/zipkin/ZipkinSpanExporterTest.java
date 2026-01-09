@@ -15,9 +15,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.exporter.zipkin.internal.copied.InstrumentationUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -41,6 +41,7 @@ import zipkin2.reporter.Encoding;
 import zipkin2.reporter.SpanBytesEncoder;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("deprecation") // testing deprecated code
 class ZipkinSpanExporterTest {
 
   @Mock private BytesMessageSender mockSender;
