@@ -103,7 +103,7 @@ public class MutableHistogramPointDataTest {
     assertThat(anotherPointData.hashCode()).isNotEqualTo(pointData.hashCode());
   }
 
-  @Test()
+  @Test
   void testBoundaries() {
     MutableHistogramPointData pointData = new MutableHistogramPointData(10);
     assertThatThrownBy(

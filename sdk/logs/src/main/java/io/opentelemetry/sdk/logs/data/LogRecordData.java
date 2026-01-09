@@ -82,4 +82,14 @@ public interface LogRecordData {
    * LogLimits#getMaxNumberOfAttributes()}.
    */
   int getTotalAttributeCount();
+
+  /**
+   * Returns the event name, or {@code null} if none is set.
+   *
+   * @since 1.50.0
+   */
+  @Nullable
+  default String getEventName() {
+    return null;
+  }
 }

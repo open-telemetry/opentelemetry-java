@@ -214,7 +214,7 @@ public abstract class CodedOutputStream {
   }
 
   /** Compute the number of bytes that would be needed to encode a {@code uint32} field. */
-  static int computeUInt32SizeNoTag(final int value) {
+  public static int computeUInt32SizeNoTag(final int value) {
     if ((value & (~0 << 7)) == 0) {
       return 1;
     }

@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-  implementation("com.google.errorprone:error_prone_core")
+  compileOnly("com.google.errorprone:error_prone_core")
 
   testImplementation("com.google.errorprone:error_prone_test_helpers")
 }
@@ -14,8 +14,8 @@ otelJava.moduleName.set("io.opentelemetry.javaagent.customchecks")
 // We also can't seem to use the toolchain without the "--release" option. So disable everything.
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_17
-  targetCompatibility = JavaVersion.VERSION_17
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
   toolchain {
     languageVersion.set(null as JavaLanguageVersion?)
   }
@@ -43,9 +43,9 @@ tasks {
     }
   }
 
-  // only test on java 17+
+  // only test on java 21+
   val testJavaVersion: String? by project
-  if (testJavaVersion != null && Integer.valueOf(testJavaVersion) < 17) {
+  if (testJavaVersion != null && Integer.valueOf(testJavaVersion) < 21) {
     test {
       enabled = false
     }
@@ -53,7 +53,7 @@ tasks {
 }
 
 tasks.withType<Test>().configureEach {
-  // required on jdk17
+  // required when accessing javac internals
   jvmArgs("--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED")
   jvmArgs("--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED")
   jvmArgs("--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED")
@@ -76,7 +76,12 @@ tasks.withType<Javadoc>().configureEach {
 configurations {
   named("errorprone") {
     dependencies.removeIf {
-      it is ProjectDependency && it.dependencyProject == project
+      it is ProjectDependency && it.name == project.name
     }
   }
+}
+
+// Skip OWASP dependencyCheck task on test module
+dependencyCheck {
+  skip = true
 }

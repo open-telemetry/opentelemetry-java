@@ -434,6 +434,7 @@ class ViewRegistryTest {
   }
 
   @Test
+  @SuppressLogger(ViewRegistry.class)
   void findViews_ApplyAdvice() {
     // use incompatible aggregation for histogram
     DefaultAggregationSelector aggregationSelector =
@@ -487,6 +488,7 @@ class ViewRegistryTest {
               assertThat(view)
                   .as("is the same as the default view, except the attributes processor")
                   .usingRecursiveComparison()
+                  .withStrictTypeChecking()
                   .ignoringFields("viewAttributesProcessor")
                   .isEqualTo(DEFAULT_REGISTERED_VIEW);
               assertThat(view)
@@ -519,6 +521,7 @@ class ViewRegistryTest {
               assertThat(view)
                   .as("is the same as the default view, except the attributes processor")
                   .usingRecursiveComparison()
+                  .withStrictTypeChecking()
                   .ignoringFields("viewAttributesProcessor")
                   .isEqualTo(DEFAULT_REGISTERED_VIEW);
               assertThat(view)

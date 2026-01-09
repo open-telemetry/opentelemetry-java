@@ -1,0 +1,16 @@
+Comparing source compatibility of opentelemetry-sdk-logs-1.46.0.jar against opentelemetry-sdk-logs-1.45.0.jar
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.ReadWriteLogRecord  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.lang.Object getAttribute(io.opentelemetry.api.common.AttributeKey<T>)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Attributes getAttributes()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Value<?> getBodyValue()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
+	+++  NEW METHOD: PUBLIC(+) long getObservedTimestampEpochNanos()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.Severity getSeverity()
+	+++  NEW METHOD: PUBLIC(+) java.lang.String getSeverityText()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.SpanContext getSpanContext()
+	+++  NEW METHOD: PUBLIC(+) long getTimestampEpochNanos()

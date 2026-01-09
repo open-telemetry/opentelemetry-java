@@ -9,11 +9,16 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Builder class for {@link BatchSpanProcessor}. */
 public final class BatchSpanProcessorBuilder {
+  private static final Logger logger = Logger.getLogger(BatchSpanProcessorBuilder.class.getName());
 
   // Visible for testing
   static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
@@ -30,7 +35,8 @@ public final class BatchSpanProcessorBuilder {
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
-  private MeterProvider meterProvider = MeterProvider.noop();
+  private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
+  private InternalTelemetryVersion telemetryVersion = InternalTelemetryVersion.LEGACY;
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
@@ -79,7 +85,7 @@ public final class BatchSpanProcessorBuilder {
   public BatchSpanProcessorBuilder setExporterTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    exporterTimeoutNanos = unit.toNanos(timeout);
+    exporterTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
@@ -106,9 +112,11 @@ public final class BatchSpanProcessorBuilder {
    * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
    *     dropping.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxQueueSize} is not positive.
    * @see BatchSpanProcessorBuilder#DEFAULT_MAX_QUEUE_SIZE
    */
   public BatchSpanProcessorBuilder setMaxQueueSize(int maxQueueSize) {
+    checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -140,7 +148,31 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessorBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = () -> meterProvider;
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
+   * metrics will not be collected.
+   *
+   * @since 1.58.0
+   */
+  public BatchSpanProcessorBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
     this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which metrics this processor records.
+   *
+   * @since 1.58.0
+   */
+  public BatchSpanProcessorBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion telemetryVersion) {
+    requireNonNull(telemetryVersion, "telemetryVersion");
+    this.telemetryVersion = telemetryVersion;
     return this;
   }
 
@@ -156,10 +188,18 @@ public final class BatchSpanProcessorBuilder {
    * @return a new {@link BatchSpanProcessor}.
    */
   public BatchSpanProcessor build() {
+    if (maxExportBatchSize > maxQueueSize) {
+      logger.log(
+          Level.WARNING,
+          "maxExportBatchSize should not exceed maxQueueSize. Setting maxExportBatchSize to {0} instead of {1}",
+          new Object[] {maxQueueSize, maxExportBatchSize});
+      maxExportBatchSize = maxQueueSize;
+    }
     return new BatchSpanProcessor(
         spanExporter,
         exportUnsampledSpans,
         meterProvider,
+        telemetryVersion,
         scheduleDelayNanos,
         maxQueueSize,
         maxExportBatchSize,

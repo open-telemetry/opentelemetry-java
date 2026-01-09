@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -16,7 +15,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Represents a complete profile, including sample types, samples, mappings to binaries, locations,
- * functions, string table, and additional metadata.
+ * and additional metadata.
  *
  * @see "profiles.proto::Profile"
  */
@@ -29,40 +28,14 @@ public interface ProfileData {
   /** Returns the instrumentation scope that generated this profile. */
   InstrumentationScopeInfo getInstrumentationScopeInfo();
 
-  /** A description of the samples associated with each Sample.value. */
-  List<ValueTypeData> getSampleTypes();
+  /** Returns the dictionary data of this profile. */
+  ProfileDictionaryData getProfileDictionaryData();
+
+  /** A description of the type associated with each Sample.value. */
+  ValueTypeData getSampleType();
 
   /** The set of samples recorded in this profile. */
   List<SampleData> getSamples();
-
-  /**
-   * Mapping from address ranges to the image/binary/library mapped into that address range.
-   * mapping[0] will be the main binary.
-   */
-  List<MappingData> getMappingTable();
-
-  /** Locations referenced by samples via location_indices. */
-  List<LocationData> getLocationTable();
-
-  /** Array of locations referenced by samples. */
-  List<Integer> getLocationIndices();
-
-  /** Functions referenced by locations. */
-  List<FunctionData> getFunctionTable();
-
-  /** Lookup table for attributes. */
-  Attributes getAttributeTable();
-
-  /** Represents a mapping between Attribute Keys and Units. */
-  List<AttributeUnitData> getAttributeUnits();
-
-  /** Lookup table for links. */
-  List<LinkData> getLinkTable();
-
-  /**
-   * A common table for strings referenced by various messages. string_table[0] must always be "".
-   */
-  List<String> getStringTable();
 
   /** Time of collection (UTC) represented as nanoseconds past the epoch. */
   long getTimeNanos();
@@ -81,9 +54,6 @@ public interface ProfileData {
   /** Free-form text associated with the profile. Indices into string table. */
   List<Integer> getCommentStrIndices();
 
-  /** Type of the preferred sample. Index into the string table. */
-  int getDefaultSampleTypeStringIndex();
-
   /**
    * Returns a globally unique identifier for a profile, as 32 character lowercase hex String. An ID
    * with all zeroes is considered invalid. This field is required.
@@ -99,13 +69,13 @@ public interface ProfileData {
   }
 
   /**
-   * Returns profile-wide attributes. Attribute keys MUST be unique (it is not allowed to have more
-   * than one attribute with the same key).
+   * Returns indexes of profile-wide attributes, referencing to Profile.attribute_table. Attribute
+   * keys MUST be unique (it is not allowed to have more than one attribute with the same key).
    *
    * @see
    *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#attribute"
    */
-  Attributes getAttributes();
+  List<Integer> getAttributeIndices();
 
   /**
    * Returns the total number of attributes that were recorded on this profile.

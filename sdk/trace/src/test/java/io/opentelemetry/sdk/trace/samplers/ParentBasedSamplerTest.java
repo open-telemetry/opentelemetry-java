@@ -410,6 +410,13 @@ class ParentBasedSamplerTest {
 
   @Test
   void equals() {
-    EqualsVerifier.forClass(ParentBasedSampler.class).verify();
+    EqualsVerifier.forClass(ParentBasedSampler.class)
+        .withNonnullFields(
+            "root",
+            "remoteParentSampled",
+            "remoteParentNotSampled",
+            "localParentSampled",
+            "localParentNotSampled")
+        .verify();
   }
 }

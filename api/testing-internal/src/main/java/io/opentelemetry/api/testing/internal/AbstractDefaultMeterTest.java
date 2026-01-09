@@ -25,7 +25,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for No-op {@link Meter}. */
-@SuppressLogger()
+@SuppressLogger
 public abstract class AbstractDefaultMeterTest {
   private final Meter meter = getMeter();
 

@@ -23,6 +23,9 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -82,19 +85,19 @@ public class OltpExporterBenchmark {
             .build();
     upstreamGrpcExporter =
         new GrpcExporter<>(
-            "otlp",
-            "span",
             new UpstreamGrpcSender<>(
                 MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null),
                 /* shutdownChannel= */ false,
                 10,
-                Collections::emptyMap),
-            MeterProvider::noop);
+                Collections::emptyMap,
+                null),
+            InternalTelemetryVersion.LATEST,
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
+            MeterProvider::noop,
+            "http://localhost");
 
     okhttpGrpcSender =
         new GrpcExporter<>(
-            "otlp",
-            "span",
             new OkHttpGrpcSender<>(
                 URI.create("http://localhost:" + server.activeLocalPort())
                     .resolve(OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
@@ -105,12 +108,17 @@ public class OltpExporterBenchmark {
                 Collections::emptyMap,
                 null,
                 null,
+                null,
                 null),
-            MeterProvider::noop);
+            InternalTelemetryVersion.LATEST,
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
+            MeterProvider::noop,
+            "http://localhost");
 
     httpExporter =
         new HttpExporterBuilder<TraceRequestMarshaler>(
-                "otlp", "span", "http://localhost:" + server.activeLocalPort() + "/v1/traces")
+                StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
+                "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();
   }
 

@@ -1,48 +1,138 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:best-practices',
+    'helpers:pinGitHubActionDigestsToSemver',
   ],
-  "packageRules": [
+  ignorePresets: [
+    'workarounds:javaLTSVersions', // Allow all Java major versions, not just LTS
+  ],
+  ignorePaths: [], // overwrite default ignore which includes **/test/**
+                   // used to update docker image versions used in Java test files
+  packageRules: [
     {
-      "matchPackageNames": [
-        "io.opentelemetry.proto:opentelemetry-proto",
-        "io.opentelemetry.semconv:opentelemetry-semconv-incubating"
+      // this is to reduce the number of renovate PRs
+      matchManagers: [
+        'github-actions',
+        'dockerfile',
+      ],
+      extends: [
+        'schedule:weekly',
+      ],
+      groupName: 'weekly update',
+    },
+    {
+      matchPackageNames: [
+        'io.opentelemetry.contrib:opentelemetry-aws-xray-propagator',
+        'io.opentelemetry.proto:opentelemetry-proto',
+        'io.opentelemetry.semconv:opentelemetry-semconv-incubating',
       ],
       // Renovate's default behavior is only to update from unstable -> unstable if it's for the
       // major.minor.patch, under the assumption that you would want to update to the stable version
       // of that release instead of the unstable version for a future release
       // (TODO remove once the artifacts above release stable versions)
-      "ignoreUnstable": false,
-      "allowedVersions": "!/\\-SNAPSHOT$/"
+      ignoreUnstable: false,
+      allowedVersions: '!/\\-SNAPSHOT$/',
+    },
+    {
+      // junit 6+ requires Java 17+
+      matchPackageNames: [
+        'org.junit:**',
+        'org.junit.jupiter:**',
+      ],
+      matchUpdateTypes: [
+        'major',
+      ],
+      enabled: false,
     },
     {
       // junit-pioneer 2+ requires Java 11+
-      "matchPackageNames": ["org.junit-pioneer:junit-pioneer"],
-      "matchUpdateTypes": ["major"],
-      "enabled": false
+      matchPackageNames: [
+        'org.junit-pioneer:junit-pioneer',
+      ],
+      matchUpdateTypes: [
+        'major',
+      ],
+      enabled: false,
     },
     {
       // mockito 5+ requires Java 11+
-      "matchPackagePrefixes": ["org.mockito:"],
-      "matchUpdateTypes": ["major"],
-      "enabled": false
+      matchUpdateTypes: [
+        'major',
+      ],
+      enabled: false,
+      matchPackageNames: [
+        'org.mockito:**',
+      ],
+    },
+    {
+      // snakeyaml-engine 3+ requires Java 11+
+      matchUpdateTypes: [
+        'major',
+      ],
+      enabled: false,
+      matchPackageNames: [
+        'org.snakeyaml:snakeyaml-engine'
+      ],
     },
     {
       // jqf-fuzz version 1.8+ requires Java 11+
-      "matchPackageNames": ["edu.berkeley.cs.jqf:jqf-fuzz"],
-      "matchUpdateTypes": ["major", "minor"],
-      "enabled": false
+      matchPackageNames: [
+        'edu.berkeley.cs.jqf:jqf-fuzz',
+      ],
+      matchUpdateTypes: [
+        'major',
+        'minor',
+      ],
+      enabled: false,
     },
     {
       // pinned version for compatibility
-      "matchPackageNames": ["org.jetbrains.kotlinx:kotlinx-coroutines-core"],
-      "matchCurrentVersion": "1.5.2",
-      "enabled": false
+      matchPackageNames: [
+        'org.jetbrains.kotlinx:kotlinx-coroutines-core',
+      ],
+      matchCurrentVersion: '1.5.2',
+      enabled: false,
     },
     {
-      "matchPackagePrefixes": ["com.diffplug.spotless"],
-      "groupName": "spotless packages"
+      groupName: 'spotless packages',
+      matchPackageNames: [
+        'com.diffplug.spotless',
+        'com.diffplug.spotless:**',
+      ],
+    },
+    {
+      // equals verifier v4+ requires java 17+
+      groupName: 'nl.jqno.equalsverifier',
+      matchPackageNames: [ 'equalsverifier'],
+      matchUpdateTypes: [ 'major' ],
+      enabled: false
     }
-  ]
+  ],
+  customManagers: [
+    {
+      customType: 'regex',
+      datasourceTemplate: 'java-version',
+      managerFilePatterns: [
+        '.github/workflows/**',
+      ],
+      matchStrings: [
+        '(?<currentValue>\\d+) # renovate\\(java-version\\)',
+      ],
+      depNameTemplate: 'java',
+      extractVersionTemplate: '^(?<version>\\d+)',
+    },
+    {
+      customType: 'regex',
+      datasourceTemplate: 'docker',
+      managerFilePatterns: [
+        '**/*.java',
+      ],
+      matchStrings: [
+        '"(?<depName>otel/opentelemetry-collector-contrib):(?<currentValue>[^@"]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?"',
+      ],
+      autoReplaceStringTemplate: '"{{depName}}:{{newValue}}{{#if newDigest}}@{{newDigest}}{{/if}}"',
+      versioningTemplate: 'docker',
+    },
+  ],
 }

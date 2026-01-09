@@ -13,8 +13,10 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +39,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -63,11 +66,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -128,7 +136,7 @@ class SdkSpanTest {
         spanData,
         Attributes.empty(),
         Collections.emptyList(),
-        Collections.singletonList(link),
+        singletonList(link),
         SPAN_NAME,
         START_EPOCH_NANOS,
         START_EPOCH_NANOS,
@@ -244,8 +252,8 @@ class SdkSpanTest {
       verifySpanData(
           spanData,
           expectedAttributes,
-          Collections.singletonList(event),
-          Collections.singletonList(link),
+          singletonList(event),
+          singletonList(link),
           SPAN_NEW_NAME,
           START_EPOCH_NANOS,
           0,
@@ -275,8 +283,8 @@ class SdkSpanTest {
     verifySpanData(
         spanData,
         expectedAttributes,
-        Collections.singletonList(event),
-        Collections.singletonList(link),
+        singletonList(event),
+        singletonList(link),
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
@@ -459,7 +467,8 @@ class SdkSpanTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // Testing deprecated code
+  @SuppressWarnings("deprecation")
+  // Testing deprecated code
   void getInstrumentationLibraryInfo() {
     SdkSpan span = createTestSpan(SpanKind.CLIENT);
     try {
@@ -545,13 +554,10 @@ class SdkSpanTest {
       span.setAttribute(doubleArrayKey("NullArrayDoubleKey"), null);
       span.setAttribute(booleanArrayKey("NullArrayBooleanKey"), null);
       // These should be maintained
-      span.setAttribute(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}));
-      span.setAttribute(
-          stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}));
-      span.setAttribute(
-          doubleArrayKey("ArrayWithNullDoubleKey"), Arrays.asList(new Double[] {null}));
-      span.setAttribute(
-          booleanArrayKey("ArrayWithNullBooleanKey"), Arrays.asList(new Boolean[] {null}));
+      span.setAttribute(longArrayKey("ArrayWithNullLongKey"), singletonList(null));
+      span.setAttribute(stringArrayKey("ArrayWithNullStringKey"), singletonList(null));
+      span.setAttribute(doubleArrayKey("ArrayWithNullDoubleKey"), singletonList(null));
+      span.setAttribute(booleanArrayKey("ArrayWithNullBooleanKey"), singletonList(null));
     } finally {
       span.end();
     }
@@ -684,10 +690,10 @@ class SdkSpanTest {
             .put(doubleArrayKey("NullArrayDoubleKey"), (Double[]) null)
             .put(booleanArrayKey("NullArrayBooleanKey"), (Boolean[]) null)
             // These should be maintained
-            .put(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}))
-            .put(stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}))
-            .put(doubleArrayKey("ArrayWithNullDoubleKey"), Arrays.asList(new Double[] {null}))
-            .put(booleanArrayKey("ArrayWithNullBooleanKey"), Arrays.asList(new Boolean[] {null}))
+            .put(longArrayKey("ArrayWithNullLongKey"), singletonList(null))
+            .put(stringArrayKey("ArrayWithNullStringKey"), singletonList(null))
+            .put(doubleArrayKey("ArrayWithNullDoubleKey"), singletonList(null))
+            .put(booleanArrayKey("ArrayWithNullBooleanKey"), singletonList(null))
             .build();
 
     try {
@@ -937,7 +943,8 @@ class SdkSpanTest {
                 .build(),
             parentSpanId,
             null,
-            null);
+            null,
+            ExceptionAttributeResolver.getDefault());
     try {
       Span span1 = createTestSpan(SpanKind.INTERNAL);
       Span span2 = createTestSpan(SpanKind.INTERNAL);
@@ -1027,12 +1034,14 @@ class SdkSpanTest {
             Context.root(),
             SpanLimits.getDefault(),
             spanProcessor,
+            ExceptionAttributeResolver.getDefault(),
             testClock,
             resource,
             null,
             null, // exercises the fault-in path
             0,
-            0);
+            0,
+            () -> {});
     SdkSpan linkedSpan = createTestSpan(SpanKind.INTERNAL);
     span.addLink(linkedSpan.getSpanContext());
 
@@ -1273,6 +1282,54 @@ class SdkSpanTest {
   }
 
   @Test
+  void recordException_SpanLimits() {
+    SdkSpan span = createTestSpan(SpanLimits.builder().setMaxNumberOfAttributes(2).build());
+    span.recordException(
+        new IllegalStateException("error"),
+        Attributes.builder().put("key1", "value").put("key2", "value").build());
+
+    List<EventData> events = span.toSpanData().getEvents();
+    assertThat(events.size()).isEqualTo(1);
+    EventData event = events.get(0);
+    assertThat(event.getAttributes().size()).isEqualTo(2);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(5);
+    assertThat(event.getTotalAttributeCount() - event.getAttributes().size()).isPositive();
+  }
+
+  @Test
+  void recordException_CustomResolver() {
+    ExceptionAttributeResolver exceptionAttributeResolver =
+        new ExceptionAttributeResolver() {
+          @Override
+          public void setExceptionAttributes(
+              AttributeSetter attributeSetter, Throwable throwable, int maxAttributeLength) {
+            attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_TYPE, "type");
+            attributeSetter.setAttribute(
+                ExceptionAttributeResolver.EXCEPTION_STACKTRACE, "stacktrace");
+          }
+        };
+
+    SdkSpan span =
+        createTestSpan(
+            SpanKind.INTERNAL,
+            SpanLimits.getDefault(),
+            parentSpanId,
+            null,
+            singletonList(link),
+            exceptionAttributeResolver);
+
+    span.recordException(new IllegalStateException("error"));
+
+    List<EventData> events = span.toSpanData().getEvents();
+    assertThat(events.size()).isEqualTo(1);
+    EventData event = events.get(0);
+    assertThat(event)
+        .hasAttributesSatisfyingExactly(
+            equalTo(ExceptionAttributeResolver.EXCEPTION_TYPE, "type"),
+            equalTo(ExceptionAttributeResolver.EXCEPTION_STACKTRACE, "stacktrace"));
+  }
+
+  @Test
   void badArgsIgnored() {
     SdkSpan span = createTestRootSpan();
 
@@ -1323,28 +1380,76 @@ class SdkSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
+            ExceptionAttributeResolver.getDefault(),
             testClock,
             resource,
             AttributesMap.create(
                 spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength()),
             Collections.emptyList(),
             1,
-            0);
+            0,
+            () -> {});
     verify(spanProcessor, never()).onStart(any(), any());
 
     span.end();
     verify(spanProcessor, never()).onEnd(any());
   }
 
-  @Test
-  void setStatusCannotOverrideStatusOK() {
+  @ParameterizedTest
+  @MethodSource("setStatusArgs")
+  void setStatus(Consumer<Span> spanConsumer, StatusData expectedSpanData) {
     SdkSpan testSpan = createTestRootSpan();
-    testSpan.setStatus(StatusCode.OK);
-    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
-    testSpan.setStatus(StatusCode.ERROR);
-    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
-    testSpan.setStatus(StatusCode.UNSET);
-    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
+    spanConsumer.accept(testSpan);
+    assertThat(testSpan.toSpanData().getStatus()).isEqualTo(expectedSpanData);
+  }
+
+  private static Stream<Arguments> setStatusArgs() {
+    return Stream.of(
+        // Default status is UNSET
+        Arguments.of(spanConsumer(span -> {}), StatusData.unset()),
+        // Simple cases
+        Arguments.of(spanConsumer(span -> span.setStatus(StatusCode.OK)), StatusData.ok()),
+        Arguments.of(spanConsumer(span -> span.setStatus(StatusCode.ERROR)), StatusData.error()),
+        // UNSET is ignored
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.OK).setStatus(StatusCode.UNSET)),
+            StatusData.ok()),
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.ERROR).setStatus(StatusCode.UNSET)),
+            StatusData.error()),
+        // Description is ignored unless status is ERROR
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.UNSET, "description")),
+            StatusData.unset()),
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.OK, "description")), StatusData.ok()),
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.ERROR, "description")),
+            StatusData.create(StatusCode.ERROR, "description")),
+        // ERROR is ignored if status is OK
+        Arguments.of(
+            spanConsumer(
+                span -> span.setStatus(StatusCode.OK).setStatus(StatusCode.ERROR, "description")),
+            StatusData.ok()),
+        // setStatus ignored after span is ended
+        Arguments.of(
+            spanConsumer(
+                span -> {
+                  span.end();
+                  span.setStatus(StatusCode.OK);
+                }),
+            StatusData.unset()),
+        Arguments.of(
+            spanConsumer(
+                span -> {
+                  span.end();
+                  span.setStatus(StatusCode.ERROR);
+                }),
+            StatusData.unset()));
+  }
+
+  private static Consumer<Span> spanConsumer(Consumer<Span> spanConsumer) {
+    return spanConsumer;
   }
 
   private SdkSpan createTestSpanWithAttributes(Map<AttributeKey, Object> attributes) {
@@ -1358,7 +1463,8 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         null,
         attributesMap,
-        Collections.singletonList(link));
+        singletonList(link),
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestRootSpan() {
@@ -1367,17 +1473,28 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         SpanId.getInvalid(),
         null,
-        Collections.singletonList(link));
+        singletonList(link),
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(SpanKind kind) {
     return createTestSpan(
-        kind, SpanLimits.getDefault(), parentSpanId, null, Collections.singletonList(link));
+        kind,
+        SpanLimits.getDefault(),
+        parentSpanId,
+        null,
+        singletonList(link),
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(SpanLimits config) {
     return createTestSpan(
-        SpanKind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
+        SpanKind.INTERNAL,
+        config,
+        parentSpanId,
+        null,
+        singletonList(link),
+        ExceptionAttributeResolver.getDefault());
   }
 
   private SdkSpan createTestSpan(
@@ -1385,7 +1502,8 @@ class SdkSpanTest {
       SpanLimits config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      @Nullable List<LinkData> links) {
+      @Nullable List<LinkData> links,
+      ExceptionAttributeResolver exceptionAttributeResolver) {
     List<LinkData> linksCopy = links == null ? new ArrayList<>() : new ArrayList<>(links);
 
     SdkSpan span =
@@ -1402,12 +1520,14 @@ class SdkSpanTest {
             Context.root(),
             config,
             spanProcessor,
+            exceptionAttributeResolver,
             testClock,
             resource,
             attributes,
             linksCopy,
             linksCopy.size(),
-            0);
+            0,
+            () -> {});
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(Context.root(), span);
     return span;
   }
@@ -1489,12 +1609,14 @@ class SdkSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
+            ExceptionAttributeResolver.getDefault(),
             clock,
             resource,
             attributesWithCapacity,
-            Collections.singletonList(link1),
+            singletonList(link1),
             1,
-            0);
+            0,
+            () -> {});
     long startEpochNanos = clock.now();
     clock.advance(Duration.ofMillis(4));
     long firstEventEpochNanos = clock.now();
@@ -1519,7 +1641,7 @@ class SdkSpanTest {
         result,
         attributesWithCapacity,
         events,
-        Collections.singletonList(link1),
+        singletonList(link1),
         name,
         startEpochNanos,
         endEpochNanos,

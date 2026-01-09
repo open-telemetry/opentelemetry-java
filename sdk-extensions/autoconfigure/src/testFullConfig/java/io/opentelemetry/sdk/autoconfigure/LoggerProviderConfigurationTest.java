@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.trace.internal.JcTools;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -118,7 +116,7 @@ class LoggerProviderConfigurationTest {
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.blrp.schedule.delay", "100000");
     properties.put("otel.blrp.max.queue.size", "2");
-    properties.put("otel.blrp.max.export.batch.size", "3");
+    properties.put("otel.blrp.max.export.batch.size", "2");
     properties.put("otel.blrp.export.timeout", "4");
 
     try (BatchLogRecordProcessor processor =
@@ -136,11 +134,12 @@ class LoggerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("exporterTimeoutNanos")
                     .isEqualTo(TimeUnit.MILLISECONDS.toNanos(4));
-                assertThat(worker).extracting("maxExportBatchSize").isEqualTo(3);
+                assertThat(worker).extracting("maxExportBatchSize").isEqualTo(2);
                 assertThat(worker)
                     .extracting("queue")
                     .isInstanceOfSatisfying(
-                        Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2));
+                        ArrayBlockingQueue.class,
+                        queue -> assertThat(queue.remainingCapacity()).isEqualTo(2));
                 assertThat(worker)
                     .extracting("logRecordExporter")
                     .isInstanceOf(SystemOutLogRecordExporter.class);

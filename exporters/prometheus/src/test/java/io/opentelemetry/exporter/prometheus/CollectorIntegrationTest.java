@@ -60,7 +60,8 @@ import org.testcontainers.utility.DockerImageName;
 class CollectorIntegrationTest {
 
   private static final String COLLECTOR_IMAGE =
-      "ghcr.io/open-telemetry/opentelemetry-java/otel-collector";
+      "otel/opentelemetry-collector-contrib:0.143.1@sha256:f051aff195ad50ed5ad9d95bcdd51d7258200c937def3797cf830366ed62e034";
+
   private static final Integer COLLECTOR_HEALTH_CHECK_PORT = 13133;
 
   private static int prometheusPort;
@@ -134,13 +135,6 @@ class CollectorIntegrationTest {
             // Resource attributes derived from the prometheus scrape config
             stringKeyValue("service.name", "app"),
             stringKeyValue("service.instance.id", "host.testcontainers.internal:" + prometheusPort),
-            // net.host.name, net.host.port and http.scheme are superseded by server.address,
-            // server.port, and url.scheme respectively and will be removed by default in a future
-            // collector release
-            // https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/32829
-            stringKeyValue("net.host.name", "host.testcontainers.internal"),
-            stringKeyValue("net.host.port", String.valueOf(prometheusPort)),
-            stringKeyValue("http.scheme", "http"),
             stringKeyValue("server.address", "host.testcontainers.internal"),
             stringKeyValue("server.port", String.valueOf(prometheusPort)),
             stringKeyValue("url.scheme", "http"),
@@ -186,12 +180,13 @@ class CollectorIntegrationTest {
     NumberDataPoint requestTotalDataPoint = requestTotalSum.getDataPoints(0);
     assertThat(requestTotalDataPoint.getAsDouble()).isEqualTo(3.0);
     assertThat(requestTotalDataPoint.getAttributesList())
-        .containsExactlyInAnyOrder(
-            stringKeyValue("animal", "bear"),
-            // Scope name and version are serialized as attributes to disambiguate metrics with the
-            // same name in different scopes
-            stringKeyValue("otel_scope_name", "test"),
-            stringKeyValue("otel_scope_version", "1.0.0"));
+        .containsExactlyInAnyOrder(stringKeyValue("animal", "bear"));
+    // Scope name and version are serialized as attributes to disambiguate metrics with the
+    // same name in different scopes
+    // TODO: potentially add these back or remove entirely, see
+    // https://github.com/open-telemetry/opentelemetry-java/issues/7544
+    // stringKeyValue("otel_scope_name", "test"),
+    // stringKeyValue("otel_scope_version", "1.0.0"));
   }
 
   private static KeyValue stringKeyValue(String key, String value) {

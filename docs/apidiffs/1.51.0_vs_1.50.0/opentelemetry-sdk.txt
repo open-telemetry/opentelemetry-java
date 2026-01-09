@@ -1,0 +1,2 @@
+Comparing source compatibility of opentelemetry-sdk-1.51.0.jar against opentelemetry-sdk-1.50.0.jar
+No changes.

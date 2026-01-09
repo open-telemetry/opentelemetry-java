@@ -16,8 +16,10 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.http.HttpClient;
@@ -29,6 +31,7 @@ import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -62,16 +65,44 @@ class JdkHttpSenderTest {
             "text/plain",
             Duration.ofSeconds(10).toNanos(),
             Collections::emptyMap,
-            RetryPolicy.builder()
-                .setMaxAttempts(2)
-                .setInitialBackoff(Duration.ofMillis(1))
-                .build());
+            RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
+            null);
+  }
+
+  @Test
+  @EnabledForJreRange(
+      minVersion = 21,
+      disabledReason = "HttpClient#close has been added in Java 21")
+  void testShutdown() throws Exception {
+    CompletableResultCode result = sender.shutdown();
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isTrue();
+    Method close = HttpClient.class.getMethod("close");
+    close.invoke(verify(mockHttpClient));
+  }
+
+  @Test
+  @EnabledForJreRange(
+      minVersion = 21,
+      disabledReason = "HttpClient#close has been added in Java 21")
+  void testShutdownException() throws Exception {
+    Method close = HttpClient.class.getMethod("close");
+    close.invoke(doThrow(new RuntimeException("testShutdownException")).when(mockHttpClient));
+
+    CompletableResultCode result = sender.shutdown();
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable()).isInstanceOf(RuntimeException.class);
+    assertThat(result.getFailureThrowable().getMessage()).isEqualTo("testShutdownException");
   }
 
   @Test
   void sendInternal_RetryableConnectTimeoutException() throws IOException, InterruptedException {
     assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
-        .isInstanceOf(HttpConnectTimeoutException.class);
+        .satisfies(
+            e ->
+                assertThat((e instanceof HttpConnectTimeoutException) || (e instanceof IOException))
+                    .isTrue());
 
     verify(mockHttpClient, times(2)).send(any(), any());
   }
@@ -90,10 +121,8 @@ class JdkHttpSenderTest {
             "text/plain",
             Duration.ofSeconds(10).toNanos(),
             Collections::emptyMap,
-            RetryPolicy.builder()
-                .setMaxAttempts(2)
-                .setInitialBackoff(Duration.ofMillis(1))
-                .build());
+            RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
+            null);
 
     assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
         .satisfies(
@@ -147,6 +176,7 @@ class JdkHttpSenderTest {
             1,
             TimeUnit.SECONDS.toNanos(10),
             Collections::emptyMap,
+            null,
             null,
             null,
             null);

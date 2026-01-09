@@ -6,12 +6,14 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.mockito.Mockito.spy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -26,11 +28,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ResourceFactoryTest {
 
-  private SpiHelper spiHelper = SpiHelper.create(MetricExporterFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(SpiHelper.create(ResourceFactoryTest.class.getClassLoader()));
 
   @Test
   void create() {
-    spiHelper = spy(spiHelper);
     assertThat(
             ResourceFactory.getInstance()
                 .create(
@@ -44,18 +46,12 @@ class ResourceFactoryTest {
                                 new AttributeNameValueModel()
                                     .withName("shape")
                                     .withValue("circle"))),
-                    spiHelper,
-                    Collections.emptyList()))
+                    context))
         .isEqualTo(
             Resource.getDefault().toBuilder()
+                .put("shape", "circle")
                 .put("service.name", "my-service")
                 .put("key", "val")
-                .put("shape", "circle")
-                // From ResourceComponentProvider
-                .put("color", "red")
-                // From ResourceOrderedSecondComponentProvider, which takes priority over
-                // ResourceOrderedFirstComponentProvider
-                .put("order", "second")
                 .build());
   }
 
@@ -65,14 +61,19 @@ class ResourceFactoryTest {
       @Nullable List<String> included, @Nullable List<String> excluded, Resource expectedResource) {
     ResourceModel resourceModel =
         new ResourceModel()
-            .withDetectors(
-                new DetectorsModel()
+            .withDetectionDevelopment(
+                new ExperimentalResourceDetectionModel()
+                    .withDetectors(
+                        Arrays.asList(
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("order_first", null),
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("order_second", null),
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("shape_color", null)))
                     .withAttributes(
-                        new DetectorAttributesModel()
-                            .withIncluded(included)
-                            .withExcluded(excluded)));
-    Resource resource =
-        ResourceFactory.getInstance().create(resourceModel, spiHelper, Collections.emptyList());
+                        new IncludeExcludeModel().withIncluded(included).withExcluded(excluded)));
+    Resource resource = ResourceFactory.getInstance().create(resourceModel, context);
     assertThat(resource).isEqualTo(expectedResource);
   }
 
@@ -139,5 +140,43 @@ class ResourceFactoryTest {
             Collections.singletonList("*o*"),
             Collections.singletonList("order"),
             Resource.getDefault().toBuilder().put("color", "red").build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createInvalidDetectorsArgs")
+  void createWithDetectors_Invalid(ResourceModel model, String expectedMessage) {
+    assertThatThrownBy(() -> ResourceFactory.getInstance().create(model, context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage(expectedMessage);
+  }
+
+  private static Stream<Arguments> createInvalidDetectorsArgs() {
+    return Stream.of(
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("foo", null)))),
+            "No component provider detected for io.opentelemetry.sdk.resources.Resource with name \"foo\"."),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("foo", null)
+                                    .withAdditionalProperty("bar", null)))),
+            "resource detector must have exactly one entry but has 2: [foo,bar]"),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withDetectors(
+                            Collections.singletonList(new ExperimentalResourceDetectorModel()))),
+            "resource detector must have exactly one entry but has 0"));
   }
 }

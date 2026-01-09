@@ -13,7 +13,6 @@ import com.linecorp.armeria.client.WebClient;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.lang.reflect.Field;
@@ -32,7 +31,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @BeforeEach
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventLoggerProvider.resetForTest();
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -75,7 +73,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Test
   void globalOpenTelemetry_AutoConfigureDisabled() {
     // Autoconfigure is disabled by default and enabled via otel.java.global-autoconfigure.enabled
-    assertThat(GlobalOpenTelemetry.get()).isSameAs(OpenTelemetry.noop());
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(OpenTelemetry.noop());
 
     logs.assertContains(
         "AutoConfiguredOpenTelemetrySdk found on classpath but automatic configuration is disabled."

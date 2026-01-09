@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +53,7 @@ final class UpstreamGrpcService implements GrpcService {
     }
 
     try {
-      return Futures.getUnchecked(stub.export(exportRequest));
+      return Objects.requireNonNull(Futures.getUnchecked(stub.export(exportRequest)));
     } catch (Throwable t) {
       Status status = Status.fromThrowable(t);
 

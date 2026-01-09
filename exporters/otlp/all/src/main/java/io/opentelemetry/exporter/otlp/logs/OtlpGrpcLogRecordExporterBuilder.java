@@ -11,17 +11,19 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
-import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -58,8 +60,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   OtlpGrpcLogRecordExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            "otlp",
-            "log",
+            StandardComponentId.ExporterType.OTLP_GRPC_LOG_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerLogsServiceGrpc::newFutureStub,
@@ -143,13 +144,12 @@ public final class OtlpGrpcLogRecordExporterBuilder {
 
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
-   * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * method "gzip" and "none" are supported out of the box. Additional compression methods can be
+   * supported by providing custom {@link Compressor} implementations via the service loader.
    */
   public OtlpGrpcLogRecordExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
-    delegate.setCompression(compressor);
+    delegate.setCompression(compressionMethod);
     return this;
   }
 
@@ -245,6 +245,19 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   *
+   * @since 1.51.0
+   */
+  public OtlpGrpcLogRecordExporterBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetryVersion(schemaVersion);
+    return this;
+  }
+
+  /**
    * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
    *
    * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
@@ -255,6 +268,39 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   public OtlpGrpcLogRecordExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
+    return this;
+  }
+
+  /**
+   * Set the {@link ClassLoader} used to load the sender API. Variant of {@link
+   * #setComponentLoader(ComponentLoader)}.
+   *
+   * @since 1.48.0
+   */
+  public OtlpGrpcLogRecordExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
+    requireNonNull(serviceClassLoader, "serviceClassLoader");
+    return setComponentLoader(ComponentLoader.forClassLoader(serviceClassLoader));
+  }
+
+  /** Set the {@link ComponentLoader} used to load the sender API. */
+  public OtlpGrpcLogRecordExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    delegate.setComponentLoader(componentLoader);
+    return this;
+  }
+
+  /**
+   * Set the {@link ExecutorService} used to execute requests.
+   *
+   * <p>NOTE: By calling this method, you are opting into managing the lifecycle of the {@code
+   * executorService}. {@link ExecutorService#shutdown()} will NOT be called when this exporter is
+   * shutdown.
+   *
+   * @since 1.49.0
+   */
+  public OtlpGrpcLogRecordExporterBuilder setExecutorService(ExecutorService executorService) {
+    requireNonNull(executorService, "executorService");
+    delegate.setExecutorService(executorService);
     return this;
   }
 

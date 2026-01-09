@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.lang.reflect.InvocationTargetException;
@@ -29,27 +28,21 @@ public final class SdkMeterProviderUtil {
 
   private SdkMeterProviderUtil() {}
 
-  /**
-   * Reflectively assign the {@link ExemplarFilter} to the {@link SdkMeterProviderBuilder}.
-   *
-   * @param sdkMeterProviderBuilder the builder
-   */
-  public static void setExemplarFilter(
-      SdkMeterProviderBuilder sdkMeterProviderBuilder, ExemplarFilter exemplarFilter) {
+  /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProvider}. */
+  public static void setMeterConfigurator(
+      SdkMeterProvider sdkMeterProvider, ScopeConfigurator<MeterConfig> scopeConfigurator) {
     try {
       Method method =
-          SdkMeterProviderBuilder.class.getDeclaredMethod(
-              "setExemplarFilter", ExemplarFilter.class);
+          SdkMeterProvider.class.getDeclaredMethod("setMeterConfigurator", ScopeConfigurator.class);
       method.setAccessible(true);
-      method.invoke(sdkMeterProviderBuilder, exemplarFilter);
+      method.invoke(sdkMeterProvider, scopeConfigurator);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling setExemplarFilter on SdkMeterProviderBuilder", e);
+      throw new IllegalStateException("Error calling setMeterConfigurator on SdkMeterProvider", e);
     }
   }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProviderBuilder}. */
-  public static void setMeterConfigurator(
+  public static SdkMeterProviderBuilder setMeterConfigurator(
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       ScopeConfigurator<MeterConfig> meterConfigurator) {
     try {
@@ -62,10 +55,11 @@ public final class SdkMeterProviderUtil {
       throw new IllegalStateException(
           "Error calling setMeterConfigurator on SdkMeterProviderBuilder", e);
     }
+    return sdkMeterProviderBuilder;
   }
 
   /** Reflectively add a tracer configurator condition to the {@link SdkMeterProviderBuilder}. */
-  public static void addMeterConfiguratorCondition(
+  public static SdkMeterProviderBuilder addMeterConfiguratorCondition(
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       Predicate<InstrumentationScopeInfo> scopeMatcher,
       MeterConfig meterConfig) {
@@ -79,6 +73,7 @@ public final class SdkMeterProviderUtil {
       throw new IllegalStateException(
           "Error calling addMeterConfiguratorCondition on SdkMeterProviderBuilder", e);
     }
+    return sdkMeterProviderBuilder;
   }
 
   /**
@@ -117,21 +112,6 @@ public final class SdkMeterProviderUtil {
       method.invoke(viewBuilder, attributesProcessor);
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException("Error adding AttributesProcessor to ViewBuilder", e);
-    }
-  }
-
-  /**
-   * Reflectively set the {@code cardinalityLimit} on the {@link ViewBuilder}.
-   *
-   * @param viewBuilder the builder
-   */
-  public static void setCardinalityLimit(ViewBuilder viewBuilder, int cardinalityLimit) {
-    try {
-      Method method = ViewBuilder.class.getDeclaredMethod("setCardinalityLimit", int.class);
-      method.setAccessible(true);
-      method.invoke(viewBuilder, cardinalityLimit);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-      throw new IllegalStateException("Error setting cardinalityLimit on ViewBuilder", e);
     }
   }
 

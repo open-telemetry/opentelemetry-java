@@ -36,8 +36,6 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
       assertThat(spanExporter.toString())
           .matches(
               "OtlpGrpcSpanExporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=span, "
                   + "endpoint=http://localhost:4317, "
                   + "endpointPath=.*, "
                   + "timeoutNanos="
@@ -49,7 +47,10 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
                   + "compressorEncoding=null, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
                   + "retryPolicy=RetryPolicy\\{.*\\}, "
-                  + "memoryMode=IMMUTABLE_DATA"
+                  + "componentLoader=.*, "
+                  + "exporterType=OTLP_GRPC_SPAN_EXPORTER, "
+                  + "internalTelemetrySchemaVersion=LEGACY, "
+                  + "memoryMode=REUSABLE_DATA"
                   + "\\}");
     }
   }

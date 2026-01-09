@@ -6,6 +6,8 @@
 package io.opentelemetry.api.incubator.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.testing.internal.AbstractDefaultTracerTest;
@@ -27,17 +29,20 @@ class ExtendedDefaultTracerTest extends AbstractDefaultTracerTest {
   }
 
   @Test
-  public void incubatingApiIsLoaded() {
+  void incubatingApiIsLoaded() {
     Tracer tracer = TracerProvider.noop().get("test");
     assertThat(tracer).isSameAs(OpenTelemetry.noop().getTracer("test"));
 
-    assertThat(tracer).isInstanceOf(ExtendedTracer.class);
+    assertThat(tracer)
+        .isInstanceOfSatisfying(
+            ExtendedTracer.class,
+            extendedTracer -> assertThat(extendedTracer.isEnabled()).isFalse());
     assertThat(tracer.spanBuilder("test")).isInstanceOf(ExtendedSpanBuilder.class);
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  public void incubatingApi() {
+  void incubatingApi() {
     ExtendedSpanBuilder spanBuilder =
         (ExtendedSpanBuilder) ExtendedDefaultTracer.getNoop().spanBuilder("test");
     assertThat(spanBuilder.setParentFrom(null, null)).isSameAs(spanBuilder);
@@ -45,21 +50,21 @@ class ExtendedDefaultTracerTest extends AbstractDefaultTracerTest {
     SpanRunnable<RuntimeException> spanRunnable = Mockito.mock(SpanRunnable.class);
 
     spanBuilder.startAndRun(spanRunnable);
-    Mockito.verify(spanRunnable).runInSpan();
-    Mockito.reset(spanRunnable);
+    verify(spanRunnable).runInSpan();
+    reset(spanRunnable);
 
     spanBuilder.startAndRun(spanRunnable, null);
-    Mockito.verify(spanRunnable).runInSpan();
-    Mockito.reset(spanRunnable);
+    verify(spanRunnable).runInSpan();
+    reset(spanRunnable);
 
     SpanCallable<String, RuntimeException> spanCallable = Mockito.mock(SpanCallable.class);
 
     spanBuilder.startAndCall(spanCallable);
-    Mockito.verify(spanCallable).callInSpan();
-    Mockito.reset(spanCallable);
+    verify(spanCallable).callInSpan();
+    reset(spanCallable);
 
     spanBuilder.startAndCall(spanCallable, null);
-    Mockito.verify(spanCallable).callInSpan();
-    Mockito.reset(spanCallable);
+    verify(spanCallable).callInSpan();
+    reset(spanCallable);
   }
 }

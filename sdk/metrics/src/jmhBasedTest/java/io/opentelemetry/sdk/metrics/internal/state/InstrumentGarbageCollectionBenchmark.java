@@ -7,12 +7,11 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.InstrumentTester;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.TestInstrumentsState;
 import java.time.Duration;
@@ -35,7 +34,7 @@ import org.openjdk.jmh.annotations.Warmup;
 
 /**
  * Run this through {@link InstrumentGarbageCollectionBenchmarkTest}, as it runs it embedded with
- * the GC profiler which what this test designed for (No need for command line run)
+ * the GC profiler which what this test designed for (No need for command line run).
  *
  * <p>This test creates 10 asynchronous counters (any asynchronous instrument will do as the code
  * path is almost the same for all async instrument types), and 1000 attribute sets. Each time the
@@ -95,8 +94,8 @@ public class InstrumentGarbageCollectionBenchmark {
 
       attributesList = AttributesGenerator.generate(cardinality);
 
-      // Disable examplars
-      SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
+      // Disable exemplars
+      builder.setExemplarFilter(ExemplarFilter.alwaysOff());
 
       sdkMeterProvider = builder.build();
       testInstrumentsState =

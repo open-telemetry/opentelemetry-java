@@ -80,7 +80,6 @@ tasks {
 // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
 
 val sourcesPath by configurations.creating {
-  isVisible = false
   isCanBeResolved = true
   isCanBeConsumed = false
   extendsFrom(configurations.implementation.get())
@@ -92,7 +91,6 @@ val sourcesPath by configurations.creating {
 }
 
 val coverageDataPath by configurations.creating {
-  isVisible = false
   isCanBeResolved = true
   isCanBeConsumed = false
   extendsFrom(configurations.implementation.get())

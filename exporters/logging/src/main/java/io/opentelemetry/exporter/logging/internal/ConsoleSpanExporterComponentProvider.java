@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.logging.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class ConsoleSpanExporterComponentProvider implements ComponentProvider<SpanExporter> {
+public final class ConsoleSpanExporterComponentProvider implements ComponentProvider {
 
   @Override
   public Class<SpanExporter> getType() {
@@ -29,7 +29,7 @@ public final class ConsoleSpanExporterComponentProvider implements ComponentProv
   }
 
   @Override
-  public SpanExporter create(StructuredConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config) {
     return LoggingSpanExporter.create();
   }
 }

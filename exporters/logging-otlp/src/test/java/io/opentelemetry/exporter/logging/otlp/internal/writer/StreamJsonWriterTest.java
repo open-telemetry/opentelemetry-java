@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import com.fasterxml.jackson.core.JsonGenerator;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 @SuppressWarnings("SystemOut")
+@SuppressLogger(StreamJsonWriter.class)
 class StreamJsonWriterTest {
 
   @RegisterExtension

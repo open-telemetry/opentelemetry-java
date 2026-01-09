@@ -5,9 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor.setIncludes;
-
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
@@ -75,7 +74,7 @@ public final class ViewBuilder {
    */
   public ViewBuilder setAttributeFilter(Set<String> keysToRetain) {
     Objects.requireNonNull(keysToRetain, "keysToRetain");
-    return setAttributeFilter(setIncludes(keysToRetain));
+    return setAttributeFilter(IncludeExcludePredicate.createExactMatching(keysToRetain, null));
   }
 
   /**

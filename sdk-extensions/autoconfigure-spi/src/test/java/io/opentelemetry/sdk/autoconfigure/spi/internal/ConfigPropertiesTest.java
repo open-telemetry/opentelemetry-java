@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;
@@ -21,6 +22,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class ConfigPropertiesTest {
+
+  private static final ComponentLoader COMPONENT_LOADER =
+      ComponentLoader.forClassLoader(ConfigPropertiesTest.class.getClassLoader());
 
   @Test
   void allValid() {
@@ -246,7 +250,7 @@ class ConfigPropertiesTest {
     expectedMap.put("bear", "growl");
 
     Map<String, String> map = makeTestProps();
-    ConfigProperties properties = DefaultConfigProperties.create(map);
+    ConfigProperties properties = DefaultConfigProperties.create(map, COMPONENT_LOADER);
     assertThat(properties.getBoolean("test.boolean", false)).isTrue();
     assertThat(properties.getString("test.string", "nah")).isEqualTo("str");
     assertThat(properties.getDouble("test.double", 65.535)).isEqualTo(5.4);
@@ -260,7 +264,7 @@ class ConfigPropertiesTest {
 
   @Test
   void defaultMethodsFallBack() {
-    ConfigProperties properties = DefaultConfigProperties.create(emptyMap());
+    ConfigProperties properties = DefaultConfigProperties.create(emptyMap(), COMPONENT_LOADER);
     assertThat(properties.getBoolean("foo", true)).isTrue();
     assertThat(properties.getString("foo", "bar")).isEqualTo("bar");
     assertThat(properties.getDouble("foo", 65.535)).isEqualTo(65.535);
@@ -271,7 +275,7 @@ class ConfigPropertiesTest {
 
   @Test
   void defaultCollectionTypes() {
-    ConfigProperties properties = DefaultConfigProperties.create(emptyMap());
+    ConfigProperties properties = DefaultConfigProperties.create(emptyMap(), COMPONENT_LOADER);
     assertThat(properties.getList("foo", Arrays.asList("1", "2", "3")))
         .containsExactly("1", "2", "3");
     assertThat(properties.getList("foo")).isEmpty();

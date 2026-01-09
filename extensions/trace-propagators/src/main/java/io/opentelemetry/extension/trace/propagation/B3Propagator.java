@@ -20,7 +20,7 @@ import javax.annotation.concurrent.Immutable;
  * href=https://github.com/openzipkin/b3-propagation>openzipkin/b3-propagation</a>.
  *
  * <p>Also see <a
- * href=https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/context/api-propagators.md#b3-requirements>B3
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/context/api-propagators.md#b3-requirements">B3
  * Requirements</a>
  *
  * <p>To register the default B3 propagator, which injects a single header, use:

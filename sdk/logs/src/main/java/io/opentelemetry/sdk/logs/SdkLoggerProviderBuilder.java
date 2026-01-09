@@ -9,9 +9,11 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -37,6 +39,9 @@ public final class SdkLoggerProviderBuilder {
   private Clock clock = Clock.getDefault();
   private ScopeConfiguratorBuilder<LoggerConfig> loggerConfiguratorBuilder =
       LoggerConfig.configuratorBuilder();
+  private ExceptionAttributeResolver exceptionAttributeResolver =
+      ExceptionAttributeResolver.getDefault();
+  private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
 
   SdkLoggerProviderBuilder() {}
 
@@ -97,6 +102,25 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Add a log processor as first. {@link LogRecordProcessor#onEmit(Context, ReadWriteLogRecord)}
+   * will be called each time a log is emitted by {@link Logger} instances obtained from the {@link
+   * SdkLoggerProvider}.
+   *
+   * <p>Compared to {@link SdkLoggerProviderBuilder#addLogRecordProcessor(LogRecordProcessor)}, this
+   * method adds the processor to the beginning of the processor pipeline. So the {@code processor}
+   * given will be executed before than the other processors already added.
+   *
+   * @param processor the log processor
+   * @return this
+   * @since 1.50.0
+   */
+  public SdkLoggerProviderBuilder addLogRecordProcessorFirst(LogRecordProcessor processor) {
+    requireNonNull(processor, "processor");
+    logRecordProcessors.add(0, processor);
+    return this;
+  }
+
+  /**
    * Assign a {@link Clock}.
    *
    * @param clock The clock to use for all temporal needs.
@@ -150,12 +174,46 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Set the exception attribute resolver, which resolves {@code exception.*} attributes an
+   * exception is set on a log.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setExceptionAttributeResolver(SdkLoggerProviderBuilder,
+   * ExceptionAttributeResolver)}.
+   */
+  SdkLoggerProviderBuilder setExceptionAttributeResolver(
+      ExceptionAttributeResolver exceptionAttributeResolver) {
+    requireNonNull(exceptionAttributeResolver, "exceptionAttributeResolver");
+    this.exceptionAttributeResolver = exceptionAttributeResolver;
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to generate <a
+   * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
+   * Metrics</a>.
+   *
+   * @since 1.58.0
+   */
+  public SdkLoggerProviderBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    this.meterProvider = meterProvider;
+    return this;
+  }
+
+  /**
    * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
     return new SdkLoggerProvider(
-        resource, logLimitsSupplier, logRecordProcessors, clock, loggerConfiguratorBuilder.build());
+        resource,
+        logLimitsSupplier,
+        logRecordProcessors,
+        clock,
+        loggerConfiguratorBuilder.build(),
+        exceptionAttributeResolver,
+        meterProvider);
   }
 }

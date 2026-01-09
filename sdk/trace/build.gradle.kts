@@ -1,5 +1,3 @@
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
-
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
@@ -22,8 +20,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
-  implementation(project(":api:incubator"))
-
+  compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk:trace-shaded-deps"))
 
   annotationProcessor("com.google.auto.value:auto-value")
@@ -65,10 +62,19 @@ dependencies {
   jmh("org.testcontainers:testcontainers") // testContainer for OTLP collector
 }
 
+testing {
+  suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":sdk:testing"))
+        implementation(project(":api:incubator"))
+      }
+    }
+  }
+}
+
 tasks {
-  withType<AnimalSniffer>().configureEach {
-    // We catch NoClassDefFoundError to fallback to non-jctools queues.
-    exclude("**/internal/shaded/jctools/**")
-    exclude("**/internal/JcTools*")
+  check {
+    dependsOn(testing.suites)
   }
 }

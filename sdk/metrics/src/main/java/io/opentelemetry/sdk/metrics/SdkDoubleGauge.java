@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGaugeBuilder;
+import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
@@ -16,15 +14,14 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
-import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkDoubleGauge extends AbstractInstrument implements ExtendedDoubleGauge {
+class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
 
-  private final SdkMeter sdkMeter;
-  private final WriteableMetricStorage storage;
+  final SdkMeter sdkMeter;
+  final WriteableMetricStorage storage;
 
-  private SdkDoubleGauge(
+  SdkDoubleGauge(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
     this.sdkMeter = sdkMeter;
@@ -42,20 +39,14 @@ final class SdkDoubleGauge extends AbstractInstrument implements ExtendedDoubleG
   }
 
   @Override
-  public void set(double increment) {
-    set(increment, Attributes.empty());
+  public void set(double value) {
+    set(value, Attributes.empty());
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
-
-  static final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder {
-    private final InstrumentBuilder builder;
+  static class SdkDoubleGaugeBuilder implements DoubleGaugeBuilder {
+    final InstrumentBuilder builder;
 
     SdkDoubleGaugeBuilder(SdkMeter sdkMeter, String name) {
-
       builder =
           new InstrumentBuilder(name, InstrumentType.GAUGE, InstrumentValueType.DOUBLE, sdkMeter);
     }
@@ -75,12 +66,6 @@ final class SdkDoubleGauge extends AbstractInstrument implements ExtendedDoubleG
     @Override
     public SdkDoubleGauge build() {
       return builder.buildSynchronousInstrument(SdkDoubleGauge::new);
-    }
-
-    @Override
-    public ExtendedDoubleGaugeBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      builder.setAdviceAttributes(attributes);
-      return this;
     }
 
     @Override

@@ -17,10 +17,10 @@ import javax.annotation.concurrent.Immutable;
 public interface LocationData {
 
   /**
-   * The index of the corresponding profile.Mapping for this location. It can be unset if the
-   * mapping is unknown or not applicable for this profile type.
+   * The index of the corresponding profile.Mapping for this location. It can be 0 if the mapping is
+   * unknown or not applicable for this profile type.
    */
-  Integer getMappingIndex();
+  int getMappingIndex();
 
   /** The instruction address for this location, if available. */
   long getAddress();
@@ -31,12 +31,6 @@ public interface LocationData {
    */
   List<LineData> getLines();
 
-  /**
-   * Provides an indication that multiple symbols map to this location's address, for example due to
-   * identical code folding by the linker.
-   */
-  boolean isFolded();
-
   /** References to attributes in Profile.attribute_table. */
-  List<Integer> getAttributes();
+  List<Integer> getAttributeIndices();
 }

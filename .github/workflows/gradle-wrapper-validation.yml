@@ -1,16 +1,17 @@
 name: Gradle wrapper validation
+
 on:
-  pull_request:
-    paths:
-      - '**/gradle/wrapper/**'
   push:
-    paths:
-      - '**/gradle/wrapper/**'
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-  validation:
+  gradle-wrapper-validation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - uses: gradle/actions/wrapper-validation@v4.2.2
+      # this needs to be in its own workflow in order to make OSSF scorecard happy
+      - uses: gradle/actions/wrapper-validation@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0

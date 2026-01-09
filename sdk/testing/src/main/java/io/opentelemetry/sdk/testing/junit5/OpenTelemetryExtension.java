@@ -9,8 +9,10 @@ import static io.opentelemetry.sdk.testing.assertj.TracesAssert.assertThat;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -86,7 +88,11 @@ public final class OpenTelemetryExtension
 
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(
+                        W3CTraceContextPropagator.getInstance(),
+                        W3CBaggagePropagator.getInstance())))
             .setTracerProvider(tracerProvider)
             .setMeterProvider(meterProvider)
             .setLoggerProvider(loggerProvider)

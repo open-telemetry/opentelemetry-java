@@ -28,8 +28,10 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
@@ -47,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -1028,6 +1031,34 @@ class SdkMeterProviderTest {
                     .hasName("async-counter")
                     .hasLongSumSatisfying(
                         sum -> sum.isCumulative().hasPointsSatisfying(point -> point.hasValue(1))));
+  }
+
+  private static ScopeConfigurator<MeterConfig> flipConfigurator(boolean enabled) {
+    return scopeInfo -> enabled ? MeterConfig.disabled() : MeterConfig.enabled();
+  }
+
+  @Test
+  void propagatesEnablementToMeterDirectly() {
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
+    SdkMeter meter = (SdkMeter) meterProvider.get("test");
+    boolean isEnabled = meter.isMeterEnabled();
+
+    meterProvider.setMeterConfigurator(flipConfigurator(isEnabled));
+
+    Assertions.assertThat(meter.isMeterEnabled()).isEqualTo(!isEnabled);
+  }
+
+  @Test
+  void propagatesEnablementToMeterByUtil() {
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
+    SdkMeter sdkMeter = (SdkMeter) sdkMeterProvider.get("test");
+    boolean isEnabled = sdkMeter.isMeterEnabled();
+
+    SdkMeterProviderUtil.setMeterConfigurator(sdkMeterProvider, flipConfigurator(isEnabled));
+
+    Assertions.assertThat(sdkMeter.isMeterEnabled()).isEqualTo(!isEnabled);
   }
 
   private static void registerViewForAllTypes(

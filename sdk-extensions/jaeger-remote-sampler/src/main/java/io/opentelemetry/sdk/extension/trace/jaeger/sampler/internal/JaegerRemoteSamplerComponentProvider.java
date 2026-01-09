@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -19,7 +20,7 @@ import java.time.Duration;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class JaegerRemoteSamplerComponentProvider implements ComponentProvider<Sampler> {
+public class JaegerRemoteSamplerComponentProvider implements ComponentProvider {
   @Override
   public Class<Sampler> getType() {
     return Sampler.class;
@@ -27,26 +28,28 @@ public class JaegerRemoteSamplerComponentProvider implements ComponentProvider<S
 
   @Override
   public String getName() {
-    return "jaeger_remote";
+    return "jaeger_remote/development";
   }
 
   @Override
-  public Sampler create(StructuredConfigProperties config) {
+  public Sampler create(DeclarativeConfigProperties config) {
     JaegerRemoteSamplerBuilder builder = JaegerRemoteSampler.builder();
 
-    // Optional configuration
     String endpoint = config.getString("endpoint");
-    if (endpoint != null) {
-      builder.setEndpoint(endpoint);
+    if (endpoint == null) {
+      throw new DeclarativeConfigException("jaeger remote sampler endpoint is required");
     }
+    builder.setEndpoint(endpoint);
+
+    DeclarativeConfigProperties initialSamplerModel = config.getStructured("initial_sampler");
+    if (initialSamplerModel == null) {
+      throw new DeclarativeConfigException("jaeger remote sampler initial_sampler is required");
+    }
+    builder.setInitialSampler(DeclarativeConfiguration.createSampler(initialSamplerModel));
+
     Long pollingIntervalMs = config.getLong("internal");
     if (pollingIntervalMs != null) {
       builder.setPollingInterval(Duration.ofMillis(pollingIntervalMs));
-    }
-    StructuredConfigProperties initialSamplerModel = config.getStructured("initial_sampler");
-    if (initialSamplerModel != null) {
-      Sampler initialSampler = FileConfiguration.createSampler(initialSamplerModel);
-      builder.setInitialSampler(initialSampler);
     }
 
     return builder.build();

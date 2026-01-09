@@ -44,13 +44,17 @@ class BaggageCodec {
     for (int i = 0; i < bytes.length; i++) {
       int b = bytes[i];
       if (b == ESCAPE_CHAR) {
-        try {
-          int u = digit16(bytes[++i]);
-          int l = digit16(bytes[++i]);
-          buffer.write((char) ((u << 4) + l));
-        } catch (ArrayIndexOutOfBoundsException e) { // FIXME
-          throw new IllegalArgumentException("Invalid URL encoding: ", e);
+        if (i + 1 >= bytes.length) {
+          return buffer.toByteArray();
         }
+        int u = digit16(bytes[++i]);
+
+        if (i + 1 >= bytes.length) {
+          return buffer.toByteArray();
+        }
+        int l = digit16(bytes[++i]);
+
+        buffer.write((char) ((u << 4) + l));
       } else {
         buffer.write(b);
       }

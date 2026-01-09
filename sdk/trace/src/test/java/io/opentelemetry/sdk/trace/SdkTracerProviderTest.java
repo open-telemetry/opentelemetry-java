@@ -8,7 +8,11 @@ package io.opentelemetry.sdk.trace;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
@@ -18,7 +22,11 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,11 +43,11 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SdkTracerProviderTest {
   @Mock private SpanProcessor spanProcessor;
-  private SdkTracerProvider tracerFactory;
+  private SdkTracerProvider tracerProvider;
 
   @BeforeEach
   void setUp() {
-    tracerFactory = SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
+    tracerProvider = SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     when(spanProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
@@ -134,34 +142,35 @@ class SdkTracerProviderTest {
 
   @Test
   void defaultGet() {
-    assertThat(tracerFactory.get("test")).isInstanceOf(SdkTracer.class);
+    assertThat(tracerProvider.get("test")).isInstanceOf(SdkTracer.class);
   }
 
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(tracerFactory.get("test")).isSameAs(tracerFactory.get("test"));
-    assertThat(tracerFactory.get("test"))
-        .isSameAs(tracerFactory.get("test", null))
-        .isSameAs(tracerFactory.tracerBuilder("test").build());
+    assertThat(tracerProvider.get("test")).isSameAs(tracerProvider.get("test"));
+    assertThat(tracerProvider.get("test"))
+        .isSameAs(tracerProvider.get("test", null))
+        .isSameAs(tracerProvider.tracerBuilder("test").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
-    assertThat(tracerFactory.get("test", "version"))
-        .isSameAs(tracerFactory.get("test", "version"))
-        .isSameAs(tracerFactory.tracerBuilder("test").setInstrumentationVersion("version").build());
+    assertThat(tracerProvider.get("test", "version"))
+        .isSameAs(tracerProvider.get("test", "version"))
+        .isSameAs(
+            tracerProvider.tracerBuilder("test").setInstrumentationVersion("version").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersionAndSchema() {
     assertThat(
-            tracerFactory
+            tracerProvider
                 .tracerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
                 .build())
         .isSameAs(
-            tracerFactory
+            tracerProvider
                 .tracerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
@@ -176,12 +185,41 @@ class SdkTracerProviderTest {
             .setSchemaUrl("http://url")
             .build();
     Tracer tracer =
-        tracerFactory
+        tracerProvider
             .tracerBuilder(expected.getName())
             .setInstrumentationVersion(expected.getVersion())
             .setSchemaUrl(expected.getSchemaUrl())
             .build();
     assertThat(((SdkTracer) tracer).getInstrumentationScopeInfo()).isEqualTo(expected);
+  }
+
+  @Test
+  void propagatesEnablementToTracerDirectly() {
+    propagatesEnablementToTracer(true);
+  }
+
+  @Test
+  void propagatesEnablementToTracerByUtil() {
+    propagatesEnablementToTracer(false);
+  }
+
+  void propagatesEnablementToTracer(boolean directly) {
+    SdkTracer tracer = (SdkTracer) tracerProvider.get("test");
+    boolean isEnabled = tracer.isEnabled();
+    ScopeConfigurator<TracerConfig> flipConfigurator =
+        new ScopeConfigurator<TracerConfig>() {
+          @Override
+          public TracerConfig apply(InstrumentationScopeInfo scopeInfo) {
+            return isEnabled ? TracerConfig.disabled() : TracerConfig.enabled();
+          }
+        };
+    // all in the same thread, so should see enablement change immediately
+    if (directly) {
+      tracerProvider.setTracerConfigurator(flipConfigurator);
+    } else {
+      SdkTracerProviderUtil.setTracerConfigurator(tracerProvider, flipConfigurator);
+    }
+    assertThat(tracer.isEnabled()).isEqualTo(!isEnabled);
   }
 
   @Test
@@ -195,58 +233,76 @@ class SdkTracerProviderTest {
 
   @Test
   void shutdown() {
-    tracerFactory.shutdown();
+    tracerProvider.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
   }
 
   @Test
   void close() {
-    tracerFactory.close();
+    tracerProvider.close();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
   }
 
   @Test
   void forceFlush() {
-    tracerFactory.forceFlush();
+    tracerProvider.forceFlush();
     Mockito.verify(spanProcessor, Mockito.times(1)).forceFlush();
   }
 
   @Test
   @SuppressLogger(SdkTracerProvider.class)
   void shutdownTwice_OnlyFlushSpanProcessorOnce() {
-    tracerFactory.shutdown();
+    tracerProvider.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
-    tracerFactory.shutdown(); // the second call will be ignored
+    tracerProvider.shutdown(); // the second call will be ignored
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
   }
 
   @Test
   void returnNoopSpanAfterShutdown() {
-    tracerFactory.shutdown();
-    Span span = tracerFactory.get("noop").spanBuilder("span").startSpan();
+    tracerProvider.shutdown();
+    Span span = tracerProvider.get("noop").spanBuilder("span").startSpan();
     assertThat(span.getSpanContext().isValid()).isFalse();
     span.end();
   }
 
   @Test
   void suppliesDefaultTracerForNullName() {
-    SdkTracer tracer = (SdkTracer) tracerFactory.get(null);
+    SdkTracer tracer = (SdkTracer) tracerProvider.get(null);
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
 
-    tracer = (SdkTracer) tracerFactory.get(null, null);
+    tracer = (SdkTracer) tracerProvider.get(null, null);
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
   }
 
   @Test
   void suppliesDefaultTracerForEmptyName() {
-    SdkTracer tracer = (SdkTracer) tracerFactory.get("");
+    SdkTracer tracer = (SdkTracer) tracerProvider.get("");
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
 
-    tracer = (SdkTracer) tracerFactory.get("", "");
+    tracer = (SdkTracer) tracerProvider.get("", "");
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
+  }
+
+  @Test
+  void exceptionAttributeResolver() {
+    int maxAttributeLength = 5;
+    SdkTracerProviderBuilder builder =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(spanProcessor)
+            .setSpanLimits(
+                SpanLimits.builder().setMaxAttributeValueLength(maxAttributeLength).build());
+    ExceptionAttributeResolver exceptionAttributeResolver =
+        spy(ExceptionAttributeResolver.getDefault());
+    SdkTracerProviderUtil.setExceptionAttributeResolver(builder, exceptionAttributeResolver);
+
+    Exception exception = new Exception("error");
+    builder.build().get("tracer").spanBuilder("span").startSpan().recordException(exception).end();
+
+    verify(exceptionAttributeResolver).setExceptionAttributes(any(), any(), eq(maxAttributeLength));
   }
 }

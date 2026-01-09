@@ -15,11 +15,12 @@ dependencies {
 
   implementation(project(":exporters:common"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
+  compileOnly(project(":api:incubator"))
 
   implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")
 
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.linecorp.armeria:armeria")
-  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }

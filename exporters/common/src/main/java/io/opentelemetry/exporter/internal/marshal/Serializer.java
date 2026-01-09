@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
@@ -535,7 +536,11 @@ public abstract class Serializer implements AutoCloseable {
     if (!messages.isEmpty()) {
       RepeatedElementWriter<T> writer = context.getInstance(key, RepeatedElementWriter::new);
       writer.initialize(field, this, marshaler, context);
-      messages.forEach(writer);
+      try {
+        messages.forEach(writer);
+      } catch (UncheckedIOException e) {
+        throw e.getCause();
+      }
     }
 
     writeEndRepeated();
@@ -559,7 +564,11 @@ public abstract class Serializer implements AutoCloseable {
       RepeatedElementPairWriter<K, V> writer =
           context.getInstance(key, RepeatedElementPairWriter::new);
       writer.initialize(field, this, marshaler, context);
-      messages.forEach(writer);
+      try {
+        messages.forEach(writer);
+      } catch (UncheckedIOException e) {
+        throw e.getCause();
+      }
     }
 
     writeEndRepeated();
@@ -582,7 +591,11 @@ public abstract class Serializer implements AutoCloseable {
       RepeatedElementPairWriter<AttributeKey<?>, Object> writer =
           context.getInstance(ATTRIBUTES_WRITER_KEY, RepeatedElementPairWriter::new);
       writer.initialize(field, this, marshaler, context);
-      attributes.forEach(writer);
+      try {
+        attributes.forEach(writer);
+      } catch (UncheckedIOException e) {
+        throw e.getCause();
+      }
     }
 
     writeEndRepeated();
@@ -619,7 +632,7 @@ public abstract class Serializer implements AutoCloseable {
         marshaler.writeTo(output, element, context);
         output.writeEndRepeatedElement();
       } catch (IOException e) {
-        throw new IllegalStateException(e);
+        throw new UncheckedIOException(e);
       }
     }
   }
@@ -655,23 +668,23 @@ public abstract class Serializer implements AutoCloseable {
         marshaler.writeTo(output, key, value, context);
         output.writeEndRepeatedElement();
       } catch (IOException e) {
-        throw new IllegalStateException(e);
+        throw new UncheckedIOException(e);
       }
     }
   }
 
   /** Writes start of repeated messages. */
-  protected abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;
+  public abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;
 
   /** Writes end of repeated messages. */
-  protected abstract void writeEndRepeated() throws IOException;
+  public abstract void writeEndRepeated() throws IOException;
 
   /** Writes start of a repeated message element. */
-  protected abstract void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+  public abstract void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;
 
   /** Writes end of a repeated message element. */
-  protected abstract void writeEndRepeatedElement() throws IOException;
+  public abstract void writeEndRepeatedElement() throws IOException;
 
   /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)

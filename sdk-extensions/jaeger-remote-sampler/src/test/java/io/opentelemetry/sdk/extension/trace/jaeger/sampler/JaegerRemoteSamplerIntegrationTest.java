@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -36,8 +35,7 @@ class JaegerRemoteSamplerIntegrationTest {
 
   @Container
   public static final GenericContainer<?> jaegerContainer =
-      new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java/jaeger:1.32")
-          .withImagePullPolicy(PullPolicy.alwaysPull())
+      new GenericContainer<>("jaegertracing/all-in-one:1.32")
           .withCommand("--sampling.strategies-file=/sampling.json")
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT, HEALTH_PORT)
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT))

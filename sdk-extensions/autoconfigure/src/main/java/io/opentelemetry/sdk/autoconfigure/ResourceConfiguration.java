@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -39,6 +40,8 @@ public final class ResourceConfiguration {
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
   static final String DISABLED_ATTRIBUTE_KEYS = "otel.resource.disabled.keys";
+  static final String ENABLED_RESOURCE_PROVIDERS = "otel.java.enabled.resource.providers";
+  static final String DISABLED_RESOURCE_PROVIDERS = "otel.java.disabled.resource.providers";
 
   /**
    * Create a {@link Resource} from the environment. The resource contains attributes parsed from
@@ -48,7 +51,10 @@ public final class ResourceConfiguration {
    * @return the resource.
    */
   public static Resource createEnvironmentResource() {
-    return createEnvironmentResource(DefaultConfigProperties.create(Collections.emptyMap()));
+    return createEnvironmentResource(
+        DefaultConfigProperties.create(
+            Collections.emptyMap(),
+            ComponentLoader.forClassLoader(ResourceConfiguration.class.getClassLoader())));
   }
 
   /**
@@ -88,10 +94,9 @@ public final class ResourceConfiguration {
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
 
-    Set<String> enabledProviders =
-        new HashSet<>(config.getList("otel.java.enabled.resource.providers"));
-    Set<String> disabledProviders =
-        new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
+    Set<String> enabledProviders = new HashSet<>(config.getList(ENABLED_RESOURCE_PROVIDERS));
+    Set<String> disabledProviders = new HashSet<>(config.getList(DISABLED_RESOURCE_PROVIDERS));
+
     for (ResourceProvider resourceProvider : spiHelper.loadOrdered(ResourceProvider.class)) {
       if (!enabledProviders.isEmpty()
           && !enabledProviders.contains(resourceProvider.getClass().getName())) {

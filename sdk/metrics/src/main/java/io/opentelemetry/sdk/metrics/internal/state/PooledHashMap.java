@@ -16,7 +16,7 @@ import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
 /**
- * A bucket-based hash map with an internal re-usable map entry objects pool
+ * A bucket-based hash map with an internal re-usable map entry objects pool.
  *
  * <p>The goal of this map is to minimize memory allocation, leading to reduced time spent in
  * garbage collection.

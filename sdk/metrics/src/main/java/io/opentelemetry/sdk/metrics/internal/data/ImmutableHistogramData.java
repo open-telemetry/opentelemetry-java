@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
  * A histogram metric point.
  *
  * <p>See:
- * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#histogram
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/data-model.md#histogram
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

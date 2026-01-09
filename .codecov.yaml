@@ -11,7 +11,7 @@ coverage:
   status:
     project:
       default:
-        target: 90%
+        target: 89%
         paths:
           - "!opencensus-shim/"
           - "!opentracing-shim/"

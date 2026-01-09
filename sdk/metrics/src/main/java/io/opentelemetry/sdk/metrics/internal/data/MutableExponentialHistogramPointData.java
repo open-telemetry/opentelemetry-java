@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A mutable {@link ExponentialHistogramPointData}
+ * A mutable {@link ExponentialHistogramPointData}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

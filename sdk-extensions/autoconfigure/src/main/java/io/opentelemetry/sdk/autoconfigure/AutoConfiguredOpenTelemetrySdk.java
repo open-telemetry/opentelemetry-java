@@ -8,9 +8,10 @@ package io.opentelemetry.sdk.autoconfigure;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -45,12 +46,8 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   }
 
   static AutoConfiguredOpenTelemetrySdk create(
-      OpenTelemetrySdk sdk,
-      Resource resource,
-      @Nullable ConfigProperties config,
-      @Nullable StructuredConfigProperties structuredConfigProperties) {
-    return new AutoValue_AutoConfiguredOpenTelemetrySdk(
-        sdk, resource, config, structuredConfigProperties);
+      OpenTelemetrySdk sdk, Resource resource, @Nullable ConfigProperties config) {
+    return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config);
   }
 
   /**
@@ -70,19 +67,15 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
    * Returns the {@link ConfigProperties} used for auto-configuration, or {@code null} if
    * declarative configuration was used.
    *
-   * @see #getStructuredConfig()
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * AutoConfigureUtil#getConfig(AutoConfiguredOpenTelemetrySdk)}.
+   *
+   * <p>If declarative config was used, {@link #getOpenTelemetrySdk()} will return an instance of
+   * {@link ExtendedOpenTelemetry} and you can use {@link ExtendedOpenTelemetry#getConfigProvider()}
+   * to access the configuration.
    */
   @Nullable
   abstract ConfigProperties getConfig();
-
-  /**
-   * Returns the {@link StructuredConfigProperties} used for auto-configuration, or {@code null} if
-   * declarative configuration was not used.
-   *
-   * @see #getConfig()
-   */
-  @Nullable
-  abstract StructuredConfigProperties getStructuredConfig();
 
   AutoConfiguredOpenTelemetrySdk() {}
 }

@@ -12,6 +12,9 @@ dependencies {
   api(project(":sdk:trace"))
   api(project(":sdk:testing"))
 
+  // ugly, but profiles doesn't have a separate API yet.
+  api(project(":exporters:otlp:profiles"))
+
   api(project(":exporters:otlp:all"))
 
   // Must be compileOnly so gRPC isn't on the classpath for non-gRPC tests.

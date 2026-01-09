@@ -8,10 +8,9 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
-import java.util.Collections;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -21,33 +20,24 @@ class SpanLimitsFactoryTest {
 
   @ParameterizedTest
   @MethodSource("createArguments")
-  void create(
-      SpanLimitsAndAttributeLimits model,
-      io.opentelemetry.sdk.trace.SpanLimits expectedSpanLimits) {
-    assertThat(
-            SpanLimitsFactory.getInstance()
-                .create(model, mock(SpiHelper.class), Collections.emptyList()))
+  void create(SpanLimitsAndAttributeLimits model, SpanLimits expectedSpanLimits) {
+    assertThat(SpanLimitsFactory.getInstance().create(model, mock(DeclarativeConfigContext.class)))
         .isEqualTo(expectedSpanLimits);
   }
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(
-            SpanLimitsAndAttributeLimits.create(null, null),
-            io.opentelemetry.sdk.trace.SpanLimits.getDefault()),
+        Arguments.of(SpanLimitsAndAttributeLimits.create(null, null), SpanLimits.getDefault()),
         Arguments.of(
             SpanLimitsAndAttributeLimits.create(new AttributeLimitsModel(), new SpanLimitsModel()),
-            io.opentelemetry.sdk.trace.SpanLimits.getDefault()),
+            SpanLimits.getDefault()),
         Arguments.of(
             SpanLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
                     .withAttributeCountLimit(1)
                     .withAttributeValueLengthLimit(2),
                 new SpanLimitsModel()),
-            io.opentelemetry.sdk.trace.SpanLimits.builder()
-                .setMaxNumberOfAttributes(1)
-                .setMaxAttributeValueLength(2)
-                .build()),
+            SpanLimits.builder().setMaxNumberOfAttributes(1).setMaxAttributeValueLength(2).build()),
         Arguments.of(
             SpanLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
@@ -60,7 +50,7 @@ class SpanLimitsFactoryTest {
                     .withLinkCountLimit(6)
                     .withEventAttributeCountLimit(7)
                     .withLinkAttributeCountLimit(8)),
-            io.opentelemetry.sdk.trace.SpanLimits.builder()
+            SpanLimits.builder()
                 .setMaxNumberOfAttributes(3)
                 .setMaxAttributeValueLength(4)
                 .setMaxNumberOfEvents(5)

@@ -1,2 +1,11 @@
-Comparing source compatibility of opentelemetry-sdk-trace-1.46.0-SNAPSHOT.jar against opentelemetry-sdk-trace-1.45.0.jar
-No changes.
+Comparing source compatibility of opentelemetry-sdk-trace-1.59.0-SNAPSHOT.jar against opentelemetry-sdk-trace-1.57.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder setInternalTelemetryVersion(io.opentelemetry.sdk.common.InternalTelemetryVersion)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.SdkTracerProviderBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.SdkTracerProviderBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)

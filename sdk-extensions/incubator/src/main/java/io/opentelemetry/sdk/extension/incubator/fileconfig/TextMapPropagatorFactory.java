@@ -8,15 +8,10 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
 
-final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPropagator> {
+final class TextMapPropagatorFactory
+    implements Factory<TextMapPropagatorModel, TextMapPropagatorAndName> {
 
   private static final TextMapPropagatorFactory INSTANCE = new TextMapPropagatorFactory();
 
@@ -27,37 +22,25 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
   }
 
   @Override
-  public TextMapPropagator create(
-      List<String> model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model.isEmpty()) {
-      model = Arrays.asList("tracecontext", "baggage");
-    }
-
-    if (model.contains("none")) {
-      if (model.size() > 1) {
-        throw new ConfigurationException(
-            "propagators contains \"none\" along with other propagators");
-      }
-      return TextMapPropagator.noop();
-    }
-
-    List<TextMapPropagator> propagators = new ArrayList<>();
-    for (String propagator : model) {
-      propagators.add(getPropagator(spiHelper, propagator));
-    }
-
-    return TextMapPropagator.composite(propagators);
+  public TextMapPropagatorAndName create(
+      TextMapPropagatorModel model, DeclarativeConfigContext context) {
+    ConfigKeyValue propagatorKeyValue =
+        FileConfigUtil.validateSingleKeyValue(context, model, "propagator");
+    return getPropagator(context, propagatorKeyValue);
   }
 
-  private static TextMapPropagator getPropagator(SpiHelper spiHelper, String name) {
-    if (name.equals("tracecontext")) {
-      return W3CTraceContextPropagator.getInstance();
-    }
-    if (name.equals("baggage")) {
-      return W3CBaggagePropagator.getInstance();
-    }
+  static TextMapPropagatorAndName getPropagator(
+      DeclarativeConfigContext context, ConfigKeyValue configKeyValue) {
+    String name = configKeyValue.getKey();
 
-    return FileConfigUtil.loadComponent(
-        spiHelper, TextMapPropagator.class, name, Collections.emptyMap());
+    TextMapPropagator textMapPropagator;
+    if (name.equals("tracecontext")) {
+      textMapPropagator = W3CTraceContextPropagator.getInstance();
+    } else if (name.equals("baggage")) {
+      textMapPropagator = W3CBaggagePropagator.getInstance();
+    } else {
+      textMapPropagator = context.loadComponent(TextMapPropagator.class, configKeyValue);
+    }
+    return TextMapPropagatorAndName.create(textMapPropagator, name);
   }
 }

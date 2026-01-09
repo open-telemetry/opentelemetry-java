@@ -18,6 +18,14 @@ import javax.annotation.Nullable;
  * A map with a fixed capacity that drops attributes when the map gets full, and which truncates
  * string and array string attribute values to the {@link #lengthLimit}.
  *
+ * <p>WARNING: In order to reduce memory allocation, this class extends {@link HashMap} when it
+ * would be more appropriate to delegate. The problem with extending is that we don't enforce that
+ * all {@link HashMap} methods for reading / writing data conform to the configured attribute
+ * limits. Therefore, it's easy to accidentally call something like {@link Map#putAll(Map)} and
+ * bypass the restrictions (see <a
+ * href="https://github.com/open-telemetry/opentelemetry-java/issues/7135">#7135</a>). Callers MUST
+ * take care to only call methods from {@link AttributesMap}, and not {@link HashMap}.
+ *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
@@ -44,16 +52,29 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
     return new AttributesMap(capacity, lengthLimit);
   }
 
-  /** Add the attribute key value pair, applying capacity and length limits. */
-  public <T> void put(AttributeKey<T> key, T value) {
+  /**
+   * Add the attribute key value pair, applying capacity and length limits. Callers MUST ensure the
+   * {@code value} type matches the type required by {@code key}.
+   */
+  @Override
+  @Nullable
+  public Object put(AttributeKey<?> key, @Nullable Object value) {
+    if (value == null) {
+      return null;
+    }
     totalAddedValues++;
     if (size() >= capacity && !containsKey(key)) {
-      return;
+      return null;
     }
-    super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
+    return super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
   }
 
-  /** Get the total number of attributes added, including those dropped for capcity limits. */
+  /** Generic overload of {@link #put(AttributeKey, Object)}. */
+  public <T> void putIfCapacity(AttributeKey<T> key, @Nullable T value) {
+    put(key, value);
+  }
+
+  /** Get the total number of attributes added, including those dropped for capacity limits. */
   public int getTotalAddedValues() {
     return totalAddedValues;
   }

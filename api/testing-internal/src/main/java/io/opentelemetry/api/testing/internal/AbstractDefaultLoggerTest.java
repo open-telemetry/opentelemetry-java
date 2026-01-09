@@ -51,6 +51,7 @@ public abstract class AbstractDefaultLoggerTest {
             () ->
                 getLogger()
                     .logRecordBuilder()
+                    .setEventName("event name")
                     .setTimestamp(100, TimeUnit.SECONDS)
                     .setTimestamp(Instant.now())
                     .setObservedTimestamp(100, TimeUnit.SECONDS)

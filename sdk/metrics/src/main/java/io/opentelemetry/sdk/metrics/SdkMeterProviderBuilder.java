@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -36,7 +36,8 @@ public final class SdkMeterProviderBuilder {
    *
    * @see #setExemplarFilter(ExemplarFilter)
    */
-  private static final ExemplarFilter DEFAULT_EXEMPLAR_FILTER = ExemplarFilter.traceBased();
+  private static final ExemplarFilterInternal DEFAULT_EXEMPLAR_FILTER =
+      ExemplarFilterInternal.asExemplarFilterInternal(ExemplarFilter.traceBased());
 
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
@@ -44,7 +45,7 @@ public final class SdkMeterProviderBuilder {
       new IdentityHashMap<>();
   private final List<MetricProducer> metricProducers = new ArrayList<>();
   private final List<RegisteredView> registeredViews = new ArrayList<>();
-  private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
+  private ExemplarFilterInternal exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
   private ScopeConfiguratorBuilder<MeterConfig> meterConfiguratorBuilder =
       MeterConfig.configuratorBuilder();
 
@@ -81,13 +82,12 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Assign an {@link ExemplarFilter} for all metrics created by Meters.
+   * Set the {@link ExemplarFilter} used for all instruments from all meters.
    *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#setExemplarFilter(SdkMeterProviderBuilder, ExemplarFilter)}.
+   * @since 1.56.0
    */
-  SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
-    this.exemplarFilter = filter;
+  public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
+    this.exemplarFilter = ExemplarFilterInternal.asExemplarFilterInternal(filter);
     return this;
   }
 

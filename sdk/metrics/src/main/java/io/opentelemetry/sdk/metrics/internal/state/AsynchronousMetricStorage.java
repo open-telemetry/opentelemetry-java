@@ -14,16 +14,18 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
@@ -31,7 +33,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,16 +46,16 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarData>
-    implements MetricStorage {
+public final class AsynchronousMetricStorage<T extends PointData> implements MetricStorage {
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
-  private final Aggregator<T, U> aggregator;
+  private final Aggregator<T> aggregator;
   private final AttributesProcessor attributesProcessor;
+  private final MemoryMode memoryMode;
 
   /**
    * This field is set to 1 less than the actual intended cardinality limit, allowing the last slot
@@ -58,25 +63,38 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
    */
   private final int maxCardinality;
 
-  private Map<Attributes, T> points;
+  // Handles responsible for aggregating data recorded during callbacks
+  private final Map<Attributes, AggregatorHandle<T>> aggregatorHandles;
 
   // Only populated if aggregationTemporality == DELTA
   private Map<Attributes, T> lastPoints;
 
   // Only populated if memoryMode == REUSABLE_DATA
   private final ObjectPool<T> reusablePointsPool;
+  private final ObjectPool<AggregatorHandle<T>> reusableHandlesPool;
+  private final Function<Attributes, AggregatorHandle<T>> handleBuilder;
+  private final BiConsumer<Attributes, AggregatorHandle<T>> handleReleaser;
+  private final BiConsumer<Attributes, T> pointReleaser;
 
-  // Only populated if memoryMode == REUSABLE_DATA
-  private final ArrayList<T> reusableResultList = new ArrayList<>();
+  private final List<T> reusablePointsList = new ArrayList<>();
+  // If aggregationTemporality == DELTA, this reference and lastPoints will be swapped at every
+  // collection
+  private Map<Attributes, T> reusablePointsMap = new PooledHashMap<>();
 
-  private final MemoryMode memoryMode;
+  // Time information relative to recording of data in aggregatorHandles, set while calling
+  // callbacks
+  private long startEpochNanos;
+  private long epochNanos;
+
+  private volatile boolean enabled;
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
-      Aggregator<T, U> aggregator,
+      Aggregator<T> aggregator,
       AttributesProcessor attributesProcessor,
-      int maxCardinality) {
+      int maxCardinality,
+      boolean enabled) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     this.aggregationTemporality =
@@ -87,13 +105,19 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
+    this.enabled = enabled;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
+    this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
+    this.handleBuilder = ignored -> reusableHandlesPool.borrowObject();
+    this.handleReleaser = (ignored, handle) -> reusableHandlesPool.returnObject(handle);
+    this.pointReleaser = (ignored, point) -> reusablePointsPool.returnObject(point);
+
     if (memoryMode == REUSABLE_DATA) {
-      lastPoints = new PooledHashMap<>();
-      points = new PooledHashMap<>();
+      this.lastPoints = new PooledHashMap<>();
+      this.aggregatorHandles = new PooledHashMap<>();
     } else {
-      lastPoints = new HashMap<>();
-      points = new HashMap<>();
+      this.lastPoints = new HashMap<>();
+      this.aggregatorHandles = new HashMap<>();
     }
   }
 
@@ -101,47 +125,53 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
    * Create an asynchronous storage instance for the {@link View} and {@link InstrumentDescriptor}.
    */
   // TODO(anuraaga): The cast to generic type here looks suspicious.
-  public static <T extends PointData, U extends ExemplarData>
-      AsynchronousMetricStorage<T, U> create(
-          RegisteredReader registeredReader,
-          RegisteredView registeredView,
-          InstrumentDescriptor instrumentDescriptor) {
+  public static <T extends PointData> AsynchronousMetricStorage<T> create(
+      RegisteredReader registeredReader,
+      RegisteredView registeredView,
+      InstrumentDescriptor instrumentDescriptor,
+      boolean enabled) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
-    Aggregator<T, U> aggregator =
+    Aggregator<T> aggregator =
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(
                 instrumentDescriptor,
-                ExemplarFilter.alwaysOff(),
+                ExemplarFilterInternal.asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
                 registeredReader.getReader().getMemoryMode());
     return new AsynchronousMetricStorage<>(
         registeredReader,
         metricDescriptor,
         aggregator,
         registeredView.getViewAttributesProcessor(),
-        registeredView.getCardinalityLimit());
+        registeredView.getCardinalityLimit(),
+        enabled);
   }
 
-  /**
-   * Record callback measurement from {@link ObservableLongMeasurement} or {@link
-   * ObservableDoubleMeasurement}.
-   */
-  void record(Measurement measurement) {
-    Context context = Context.current();
-    Attributes processedAttributes = attributesProcessor.process(measurement.attributes(), context);
-    long start =
+  /** Record callback measurement from {@link ObservableLongMeasurement}. */
+  void record(Attributes attributes, long value) {
+    attributes = validateAndProcessAttributes(attributes);
+    AggregatorHandle<T> handle = aggregatorHandles.computeIfAbsent(attributes, handleBuilder);
+    handle.recordLong(value, attributes, Context.current());
+  }
+
+  /** Record callback measurement from {@link ObservableDoubleMeasurement}. */
+  void record(Attributes attributes, double value) {
+    attributes = validateAndProcessAttributes(attributes);
+    AggregatorHandle<T> handle = aggregatorHandles.computeIfAbsent(attributes, handleBuilder);
+    handle.recordDouble(value, attributes, Context.current());
+  }
+
+  void setEpochInformation(long startEpochNanos, long epochNanos) {
+    this.startEpochNanos =
         aggregationTemporality == AggregationTemporality.DELTA
             ? registeredReader.getLastCollectEpochNanos()
-            : measurement.startEpochNanos();
-
-    measurement = measurement.withAttributes(processedAttributes).withStartEpochNanos(start);
-
-    recordPoint(processedAttributes, measurement);
+            : startEpochNanos;
+    this.epochNanos = epochNanos;
   }
 
-  private void recordPoint(Attributes attributes, Measurement measurement) {
-    if (points.size() >= maxCardinality) {
+  private Attributes validateAndProcessAttributes(Attributes attributes) {
+    if (aggregatorHandles.size() >= maxCardinality) {
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
@@ -149,28 +179,12 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
               + " has exceeded the maximum allowed cardinality ("
               + maxCardinality
               + ").");
-      attributes = MetricStorage.CARDINALITY_OVERFLOW;
-      measurement = measurement.withAttributes(attributes);
-    } else if (points.containsKey(
-        attributes)) { // Check there is not already a recording for the attributes
-      throttlingLogger.log(
-          Level.WARNING,
-          "Instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " has recorded multiple values for the same attributes: "
-              + attributes);
-      return;
+      return MetricStorage.CARDINALITY_OVERFLOW;
     }
 
-    T dataPoint;
-    if (memoryMode == REUSABLE_DATA) {
-      dataPoint = reusablePointsPool.borrowObject();
-      aggregator.toPoint(measurement, dataPoint);
-    } else {
-      dataPoint = aggregator.toPoint(measurement);
-    }
-
-    points.put(attributes, dataPoint);
+    Context context = Context.current();
+    attributes = attributesProcessor.process(attributes, context);
+    return attributes;
   }
 
   @Override
@@ -189,80 +203,121 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
+    Collection<T> result =
+        aggregationTemporality == AggregationTemporality.DELTA
+            ? collectWithDeltaAggregationTemporality()
+            : collectWithCumulativeAggregationTemporality();
+
+    // collectWith*AggregationTemporality() methods are responsible for resetting the handle
+    aggregatorHandles.forEach(handleReleaser);
+    aggregatorHandles.clear();
+
+    return enabled
+        ? aggregator.toMetricData(
+            resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality)
+        : EmptyMetricData.getInstance();
+  }
+
+  private Collection<T> collectWithDeltaAggregationTemporality() {
+    Map<Attributes, T> currentPoints;
     if (memoryMode == REUSABLE_DATA) {
-      // Collect can not run concurrently for same reader, hence we safely assume
-      // the previous collect result has been used and done with
-      reusableResultList.forEach(reusablePointsPool::returnObject);
-      reusableResultList.clear();
+      // deltaPoints computed in the previous collection can be released
+      reusablePointsList.forEach(reusablePointsPool::returnObject);
+      reusablePointsList.clear();
+
+      currentPoints = reusablePointsMap;
+    } else {
+      currentPoints = new HashMap<>();
     }
 
-    Collection<T> result;
-    if (aggregationTemporality == AggregationTemporality.DELTA) {
-      Map<Attributes, T> points = this.points;
-      Map<Attributes, T> lastPoints = this.lastPoints;
+    aggregatorHandles.forEach(
+        (attributes, handle) -> {
+          T point =
+              handle.aggregateThenMaybeReset(
+                  this.startEpochNanos, this.epochNanos, attributes, /* reset= */ true);
 
-      Collection<T> deltaPoints;
-      if (memoryMode == REUSABLE_DATA) {
-        deltaPoints = reusableResultList;
-      } else {
-        deltaPoints = new ArrayList<>();
-      }
+          T pointForCurrentPoints;
+          if (memoryMode == REUSABLE_DATA) {
+            // AggregatorHandle is going to modify the point eventually, but we must persist its
+            // value to used it at the next collection (within lastPoints). Thus, we make a copy.
+            pointForCurrentPoints = reusablePointsPool.borrowObject();
+            aggregator.copyPoint(point, pointForCurrentPoints);
+          } else {
+            pointForCurrentPoints = point;
+          }
+          currentPoints.put(attributes, pointForCurrentPoints);
+        });
 
-      points.forEach(
-          (k, v) -> {
-            T lastPoint = lastPoints.get(k);
+    List<T> deltaPoints = memoryMode == REUSABLE_DATA ? reusablePointsList : new ArrayList<>();
+    currentPoints.forEach(
+        (attributes, currentPoint) -> {
+          T lastPoint = lastPoints.remove(attributes);
 
-            T deltaPoint;
-            if (lastPoint == null) {
-              if (memoryMode == REUSABLE_DATA) {
-                deltaPoint = reusablePointsPool.borrowObject();
-                aggregator.copyPoint(v, deltaPoint);
-              } else {
-                deltaPoint = v;
-              }
+          T deltaPoint;
+          if (lastPoint == null) {
+            if (memoryMode == REUSABLE_DATA) {
+              // All deltaPoints are released at the end of the collection. Thus, we need a copy
+              // to make sure currentPoint can still be used within lastPoints during the next
+              // collection.
+              deltaPoint = reusablePointsPool.borrowObject();
+              aggregator.copyPoint(currentPoint, deltaPoint);
             } else {
-              if (memoryMode == REUSABLE_DATA) {
-                aggregator.diffInPlace(lastPoint, v);
-                deltaPoint = lastPoint;
-
-                // Remaining last points are returned to reusablePointsPool, but
-                // this reusable point is still used, so don't return it to pool yet
-                lastPoints.remove(k);
-              } else {
-                deltaPoint = aggregator.diff(lastPoint, v);
-              }
+              deltaPoint = currentPoint;
             }
+          } else {
+            if (memoryMode == REUSABLE_DATA) {
+              aggregator.diffInPlace(lastPoint, currentPoint);
+              deltaPoint = lastPoint;
+            } else {
+              deltaPoint = aggregator.diff(lastPoint, currentPoint);
+            }
+          }
+          deltaPoints.add(deltaPoint);
+        });
 
-            deltaPoints.add(deltaPoint);
-          });
+    if (memoryMode == REUSABLE_DATA) {
+      // - If the point was used to compute a delta, it's now in deltaPoints (and thus in
+      //  reusablePointsList)
+      // - If the point hasn't been used, it's still in lastPoints and can be returned
+      lastPoints.forEach(pointReleaser);
+      lastPoints.clear();
 
-      if (memoryMode == REUSABLE_DATA) {
-        lastPoints.forEach((k, v) -> reusablePointsPool.returnObject(v));
-        lastPoints.clear();
-        this.points = lastPoints;
-      } else {
-        this.points = new HashMap<>();
-      }
-
-      this.lastPoints = points;
-      result = deltaPoints;
-    } else /* CUMULATIVE */ {
-      if (memoryMode == REUSABLE_DATA) {
-        points.forEach((k, v) -> reusableResultList.add(v));
-        points.clear();
-        result = reusableResultList;
-      } else {
-        result = points.values();
-        points = new HashMap<>();
-      }
+      Map<Attributes, T> tmp = lastPoints;
+      lastPoints = reusablePointsMap;
+      reusablePointsMap = tmp;
+    } else {
+      lastPoints = currentPoints;
     }
 
-    return aggregator.toMetricData(
-        resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality);
+    return deltaPoints;
+  }
+
+  private Collection<T> collectWithCumulativeAggregationTemporality() {
+    List<T> currentPoints;
+    if (memoryMode == REUSABLE_DATA) {
+      // We should not return the points in this list to the pool, they belong to the
+      // AggregatorHandle
+      reusablePointsList.clear();
+      currentPoints = reusablePointsList;
+    } else {
+      currentPoints = new ArrayList<>();
+    }
+
+    aggregatorHandles.forEach(
+        (attributes, handle) -> {
+          T value =
+              handle.aggregateThenMaybeReset(
+                  AsynchronousMetricStorage.this.startEpochNanos,
+                  AsynchronousMetricStorage.this.epochNanos,
+                  attributes,
+                  /* reset= */ true);
+          currentPoints.add(value);
+        });
+    return currentPoints;
   }
 
   @Override
-  public boolean isEmpty() {
-    return aggregator == Aggregator.drop();
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 }

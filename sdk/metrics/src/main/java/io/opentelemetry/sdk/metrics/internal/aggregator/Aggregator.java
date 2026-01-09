@@ -7,13 +7,10 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
@@ -26,9 +23,9 @@ import javax.annotation.concurrent.Immutable;
  * at any time.
  */
 @Immutable
-public interface Aggregator<T extends PointData, U extends ExemplarData> {
+public interface Aggregator<T extends PointData> {
   /** Returns the drop aggregator, an aggregator that drops measurements. */
-  static Aggregator<?, DoubleExemplarData> drop() {
+  static Aggregator<?> drop() {
     return DropAggregator.INSTANCE;
   }
 
@@ -38,7 +35,7 @@ public interface Aggregator<T extends PointData, U extends ExemplarData> {
    *
    * @return a new {@link AggregatorHandle}.
    */
-  AggregatorHandle<T, U> createHandle();
+  AggregatorHandle<T> createHandle();
 
   /**
    * Returns a new DELTA point by computing the difference between two cumulative points.
@@ -66,24 +63,6 @@ public interface Aggregator<T extends PointData, U extends ExemplarData> {
    */
   default void diffInPlace(T previousCumulativeReusable, T currentCumulative) {
     throw new UnsupportedOperationException("This aggregator does not support diffInPlace.");
-  }
-
-  /**
-   * Return a new point representing the measurement.
-   *
-   * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
-   */
-  default T toPoint(Measurement measurement) {
-    throw new UnsupportedOperationException("This aggregator does not support toPoint.");
-  }
-
-  /**
-   * Resets {@code reusablePoint} to represent the {@code measurement}.
-   *
-   * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
-   */
-  default void toPoint(Measurement measurement, T reusablePoint) {
-    throw new UnsupportedOperationException("This aggregator does not support toPoint.");
   }
 
   /** Creates a new reusable point. */

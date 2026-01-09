@@ -10,8 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,8 +29,8 @@ class AttributeListFactoryTest {
     assertThatThrownBy(
             () ->
                 AttributeListFactory.getInstance()
-                    .create(model, mock(SpiHelper.class), Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+                    .create(model, mock(DeclarativeConfigContext.class)))
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining(expectedMessage);
   }
 
@@ -48,14 +47,14 @@ class AttributeListFactoryTest {
             Collections.singletonList(
                 new AttributeNameValueModel()
                     .withName("key")
-                    .withType(AttributeNameValueModel.Type.INT)
+                    .withType(AttributeNameValueModel.AttributeType.INT)
                     .withValue(Arrays.asList(1L, 1))),
             "Error processing attribute with name \"key\": value did not match type INT"),
         Arguments.of(
             Collections.singletonList(
                 new AttributeNameValueModel()
                     .withName("key")
-                    .withType(AttributeNameValueModel.Type.INT)
+                    .withType(AttributeNameValueModel.AttributeType.INT)
                     .withValue(true)),
             "Error processing attribute with name \"key\": value did not match type INT"));
   }
@@ -88,53 +87,52 @@ class AttributeListFactoryTest {
                         new AttributeNameValueModel()
                             .withName("strKey")
                             .withValue("val")
-                            .withType(AttributeNameValueModel.Type.STRING),
+                            .withType(AttributeNameValueModel.AttributeType.STRING),
                         new AttributeNameValueModel()
                             .withName("longKey")
                             .withValue(1L)
-                            .withType(AttributeNameValueModel.Type.INT),
+                            .withType(AttributeNameValueModel.AttributeType.INT),
                         new AttributeNameValueModel()
                             .withName("intKey")
                             .withValue(2)
-                            .withType(AttributeNameValueModel.Type.INT),
+                            .withType(AttributeNameValueModel.AttributeType.INT),
                         new AttributeNameValueModel()
                             .withName("doubleKey")
                             .withValue(1.0d)
-                            .withType(AttributeNameValueModel.Type.DOUBLE),
+                            .withType(AttributeNameValueModel.AttributeType.DOUBLE),
                         new AttributeNameValueModel()
                             .withName("floatKey")
                             .withValue(2.0f)
-                            .withType(AttributeNameValueModel.Type.DOUBLE),
+                            .withType(AttributeNameValueModel.AttributeType.DOUBLE),
                         new AttributeNameValueModel()
                             .withName("boolKey")
                             .withValue(true)
-                            .withType(AttributeNameValueModel.Type.BOOL),
+                            .withType(AttributeNameValueModel.AttributeType.BOOL),
                         new AttributeNameValueModel()
                             .withName("strArrKey")
                             .withValue(Arrays.asList("val1", "val2"))
-                            .withType(AttributeNameValueModel.Type.STRING_ARRAY),
+                            .withType(AttributeNameValueModel.AttributeType.STRING_ARRAY),
                         new AttributeNameValueModel()
                             .withName("longArrKey")
                             .withValue(Arrays.asList(1L, 2L))
-                            .withType(AttributeNameValueModel.Type.INT_ARRAY),
+                            .withType(AttributeNameValueModel.AttributeType.INT_ARRAY),
                         new AttributeNameValueModel()
                             .withName("intArrKey")
                             .withValue(Arrays.asList(1, 2))
-                            .withType(AttributeNameValueModel.Type.INT_ARRAY),
+                            .withType(AttributeNameValueModel.AttributeType.INT_ARRAY),
                         new AttributeNameValueModel()
                             .withName("doubleArrKey")
                             .withValue(Arrays.asList(1.0d, 2.0d))
-                            .withType(AttributeNameValueModel.Type.DOUBLE_ARRAY),
+                            .withType(AttributeNameValueModel.AttributeType.DOUBLE_ARRAY),
                         new AttributeNameValueModel()
                             .withName("floatArrKey")
                             .withValue(Arrays.asList(1.0f, 2.0f))
-                            .withType(AttributeNameValueModel.Type.DOUBLE_ARRAY),
+                            .withType(AttributeNameValueModel.AttributeType.DOUBLE_ARRAY),
                         new AttributeNameValueModel()
                             .withName("boolArrKey")
                             .withValue(Arrays.asList(true, false))
-                            .withType(AttributeNameValueModel.Type.BOOL_ARRAY)),
-                    mock(SpiHelper.class),
-                    Collections.emptyList()))
+                            .withType(AttributeNameValueModel.AttributeType.BOOL_ARRAY)),
+                    mock(DeclarativeConfigContext.class)))
         .isEqualTo(expectedAttributes);
   }
 }

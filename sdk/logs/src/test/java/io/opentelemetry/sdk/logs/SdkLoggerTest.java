@@ -21,6 +21,13 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.logs.LogRecordBuilder;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -44,6 +51,8 @@ class SdkLoggerTest {
     when(state.getResource()).thenReturn(Resource.getDefault());
     when(state.getLogRecordProcessor()).thenReturn(logRecordProcessor);
     when(state.getClock()).thenReturn(clock);
+    when(state.getLoggerInstrumentation())
+        .thenReturn(new SdkLoggerInstrumentation(MeterProvider::noop));
 
     SdkLogger logger = new SdkLogger(state, info, LoggerConfig.defaultConfig());
     LogRecordBuilder logRecordBuilder = logger.logRecordBuilder();
@@ -132,5 +141,87 @@ class SdkLoggerTest {
     loggerProvider.get("test").logRecordBuilder().emit();
 
     verify(logRecordProcessor, never()).onEmit(any(), any());
+  }
+
+  @Test
+  void updateLoggerConfig() {
+    LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
+    SdkLogger logger = (SdkLogger) loggerProvider.get("test");
+
+    // Start with default config
+    assertThat(logger.loggerEnabled).isTrue();
+    assertThat(logger.minimumSeverity).isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER);
+    assertThat(logger.traceBased).isFalse();
+
+    // Update to custom config
+    LoggerConfig config =
+        LoggerConfig.builder()
+            .setEnabled(false)
+            .setMinimumSeverity(Severity.WARN)
+            .setTraceBased(true)
+            .build();
+    logger.updateLoggerConfig(config);
+
+    assertThat(logger.loggerEnabled).isFalse();
+    assertThat(logger.minimumSeverity).isEqualTo(Severity.WARN);
+    assertThat(logger.traceBased).isTrue();
+  }
+
+  @Test
+  void isEnabled_MinimumSeverity() {
+    LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
+    SdkLogger logger = (SdkLogger) loggerProvider.get("test");
+
+    LoggerConfig config = LoggerConfig.builder().setMinimumSeverity(Severity.WARN).build();
+    logger.updateLoggerConfig(config);
+
+    // Below minimum severity - should be disabled
+    assertThat(logger.isEnabled(Severity.INFO, Context.current())).isFalse();
+    assertThat(logger.isEnabled(Severity.DEBUG, Context.current())).isFalse();
+
+    // At or above minimum severity - should be enabled
+    assertThat(logger.isEnabled(Severity.WARN, Context.current())).isTrue();
+    assertThat(logger.isEnabled(Severity.ERROR, Context.current())).isTrue();
+
+    // Undefined severity - should be enabled (bypasses minimum severity filter)
+    assertThat(logger.isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER, Context.current())).isTrue();
+  }
+
+  @Test
+  void isEnabled_TraceBased() {
+    LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
+    SdkLogger logger = (SdkLogger) loggerProvider.get("test");
+
+    LoggerConfig config = LoggerConfig.builder().setTraceBased(true).build();
+    logger.updateLoggerConfig(config);
+
+    // No trace context - should be enabled
+    assertThat(logger.isEnabled(Severity.INFO, Context.current())).isTrue();
+
+    // Sampled trace - should be enabled
+    SpanContext sampledSpanContext =
+        SpanContext.create(
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bbbbbbbbbbbbbbbb",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+    Context sampledContext = Span.wrap(sampledSpanContext).storeInContext(Context.root());
+    assertThat(logger.isEnabled(Severity.INFO, sampledContext)).isTrue();
+
+    // Unsampled trace - should be disabled
+    SpanContext unsampledSpanContext =
+        SpanContext.create(
+            "cccccccccccccccccccccccccccccccc",
+            "dddddddddddddddd",
+            TraceFlags.getDefault(),
+            TraceState.getDefault());
+    Context unsampledContext = Span.wrap(unsampledSpanContext).storeInContext(Context.root());
+    assertThat(logger.isEnabled(Severity.INFO, unsampledContext)).isFalse();
   }
 }

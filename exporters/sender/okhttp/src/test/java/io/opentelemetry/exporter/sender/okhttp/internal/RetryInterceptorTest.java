@@ -9,8 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -24,11 +25,19 @@ import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.HttpRetryException;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -37,9 +46,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 @ExtendWith(MockitoExtension.class)
 class RetryInterceptorTest {
@@ -47,36 +60,58 @@ class RetryInterceptorTest {
   @RegisterExtension static final MockWebServerExtension server = new MockWebServerExtension();
 
   @Mock private RetryInterceptor.Sleeper sleeper;
-  @Mock private RetryInterceptor.BoundedLongGenerator random;
-  private Function<IOException, Boolean> isRetryableException;
+  @Mock private Supplier<Double> random;
+  private Predicate<IOException> retryExceptionPredicate;
 
   private RetryInterceptor retrier;
   private OkHttpClient client;
 
   @BeforeEach
   void setUp() {
-    // Note: cannot replace this with lambda or method reference because we need to spy on it
-    isRetryableException =
+    Logger logger = java.util.logging.Logger.getLogger(RetryInterceptor.class.getName());
+    logger.setLevel(Level.FINER);
+    retryExceptionPredicate =
         spy(
-            new Function<IOException, Boolean>() {
+            new Predicate<IOException>() {
               @Override
-              public Boolean apply(IOException exception) {
-                return RetryInterceptor.isRetryableException(exception);
+              public boolean test(IOException e) {
+                return RetryInterceptor.isRetryableException(e)
+                    || (e instanceof HttpRetryException
+                        && e.getMessage().contains("timeout retry"));
               }
             });
+
+    RetryPolicy retryPolicy =
+        RetryPolicy.builder()
+            .setBackoffMultiplier(1.6)
+            .setInitialBackoff(Duration.ofSeconds(1))
+            .setMaxBackoff(Duration.ofSeconds(2))
+            .setMaxAttempts(5)
+            .setRetryExceptionPredicate(retryExceptionPredicate)
+            .build();
+
     retrier =
         new RetryInterceptor(
-            RetryPolicy.builder()
-                .setBackoffMultiplier(1.6)
-                .setInitialBackoff(Duration.ofSeconds(1))
-                .setMaxBackoff(Duration.ofSeconds(2))
-                .setMaxAttempts(5)
-                .build(),
-            r -> !r.isSuccessful(),
-            isRetryableException,
-            sleeper,
-            random);
+            retryPolicy, r -> !r.isSuccessful(), retryExceptionPredicate, sleeper, random);
     client = new OkHttpClient.Builder().addInterceptor(retrier).build();
+  }
+
+  @Test
+  void noRetryOnNullResponse() throws IOException {
+    Interceptor.Chain chain = mock(Interceptor.Chain.class);
+    when(chain.proceed(any())).thenReturn(null);
+    when(chain.request())
+        .thenReturn(new Request.Builder().url(server.httpUri().toString()).build());
+    assertThatThrownBy(
+            () -> {
+              retrier.intercept(chain);
+            })
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("response cannot be null.");
+
+    verifyNoInteractions(retryExceptionPredicate);
+    verifyNoInteractions(random);
+    verifyNoInteractions(sleeper);
   }
 
   @Test
@@ -97,17 +132,8 @@ class RetryInterceptorTest {
   @ValueSource(ints = {5, 6})
   void backsOff(int attempts) throws Exception {
     succeedOnAttempt(attempts);
-
-    // Will backoff 4 times
-    when(random.get((long) (TimeUnit.SECONDS.toNanos(1) * Math.pow(1.6, 0)))).thenReturn(100L);
-    when(random.get((long) (TimeUnit.SECONDS.toNanos(1) * Math.pow(1.6, 1)))).thenReturn(50L);
-    // Capped
-    when(random.get(TimeUnit.SECONDS.toNanos(2))).thenReturn(500L).thenReturn(510L);
-
-    doNothing().when(sleeper).sleep(100);
-    doNothing().when(sleeper).sleep(50);
-    doNothing().when(sleeper).sleep(500);
-    doNothing().when(sleeper).sleep(510);
+    when(random.get()).thenReturn(1.0d);
+    doNothing().when(sleeper).sleep(anyLong());
 
     try (Response response = sendRequest()) {
       if (attempts <= 5) {
@@ -127,16 +153,26 @@ class RetryInterceptorTest {
     succeedOnAttempt(5);
 
     // Backs off twice, second is interrupted
-    when(random.get((long) (TimeUnit.SECONDS.toNanos(1) * Math.pow(1.6, 0)))).thenReturn(100L);
-    when(random.get((long) (TimeUnit.SECONDS.toNanos(1) * Math.pow(1.6, 1)))).thenReturn(50L);
+    when(random.get()).thenReturn(1.0d).thenReturn(1.0d);
+    doAnswer(
+            new Answer<Void>() {
+              int counter = 0;
 
-    doNothing().when(sleeper).sleep(100);
-    doThrow(new InterruptedException()).when(sleeper).sleep(50);
+              @Override
+              public Void answer(InvocationOnMock invocation) throws Throwable {
+                if (counter++ == 1) {
+                  throw new InterruptedException();
+                }
+                return null;
+              }
+            })
+        .when(sleeper)
+        .sleep(anyLong());
 
     try (Response response = sendRequest()) {
       assertThat(response.isSuccessful()).isFalse();
     }
-
+    verify(sleeper, times(2)).sleep(anyLong());
     for (int i = 0; i < 2; i++) {
       server.takeRequest(0, TimeUnit.NANOSECONDS);
     }
@@ -145,16 +181,16 @@ class RetryInterceptorTest {
   @Test
   void connectTimeout() throws Exception {
     client = connectTimeoutClient();
-    when(random.get(anyLong())).thenReturn(1L);
+    when(random.get()).thenReturn(1.0d);
     doNothing().when(sleeper).sleep(anyLong());
 
     // Connecting to a non-routable IP address to trigger connection error
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
-        .isInstanceOf(SocketTimeoutException.class);
+        .isInstanceOfAny(SocketTimeoutException.class, SocketException.class);
 
-    verify(isRetryableException, times(5)).apply(any());
+    verify(retryExceptionPredicate, times(5)).test(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
     verify(sleeper, times(4)).sleep(anyLong());
   }
@@ -162,7 +198,7 @@ class RetryInterceptorTest {
   @Test
   void connectException() throws Exception {
     client = connectTimeoutClient();
-    when(random.get(anyLong())).thenReturn(1L);
+    when(random.get()).thenReturn(1.0d);
     doNothing().when(sleeper).sleep(anyLong());
 
     // Connecting to localhost on an unused port address to trigger java.net.ConnectException
@@ -174,7 +210,7 @@ class RetryInterceptorTest {
                     .execute())
         .isInstanceOfAny(ConnectException.class, SocketTimeoutException.class);
 
-    verify(isRetryableException, times(5)).apply(any());
+    verify(retryExceptionPredicate, times(5)).test(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
     verify(sleeper, times(4)).sleep(anyLong());
   }
@@ -190,16 +226,16 @@ class RetryInterceptorTest {
   @Test
   void nonRetryableException() throws InterruptedException {
     client = connectTimeoutClient();
-    // Override isRetryableException so that no exception is retryable
-    when(isRetryableException.apply(any())).thenReturn(false);
+    // Override retryPredicate so that no exception is retryable
+    when(retryExceptionPredicate.test(any())).thenReturn(false);
 
     // Connecting to a non-routable IP address to trigger connection timeout
     assertThatThrownBy(
             () ->
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
-        .isInstanceOf(SocketTimeoutException.class);
+        .isInstanceOfAny(SocketTimeoutException.class, SocketException.class);
 
-    verify(isRetryableException, times(1)).apply(any());
+    verify(retryExceptionPredicate, times(1)).test(any());
     verify(sleeper, never()).sleep(anyLong());
   }
 
@@ -210,24 +246,61 @@ class RetryInterceptorTest {
         .build();
   }
 
+  @ParameterizedTest
+  @MethodSource("isRetryableExceptionArgs")
+  void isRetryableException(IOException exception, boolean expectedRetryResult) {
+    assertThat(retrier.shouldRetryOnException(exception)).isEqualTo(expectedRetryResult);
+  }
+
+  private static Stream<Arguments> isRetryableExceptionArgs() {
+    return Stream.of(
+        // Should retry on SocketTimeoutExceptions
+        Arguments.of(new SocketTimeoutException("Connect timed out"), true),
+        Arguments.of(new SocketTimeoutException("connect timed out"), true),
+        Arguments.of(new SocketTimeoutException("timeout"), true),
+        Arguments.of(new SocketTimeoutException("Read timed out"), true),
+        Arguments.of(new SocketTimeoutException(), true),
+        // Should retry on UnknownHostExceptions
+        Arguments.of(new UnknownHostException("host"), true),
+        // Should retry on SocketException
+        Arguments.of(new SocketException("closed"), true),
+        // Should retry on ConnectException
+        Arguments.of(
+            new ConnectException("Failed to connect to localhost/[0:0:0:0:0:0:0:1]:62611"), true),
+        // Shouldn't retry other IOException
+        Arguments.of(new IOException("error"), false),
+        // Testing configured predicate
+        Arguments.of(new HttpRetryException("error", 400), false),
+        Arguments.of(new HttpRetryException("timeout retry", 400), true));
+  }
+
   @Test
-  void isRetryableException() {
-    // Should retry on connection timeouts, where error message is "Connect timed out" or "connect
-    // timed out"
+  void isRetryableExceptionDefaultBehaviour() {
+    RetryInterceptor retryInterceptor =
+        new RetryInterceptor(RetryPolicy.getDefault(), OkHttpHttpSender::isRetryable);
     assertThat(
-            RetryInterceptor.isRetryableException(new SocketTimeoutException("Connect timed out")))
+            retryInterceptor.shouldRetryOnException(
+                new SocketTimeoutException("Connect timed out")))
         .isTrue();
+    assertThat(retryInterceptor.shouldRetryOnException(new IOException("Connect timed out")))
+        .isFalse();
+  }
+
+  @Test
+  void isRetryableExceptionCustomRetryPredicate() {
+    RetryInterceptor retryInterceptor =
+        new RetryInterceptor(
+            RetryPolicy.builder()
+                .setRetryExceptionPredicate((IOException e) -> e.getMessage().equals("retry"))
+                .build(),
+            OkHttpHttpSender::isRetryable);
+
+    assertThat(retryInterceptor.shouldRetryOnException(new IOException("some message"))).isFalse();
+    assertThat(retryInterceptor.shouldRetryOnException(new IOException("retry"))).isTrue();
     assertThat(
-            RetryInterceptor.isRetryableException(new SocketTimeoutException("connect timed out")))
-        .isTrue();
-    // Shouldn't retry on read timeouts, where error message is "Read timed out"
-    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("Read timed out")))
+            retryInterceptor.shouldRetryOnException(
+                new SocketTimeoutException("Connect timed out")))
         .isFalse();
-    // Shouldn't retry on write timeouts, where error message is "timeout", or other IOException
-    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException("timeout")))
-        .isFalse();
-    assertThat(RetryInterceptor.isRetryableException(new SocketTimeoutException())).isTrue();
-    assertThat(RetryInterceptor.isRetryableException(new IOException("error"))).isFalse();
   }
 
   private Response sendRequest() throws IOException {

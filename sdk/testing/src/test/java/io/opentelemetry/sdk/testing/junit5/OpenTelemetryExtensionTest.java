@@ -10,18 +10,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -224,11 +230,39 @@ class OpenTelemetryExtensionTest {
     assertThat(extension.getSpans()).isNotEmpty();
 
     extension.afterAll(null);
-    assertThat(GlobalOpenTelemetry.get()).isSameAs(OpenTelemetry.noop());
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(OpenTelemetry.noop());
 
     meter.counterBuilder("counter").build().add(10);
     tracer.spanBuilder("span").startSpan().end();
     assertThat(extension.getMetrics()).isEmpty();
     assertThat(extension.getSpans()).isEmpty();
+  }
+
+  @Test
+  void baggageAndTracePropagation() {
+    OpenTelemetryExtension extension = OpenTelemetryExtension.create();
+    Span span = extension.getOpenTelemetry().getTracer("test").spanBuilder("test").startSpan();
+    try (Scope baggageScope = Baggage.builder().put("key", "value").build().makeCurrent();
+        Scope spanScope = span.makeCurrent()) {
+      Map<String, String> carrier = new HashMap<>();
+      extension
+          .getOpenTelemetry()
+          .getPropagators()
+          .getTextMapPropagator()
+          .inject(Context.current(), carrier, new MapTextMapSetter());
+      assertThat(carrier).containsEntry("baggage", "key=value");
+      assertThat(carrier).containsKey("traceparent");
+    } finally {
+      span.end();
+    }
+  }
+
+  public static class MapTextMapSetter implements TextMapSetter<Map<String, String>> {
+    @Override
+    public void set(@Nullable Map<String, String> carrier, String key, String value) {
+      if (carrier != null) {
+        carrier.put(key, value);
+      }
+    }
   }
 }

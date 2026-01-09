@@ -1,1 +1,1 @@
-io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider
+io.opentelemetry.sdk.autoconfigure.EnvironmentResourceProvider

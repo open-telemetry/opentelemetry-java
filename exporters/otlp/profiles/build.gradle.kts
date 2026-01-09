@@ -15,9 +15,16 @@ dependencies {
   api(project(":exporters:common"))
   implementation(project(":exporters:otlp:common"))
 
+  implementation(project(":exporters:otlp:all"))
+  compileOnly("io.grpc:grpc-stub")
+
   annotationProcessor("com.google.auto.value:auto-value")
 
+  testCompileOnly("com.google.guava:guava")
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
+  testImplementation(project(":exporters:otlp:testing-internal"))
+  testImplementation(project(":exporters:sender:okhttp"))
+  testImplementation("io.grpc:grpc-stub")
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
@@ -37,7 +38,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   }
 
   @Override
-  public <T> AttributesBuilder put(AttributeKey<T> key, T value) {
+  public <T> AttributesBuilder put(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -48,12 +49,11 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
+  // Safe: Attributes guarantees iteration over matching AttributeKey<T> / value pairs.
   public AttributesBuilder putAll(Attributes attributes) {
     if (attributes == null) {
       return this;
     }
-    // Attributes must iterate over their entries with matching types for key / value, so this
-    // downcast to the raw type is safe.
     attributes.forEach((key, value) -> put((AttributeKey) key, value));
     return this;
   }

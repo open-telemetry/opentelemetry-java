@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -12,8 +13,10 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
@@ -30,7 +33,9 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   static final String DEFAULT_TRACER_NAME = "";
   private final TracerSharedState sharedState;
   private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
-  private final ScopeConfigurator<TracerConfig> tracerConfigurator;
+  // deliberately not volatile because of performance concerns
+  // - which means its eventually consistent
+  private ScopeConfigurator<TracerConfig> tracerConfigurator;
 
   /**
    * Returns a new {@link SdkTracerProviderBuilder} for {@link SdkTracerProvider}.
@@ -49,14 +54,23 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
-      ScopeConfigurator<TracerConfig> tracerConfigurator) {
+      ScopeConfigurator<TracerConfig> tracerConfigurator,
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      Supplier<MeterProvider> meterProvider) {
     this.sharedState =
         new TracerSharedState(
-            clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
+            clock,
+            idsGenerator,
+            resource,
+            spanLimitsSupplier,
+            sampler,
+            spanProcessors,
+            exceptionAttributeResolver,
+            new SdkTracerInstrumentation(meterProvider));
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->
-                new SdkTracer(
+                SdkTracer.create(
                     sharedState,
                     instrumentationScopeInfo,
                     getTracerConfig(instrumentationScopeInfo)));
@@ -98,6 +112,25 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   /** Returns the configured {@link Sampler}. */
   public Sampler getSampler() {
     return sharedState.getSampler();
+  }
+
+  /**
+   * Updates the tracer configurator, which computes {@link TracerConfig} for each {@link
+   * InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setTracerConfigurator(SdkTracerProvider, ScopeConfigurator)}.
+   *
+   * @see TracerConfig#configuratorBuilder()
+   */
+  void setTracerConfigurator(ScopeConfigurator<TracerConfig> tracerConfigurator) {
+    this.tracerConfigurator = tracerConfigurator;
+    this.tracerSdkComponentRegistry
+        .getComponents()
+        .forEach(
+            sdkTracer ->
+                sdkTracer.updateTracerConfig(
+                    getTracerConfig(sdkTracer.getInstrumentationScopeInfo())));
   }
 
   /**
@@ -165,6 +198,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
         + sharedState.getSampler()
         + ", spanProcessor="
         + sharedState.getActiveSpanProcessor()
+        + ", tracerConfigurator="
+        + tracerConfigurator
         + '}';
   }
 }

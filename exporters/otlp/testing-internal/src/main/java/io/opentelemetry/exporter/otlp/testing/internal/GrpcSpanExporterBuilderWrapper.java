@@ -6,13 +6,16 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -77,11 +80,6 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setAuthenticator(Authenticator authenticator) {
-    return this;
-  }
-
-  @Override
   public TelemetryExporterBuilder<SpanData> setTrustedCertificates(byte[] certificates) {
     builder.setTrustedCertificates(certificates);
     return this;
@@ -116,6 +114,38 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
   @SuppressWarnings("deprecation") // testing deprecated functionality
   public TelemetryExporterBuilder<SpanData> setChannel(Object channel) {
     builder.setChannel((ManagedChannel) channel);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setServiceClassLoader(ClassLoader serviceClassLoader) {
+    builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setComponentLoader(ComponentLoader componentLoader) {
+    builder.setComponentLoader(componentLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setExecutorService(ExecutorService executorService) {
+    builder.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    builder.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    builder.setInternalTelemetryVersion(schemaVersion);
     return this;
   }
 

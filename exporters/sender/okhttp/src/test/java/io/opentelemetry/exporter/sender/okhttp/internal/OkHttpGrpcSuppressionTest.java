@@ -21,7 +21,7 @@ class OkHttpGrpcSuppressionTest
   @Override
   OkHttpGrpcSender<DummyMarshaler> createSender(String endpoint) {
     return new OkHttpGrpcSender<>(
-        "https://localhost", null, 10L, 10L, Collections::emptyMap, null, null, null);
+        "https://localhost", null, 10L, 10L, Collections::emptyMap, null, null, null, null);
   }
 
   protected static class DummyMarshaler extends MarshalerWithSize {

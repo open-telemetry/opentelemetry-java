@@ -9,10 +9,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
@@ -36,8 +38,11 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
 
   private final LoggerSharedState sharedState;
   private final ComponentRegistry<SdkLogger> loggerComponentRegistry;
-  private final ScopeConfigurator<LoggerConfig> loggerConfigurator;
   private final boolean isNoopLogRecordProcessor;
+
+  // deliberately not volatile because of performance concerns
+  // - which means its eventually consistent
+  private ScopeConfigurator<LoggerConfig> loggerConfigurator;
 
   /**
    * Returns a new {@link SdkLoggerProviderBuilder} for {@link SdkLoggerProvider}.
@@ -53,14 +58,22 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
       Supplier<LogLimits> logLimitsSupplier,
       List<LogRecordProcessor> processors,
       Clock clock,
-      ScopeConfigurator<LoggerConfig> loggerConfigurator) {
+      ScopeConfigurator<LoggerConfig> loggerConfigurator,
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      Supplier<MeterProvider> meterProvider) {
     LogRecordProcessor logRecordProcessor = LogRecordProcessor.composite(processors);
     this.sharedState =
-        new LoggerSharedState(resource, logLimitsSupplier, logRecordProcessor, clock);
+        new LoggerSharedState(
+            resource,
+            logLimitsSupplier,
+            logRecordProcessor,
+            clock,
+            exceptionAttributeResolver,
+            new SdkLoggerInstrumentation(meterProvider));
     this.loggerComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->
-                new SdkLogger(
+                SdkLogger.create(
                     sharedState,
                     instrumentationScopeInfo,
                     getLoggerConfig(instrumentationScopeInfo)));
@@ -94,6 +107,26 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
       return DEFAULT_LOGGER_NAME;
     }
     return instrumentationScopeName;
+  }
+
+  /**
+   * Updates the logger configurator, which computes {@link LoggerConfig} for each {@link
+   * InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil#setLoggerConfigurator(SdkLoggerProvider,
+   * ScopeConfigurator)}.
+   *
+   * @see LoggerConfig#configuratorBuilder()
+   */
+  void setLoggerConfigurator(ScopeConfigurator<LoggerConfig> loggerConfigurator) {
+    this.loggerConfigurator = loggerConfigurator;
+    this.loggerComponentRegistry
+        .getComponents()
+        .forEach(
+            sdkLogger ->
+                sdkLogger.updateLoggerConfig(
+                    getLoggerConfig(sdkLogger.getInstrumentationScopeInfo())));
   }
 
   /**
@@ -135,6 +168,8 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
         + sharedState.getLogLimits()
         + ", logRecordProcessor="
         + sharedState.getLogRecordProcessor()
+        + ", loggerConfigurator="
+        + loggerConfigurator
         + '}';
   }
 }

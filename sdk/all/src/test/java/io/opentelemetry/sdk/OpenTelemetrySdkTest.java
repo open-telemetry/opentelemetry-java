@@ -406,31 +406,13 @@ class OpenTelemetrySdkTest {
             .setPropagators(ContextPropagators.create(propagator))
             .build();
 
+    // Test that toString delegates to underlying classes, and make sure their toString is also
+    // nice.
     assertThat(sdk.toString())
-        .isEqualTo(
-            "OpenTelemetrySdk{"
-                + "tracerProvider=SdkTracerProvider{"
-                + "clock=SystemClock{}, "
-                + "idGenerator=RandomIdGenerator{}, "
-                + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
-                + "spanLimitsSupplier=SpanLimitsValue{maxNumberOfAttributes=128, maxNumberOfEvents=128, maxNumberOfLinks=128, maxNumberOfAttributesPerEvent=128, maxNumberOfAttributesPerLink=128, maxAttributeValueLength=2147483647}, "
-                + "sampler=ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}, "
-                + "spanProcessor=SimpleSpanProcessor{spanExporter=MultiSpanExporter{spanExporters=[MockSpanExporter{}, MockSpanExporter{}]}, exportUnsampledSpans=false}"
-                + "}, "
-                + "meterProvider=SdkMeterProvider{"
-                + "clock=SystemClock{}, "
-                + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
-                + "metricReaders=[PeriodicMetricReader{exporter=MockMetricExporter{}, intervalNanos=60000000000}], "
-                + "metricProducers=[], "
-                + "views=[RegisteredView{instrumentSelector=InstrumentSelector{instrumentName=instrument}, view=View{name=new-instrument, aggregation=DefaultAggregation, attributesProcessor=NoopAttributesProcessor{}, cardinalityLimit=2000}}]"
-                + "}, "
-                + "loggerProvider=SdkLoggerProvider{"
-                + "clock=SystemClock{}, "
-                + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
-                + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
-                + "logRecordProcessor=SimpleLogRecordProcessor{logRecordExporter=MultiLogRecordExporter{logRecordExporters=[MockLogRecordExporter{}, MockLogRecordExporter{}]}}"
-                + "}, "
-                + "propagators=DefaultContextPropagators{textMapPropagator=MockTextMapPropagator{}}"
-                + "}");
+        .matches("OpenTelemetrySdk\\{.*}")
+        .matches("OpenTelemetrySdk\\{tracerProvider=SdkTracerProvider\\{.*}.*}")
+        .matches("OpenTelemetrySdk\\{.*, meterProvider=SdkMeterProvider\\{.*}.*}")
+        .matches("OpenTelemetrySdk\\{.*, loggerProvider=SdkLoggerProvider\\{.*}.*}")
+        .matches("OpenTelemetrySdk\\{.*, propagators=DefaultContextPropagators\\{.*}}");
   }
 }

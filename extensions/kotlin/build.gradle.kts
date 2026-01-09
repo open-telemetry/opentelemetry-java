@@ -1,4 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
   id("otel.java-conventions")
@@ -45,10 +47,10 @@ testing {
 }
 
 tasks {
-  withType(KotlinCompile::class) {
-    kotlinOptions {
-      jvmTarget = "1.8"
-      languageVersion = "1.6"
+  withType(KotlinJvmCompile::class) {
+    compilerOptions {
+      jvmTarget.set(JvmTarget.JVM_1_8)
+      apiVersion.set(KotlinVersion.KOTLIN_1_8)
     }
   }
 

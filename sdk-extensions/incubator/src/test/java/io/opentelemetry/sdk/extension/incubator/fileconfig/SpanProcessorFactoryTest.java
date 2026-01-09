@@ -8,21 +8,20 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanProcessorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorPropertyModel;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,8 +31,9 @@ class SpanProcessorFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final SpiHelper spiHelper =
-      SpiHelper.create(SpanProcessorFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(
+          SpiHelper.create(SpanProcessorFactoryTest.class.getClassLoader()));
 
   @Test
   void create_BatchNullExporter() {
@@ -41,10 +41,8 @@ class SpanProcessorFactoryTest {
             () ->
                 SpanProcessorFactory.getInstance()
                     .create(
-                        new SpanProcessorModel().withBatch(new BatchSpanProcessorModel()),
-                        spiHelper,
-                        Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+                        new SpanProcessorModel().withBatch(new BatchSpanProcessorModel()), context))
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("batch span processor exporter is required but is null");
   }
 
@@ -63,9 +61,9 @@ class SpanProcessorFactoryTest {
                 new SpanProcessorModel()
                     .withBatch(
                         new BatchSpanProcessorModel()
-                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))),
-                spiHelper,
-                closeables);
+                            .withExporter(
+                                new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))),
+                context);
     cleanup.addCloseable(processor);
     cleanup.addCloseables(closeables);
 
@@ -90,12 +88,12 @@ class SpanProcessorFactoryTest {
                 new SpanProcessorModel()
                     .withBatch(
                         new BatchSpanProcessorModel()
-                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))
+                            .withExporter(
+                                new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))
                             .withScheduleDelay(1)
                             .withMaxExportBatchSize(2)
                             .withExportTimeout(3)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(processor);
     cleanup.addCloseables(closeables);
 
@@ -109,9 +107,8 @@ class SpanProcessorFactoryTest {
                 SpanProcessorFactory.getInstance()
                     .create(
                         new SpanProcessorModel().withSimple(new SimpleSpanProcessorModel()),
-                        spiHelper,
-                        Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+                        context))
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("simple span processor exporter is required but is null");
   }
 
@@ -129,9 +126,9 @@ class SpanProcessorFactoryTest {
                 new SpanProcessorModel()
                     .withSimple(
                         new SimpleSpanProcessorModel()
-                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))),
-                spiHelper,
-                closeables);
+                            .withExporter(
+                                new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))),
+                context);
     cleanup.addCloseable(processor);
     cleanup.addCloseables(closeables);
 
@@ -146,10 +143,11 @@ class SpanProcessorFactoryTest {
                     .create(
                         new SpanProcessorModel()
                             .withAdditionalProperty(
-                                "unknown_key", ImmutableMap.of("key1", "value1")),
-                        spiHelper,
-                        new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
+                                "unknown_key",
+                                new SpanProcessorPropertyModel()
+                                    .withAdditionalProperty("key1", "value1")),
+                        context))
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.trace.SpanProcessor with name \"unknown_key\".");
   }
@@ -160,9 +158,10 @@ class SpanProcessorFactoryTest {
         SpanProcessorFactory.getInstance()
             .create(
                 new SpanProcessorModel()
-                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
-                spiHelper,
-                new ArrayList<>());
+                    .withAdditionalProperty(
+                        "test",
+                        new SpanProcessorPropertyModel().withAdditionalProperty("key1", "value1")),
+                context);
     assertThat(spanProcessor).isInstanceOf(SpanProcessorComponentProvider.TestSpanProcessor.class);
     Assertions.assertThat(
             ((SpanProcessorComponentProvider.TestSpanProcessor) spanProcessor)

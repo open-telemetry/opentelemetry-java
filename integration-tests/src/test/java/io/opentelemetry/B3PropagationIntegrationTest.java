@@ -30,7 +30,6 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Supplier;
@@ -44,6 +43,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 
 /** Integration tests for the B3 propagators, in various configurations. */
 class B3PropagationIntegrationTest {
@@ -161,7 +161,7 @@ class B3PropagationIntegrationTest {
 
   @ParameterizedTest
   @ArgumentsSource(WebClientArgumentSupplier.class)
-  void propagation(String testType, WebClient client) throws IOException {
+  void propagation(String testType, WebClient client) {
     OpenTelemetrySdk clientSdk = setupClient();
 
     Span span = clientSdk.getTracer("testTracer").spanBuilder("clientSpan").startSpan();
@@ -182,7 +182,7 @@ class B3PropagationIntegrationTest {
 
   @ParameterizedTest
   @ArgumentsSource(WebClientArgumentSupplier.class)
-  void noClientTracing(String testType, WebClient client) throws IOException {
+  void noClientTracing(String testType, WebClient client) {
     assertThat(client.get("/frontend").aggregate().join().contentUtf8()).isEqualTo("OK");
 
     List<SpanData> finishedSpanItems = spanExporter.getFinishedSpanItems();
@@ -237,7 +237,8 @@ class B3PropagationIntegrationTest {
 
   public static class WebClientArgumentSupplier implements ArgumentsProvider {
     @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(
+        ParameterDeclarations parameters, ExtensionContext context) {
       return Stream.of(
           Arguments.of("b3multi", b3MultiClient), Arguments.of("b3single", b3SingleClient));
     }

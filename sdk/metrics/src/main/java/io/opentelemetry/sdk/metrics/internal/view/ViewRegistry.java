@@ -169,7 +169,7 @@ public final class ViewRegistry {
       return false;
     }
     if (selector.getInstrumentName() != null
-        && !GlobUtil.toGlobPatternPredicate(selector.getInstrumentName())
+        && !GlobUtil.createGlobPatternPredicate(selector.getInstrumentName())
             .test(descriptor.getName())) {
       return false;
     }

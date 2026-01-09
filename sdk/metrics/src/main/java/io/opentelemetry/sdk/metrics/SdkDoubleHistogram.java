@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogram;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogramBuilder;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
@@ -21,14 +19,14 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDoubleHistogram {
+class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
   private static final Logger logger = Logger.getLogger(SdkDoubleHistogram.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final SdkMeter sdkMeter;
-  private final WriteableMetricStorage storage;
+  final SdkMeter sdkMeter;
+  final WriteableMetricStorage storage;
 
-  private SdkDoubleHistogram(
+  SdkDoubleHistogram(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
     this.sdkMeter = sdkMeter;
@@ -58,14 +56,9 @@ final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDou
     record(value, Attributes.empty());
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
+  static class SdkDoubleHistogramBuilder implements DoubleHistogramBuilder {
 
-  static final class SdkDoubleHistogramBuilder implements ExtendedDoubleHistogramBuilder {
-
-    private final InstrumentBuilder builder;
+    final InstrumentBuilder builder;
 
     SdkDoubleHistogramBuilder(SdkMeter sdkMeter, String name) {
       builder =
@@ -105,12 +98,6 @@ final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDou
         return this;
       }
       builder.setExplicitBucketBoundaries(bucketBoundaries);
-      return this;
-    }
-
-    @Override
-    public ExtendedDoubleHistogramBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      builder.setAdviceAttributes(attributes);
       return this;
     }
 

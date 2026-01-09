@@ -1,0 +1,40 @@
+version: 3
+
+targets:
+  only:
+    - type: gradle
+  exclude:
+    # these modules are not published and so consumers will not be exposed to them
+    - type: gradle
+      path: ./
+      target: ':api:testing-internal'
+    - type: gradle
+      path: ./
+      target: ':exporters:otlp:testing-internal'
+    - type: gradle
+      path: ./
+      target: ':integration-tests'
+    - type: gradle
+      path: ./
+      target: ':integration-tests:graal'
+    - type: gradle
+      path: ./
+      target: ':integration-tests:graal-incubating'
+    - type: gradle
+      path: ./
+      target: ':integration-tests:otlp'
+    - type: gradle
+      path: ./
+      target: ':integration-tests:tracecontext'
+    - type: gradle
+      path: ./
+      target: ':perf-harness'
+    - type: gradle
+      path: ./
+      target: ':testing-internal'
+
+experimental:
+  gradle:
+    configurations-only:
+      # consumer will only be exposed to these dependencies
+      - runtimeClasspath

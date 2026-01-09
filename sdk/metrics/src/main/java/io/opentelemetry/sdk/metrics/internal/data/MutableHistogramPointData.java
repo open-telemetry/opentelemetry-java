@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A mutable {@link HistogramPointData}
+ * A mutable {@link HistogramPointData}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

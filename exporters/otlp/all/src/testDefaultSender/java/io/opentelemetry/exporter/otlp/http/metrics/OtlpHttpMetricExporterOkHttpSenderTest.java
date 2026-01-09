@@ -86,8 +86,6 @@ class OtlpHttpMetricExporterOkHttpSenderTest
       assertThat(metricExporter.toString())
           .matches(
               "OtlpHttpMetricExporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=metric, "
                   + "endpoint=http://localhost:4318/v1/metrics, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
@@ -100,9 +98,12 @@ class OtlpHttpMetricExporterOkHttpSenderTest
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
                   + "retryPolicy=RetryPolicy\\{.*\\}, "
+                  + "componentLoader=.*, "
+                  + "exporterType=OTLP_HTTP_METRIC_EXPORTER, "
+                  + "internalTelemetrySchemaVersion=LEGACY, "
                   + "aggregationTemporalitySelector=AggregationTemporalitySelector\\{.*\\}, "
                   + "defaultAggregationSelector=DefaultAggregationSelector\\{.*\\}, "
-                  + "memoryMode=IMMUTABLE_DATA"
+                  + "memoryMode=REUSABLE_DATA"
                   + "\\}");
     }
   }

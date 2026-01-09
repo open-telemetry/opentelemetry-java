@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.StringJoiner;
@@ -31,8 +32,10 @@ public final class ZipkinSpanExporterBuilder {
   // compression is enabled by default, because this is the default of OkHttpSender,
   // which is created when no custom sender is set (see OkHttpSender.Builder)
   private boolean compressionEnabled = true;
-  private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
-  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private int readTimeoutMillis = (int) TimeUnit.SECONDS.toMillis(10);
+  private Supplier<MeterProvider> meterProviderSupplier =
+      () -> GlobalOpenTelemetry.getOrNoop().getMeterProvider();
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
@@ -156,7 +159,8 @@ public final class ZipkinSpanExporterBuilder {
   public ZipkinSpanExporterBuilder setReadTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    this.readTimeoutMillis = unit.toMillis(timeout);
+    long timeoutMillis = timeout == 0 ? Long.MAX_VALUE : unit.toMillis(timeout);
+    this.readTimeoutMillis = (int) Math.min(timeoutMillis, Integer.MAX_VALUE);
     return this;
   }
 
@@ -185,6 +189,18 @@ public final class ZipkinSpanExporterBuilder {
     return this;
   }
 
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   *
+   * @since 1.51.0
+   */
+  public ZipkinSpanExporterBuilder setInternalTelemetryVersion(InternalTelemetryVersion level) {
+    requireNonNull(level, "level");
+    this.internalTelemetryVersion = level;
+    return this;
+  }
+
   String toString(boolean includePrefixAndSuffix) {
     StringJoiner joiner =
         includePrefixAndSuffix
@@ -193,6 +209,7 @@ public final class ZipkinSpanExporterBuilder {
     joiner.add("endpoint=" + endpoint);
     joiner.add("compressionEnabled=" + compressionEnabled);
     joiner.add("readTimeoutMillis=" + readTimeoutMillis);
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit sender because we can't log the configuration in any readable way
     // Note: omit encoder because we can't log the configuration in any readable way
     // Note: omit localIpAddressSupplier because we can't log the configuration in any readable way
@@ -212,11 +229,18 @@ public final class ZipkinSpanExporterBuilder {
           OkHttpSender.newBuilder()
               .endpoint(endpoint)
               .compressionEnabled(compressionEnabled)
-              .readTimeout((int) readTimeoutMillis)
+              .readTimeout(readTimeoutMillis)
               .build();
     }
     OtelToZipkinSpanTransformer transformer =
         OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
-    return new ZipkinSpanExporter(this, encoder, sender, meterProviderSupplier, transformer);
+    return new ZipkinSpanExporter(
+        this,
+        encoder,
+        sender,
+        meterProviderSupplier,
+        internalTelemetryVersion,
+        endpoint,
+        transformer);
   }
 }

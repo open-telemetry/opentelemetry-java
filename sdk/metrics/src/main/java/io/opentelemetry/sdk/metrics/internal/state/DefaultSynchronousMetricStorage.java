@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
@@ -41,7 +40,7 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DefaultSynchronousMetricStorage<T extends PointData, U extends ExemplarData>
+public final class DefaultSynchronousMetricStorage<T extends PointData>
     implements SynchronousMetricStorage {
 
   private static final Logger internalLogger =
@@ -51,8 +50,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
-  private final Aggregator<T, U> aggregator;
-  private volatile AggregatorHolder<T, U> aggregatorHolder = new AggregatorHolder<>();
+  private final Aggregator<T> aggregator;
+  private volatile AggregatorHolder<T> aggregatorHolder = new AggregatorHolder<>();
   private final AttributesProcessor attributesProcessor;
 
   private final MemoryMode memoryMode;
@@ -62,7 +61,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   // Only populated if memoryMode == REUSABLE_DATA and
   // aggregationTemporality is DELTA
-  private volatile ConcurrentHashMap<Attributes, AggregatorHandle<T, U>>
+  private volatile ConcurrentHashMap<Attributes, AggregatorHandle<T>>
       previousCollectionAggregatorHandles = new ConcurrentHashMap<>();
 
   /**
@@ -71,15 +70,18 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
    */
   private final int maxCardinality;
 
-  private final ConcurrentLinkedQueue<AggregatorHandle<T, U>> aggregatorHandlePool =
+  private final ConcurrentLinkedQueue<AggregatorHandle<T>> aggregatorHandlePool =
       new ConcurrentLinkedQueue<>();
+
+  private volatile boolean enabled;
 
   DefaultSynchronousMetricStorage(
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
-      Aggregator<T, U> aggregator,
+      Aggregator<T> aggregator,
       AttributesProcessor attributesProcessor,
-      int maxCardinality) {
+      int maxCardinality,
+      boolean enabled) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     this.aggregationTemporality =
@@ -90,18 +92,22 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
     this.memoryMode = registeredReader.getReader().getMemoryMode();
+    this.enabled = enabled;
   }
 
   // Visible for testing
-  Queue<AggregatorHandle<T, U>> getAggregatorHandlePool() {
+  Queue<AggregatorHandle<T>> getAggregatorHandlePool() {
     return aggregatorHandlePool;
   }
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
-    AggregatorHolder<T, U> aggregatorHolder = getHolderForRecord();
+    if (!enabled) {
+      return;
+    }
+    AggregatorHolder<T> aggregatorHolder = getHolderForRecord();
     try {
-      AggregatorHandle<T, U> handle =
+      AggregatorHandle<T> handle =
           getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
       handle.recordLong(value, attributes, context);
     } finally {
@@ -111,6 +117,9 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {
+    if (!enabled) {
+      return;
+    }
     if (Double.isNaN(value)) {
       logger.log(
           Level.FINE,
@@ -121,9 +130,9 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
-    AggregatorHolder<T, U> aggregatorHolder = getHolderForRecord();
+    AggregatorHolder<T> aggregatorHolder = getHolderForRecord();
     try {
-      AggregatorHandle<T, U> handle =
+      AggregatorHandle<T> handle =
           getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
       handle.recordDouble(value, attributes, context);
     } finally {
@@ -132,8 +141,13 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   }
 
   @Override
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  @Override
   public boolean isEnabled() {
-    return true;
+    return enabled;
   }
 
   /**
@@ -144,9 +158,9 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
    * #releaseHolderForRecord(AggregatorHolder)} when record operation completes to signal to that
    * its safe to proceed with Collect operations.
    */
-  private AggregatorHolder<T, U> getHolderForRecord() {
+  private AggregatorHolder<T> getHolderForRecord() {
     do {
-      AggregatorHolder<T, U> aggregatorHolder = this.aggregatorHolder;
+      AggregatorHolder<T> aggregatorHolder = this.aggregatorHolder;
       int recordsInProgress = aggregatorHolder.activeRecordingThreads.addAndGet(2);
       if (recordsInProgress % 2 == 0) {
         return aggregatorHolder;
@@ -162,17 +176,17 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
    * Called on the {@link AggregatorHolder} obtained from {@link #getHolderForRecord()} to indicate
    * that recording is complete, and it is safe to collect.
    */
-  private void releaseHolderForRecord(AggregatorHolder<T, U> aggregatorHolder) {
+  private void releaseHolderForRecord(AggregatorHolder<T> aggregatorHolder) {
     aggregatorHolder.activeRecordingThreads.addAndGet(-2);
   }
 
-  private AggregatorHandle<T, U> getAggregatorHandle(
-      ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles,
+  private AggregatorHandle<T> getAggregatorHandle(
+      ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles,
       Attributes attributes,
       Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
-    AggregatorHandle<T, U> handle = aggregatorHandles.get(attributes);
+    AggregatorHandle<T> handle = aggregatorHandles.get(attributes);
     if (handle != null) {
       return handle;
     }
@@ -192,7 +206,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       }
     }
     // Get handle from pool if available, else create a new one.
-    AggregatorHandle<T, U> newHandle = aggregatorHandlePool.poll();
+    AggregatorHandle<T> newHandle = aggregatorHandlePool.poll();
     if (newHandle == null) {
       newHandle = aggregator.createHandle();
     }
@@ -212,9 +226,9 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
             ? registeredReader.getLastCollectEpochNanos()
             : startEpochNanos;
 
-    ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
+    ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles;
     if (reset) {
-      AggregatorHolder<T, U> holder = this.aggregatorHolder;
+      AggregatorHolder<T> holder = this.aggregatorHolder;
       this.aggregatorHolder =
           (memoryMode == REUSABLE_DATA)
               ? new AggregatorHolder<>(previousCollectionAggregatorHandles)
@@ -299,7 +313,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       previousCollectionAggregatorHandles = aggregatorHandles;
     }
 
-    if (points.isEmpty()) {
+    if (points.isEmpty() || !enabled) {
       return EmptyMetricData.getInstance();
     }
 
@@ -312,8 +326,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     return metricDescriptor;
   }
 
-  private static class AggregatorHolder<T extends PointData, U extends ExemplarData> {
-    private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
+  private static class AggregatorHolder<T extends PointData> {
+    private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles;
     // Recording threads grab the current interval (AggregatorHolder) and atomically increment
     // this by 2 before recording against it (and then decrement by two when done).
     //
@@ -334,8 +348,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       aggregatorHandles = new ConcurrentHashMap<>();
     }
 
-    private AggregatorHolder(
-        ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles) {
+    private AggregatorHolder(ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles) {
       this.aggregatorHandles = aggregatorHandles;
     }
   }

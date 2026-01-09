@@ -2,19 +2,12 @@
 
 Experimental APIs, including Event API, extended Log Bridge APIs, extended Metrics APIs, extended ContextPropagator APIs, and extended Trace APIs.
 
-## Event API
-
-Features:
-
-* Event API for producing log records according to [Event Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/general/events/).
-
-See [EventApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/events/EventApiUsageTest.java).
-
 ## Extended Log Bridge API
 
 Features:
 
 * Check if logger is enabled before emitting logs to avoid unnecessary computation
+* Add extended attributes to log records to encode complex data structures
 
 See [ExtendedLogsBridgeApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/logs/ExtendedLogsBridgeApiUsageTest.java).
 

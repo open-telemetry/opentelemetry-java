@@ -5,14 +5,14 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig.component;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 
-public class SpanExporterComponentProvider implements ComponentProvider<SpanExporter> {
+public class SpanExporterComponentProvider implements ComponentProvider {
   @Override
   public Class<SpanExporter> getType() {
     return SpanExporter.class;
@@ -24,15 +24,15 @@ public class SpanExporterComponentProvider implements ComponentProvider<SpanExpo
   }
 
   @Override
-  public SpanExporter create(StructuredConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config) {
     return new TestSpanExporter(config);
   }
 
   public static class TestSpanExporter implements SpanExporter {
 
-    public final StructuredConfigProperties config;
+    public final DeclarativeConfigProperties config;
 
-    private TestSpanExporter(StructuredConfigProperties config) {
+    private TestSpanExporter(DeclarativeConfigProperties config) {
       this.config = config;
     }
 

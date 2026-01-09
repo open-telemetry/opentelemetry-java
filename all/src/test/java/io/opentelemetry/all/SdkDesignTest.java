@@ -28,7 +28,7 @@ class SdkDesignTest {
    * Ensures that all SDK methods that: - are defined in classes that extend or implement API model
    * and are public (to exclude protected builders) - are public (avoids issues with protected
    * methods returning classes unavailable to test's CL) - override or implement parent method
-   * return only API, Context or generic Java type.
+   * return only API, Context, Common, or generic Java type.
    */
   @Test
   void sdkImplementationOfApiClassesShouldReturnApiTypeOnly() {
@@ -45,7 +45,11 @@ class SdkDesignTest {
             .and(implementOrOverride())
             .should()
             .haveRawReturnType(
-                inPackage("io.opentelemetry.api..", "io.opentelemetry.context..", "java.."))
+                inPackage(
+                    "io.opentelemetry.api..",
+                    "io.opentelemetry.context..",
+                    "io.opentelemetry.common..",
+                    "java.."))
             .orShould()
             .haveRawReturnType("void");
 

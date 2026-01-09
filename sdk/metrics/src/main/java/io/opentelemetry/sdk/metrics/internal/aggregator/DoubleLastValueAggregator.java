@@ -17,14 +17,13 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.Measurement;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -40,20 +39,19 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public final class DoubleLastValueAggregator
-    implements Aggregator<DoublePointData, DoubleExemplarData> {
-  private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+public final class DoubleLastValueAggregator implements Aggregator<DoublePointData> {
+  private final ExemplarReservoirFactory reservoirFactory;
   private final MemoryMode memoryMode;
 
   public DoubleLastValueAggregator(
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier, MemoryMode memoryMode) {
-    this.reservoirSupplier = reservoirSupplier;
+      ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+    this.reservoirFactory = reservoirFactory;
     this.memoryMode = memoryMode;
   }
 
   @Override
-  public AggregatorHandle<DoublePointData, DoubleExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get(), memoryMode);
+  public AggregatorHandle<DoublePointData> createHandle() {
+    return new Handle(reservoirFactory, memoryMode);
   }
 
   @Override
@@ -64,25 +62,6 @@ public final class DoubleLastValueAggregator
   @Override
   public void diffInPlace(DoublePointData previousReusable, DoublePointData current) {
     ((MutableDoublePointData) previousReusable).set(current);
-  }
-
-  @Override
-  public DoublePointData toPoint(Measurement measurement) {
-    return ImmutableDoublePointData.create(
-        measurement.startEpochNanos(),
-        measurement.epochNanos(),
-        measurement.attributes(),
-        measurement.doubleValue());
-  }
-
-  @Override
-  public void toPoint(Measurement measurement, DoublePointData reusablePoint) {
-    ((MutableDoublePointData) reusablePoint)
-        .set(
-            measurement.startEpochNanos(),
-            measurement.epochNanos(),
-            measurement.attributes(),
-            measurement.doubleValue());
   }
 
   @Override
@@ -113,15 +92,15 @@ public final class DoubleLastValueAggregator
         ImmutableGaugeData.create(points));
   }
 
-  static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
-    @Nullable private static final Double DEFAULT_VALUE = null;
-    private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
+  static final class Handle extends AggregatorHandle<DoublePointData> {
+    private final AtomicReference<AtomicLong> current = new AtomicReference<>(null);
+    private final AtomicLong valueBits = new AtomicLong();
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
 
-    private Handle(ExemplarReservoir<DoubleExemplarData> reservoir, MemoryMode memoryMode) {
-      super(reservoir);
+    private Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(reservoirFactory, /* isDoubleType= */ true);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableDoublePointData();
       } else {
@@ -130,26 +109,28 @@ public final class DoubleLastValueAggregator
     }
 
     @Override
-    protected DoublePointData doAggregateThenMaybeReset(
+    protected DoublePointData doAggregateThenMaybeResetDoubles(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
         List<DoubleExemplarData> exemplars,
         boolean reset) {
-      Double value = reset ? this.current.getAndSet(DEFAULT_VALUE) : this.current.get();
+      AtomicLong valueBits =
+          Objects.requireNonNull(reset ? this.current.getAndSet(null) : this.current.get());
+      double value = Double.longBitsToDouble(valueBits.get());
       if (reusablePoint != null) {
-        reusablePoint.set(
-            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+        reusablePoint.set(startEpochNanos, epochNanos, attributes, value, exemplars);
         return reusablePoint;
       } else {
         return ImmutableDoublePointData.create(
-            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+            startEpochNanos, epochNanos, attributes, value, exemplars);
       }
     }
 
     @Override
     protected void doRecordDouble(double value) {
-      current.set(value);
+      valueBits.set(Double.doubleToLongBits(value));
+      current.compareAndSet(null, valueBits);
     }
   }
 }

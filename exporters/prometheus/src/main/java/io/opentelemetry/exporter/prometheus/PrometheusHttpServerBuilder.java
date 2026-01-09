@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.prometheus;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -29,13 +30,13 @@ public final class PrometheusHttpServerBuilder {
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
-  private boolean otelScopeEnabled = true;
-  @Nullable private Predicate<String> allowedResourceAttributesFilter;
+  private PrometheusMetricReaderBuilder metricReaderBuilder = PrometheusMetricReader.builder();
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
   @Nullable private HttpHandler defaultHandler;
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
+  @Nullable private Authenticator authenticator;
 
   PrometheusHttpServerBuilder() {}
 
@@ -43,11 +44,11 @@ public final class PrometheusHttpServerBuilder {
     this.host = builder.host;
     this.port = builder.port;
     this.prometheusRegistry = builder.prometheusRegistry;
-    this.otelScopeEnabled = builder.otelScopeEnabled;
-    this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
+    this.metricReaderBuilder = new PrometheusMetricReaderBuilder(builder.metricReaderBuilder);
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
     this.defaultAggregationSelector = builder.defaultAggregationSelector;
+    this.authenticator = builder.authenticator;
   }
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
@@ -73,7 +74,6 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Sets the {@link PrometheusRegistry} to be used for {@link PrometheusHttpServer}. */
-  @SuppressWarnings("UnusedReturnValue")
   public PrometheusHttpServerBuilder setPrometheusRegistry(PrometheusRegistry prometheusRegistry) {
     requireNonNull(prometheusRegistry, "prometheusRegistry");
     this.prometheusRegistry = prometheusRegistry;
@@ -81,9 +81,14 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}. */
-  @SuppressWarnings("UnusedReturnValue")
-  public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
-    this.otelScopeEnabled = otelScopeEnabled;
+  public PrometheusHttpServerBuilder setOtelScopeLabelsEnabled(boolean otelScopeLabelsEnabled) {
+    metricReaderBuilder.setOtelScopeLabelsEnabled(otelScopeLabelsEnabled);
+    return this;
+  }
+
+  /** Set if the {@code otel_target_info} metric is generated. Default is {@code true}. */
+  public PrometheusHttpServerBuilder setTargetInfoMetricEnabled(boolean targetInfoMetricEnabled) {
+    metricReaderBuilder.setTargetInfoMetricEnabled(targetInfoMetricEnabled);
     return this;
   }
 
@@ -99,7 +104,8 @@ public final class PrometheusHttpServerBuilder {
    */
   public PrometheusHttpServerBuilder setAllowedResourceAttributesFilter(
       Predicate<String> resourceAttributesFilter) {
-    this.allowedResourceAttributesFilter = requireNonNull(resourceAttributesFilter);
+    requireNonNull(resourceAttributesFilter, "resourceAttributesFilter");
+    metricReaderBuilder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
     return this;
   }
 
@@ -147,6 +153,17 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
+   * Set the authenticator for {@link PrometheusHttpServer}.
+   *
+   * <p>If unset, no authentication will be performed.
+   */
+  public PrometheusHttpServerBuilder setAuthenticator(Authenticator authenticator) {
+    requireNonNull(authenticator, "authenticator");
+    this.authenticator = authenticator;
+    return this;
+  }
+
+  /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
@@ -162,10 +179,10 @@ public final class PrometheusHttpServerBuilder {
         port,
         executor,
         prometheusRegistry,
-        otelScopeEnabled,
-        allowedResourceAttributesFilter,
         memoryMode,
         defaultHandler,
-        defaultAggregationSelector);
+        defaultAggregationSelector,
+        authenticator,
+        metricReaderBuilder.build());
   }
 }

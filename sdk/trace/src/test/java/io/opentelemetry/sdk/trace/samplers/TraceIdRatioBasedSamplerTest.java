@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.Collections;
@@ -80,6 +81,7 @@ class TraceIdRatioBasedSamplerTest {
   }
 
   @Test
+  @SuppressLogger(ParentBasedSamplerBuilder.class)
   void differentProbabilities_NotSampledParent() {
     assert_NotSampledParent(Sampler.traceIdRatioBased(0.5), 0.5);
     assert_NotSampledParent(Sampler.traceIdRatioBased(0.2), 0.2);
@@ -97,6 +99,7 @@ class TraceIdRatioBasedSamplerTest {
   }
 
   @Test
+  @SuppressLogger(ParentBasedSamplerBuilder.class)
   void differentProbabilities_SampledParent() {
     assertSampledParent(Sampler.traceIdRatioBased(0.5), 0.5);
     assertSampledParent(Sampler.traceIdRatioBased(0.2), 0.2);
@@ -114,6 +117,7 @@ class TraceIdRatioBasedSamplerTest {
   }
 
   @Test
+  @SuppressLogger(ParentBasedSamplerBuilder.class)
   void differentProbabilities_SampledParentLink() {
     // Parent NOT sampled
     assertSampledParentLink(Sampler.traceIdRatioBased(0.5), 0.5);

@@ -19,7 +19,7 @@ final class KeyValueListAnyValueMarshaler extends MarshalerWithSize {
 
   private final Marshaler value;
 
-  private KeyValueListAnyValueMarshaler(KeyValueListMarshaler value) {
+  KeyValueListAnyValueMarshaler(KeyValueListMarshaler value) {
     super(calculateSize(value));
     this.value = value;
   }
@@ -42,11 +42,11 @@ final class KeyValueListAnyValueMarshaler extends MarshalerWithSize {
     return MarshalerUtil.sizeMessage(AnyValue.KVLIST_VALUE, value);
   }
 
-  private static class KeyValueListMarshaler extends MarshalerWithSize {
+  static class KeyValueListMarshaler extends MarshalerWithSize {
 
     private final Marshaler[] values;
 
-    private KeyValueListMarshaler(KeyValueMarshaler[] values) {
+    KeyValueListMarshaler(KeyValueMarshaler[] values) {
       super(calculateSize(values));
       this.values = values;
     }

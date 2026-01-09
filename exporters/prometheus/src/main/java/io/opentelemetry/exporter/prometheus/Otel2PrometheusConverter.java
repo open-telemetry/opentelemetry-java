@@ -10,6 +10,7 @@ import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMet
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -55,11 +56,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -75,10 +75,13 @@ final class Otel2PrometheusConverter {
   private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
   private static final String OTEL_SCOPE_NAME = "otel_scope_name";
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
+  private static final String OTEL_SCOPE_SCHEMA_URL = "otel_scope_schema_url";
+  private static final String OTEL_SCOPE_ATTRIBUTE_PREFIX = "otel_scope_";
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
-  private final boolean otelScopeEnabled;
+  private final boolean otelScopeLabelsEnabled;
+  private final boolean targetInfoMetricEnabled;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -88,21 +91,38 @@ final class Otel2PrometheusConverter {
   private final Map<Attributes, List<AttributeKey<?>>> resourceAttributesToAllowedKeysCache;
 
   /**
-   * Constructor with feature flag parameter.
+   * Constructor with feature flag parameters.
    *
-   * @param otelScopeEnabled enable generation of the OpenTelemetry instrumentation scope info
-   *     metric and labels.
+   * @param otelScopeLabelsEnabled whether to add OpenTelemetry scope labels to exported metrics
+   * @param targetInfoMetricEnabled whether to export the target_info metric with resource
+   *     attributes
    * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
    *     matching this predicate will be added as labels on each exported metric
    */
   Otel2PrometheusConverter(
-      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this.otelScopeEnabled = otelScopeEnabled;
+      boolean otelScopeLabelsEnabled,
+      boolean targetInfoMetricEnabled,
+      @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
+    this.targetInfoMetricEnabled = targetInfoMetricEnabled;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
             ? new ConcurrentHashMap<>()
             : Collections.emptyMap();
+  }
+
+  boolean isOtelScopeLabelsEnabled() {
+    return otelScopeLabelsEnabled;
+  }
+
+  boolean isTargetInfoMetricEnabled() {
+    return targetInfoMetricEnabled;
+  }
+
+  @Nullable
+  Predicate<String> getAllowedResourceAttributesFilter() {
+    return allowedResourceAttributesFilter;
   }
 
   MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
@@ -111,7 +131,6 @@ final class Otel2PrometheusConverter {
     }
     Map<String, MetricSnapshot> snapshotsByName = new HashMap<>(metricDataCollection.size());
     Resource resource = null;
-    Set<InstrumentationScopeInfo> scopes = new LinkedHashSet<>();
     for (MetricData metricData : metricDataCollection) {
       MetricSnapshot snapshot = convert(metricData);
       if (snapshot == null) {
@@ -121,15 +140,9 @@ final class Otel2PrometheusConverter {
       if (resource == null) {
         resource = metricData.getResource();
       }
-      if (otelScopeEnabled && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
-        scopes.add(metricData.getInstrumentationScopeInfo());
-      }
     }
-    if (resource != null) {
+    if (resource != null && targetInfoMetricEnabled) {
       putOrMerge(snapshotsByName, makeTargetInfo(resource));
-    }
-    if (otelScopeEnabled && !scopes.isEmpty()) {
-      putOrMerge(snapshotsByName, makeScopeInfo(scopes));
     }
     return new MetricSnapshots(snapshotsByName.values());
   }
@@ -436,25 +449,11 @@ final class Otel2PrometheusConverter {
                     resource.getAttributes()))));
   }
 
-  private InfoSnapshot makeScopeInfo(Set<InstrumentationScopeInfo> scopes) {
-    List<InfoDataPointSnapshot> prometheusScopeInfos = new ArrayList<>(scopes.size());
-    for (InstrumentationScopeInfo scope : scopes) {
-      prometheusScopeInfos.add(
-          new InfoDataPointSnapshot(
-              convertAttributes(
-                  null, // resource attributes are only copied for point's attributes
-                  scope,
-                  scope.getAttributes())));
-    }
-    return new InfoSnapshot(new MetricMetadata("otel_scope"), prometheusScopeInfos);
-  }
-
   /**
    * Convert OpenTelemetry attributes to Prometheus labels.
    *
    * @param resource optional resource (attributes) to be converted.
-   * @param scope will be converted to {@code otel_scope_*} labels if {@code otelScopeEnabled} is
-   *     {@code true}.
+   * @param scope will be converted to {@code otel_scope_*} labels.
    * @param attributes the attributes to be converted.
    * @param additionalAttributes optional list of key/value pairs, may be empty.
    */
@@ -472,18 +471,30 @@ final class Otel2PrometheusConverter {
 
     Map<String, String> labelNameToValue = new HashMap<>();
     attributes.forEach(
-        (key, value) -> labelNameToValue.put(sanitizeLabelName(key.getKey()), value.toString()));
+        (key, value) ->
+            labelNameToValue.put(
+                sanitizeLabelName(key.getKey()), toLabelValue(key.getType(), value)));
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
           requireNonNull(additionalAttributes[i]), additionalAttributes[i + 1]);
     }
 
-    if (otelScopeEnabled && scope != null) {
+    if (scope != null && otelScopeLabelsEnabled) {
       labelNameToValue.putIfAbsent(OTEL_SCOPE_NAME, scope.getName());
       if (scope.getVersion() != null) {
         labelNameToValue.putIfAbsent(OTEL_SCOPE_VERSION, scope.getVersion());
       }
+      String schemaUrl = scope.getSchemaUrl();
+      if (schemaUrl != null) {
+        labelNameToValue.putIfAbsent(OTEL_SCOPE_SCHEMA_URL, schemaUrl);
+      }
+      scope
+          .getAttributes()
+          .forEach(
+              (key, value) ->
+                  labelNameToValue.putIfAbsent(
+                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(), value.toString()));
     }
 
     if (resource != null) {
@@ -641,5 +652,77 @@ final class Otel2PrometheusConverter {
   private static String typeString(MetricSnapshot snapshot) {
     // Simple helper for a log message.
     return snapshot.getClass().getSimpleName().replace("Snapshot", "").toLowerCase(Locale.ENGLISH);
+  }
+
+  private static String toLabelValue(AttributeType type, Object attributeValue) {
+    switch (type) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return attributeValue.toString();
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+      case STRING_ARRAY:
+        if (attributeValue instanceof List) {
+          return toJsonStr((List<?>) attributeValue);
+        } else {
+          throw new IllegalStateException(
+              String.format(
+                  "Unexpected label value of %s for %s",
+                  attributeValue.getClass().getName(), type.name()));
+        }
+    }
+    throw new IllegalStateException("Unrecognized AttributeType: " + type);
+  }
+
+  public static String toJsonStr(List<?> attributeValue) {
+    StringJoiner joiner = new StringJoiner(",", "[", "]");
+    for (int i = 0; i < attributeValue.size(); i++) {
+      Object value = attributeValue.get(i);
+      joiner.add(value instanceof String ? toJsonValidStr((String) value) : String.valueOf(value));
+    }
+    return joiner.toString();
+  }
+
+  public static String toJsonValidStr(String str) {
+    StringBuilder sb = new StringBuilder();
+    sb.append('"');
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+
+      switch (c) {
+        case '"':
+          sb.append("\\\"");
+          break;
+        case '\\':
+          sb.append("\\\\");
+          break;
+        case '\b':
+          sb.append("\\b");
+          break;
+        case '\f':
+          sb.append("\\f");
+          break;
+        case '\n':
+          sb.append("\\n");
+          break;
+        case '\r':
+          sb.append("\\r");
+          break;
+        case '\t':
+          sb.append("\\t");
+          break;
+        default:
+          if (c <= 0x1F) {
+            sb.append(String.format(Locale.ROOT, "\\u%04X", (int) c));
+          } else {
+            sb.append(c);
+          }
+      }
+    }
+    sb.append('"');
+    return sb.toString();
   }
 }

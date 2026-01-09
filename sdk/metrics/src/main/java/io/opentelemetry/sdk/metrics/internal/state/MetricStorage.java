@@ -48,14 +48,5 @@ public interface MetricStorage {
       long startEpochNanos,
       long epochNanos);
 
-  /**
-   * Determines whether this storage is an empty metric storage.
-   *
-   * <p>Uses the reference comparison since {@link EmptyMetricStorage} is singleton.
-   *
-   * @return true if is empty.
-   */
-  default boolean isEmpty() {
-    return this == EmptyMetricStorage.INSTANCE;
-  }
+  void setEnabled(boolean enabled);
 }

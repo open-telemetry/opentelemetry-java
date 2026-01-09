@@ -10,6 +10,7 @@ description = "OpenTelemetry Context (Incubator)"
 otelJava.moduleName.set("io.opentelemetry.context")
 
 dependencies {
+  api(project(":common"))
   // MustBeClosed
   compileOnly("com.google.errorprone:error_prone_annotations")
 

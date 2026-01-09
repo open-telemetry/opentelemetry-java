@@ -1,0 +1,4 @@
+Comparing source compatibility of opentelemetry-exporter-zipkin-1.51.0.jar against opentelemetry-exporter-zipkin-1.50.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setInternalTelemetryVersion(io.opentelemetry.sdk.common.InternalTelemetryVersion)

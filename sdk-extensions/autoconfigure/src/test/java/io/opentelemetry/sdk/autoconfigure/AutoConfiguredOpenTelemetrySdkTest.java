@@ -10,8 +10,8 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -19,18 +19,17 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -38,7 +37,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -49,32 +47,36 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,8 +102,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Mock private TextMapGetter<Map<String, String>> getter;
   @Mock private Sampler sampler1;
   @Mock private Sampler sampler2;
-  @Mock private SpanExporter spanExporter1;
-  @Mock private SpanExporter spanExporter2;
   @Mock private MetricReader metricReader;
   @Mock private LogRecordProcessor logRecordProcessor;
 
@@ -156,7 +156,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @BeforeEach
   void resetGlobal() {
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventLoggerProvider.resetForTest();
     builder =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(disableExportPropertySupplier());
@@ -251,76 +250,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  void builder_addSpanExporterCustomizer() {
-    Mockito.lenient().when(spanExporter2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-
-    SdkTracerProvider sdkTracerProvider =
-        builder
-            .addSpanExporterCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(SpanExporter.composite());
-                  return spanExporter1;
-                })
-            .addSpanExporterCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(spanExporter1);
-                  return spanExporter2;
-                })
-            .build()
-            .getOpenTelemetrySdk()
-            .getSdkTracerProvider();
-
-    assertThat(sdkTracerProvider)
-        .extracting("sharedState")
-        .extracting("activeSpanProcessor")
-        .extracting("worker")
-        .extracting("spanExporter")
-        .isEqualTo(spanExporter2);
-  }
-
-  @Test
-  void builder_addSpanProcessorCustomizer() {
-    SpanProcessor mockProcessor1 = Mockito.mock(SpanProcessor.class);
-    SpanProcessor mockProcessor2 = Mockito.mock(SpanProcessor.class);
-    when(mockProcessor2.isStartRequired()).thenReturn(true);
-    when(mockProcessor2.isEndRequired()).thenReturn(true);
-    Mockito.lenient().doReturn(CompletableResultCode.ofSuccess()).when(mockProcessor2).shutdown();
-    Mockito.lenient().when(spanExporter1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-
-    SdkTracerProvider sdkTracerProvider =
-        builder
-            .addSpanExporterCustomizer((prev, config) -> spanExporter1)
-            .addSpanProcessorCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isNotSameAs(mockProcessor2);
-                  return mockProcessor1;
-                })
-            .addSpanProcessorCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(mockProcessor1);
-                  return mockProcessor2;
-                })
-            .build()
-            .getOpenTelemetrySdk()
-            .getSdkTracerProvider();
-
-    assertThat(sdkTracerProvider)
-        .extracting("sharedState")
-        .extracting("activeSpanProcessor")
-        .isSameAs(mockProcessor2);
-
-    Span span = sdkTracerProvider.get("dummy-scope").spanBuilder("dummy-span").startSpan();
-
-    verify(mockProcessor2).onStart(any(), same((ReadWriteSpan) span));
-
-    span.end();
-    verify(mockProcessor2).onEnd(same((ReadableSpan) span));
-
-    verifyNoInteractions(mockProcessor1);
-    verifyNoInteractions(spanExporter1);
-  }
-
-  @Test
   void builder_addAutoConfigurationCustomizerProviderUsingComponentLoader() {
     AutoConfigurationCustomizerProvider customizerProvider =
         mock(AutoConfigurationCustomizerProvider.class);
@@ -328,22 +257,28 @@ class AutoConfiguredOpenTelemetrySdkTest {
     SpiHelper spiHelper =
         SpiHelper.create(AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
 
-    AutoConfigureUtil.setComponentLoader(
-            builder,
-            new ComponentLoader() {
-              @SuppressWarnings("unchecked")
-              @Override
-              public <T> Iterable<T> load(Class<T> spiClass) {
-                if (spiClass.equals(AutoConfigurationCustomizerProvider.class)) {
-                  return Collections.singletonList((T) customizerProvider);
-                }
-                return spiHelper.load(spiClass);
-              }
-            })
-        .build();
+    ComponentLoader componentLoader =
+        new ComponentLoader() {
+          @SuppressWarnings("unchecked")
+          @Override
+          public <T> Iterable<T> load(Class<T> spiClass) {
+            if (spiClass.equals(AutoConfigurationCustomizerProvider.class)) {
+              return Collections.singletonList((T) customizerProvider);
+            }
+            return spiHelper.load(spiClass);
+          }
+        };
 
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        builder.setComponentLoader(componentLoader).build();
+
+    assertThat(
+            Objects.requireNonNull(autoConfiguredOpenTelemetrySdk.getConfig()).getComponentLoader())
+        .isSameAs(componentLoader);
     verify(customizerProvider).customize(any());
     verifyNoMoreInteractions(customizerProvider);
+
+    autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Test
@@ -423,8 +358,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(metricReader).forceFlush();
   }
 
-  // TODO: add test for addMetricExporterCustomizer once OTLP export is enabled by default
-
   @Test
   void builder_addLoggerProviderCustomizer() {
     Mockito.lenient()
@@ -445,10 +378,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(logRecordProcessor).forceFlush();
   }
 
-  // TODO: add test for addLogRecordExporterCustomizer once OTLP export is enabled by default
-
-  // TODO: add test for addLogRecordProcessorCustomizer once OTLP export is enabled by default
-
   @Test
   void builder_setResultAsGlobalFalse() {
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
@@ -456,7 +385,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry = builder.build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetry);
-    assertThat(GlobalEventLoggerProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   @Test
@@ -464,10 +392,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry = builder.setResultAsGlobal().build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetry);
-    assertThat(GlobalEventLoggerProvider.get())
-        .isInstanceOf(SdkEventLoggerProvider.class)
-        .extracting("delegateLoggerProvider")
-        .isSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   @Test
@@ -483,7 +407,15 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  void shutdownHook() throws InterruptedException {
+  void builder_customizes() {
+    builder = spy(builder);
+    OpenTelemetrySdk sdk = builder.build().getOpenTelemetrySdk();
+    assertThat(sdk).isNotNull();
+    verify(builder, times(1)).mergeSdkTracerProviderConfigurer();
+  }
+
+  @Test
+  void builder_shutdownHook() throws InterruptedException {
     OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
 
     Thread thread = builder.shutdownHook(sdk);
@@ -503,7 +435,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  void callAutoConfigureListeners() {
+  void builder_callAutoConfigureListeners() {
     AutoConfigureListener listener = mock(AutoConfigureListener.class);
     SpiHelper spiHelper = mock(SpiHelper.class);
     when(spiHelper.getListeners()).thenReturn(Collections.singleton(listener));
@@ -512,6 +444,22 @@ class AutoConfiguredOpenTelemetrySdkTest {
     builder.callAutoConfigureListeners(spiHelper, sdk);
 
     verify(listener).afterAutoConfigure(sdk);
+  }
+
+  @Test
+  void builder_catchesException() throws InterruptedException {
+    OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
+    doThrow(NoClassDefFoundError.class).when(sdk).close();
+
+    try {
+      Thread thread = builder.shutdownHook(sdk);
+      thread.start();
+      thread.join();
+    } catch (NoClassDefFoundError e) {
+      fail("shutdownHook threw unexpected NoClassDefFoundError", e);
+    }
+
+    verify(sdk).close();
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {
@@ -545,6 +493,39 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(traceCustomizer, never()).apply(any(), any());
     verify(metricCustomizer, never()).apply(any(), any());
     verify(logCustomizer, never()).apply(any(), any());
+  }
+
+  @Test
+  void disableSdk_PropagatorCustomizer() {
+    Context extracted = Context.root().with(ContextKey.named("animal"), "bear");
+
+    when(propagator2.extract(any(), any(), any())).thenReturn(extracted);
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+            .addPropertiesSupplier(() -> singletonMap("otel.propagators", "tracecontext"))
+            .addPropagatorCustomizer(
+                (previous, config) -> {
+                  assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
+                  return propagator1;
+                })
+            .addPropagatorCustomizer(
+                (previous, config) -> {
+                  assertThat(previous).isSameAs(propagator1);
+                  return propagator2;
+                })
+            .build();
+
+    // When the SDK is disabled, propagators are still configured
+    assertThat(autoConfiguredSdk.getOpenTelemetrySdk().getPropagators()).isNotNull();
+    Consumer<TextMapPropagator> propagatorConsumer =
+        propagator -> {
+          assertThat(propagator.extract(Context.root(), Collections.emptyMap(), getter))
+              .isEqualTo(extracted);
+        };
+    assertThat(autoConfiguredSdk.getOpenTelemetrySdk().getPropagators().getTextMapPropagator())
+        .isInstanceOfSatisfying(TextMapPropagator.class, propagatorConsumer);
   }
 
   @Test
@@ -604,6 +585,88 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   @SuppressLogger(AutoConfiguredOpenTelemetrySdkBuilder.class)
+  void configurationError_propagators() {
+    BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+        traceCustomizer = getTracerProviderBuilderSpy();
+    BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+        metricCustomizer = getMeterProviderBuilderSpy();
+    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
+        getLoggerProviderBuilderSpy();
+
+    assertThatThrownBy(
+            () ->
+                // Override the provider builders with mocks which we can verify are closed
+                AutoConfiguredOpenTelemetrySdk.builder()
+                    .addTracerProviderCustomizer(traceCustomizer)
+                    .addMeterProviderCustomizer(metricCustomizer)
+                    .addLoggerProviderCustomizer(logCustomizer)
+                    .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                    .build())
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Unrecognized value for otel.propagators");
+
+    // When the SDK is disabled and propagators are mis-configured, none of the customizers are
+    // called
+    verify(traceCustomizer, never()).apply(any(), any());
+    verify(metricCustomizer, never()).apply(any(), any());
+    verify(logCustomizer, never()).apply(any(), any());
+
+    assertThatThrownBy(
+            () ->
+                // Override the provider builders with mocks which we can verify are closed
+                AutoConfiguredOpenTelemetrySdk.builder()
+                    .addTracerProviderCustomizer(traceCustomizer)
+                    .addMeterProviderCustomizer(metricCustomizer)
+                    .addLoggerProviderCustomizer(logCustomizer)
+                    .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
+                    .build())
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Unrecognized value for otel.propagators");
+
+    // When the SDK is enabled and propagators are mis-configured, none of the customizers are
+    // called
+    verify(traceCustomizer, never()).apply(any(), any());
+    verify(metricCustomizer, never()).apply(any(), any());
+    verify(logCustomizer, never()).apply(any(), any());
+  }
+
+  @Test
+  @SuppressLogger(AutoConfiguredOpenTelemetrySdkBuilder.class)
+  void configurationError_runtime() {
+    BiFunction<SdkTracerProviderBuilder, ConfigProperties, SdkTracerProviderBuilder>
+        traceCustomizer = getTracerProviderBuilderSpy();
+    BiFunction<SdkMeterProviderBuilder, ConfigProperties, SdkMeterProviderBuilder>
+        metricCustomizer = getMeterProviderBuilderSpy();
+    BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder> logCustomizer =
+        getLoggerProviderBuilderSpy();
+
+    doThrow(new RuntimeException()).when(traceCustomizer).apply(any(), any());
+
+    assertThatThrownBy(
+            () ->
+                AutoConfiguredOpenTelemetrySdk.builder()
+                    .addTracerProviderCustomizer(traceCustomizer)
+                    .addMeterProviderCustomizer(metricCustomizer)
+                    .addLoggerProviderCustomizer(logCustomizer)
+                    .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
+                    .build())
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Unexpected configuration error");
+  }
+
+  @Test
+  @SuppressLogger(AutoConfiguredOpenTelemetrySdkBuilder.class)
   void configurationError_ClosesResources() {
     // AutoConfiguredOpenTelemetrySdk should close partially configured resources if an exception
     // short circuits configuration. Verify that SdkTracerProvider, SdkMeterProvider, and
@@ -631,16 +694,77 @@ class AutoConfiguredOpenTelemetrySdkTest {
                     .addLoggerProviderCustomizer((u1, u2) -> loggerProviderBuilder)
                     .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
                     .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "foo"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "false"))
                     .build())
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Unrecognized value for otel.propagators");
+        .hasMessageContaining("Unrecognized value for otel.logs.exporter: foo");
 
     verify(tracerProvider).close();
     verify(meterProvider).close();
-    verify(loggerProvider).close();
 
     logs.assertContains("Error closing io.opentelemetry.sdk.trace.SdkTracerProvider: Error!");
+  }
+
+  @Test
+  void globalOpenTelemetryLock() throws InterruptedException, ExecutionException, TimeoutException {
+    CountDownLatch autoconfigStarted = new CountDownLatch(1);
+    CountDownLatch completeAutoconfig = new CountDownLatch(1);
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+    // Submit a future to autoconfigure the SDK and set the result as global. Add a customization
+    // hook which blocks until we say so.
+    CompletableFuture<OpenTelemetrySdk> autoConfiguredOpenTelemetryFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                builder
+                    .addLoggerProviderCustomizer(
+                        (sdkLoggerProviderBuilder, configProperties) -> {
+                          autoconfigStarted.countDown();
+                          try {
+                            completeAutoconfig.await();
+                          } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                          }
+                          return sdkLoggerProviderBuilder;
+                        })
+                    .setResultAsGlobal()
+                    .build()
+                    .getOpenTelemetrySdk(),
+            executorService);
+
+    // Wait for autoconfiguration to enter our callback, then try to get an instance of
+    // GlobalOpenTelemetry. GlobalOpenTelemetry.get() should block until we release the
+    // completeAutoconfig latch and allow autoconfiguration to complete.
+    autoconfigStarted.await();
+    CompletableFuture<OpenTelemetry> globalOpenTelemetryFuture =
+        CompletableFuture.supplyAsync(GlobalOpenTelemetry::get, executorService);
+    Thread.sleep(10);
+    assertThat(globalOpenTelemetryFuture.isDone()).isFalse();
+    assertThat(autoConfiguredOpenTelemetryFuture.isDone()).isFalse();
+
+    // Release the latch, allowing autoconfiguration to complete. Confirm that our
+    // GlobalOpenTelemetry.get() future resolved to the same instance as autoconfiguration.
+    completeAutoconfig.countDown();
+    assertThat(unobfuscate(globalOpenTelemetryFuture.get(10, TimeUnit.SECONDS)))
+        .isSameAs(autoConfiguredOpenTelemetryFuture.get(10, TimeUnit.SECONDS));
+
+    // Cleanup
+    executorService.shutdown();
+    autoConfiguredOpenTelemetryFuture.get().shutdown().join(10, TimeUnit.SECONDS);
+    GlobalOpenTelemetry.resetForTest();
+  }
+
+  private static OpenTelemetry unobfuscate(OpenTelemetry openTelemetry) {
+    try {
+      Field delegateField =
+          Class.forName("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry")
+              .getDeclaredField("delegate");
+      delegateField.setAccessible(true);
+      Object delegate = delegateField.get(openTelemetry);
+      return (OpenTelemetry) delegate;
+    } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
+      throw new IllegalStateException("Error unobfuscating OpenTelemetry", e);
+    }
   }
 }

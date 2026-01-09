@@ -155,6 +155,36 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  @SuppressLogger(PeriodicMetricReader.class)
+  void forceflush_callsFlush() {
+    MetricExporter metricExporter = mock(MetricExporter.class);
+    when(metricExporter.export(any()))
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenThrow(new RuntimeException("Export Failed!"));
+    when(metricExporter.flush())
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenReturn(CompletableResultCode.ofFailure())
+        .thenReturn(CompletableResultCode.ofSuccess());
+    when(metricExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(metricExporter)
+            .setInterval(Duration.ofNanos(Long.MAX_VALUE))
+            .build();
+
+    try {
+      reader.register(collectionRegistration);
+      assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+      assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    } finally {
+      reader.shutdown();
+    }
+    verify(metricExporter, times(3)).flush();
+  }
+
+  @Test
   @Timeout(2)
   @SuppressLogger(PeriodicMetricReader.class)
   public void intervalExport_exporterThrowsException() throws Exception {

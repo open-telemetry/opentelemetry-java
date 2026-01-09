@@ -12,7 +12,10 @@ nexusPublishing {
   packageGroup.set("io.opentelemetry")
 
   repositories {
+    // see https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#configuration
     sonatype {
+      nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+      snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
       username.set(System.getenv("SONATYPE_USER"))
       password.set(System.getenv("SONATYPE_KEY"))
     }
@@ -42,13 +45,13 @@ subprojects {
 tasks {
   register("updateVersionInDocs") {
     group = "documentation"
+    val version = findProperty("release.version")
+    val readme = file("README.md")
     doLast {
-      val version = findProperty("release.version")
       val versionParts = version.toString().split('.')
       val minorVersionNumber = Integer.parseInt(versionParts[1])
       val nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
 
-      val readme = file("README.md")
       if (readme.exists()) {
         val readmeText = readme.readText()
         val updatedText = readmeText

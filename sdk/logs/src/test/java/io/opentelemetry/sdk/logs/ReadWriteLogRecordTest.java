@@ -68,6 +68,7 @@ class ReadWriteLogRecordTest {
         Severity.DEBUG,
         "buggin",
         body,
-        initialAttributes);
+        initialAttributes,
+        "my.event.name");
   }
 }

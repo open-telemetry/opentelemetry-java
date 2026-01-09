@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounterBuilder;
+import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -17,19 +15,18 @@ import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class SdkDoubleCounter extends AbstractInstrument implements ExtendedDoubleCounter {
+class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
   private static final Logger logger = Logger.getLogger(SdkDoubleCounter.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final SdkMeter sdkMeter;
-  private final WriteableMetricStorage storage;
+  final SdkMeter sdkMeter;
+  final WriteableMetricStorage storage;
 
-  private SdkDoubleCounter(
+  SdkDoubleCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
     this.sdkMeter = sdkMeter;
@@ -59,14 +56,9 @@ final class SdkDoubleCounter extends AbstractInstrument implements ExtendedDoubl
     add(increment, Attributes.empty());
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
+  static class SdkDoubleCounterBuilder implements DoubleCounterBuilder {
 
-  static final class SdkDoubleCounterBuilder implements ExtendedDoubleCounterBuilder {
-
-    private final InstrumentBuilder builder;
+    final InstrumentBuilder builder;
 
     SdkDoubleCounterBuilder(
         SdkMeter sdkMeter,
@@ -107,12 +99,6 @@ final class SdkDoubleCounter extends AbstractInstrument implements ExtendedDoubl
     @Override
     public ObservableDoubleMeasurement buildObserver() {
       return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
-    }
-
-    @Override
-    public ExtendedDoubleCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      builder.setAdviceAttributes(attributes);
-      return this;
     }
 
     @Override

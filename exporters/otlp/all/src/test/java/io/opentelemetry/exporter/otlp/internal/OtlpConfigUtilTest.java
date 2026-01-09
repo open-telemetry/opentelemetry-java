@@ -371,6 +371,7 @@ class OtlpConfigUtilTest {
     OtlpConfigUtil.configureOtlpExporterBuilder(
         dataType,
         DefaultConfigProperties.createFromMap(properties),
+        value -> {},
         endpoint::set,
         (value1, value2) -> {},
         value -> {},

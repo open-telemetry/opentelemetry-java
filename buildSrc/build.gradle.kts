@@ -2,24 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.25.0"
-}
-
-if (!hasLauncherForJavaVersion(17)) {
-  throw GradleException(
-    "JDK 17 is required to build and gradle was unable to detect it on the system.  " +
-        "Please install it and see https://docs.gradle.org/current/userguide/toolchains.html#sec:auto_detection " +
-        "for details on how gradle detects java toolchains."
-  )
-}
-
-fun hasLauncherForJavaVersion(version: Int): Boolean {
-  return try {
-    javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(version) }.get()
-    true
-  } catch (e: Exception) {
-    false
-  }
+  id("com.diffplug.spotless") version "8.1.0"
 }
 
 spotless {
@@ -50,30 +33,21 @@ repositories {
 }
 
 dependencies {
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.1.0"))
-  implementation("com.google.auto.value:auto-value-annotations:1.11.0")
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.4.0"))
+  implementation("com.google.auto.value:auto-value-annotations:1.11.1")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
-  // Needed for japicmp but not automatically brought in for some reason.
-  implementation("com.google.guava:guava:33.4.0-jre")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.1.0")
+  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.3")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
-  implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
+  implementation("com.google.protobuf:protobuf-gradle-plugin:0.9.6")
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
-  implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.5")
-  implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.2")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.1.0")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.1.0")
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
-  implementation("org.owasp:dependency-check-gradle:11.1.1")
-  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.2")
-}
-
-// We can't apply conventions to this build so include important ones such as the Java compilation
-// target.
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
-  }
+  implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.6")
+  implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.3.0")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.3.0")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21")
+  implementation("org.owasp:dependency-check-gradle:12.1.9")
+  implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
 }

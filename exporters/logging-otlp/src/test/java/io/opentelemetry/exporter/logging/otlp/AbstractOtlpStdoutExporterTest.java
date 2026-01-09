@@ -9,16 +9,15 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Streams;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,10 +28,10 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -293,20 +292,20 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     assertThat(
             exporterFromProvider(
                 DefaultConfigProperties.createFromMap(
-                    singletonMap("otel.java.experimental.exporter.memory_mode", "immutable_data"))))
+                    singletonMap("otel.java.exporter.memory_mode", "immutable_data"))))
         .extracting("memoryMode")
         .isEqualTo(MemoryMode.IMMUTABLE_DATA);
     assertThat(
             exporterFromProvider(
                 DefaultConfigProperties.createFromMap(
-                    singletonMap("otel.java.experimental.exporter.memory_mode", "reusable_data"))))
+                    singletonMap("otel.java.exporter.memory_mode", "reusable_data"))))
         .extracting("memoryMode")
         .isEqualTo(MemoryMode.REUSABLE_DATA);
   }
 
   @Test
   void componentProviderConfig() {
-    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
+    DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
     T exporter = exporterFromComponentProvider(properties);
 
     assertThat(exporter).extracting("wrapperJsonObject").isEqualTo(true);
@@ -328,24 +327,23 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   }
 
   @SuppressWarnings("unchecked")
-  protected T exporterFromComponentProvider(StructuredConfigProperties properties) {
+  protected T exporterFromComponentProvider(DeclarativeConfigProperties properties) {
     return (T)
-        ((ComponentProvider<?>)
-                loadSpi(ComponentProvider.class)
-                    .filter(
-                        p -> {
-                          ComponentProvider<?> c = (ComponentProvider<?>) p;
-                          return "experimental-otlp/stdout".equals(c.getName())
-                              && c.getType().equals(componentProviderType);
-                        })
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("No provider found")))
+        StreamSupport.stream(
+                properties.getComponentLoader().load(ComponentProvider.class).spliterator(), false)
+            .filter(
+                p -> {
+                  return "otlp_file/development".equals(p.getName())
+                      && p.getType().equals(componentProviderType);
+                })
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("No provider found"))
             .create(properties);
   }
 
   @SuppressWarnings("unchecked")
   protected T exporterFromProvider(ConfigProperties config) {
-    Object provider = loadProvider();
+    Object provider = loadProvider(config);
 
     try {
       return (T)
@@ -358,8 +356,9 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     }
   }
 
-  private Object loadProvider() {
-    return loadSpi(providerClass)
+  private Object loadProvider(ConfigProperties config) {
+    return StreamSupport.stream(
+            config.getComponentLoader().load(providerClass).spliterator(), false)
         .filter(
             p -> {
               try {
@@ -371,9 +370,5 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
             })
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("No provider found"));
-  }
-
-  protected static Stream<?> loadSpi(Class<?> type) {
-    return Streams.stream(ServiceLoader.load(type, type.getClassLoader()).iterator());
   }
 }

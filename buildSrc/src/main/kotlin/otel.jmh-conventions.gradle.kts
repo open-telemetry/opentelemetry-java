@@ -27,6 +27,15 @@ jmh {
   if (jmhIncludeSingleClass != null) {
     includes.add(jmhIncludeSingleClass as String)
   }
+
+  val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
+  if (testJavaVersion != null) {
+    val javaExecutable = javaToolchains.launcherFor {
+      languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
+    }.get().executablePath.asFile.absolutePath
+
+    jvm.set(javaExecutable)
+  }
 }
 
 jmhReport {

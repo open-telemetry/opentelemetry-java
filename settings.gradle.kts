@@ -1,16 +1,18 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "8.3.5"
-    id("com.gradle.develocity") version "3.19"
+    id("com.gradleup.shadow") version "9.3.1"
+    id("com.gradle.develocity") version "4.3"
     id("de.undercouch.download") version "5.6.0"
     id("org.jsonschema2pojo") version "1.2.2"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("org.graalvm.buildtools.native") version "0.10.4"
+    id("org.graalvm.buildtools.native") version "0.11.3"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
   }
 }
 
 plugins {
   id("com.gradle.develocity")
+  id("org.gradle.toolchains.foojay-resolver-convention")
 }
 
 dependencyResolutionManagement {
@@ -28,6 +30,7 @@ include(":api:incubator")
 include(":api:testing-internal")
 include(":bom")
 include(":bom-alpha")
+include(":common")
 include(":context")
 include(":custom-checks")
 include(":dependencyManagement")
@@ -51,6 +54,7 @@ include(":integration-tests:otlp")
 include(":integration-tests:tracecontext")
 include(":integration-tests:graal")
 include(":integration-tests:graal-incubating")
+include(":javadoc-crawler")
 include(":opencensus-shim")
 include(":opentracing-shim")
 include(":perf-harness")
@@ -68,10 +72,44 @@ include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")
 include(":animal-sniffer-signature")
 
+val develocityServer = "https://develocity.opentelemetry.io"
+val isCI = System.getenv("CI") != null
+val develocityAccessKey = System.getenv("DEVELOCITY_ACCESS_KEY") ?: ""
+
 develocity {
+  if (develocityAccessKey.isNotEmpty()) {
+    server = develocityServer
+  }
+
   buildScan {
-    publishing.onlyIf { System.getenv("CI") != null }
-    termsOfUseUrl.set("https://gradle.com/help/legal-terms-of-use")
-    termsOfUseAgree.set("yes")
+    if (develocityAccessKey.isNotEmpty()) {
+      gradle.startParameter.projectProperties["testJavaVersion"]?.let { tag(it) }
+      gradle.startParameter.projectProperties["testJavaVM"]?.let { tag(it) }
+      gradle.startParameter.projectProperties["smokeTestSuite"]?.let {
+        value("Smoke test suite", it)
+      }
+    } else if (isCI) {
+      termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
+      termsOfUseAgree = "yes"
+    } else {
+      publishing.onlyIf { false }
+    }
+
+    capture {
+      fileFingerprints = true
+    }
+
+    buildScanPublished {
+      File("build-scan.txt").printWriter().use { writer ->
+        writer.println(buildScanUri)
+      }
+    }
+  }
+}
+
+buildCache {
+  remote(HttpBuildCache::class) {
+    url = uri("$develocityServer/cache/")
+    isPush = isCI && develocityAccessKey.isNotEmpty()
   }
 }

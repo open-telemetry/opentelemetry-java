@@ -9,15 +9,19 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_M
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link MetricExporter} SPI implementation for {@link OtlpGrpcMetricExporter} and {@link
@@ -26,7 +30,11 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpMetricExporterProvider implements ConfigurableMetricExporterProvider {
+public class OtlpMetricExporterProvider
+    implements ConfigurableMetricExporterProvider, AutoConfigureListener {
+
+  private final AtomicReference<MeterProvider> meterProviderRef =
+      new AtomicReference<>(MeterProvider.noop());
 
   @Override
   public MetricExporter createExporter(ConfigProperties config) {
@@ -38,6 +46,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
           config,
+          builder::setComponentLoader,
           builder::setEndpoint,
           builder::addHeader,
           builder::setCompression,
@@ -50,6 +59,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           config, builder::setAggregationTemporalitySelector);
       ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
+      builder.setMeterProvider(meterProviderRef::get);
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -58,6 +68,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
           config,
+          builder::setComponentLoader,
           builder::setEndpoint,
           builder::addHeader,
           builder::setCompression,
@@ -70,6 +81,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           config, builder::setAggregationTemporalitySelector);
       ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
+      builder.setMeterProvider(meterProviderRef::get);
 
       return builder.build();
     }
@@ -89,5 +101,10 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
   // Visible for testing
   OtlpGrpcMetricExporterBuilder grpcBuilder() {
     return OtlpGrpcMetricExporter.builder();
+  }
+
+  @Override
+  public void afterAutoConfigure(OpenTelemetrySdk sdk) {
+    meterProviderRef.set(sdk.getMeterProvider());
   }
 }

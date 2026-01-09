@@ -10,10 +10,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.internal.GuardedBy;
@@ -21,6 +24,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -111,6 +115,50 @@ class BatchLogRecordProcessorTest {
             () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setExporterTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+    assertThatThrownBy(
+            () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setMaxQueueSize(0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxQueueSize must be positive.");
+  }
+
+  @Test
+  @SuppressLogger(BatchLogRecordProcessorBuilder.class)
+  void builderAdjustMaxBatchSize() {
+    LogRecordExporter dummyExporter = new CompletableLogRecordExporter();
+
+    BatchLogRecordProcessorBuilder builder =
+        BatchLogRecordProcessor.builder(dummyExporter)
+            .setMaxQueueSize(513)
+            .setMaxExportBatchSize(1000);
+    builder.build();
+
+    assertThat(builder.getMaxExportBatchSize()).isEqualTo(513);
+    assertThat(builder.getMaxQueueSize()).isEqualTo(513);
+  }
+
+  @Test
+  @SuppressLogger(BatchLogRecordProcessorBuilder.class)
+  void maxExportBatchSizeExceedsQueueSize() throws InterruptedException {
+    // Given a processor configured with a maxExportBatchSize > maxQueueSize, ensure that after n =
+    // maxQueueSize logs are emitted, export is triggered and that the queue is fully drained and
+    // exported.
+    int maxQueueSize = 2048;
+    when(mockLogRecordExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(
+                BatchLogRecordProcessor.builder(mockLogRecordExporter)
+                    .setScheduleDelay(Duration.ofSeconds(Integer.MAX_VALUE))
+                    .setMaxExportBatchSize(2049)
+                    .setMaxQueueSize(maxQueueSize)
+                    .build())
+            .build();
+
+    for (int i = 0; i < maxQueueSize; i++) {
+      emitLog(sdkLoggerProvider, "log " + i);
+    }
+
+    await().untilAsserted(() -> verify(mockLogRecordExporter, times(1)).export(any()));
   }
 
   @Test
@@ -337,6 +385,7 @@ class BatchLogRecordProcessorTest {
             .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
             .setScheduleDelay(1, TimeUnit.MILLISECONDS)
             .setMaxQueueSize(1)
+            .setMaxExportBatchSize(1)
             .build();
     SdkLoggerProvider sdkLoggerProvider =
         SdkLoggerProvider.builder().addLogRecordProcessor(blp).build();

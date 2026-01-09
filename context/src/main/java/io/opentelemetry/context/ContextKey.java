@@ -16,7 +16,7 @@ package io.opentelemetry.context;
  *   private static final ContextKey<MyState> KEY = ContextKey.named("MyState");
  *
  *   public Context startWork() {
- *     return Context.withValues(KEY, new MyState());
+ *     return Context.with(KEY, new MyState());
  *   }
  *
  *   public void continueWork(Context context) {

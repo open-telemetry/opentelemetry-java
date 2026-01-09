@@ -55,6 +55,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 
 class LowAllocationMetricsRequestMarshalerTest {
 
@@ -127,7 +128,7 @@ class LowAllocationMetricsRequestMarshalerTest {
       MarshalerContext context = new MarshalerContext();
       class TestMarshaler extends MarshalerWithSize {
 
-        protected TestMarshaler() {
+        TestMarshaler() {
           super(ExemplarStatelessMarshaler.INSTANCE.getBinarySerializedSize(exemplar, context));
         }
 
@@ -170,7 +171,7 @@ class LowAllocationMetricsRequestMarshalerTest {
       MarshalerContext context = new MarshalerContext();
       class TestMarshaler extends MarshalerWithSize {
 
-        protected TestMarshaler() {
+        TestMarshaler() {
           super(SummaryStatelessMarshaler.INSTANCE.getBinarySerializedSize(summary, context));
         }
 
@@ -225,7 +226,8 @@ class LowAllocationMetricsRequestMarshalerTest {
 
   private static class MetricsProvider implements ArgumentsProvider {
     @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(
+        ParameterDeclarations parameters, ExtensionContext context) {
       return Stream.of(
           arguments(
               named(
@@ -386,7 +388,8 @@ class LowAllocationMetricsRequestMarshalerTest {
 
   private static class ExemplarProvider implements ArgumentsProvider {
     @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+    public Stream<? extends Arguments> provideArguments(
+        ParameterDeclarations parameters, ExtensionContext context) {
       SpanContext spanContext =
           SpanContext.create(
               "7b2e170db4df2d593ddb4ddf2ddf2d59",

@@ -20,6 +20,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -60,6 +61,8 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            "http://testing:1234",
             mockTransformer);
 
     byte[] someBytes = new byte[0];
@@ -89,6 +92,8 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            "http://testing:1234",
             mockTransformer);
 
     byte[] someBytes = new byte[0];
@@ -232,11 +237,26 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void readTimeout_Zero() {
+    ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.builder().setReadTimeout(0, TimeUnit.SECONDS).build();
+
+    try {
+      assertThat(exporter)
+          .extracting("sender.delegate.client.readTimeoutMillis")
+          .isEqualTo(Integer.MAX_VALUE);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   void stringRepresentation() {
     try (ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build()) {
       assertThat(exporter.toString())
           .isEqualTo(
-              "ZipkinSpanExporter{endpoint=http://localhost:9411/api/v2/spans, compressionEnabled=true, readTimeoutMillis=10000}");
+              "ZipkinSpanExporter{endpoint=http://localhost:9411/api/v2/spans, compressionEnabled=true, readTimeoutMillis=10000, internalTelemetrySchemaVersion=LEGACY}");
     }
     try (ZipkinSpanExporter exporter =
         ZipkinSpanExporter.builder()
@@ -246,7 +266,7 @@ class ZipkinSpanExporterTest {
             .build()) {
       assertThat(exporter.toString())
           .isEqualTo(
-              "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000}");
+              "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000, internalTelemetrySchemaVersion=LEGACY}");
     }
   }
 
@@ -261,6 +281,8 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             suppressCatchingSender,
             MeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            "http://testing:1234",
             mockTransformer);
 
     byte[] someBytes = new byte[0];

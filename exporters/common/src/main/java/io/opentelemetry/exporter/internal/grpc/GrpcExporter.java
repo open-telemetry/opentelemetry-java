@@ -9,10 +9,12 @@ import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STAT
 import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNIMPLEMENTED;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -38,16 +40,19 @@ public final class GrpcExporter<T extends Marshaler> {
 
   private final String type;
   private final GrpcSender<T> grpcSender;
-  private final ExporterMetrics exporterMetrics;
+  private final ExporterInstrumentation exporterMetrics;
 
   public GrpcExporter(
-      String exporterName,
-      String type,
       GrpcSender<T> grpcSender,
-      Supplier<MeterProvider> meterProviderSupplier) {
-    this.type = type;
+      InternalTelemetryVersion internalTelemetryVersion,
+      StandardComponentId componentId,
+      Supplier<MeterProvider> meterProviderSupplier,
+      String endpoint) {
+    this.type = componentId.getStandardType().signal().logFriendlyName();
     this.grpcSender = grpcSender;
-    this.exporterMetrics = ExporterMetrics.createGrpc(exporterName, type, meterProviderSupplier);
+    this.exporterMetrics =
+        new ExporterInstrumentation(
+            internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -55,28 +60,34 @@ public final class GrpcExporter<T extends Marshaler> {
       return CompletableResultCode.ofFailure();
     }
 
-    exporterMetrics.addSeen(numItems);
+    ExporterInstrumentation.Recording metricRecording =
+        exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
 
     grpcSender.send(
         exportRequest,
-        grpcResponse -> onResponse(result, numItems, grpcResponse),
-        throwable -> onError(result, numItems, throwable));
+        grpcResponse -> onResponse(result, metricRecording, grpcResponse),
+        throwable -> onError(result, metricRecording, throwable));
 
     return result;
   }
 
-  private void onResponse(CompletableResultCode result, int numItems, GrpcResponse grpcResponse) {
+  private void onResponse(
+      CompletableResultCode result,
+      ExporterInstrumentation.Recording metricRecording,
+      GrpcResponse grpcResponse) {
     int statusCode = grpcResponse.grpcStatusValue();
 
+    metricRecording.setGrpcStatusCode(statusCode);
+
     if (statusCode == 0) {
-      exporterMetrics.addSuccess(numItems);
+      metricRecording.finishSuccessful();
       result.succeed();
       return;
     }
 
-    exporterMetrics.addFailed(numItems);
+    metricRecording.finishFailed(String.valueOf(statusCode));
     switch (statusCode) {
       case GRPC_STATUS_UNIMPLEMENTED:
         if (loggedUnimplemented.compareAndSet(false, true)) {
@@ -108,8 +119,11 @@ public final class GrpcExporter<T extends Marshaler> {
     result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
   }
 
-  private void onError(CompletableResultCode result, int numItems, Throwable e) {
-    exporterMetrics.addFailed(numItems);
+  private void onError(
+      CompletableResultCode result,
+      ExporterInstrumentation.Recording metricRecording,
+      Throwable e) {
+    metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,
         "Failed to export "

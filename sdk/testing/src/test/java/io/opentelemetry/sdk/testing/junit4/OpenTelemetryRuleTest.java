@@ -7,12 +7,20 @@ package io.opentelemetry.sdk.testing.junit4;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -117,5 +125,32 @@ public class OpenTelemetryRuleTest {
         .singleElement()
         .satisfies(
             logRecordData -> assertThat(logRecordData.getBodyValue()).isEqualTo(Value.of("body")));
+  }
+
+  @Test
+  public void baggageAndTracePropagation() {
+    OpenTelemetryRule rule = OpenTelemetryRule.create();
+    Span span = rule.getOpenTelemetry().getTracer("test").spanBuilder("test").startSpan();
+    try (Scope baggageScope = Baggage.builder().put("key", "value").build().makeCurrent();
+        Scope spanScope = span.makeCurrent()) {
+      Map<String, String> carrier = new HashMap<>();
+      rule.getOpenTelemetry()
+          .getPropagators()
+          .getTextMapPropagator()
+          .inject(Context.current(), carrier, new MapTextMapSetter());
+      assertThat(carrier).containsEntry("baggage", "key=value");
+      assertThat(carrier).containsKey("traceparent");
+    } finally {
+      span.end();
+    }
+  }
+
+  public static class MapTextMapSetter implements TextMapSetter<Map<String, String>> {
+    @Override
+    public void set(@Nullable Map<String, String> carrier, String key, String value) {
+      if (carrier != null) {
+        carrier.put(key, value);
+      }
+    }
   }
 }

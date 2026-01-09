@@ -5,6 +5,8 @@
 
 package io.opentelemetry.context.propagation;
 
+import java.util.Collections;
+import java.util.Iterator;
 import javax.annotation.Nullable;
 
 /**
@@ -33,4 +35,24 @@ public interface TextMapGetter<C> {
    */
   @Nullable
   String get(@Nullable C carrier, String key);
+
+  /**
+   * If implemented, returns all values for a given {@code key} in order, or returns an empty list.
+   *
+   * <p>The default method returns the first value of the given propagation {@code key} as a
+   * singleton list, or returns an empty list.
+   *
+   * @param carrier carrier of propagation fields, such as an http request.
+   * @param key the key of the field.
+   * @return all values for a given {@code key} in order, or returns an empty list. Default method
+   *     wraps {@code get()} as an {@link Iterator}.
+   * @since 1.50.0
+   */
+  default Iterator<String> getAll(@Nullable C carrier, String key) {
+    String first = get(carrier, key);
+    if (first == null) {
+      return Collections.emptyIterator();
+    }
+    return Collections.singleton(first).iterator();
+  }
 }

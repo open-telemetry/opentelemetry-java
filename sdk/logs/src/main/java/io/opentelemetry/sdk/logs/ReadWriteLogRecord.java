@@ -53,52 +53,96 @@ public interface ReadWriteLogRecord {
   LogRecordData toLogRecordData();
 
   /**
-   * Returns the value of a given attribute if it exists. This is the equivalent of calling
-   * getAttributes().get(key)
+   * Returns the log record event name, or {@code null} if none is set.
+   *
+   * @since 1.50.0
+   */
+  @Nullable
+  default String getEventName() {
+    return null;
+  }
+
+  /**
+   * Returns the value of a given attribute if it exists. This is the equivalent of calling {@code
+   * getAttributes().get(key)}.
+   *
+   * @since 1.46.0
    */
   @Nullable
   default <T> T getAttribute(AttributeKey<T> key) {
     return toLogRecordData().getAttributes().get(key);
   }
 
-  /** Returns the instrumentation scope that generated this log. */
+  /**
+   * Returns the instrumentation scope that generated this log.
+   *
+   * @since 1.46.0
+   */
   default InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return toLogRecordData().getInstrumentationScopeInfo();
   }
 
-  /** Returns the timestamp at which the log record occurred, in epoch nanos. */
+  /**
+   * Returns the timestamp at which the log record occurred, in epoch nanos.
+   *
+   * @since 1.46.0
+   */
   default long getTimestampEpochNanos() {
     return toLogRecordData().getTimestampEpochNanos();
   }
 
-  /** Returns the timestamp at which the log record was observed, in epoch nanos. */
+  /**
+   * Returns the timestamp at which the log record was observed, in epoch nanos.
+   *
+   * @since 1.46.0
+   */
   default long getObservedTimestampEpochNanos() {
     return toLogRecordData().getTimestampEpochNanos();
   }
 
-  /** Return the span context for this log, or {@link SpanContext#getInvalid()} if unset. */
+  /**
+   * Return the span context for this log, or {@link SpanContext#getInvalid()} if unset.
+   *
+   * @since 1.46.0
+   */
   default SpanContext getSpanContext() {
     return toLogRecordData().getSpanContext();
   }
 
-  /** Returns the severity for this log, or {@link Severity#UNDEFINED_SEVERITY_NUMBER} if unset. */
+  /**
+   * Returns the severity for this log, or {@link Severity#UNDEFINED_SEVERITY_NUMBER} if unset.
+   *
+   * @since 1.46.0
+   */
   default Severity getSeverity() {
     return toLogRecordData().getSeverity();
   }
 
-  /** Returns the severity text for this log, or null if unset. */
+  /**
+   * Returns the severity text for this log, or null if unset.
+   *
+   * @since 1.46.0
+   */
   @Nullable
   default String getSeverityText() {
     return toLogRecordData().getSeverityText();
   }
 
-  /** Returns the {@link Value} representation of the log body, of null if unset. */
+  /**
+   * Returns the {@link Value} representation of the log body, of null if unset.
+   *
+   * @since 1.46.0
+   */
   @Nullable
   default Value<?> getBodyValue() {
     return toLogRecordData().getBodyValue();
   }
 
-  /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
+  /**
+   * Returns the attributes for this log, or {@link Attributes#empty()} if unset.
+   *
+   * @since 1.46.0
+   */
   default Attributes getAttributes() {
     return toLogRecordData().getAttributes();
   }

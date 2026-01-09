@@ -8,7 +8,10 @@ package io.opentelemetry.sdk.internal;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -22,11 +25,11 @@ import javax.annotation.Nullable;
  */
 public final class ScopeConfiguratorBuilder<T> {
 
-  private final ScopeConfigurator<T> baseScopeConfigurator;
+  @Nullable private final ScopeConfigurator<T> baseScopeConfigurator;
   @Nullable private T defaultScopeConfig;
   private final List<Condition<T>> conditions = new ArrayList<>();
 
-  ScopeConfiguratorBuilder(ScopeConfigurator<T> baseScopeConfigurator) {
+  ScopeConfiguratorBuilder(@Nullable ScopeConfigurator<T> baseScopeConfigurator) {
     this.baseScopeConfigurator = baseScopeConfigurator;
   }
 
@@ -71,8 +74,7 @@ public final class ScopeConfiguratorBuilder<T> {
    * @see #addCondition(Predicate, Object)
    */
   public static Predicate<InstrumentationScopeInfo> nameMatchesGlob(String globPattern) {
-    Predicate<String> globPredicate = GlobUtil.toGlobPatternPredicate(globPattern);
-    return scopeInfo -> globPredicate.test(scopeInfo.getName());
+    return new ScopeNameMatcher(GlobUtil.createGlobPatternPredicate(globPattern));
   }
 
   /**
@@ -82,24 +84,12 @@ public final class ScopeConfiguratorBuilder<T> {
    * @see #addCondition(Predicate, Object)
    */
   public static Predicate<InstrumentationScopeInfo> nameEquals(String scopeName) {
-    return scopeInfo -> scopeInfo.getName().equals(scopeName);
+    return new ScopeNameMatcher(name -> name.equals(scopeName));
   }
 
   /** Build a {@link ScopeConfigurator} with the configuration of this builder. */
   public ScopeConfigurator<T> build() {
-    // TODO: return an instance with toString implementation which self describes rules
-    return scopeInfo -> {
-      T scopeConfig = baseScopeConfigurator.apply(scopeInfo);
-      if (scopeConfig != null) {
-        return scopeConfig;
-      }
-      for (Condition<T> condition : conditions) {
-        if (condition.scopeMatcher.test(scopeInfo)) {
-          return condition.scopeConfig;
-        }
-      }
-      return defaultScopeConfig;
-    };
+    return new ScopeConfiguratorImpl<>(baseScopeConfigurator, defaultScopeConfig, conditions);
   }
 
   private static final class Condition<T> {
@@ -109,6 +99,81 @@ public final class ScopeConfiguratorBuilder<T> {
     private Condition(Predicate<InstrumentationScopeInfo> scopeMatcher, T scopeConfig) {
       this.scopeMatcher = scopeMatcher;
       this.scopeConfig = scopeConfig;
+    }
+
+    @Override
+    public String toString() {
+      StringJoiner joiner = new StringJoiner(", ", "Condition{", "}");
+      joiner.add("scopeMatcher=" + scopeMatcher);
+      joiner.add("scopeConfig=" + scopeConfig);
+      return joiner.toString();
+    }
+  }
+
+  private static class ScopeConfiguratorImpl<T> implements ScopeConfigurator<T> {
+    @Nullable private final ScopeConfigurator<T> baseScopeConfigurator;
+    @Nullable private final T defaultScopeConfig;
+    private final List<Condition<T>> conditions;
+
+    private ScopeConfiguratorImpl(
+        @Nullable ScopeConfigurator<T> baseScopeConfigurator,
+        @Nullable T defaultScopeConfig,
+        List<Condition<T>> conditions) {
+      this.baseScopeConfigurator = baseScopeConfigurator;
+      this.defaultScopeConfig = defaultScopeConfig;
+      this.conditions = conditions;
+    }
+
+    @Override
+    @Nullable
+    public T apply(InstrumentationScopeInfo scopeInfo) {
+      if (baseScopeConfigurator != null) {
+        T scopeConfig = baseScopeConfigurator.apply(scopeInfo);
+        if (scopeConfig != null) {
+          return scopeConfig;
+        }
+      }
+      for (Condition<T> condition : conditions) {
+        if (condition.scopeMatcher.test(scopeInfo)) {
+          return condition.scopeConfig;
+        }
+      }
+      return defaultScopeConfig;
+    }
+
+    @Override
+    public String toString() {
+      StringJoiner joiner = new StringJoiner(", ", "ScopeConfiguratorImpl{", "}");
+      if (baseScopeConfigurator != null) {
+        joiner.add("baseScopeConfigurator=" + baseScopeConfigurator);
+      }
+      if (defaultScopeConfig != null) {
+        joiner.add("defaultScopeConfig=" + defaultScopeConfig);
+      }
+      joiner.add(
+          "conditions="
+              + conditions.stream()
+                  .map(Objects::toString)
+                  .collect(Collectors.joining(",", "[", "]")));
+      return joiner.toString();
+    }
+  }
+
+  private static class ScopeNameMatcher implements Predicate<InstrumentationScopeInfo> {
+    private final Predicate<String> nameMatcher;
+
+    private ScopeNameMatcher(Predicate<String> nameMatcher) {
+      this.nameMatcher = nameMatcher;
+    }
+
+    @Override
+    public boolean test(InstrumentationScopeInfo scopeInfo) {
+      return nameMatcher.test(scopeInfo.getName());
+    }
+
+    @Override
+    public String toString() {
+      return "ScopeNameMatcher{nameMatcher=" + nameMatcher + "}";
     }
   }
 }

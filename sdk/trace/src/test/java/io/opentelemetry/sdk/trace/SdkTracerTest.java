@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,14 @@ class SdkTracerTest {
   @Test
   void getInstrumentationScopeInfo() {
     assertThat(tracer.getInstrumentationScopeInfo()).isEqualTo(instrumentationScopeInfo);
+  }
+
+  @Test
+  void updateEnabled() {
+    tracer.updateTracerConfig(TracerConfig.disabled());
+    assertThat(tracer.isEnabled()).isFalse();
+    tracer.updateTracerConfig(TracerConfig.enabled());
+    assertThat(tracer.isEnabled()).isTrue();
   }
 
   @Test
@@ -142,7 +151,7 @@ class SdkTracerTest {
   private static class SimpleSpanOperation implements OperationUpdater {
     private final SdkTracer tracer;
 
-    public SimpleSpanOperation(SdkTracer tracer) {
+    private SimpleSpanOperation(SdkTracer tracer) {
       this.tracer = tracer;
     }
 
@@ -159,7 +168,7 @@ class SdkTracerTest {
 
   private static class CountingSpanExporter implements SpanExporter {
 
-    public final AtomicLong numberOfSpansExported = new AtomicLong();
+    private final AtomicLong numberOfSpansExported = new AtomicLong();
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {

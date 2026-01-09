@@ -70,7 +70,7 @@ spotless {
       "*.sh",
       "src/**/*.properties",
     )
-    indentWithSpaces()
+    leadingTabsToSpaces()
     trimTrailingWhitespace()
     endWithNewline()
   }

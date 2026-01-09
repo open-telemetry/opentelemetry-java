@@ -8,7 +8,10 @@ package io.opentelemetry.sdk.common.export;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import com.google.auto.value.AutoValue;
+import java.io.IOException;
 import java.time.Duration;
+import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * Configuration for exporter exponential retry policy.
@@ -66,6 +69,15 @@ public abstract class RetryPolicy {
   /** Returns the backoff multiplier. */
   public abstract double getBackoffMultiplier();
 
+  /**
+   * Returns the predicate used to determine if an attempt which failed exceptionally should be
+   * retried, or {@code null} if the exporter specific default predicate should be used.
+   *
+   * @since 1.47.0
+   */
+  @Nullable
+  public abstract Predicate<IOException> getRetryExceptionPredicate();
+
   /** Builder for {@link RetryPolicy}. */
   @AutoValue.Builder
   public abstract static class RetryPolicyBuilder {
@@ -95,6 +107,15 @@ public abstract class RetryPolicy {
      * DEFAULT_BACKOFF_MULTIPLIER}.
      */
     public abstract RetryPolicyBuilder setBackoffMultiplier(double backoffMultiplier);
+
+    /**
+     * Set the predicate used to determine if an attempt which failed exceptionally should be
+     * retried. By default, an exporter specific default predicate should be used.
+     *
+     * @since 1.47.0
+     */
+    public abstract RetryPolicyBuilder setRetryExceptionPredicate(
+        Predicate<IOException> retryExceptionPredicate);
 
     abstract RetryPolicy autoBuild();
 

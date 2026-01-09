@@ -5,42 +5,51 @@
 
 package io.opentelemetry.sdk.internal;
 
-import static io.opentelemetry.sdk.internal.GlobUtil.toGlobPatternPredicate;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class GlobUtilTest {
 
-  @Test
-  void matchesName() {
-    assertThat(toGlobPatternPredicate("foo").test("foo")).isTrue();
-    assertThat(toGlobPatternPredicate("foo").test("Foo")).isTrue();
-    assertThat(toGlobPatternPredicate("foo").test("bar")).isFalse();
-    assertThat(toGlobPatternPredicate("fo?").test("foo")).isTrue();
-    assertThat(toGlobPatternPredicate("fo??").test("fooo")).isTrue();
-    assertThat(toGlobPatternPredicate("fo?").test("fob")).isTrue();
-    assertThat(toGlobPatternPredicate("fo?").test("fooo")).isFalse();
-    assertThat(toGlobPatternPredicate("*").test("foo")).isTrue();
-    assertThat(toGlobPatternPredicate("*").test("bar")).isTrue();
-    assertThat(toGlobPatternPredicate("*").test("baz")).isTrue();
-    assertThat(toGlobPatternPredicate("*").test("foo.bar.baz")).isTrue();
-    assertThat(toGlobPatternPredicate("*").test(null)).isTrue();
-    assertThat(toGlobPatternPredicate("*").test("")).isTrue();
-    assertThat(toGlobPatternPredicate("fo*").test("fo")).isTrue();
-    assertThat(toGlobPatternPredicate("fo*").test("foo")).isTrue();
-    assertThat(toGlobPatternPredicate("fo*").test("fooo")).isTrue();
-    assertThat(toGlobPatternPredicate("fo*").test("foo.bar.baz")).isTrue();
-    assertThat(toGlobPatternPredicate("*bar").test("sandbar")).isTrue();
-    assertThat(toGlobPatternPredicate("fo*b*").test("foobar")).isTrue();
-    assertThat(toGlobPatternPredicate("fo*b*").test("foob")).isTrue();
-    assertThat(toGlobPatternPredicate("fo*b*").test("foo bar")).isTrue();
-    assertThat(toGlobPatternPredicate("fo? b??").test("foo bar")).isTrue();
-    assertThat(toGlobPatternPredicate("fo? b??").test("fooo bar")).isFalse();
-    assertThat(toGlobPatternPredicate("fo* ba?").test("foo is not bar")).isTrue();
-    assertThat(toGlobPatternPredicate("fo? b*").test("fox beetles for lunch")).isTrue();
-    assertThat(toGlobPatternPredicate("f()[]$^.{}|").test("f()[]$^.{}|")).isTrue();
-    assertThat(toGlobPatternPredicate("f()[]$^.{}|?").test("f()[]$^.{}|o")).isTrue();
-    assertThat(toGlobPatternPredicate("f()[]$^.{}|*").test("f()[]$^.{}|ooo")).isTrue();
+  @ParameterizedTest
+  @MethodSource("globPatternPredicateArgs")
+  void matchesName(String globPattern, String testString, boolean isMatchExpected) {
+    assertThat(GlobUtil.createGlobPatternPredicate(globPattern).test(testString))
+        .isEqualTo(isMatchExpected);
+  }
+
+  private static Stream<Arguments> globPatternPredicateArgs() {
+    return Stream.of(
+        Arguments.of("foo", "foo", true),
+        Arguments.of("foo", "Foo", true),
+        Arguments.of("foo", "bar", false),
+        Arguments.of("fo?", "foo", true),
+        Arguments.of("fo??", "fooo", true),
+        Arguments.of("fo?", "fob", true),
+        Arguments.of("fo?", "fooo", false),
+        Arguments.of("*", "foo", true),
+        Arguments.of("*", "bar", true),
+        Arguments.of("*", "baz", true),
+        Arguments.of("*", "foo.bar.baz", true),
+        Arguments.of("*", null, true),
+        Arguments.of("*", "", true),
+        Arguments.of("fo*", "fo", true),
+        Arguments.of("fo*", "foo", true),
+        Arguments.of("fo*", "fooo", true),
+        Arguments.of("fo*", "foo.bar.baz", true),
+        Arguments.of("*bar", "sandbar", true),
+        Arguments.of("fo*b*", "foobar", true),
+        Arguments.of("fo*b*", "foob", true),
+        Arguments.of("fo*b*", "foo bar", true),
+        Arguments.of("fo? b??", "foo bar", true),
+        Arguments.of("fo? b??", "fooo bar", false),
+        Arguments.of("fo* ba?", "foo is not bar", true),
+        Arguments.of("fo? b*", "fox beetles for lunch", true),
+        Arguments.of("f()[]$^.{}|", "f()[]$^.{}|", true),
+        Arguments.of("f()[]$^.{}|?", "f()[]$^.{}|o", true),
+        Arguments.of("f()[]$^.{}|*", "f()[]$^.{}|ooo", true));
   }
 }

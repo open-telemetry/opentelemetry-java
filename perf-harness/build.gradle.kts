@@ -13,7 +13,7 @@ dependencies {
   implementation(project(":exporters:logging"))
 
   implementation("eu.rekawek.toxiproxy:toxiproxy-java")
-  implementation("org.testcontainers:junit-jupiter")
+  implementation("org.testcontainers:testcontainers-junit-jupiter")
 
   runtimeOnly("io.grpc:grpc-netty-shaded")
 }

@@ -5,13 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
-import static io.opentelemetry.api.common.AttributeKey.doubleKey;
-import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
@@ -21,8 +15,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.events.EventLogger;
+import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -31,10 +26,9 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
-import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
+import io.opentelemetry.sdk.testing.logs.internal.TestExtendedLogRecordData;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -62,9 +56,10 @@ public class LogAssertionsTest {
           .build();
 
   private static final LogRecordData LOG_DATA =
-      TestLogRecordData.builder()
+      TestExtendedLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
+          .setEventName("event name")
           .setTimestamp(100, TimeUnit.NANOSECONDS)
           .setObservedTimestamp(200, TimeUnit.NANOSECONDS)
           .setSpanContext(
@@ -112,6 +107,7 @@ public class LogAssertionsTest {
                     satisfies(DOG, val -> val.startsWith("bar")),
                     satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+        .hasEventName("event name")
         .hasTimestamp(100)
         .hasObservedTimestamp(200)
         .hasSpanContext(
@@ -210,6 +206,7 @@ public class LogAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
         () -> assertThat(LOG_DATA).hasInstrumentationScope(InstrumentationScopeInfo.empty()));
+    assertThatThrownBy(() -> assertThat(LOG_DATA).hasEventName("foo"));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTimestamp(200));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasObservedTimestamp(100));
     assertThatThrownBy(
@@ -289,32 +286,34 @@ public class LogAssertionsTest {
   }
 
   @Test
-  void eventBodyAssertions() {
+  void logBodyAssertions() {
     InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
             .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
             .build();
-    EventLogger eventLogger = SdkEventLoggerProvider.create(loggerProvider).get("test.test");
-    eventLogger
-        .builder("foo")
-        .put("foostr", "bar")
-        .put("foobool", true)
-        .put("foolong", 12L)
-        .put("foodbl", 12.0)
-        .put("foostra", "bar", "baz", "buzz")
-        .put("foolonga", 9, 0, 2, 1, 0)
-        .put("foodbla", 9.1, 0.2, 2.3, 1.4, 0.5)
-        .put("fooboola", true, true, true, false)
-        .put("fooany", Value.of("grim"))
-        .put(stringKey("ak_str"), "bar")
-        .put(booleanKey("ak_bool"), true)
-        .put(longKey("ak_long"), 12L)
-        .put(doubleKey("ak_dbl"), 12.0)
-        .put(stringArrayKey("ak_stra"), Arrays.asList("bar", "baz", "buzz"))
-        .put(longArrayKey("ak_longa"), Arrays.asList(9L, 0L, 2L, 1L, 0L))
-        .put(doubleArrayKey("ak_dbla"), Arrays.asList(9.1, 0.2, 2.3, 1.4, 0.5))
-        .put(booleanArrayKey("ak_boola"), Arrays.asList(true, true, true, false))
+    Logger logger = loggerProvider.get("test.test");
+    logger
+        .logRecordBuilder()
+        .setBody(
+            Value.of(
+                KeyValue.of("foostr", Value.of("bar")),
+                KeyValue.of("foobool", Value.of(true)),
+                KeyValue.of("foolong", Value.of(12L)),
+                KeyValue.of("foodbl", Value.of(12.0)),
+                KeyValue.of(
+                    "foostra", Value.of(Value.of("bar"), Value.of("baz"), Value.of("buzz"))),
+                KeyValue.of(
+                    "foolonga",
+                    Value.of(Value.of(9), Value.of(0), Value.of(2), Value.of(1), Value.of(0))),
+                KeyValue.of(
+                    "foodbla",
+                    Value.of(
+                        Value.of(9.1), Value.of(0.2), Value.of(2.3), Value.of(1.4), Value.of(0.5))),
+                KeyValue.of(
+                    "fooboola",
+                    Value.of(Value.of(true), Value.of(true), Value.of(true), Value.of(false))),
+                KeyValue.of("fooany", Value.of("grim"))))
         .emit();
     List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
     assertThat(logs).hasSize(1);
@@ -327,14 +326,6 @@ public class LogAssertionsTest {
         .hasBodyField("foolonga", 9, 0, 2, 1, 0)
         .hasBodyField("foodbla", 9.1, 0.2, 2.3, 1.4, 0.5)
         .hasBodyField("fooboola", true, true, true, false)
-        .hasBodyField("fooany", Value.of("grim"))
-        .hasBodyField(stringKey("ak_str"), "bar")
-        .hasBodyField(booleanKey("ak_bool"), true)
-        .hasBodyField(longKey("ak_long"), 12L)
-        .hasBodyField(doubleKey("ak_dbl"), 12.0)
-        .hasBodyField(stringArrayKey("ak_stra"), Arrays.asList("bar", "baz", "buzz"))
-        .hasBodyField(longArrayKey("ak_longa"), Arrays.asList(9L, 0L, 2L, 1L, 0L))
-        .hasBodyField(doubleArrayKey("ak_dbla"), Arrays.asList(9.1, 0.2, 2.3, 1.4, 0.5))
-        .hasBodyField(booleanArrayKey("ak_boola"), Arrays.asList(true, true, true, false));
+        .hasBodyField("fooany", Value.of("grim"));
   }
 }

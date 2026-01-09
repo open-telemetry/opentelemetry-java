@@ -10,7 +10,7 @@ dependencies {
   api(project(":sdk:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
-  implementation(project(":api:incubator"))
+  compileOnly(project(":api:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -47,13 +47,14 @@ testing {
     }
     register<JvmTestSuite>("testFullConfig") {
       dependencies {
-        implementation(project(":api:incubator"))
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:prometheus"))
-        implementation("io.prometheus:prometheus-metrics-exporter-httpserver")
+        implementation("io.prometheus:prometheus-metrics-exporter-httpserver") {
+          exclude(group = "io.prometheus", module = "prometheus-metrics-exposition-formats")
+        }
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
@@ -69,15 +70,30 @@ testing {
       targets {
         all {
           testTask {
-            environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
+            environment("OTEL_SERVICE_NAME", "test")
+            environment("OTEL_RESOURCE_ATTRIBUTES", "cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,test")
             environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
             environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
-            environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
             environment("OTEL_TEST_CONFIGURED", "true")
             environment("OTEL_TEST_WRAPPED", "1")
           }
         }
+      }
+    }
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":sdk:testing"))
+      }
+    }
+
+    register<JvmTestSuite>("testDeclarativeConfigSpi") {
+      dependencies {
+        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":sdk:testing"))
       }
     }
   }

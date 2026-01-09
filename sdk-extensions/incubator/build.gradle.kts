@@ -1,4 +1,5 @@
 import de.undercouch.gradle.tasks.download.Download
+import java.io.FileFilter
 
 plugins {
   id("otel.java-conventions")
@@ -25,6 +26,7 @@ dependencies {
   implementation("org.snakeyaml:snakeyaml-engine")
 
   // io.opentelemetry.sdk.extension.incubator.fileconfig
+  api(project(":api:incubator"))
   implementation("com.fasterxml.jackson.core:jackson-databind")
   api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
@@ -33,12 +35,12 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:logging"))
+  testImplementation(project(":exporters:logging-otlp"))
   testImplementation(project(":exporters:otlp:all"))
   testImplementation(project(":exporters:prometheus"))
-  testImplementation(project(":exporters:zipkin"))
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
-  // As a part of the tests we check that we can parse examples without error. The https://github.com/open-telemetry/opentelemetry-configuration/blob/main/examples/kitchen-sink.yam contains a reference to the xray propagator
+  testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
@@ -49,18 +51,14 @@ dependencies {
 // The sequence of tasks is:
 // 1. downloadConfigurationSchema - download configuration schema from open-telemetry/opentelemetry-configuration
 // 2. unzipConfigurationSchema - unzip the configuration schema archive contents to $buildDir/configuration/
-// 3. deleteTypeDescriptions - delete type_descriptions.yaml $buildDir/configuration/schema, which is not part of core schema and causes problems resolving type refs
-// 4. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
-// 5. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
-// 6. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
-// 7. deleteJs2pTmp - delete tmp directory
+// 3. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
+// 4. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
+// 5. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
+// 6. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-// TODO (trask) revert after the 0.4.0 release
-//  it was needed after 0.3.0 release because file_format in the examples weren't updated prior to the release tag
-// val configurationTag = "0.3.0"
-// val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
-val configurationRef = "cea3905ce0a542d573968c3c47d413143d473cf4"
+val configurationTag = "1.0.0-rc.3"
+val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
@@ -82,13 +80,8 @@ val unzipConfigurationSchema by tasks.registering(Copy::class) {
   into("$buildDirectory/configuration/")
 }
 
-val deleteTypeDescriptions by tasks.registering(Delete::class) {
-  dependsOn(unzipConfigurationSchema)
-  delete("$buildDirectory/configuration/schema/type_descriptions.yaml")
-}
-
 jsonSchema2Pojo {
-  sourceFiles = setOf(file("$buildDirectory/configuration/schema"))
+  sourceFiles = setOf(file("$buildDirectory/configuration/opentelemetry_configuration.json"))
   targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
 
@@ -115,7 +108,7 @@ jsonSchema2Pojo {
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
-generateJsonSchema2Pojo.dependsOn(deleteTypeDescriptions)
+generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
 
 val jsonSchema2PojoPostProcessing by tasks.registering(Copy::class) {
   dependsOn(generateJsonSchema2Pojo)
@@ -146,11 +139,71 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
   delete("$buildDirectory/generated/sources/js2p-tmp/")
 }
 
+val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
+  val buildDir = buildDirectory
+  val targetFile = File(
+    buildDir,
+    "resources/main/META-INF/native-image/io.opentelemetry/io.opentelemetry.sdk.extension.incubator/reflect-config.json"
+  )
+  val sourcePackage =
+    "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
+  val sourcePackagePath = sourcePackage.replace(".", "/")
+  val classesDir =
+    File(
+      buildDir,
+      "classes/java/main/$sourcePackagePath"
+    )
+
+  inputs.dir(classesDir)
+  outputs.file(targetFile)
+
+  onlyIf { !targetFile.exists() }
+
+  dependsOn("compileJava")
+
+  doLast {
+    println("Generating GraalVM reflection config at: ${targetFile.absolutePath}")
+
+    val classes = mutableListOf<String>()
+    classesDir.walkTopDown().filter { it.isFile && it.extension == "class" }.forEach { file ->
+      val relativePath = file.toRelativeString(classesDir)
+      val className = relativePath
+        .removeSuffix(".class")
+        .replace(File.separatorChar, '.')
+      classes.add("$sourcePackage.$className")
+    }
+    classes.sort()
+
+    targetFile.parentFile.mkdirs()
+    targetFile.bufferedWriter().use { writer ->
+      writer.write("[\n")
+      classes.forEachIndexed { index, className ->
+        writer.write("  {\n")
+        writer.write("    \"name\": \"$className\",\n")
+        writer.write("    \"allDeclaredMethods\": true,\n")
+        writer.write("    \"allDeclaredFields\": true,\n")
+        writer.write("    \"allDeclaredConstructors\": true\n")
+        writer.write("  }")
+        if (index < classes.size - 1) {
+          writer.write(",\n")
+        } else {
+          writer.write("\n")
+        }
+      }
+      writer.write("]\n")
+    }
+  }
+}
+
 tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
-tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp)
+tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("javadoc").dependsOn(buildGraalVmReflectionJson)
+tasks.getByName("compileTestJava").dependsOn(buildGraalVmReflectionJson)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {
+  dependsOn(buildGraalVmReflectionJson)
   exclude("**/fileconfig/internal/model/**")
 }
 

@@ -60,6 +60,10 @@ public abstract class TestLogRecordData implements LogRecordData {
   @Nullable
   public abstract Value<?> getBodyValue();
 
+  @Override
+  @Nullable
+  public abstract String getEventName();
+
   TestLogRecordData() {}
 
   /** A {@code Builder} class for {@link TestLogRecordData}. */
@@ -173,5 +177,12 @@ public abstract class TestLogRecordData implements LogRecordData {
 
     /** Set the total attribute count. */
     public abstract Builder setTotalAttributeCount(int totalAttributeCount);
+
+    /**
+     * Set the event name.
+     *
+     * @since 1.50.0
+     */
+    public abstract Builder setEventName(String eventName);
   }
 }

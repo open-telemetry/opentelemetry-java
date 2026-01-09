@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -25,8 +26,6 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +49,8 @@ final class SdkSpan implements ReadWriteSpan {
   private final SpanContext parentSpanContext;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
+  // Resolves exception.* when an recordException is called
+  private final ExceptionAttributeResolver exceptionAttributeResolver;
   // The kind of the span.
   private final SpanKind kind;
   // The clock used to get the time.
@@ -60,6 +61,9 @@ final class SdkSpan implements ReadWriteSpan {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   // The start time of the span.
   private final long startEpochNanos;
+  // Callback to run when span ends to record metrics.
+  private final Runnable recordEndMetrics;
+
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
 
@@ -117,13 +121,6 @@ final class SdkSpan implements ReadWriteSpan {
   @Nullable
   private Thread spanEndingThread;
 
-  private static final AttributeKey<String> EXCEPTION_TYPE =
-      AttributeKey.stringKey("exception.type");
-  private static final AttributeKey<String> EXCEPTION_MESSAGE =
-      AttributeKey.stringKey("exception.message");
-  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
-      AttributeKey.stringKey("exception.stacktrace");
-
   private SdkSpan(
       SpanContext context,
       String name,
@@ -132,12 +129,14 @@ final class SdkSpan implements ReadWriteSpan {
       SpanContext parentSpanContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
+      ExceptionAttributeResolver exceptionAttributeResolver,
       AnchoredClock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
-      long startEpochNanos) {
+      long startEpochNanos,
+      Runnable recordEndMetrics) {
     this.context = context;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.parentSpanContext = parentSpanContext;
@@ -146,12 +145,14 @@ final class SdkSpan implements ReadWriteSpan {
     this.name = name;
     this.kind = kind;
     this.spanProcessor = spanProcessor;
+    this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.resource = resource;
     this.hasEnded = EndState.NOT_ENDED;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
     this.spanLimits = spanLimits;
+    this.recordEndMetrics = recordEndMetrics;
   }
 
   /**
@@ -167,6 +168,7 @@ final class SdkSpan implements ReadWriteSpan {
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
    * @param links the links set during span creation, may be truncated. The list MUST be immutable.
+   * @param recordEndMetrics a {@link Runnable} to run when the span is ended to record metrics.
    * @return a new and started span.
    */
   static SdkSpan startSpan(
@@ -178,12 +180,14 @@ final class SdkSpan implements ReadWriteSpan {
       Context parentContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
+      ExceptionAttributeResolver exceptionAttributeResolver,
       Clock tracerClock,
       Resource resource,
       @Nullable AttributesMap attributes,
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
-      long userStartEpochNanos) {
+      long userStartEpochNanos,
+      Runnable recordEndMetrics) {
     boolean createdAnchoredClock;
     AnchoredClock clock;
     if (parentSpan instanceof SdkSpan) {
@@ -216,12 +220,14 @@ final class SdkSpan implements ReadWriteSpan {
             parentSpan.getSpanContext(),
             spanLimits,
             spanProcessor,
+            exceptionAttributeResolver,
             clock,
             resource,
             attributes,
             links,
             totalRecordedLinks,
-            startEpochNanos);
+            startEpochNanos,
+            recordEndMetrics);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     if (spanProcessor.isStartRequired()) {
@@ -323,7 +329,7 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
-  public <T> ReadWriteSpan setAttribute(AttributeKey<T> key, T value) {
+  public <T> ReadWriteSpan setAttribute(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -434,10 +440,26 @@ final class SdkSpan implements ReadWriteSpan {
       if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
-      } else if (this.status.getStatusCode() == StatusCode.OK) {
+      }
+
+      // If current status is OK, ignore further attempts to change it
+      if (this.status.getStatusCode() == StatusCode.OK) {
         logger.log(Level.FINE, "Calling setStatus() on a Span that is already set to OK.");
         return this;
       }
+
+      // Ignore attempts to set status to UNSET
+      if (statusCode == StatusCode.UNSET) {
+        logger.log(Level.FINE, "Ignoring call to setStatus() with status UNSET.");
+        return this;
+      }
+
+      // Ignore description when status is not ERROR
+      if (description != null && statusCode != StatusCode.ERROR) {
+        logger.log(Level.FINE, "Ignoring setStatus() description since status is not ERROR.");
+        description = null;
+      }
+
       this.status = StatusData.create(statusCode, description);
     }
     return this;
@@ -458,26 +480,13 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
+    int maxAttributeLength = spanLimits.getMaxAttributeValueLength();
     AttributesMap attributes =
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
-    String exceptionName = exception.getClass().getCanonicalName();
-    String exceptionMessage = exception.getMessage();
-    StringWriter stringWriter = new StringWriter();
-    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-      exception.printStackTrace(printWriter);
-    }
-    String stackTrace = stringWriter.toString();
 
-    if (exceptionName != null) {
-      attributes.put(EXCEPTION_TYPE, exceptionName);
-    }
-    if (exceptionMessage != null) {
-      attributes.put(EXCEPTION_MESSAGE, exceptionMessage);
-    }
-    if (stackTrace != null) {
-      attributes.put(EXCEPTION_STACKTRACE, stackTrace);
-    }
+    exceptionAttributeResolver.setExceptionAttributes(
+        attributes::putIfCapacity, exception, maxAttributeLength);
 
     additionalAttributes.forEach(attributes::put);
 
@@ -556,6 +565,7 @@ final class SdkSpan implements ReadWriteSpan {
       spanEndingThread = Thread.currentThread();
       hasEnded = EndState.ENDING;
     }
+    recordEndMetrics.run();
     if (spanProcessor instanceof ExtendedSpanProcessor) {
       ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
       if (extendedSpanProcessor.isOnEndingRequired()) {

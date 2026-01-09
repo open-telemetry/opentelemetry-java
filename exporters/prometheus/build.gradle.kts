@@ -9,18 +9,21 @@ otelJava.moduleName.set("io.opentelemetry.exporter.prometheus")
 dependencies {
   api(project(":sdk:metrics"))
 
+  compileOnly(project(":api:incubator"))
   implementation(project(":exporters:common"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
-  implementation("io.prometheus:prometheus-metrics-exporter-httpserver")
+  implementation("io.prometheus:prometheus-metrics-exporter-httpserver") {
+    exclude(group = "io.prometheus", module = "prometheus-metrics-exposition-formats")
+  }
+  implementation("io.prometheus:prometheus-metrics-exposition-formats-no-protobuf")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
+  compileOnly("com.google.errorprone:error_prone_annotations")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
-  testImplementation("io.prometheus:prometheus-metrics-shaded-protobuf")
-  testImplementation("io.prometheus:prometheus-metrics-exposition-formats")
   testImplementation("com.sun.net.httpserver:http")
   testImplementation("com.google.guava:guava")
   testImplementation("com.linecorp.armeria:armeria")
@@ -28,7 +31,7 @@ dependencies {
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
   testImplementation("com.fasterxml.jackson.jr:jackson-jr-objects")
-  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }
 
 tasks {

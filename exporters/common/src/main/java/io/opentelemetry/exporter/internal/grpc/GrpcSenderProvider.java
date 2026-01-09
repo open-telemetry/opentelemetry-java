@@ -5,18 +5,7 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import io.grpc.Channel;
-import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.export.RetryPolicy;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 
 /**
  * A service provider interface (SPI) for providing {@link GrpcSender}s backed by different client
@@ -27,18 +16,6 @@ import javax.net.ssl.X509TrustManager;
  */
 public interface GrpcSenderProvider {
 
-  /** Returns a {@link GrpcSender} configured with the provided parameters. */
-  @SuppressWarnings("TooManyParameters")
-  <T extends Marshaler> GrpcSender<T> createSender(
-      URI endpoint,
-      String endpointPath,
-      @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectTimeoutNanos,
-      Supplier<Map<String, List<String>>> headersSupplier,
-      @Nullable Object managedChannel,
-      Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
-      @Nullable RetryPolicy retryPolicy,
-      @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager);
+  /** Returns a {@link GrpcSender} configured with the provided config. */
+  <T extends Marshaler> GrpcSender<T> createSender(GrpcSenderConfig<T> grpcSenderConfig);
 }

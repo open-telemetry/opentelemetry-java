@@ -5,18 +5,9 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.internal.auth.Authenticator;
-import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
+import io.opentelemetry.exporter.internal.http.HttpSenderConfig;
 import io.opentelemetry.exporter.internal.http.HttpSenderProvider;
-import io.opentelemetry.sdk.common.export.ProxyOptions;
-import io.opentelemetry.sdk.common.export.RetryPolicy;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * {@link HttpSender} SPI implementation for {@link OkHttpHttpSender}.
@@ -27,31 +18,19 @@ import org.jetbrains.annotations.Nullable;
 public final class OkHttpHttpSenderProvider implements HttpSenderProvider {
 
   @Override
-  public HttpSender createSender(
-      String endpoint,
-      @Nullable Compressor compressor,
-      boolean exportAsJson,
-      String contentType,
-      long timeoutNanos,
-      long connectTimeout,
-      Supplier<Map<String, List<String>>> headerSupplier,
-      @Nullable ProxyOptions proxyOptions,
-      @Nullable Authenticator authenticator,
-      @Nullable RetryPolicy retryPolicy,
-      @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+  public HttpSender createSender(HttpSenderConfig httpSenderConfig) {
     return new OkHttpHttpSender(
-        endpoint,
-        compressor,
-        exportAsJson,
-        contentType,
-        timeoutNanos,
-        connectTimeout,
-        headerSupplier,
-        proxyOptions,
-        authenticator,
-        retryPolicy,
-        sslContext,
-        trustManager);
+        httpSenderConfig.getEndpoint(),
+        httpSenderConfig.getCompressor(),
+        httpSenderConfig.getExportAsJson(),
+        httpSenderConfig.getContentType(),
+        httpSenderConfig.getTimeoutNanos(),
+        httpSenderConfig.getConnectTimeoutNanos(),
+        httpSenderConfig.getHeadersSupplier(),
+        httpSenderConfig.getProxyOptions(),
+        httpSenderConfig.getRetryPolicy(),
+        httpSenderConfig.getSslContext(),
+        httpSenderConfig.getTrustManager(),
+        httpSenderConfig.getExecutorService());
   }
 }

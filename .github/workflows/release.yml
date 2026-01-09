@@ -2,11 +2,17 @@ name: Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   release:
+    permissions:
+      contents: write # for creating the release
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.create-github-release.outputs.version }}
+      prior-version: ${{ steps.create-github-release.outputs.prior-version }}
     steps:
       - run: |
           if [[ $GITHUB_REF_NAME != release/* ]]; then
@@ -14,15 +20,15 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
 
       - name: Build and publish artifacts
         run: ./gradlew assemble publishToSonatype closeAndReleaseSonatypeStagingRepository
@@ -31,6 +37,7 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Set environment variables
         run: |
@@ -59,7 +66,7 @@ jobs:
 
         # check out main branch to verify there won't be problems with merging the change log
         # at the end of this workflow
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: main
 
@@ -74,7 +81,7 @@ jobs:
           fi
 
         # back to the release branch
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           # tags are needed for the generate-release-contributors.sh script
           fetch-depth: 0
@@ -123,14 +130,20 @@ jobs:
                             --notes-file /tmp/release-notes.txt \
                             v$VERSION
 
+          # these are used as job outputs
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "prior-version=$PRIOR_VERSION" >> $GITHUB_OUTPUT
 
-  merge-change-log-to-main:
+  post-release-updates:
+    permissions:
+      contents: write # for git push to PR branch
     runs-on: ubuntu-latest
     needs:
       - release
     steps:
-      - uses: actions/checkout@v4
+      # add change log sync (if any) into this PR since the apidiff update
+      # is required before any other PR can be merged anyway
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Copy change log section from release branch
         env:
@@ -139,7 +152,7 @@ jobs:
           sed -n "0,/^## Version $VERSION /d;/^## Version /q;p" CHANGELOG.md \
             > /tmp/changelog-section.md
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: main
 
@@ -150,32 +163,70 @@ jobs:
         run: |
           release_date=$(gh release view v$VERSION --json publishedAt --jq .publishedAt | sed 's/T.*//')
           RELEASE_DATE=$release_date .github/scripts/merge-change-log-after-release.sh
+          git add CHANGELOG.md
 
-      - name: Use CLA approved github bot
-        run: .github/scripts/use-cla-approved-github-bot.sh
+      - name: Wait for release to be available in maven central
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          until curl --silent \
+                     --show-error \
+                     --output /dev/null \
+                     --head \
+                     --fail \
+                     https://repo1.maven.org/maven2/io/opentelemetry/opentelemetry-api/$VERSION/opentelemetry-api-$VERSION.jar
+          do
+            sleep 60
+          done
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
+
+      - name: Update apidiff baseline
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          PRIOR_VERSION: ${{ needs.release.outputs.prior-version }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+        run: |
+          ./gradlew japicmp -PapiBaseVersion=$PRIOR_VERSION -PapiNewVersion=$VERSION
+          ./gradlew --refresh-dependencies japicmp
+          git add docs/apidiffs
+
+      - name: Update versions in README.md
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+        run: |
+          ./gradlew updateVersionInDocs -Prelease.version=$VERSION
+          git add README.md
+
+      - name: Use CLA approved bot
+        run: .github/scripts/use-cla-approved-bot.sh
+
+      - uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        id: otelbot-token
+        with:
+          app-id: ${{ vars.OTELBOT_APP_ID }}
+          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
 
       - name: Create pull request against main
         env:
           VERSION: ${{ needs.release.outputs.version }}
           # not using secrets.GITHUB_TOKEN since pull requests from that token do not run workflows
-          GH_TOKEN: ${{ secrets.OPENTELEMETRYBOT_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
         run: |
-          if git diff --quiet; then
-            if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.0 ]]; then
-              echo there are no updates to merge, not creating pull request
-              exit 0 # success
-            else
-              echo patch release notes did not get applied for some reason
-              exit 1 # failure
-            fi
-          fi
-
-          message="Merge change log updates from $GITHUB_REF_NAME"
-          body="Merge log updates from \`$GITHUB_REF_NAME\`."
-          branch="opentelemetrybot/merge-change-log-updates-from-${GITHUB_REF_NAME//\//-}"
+          message="Post-release updates for $VERSION"
+          body="Post-release updates for \`$VERSION\`."
+          branch="otelbot/post-release-updates-${VERSION}"
 
           git checkout -b $branch
-          git commit -a -m "$message"
+          git commit -m "$message"
           git push --set-upstream origin $branch
           gh pr create --title "$message" \
                        --body "$body" \
