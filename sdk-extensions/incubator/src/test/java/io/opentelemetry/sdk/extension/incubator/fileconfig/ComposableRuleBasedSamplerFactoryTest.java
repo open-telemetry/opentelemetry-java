@@ -13,7 +13,6 @@ import static io.opentelemetry.api.trace.SpanKind.SERVER;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate.toSpanParent;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -22,6 +21,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.ComposableRuleBasedSamplerFactory.AttributeMatcher;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableAlwaysOffSamplerModel;
@@ -47,12 +47,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ComposableRuleBasedSamplerFactoryTest {
 
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(SpiHelper.create(SamplerFactoryTest.class.getClassLoader()));
+
   @ParameterizedTest
   @MethodSource("createTestCases")
   void create(ExperimentalComposableRuleBasedSamplerModel model, ComposableSampler expectedResult) {
     ComposableSampler composableSampler =
-        ComposableRuleBasedSamplerFactory.getInstance()
-            .create(model, mock(DeclarativeConfigContext.class));
+        ComposableRuleBasedSamplerFactory.getInstance().create(model, context);
     assertThat(composableSampler.toString()).isEqualTo(expectedResult.toString());
   }
 

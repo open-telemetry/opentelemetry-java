@@ -82,10 +82,10 @@ class DeclarativeConfigContext {
    * @throws DeclarativeConfigException if no matching providers are found, or if multiple are found
    *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
    */
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  <T> T loadComponent(Class<T> type, String name, Object model) {
-    DeclarativeConfigProperties config =
-        DeclarativeConfiguration.toConfigProperties(model, spiHelper.getComponentLoader());
+  @SuppressWarnings({"unchecked"})
+  <T> T loadComponent(Class<T> type, ConfigKeyValue configKeyValue) {
+    String name = configKeyValue.getKey();
+    DeclarativeConfigProperties config = configKeyValue.getValue();
 
     // TODO(jack-berg): cache loaded component providers
     List<ComponentProvider> componentProviders = spiHelper.load(ComponentProvider.class);
@@ -115,6 +115,9 @@ class DeclarativeConfigContext {
 
     try {
       Object component = provider.create(config);
+      if (component instanceof Closeable) {
+        closeables.add((Closeable) component);
+      }
       if (component != null && !type.isInstance(component)) {
         throw new DeclarativeConfigException(
             "Error configuring "

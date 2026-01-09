@@ -170,13 +170,13 @@ class ResourceFactoryTest {
                                 new ExperimentalResourceDetectorModel()
                                     .withAdditionalProperty("foo", null)
                                     .withAdditionalProperty("bar", null)))),
-            "Invalid configuration - multiple resource detectors set: [foo,bar]"),
+            "resource detector must have exactly one entry but has 2: [foo,bar]"),
         Arguments.of(
             new ResourceModel()
                 .withDetectionDevelopment(
                     new ExperimentalResourceDetectionModel()
                         .withDetectors(
                             Collections.singletonList(new ExperimentalResourceDetectorModel()))),
-            "resource detector must be set"));
+            "resource detector must have exactly one entry but has 0"));
   }
 }
