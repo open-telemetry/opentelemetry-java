@@ -26,9 +26,9 @@ dependencies {
         subproject.tasks.withType<Test>().configureEach {
           testTasks.add(this)
         }
-        subproject.tasks.withType<Jar> {
-          if (this.archiveClassifier.get().isEmpty()) {
-            jarTasks.add(this)
+        subproject.tasks.withType<Jar>().forEach {
+          if (it.archiveClassifier.get().isEmpty() && !it.archiveFile.get().toString().contains("jmh")) {
+            jarTasks.add(it)
           }
         }
       }
@@ -41,13 +41,11 @@ dependencies {
 val artifactsAndJarsFile = layout.buildDirectory.file("artifacts_and_jars.txt").get().asFile
 
 var writeArtifactsAndJars = tasks.register("writeArtifactsAndJars") {
+
   dependsOn(jarTasks)
   artifactsAndJarsFile.parentFile.mkdirs()
   artifactsAndJarsFile.createNewFile()
   val content = jarTasks.stream()
-    .filter {
-      !it.archiveFile.get().toString().contains("jmh")
-    }
     .map {
       it.archiveBaseName.get() + ":" + it.archiveFile.get().toString()
     }.collect(Collectors.joining("\n"))
@@ -65,15 +63,10 @@ tasks {
   }
 
   val testJavaVersion: String? by project
-  if (testJavaVersion == "8") {
-    test {
-      enabled = false
-    }
-  } else {
-    test {
-      dependsOn(writeArtifactsAndJars)
-      environment("ARTIFACTS_AND_JARS", artifactsAndJarsFile.absolutePath)
-    }
+  test {
+    enabled = testJavaVersion != "8"
+    dependsOn(writeArtifactsAndJars)
+    environment("ARTIFACTS_AND_JARS", artifactsAndJarsFile.absolutePath)
   }
 }
 
