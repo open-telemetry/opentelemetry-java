@@ -12,6 +12,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -673,6 +674,9 @@ final class Otel2PrometheusConverter {
                   "Unexpected label value of %s for %s",
                   attributeValue.getClass().getName(), type.name()));
         }
+      case VALUE:
+        // TODO this should be json representation
+        return ((Value<?>) attributeValue).asString();
     }
     throw new IllegalStateException("Unrecognized AttributeType: " + type);
   }

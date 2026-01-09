@@ -8,10 +8,13 @@ package io.opentelemetry.exporter.logging;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -53,7 +56,15 @@ class LoggingSpanExporterTest {
           .setStatus(StatusData.ok())
           .setName("testSpan1")
           .setKind(SpanKind.INTERNAL)
-          .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
+          .setAttributes(
+              Attributes.builder()
+                  .put(stringKey("animal"), "cat")
+                  .put(longKey("lives"), 9L)
+                  .put(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+                  .put(valueKey("map"), Value.of(KeyValue.of("nested", Value.of("value"))))
+                  .put(valueKey("heterogeneousArray"), Value.of(Value.of("string"), Value.of(123L)))
+                  .put(valueKey("empty"), Value.empty())
+                  .build())
           .setEvents(
               Collections.singletonList(
                   EventData.create(
@@ -104,7 +115,9 @@ class LoggingSpanExporterTest {
         .isEqualTo(
             "'testSpan1' : 12345678876543211234567887654321 8765432112345678 "
                 + "INTERNAL [tracer: tracer1:] "
-                + "{animal=\"cat\", lives=9}");
+                + "{animal=\"cat\", bytes=ValueBytes{AQID}, empty=ValueEmpty{}, "
+                + "heterogeneousArray=ValueArray{[string, 123]}, lives=9, "
+                + "map=KeyValueList{[nested=value]}}");
     assertThat(logs.getEvents().get(1).getMessage())
         .isEqualTo(
             "'testSpan2' : 12340000000043211234000000004321 8765000000005678 "

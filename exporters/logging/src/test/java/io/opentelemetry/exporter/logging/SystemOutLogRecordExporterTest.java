@@ -7,10 +7,13 @@ package io.opentelemetry.exporter.logging;
 
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -45,7 +48,9 @@ class SystemOutLogRecordExporterTest {
     assertThat(output.toString())
         .isEqualTo(
             "1970-08-07T10:00:00Z ERROR3 'message' : 00000000000000010000000000000002 0000000000000003 "
-                + "[scopeInfo: logTest:1.0] {amount=1, cheese=\"cheddar\"}");
+                + "[scopeInfo: logTest:1.0] {amount=1, bytes=ValueBytes{AQID}, cheese=\"cheddar\", "
+                + "empty=ValueEmpty{}, heterogeneousArray=ValueArray{[string, 123]}, "
+                + "map=KeyValueList{[nested=value]}}");
   }
 
   @Test
@@ -72,7 +77,15 @@ class SystemOutLogRecordExporterTest {
         .setResource(Resource.empty())
         .setInstrumentationScopeInfo(
             InstrumentationScopeInfo.builder("logTest").setVersion("1.0").build())
-        .setAttributes(Attributes.of(stringKey("cheese"), "cheddar", longKey("amount"), 1L))
+        .setAttributes(
+            Attributes.builder()
+                .put(stringKey("cheese"), "cheddar")
+                .put(longKey("amount"), 1L)
+                .put(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+                .put(valueKey("map"), Value.of(KeyValue.of("nested", Value.of("value"))))
+                .put(valueKey("heterogeneousArray"), Value.of(Value.of("string"), Value.of(123L)))
+                .put(valueKey("empty"), Value.empty())
+                .build())
         .setBody("message")
         .setSeverity(Severity.ERROR3)
         .setTimestamp(timestamp, TimeUnit.MILLISECONDS)

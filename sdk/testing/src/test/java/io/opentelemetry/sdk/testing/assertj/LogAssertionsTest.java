@@ -53,6 +53,7 @@ public class LogAssertionsTest {
           .put("conditions", false, true)
           .put("scores", 0L, 1L)
           .put("coins", 0.01, 0.05, 0.1)
+          .put("bytes", Value.of(new byte[] {1, 2, 3}))
           .build();
 
   private static final LogRecordData LOG_DATA =
@@ -124,11 +125,12 @@ public class LogAssertionsTest {
             attributeEntry("colors", "red", "blue"),
             attributeEntry("conditions", false, true),
             attributeEntry("scores", 0L, 1L),
-            attributeEntry("coins", 0.01, 0.05, 0.1))
+            attributeEntry("coins", 0.01, 0.05, 0.1),
+            attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
         .hasAttributesSatisfying(
             attributes ->
                 OpenTelemetryAssertions.assertThat(attributes)
-                    .hasSize(8)
+                    .hasSize(9)
                     .containsEntry(stringKey("bear"), "mya")
                     .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
                     .containsEntry("bear", "mya")
@@ -145,6 +147,7 @@ public class LogAssertionsTest {
                     .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
                     .containsEntry("coins", 0.01, 0.05, 0.1)
                     .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
+                    .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
                     .containsKey(stringKey("bear"))
                     .containsKey("bear")
                     .containsOnly(
@@ -155,7 +158,8 @@ public class LogAssertionsTest {
                         attributeEntry("colors", "red", "blue"),
                         attributeEntry("conditions", false, true),
                         attributeEntry("scores", 0L, 1L),
-                        attributeEntry("coins", 0.01, 0.05, 0.1)))
+                        attributeEntry("coins", 0.01, 0.05, 0.1),
+                        attributeEntry("bytes", Value.of(new byte[] {1, 2, 3}))))
         .hasAttributesSatisfying(
             equalTo(stringKey("bear"), "mya"),
             equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)))
@@ -167,7 +171,8 @@ public class LogAssertionsTest {
             equalTo(AttributeKey.stringArrayKey("colors"), Arrays.asList("red", "blue")),
             equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)),
             equalTo(AttributeKey.longArrayKey("scores"), Arrays.asList(0L, 1L)),
-            equalTo(AttributeKey.doubleArrayKey("coins"), Arrays.asList(0.01, 0.05, 0.1)))
+            equalTo(AttributeKey.doubleArrayKey("coins"), Arrays.asList(0.01, 0.05, 0.1)),
+            equalTo(AttributeKey.valueKey("bytes"), Value.of(new byte[] {1, 2, 3})))
         .hasTotalAttributeCount(999);
   }
 

@@ -14,6 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +40,40 @@ public interface AttributesBuilder {
   /**
    * Puts an {@link AttributeKey} with an associated value into this if the value is non-null.
    * Providing a null value does not remove or unset previously set values.
+   *
+   * <p>Simple attributes ({@link AttributeType#STRING}, {@link AttributeType#LONG}, {@link
+   * AttributeType#DOUBLE}, {@link AttributeType#BOOLEAN}, {@link AttributeType#STRING_ARRAY},
+   * {@link AttributeType#LONG_ARRAY}, {@link AttributeType#DOUBLE_ARRAY}, {@link
+   * AttributeType#BOOLEAN_ARRAY}) SHOULD be used whenever possible. Instrumentations SHOULD assume
+   * that backends do not index individual properties of complex attributes, that querying or
+   * aggregating on such properties is inefficient and complicated, and that reporting complex
+   * attributes carries higher performance overhead.
+   *
+   * <p>Note: This method will automatically convert complex attributes ({@link
+   * AttributeType#VALUE}) to simple attributes when possible.
+   *
+   * <ul>
+   *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of("a"))} is equivalent to calling
+   *       {@code put(AttributeKey.stringKey("key"), "a")}.
+   *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of(1L))} is equivalent to calling
+   *       {@code put(AttributeKey.longKey("key"), 1L)}.
+   *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of(1.0))} is equivalent to calling
+   *       {@code put(AttributeKey.doubleKey("key"), 1.0)}.
+   *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of(true))} is equivalent to
+   *       calling {@code put(AttributeKey.booleanKey("key"), true)}.
+   *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of(Value.of("a"), Value.of("b")))}
+   *       is equivalent to calling {@code put(AttributeKey.stringArrayKey("key"),
+   *       Arrays.asList("a", "b"))}.
+   *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of(Value.of(1L), Value.of(2L)))}
+   *       is equivalent to calling {@code put(AttributeKey.longArrayKey("key"), Arrays.asList(1L,
+   *       2L))}.
+   *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of(Value.of(1.0), Value.of(2.0)))}
+   *       is equivalent to calling {@code put(AttributeKey.doubleArrayKey("key"),
+   *       Arrays.asList(1.0, 2.0))}.
+   *   <li>Calling {@code put(AttributeKey.valueKey("key"), Value.of(Value.of(true),
+   *       Value.of(false)))} is equivalent to calling {@code
+   *       put(AttributeKey.booleanArrayKey("key"), Arrays.asList(true, false))}.
+   * </ul>
    */
   <T> AttributesBuilder put(AttributeKey<T> key, @Nullable T value);
 
@@ -162,6 +197,18 @@ public interface AttributesBuilder {
       return this;
     }
     return put(booleanArrayKey(key), toList(value));
+  }
+
+  /**
+   * Puts a {@link Value} attribute into this.
+   *
+   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
+   * your keys, if possible.
+   *
+   * @return this Builder
+   */
+  default AttributesBuilder put(String key, Value<?> value) {
+    return put(valueKey(key), value);
   }
 
   /**

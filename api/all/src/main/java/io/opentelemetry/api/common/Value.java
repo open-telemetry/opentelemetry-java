@@ -26,6 +26,7 @@ import java.util.Map;
  *       are type {@link Value}, arrays can contain primitives, complex types like maps or arrays,
  *       or any combination.
  *   <li>Raw bytes via {@link #of(byte[])}
+ *   <li>An empty value via {@link #empty()}
  * </ul>
  *
  * <p>Currently, Value is only used as an argument for {@link
@@ -84,6 +85,11 @@ public interface Value<T> {
     return KeyValueList.createFromMap(value);
   }
 
+  /** Returns an empty {@link Value}. */
+  static Value<Void> empty() {
+    return ValueEmpty.create();
+  }
+
   /** Returns the type of this {@link Value}. Useful for building switch statements. */
   ValueType getType();
 
@@ -101,6 +107,7 @@ public interface Value<T> {
    *   <li>{@link ValueType#KEY_VALUE_LIST} returns {@link List} of {@link KeyValue}
    *   <li>{@link ValueType#BYTES} returns read only {@link ByteBuffer}. See {@link
    *       ByteBuffer#asReadOnlyBuffer()}.
+   *   <li>{@link ValueType#EMPTY} returns {@code null}
    * </ul>
    */
   T getValue();

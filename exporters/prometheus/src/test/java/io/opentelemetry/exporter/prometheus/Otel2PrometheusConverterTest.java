@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -20,6 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -334,10 +337,14 @@ class Otel2PrometheusConverterTest {
         (key, value) -> {
           String labelValue = labels.get(key.getKey());
           try {
-            String expectedValue =
-                key.getType() == AttributeType.STRING
-                    ? (String) value
-                    : OBJECT_MAPPER.writeValueAsString(value);
+            String expectedValue;
+            if (key.getType() == AttributeType.STRING) {
+              expectedValue = (String) value;
+            } else if (key.getType() == AttributeType.VALUE) {
+              expectedValue = ((Value<?>) value).asString();
+            } else {
+              expectedValue = OBJECT_MAPPER.writeValueAsString(value);
+            }
             assertThat(labelValue).isEqualTo(expectedValue);
           } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -360,7 +367,12 @@ class Otel2PrometheusConverterTest {
             Attributes.of(longArrayKey("key"), Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE))),
         Arguments.of(
             Attributes.of(
-                doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE))));
+                doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE))),
+        Arguments.of(Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3}))),
+        Arguments.of(
+            Attributes.of(valueKey("key"), Value.of(KeyValue.of("nested", Value.of("value"))))),
+        Arguments.of(Attributes.of(valueKey("key"), Value.of(Value.of("string"), Value.of(123L)))),
+        Arguments.of(Attributes.of(valueKey("key"), Value.empty())));
   }
 
   static MetricData createSampleMetricData(

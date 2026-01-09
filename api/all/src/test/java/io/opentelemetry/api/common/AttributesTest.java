@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -298,7 +299,7 @@ class AttributesTest {
             .put(longKey("long"), 10)
             .put(stringArrayKey("anotherString"), "value1", "value2", "value3")
             .put(longArrayKey("anotherLong"), 10L, 20L, 30L)
-            .put(booleanArrayKey("anotherBoolean"), true, false, true)
+            .put(valueKey("value"), Value.of(new byte[] {1, 2, 3}))
             .build();
 
     Attributes wantAttributes =
@@ -311,8 +312,8 @@ class AttributesTest {
             Arrays.asList("value1", "value2", "value3"),
             longArrayKey("anotherLong"),
             Arrays.asList(10L, 20L, 30L),
-            booleanArrayKey("anotherBoolean"),
-            Arrays.asList(true, false, true));
+            valueKey("value"),
+            Value.of(new byte[] {1, 2, 3}));
     assertThat(attributes).isEqualTo(wantAttributes);
 
     AttributesBuilder newAttributes = attributes.toBuilder();
@@ -328,8 +329,8 @@ class AttributesTest {
                 Arrays.asList("value1", "value2", "value3"),
                 longArrayKey("anotherLong"),
                 Arrays.asList(10L, 20L, 30L),
-                booleanArrayKey("anotherBoolean"),
-                Arrays.asList(true, false, true),
+                valueKey("value"),
+                Value.of(new byte[] {1, 2, 3}),
                 stringKey("newKey"),
                 "newValue"));
     // Original not mutated.
@@ -358,6 +359,93 @@ class AttributesTest {
   }
 
   @Test
+  void builder_valueTypes() {
+    // Test Value type attributes with various Value kinds
+    // Note: simple Value types (string, long, double, boolean) are coerced to their
+    // corresponding primitive AttributeTypes for consistent storage
+
+    // These Value types should be coerced to primitive types
+    AttributeKey<Value<?>> stringValueKey = valueKey("stringValue");
+    AttributeKey<Value<?>> longValueKey = valueKey("longValue");
+    AttributeKey<Value<?>> doubleValueKey = valueKey("doubleValue");
+    AttributeKey<Value<?>> booleanValueKey = valueKey("booleanValue");
+
+    // These Value types cannot be coerced and remain as VALUE type
+    AttributeKey<Value<?>> bytesValueKey = valueKey("bytesValue");
+    AttributeKey<Value<?>> kvListValueKey = valueKey("kvListValue");
+    AttributeKey<Value<?>> heterogeneousArrayKey = valueKey("heterogeneousArray");
+    AttributeKey<Value<?>> emptyValueKey = valueKey("emptyValue");
+
+    Attributes attributes =
+        Attributes.builder()
+            .put(stringValueKey, Value.of("stringVal"))
+            .put(longValueKey, Value.of(100L))
+            .put(doubleValueKey, Value.of(3.14))
+            .put(booleanValueKey, Value.of(true))
+            .put(bytesValueKey, Value.of(new byte[] {1, 2, 3}))
+            .put(kvListValueKey, Value.of(KeyValue.of("nested", Value.of("value"))))
+            .put(heterogeneousArrayKey, Value.of(Value.of("elem1"), Value.of(42L)))
+            .put(emptyValueKey, Value.empty())
+            .build();
+
+    // Verify coerced values can be retrieved with primitive keys
+    assertThat(attributes.get(stringKey("stringValue"))).isEqualTo("stringVal");
+    assertThat(attributes.get(longKey("longValue"))).isEqualTo(100L);
+    assertThat(attributes.get(doubleKey("doubleValue"))).isEqualTo(3.14);
+    assertThat(attributes.get(booleanKey("booleanValue"))).isEqualTo(true);
+
+    // Verify complex Value types that remain as VALUE type
+    assertThat(attributes.get(bytesValueKey)).isNotNull();
+    assertThat(attributes.get(bytesValueKey).getType()).isEqualTo(ValueType.BYTES);
+
+    assertThat(attributes.get(kvListValueKey)).isNotNull();
+    assertThat(attributes.get(kvListValueKey).getType()).isEqualTo(ValueType.KEY_VALUE_LIST);
+
+    assertThat(attributes.get(heterogeneousArrayKey)).isNotNull();
+    assertThat(attributes.get(heterogeneousArrayKey).getType()).isEqualTo(ValueType.ARRAY);
+
+    assertThat(attributes.get(emptyValueKey)).isNotNull();
+    assertThat(attributes.get(emptyValueKey).getType()).isEqualTo(ValueType.EMPTY);
+    assertThat(attributes.get(emptyValueKey).getValue()).isNull();
+
+    // Verify the total size
+    assertThat(attributes.size()).isEqualTo(8);
+
+    // Verify forEach sees the correct types
+    Map<AttributeKey, Object> entriesSeen = new LinkedHashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).hasSize(8);
+
+    // Verify coerced keys have primitive types
+    assertThat(entriesSeen.keySet())
+        .filteredOn(key -> key.getKey().equals("stringValue"))
+        .allMatch(key -> key.getType() == AttributeType.STRING);
+    assertThat(entriesSeen.keySet())
+        .filteredOn(key -> key.getKey().equals("longValue"))
+        .allMatch(key -> key.getType() == AttributeType.LONG);
+    assertThat(entriesSeen.keySet())
+        .filteredOn(key -> key.getKey().equals("doubleValue"))
+        .allMatch(key -> key.getType() == AttributeType.DOUBLE);
+    assertThat(entriesSeen.keySet())
+        .filteredOn(key -> key.getKey().equals("booleanValue"))
+        .allMatch(key -> key.getType() == AttributeType.BOOLEAN);
+
+    // Verify complex types remain as VALUE type
+    assertThat(entriesSeen.keySet())
+        .filteredOn(key -> key.getKey().equals("bytesValue"))
+        .allMatch(key -> key.getType() == AttributeType.VALUE);
+    assertThat(entriesSeen.keySet())
+        .filteredOn(key -> key.getKey().equals("kvListValue"))
+        .allMatch(key -> key.getType() == AttributeType.VALUE);
+    assertThat(entriesSeen.keySet())
+        .filteredOn(key -> key.getKey().equals("heterogeneousArray"))
+        .allMatch(key -> key.getType() == AttributeType.VALUE);
+    assertThat(entriesSeen.keySet())
+        .filteredOn(key -> key.getKey().equals("emptyValue"))
+        .allMatch(key -> key.getType() == AttributeType.VALUE);
+  }
+
+  @Test
   @SuppressWarnings("unchecked")
   void get_Null() {
     assertThat(Attributes.empty().get(stringKey("foo"))).isNull();
@@ -379,7 +467,7 @@ class AttributesTest {
         Attributes.of(stringKey("string"), "value", booleanKey("boolean"), true);
     assertThat(twoElements.get(booleanKey("boolean"))).isEqualTo(true);
     assertThat(twoElements.get(stringKey("string"))).isEqualTo("value");
-    Attributes fourElements =
+    Attributes fiveElements =
         Attributes.of(
             stringKey("string"),
             "value",
@@ -388,12 +476,16 @@ class AttributesTest {
             longKey("long"),
             1L,
             stringArrayKey("array"),
-            Arrays.asList("one", "two", "three"));
-    assertThat(fourElements.get(stringArrayKey("array")))
+            Arrays.asList("one", "two", "three"),
+            valueKey("value"),
+            Value.of(new byte[] {1, 2, 3}));
+    assertThat(fiveElements.get(stringArrayKey("array")))
         .isEqualTo(Arrays.asList("one", "two", "three"));
-    assertThat(threeElements.get(booleanKey("boolean"))).isEqualTo(true);
-    assertThat(threeElements.get(stringKey("string"))).isEqualTo("value");
-    assertThat(threeElements.get(longKey("long"))).isEqualTo(1L);
+    assertThat(fiveElements.get(booleanKey("boolean"))).isEqualTo(true);
+    assertThat(fiveElements.get(stringKey("string"))).isEqualTo("value");
+    assertThat(fiveElements.get(longKey("long"))).isEqualTo(1L);
+    assertThat(fiveElements.get(valueKey("value"))).isEqualTo(Value.of(new byte[] {1, 2, 3}));
+    assertThat(fiveElements.get(valueKey("value")).getType()).isEqualTo(ValueType.BYTES);
   }
 
   @Test
@@ -429,24 +521,26 @@ class AttributesTest {
     builder.put("arrayDouble", doubles);
     boolean[] booleans = {true};
     builder.put("arrayBool", booleans);
-    assertThat(builder.build().size()).isEqualTo(9);
+    Value<?> value = Value.of(new byte[] {1, 2, 3});
+    builder.put(valueKey("value"), value);
+    assertThat(builder.build().size()).isEqualTo(10);
 
-    // note: currently these are no-op calls; that behavior is not required, so if it needs to
-    // change, that is fine.
     builder.put(stringKey("attrValue"), null);
     builder.put("string", (String) null);
     builder.put("arrayString", (String[]) null);
     builder.put("arrayLong", (long[]) null);
     builder.put("arrayDouble", (double[]) null);
     builder.put("arrayBool", (boolean[]) null);
+    builder.put(valueKey("value"), null);
 
     Attributes attributes = builder.build();
-    assertThat(attributes.size()).isEqualTo(9);
+    assertThat(attributes.size()).isEqualTo(10);
     assertThat(attributes.get(stringKey("string"))).isEqualTo("string");
     assertThat(attributes.get(stringArrayKey("arrayString"))).isEqualTo(singletonList("string"));
     assertThat(attributes.get(longArrayKey("arrayLong"))).isEqualTo(singletonList(10L));
     assertThat(attributes.get(doubleArrayKey("arrayDouble"))).isEqualTo(singletonList(1.0d));
     assertThat(attributes.get(booleanArrayKey("arrayBool"))).isEqualTo(singletonList(true));
+    assertThat(attributes.get(valueKey("value"))).isEqualTo(Value.of(new byte[] {1, 2, 3}));
   }
 
   @Test
