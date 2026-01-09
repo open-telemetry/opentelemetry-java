@@ -10,6 +10,11 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.metrics.MeterProvider;
 import java.util.function.Supplier;
 
+/**
+ * Builder for {@link SimpleLogRecordProcessor}.
+ *
+ * @since 1.58.0
+ */
 public final class SimpleLogRecordProcessorBuilder {
   private final LogRecordExporter exporter;
   private Supplier<MeterProvider> meterProvider = MeterProvider::noop;

@@ -37,6 +37,8 @@ public final class SimpleSpanProcessorBuilder {
    * Sets the {@link MeterProvider} to use to generate <a
    * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
    * Metrics</a>.
+   *
+   * @since 1.58.0
    */
   public SimpleSpanProcessorBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
