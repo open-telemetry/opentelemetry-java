@@ -1,0 +1,2 @@
+Comparing source compatibility of opentelemetry-exporter-zipkin-1.59.0-SNAPSHOT.jar against opentelemetry-exporter-zipkin-1.57.0.jar
+No changes.
