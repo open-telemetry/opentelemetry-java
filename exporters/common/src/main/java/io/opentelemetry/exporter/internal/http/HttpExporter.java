@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
+import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.StandardComponentId;
@@ -67,9 +68,11 @@ public final class HttpExporter {
         exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
+    MessageWriter messageWriter =
+        exportAsJson ? exportRequest.toJsonMessageWriter() : exportRequest.toBinaryMessageWriter();
 
     httpSender.send(
-        exportRequest.toMessageWriter(exportAsJson),
+        messageWriter,
         httpResponse -> onResponse(result, metricRecording, httpResponse),
         throwable -> onError(result, metricRecording, throwable));
 

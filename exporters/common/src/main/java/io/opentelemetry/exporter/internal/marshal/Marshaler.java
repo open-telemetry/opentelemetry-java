@@ -55,20 +55,30 @@ public abstract class Marshaler {
 
   protected abstract void writeTo(Serializer output) throws IOException;
 
-  public MessageWriter toMessageWriter(boolean exportAsJson) {
+  public MessageWriter toJsonMessageWriter() {
     return new MessageWriter() {
       @Override
       public void writeMessage(OutputStream output) throws IOException {
-        if (exportAsJson) {
-          writeJsonTo(output);
-        } else {
-          writeBinaryTo(output);
-        }
+        writeJsonTo(output);
       }
 
       @Override
       public int getContentLength() {
-        return exportAsJson ? -1 : getBinarySerializedSize();
+        return -1;
+      }
+    };
+  }
+
+  public MessageWriter toBinaryMessageWriter() {
+    return new MessageWriter() {
+      @Override
+      public void writeMessage(OutputStream output) throws IOException {
+        writeBinaryTo(output);
+      }
+
+      @Override
+      public int getContentLength() {
+        return getBinarySerializedSize();
       }
     };
   }

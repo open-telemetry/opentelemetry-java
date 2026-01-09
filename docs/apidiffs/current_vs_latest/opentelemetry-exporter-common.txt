@@ -30,10 +30,10 @@ Comparing source compatibility of opentelemetry-exporter-common-1.58.0-SNAPSHOT.
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.net.URI getEndpoint()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.concurrent.ExecutorService getExecutorService()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getFullMethodName()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.function.Supplier<java.util.Map<java.lang.String,java.util.List<java.lang.String>>> getHeadersSupplier()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.export.RetryPolicy getRetryPolicy()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getServiceAndMethodName()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) javax.net.ssl.SSLContext getSslContext()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getTimeoutNanos()

@@ -14,6 +14,6 @@ public interface MessageWriter {
   /** Write the message to the {@link OutputStream}. */
   void writeMessage(OutputStream output) throws IOException;
 
-  /** Return the message length in bytes. */
+  /** Return the message length in bytes, or -1 if the length is unknown. */
   int getContentLength();
 }

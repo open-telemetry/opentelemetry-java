@@ -29,15 +29,15 @@ public interface GrpcSenderConfig {
 
   /**
    * The gRPC endpoint to send to, including scheme. Omits path, which must be obtained from {@link
-   * #getServiceAndMethodName()}.
+   * #getFullMethodName()}.
    */
   URI getEndpoint();
 
   /**
-   * The fully qualified gRPC service name, e.g. {@code
+   * The fully qualified gRPC method name, e.g. {@code
    * opentelemetry.proto.collector.trace.v1.TraceService/Export}.
    */
-  String getServiceAndMethodName();
+  String getFullMethodName();
 
   /**
    * The compressor, or {@code null} if no compression is used. If present, {@link

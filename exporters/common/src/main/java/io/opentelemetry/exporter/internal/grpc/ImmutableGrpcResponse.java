@@ -20,8 +20,8 @@ import javax.annotation.Nullable;
 public abstract class ImmutableGrpcResponse implements GrpcResponse {
 
   public static ImmutableGrpcResponse create(
-      GrpcStatusCode grpcStatusCode, @Nullable String grpcStatusDescription, byte[] responseBody) {
-    return new AutoValue_ImmutableGrpcResponse(grpcStatusCode, grpcStatusDescription, responseBody);
+      GrpcStatusCode statusCode, @Nullable String statusDescription, byte[] responseBody) {
+    return new AutoValue_ImmutableGrpcResponse(statusCode, statusDescription, responseBody);
   }
 
   @SuppressWarnings("mutable")
