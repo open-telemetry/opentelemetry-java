@@ -345,27 +345,21 @@ class Otel2PrometheusConverterTest {
                 Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0)),
             "[\"stringValue1\",\"\\\"+\\\\\\\\\\\\+\\b+\\f+\\n+\\r+\\t+\\u0000\"]"),
         Arguments.of(
-            Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false)),
-            "[true,false]"),
+            Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false)), "[true,false]"),
         Arguments.of(
             Attributes.of(longArrayKey("key"), Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE)),
             "[-9223372036854775808,9223372036854775807]"),
         Arguments.of(
-            Attributes.of(
-                doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE)),
+            Attributes.of(doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE)),
             "[4.9E-324,1.7976931348623157E308]"),
-        Arguments.of(
-            Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})),
-            "AQID"),
+        Arguments.of(Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})), "AQID"),
         Arguments.of(
             Attributes.of(valueKey("key"), Value.of(KeyValue.of("nested", Value.of("value")))),
             "[nested=value]"),
         Arguments.of(
             Attributes.of(valueKey("key"), Value.of(Value.of("string"), Value.of(123L))),
             "[string, 123]"),
-        Arguments.of(
-            Attributes.of(valueKey("key"), Value.empty()),
-            ""));
+        Arguments.of(Attributes.of(valueKey("key"), Value.empty()), ""));
   }
 
   static MetricData createSampleMetricData(

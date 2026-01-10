@@ -368,7 +368,7 @@ class AttributesTest {
     assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of("test"));
 
     // forEach should show STRING type
-    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(stringKey("key"), "test"));
 
@@ -386,7 +386,7 @@ class AttributesTest {
     assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(123L));
 
     // forEach should show LONG type
-    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(longKey("key"), 123L));
 
@@ -404,7 +404,7 @@ class AttributesTest {
     assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(1.23));
 
     // forEach should show DOUBLE type
-    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(doubleKey("key"), 1.23));
 
@@ -422,7 +422,7 @@ class AttributesTest {
     assertThat(attributes.get(valueKey("key"))).isEqualTo(Value.of(true));
 
     // forEach should show BOOLEAN type
-    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(booleanKey("key"), true));
 
@@ -445,7 +445,7 @@ class AttributesTest {
         .isEqualTo(Value.of(Arrays.asList(Value.of("a"), Value.of("b"))));
 
     // forEach should show STRING_ARRAY type
-    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(stringArrayKey("key"), Arrays.asList("a", "b")));
 
@@ -469,7 +469,7 @@ class AttributesTest {
         .isEqualTo(Value.of(Arrays.asList(Value.of(1L), Value.of(2L))));
 
     // forEach should show LONG_ARRAY type
-    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(longArrayKey("key"), Arrays.asList(1L, 2L)));
 
@@ -493,7 +493,7 @@ class AttributesTest {
         .isEqualTo(Value.of(Arrays.asList(Value.of(1.1), Value.of(2.2))));
 
     // forEach should show DOUBLE_ARRAY type
-    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly(entry(doubleArrayKey("key"), Arrays.asList(1.1, 2.2)));
 
@@ -517,7 +517,7 @@ class AttributesTest {
         .isEqualTo(Value.of(Arrays.asList(Value.of(true), Value.of(false))));
 
     // forEach should show BOOLEAN_ARRAY type
-    Map<AttributeKey, Object> entriesSeen = new HashMap<>();
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
     attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen)
         .containsExactly(entry(booleanArrayKey("key"), Arrays.asList(true, false)));
@@ -525,6 +525,82 @@ class AttributesTest {
     // asMap should show BOOLEAN_ARRAY type
     assertThat(attributes.asMap())
         .containsExactly(entry(booleanArrayKey("key"), Arrays.asList(true, false)));
+  }
+
+  @Test
+  void complexValueWithKeyValueList() {
+    // KEY_VALUE_LIST should be kept as VALUE type
+    Value<?> kvListValue = Value.of(Collections.emptyMap());
+    Attributes attributes = Attributes.builder().put(valueKey("key"), kvListValue).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(kvListValue);
+
+    // forEach should show VALUE type
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), kvListValue));
+  }
+
+  @Test
+  void complexValueWithBytes() {
+    // BYTES should be kept as VALUE type
+    Value<?> bytesValue = Value.of(new byte[] {1, 2, 3});
+    Attributes attributes = Attributes.builder().put(valueKey("key"), bytesValue).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(bytesValue);
+
+    // forEach should show VALUE type
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), bytesValue));
+  }
+
+  @Test
+  void complexValueWithNonHomogeneousArray() {
+    // Non-homogeneous array should be kept as VALUE type
+    Value<?> mixedArray = Value.of(Arrays.asList(Value.of("string"), Value.of(123L)));
+    Attributes attributes = Attributes.builder().put(valueKey("key"), mixedArray).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(mixedArray);
+
+    // forEach should show VALUE type
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), mixedArray));
+  }
+
+  @Test
+  void complexValueWithNestedArray() {
+    // Array containing arrays should be kept as VALUE type
+    Value<?> nestedArray =
+        Value.of(
+            Arrays.asList(
+                Value.of(Arrays.asList(Value.of("a"), Value.of("b"))),
+                Value.of(Arrays.asList(Value.of("c"), Value.of("d")))));
+    Attributes attributes = Attributes.builder().put(valueKey("key"), nestedArray).build();
+
+    // Should be stored as VALUE type
+    assertThat(attributes.get(valueKey("key"))).isEqualTo(nestedArray);
+
+    // forEach should show VALUE type
+    Map<AttributeKey<?>, Object> entriesSeen = new HashMap<>();
+    attributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).containsExactly(entry(valueKey("key"), nestedArray));
+  }
+
+  @Test
+  void getNonExistentArrayType() {
+    // Test the code path where we look for an array type that doesn't exist
+    Attributes attributes = Attributes.builder().put("key", "value").build();
+
+    // Looking for an array type when only a string exists should return null
+    assertThat(attributes.get(stringArrayKey("key"))).isNull();
+    assertThat(attributes.get(longArrayKey("key"))).isNull();
+    assertThat(attributes.get(doubleArrayKey("key"))).isNull();
+    assertThat(attributes.get(booleanArrayKey("key"))).isNull();
   }
 
   @Test

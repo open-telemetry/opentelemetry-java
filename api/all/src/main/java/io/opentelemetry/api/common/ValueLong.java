@@ -31,7 +31,9 @@ final class ValueLong implements Value<Long> {
 
   @Override
   public String asString() {
-    return String.valueOf(value);
+    StringBuilder sb = new StringBuilder();
+    JsonUtil.appendJsonValue(sb, this);
+    return sb.toString();
   }
 
   @Override

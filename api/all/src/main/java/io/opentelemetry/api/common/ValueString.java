@@ -32,7 +32,9 @@ final class ValueString implements Value<String> {
 
   @Override
   public String asString() {
-    return value;
+    StringBuilder sb = new StringBuilder();
+    JsonUtil.appendJsonValue(sb, this);
+    return sb.toString();
   }
 
   @Override
