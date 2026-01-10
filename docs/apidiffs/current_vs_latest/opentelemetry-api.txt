@@ -13,6 +13,7 @@ Comparing source compatibility of opentelemetry-api-1.59.0-SNAPSHOT.jar against 
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	GENERIC TEMPLATES: === T:java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.lang.Void> empty()
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toProtoJson()
 ***  MODIFIED ENUM: PUBLIC FINAL io.opentelemetry.api.common.ValueType  (compatible)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType EMPTY

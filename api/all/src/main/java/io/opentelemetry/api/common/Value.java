@@ -120,6 +120,32 @@ public interface Value<T> {
    * <p>WARNING: No guarantees are made about the encoding of this string response. It MAY change in
    * a future minor release. If you need a reliable string encoding, write your own serializer.
    */
-  // TODO(jack-berg): Should this be a JSON encoding?
+  // TODO deprecate in favor of toString() or toProtoJson()?
   String asString();
+
+  /**
+   * Returns a JSON encoding of this {@link Value}.
+   *
+   * <p>The output follows the <a href="https://protobuf.dev/programming-guides/json/">ProtoJSON</a>
+   * specification:
+   *
+   * <ul>
+   *   <li>{@link ValueType#STRING} JSON string (including escaping and surrounding quotes)
+   *   <li>{@link ValueType#BOOLEAN} JSON boolean ({@code true} or {@code false})
+   *   <li>{@link ValueType#LONG} JSON number
+   *   <li>{@link ValueType#DOUBLE} JSON number, or {@code "NaN"}, {@code "Infinity"}, {@code
+   *       "-Infinity"} for special values
+   *   <li>{@link ValueType#ARRAY} JSON array (e.g. {@code [1,"two",true]})
+   *   <li>{@link ValueType#KEY_VALUE_LIST} JSON object (e.g. {@code {"key1":"value1","key2":2}})
+   *   <li>{@link ValueType#BYTES} JSON string (including surrounding double quotes) containing
+   *       base64 encoded bytes
+   *   <li>{@link ValueType#EMPTY} JSON {@code null} (the string {@code "null"} without the
+   *       surrounding quotes)
+   * </ul>
+   *
+   * @return a JSON encoding of this value
+   */
+  default String toProtoJson() {
+    return "\"unimplemented\"";
+  }
 }

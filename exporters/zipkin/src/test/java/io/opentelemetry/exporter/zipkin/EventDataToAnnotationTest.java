@@ -35,7 +35,7 @@ class EventDataToAnnotationTest {
             .put(valueKey("v12"), Value.empty())
             .build();
     String expected =
-        "\"cat\":{\"v01\":\"v1\",\"v02\":12,\"v03\":123.45,\"v04\":false,\"v05\":[\"foo\",\"bar\",\"baz\"],\"v06\":[1,2,3],\"v07\":[1.23,3.45],\"v08\":[true,false,true],\"v09\":ValueBytes{AQID},\"v10\":KeyValueList{[nested=value]},\"v11\":ValueArray{[string, 123]},\"v12\":ValueEmpty{}}";
+        "\"cat\":{\"v01\":\"v1\",\"v02\":12,\"v03\":123.45,\"v04\":false,\"v05\":[\"foo\",\"bar\",\"baz\"],\"v06\":[1,2,3],\"v07\":[1.23,3.45],\"v08\":[true,false,true],\"v09\":\"AQID\",\"v10\":{\"nested\":\"value\"},\"v11\":[\"string\",123],\"v12\":null}";
     EventData eventData = EventData.create(0, "cat", attrs);
 
     String result = EventDataToAnnotation.apply(eventData);

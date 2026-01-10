@@ -27,6 +27,11 @@ final class ValueEmpty implements Value<Void> {
 
   @Override
   public String asString() {
+    return "";
+  }
+
+  @Override
+  public String toProtoJson() {
     return "null";
   }
 

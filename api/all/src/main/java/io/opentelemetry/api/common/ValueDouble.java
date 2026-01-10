@@ -31,8 +31,13 @@ final class ValueDouble implements Value<Double> {
 
   @Override
   public String asString() {
+    return String.valueOf(value);
+  }
+
+  @Override
+  public String toProtoJson() {
     StringBuilder sb = new StringBuilder();
-    JsonUtil.appendJsonValue(sb, this);
+    ProtoJson.append(sb, this);
     return sb.toString();
   }
 

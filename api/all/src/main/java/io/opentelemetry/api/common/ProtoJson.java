@@ -9,36 +9,35 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.List;
 
-/** Package-private utility for JSON encoding. */
-final class JsonUtil {
+final class ProtoJson {
 
   private static final char[] HEX_DIGITS = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
   };
 
   @SuppressWarnings("unchecked")
-  static void appendJsonValue(StringBuilder sb, Value<?> value) {
+  static void append(StringBuilder sb, Value<?> value) {
     switch (value.getType()) {
       case STRING:
-        appendJsonString(sb, (String) value.getValue());
+        appendString(sb, (String) value.getValue());
         break;
       case LONG:
         sb.append(value.getValue());
         break;
       case DOUBLE:
-        appendJsonDouble(sb, (Double) value.getValue());
+        appendDouble(sb, (Double) value.getValue());
         break;
       case BOOLEAN:
         sb.append(value.getValue());
         break;
       case ARRAY:
-        appendJsonArray(sb, (List<Value<?>>) value.getValue());
+        appendArray(sb, (List<Value<?>>) value.getValue());
         break;
       case KEY_VALUE_LIST:
-        appendJsonKeyValueList(sb, (List<KeyValue>) value.getValue());
+        appendMap(sb, (List<KeyValue>) value.getValue());
         break;
       case BYTES:
-        appendJsonBytes(sb, (ByteBuffer) value.getValue());
+        appendBytes(sb, (ByteBuffer) value.getValue());
         break;
       case EMPTY:
         sb.append("null");
@@ -46,7 +45,7 @@ final class JsonUtil {
     }
   }
 
-  static void appendJsonString(StringBuilder sb, String value) {
+  private static void appendString(StringBuilder sb, String value) {
     sb.append('"');
     for (int i = 0; i < value.length(); i++) {
       char c = value.charAt(i);
@@ -88,49 +87,46 @@ final class JsonUtil {
     sb.append('"');
   }
 
-  private static void appendJsonDouble(StringBuilder sb, double value) {
+  private static void appendDouble(StringBuilder sb, double value) {
     if (Double.isNaN(value)) {
-      // Encoding as string to match ProtoJSON: https://protobuf.dev/programming-guides/json/
       sb.append("\"NaN\"");
     } else if (Double.isInfinite(value)) {
-      // Encoding as string to match ProtoJSON: https://protobuf.dev/programming-guides/json/
       sb.append(value > 0 ? "\"Infinity\"" : "\"-Infinity\"");
     } else {
       sb.append(value);
     }
   }
 
-  private static void appendJsonBytes(StringBuilder sb, ByteBuffer value) {
-    // Encoding as base64 to match ProtoJSON: https://protobuf.dev/programming-guides/json/
+  private static void appendBytes(StringBuilder sb, ByteBuffer value) {
     byte[] bytes = new byte[value.remaining()];
     value.duplicate().get(bytes);
     sb.append('"').append(Base64.getEncoder().encodeToString(bytes)).append('"');
   }
 
-  private static void appendJsonArray(StringBuilder sb, List<Value<?>> values) {
+  private static void appendArray(StringBuilder sb, List<Value<?>> values) {
     sb.append('[');
     for (int i = 0; i < values.size(); i++) {
       if (i > 0) {
         sb.append(',');
       }
-      appendJsonValue(sb, values.get(i));
+      append(sb, values.get(i));
     }
     sb.append(']');
   }
 
-  private static void appendJsonKeyValueList(StringBuilder sb, List<KeyValue> values) {
+  private static void appendMap(StringBuilder sb, List<KeyValue> values) {
     sb.append('{');
     for (int i = 0; i < values.size(); i++) {
       if (i > 0) {
         sb.append(',');
       }
       KeyValue kv = values.get(i);
-      appendJsonString(sb, kv.getKey());
+      appendString(sb, kv.getKey());
       sb.append(':');
-      appendJsonValue(sb, kv.getValue());
+      append(sb, kv.getValue());
     }
     sb.append('}');
   }
 
-  private JsonUtil() {}
+  private ProtoJson() {}
 }

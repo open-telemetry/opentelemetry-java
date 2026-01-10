@@ -675,8 +675,7 @@ final class Otel2PrometheusConverter {
                   attributeValue.getClass().getName(), type.name()));
         }
       case VALUE:
-        // TODO this should be json representation
-        return ((Value<?>) attributeValue).asString();
+        return ((Value<?>) attributeValue).toProtoJson();
     }
     throw new IllegalStateException("Unrecognized AttributeType: " + type);
   }

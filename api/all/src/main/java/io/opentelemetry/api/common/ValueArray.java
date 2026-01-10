@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.common;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,8 +44,13 @@ final class ValueArray implements Value<List<Value<?>>> {
 
   @Override
   public String asString() {
+    return value.stream().map(Value::asString).collect(joining(", ", "[", "]"));
+  }
+
+  @Override
+  public String toProtoJson() {
     StringBuilder sb = new StringBuilder();
-    JsonUtil.appendJsonValue(sb, this);
+    ProtoJson.append(sb, this);
     return sb.toString();
   }
 
