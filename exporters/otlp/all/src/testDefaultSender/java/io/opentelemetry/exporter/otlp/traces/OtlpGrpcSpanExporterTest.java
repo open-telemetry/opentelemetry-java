@@ -37,7 +37,7 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
           .matches(
               "OtlpGrpcSpanExporter\\{"
                   + "endpoint=http://localhost:4317, "
-                  + "serviceAndMethodName=.*, "
+                  + "fullMethodName=.*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "

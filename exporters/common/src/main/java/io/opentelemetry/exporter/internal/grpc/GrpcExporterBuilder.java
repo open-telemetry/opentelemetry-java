@@ -53,7 +53,7 @@ public class GrpcExporterBuilder {
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
   private final StandardComponentId.ExporterType exporterType;
-  private final String serviceAndMethodName;
+  private final String fullMethodName;
 
   private long timeoutNanos;
   private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
@@ -78,9 +78,9 @@ public class GrpcExporterBuilder {
       StandardComponentId.ExporterType exporterType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
-      String serviceAndMethodName) {
+      String fullMethodName) {
     this.exporterType = exporterType;
-    this.serviceAndMethodName = serviceAndMethodName;
+    this.fullMethodName = fullMethodName;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
   }
@@ -180,10 +180,7 @@ public class GrpcExporterBuilder {
   public GrpcExporterBuilder copy() {
     GrpcExporterBuilder copy =
         new GrpcExporterBuilder(
-            exporterType,
-            TimeUnit.NANOSECONDS.toSeconds(timeoutNanos),
-            endpoint,
-            serviceAndMethodName);
+            exporterType, TimeUnit.NANOSECONDS.toSeconds(timeoutNanos), endpoint, fullMethodName);
 
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
@@ -230,7 +227,7 @@ public class GrpcExporterBuilder {
         grpcSenderProvider.createSender(
             ImmutableGrpcSenderConfig.create(
                 endpoint,
-                serviceAndMethodName,
+                fullMethodName,
                 compressor,
                 timeoutNanos,
                 connectTimeoutNanos,
@@ -256,7 +253,7 @@ public class GrpcExporterBuilder {
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("endpoint=" + endpoint.toString());
-    joiner.add("serviceAndMethodName=" + serviceAndMethodName);
+    joiner.add("fullMethodName=" + fullMethodName);
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("connectTimeoutNanos=" + connectTimeoutNanos);
     joiner.add(

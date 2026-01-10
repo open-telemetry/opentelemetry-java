@@ -29,7 +29,7 @@ import javax.net.ssl.X509TrustManager;
 /** Builder utility for this exporter. */
 public final class OtlpGrpcProfilesExporterBuilder {
 
-  private static final String GRPC_SERVICE_AND_METHOD_NAME =
+  private static final String GRPC_FULL_METHOD_NAME =
       "opentelemetry.proto.collector.profiles.v1development.ProfilesService/Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
@@ -53,7 +53,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
             StandardComponentId.ExporterType.OTLP_GRPC_PROFILES_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
-            GRPC_SERVICE_AND_METHOD_NAME));
+            GRPC_FULL_METHOD_NAME));
   }
 
   /**

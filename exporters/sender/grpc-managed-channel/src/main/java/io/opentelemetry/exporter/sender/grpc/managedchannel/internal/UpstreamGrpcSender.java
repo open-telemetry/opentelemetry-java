@@ -85,7 +85,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
   /** Creates a new {@link UpstreamGrpcSender}. */
   public UpstreamGrpcSender(
       ManagedChannel channel,
-      String serviceAndMethodName,
+      String fullMethodName,
       @Nullable io.opentelemetry.exporter.compressor.Compressor compressor,
       boolean shutdownChannel,
       long timeoutNanos,
@@ -95,7 +95,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
     this.methodDescriptor =
         MethodDescriptor.<MessageWriter, byte[]>newBuilder()
             .setType(MethodDescriptor.MethodType.UNARY)
-            .setFullMethodName(serviceAndMethodName)
+            .setFullMethodName(fullMethodName)
             .setRequestMarshaller(REQUEST_MARSHALER)
             .setResponseMarshaller(RESPONSE_MARSHALER)
             .build();

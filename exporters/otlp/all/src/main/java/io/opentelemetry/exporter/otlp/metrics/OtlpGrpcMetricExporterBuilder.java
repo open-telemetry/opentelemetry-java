@@ -42,7 +42,7 @@ import javax.net.ssl.X509TrustManager;
  */
 public final class OtlpGrpcMetricExporterBuilder {
 
-  private static final String GRPC_SERVICE_AND_METHOD_NAME =
+  private static final String GRPC_FULL_METHOD_NAME =
       "opentelemetry.proto.collector.metrics.v1.MetricsService/Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
@@ -77,7 +77,7 @@ public final class OtlpGrpcMetricExporterBuilder {
             StandardComponentId.ExporterType.OTLP_GRPC_METRIC_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
-            GRPC_SERVICE_AND_METHOD_NAME),
+            GRPC_FULL_METHOD_NAME),
         DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
         DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
