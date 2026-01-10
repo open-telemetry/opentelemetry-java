@@ -45,6 +45,15 @@ public class PrometheusComponentProvider implements ComponentProvider {
       prometheusBuilder.setHost(host);
     }
 
+    Boolean withoutTargetInfo = config.getBoolean("without_target_info");
+    if (withoutTargetInfo != null) {
+      prometheusBuilder.setTargetInfoMetricEnabled(!withoutTargetInfo);
+    }
+    Boolean withoutScopeInfo = config.getBoolean("without_scope_info");
+    if (withoutScopeInfo != null) {
+      prometheusBuilder.setOtelScopeLabelsEnabled(!withoutScopeInfo);
+    }
+
     DeclarativeConfigProperties withResourceConstantLabels =
         config.getStructured("with_resource_constant_labels");
     if (withResourceConstantLabels != null) {

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.exporter.grpc.GrpcStatusCode;
-import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.sender.okhttp.internal.GrpcRequestBody;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
@@ -176,18 +175,6 @@ final class OkHttpGrpcService implements GrpcService {
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();
     return CompletableResultCode.ofSuccess();
-  }
-
-  static boolean isRetryable(Response response) {
-    // Only retry on gRPC codes which will always come with an HTTP success
-    if (!response.isSuccessful()) {
-      return false;
-    }
-
-    // We don't check trailers for retry since retryable error codes always come with response
-    // headers, not trailers, in practice.
-    String grpcStatus = response.header(GRPC_STATUS);
-    return RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
   }
 
   // From grpc-java

@@ -153,7 +153,7 @@ class MetricReaderFactoryTest {
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
     assertThat(readerAndCardinalityLimits.getCardinalityLimitsSelector()).isNull();
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
-    verify(context).loadComponent(eq(MetricReader.class), eq("prometheus/development"), any());
+    verify(context).loadComponent(eq(MetricReader.class), any(ConfigKeyValue.class));
   }
 
   @Test
@@ -189,7 +189,8 @@ class MetricReaderFactoryTest {
                                                 new IncludeExcludeModel()
                                                     .withIncluded(singletonList("foo"))
                                                     .withExcluded(singletonList("bar")))
-                                            .withWithoutScopeInfo(true)
+                                            .withWithoutScopeInfo(false)
+                                            .withWithoutTargetInfo(false)
                                             .withTranslationStrategy(
                                                 ExperimentalPrometheusMetricExporterModel
                                                     .ExperimentalPrometheusTranslationStrategy
@@ -206,7 +207,7 @@ class MetricReaderFactoryTest {
                 .getCardinalityLimit(InstrumentType.COUNTER))
         .isEqualTo(100);
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
-    verify(context).loadComponent(eq(MetricReader.class), eq("prometheus/development"), any());
+    verify(context).loadComponent(eq(MetricReader.class), any(ConfigKeyValue.class));
   }
 
   @Test
@@ -228,7 +229,7 @@ class MetricReaderFactoryTest {
                                     .withExporter(new PullMetricExporterModel())),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage("prometheus is the only currently supported pull reader");
+        .hasMessage("metric reader must have exactly one entry but has 0");
   }
 
   /**

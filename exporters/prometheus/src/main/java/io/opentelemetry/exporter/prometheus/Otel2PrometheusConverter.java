@@ -80,6 +80,8 @@ final class Otel2PrometheusConverter {
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
+  private final boolean otelScopeLabelsEnabled;
+  private final boolean targetInfoMetricEnabled;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -89,17 +91,38 @@ final class Otel2PrometheusConverter {
   private final Map<Attributes, List<AttributeKey<?>>> resourceAttributesToAllowedKeysCache;
 
   /**
-   * Constructor with feature flag parameter.
+   * Constructor with feature flag parameters.
    *
+   * @param otelScopeLabelsEnabled whether to add OpenTelemetry scope labels to exported metrics
+   * @param targetInfoMetricEnabled whether to export the target_info metric with resource
+   *     attributes
    * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
    *     matching this predicate will be added as labels on each exported metric
    */
-  Otel2PrometheusConverter(@Nullable Predicate<String> allowedResourceAttributesFilter) {
+  Otel2PrometheusConverter(
+      boolean otelScopeLabelsEnabled,
+      boolean targetInfoMetricEnabled,
+      @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
+    this.targetInfoMetricEnabled = targetInfoMetricEnabled;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
             ? new ConcurrentHashMap<>()
             : Collections.emptyMap();
+  }
+
+  boolean isOtelScopeLabelsEnabled() {
+    return otelScopeLabelsEnabled;
+  }
+
+  boolean isTargetInfoMetricEnabled() {
+    return targetInfoMetricEnabled;
+  }
+
+  @Nullable
+  Predicate<String> getAllowedResourceAttributesFilter() {
+    return allowedResourceAttributesFilter;
   }
 
   MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
@@ -118,7 +141,7 @@ final class Otel2PrometheusConverter {
         resource = metricData.getResource();
       }
     }
-    if (resource != null) {
+    if (resource != null && targetInfoMetricEnabled) {
       putOrMerge(snapshotsByName, makeTargetInfo(resource));
     }
     return new MetricSnapshots(snapshotsByName.values());
@@ -457,7 +480,7 @@ final class Otel2PrometheusConverter {
           requireNonNull(additionalAttributes[i]), additionalAttributes[i + 1]);
     }
 
-    if (scope != null) {
+    if (scope != null && otelScopeLabelsEnabled) {
       labelNameToValue.putIfAbsent(OTEL_SCOPE_NAME, scope.getName());
       if (scope.getVersion() != null) {
         labelNameToValue.putIfAbsent(OTEL_SCOPE_VERSION, scope.getVersion());

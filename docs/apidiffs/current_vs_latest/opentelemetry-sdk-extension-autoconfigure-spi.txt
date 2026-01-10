@@ -1,2 +1,2 @@
-Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-spi-1.58.0-SNAPSHOT.jar against opentelemetry-sdk-extension-autoconfigure-spi-1.57.0.jar
+Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-spi-1.59.0-SNAPSHOT.jar against opentelemetry-sdk-extension-autoconfigure-spi-1.58.0.jar
 No changes.
