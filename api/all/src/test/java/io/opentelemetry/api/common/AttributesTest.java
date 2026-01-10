@@ -943,4 +943,43 @@ class AttributesTest {
     Attributes attributes = Attributes.of(key, "");
     assertThat(attributes.get(key)).isEqualTo("");
   }
+
+  @Test
+  void getValueAttribute_KeyNameMatching() {
+    // Test the getValueAttribute method's key name matching logic
+    Attributes attributes =
+        Attributes.builder()
+            .put(valueKey("key1"), Value.of(new byte[] {1, 2, 3}))
+            .put("key2", "value2")
+            .put(valueKey("key3"), Value.of(Collections.emptyMap()))
+            .build();
+
+    // When looking for array type with key1, should not find it (it's VALUE with BYTES)
+    assertThat(attributes.get(stringArrayKey("key1"))).isNull();
+
+    // When looking for array type with key2, should not find it (it's STRING, not VALUE)
+    assertThat(attributes.get(longArrayKey("key2"))).isNull();
+
+    // Verify VALUE types can be retrieved
+    assertThat(attributes.get(valueKey("key1"))).isEqualTo(Value.of(new byte[] {1, 2, 3}));
+    assertThat(attributes.get(valueKey("key3"))).isEqualTo(Value.of(Collections.emptyMap()));
+  }
+
+  @Test
+  void emptyArrayValueNotStoredAsTypedArray() {
+    // When empty array is stored as VALUE, it should not be found when looking for
+    // the VALUE attribute with non-empty array
+    Attributes attributes =
+        Attributes.builder().put(valueKey("empty"), Value.of(Collections.emptyList())).build();
+
+    // Should return empty list for typed array lookups (testing isEmptyArray branch)
+    assertThat(attributes.get(stringArrayKey("empty"))).isEmpty();
+    assertThat(attributes.get(longArrayKey("empty"))).isEmpty();
+
+    // Non-array VALUE types should not trigger the empty array logic
+    Attributes nonArrayAttrs =
+        Attributes.builder().put(valueKey("bytes"), Value.of(new byte[] {1, 2})).build();
+    assertThat(nonArrayAttrs.get(stringArrayKey("bytes"))).isNull();
+    assertThat(nonArrayAttrs.get(longArrayKey("bytes"))).isNull();
+  }
 }

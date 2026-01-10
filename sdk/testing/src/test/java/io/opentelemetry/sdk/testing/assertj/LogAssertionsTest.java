@@ -335,4 +335,43 @@ public class LogAssertionsTest {
         .hasBodyField("fooany", Value.of("grim"))
         .hasBodyField("foobytes", Value.of(new byte[] {1, 2, 3}));
   }
+
+  @Test
+  void logBodyAssertions_withAttributeKeys() {
+    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
+            .build();
+    Logger logger = loggerProvider.get("test.test");
+
+    logger
+        .logRecordBuilder()
+        .setBody(
+            Value.of(
+                KeyValue.of("strField", Value.of("value1")),
+                KeyValue.of("boolField", Value.of(false)),
+                KeyValue.of("longField", Value.of(42L)),
+                KeyValue.of("doubleField", Value.of(3.14)),
+                KeyValue.of("strArrayField", Value.of(Value.of("a"), Value.of("b"))),
+                KeyValue.of("boolArrayField", Value.of(Value.of(true), Value.of(false))),
+                KeyValue.of("longArrayField", Value.of(Value.of(1L), Value.of(2L))),
+                KeyValue.of("doubleArrayField", Value.of(Value.of(1.1), Value.of(2.2))),
+                KeyValue.of("bytes", Value.of(new byte[] {1, 2, 3}))))
+        .emit();
+
+    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
+    assertThat(logs).hasSize(1);
+
+    assertThat(logs.get(0))
+        .hasBodyField(AttributeKey.stringKey("strField"), "value1")
+        .hasBodyField(AttributeKey.booleanKey("boolField"), false)
+        .hasBodyField(AttributeKey.longKey("longField"), 42L)
+        .hasBodyField(AttributeKey.doubleKey("doubleField"), 3.14)
+        .hasBodyField(AttributeKey.stringArrayKey("strArrayField"), Arrays.asList("a", "b"))
+        .hasBodyField(AttributeKey.booleanArrayKey("boolArrayField"), Arrays.asList(true, false))
+        .hasBodyField(AttributeKey.longArrayKey("longArrayField"), Arrays.asList(1L, 2L))
+        .hasBodyField(AttributeKey.doubleArrayKey("doubleArrayField"), Arrays.asList(1.1, 2.2))
+        .hasBodyField(AttributeKey.valueKey("bytes"), Value.of(new byte[] {1, 2, 3}));
+  }
 }

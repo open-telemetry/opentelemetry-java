@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class ValueProtoJsonTest {
+class ValueToProtoJsonTest {
 
   @Test
   void valueString_basic() {
@@ -364,5 +364,29 @@ class ValueProtoJsonTest {
                     KeyValue.of("metadata", Value.of(new KeyValue[] {})))
                 .toProtoJson())
         .isEqualTo("{\"data\":\"test\",\"metadata\":{}}");
+  }
+
+  @Test
+  void defaultImplementation_returnsUnimplemented() {
+    // Create a custom Value implementation that doesn't override toProtoJson()
+    Value<String> customValue =
+        new Value<String>() {
+          @Override
+          public ValueType getType() {
+            return ValueType.STRING;
+          }
+
+          @Override
+          public String getValue() {
+            return "test";
+          }
+
+          @Override
+          public String asString() {
+            return "test";
+          }
+        };
+
+    assertThat(customValue.toProtoJson()).isEqualTo("\"unimplemented\"");
   }
 }
