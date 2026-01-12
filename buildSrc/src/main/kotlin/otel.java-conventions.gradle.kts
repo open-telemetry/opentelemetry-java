@@ -9,6 +9,7 @@ plugins {
   eclipse
   idea
 
+  id("biz.aQute.bnd.builder")
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
   id("otel.spotless-conventions")
@@ -139,6 +140,25 @@ tasks {
 
       addBooleanOption("html5", true)
       addBooleanOption("Xdoclint:all,-missing", true)
+    }
+  }
+
+  named<Jar>("jar") {
+    // Configure OSGi metadata
+    bundle {
+      // Compute import packages.
+      // Certain packages like javax.annotation.* are always optional.
+      // Modules may have additional optional packages, typically corresponding to compileOnly dependencies.
+      // Append wildcard "*" last to import any other referenced packages
+      val optionalPackages = mutableListOf("javax.annotation")
+      optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
+      val importPackages = optionalPackages.joinToString(",") { it + ".*;resolution:=optional;version\"\${@}\"" } + ",*"
+
+      bnd(mapOf(
+        // Once https://github.com/open-telemetry/opentelemetry-java/issues/6970 is resolved, exclude .internal packages
+        "-exportcontents" to "io.opentelemetry.*",
+        "Import-Package" to importPackages
+      ))
     }
   }
 

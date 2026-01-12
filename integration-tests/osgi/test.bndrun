@@ -1,0 +1,8 @@
+-tester: biz.aQute.tester.junit-platform
+-runfw: org.apache.felix.framework
+-runee: ${project.osgiRunee}
+
+-runrequires: \
+	bnd.identity;id='opentelemetry-osgi-testing',\
+  bnd.identity;id='junit-jupiter-engine',\
+  bnd.identity;id='junit-platform-launcher'
