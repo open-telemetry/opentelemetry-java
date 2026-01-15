@@ -27,7 +27,5 @@ public interface GrpcResponse {
 
   /** The gRPC response message bytes. */
   @SuppressWarnings("mutable")
-  default byte[] getResponseMessage() {
-    return new byte[0];
-  }
+  byte[] getResponseMessage();
 }

@@ -25,7 +25,5 @@ public interface HttpResponse {
 
   /** The HTTP response body bytes. */
   @SuppressWarnings("mutable")
-  default byte[] getResponseBody() {
-    return new byte[0];
-  }
+  byte[] getResponseBody();
 }
