@@ -11,7 +11,6 @@ import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.compressor.CompressorProvider;
 import io.opentelemetry.exporter.grpc.GrpcSender;
 import io.opentelemetry.exporter.grpc.GrpcSenderProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
@@ -117,7 +116,7 @@ public class GrpcExporterBuilder {
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
    * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * methods is available by implementing {@link Compressor} SPI.
    */
   public GrpcExporterBuilder setCompression(String compressionMethod) {
     Compressor compressor =

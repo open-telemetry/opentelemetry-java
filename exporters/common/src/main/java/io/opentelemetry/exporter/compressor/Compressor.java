@@ -10,10 +10,8 @@ import java.io.OutputStream;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * An abstraction for compressing messages. Implementation MUST be thread safe as the same instance
- * is expected to be used many times and concurrently. Instances are usually singletons.
- *
- * @see CompressorProvider
+ * A service provider interface (SPI) for compression. Implementation MUST be thread safe as the
+ * same instance is expected to be used many times and concurrently.
  */
 @ThreadSafe
 public interface Compressor {

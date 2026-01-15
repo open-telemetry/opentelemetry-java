@@ -18,13 +18,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public final class GzipCompressor implements Compressor {
 
-  private static final GzipCompressor INSTANCE = new GzipCompressor();
-
-  private GzipCompressor() {}
-
-  public static GzipCompressor getInstance() {
-    return INSTANCE;
-  }
+  public GzipCompressor() {}
 
   @Override
   public String getEncoding() {

@@ -5,10 +5,6 @@ Comparing source compatibility of opentelemetry-exporter-common-1.59.0-SNAPSHOT.
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.io.OutputStream compress(java.io.OutputStream)
 		+++  NEW EXCEPTION: java.io.IOException
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getEncoding()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.compressor.CompressorProvider  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.compressor.Compressor getInstance()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.grpc.GrpcResponse  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object

@@ -10,7 +10,6 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.compressor.CompressorProvider;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,11 +20,10 @@ import javax.annotation.Nullable;
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
- *
- * @see CompressorProvider
  */
 public final class CompressorUtil {
 
+  private static final GzipCompressor gzipCompressor = new GzipCompressor();
   private static final Map<String, Compressor> compressorRegistry =
       buildCompressorRegistry(
           ComponentLoader.forClassLoader(CompressorUtil.class.getClassLoader()));
@@ -69,12 +67,11 @@ public final class CompressorUtil {
 
   private static Map<String, Compressor> buildCompressorRegistry(ComponentLoader componentLoader) {
     Map<String, Compressor> compressors = new HashMap<>();
-    for (CompressorProvider spi : componentLoader.load(CompressorProvider.class)) {
-      Compressor compressor = spi.getInstance();
+    for (Compressor compressor : componentLoader.load(Compressor.class)) {
       compressors.put(compressor.getEncoding(), compressor);
     }
     // Hardcode gzip compressor
-    compressors.put(GzipCompressor.getInstance().getEncoding(), GzipCompressor.getInstance());
+    compressors.put(gzipCompressor.getEncoding(), gzipCompressor);
     return compressors;
   }
 }

@@ -10,7 +10,6 @@ import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.compressor.CompressorProvider;
 import io.opentelemetry.exporter.http.HttpSender;
 import io.opentelemetry.exporter.http.HttpSenderProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
@@ -105,7 +104,7 @@ public final class HttpExporterBuilder {
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
    * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * methods is available by implementing {@link Compressor}.
    */
   public HttpExporterBuilder setCompression(String compressionMethod) {
     Compressor compressor =

@@ -46,14 +46,14 @@ class GrpcExporterBuilderTest {
 
   @Test
   void compressionGzip() {
-    builder.setCompression(GzipCompressor.getInstance());
+    builder.setCompression(new GzipCompressor());
 
-    assertThat(builder).extracting("compressor").isEqualTo(GzipCompressor.getInstance());
+    assertThat(builder).extracting("compressor").isInstanceOf(GzipCompressor.class);
   }
 
   @Test
   void compressionEnabledAndDisabled() {
-    builder.setCompression(GzipCompressor.getInstance()).setCompression((Compressor) null);
+    builder.setCompression(new GzipCompressor()).setCompression((Compressor) null);
 
     assertThat(builder).extracting("compressor").isNull();
   }
@@ -69,7 +69,7 @@ class GrpcExporterBuilderTest {
   void compressionString_gzip() {
     builder.setCompression("gzip");
 
-    assertThat(builder).extracting("compressor").isEqualTo(GzipCompressor.getInstance());
+    assertThat(builder).extracting("compressor").isInstanceOf(GzipCompressor.class);
   }
 
   @Test
@@ -81,14 +81,14 @@ class GrpcExporterBuilderTest {
 
   @Test
   void compressionString_usesServiceClassLoader() {
-    // Create a class loader that cannot load CompressorProvider services
+    // Create a class loader that cannot load Compressor services
     ComponentLoader emptyComponentLoader =
         ComponentLoader.forClassLoader(new URLClassLoader(new URL[0], null));
     builder.setComponentLoader(emptyComponentLoader);
 
     // This should still work because gzip compressor is hardcoded
     builder.setCompression("gzip");
-    assertThat(builder).extracting("compressor").isEqualTo(GzipCompressor.getInstance());
+    assertThat(builder).extracting("compressor").isInstanceOf(GzipCompressor.class);
 
     // This should still work because "none" doesn't require loading services
     builder.setCompression("none");
