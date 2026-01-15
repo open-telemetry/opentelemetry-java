@@ -9,6 +9,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.exporter.compressor.Compressor;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -25,8 +26,8 @@ abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderConfig {
       URI endpoint,
       String fullMethodName,
       @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectTimeoutNanos,
+      Duration timeoutNanos,
+      Duration connectTimeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,

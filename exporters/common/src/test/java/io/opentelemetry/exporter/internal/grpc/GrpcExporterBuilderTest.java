@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ class GrpcExporterBuilderTest {
     builder =
         new GrpcExporterBuilder(
             StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-            0,
+            Duration.ZERO,
             URI.create("http://localhost:4317"),
             "service/method");
   }

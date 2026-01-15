@@ -78,7 +78,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
   private final MethodDescriptor<MessageWriter, byte[]> methodDescriptor;
   @Nullable private final String compressorName;
   private final boolean shutdownChannel;
-  private final long timeoutNanos;
+  private final Duration timeout;
   private final Supplier<Map<String, List<String>>> headersSupplier;
   private final Executor executor;
 
@@ -88,7 +88,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
       String fullMethodName,
       @Nullable io.opentelemetry.exporter.compressor.Compressor compressor,
       boolean shutdownChannel,
-      long timeoutNanos,
+      Duration timeout,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable ExecutorService executorService) {
     this.channel = channel;
@@ -118,7 +118,7 @@ public final class UpstreamGrpcSender implements GrpcSender {
       this.compressorName = null;
     }
     this.shutdownChannel = shutdownChannel;
-    this.timeoutNanos = timeoutNanos;
+    this.timeout = timeout;
     this.headersSupplier = headersSupplier;
     this.executor = executorService == null ? MoreExecutors.directExecutor() : executorService;
   }
@@ -128,8 +128,8 @@ public final class UpstreamGrpcSender implements GrpcSender {
       MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     CallOptions requestCallOptions = CallOptions.DEFAULT;
     Channel requestChannel = channel;
-    if (timeoutNanos > 0) {
-      requestCallOptions = requestCallOptions.withDeadlineAfter(Duration.ofNanos(timeoutNanos));
+    if (timeout.toNanos() > 0) {
+      requestCallOptions = requestCallOptions.withDeadlineAfter(timeout);
     }
     Metadata metadata = new Metadata();
     Map<String, List<String>> headers = headersSupplier.get();

@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.exporter.marshal.MessageWriter;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.util.Collections;
 
 class OkHttpGrpcSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpGrpcSender> {
@@ -30,6 +31,14 @@ class OkHttpGrpcSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpGrpc
   @Override
   OkHttpGrpcSender createSender(String endpoint) {
     return new OkHttpGrpcSender(
-        "https://localhost", null, 10L, 10L, Collections::emptyMap, null, null, null, null);
+        "https://localhost",
+        null,
+        Duration.ofNanos(10),
+        Duration.ofNanos(10L),
+        Collections::emptyMap,
+        null,
+        null,
+        null,
+        null);
   }
 }

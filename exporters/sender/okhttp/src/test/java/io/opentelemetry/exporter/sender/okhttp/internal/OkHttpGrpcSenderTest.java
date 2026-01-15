@@ -83,8 +83,8 @@ class OkHttpGrpcSenderTest {
         new OkHttpGrpcSender(
             "http://localhost:" + port, // Non-existent endpoint to trigger thread creation
             null,
-            Duration.ofSeconds(10).toNanos(),
-            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             null,
             null,
@@ -126,8 +126,8 @@ class OkHttpGrpcSenderTest {
           new OkHttpGrpcSender(
               "http://localhost:8080",
               null,
-              Duration.ofSeconds(10).toNanos(),
-              Duration.ofSeconds(10).toNanos(),
+              Duration.ofSeconds(10),
+              Duration.ofSeconds(10),
               Collections::emptyMap,
               null,
               null,
@@ -163,8 +163,8 @@ class OkHttpGrpcSenderTest {
         new OkHttpGrpcSender(
             "http://localhost:" + port,
             null,
-            Duration.ofSeconds(10).toNanos(),
-            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             null,
             null,
@@ -225,8 +225,8 @@ class OkHttpGrpcSenderTest {
         new OkHttpGrpcSender(
             "http://localhost:" + port,
             null,
-            Duration.ofSeconds(10).toNanos(),
-            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             null,
             null,

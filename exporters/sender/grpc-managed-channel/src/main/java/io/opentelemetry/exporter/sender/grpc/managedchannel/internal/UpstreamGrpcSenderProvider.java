@@ -49,7 +49,7 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
         extendedSenderConfig.getFullMethodName(),
         extendedSenderConfig.getCompressor(),
         shutdownChannel,
-        extendedSenderConfig.getTimeoutNanos(),
+        extendedSenderConfig.getTimeout(),
         extendedSenderConfig.getHeadersSupplier(),
         extendedSenderConfig.getExecutorService());
   }

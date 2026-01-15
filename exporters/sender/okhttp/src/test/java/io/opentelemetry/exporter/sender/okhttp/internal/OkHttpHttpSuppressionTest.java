@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 
 class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttpSender> {
@@ -38,8 +39,8 @@ class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttp
         URI.create(endpoint),
         "text/plain",
         null,
-        10L,
-        10L,
+        Duration.ofNanos(10),
+        Duration.ofNanos(10),
         Collections::emptyMap,
         null,
         null,

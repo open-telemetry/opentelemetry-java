@@ -22,7 +22,7 @@ Comparing source compatibility of opentelemetry-exporter-common-1.59.0-SNAPSHOT.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.compressor.Compressor getCompressor()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getConnectTimeoutNanos()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getConnectTimeout()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.net.URI getEndpoint()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.concurrent.ExecutorService getExecutorService()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
@@ -32,7 +32,7 @@ Comparing source compatibility of opentelemetry-exporter-common-1.59.0-SNAPSHOT.
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) javax.net.ssl.SSLContext getSslContext()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getTimeoutNanos()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getTimeout()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) javax.net.ssl.X509TrustManager getTrustManager()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.grpc.GrpcSenderProvider  (not serializable)
@@ -82,7 +82,7 @@ Comparing source compatibility of opentelemetry-exporter-common-1.59.0-SNAPSHOT.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.compressor.Compressor getCompressor()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getConnectTimeoutNanos()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getConnectTimeout()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getContentType()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.net.URI getEndpoint()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.concurrent.ExecutorService getExecutorService()
@@ -94,7 +94,7 @@ Comparing source compatibility of opentelemetry-exporter-common-1.59.0-SNAPSHOT.
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) javax.net.ssl.SSLContext getSslContext()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getTimeoutNanos()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getTimeout()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) javax.net.ssl.X509TrustManager getTrustManager()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.exporter.http.HttpSenderProvider  (not serializable)

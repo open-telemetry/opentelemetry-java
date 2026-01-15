@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.http.HttpSenderConfig;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -27,8 +28,8 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
       URI endpoint,
       String contentType,
       @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectTimeoutNanos,
+      Duration timeoutNanos,
+      Duration connectTimeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable ProxyOptions proxyOptions,
       @Nullable RetryPolicy retryPolicy,

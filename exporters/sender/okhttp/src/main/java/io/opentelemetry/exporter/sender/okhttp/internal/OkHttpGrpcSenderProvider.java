@@ -25,8 +25,8 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
             .resolve("/" + grpcSenderConfig.getFullMethodName())
             .toString(),
         grpcSenderConfig.getCompressor(),
-        grpcSenderConfig.getTimeoutNanos(),
-        grpcSenderConfig.getConnectTimeoutNanos(),
+        grpcSenderConfig.getTimeout(),
+        grpcSenderConfig.getConnectTimeout(),
         grpcSenderConfig.getHeadersSupplier(),
         grpcSenderConfig.getRetryPolicy(),
         grpcSenderConfig.getSslContext(),

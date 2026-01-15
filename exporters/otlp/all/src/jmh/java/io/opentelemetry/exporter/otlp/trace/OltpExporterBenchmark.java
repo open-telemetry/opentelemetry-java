@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -88,7 +89,7 @@ public class OltpExporterBenchmark {
                 "opentelemetry.proto.collector.trace.v1.TraceService/Export",
                 null,
                 /* shutdownChannel= */ false,
-                10,
+                Duration.ofNanos(10),
                 Collections::emptyMap,
                 null),
             InternalTelemetryVersion.LATEST,
@@ -103,8 +104,8 @@ public class OltpExporterBenchmark {
                     .resolve("opentelemetry.proto.collector.trace.v1.TraceService/Export")
                     .toString(),
                 null,
-                10,
-                10,
+                Duration.ofNanos(10),
+                Duration.ofNanos(10),
                 Collections::emptyMap,
                 null,
                 null,

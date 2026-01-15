@@ -61,8 +61,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
   public OtlpHttpLogRecordExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setTimeout(timeout, unit);
-    return this;
+    return setTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
@@ -71,7 +70,8 @@ public final class OtlpHttpLogRecordExporterBuilder {
    */
   public OtlpHttpLogRecordExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
-    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+    delegate.setTimeout(timeout);
+    return this;
   }
 
   /**
@@ -83,8 +83,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
   public OtlpHttpLogRecordExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setConnectTimeout(timeout, unit);
-    return this;
+    return setConnectTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
@@ -95,7 +94,8 @@ public final class OtlpHttpLogRecordExporterBuilder {
    */
   public OtlpHttpLogRecordExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
-    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+    delegate.setConnectTimeout(timeout);
+    return this;
   }
 
   /**

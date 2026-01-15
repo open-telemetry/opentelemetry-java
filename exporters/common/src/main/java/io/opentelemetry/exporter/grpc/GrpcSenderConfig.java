@@ -10,6 +10,7 @@ import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.OutputStream;
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -50,13 +51,13 @@ public interface GrpcSenderConfig {
   Compressor getCompressor();
 
   /**
-   * The max time in nanoseconds allowed to send a request, including resolving DNS, connecting,
-   * writing the request, reading the response, and any retries via {@link #getRetryPolicy()}.
+   * The max duration allowed to send a request, including resolving DNS, connecting, writing the
+   * request, reading the response, and any retries via {@link #getRetryPolicy()}.
    */
-  long getTimeoutNanos();
+  Duration getTimeout();
 
-  /** The max time in nanoseconds allowed to connect to a target host. */
-  long getConnectTimeoutNanos();
+  /** The max duration allowed to connect to a target host. */
+  Duration getConnectTimeout();
 
   /**
    * Additional headers that must be appended to every request. The resulting {@link Supplier} must

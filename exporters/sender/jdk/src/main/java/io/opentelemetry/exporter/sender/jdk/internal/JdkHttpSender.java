@@ -68,7 +68,7 @@ public final class JdkHttpSender implements HttpSender {
   private final URI endpoint;
   private final String contentType;
   @Nullable private final Compressor compressor;
-  private final long timeoutNanos;
+  private final Duration timeout;
   private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
   private final Predicate<IOException> retryExceptionPredicate;
@@ -79,7 +79,7 @@ public final class JdkHttpSender implements HttpSender {
       URI endpoint,
       String contentType,
       @Nullable Compressor compressor,
-      long timeoutNanos,
+      Duration timeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable ExecutorService executorService) {
@@ -87,7 +87,7 @@ public final class JdkHttpSender implements HttpSender {
     this.endpoint = endpoint;
     this.contentType = contentType;
     this.compressor = compressor;
-    this.timeoutNanos = timeoutNanos;
+    this.timeout = timeout;
     this.headerSupplier = headerSupplier;
     this.retryPolicy = retryPolicy;
     this.retryExceptionPredicate =
@@ -107,19 +107,19 @@ public final class JdkHttpSender implements HttpSender {
       URI endpoint,
       String contentType,
       @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectTimeoutNanos,
+      Duration timeout,
+      Duration connectTimeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable ProxyOptions proxyOptions,
       @Nullable SSLContext sslContext,
       @Nullable ExecutorService executorService) {
     this(
-        configureClient(sslContext, connectTimeoutNanos, proxyOptions),
+        configureClient(sslContext, connectTimeout, proxyOptions),
         endpoint,
         contentType,
         compressor,
-        timeoutNanos,
+        timeout,
         headerSupplier,
         retryPolicy,
         executorService);
@@ -137,10 +137,9 @@ public final class JdkHttpSender implements HttpSender {
 
   private static HttpClient configureClient(
       @Nullable SSLContext sslContext,
-      long connectionTimeoutNanos,
+      Duration connectTimeout,
       @Nullable ProxyOptions proxyOptions) {
-    HttpClient.Builder builder =
-        HttpClient.newBuilder().connectTimeout(Duration.ofNanos(connectionTimeoutNanos));
+    HttpClient.Builder builder = HttpClient.newBuilder().connectTimeout(connectTimeout);
     if (sslContext != null) {
       builder.sslContext(sslContext);
     }
@@ -178,8 +177,7 @@ public final class JdkHttpSender implements HttpSender {
   // Visible for testing
   HttpResponse<byte[]> sendInternal(MessageWriter requestBodyWriter) throws IOException {
     long startTimeNanos = System.nanoTime();
-    HttpRequest.Builder requestBuilder =
-        HttpRequest.newBuilder().uri(endpoint).timeout(Duration.ofNanos(timeoutNanos));
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(endpoint).timeout(timeout);
     Map<String, List<String>> headers = headerSupplier.get();
     if (headers != null) {
       headers.forEach((key, values) -> values.forEach(value -> requestBuilder.header(key, value)));
@@ -227,13 +225,13 @@ public final class JdkHttpSender implements HttpSender {
         }
         // If after sleeping we've exceeded timeoutNanos, break out and return
         // response or throw
-        if ((System.nanoTime() - startTimeNanos) >= timeoutNanos) {
+        if ((System.nanoTime() - startTimeNanos) >= timeout.toNanos()) {
           break;
         }
       }
       httpResponse = null;
       exception = null;
-      requestBuilder.timeout(Duration.ofNanos(timeoutNanos - (System.nanoTime() - startTimeNanos)));
+      requestBuilder.timeout(timeout.minusNanos(System.nanoTime() - startTimeNanos));
       try {
         httpResponse = sendRequest(requestBuilder, byteBufferPool);
         boolean retryable = retryableStatusCodes.contains(httpResponse.statusCode());

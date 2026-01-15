@@ -64,18 +64,16 @@ public final class OkHttpHttpSender implements HttpSender {
       URI endpoint,
       String contentType,
       @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectionTimeoutNanos,
+      Duration timeout,
+      Duration connectTimeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable ProxyOptions proxyOptions,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService) {
-    int callTimeoutMillis =
-        (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
-    int connectTimeoutMillis =
-        (int) Math.min(Duration.ofNanos(connectionTimeoutNanos).toMillis(), Integer.MAX_VALUE);
+    int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
+    int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
     Dispatcher dispatcher;
     if (executorService == null) {

@@ -63,7 +63,7 @@ class JdkHttpSenderTest {
             URI.create("http://10.255.255.1"),
             "text/plain",
             null,
-            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
             null);
@@ -118,7 +118,7 @@ class JdkHttpSenderTest {
             URI.create("http://localhost:" + freePort()),
             "text/plain",
             null,
-            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
             null);
@@ -171,8 +171,8 @@ class JdkHttpSenderTest {
             URI.create("http://localhost"),
             "text/plain",
             null,
-            1,
-            TimeUnit.SECONDS.toNanos(10),
+            Duration.ofNanos(1),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             null,
             null,

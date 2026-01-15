@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,8 +53,8 @@ public class GrpcExporterBuilder {
   private final StandardComponentId.ExporterType exporterType;
   private final String fullMethodName;
 
-  private long timeoutNanos;
-  private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
+  private Duration timeout;
+  private Duration connectTimeout = Duration.ofSeconds(DEFAULT_CONNECT_TIMEOUT_SECS);
   private URI endpoint;
   @Nullable private Compressor compressor;
   private final Map<String, String> constantHeaders = new HashMap<>();
@@ -75,12 +74,12 @@ public class GrpcExporterBuilder {
 
   public GrpcExporterBuilder(
       StandardComponentId.ExporterType exporterType,
-      long defaultTimeoutSecs,
+      Duration defaultTimeout,
       URI defaultEndpoint,
       String fullMethodName) {
     this.exporterType = exporterType;
     this.fullMethodName = fullMethodName;
-    timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
+    timeout = defaultTimeout;
     endpoint = defaultEndpoint;
   }
 
@@ -89,17 +88,13 @@ public class GrpcExporterBuilder {
     return this;
   }
 
-  public GrpcExporterBuilder setTimeout(long timeout, TimeUnit unit) {
-    timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
+  public GrpcExporterBuilder setTimeout(Duration timeout) {
+    this.timeout = timeout.toNanos() == 0 ? Duration.ofNanos(Long.MAX_VALUE) : timeout;
     return this;
   }
 
-  public GrpcExporterBuilder setTimeout(Duration timeout) {
-    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
-  }
-
-  public GrpcExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
-    connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
+  public GrpcExporterBuilder setConnectTimeout(Duration timeout) {
+    connectTimeout = timeout.toNanos() == 0 ? Duration.ofNanos(Long.MAX_VALUE) : timeout;
     return this;
   }
 
@@ -178,11 +173,10 @@ public class GrpcExporterBuilder {
   @SuppressWarnings("BuilderReturnThis")
   public GrpcExporterBuilder copy() {
     GrpcExporterBuilder copy =
-        new GrpcExporterBuilder(
-            exporterType, TimeUnit.NANOSECONDS.toSeconds(timeoutNanos), endpoint, fullMethodName);
+        new GrpcExporterBuilder(exporterType, timeout, endpoint, fullMethodName);
 
-    copy.timeoutNanos = timeoutNanos;
-    copy.connectTimeoutNanos = connectTimeoutNanos;
+    copy.timeout = timeout;
+    copy.connectTimeout = connectTimeout;
     copy.endpoint = endpoint;
     copy.compressor = compressor;
     copy.constantHeaders.putAll(constantHeaders);
@@ -228,8 +222,8 @@ public class GrpcExporterBuilder {
                 endpoint,
                 fullMethodName,
                 compressor,
-                timeoutNanos,
-                connectTimeoutNanos,
+                timeout,
+                connectTimeout,
                 headerSupplier,
                 retryPolicy,
                 isPlainHttp ? null : tlsConfigHelper.getSslContext(),
@@ -253,8 +247,8 @@ public class GrpcExporterBuilder {
             : new StringJoiner(", ");
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("fullMethodName=" + fullMethodName);
-    joiner.add("timeoutNanos=" + timeoutNanos);
-    joiner.add("connectTimeoutNanos=" + connectTimeoutNanos);
+    joiner.add("timeoutNanos=" + timeout.toNanos());
+    joiner.add("connectTimeoutNanos=" + connectTimeout.toNanos());
     joiner.add(
         "compressorEncoding="
             + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));

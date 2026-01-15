@@ -17,6 +17,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
@@ -34,7 +35,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder(
                         StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-                        10,
+                        Duration.ofSeconds(10),
                         new URI("http://localhost"),
                         "io.opentelemetry.Dummy/Method")
                     .setChannel(ManagedChannelBuilder.forTarget("localhost").build())
@@ -56,7 +57,7 @@ class GrpcExporterTest {
     assertThat(
             new GrpcExporterBuilder(
                     StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-                    10,
+                    Duration.ofSeconds(10),
                     new URI("http://localhost"),
                     "io.opentelemetry.Dummy/Method")
                 .setChannel(ManagedChannelBuilder.forTarget("localhost").build())
@@ -75,7 +76,7 @@ class GrpcExporterTest {
     assertThat(
             new GrpcExporterBuilder(
                     StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-                    10,
+                    Duration.ofSeconds(10),
                     new URI("http://localhost"),
                     "io.opentelemetry.Dummy/Method")
                 .setChannel(ManagedChannelBuilder.forTarget("localhost").build())
@@ -93,7 +94,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder(
                         StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-                        10,
+                        Duration.ofSeconds(10),
                         new URI("http://localhost"),
                         "io.opentelemetry.Dummy/Method")
                     .setChannel(ManagedChannelBuilder.forTarget("localhost").build())

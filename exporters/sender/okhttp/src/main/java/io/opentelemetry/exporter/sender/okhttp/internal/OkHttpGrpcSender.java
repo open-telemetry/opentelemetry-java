@@ -85,17 +85,15 @@ public final class OkHttpGrpcSender implements GrpcSender {
   public OkHttpGrpcSender(
       String endpoint,
       @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectTimeoutNanos,
+      Duration timeout,
+      Duration connectTimeout,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService) {
-    int callTimeoutMillis =
-        (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
-    int connectTimeoutMillis =
-        (int) Math.min(Duration.ofNanos(connectTimeoutNanos).toMillis(), Integer.MAX_VALUE);
+    int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
+    int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
     Dispatcher dispatcher;
     if (executorService == null) {

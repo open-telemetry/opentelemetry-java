@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,7 +41,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder(
                         StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-                        10,
+                        Duration.ofSeconds(10),
                         new URI("http://localhost"),
                         "service/method")
                     .build())

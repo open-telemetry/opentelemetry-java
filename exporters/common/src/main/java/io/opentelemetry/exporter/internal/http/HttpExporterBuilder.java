@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,9 +54,9 @@ public final class HttpExporterBuilder {
 
   private URI endpoint;
 
-  private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
+  private Duration timeout = Duration.ofSeconds(DEFAULT_TIMEOUT_SECS);
   @Nullable private Compressor compressor;
-  private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
+  private Duration connectTimeout = Duration.ofSeconds(DEFAULT_CONNECT_TIMEOUT_SECS);
   @Nullable private ProxyOptions proxyOptions;
   private boolean exportAsJson = false;
   private final Map<String, String> constantHeaders = new HashMap<>();
@@ -81,13 +81,13 @@ public final class HttpExporterBuilder {
     this.endpoint = endpoint;
   }
 
-  public HttpExporterBuilder setTimeout(long timeout, TimeUnit unit) {
-    timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
+  public HttpExporterBuilder setTimeout(Duration duration) {
+    timeout = duration.toNanos() == 0 ? Duration.ofNanos(Long.MAX_VALUE) : duration;
     return this;
   }
 
-  public HttpExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
-    connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
+  public HttpExporterBuilder setConnectTimeout(Duration duration) {
+    connectTimeout = duration.toNanos() == 0 ? Duration.ofNanos(Long.MAX_VALUE) : duration;
     return this;
   }
 
@@ -191,8 +191,8 @@ public final class HttpExporterBuilder {
   @SuppressWarnings("BuilderReturnThis")
   public HttpExporterBuilder copy() {
     HttpExporterBuilder copy = new HttpExporterBuilder(exporterType, endpoint);
-    copy.timeoutNanos = timeoutNanos;
-    copy.connectTimeoutNanos = connectTimeoutNanos;
+    copy.timeout = timeout;
+    copy.connectTimeout = connectTimeout;
     copy.exportAsJson = exportAsJson;
     copy.compressor = compressor;
     copy.constantHeaders.putAll(constantHeaders);
@@ -238,8 +238,8 @@ public final class HttpExporterBuilder {
                 endpoint,
                 exportAsJson ? "application/json" : "application/x-protobuf",
                 compressor,
-                timeoutNanos,
-                connectTimeoutNanos,
+                timeout,
+                connectTimeout,
                 headerSupplier,
                 proxyOptions,
                 retryPolicy,
@@ -263,12 +263,12 @@ public final class HttpExporterBuilder {
             ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("endpoint=" + endpoint);
-    joiner.add("timeoutNanos=" + timeoutNanos);
+    joiner.add("timeoutNanos=" + timeout.toNanos());
     joiner.add("proxyOptions=" + proxyOptions);
     joiner.add(
         "compressorEncoding="
             + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));
-    joiner.add("connectTimeoutNanos=" + connectTimeoutNanos);
+    joiner.add("connectTimeoutNanos=" + connectTimeout.toNanos());
     joiner.add("exportAsJson=" + exportAsJson);
     StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
     constantHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));

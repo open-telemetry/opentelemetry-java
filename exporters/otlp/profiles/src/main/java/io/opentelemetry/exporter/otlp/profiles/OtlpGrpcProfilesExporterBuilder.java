@@ -34,7 +34,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
-  private static final long DEFAULT_TIMEOUT_SECS = 10;
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
 
   // TODO maybe make more efficient by adding support for MEMORY_MODE
 
@@ -51,7 +51,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
     this(
         new GrpcExporterBuilder(
             StandardComponentId.ExporterType.OTLP_GRPC_PROFILES_EXPORTER,
-            DEFAULT_TIMEOUT_SECS,
+            DEFAULT_TIMEOUT,
             DEFAULT_ENDPOINT,
             GRPC_FULL_METHOD_NAME));
   }
@@ -77,18 +77,17 @@ public final class OtlpGrpcProfilesExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of profiles. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@link #DEFAULT_TIMEOUT}.
    */
   public OtlpGrpcProfilesExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setTimeout(timeout, unit);
-    return this;
+    return setTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of profiles. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@link #DEFAULT_TIMEOUT}.
    */
   public OtlpGrpcProfilesExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -103,8 +102,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   public OtlpGrpcProfilesExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setConnectTimeout(timeout, unit);
-    return this;
+    return setConnectTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
@@ -113,7 +111,8 @@ public final class OtlpGrpcProfilesExporterBuilder {
    */
   public OtlpGrpcProfilesExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
-    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+    delegate.setConnectTimeout(timeout);
+    return this;
   }
 
   /**
