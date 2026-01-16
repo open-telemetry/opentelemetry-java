@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -368,109 +367,5 @@ class SdkDoubleHistogramTest {
                                                         Attributes.builder()
                                                             .put("key", "value")
                                                             .build())))));
-  }
-
-  @Test
-  void stressTest() {
-    DoubleHistogram doubleHistogram = sdkMeter.histogramBuilder("testHistogram").build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setCollectionIntervalMs(100);
-
-    for (int i = 0; i < 4; i++) {
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              1_000,
-              1,
-              () -> doubleHistogram.record(10, Attributes.builder().put("K", "V").build())));
-    }
-
-    stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testHistogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(attributeEntry("K", "V"))
-                                        .hasCount(4_000)
-                                        .hasSum(40_000))));
-  }
-
-  @Test
-  void stressTest_WithDifferentLabelSet() {
-    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    DoubleHistogram doubleHistogram = sdkMeter.histogramBuilder("testHistogram").build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setCollectionIntervalMs(100);
-
-    IntStream.range(0, 4)
-        .forEach(
-            i ->
-                stressTestBuilder.addOperation(
-                    StressTestRunner.Operation.create(
-                        2_000,
-                        1,
-                        () ->
-                            doubleHistogram.record(
-                                10, Attributes.builder().put(keys[i], values[i]).build()))));
-
-    stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testHistogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(2_000)
-                                        .hasSum(20_000)
-                                        .hasBucketCounts(
-                                            0, 0, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry(keys[0], values[0])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(2_000)
-                                        .hasSum(20_000)
-                                        .hasBucketCounts(
-                                            0, 0, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry(keys[1], values[1])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(2_000)
-                                        .hasSum(20_000)
-                                        .hasBucketCounts(
-                                            0, 0, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry(keys[2], values[2])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(2_000)
-                                        .hasSum(20_000)
-                                        .hasBucketCounts(
-                                            0, 0, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
 }

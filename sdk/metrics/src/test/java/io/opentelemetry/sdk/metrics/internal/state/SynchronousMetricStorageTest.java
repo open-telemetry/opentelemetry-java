@@ -14,8 +14,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import com.google.common.util.concurrent.Uninterruptibles;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -30,7 +28,6 @@ import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
@@ -44,19 +41,11 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.DoubleSumAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.function.BiConsumer;
-import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.event.Level;
 
 @SuppressLogger(DefaultSynchronousMetricStorage.class)
@@ -766,106 +755,6 @@ public class SynchronousMetricStorageTest {
                                     point
                                         .getAttributes()
                                         .equals(MetricStorage.CARDINALITY_OVERFLOW))));
-  }
-
-  @ParameterizedTest
-  @MethodSource("concurrentStressTestArguments")
-  void recordAndCollect_concurrentStressTest(
-      DefaultSynchronousMetricStorage<?> storage, BiConsumer<Double, AtomicDouble> collect) {
-    // Define record threads. Each records a value of 1.0, 2000 times
-    List<Thread> threads = new ArrayList<>();
-    CountDownLatch latch = new CountDownLatch(4);
-    for (int i = 0; i < 4; i++) {
-      Thread thread =
-          new Thread(
-              () -> {
-                for (int j = 0; j < 2000; j++) {
-                  storage.recordDouble(1.0, Attributes.empty(), Context.current());
-                  Uninterruptibles.sleepUninterruptibly(Duration.ofMillis(1));
-                }
-                latch.countDown();
-              });
-      threads.add(thread);
-    }
-
-    // Define collect thread. Collect thread collects and aggregates the
-    AtomicDouble cumulativeSum = new AtomicDouble();
-    Thread collectThread =
-        new Thread(
-            () -> {
-              int extraCollects = 0;
-              // If we terminate when latch.count() == 0, the last collect may have occurred before
-              // the last recorded measurement. To ensure we collect all measurements, we collect
-              // one extra time after latch.count() == 0.
-              while (latch.getCount() != 0 || extraCollects <= 1) {
-                Uninterruptibles.sleepUninterruptibly(Duration.ofMillis(1));
-                MetricData metricData =
-                    storage.collect(Resource.empty(), InstrumentationScopeInfo.empty(), 0, 1);
-                if (!metricData.isEmpty()) {
-                  metricData.getDoubleSumData().getPoints().stream()
-                      .findFirst()
-                      .ifPresent(pointData -> collect.accept(pointData.getValue(), cumulativeSum));
-                }
-                if (latch.getCount() == 0) {
-                  extraCollects++;
-                }
-              }
-            });
-
-    // Start all the threads
-    collectThread.start();
-    threads.forEach(Thread::start);
-
-    // Wait for the collect thread to end, which collects until the record threads are done
-    Uninterruptibles.joinUninterruptibly(collectThread);
-
-    assertThat(cumulativeSum.get()).isEqualTo(8000.0);
-  }
-
-  private static Stream<Arguments> concurrentStressTestArguments() {
-    List<Arguments> argumentsList = new ArrayList<>();
-
-    for (MemoryMode memoryMode : MemoryMode.values()) {
-      Aggregator<PointData> aggregator =
-          ((AggregatorFactory) Aggregation.sum())
-              .createAggregator(
-                  DESCRIPTOR, asExemplarFilterInternal(ExemplarFilter.alwaysOff()), memoryMode);
-
-      argumentsList.add(
-          Arguments.of(
-              // Delta
-              new DefaultSynchronousMetricStorage<>(
-                  RegisteredReader.create(
-                      InMemoryMetricReader.builder()
-                          .setAggregationTemporalitySelector(unused -> AggregationTemporality.DELTA)
-                          .setMemoryMode(memoryMode)
-                          .build(),
-                      ViewRegistry.create()),
-                  METRIC_DESCRIPTOR,
-                  aggregator,
-                  AttributesProcessor.noop(),
-                  CARDINALITY_LIMIT,
-                  /* enabled= */ true),
-              (BiConsumer<Double, AtomicDouble>)
-                  (value, cumulativeCount) -> cumulativeCount.addAndGet(value)));
-
-      argumentsList.add(
-          Arguments.of(
-              // Cumulative
-              new DefaultSynchronousMetricStorage<>(
-                  RegisteredReader.create(
-                      InMemoryMetricReader.builder().setMemoryMode(memoryMode).build(),
-                      ViewRegistry.create()),
-                  METRIC_DESCRIPTOR,
-                  aggregator,
-                  AttributesProcessor.noop(),
-                  CARDINALITY_LIMIT,
-                  /* enabled= */ true),
-              (BiConsumer<Double, AtomicDouble>)
-                  (value, cumulativeCount) -> cumulativeCount.set(value)));
-    }
-
-    return argumentsList.stream();
   }
 
   @ParameterizedTest

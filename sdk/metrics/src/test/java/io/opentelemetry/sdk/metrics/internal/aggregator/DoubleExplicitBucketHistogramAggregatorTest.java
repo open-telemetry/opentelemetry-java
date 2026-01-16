@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -31,9 +30,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import org.junit.jupiter.api.Test;
@@ -266,49 +262,6 @@ class DoubleExplicitBucketHistogramAggregatorTest {
         aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
     assertThat(point).isNotNull();
     assertThat(point.getCounts().size()).isEqualTo(boundaries.length + 1);
-  }
-
-  @ParameterizedTest
-  @EnumSource(MemoryMode.class)
-  void testMultithreadedUpdates(MemoryMode memoryMode) throws InterruptedException {
-    init(memoryMode);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
-    ImmutableList<Long> updates = ImmutableList.of(1L, 2L, 3L, 5L, 7L, 11L, 13L, 17L, 19L, 23L);
-    int numberOfThreads = updates.size();
-    int numberOfUpdates = 10000;
-    ThreadPoolExecutor executor =
-        (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);
-
-    executor.invokeAll(
-        updates.stream()
-            .map(
-                v ->
-                    Executors.callable(
-                        () -> {
-                          for (int j = 0; j < numberOfUpdates; j++) {
-                            aggregatorHandle.recordLong(v, Attributes.empty(), Context.current());
-                            if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                              aggregatorHandle.aggregateThenMaybeReset(
-                                  0, 1, Attributes.empty(), /* reset= */ false);
-                            }
-                          }
-                        }))
-            .collect(Collectors.toList()));
-
-    assertThat(
-            aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false))
-        .isEqualTo(
-            ImmutableHistogramPointData.create(
-                0,
-                1,
-                Attributes.empty(),
-                1010000,
-                /* hasMin= */ true,
-                1d,
-                /* hasMax= */ true,
-                23d,
-                boundariesList,
-                Arrays.asList(50000L, 50000L, 0L, 0L)));
   }
 
   @Test

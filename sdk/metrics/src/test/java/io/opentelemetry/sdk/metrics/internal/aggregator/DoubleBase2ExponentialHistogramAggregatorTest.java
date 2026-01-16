@@ -413,6 +413,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
+  // TODO: incorporate into SynchronousInstrumentStressTest and delete
   void testMultithreadedUpdates(MemoryMode memoryMode) throws InterruptedException {
     initialize(memoryMode);
 
