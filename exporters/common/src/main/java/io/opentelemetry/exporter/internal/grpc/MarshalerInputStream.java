@@ -25,7 +25,7 @@ package io.opentelemetry.exporter.internal.grpc;
 import com.google.common.io.ByteStreams;
 import io.grpc.Drainable;
 import io.grpc.KnownLength;
-import io.opentelemetry.exporter.marshal.MessageWriter;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

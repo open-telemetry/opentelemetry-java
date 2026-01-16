@@ -37,7 +37,7 @@ class HttpExporterTest {
 
     logCapturer.assertContains(
         "Multiple HttpSenderProvider found. Please include only one, "
-            + "or specify preference setting io.opentelemetry.exporter.http.HttpSenderProvider "
+            + "or specify preference setting io.opentelemetry.sdk.common.export.HttpSenderProvider "
             + "to the FQCN of the preferred provider.");
   }
 
@@ -58,7 +58,7 @@ class HttpExporterTest {
 
   @Test
   @SetSystemProperty(
-      key = "io.opentelemetry.exporter.http.HttpSenderProvider",
+      key = "io.opentelemetry.sdk.common.export.HttpSenderProvider",
       value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
   void build_multipleSendersWithJdk() {
     assertThat(
@@ -73,7 +73,7 @@ class HttpExporterTest {
 
   @Test
   @SetSystemProperty(
-      key = "io.opentelemetry.exporter.http.HttpSenderProvider",
+      key = "io.opentelemetry.sdk.common.export.HttpSenderProvider",
       value = "io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSenderProvider")
   void build_multipleSendersWithOkHttp() {
     assertThat(
@@ -87,7 +87,7 @@ class HttpExporterTest {
   }
 
   @Test
-  @SetSystemProperty(key = "io.opentelemetry.exporter.http.HttpSenderProvider", value = "foo")
+  @SetSystemProperty(key = "io.opentelemetry.sdk.common.export.HttpSenderProvider", value = "foo")
   void build_multipleSendersNoMatch() {
     assertThatThrownBy(
             () ->
@@ -97,7 +97,7 @@ class HttpExporterTest {
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
-            "No HttpSenderProvider matched configured io.opentelemetry.exporter.http.HttpSenderProvider: foo");
+            "No HttpSenderProvider matched configured io.opentelemetry.sdk.common.export.HttpSenderProvider: foo");
 
     assertThat(logCapturer.getEvents()).isEmpty();
   }

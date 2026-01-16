@@ -11,11 +11,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.http.HttpResponse;
-import io.opentelemetry.exporter.http.HttpSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.HttpResponse;
+import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.StandardComponentId;

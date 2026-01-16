@@ -9,8 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.compressor.Compressor;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
+import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URL;
 import java.net.URLClassLoader;

@@ -7,10 +7,10 @@ package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.exporter.grpc.GrpcSender;
-import io.opentelemetry.exporter.grpc.GrpcSenderConfig;
-import io.opentelemetry.exporter.grpc.GrpcSenderProvider;
 import io.opentelemetry.exporter.internal.grpc.ExtendedGrpcSenderConfig;
+import io.opentelemetry.sdk.common.export.GrpcSender;
+import io.opentelemetry.sdk.common.export.GrpcSenderConfig;
+import io.opentelemetry.sdk.common.export.GrpcSenderProvider;
 import java.net.URI;
 
 /**

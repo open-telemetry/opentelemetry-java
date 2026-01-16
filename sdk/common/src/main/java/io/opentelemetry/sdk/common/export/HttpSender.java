@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.http;
+package io.opentelemetry.sdk.common.export;
 
-import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.function.Consumer;
 
@@ -17,7 +16,7 @@ import java.util.function.Consumer;
  * {@code opentelemetry-java} project provides built-in implementations that cover virtually all
  * cases.
  *
- * @see io.opentelemetry.exporter.http.HttpSenderProvider
+ * @see HttpSenderProvider
  */
 public interface HttpSender {
 

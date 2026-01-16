@@ -6,8 +6,8 @@
 package io.opentelemetry.exporter.internal.http;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.http.HttpSenderConfig;
+import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.HttpSenderConfig;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;

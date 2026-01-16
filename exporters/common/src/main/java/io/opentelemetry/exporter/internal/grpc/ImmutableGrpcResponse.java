@@ -6,8 +6,8 @@
 package io.opentelemetry.exporter.internal.grpc;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.exporter.grpc.GrpcResponse;
-import io.opentelemetry.exporter.grpc.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import javax.annotation.Nullable;
 
 /**

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.grpc;
+package io.opentelemetry.sdk.common.export;
 
 /**
  * A service provider interface (SPI) for providing {@link GrpcSender}s backed by different client
