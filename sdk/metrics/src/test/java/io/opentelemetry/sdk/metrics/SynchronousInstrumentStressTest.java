@@ -12,6 +12,8 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -66,6 +68,11 @@ class SynchronousInstrumentStressTest {
       ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES;
   private static final double[] bucketBoundariesArr =
       bucketBoundaries.stream().mapToDouble(Double::doubleValue).toArray();
+  private static final AttributeKey<String> attributesKey = AttributeKey.stringKey("key");
+  private static final Attributes attr1 = Attributes.of(attributesKey, "value1");
+  private static final Attributes attr2 = Attributes.of(attributesKey, "value2");
+  private static final Attributes attr3 = Attributes.of(attributesKey, "value3");
+  private static final Attributes attr4 = Attributes.of(attributesKey, "value4");
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
@@ -106,8 +113,12 @@ class SynchronousInstrumentStressTest {
       recordThreads.add(
           new Thread(
               () -> {
+                List<Attributes> attributes = Arrays.asList(attr1, attr2, attr3, attr4);
+                Collections.shuffle(attributes);
                 for (Long measurement : measurements) {
-                  instrument.record(measurement);
+                  for (Attributes attr : attributes) {
+                    instrument.record(measurement, attr);
+                  }
                   Uninterruptibles.sleepUninterruptibly(oneMicrosecond);
                 }
                 latch.countDown();
@@ -169,44 +180,64 @@ class SynchronousInstrumentStressTest {
               bucketCounts.set(bucketIndex, bucketCounts.get(bucketIndex) + 1);
             });
 
-    PointData reducedPointData =
-        getReducedPointData(
-            collectedMetrics, aggregationTemporality == AggregationTemporality.CUMULATIVE);
+    boolean isCumulative = aggregationTemporality == AggregationTemporality.CUMULATIVE;
+    List<PointData> points =
+        Stream.of(attr1, attr2, attr3, attr4)
+            .map(attr -> getReducedPointData(collectedMetrics, isCumulative, attr))
+            .collect(toList());
     if (instrumentType == InstrumentType.COUNTER
         || instrumentType == InstrumentType.UP_DOWN_COUNTER) {
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
-        assertThat(reducedPointData)
-            .isInstanceOfSatisfying(
-                DoublePointData.class,
-                point -> assertThat(point.getValue()).isEqualTo((double) sum.get()));
+        assertThat(points)
+            .allSatisfy(
+                point ->
+                    assertThat(point)
+                        .isInstanceOfSatisfying(
+                            DoublePointData.class,
+                            p -> assertThat(p.getValue()).isEqualTo((double) sum.get())));
+
       } else {
-        assertThat(reducedPointData)
-            .isInstanceOfSatisfying(
-                LongPointData.class, point -> assertThat(point.getValue()).isEqualTo(sum.get()));
+        assertThat(points)
+            .allSatisfy(
+                point ->
+                    assertThat(point)
+                        .isInstanceOfSatisfying(
+                            LongPointData.class,
+                            p -> assertThat(p.getValue()).isEqualTo(sum.get())));
       }
     } else if (instrumentType == InstrumentType.GAUGE) {
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
-        assertThat(reducedPointData)
-            .isInstanceOfSatisfying(
-                DoublePointData.class,
-                point -> assertThat(point.getValue()).isEqualTo((double) lastValue.get()));
+        assertThat(points)
+            .allSatisfy(
+                point ->
+                    assertThat(point)
+                        .isInstanceOfSatisfying(
+                            DoublePointData.class,
+                            p -> assertThat(p.getValue()).isEqualTo((double) lastValue.get())));
       } else {
-        assertThat(reducedPointData)
-            .isInstanceOfSatisfying(
-                LongPointData.class,
-                point -> assertThat(point.getValue()).isEqualTo(lastValue.get()));
+        assertThat(points)
+            .allSatisfy(
+                point ->
+                    assertThat(point)
+                        .isInstanceOfSatisfying(
+                            LongPointData.class,
+                            p -> assertThat(p.getValue()).isEqualTo(lastValue.get())));
       }
     } else if (instrumentType == InstrumentType.HISTOGRAM) {
-      assertThat(reducedPointData)
-          .isInstanceOfSatisfying(
-              HistogramPointData.class,
-              point -> {
-                assertThat(point.getSum()).isEqualTo((double) sum.get());
-                assertThat(point.getMin()).isEqualTo((double) min.get());
-                assertThat(point.getMax()).isEqualTo((double) max.get());
-                assertThat(point.getCount()).isEqualTo(bucketCounts.stream().reduce(0L, Long::sum));
-                assertThat(point.getCounts()).isEqualTo(bucketCounts);
-              });
+      assertThat(points)
+          .allSatisfy(
+              point ->
+                  assertThat(point)
+                      .isInstanceOfSatisfying(
+                          HistogramPointData.class,
+                          p -> {
+                            assertThat(p.getSum()).isEqualTo((double) sum.get());
+                            assertThat(p.getMin()).isEqualTo((double) min.get());
+                            assertThat(p.getMax()).isEqualTo((double) max.get());
+                            assertThat(p.getCount())
+                                .isEqualTo(bucketCounts.stream().reduce(0L, Long::sum));
+                            assertThat(p.getCounts()).isEqualTo(bucketCounts);
+                          }));
     } else {
       throw new IllegalArgumentException();
     }
@@ -264,7 +295,7 @@ class SynchronousInstrumentStressTest {
   }
 
   private interface Instrument {
-    void record(long value);
+    void record(long value, Attributes attributes);
   }
 
   private static MetricData copy(MetricData m) {
@@ -380,7 +411,8 @@ class SynchronousInstrumentStressTest {
    * Reduce a list of metric data assumed to be uniform and for a single instrument to a single
    * point data. If cumulative, return the last point data. If delta, merge the data points.
    */
-  private static PointData getReducedPointData(List<MetricData> metrics, boolean isCumulative) {
+  private static PointData getReducedPointData(
+      List<MetricData> metrics, boolean isCumulative, Attributes attributes) {
     metrics.stream()
         .forEach(metricData -> assertThat(metricData.getName()).isEqualTo(instrumentName));
     MetricData first = metrics.get(0);
@@ -389,18 +421,21 @@ class SynchronousInstrumentStressTest {
         List<LongPointData> lgaugePoints =
             metrics.stream()
                 .flatMap(m -> m.getLongGaugeData().getPoints().stream())
+                .filter(p -> attributes.equals(p.getAttributes()))
                 .collect(toList());
         return lgaugePoints.get(lgaugePoints.size() - 1);
       case DOUBLE_GAUGE:
         List<DoublePointData> dgaugePoints =
             metrics.stream()
                 .flatMap(m -> m.getDoubleGaugeData().getPoints().stream())
+                .filter(p -> attributes.equals(p.getAttributes()))
                 .collect(toList());
         return dgaugePoints.get(dgaugePoints.size() - 1);
       case LONG_SUM:
         List<LongPointData> lsumPoints =
             metrics.stream()
                 .flatMap(m -> m.getLongSumData().getPoints().stream())
+                .filter(p -> attributes.equals(p.getAttributes()))
                 .collect(toList());
         return isCumulative
             ? lsumPoints.get(lsumPoints.size() - 1)
@@ -414,6 +449,7 @@ class SynchronousInstrumentStressTest {
         List<DoublePointData> dsumPoints =
             metrics.stream()
                 .flatMap(m -> m.getDoubleSumData().getPoints().stream())
+                .filter(p -> attributes.equals(p.getAttributes()))
                 .collect(toList());
         return isCumulative
             ? dsumPoints.get(dsumPoints.size() - 1)
@@ -427,6 +463,7 @@ class SynchronousInstrumentStressTest {
         List<HistogramPointData> histPoints =
             metrics.stream()
                 .flatMap(m -> m.getHistogramData().getPoints().stream())
+                .filter(p -> attributes.equals(p.getAttributes()))
                 .collect(toList());
         return isCumulative
             ? histPoints.get(histPoints.size() - 1)
