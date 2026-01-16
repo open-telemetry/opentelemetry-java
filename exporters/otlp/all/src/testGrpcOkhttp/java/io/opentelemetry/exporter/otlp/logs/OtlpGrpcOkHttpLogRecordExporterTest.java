@@ -23,10 +23,10 @@ import java.io.Closeable;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class OtlpGrpcNettyOkHttpLogRecordExporterTest
+class OtlpGrpcOkHttpLogRecordExporterTest
     extends AbstractGrpcTelemetryExporterTest<LogRecordData, ResourceLogs> {
 
-  OtlpGrpcNettyOkHttpLogRecordExporterTest() {
+  OtlpGrpcOkHttpLogRecordExporterTest() {
     super("log", ResourceLogs.getDefaultInstance());
   }
 
