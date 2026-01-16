@@ -49,6 +49,9 @@ public final class HttpExporterBuilder {
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
 
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
+  private static final String OLD_SPI_PROPERTY =
+      "io.opentelemetry.exporter.internal.http.HttpSenderProvider";
+  private static final String SPI_PROPERTY = "io.opentelemetry.exporter.http.HttpSenderProvider";
 
   private StandardComponentId.ExporterType exporterType;
 
@@ -330,16 +333,30 @@ public final class HttpExporterBuilder {
     }
 
     // If we've reached here, there are multiple HttpSenderProviders
-    String configuredSender =
-        ConfigUtil.getString("io.opentelemetry.exporter.http.HttpSenderProvider", "");
+    String configuredSender = ConfigUtil.getString(SPI_PROPERTY, "");
+    // TODO: remove support for reading OLD_SPI_PROPERTY after 1.61.0
+    if (configuredSender.isEmpty()) {
+      configuredSender = ConfigUtil.getString(OLD_SPI_PROPERTY, "");
+      if (configuredSender.isEmpty()) {
+        LOGGER.log(
+            Level.WARNING,
+            OLD_SPI_PROPERTY
+                + " was used to set HttpSenderProvider. Please use "
+                + SPI_PROPERTY
+                + " instead. "
+                + OLD_SPI_PROPERTY
+                + " will be removed after 1.61.0");
+      }
+    }
 
     // Multiple providers but none configured, use first we find and log a warning
     if (configuredSender.isEmpty()) {
       LOGGER.log(
           Level.WARNING,
           "Multiple HttpSenderProvider found. Please include only one, "
-              + "or specify preference setting io.opentelemetry.exporter.http.HttpSenderProvider "
-              + "to the FQCN of the preferred provider.");
+              + "or specify preference setting "
+              + SPI_PROPERTY
+              + " to the FQCN of the preferred provider.");
       return httpSenderProviders.values().stream().findFirst().get();
     }
 
@@ -350,7 +367,6 @@ public final class HttpExporterBuilder {
 
     // Multiple providers, configured does not match, throw
     throw new IllegalStateException(
-        "No HttpSenderProvider matched configured io.opentelemetry.exporter.http.HttpSenderProvider: "
-            + configuredSender);
+        "No HttpSenderProvider matched configured " + SPI_PROPERTY + ": " + configuredSender);
   }
 }

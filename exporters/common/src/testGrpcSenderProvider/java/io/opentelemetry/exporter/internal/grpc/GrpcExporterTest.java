@@ -48,6 +48,27 @@ class GrpcExporterTest {
             + "to the FQCN of the preferred provider.");
   }
 
+  // TODO: delete test after support for old spi is removed
+  @Test
+  @SetSystemProperty(
+      key = "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+      value =
+          "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider")
+  void build_configureUsingOldSpi() throws URISyntaxException {
+    assertThat(
+            new GrpcExporterBuilder(
+                    StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
+                    Duration.ofSeconds(10),
+                    new URI("http://localhost"),
+                    "io.opentelemetry.Dummy/Method")
+                .setChannel(ManagedChannelBuilder.forTarget("localhost").build())
+                .build())
+        .extracting("grpcSender")
+        .isInstanceOf(UpstreamGrpcSender.class);
+
+    assertThat(logCapturer.getEvents()).isEmpty();
+  }
+
   @Test
   @SetSystemProperty(
       key = "io.opentelemetry.exporter.grpc.GrpcSenderProvider",

@@ -49,6 +49,9 @@ public class GrpcExporterBuilder {
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
 
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
+  private static final String OLD_SPI_PROPERTY =
+      "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider";
+  private static final String SPI_PROPERTY = "io.opentelemetry.exporter.grpc.GrpcSenderProvider";
 
   private final StandardComponentId.ExporterType exporterType;
   private final String fullMethodName;
@@ -315,16 +318,30 @@ public class GrpcExporterBuilder {
     }
 
     // If we've reached here, there are multiple GrpcSenderProviders
-    String configuredSender =
-        ConfigUtil.getString("io.opentelemetry.exporter.grpc.GrpcSenderProvider", "");
+    String configuredSender = ConfigUtil.getString(SPI_PROPERTY, "");
+    // TODO: remove support for reading OLD_SPI_PROPERTY after 1.61.0
+    if (configuredSender.isEmpty()) {
+      configuredSender = ConfigUtil.getString(OLD_SPI_PROPERTY, "");
+      if (configuredSender.isEmpty()) {
+        LOGGER.log(
+            Level.WARNING,
+            OLD_SPI_PROPERTY
+                + " was used to set GrpcSenderProvider. Please use "
+                + SPI_PROPERTY
+                + " instead. "
+                + OLD_SPI_PROPERTY
+                + " will be removed after 1.61.0");
+      }
+    }
 
     // Multiple providers but none configured, use first we find and log a warning
     if (configuredSender.isEmpty()) {
       LOGGER.log(
           Level.WARNING,
           "Multiple GrpcSenderProvider found. Please include only one, "
-              + "or specify preference setting io.opentelemetry.exporter.grpc.GrpcSenderProvider "
-              + "to the FQCN of the preferred provider.");
+              + "or specify preference setting "
+              + SPI_PROPERTY
+              + " to the FQCN of the preferred provider.");
       return grpcSenderProviders.values().stream().findFirst().get();
     }
 
@@ -335,7 +352,6 @@ public class GrpcExporterBuilder {
 
     // Multiple providers, configured does not match, throw
     throw new IllegalStateException(
-        "No GrpcSenderProvider matched configured io.opentelemetry.exporter.grpc.GrpcSenderProvider: "
-            + configuredSender);
+        "No GrpcSenderProvider matched configured " + SPI_PROPERTY + ": " + configuredSender);
   }
 }

@@ -43,6 +43,21 @@ class HttpExporterTest {
 
   @Test
   @SetSystemProperty(
+      key = "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
+      value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
+  void build_configureUsingOldSpi() {
+    assertThat(
+            new HttpExporterBuilder(
+                    StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
+                .build())
+        .extracting("httpSender")
+        .isInstanceOf(JdkHttpSender.class);
+
+    assertThat(logCapturer.getEvents()).isEmpty();
+  }
+
+  @Test
+  @SetSystemProperty(
       key = "io.opentelemetry.exporter.http.HttpSenderProvider",
       value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
   void build_multipleSendersWithJdk() {
