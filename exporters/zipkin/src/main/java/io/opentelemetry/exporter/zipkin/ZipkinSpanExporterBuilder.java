@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.zipkin;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -248,13 +249,5 @@ public final class ZipkinSpanExporterBuilder {
         internalTelemetryVersion,
         endpoint,
         transformer);
-  }
-
-  // Copied from io.opentelemetry.api.internal.Utils to remove internal dependencies as part of
-  // https://github.com/open-telemetry/opentelemetry-java/issues/7863
-  private static void checkArgument(boolean isValid, String errorMessage) {
-    if (!isValid) {
-      throw new IllegalArgumentException(errorMessage);
-    }
   }
 }
