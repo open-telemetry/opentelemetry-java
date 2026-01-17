@@ -44,8 +44,11 @@ public final class OtelEncodingUtils {
 
   private static boolean[] buildValidHexArray() {
     boolean[] validHex = new boolean[Character.MAX_VALUE];
-    for (int i = 0; i < Character.MAX_VALUE; i++) {
-      validHex[i] = (48 <= i && i <= 57) || (97 <= i && i <= 102);
+    // Use the fact that the default initial boolean value is false
+    // and only explicitly init the values between the extreme HEX values
+    // This minimized impact during process startup esp. on mobile.
+    for (int i = 48; i < 103; i++) {
+      validHex[i] = i <= 57 || 97 <= i;
     }
     return validHex;
   }
