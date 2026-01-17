@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.builder.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -476,6 +477,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     try {
       OpenTelemetrySdkBuilder sdkBuilder = OpenTelemetrySdk.builder();
+      if (INCUBATOR_AVAILABLE) {
+        OpenTelemetrySdkBuilderUtil.setSdkConfigProvider(
+            sdkBuilder, IncubatingUtil.toSdkConfigProvider(config));
+      }
 
       // The propagation system is part of the API and functions in the absence of an SDK.
       ContextPropagators propagators =

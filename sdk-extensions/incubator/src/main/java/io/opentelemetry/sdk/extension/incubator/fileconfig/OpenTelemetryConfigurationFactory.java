@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.builder.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
@@ -34,7 +35,9 @@ final class OpenTelemetryConfigurationFactory
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
     SdkConfigProvider sdkConfigProvider =
         SdkConfigProvider.create(model, context.getSpiHelper().getComponentLoader());
-    OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
+    OpenTelemetrySdkBuilder builder =
+        OpenTelemetrySdkBuilderUtil.setSdkConfigProvider(
+            OpenTelemetrySdk.builder(), sdkConfigProvider);
     String fileFormat = model.getFileFormat();
     if (fileFormat == null || !SUPPORTED_FILE_FORMATS.matcher(fileFormat).matches()) {
       throw new DeclarativeConfigException(
@@ -44,7 +47,7 @@ final class OpenTelemetryConfigurationFactory
     // behavior for experimental properties.
 
     if (Objects.equals(true, model.getDisabled())) {
-      return ExtendedOpenTelemetrySdk.create(builder.build(), sdkConfigProvider);
+      return (ExtendedOpenTelemetrySdk) builder.build();
     }
 
     if (model.getPropagator() != null) {
@@ -92,7 +95,6 @@ final class OpenTelemetryConfigurationFactory
                   .build()));
     }
 
-    OpenTelemetrySdk openTelemetrySdk = context.addCloseable(builder.build());
-    return ExtendedOpenTelemetrySdk.create(openTelemetrySdk, sdkConfigProvider);
+    return (ExtendedOpenTelemetrySdk) context.addCloseable(builder.build());
   }
 }

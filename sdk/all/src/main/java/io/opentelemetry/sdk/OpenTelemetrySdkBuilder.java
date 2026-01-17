@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -21,6 +23,26 @@ public final class OpenTelemetrySdkBuilder {
   @Nullable private SdkTracerProvider tracerProvider;
   @Nullable private SdkMeterProvider meterProvider;
   @Nullable private SdkLoggerProvider loggerProvider;
+
+  @Nullable
+  private Object sdkConfigProvider =
+      INCUBATOR_AVAILABLE ? IncubatingUtil.noopSdkConfigProvider() : null;
+
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName(
+          "io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider",
+          false,
+          OpenTelemetrySdkBuilder.class.getClassLoader());
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
 
   /**
    * Package protected to disallow direct initialization.
@@ -66,7 +88,12 @@ public final class OpenTelemetrySdkBuilder {
 
   /** Sets the {@link ContextPropagators} to use. */
   public OpenTelemetrySdkBuilder setPropagators(ContextPropagators propagators) {
-    this.propagators = propagators;
+    this.propagators = requireNonNull(propagators);
+    return this;
+  }
+
+  OpenTelemetrySdkBuilder setSdkConfigProvider(Object sdkConfigProvider) {
+    this.sdkConfigProvider = requireNonNull(sdkConfigProvider);
     return this;
   }
 
@@ -111,6 +138,11 @@ public final class OpenTelemetrySdkBuilder {
       loggerProvider = SdkLoggerProvider.builder().build();
     }
 
-    return new OpenTelemetrySdk(tracerProvider, meterProvider, loggerProvider, propagators);
+    OpenTelemetrySdk openTelemetrySdk =
+        new OpenTelemetrySdk(tracerProvider, meterProvider, loggerProvider, propagators);
+    return INCUBATOR_AVAILABLE
+        ? IncubatingUtil.createExtendedOpenTelemetrySdk(
+            openTelemetrySdk, requireNonNull(sdkConfigProvider))
+        : openTelemetrySdk;
   }
 }

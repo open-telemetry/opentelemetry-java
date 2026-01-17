@@ -19,10 +19,13 @@ public final class SdkConfigProvider implements ConfigProvider {
 
   private SdkConfigProvider(
       OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
-    DeclarativeConfigProperties configProperties =
-        DeclarativeConfiguration.toConfigProperties(model, componentLoader);
-    this.instrumentationConfig =
-        configProperties.getStructured("instrumentation/development", empty());
+    this(
+        DeclarativeConfiguration.toConfigProperties(model, componentLoader)
+            .getStructured("instrumentation/development", empty()));
+  }
+
+  private SdkConfigProvider(DeclarativeConfigProperties instrumentationConfig) {
+    this.instrumentationConfig = instrumentationConfig;
   }
 
   /**
@@ -45,6 +48,15 @@ public final class SdkConfigProvider implements ConfigProvider {
   public static SdkConfigProvider create(
       OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
     return new SdkConfigProvider(model, componentLoader);
+  }
+
+  /**
+   * Create a no-op {@link SdkConfigProvider}.
+   *
+   * @return the no-op {@link SdkConfigProvider}
+   */
+  public static SdkConfigProvider noop() {
+    return new SdkConfigProvider(DeclarativeConfigProperties.empty());
   }
 
   @Override
