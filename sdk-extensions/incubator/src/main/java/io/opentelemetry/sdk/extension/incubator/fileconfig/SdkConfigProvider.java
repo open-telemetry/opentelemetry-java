@@ -55,7 +55,7 @@ public final class SdkConfigProvider implements ConfigProvider {
    *
    * @return the no-op {@link SdkConfigProvider}
    */
-  public static SdkConfigProvider noop() {
+  public static ConfigProvider noop() {
     return new SdkConfigProvider(DeclarativeConfigProperties.empty());
   }
 
