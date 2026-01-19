@@ -19,12 +19,17 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
@@ -47,23 +52,16 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * {@link #stressTest(AggregationTemporality, InstrumentType, MemoryMode, InstrumentValueType)}
- * performs a stress test to confirm simultaneous record and collections do not have concurrency
- * issues like lost writes, partial writes, duplicate writes, etc. All combinations of the following
- * dimensions are tested: aggregation temporality, instrument type (synchronous), memory mode,
- * instrument value type.
+ * {@link #stressTest(AggregationTemporality, SyncInstrumentAggregation, MemoryMode,
+ * InstrumentValueType)} performs a stress test to confirm simultaneous record and collections do
+ * not have concurrency issues like lost writes, partial writes, duplicate writes, etc. All
+ * combinations of the following dimensions are tested: aggregation temporality, instrument type
+ * (synchronous), memory mode, instrument value type.
  */
-// TODO: add support for exponential histogram
 class SynchronousInstrumentStressTest {
 
   private static final String instrumentName = "instrument";
   private static final Duration oneMicrosecond = Duration.ofNanos(1000);
-  private static final List<InstrumentType> instrumentTypes =
-      Arrays.asList(
-          InstrumentType.COUNTER,
-          InstrumentType.HISTOGRAM,
-          InstrumentType.UP_DOWN_COUNTER,
-          InstrumentType.GAUGE);
   private static final List<Double> bucketBoundaries =
       ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES;
   private static final double[] bucketBoundariesArr =
@@ -80,12 +78,19 @@ class SynchronousInstrumentStressTest {
   @MethodSource("stressTestArgs")
   void stressTest(
       AggregationTemporality aggregationTemporality,
-      InstrumentType instrumentType,
+      SyncInstrumentAggregation instrumentType,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType) {
     // Initialize metric SDK
+    DefaultAggregationSelector aggregationSelector = DefaultAggregationSelector.getDefault();
+    if (instrumentType == SyncInstrumentAggregation.HISTOGRAM_EXPONENTIAL_HISTOGRAM) {
+      aggregationSelector =
+          aggregationSelector.with(
+              InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
+    }
     InMemoryMetricReader reader =
         InMemoryMetricReader.builder()
+            .setDefaultAggregationSelector(aggregationSelector)
             .setAggregationTemporalitySelector(unused -> aggregationTemporality)
             .setMemoryMode(memoryMode)
             .build();
@@ -166,6 +171,8 @@ class SynchronousInstrumentStressTest {
     for (int i = 0; i < bucketBoundaries.size() + 1; i++) {
       bucketCounts.add(0L);
     }
+    AtomicLong totalCount = new AtomicLong(0);
+    AtomicLong zeroCount = new AtomicLong(0);
     LongStream.range(0, threadCount)
         .flatMap(i -> measurements.stream().mapToLong(l -> l))
         .forEach(
@@ -174,10 +181,14 @@ class SynchronousInstrumentStressTest {
               sum.addAndGet(measurement);
               min.updateAndGet(v -> Math.min(v, measurement));
               max.updateAndGet(v -> Math.max(v, measurement));
+              totalCount.incrementAndGet();
               int bucketIndex =
                   ExplicitBucketHistogramUtils.findBucketIndex(
                       bucketBoundariesArr, (double) measurement);
               bucketCounts.set(bucketIndex, bucketCounts.get(bucketIndex) + 1);
+              if (measurement == 0) {
+                zeroCount.incrementAndGet();
+              }
             });
 
     boolean isCumulative = aggregationTemporality == AggregationTemporality.CUMULATIVE;
@@ -185,8 +196,8 @@ class SynchronousInstrumentStressTest {
         Stream.of(attr1, attr2, attr3, attr4)
             .map(attr -> getReducedPointData(collectedMetrics, isCumulative, attr))
             .collect(toList());
-    if (instrumentType == InstrumentType.COUNTER
-        || instrumentType == InstrumentType.UP_DOWN_COUNTER) {
+    if (instrumentType == SyncInstrumentAggregation.COUNTER_SUM
+        || instrumentType == SyncInstrumentAggregation.UP_DOWN_COUNTER_SUM) {
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
         assertThat(points)
             .allSatisfy(
@@ -205,7 +216,7 @@ class SynchronousInstrumentStressTest {
                             LongPointData.class,
                             p -> assertThat(p.getValue()).isEqualTo(sum.get())));
       }
-    } else if (instrumentType == InstrumentType.GAUGE) {
+    } else if (instrumentType == SyncInstrumentAggregation.GAUGE_LAST_VALUE) {
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
         assertThat(points)
             .allSatisfy(
@@ -223,7 +234,7 @@ class SynchronousInstrumentStressTest {
                             LongPointData.class,
                             p -> assertThat(p.getValue()).isEqualTo(lastValue.get())));
       }
-    } else if (instrumentType == InstrumentType.HISTOGRAM) {
+    } else if (instrumentType == SyncInstrumentAggregation.HISTOGRAM_EXPLICIT_HISTOGRAM) {
       assertThat(points)
           .allSatisfy(
               point ->
@@ -238,6 +249,23 @@ class SynchronousInstrumentStressTest {
                                 .isEqualTo(bucketCounts.stream().reduce(0L, Long::sum));
                             assertThat(p.getCounts()).isEqualTo(bucketCounts);
                           }));
+    } else if (instrumentType == SyncInstrumentAggregation.HISTOGRAM_EXPONENTIAL_HISTOGRAM) {
+      assertThat(points)
+          .allSatisfy(
+              point ->
+                  assertThat(point)
+                      .isInstanceOfSatisfying(
+                          ExponentialHistogramPointData.class,
+                          p -> {
+                            assertThat(p.getSum()).isEqualTo((double) sum.get());
+                            assertThat(p.getMin()).isEqualTo((double) min.get());
+                            assertThat(p.getMax()).isEqualTo((double) max.get());
+                            assertThat(p.getZeroCount()).isEqualTo(zeroCount.get());
+                            assertThat(
+                                    p.getPositiveBuckets().getBucketCounts().stream()
+                                        .reduce(0L, Long::sum))
+                                .isEqualTo(totalCount.get() - zeroCount.get());
+                          }));
     } else {
       throw new IllegalArgumentException();
     }
@@ -246,7 +274,7 @@ class SynchronousInstrumentStressTest {
   private static Stream<Arguments> stressTestArgs() {
     List<Arguments> argumentsList = new ArrayList<>();
     for (AggregationTemporality aggregationTemporality : AggregationTemporality.values()) {
-      for (InstrumentType instrumentType : instrumentTypes) {
+      for (SyncInstrumentAggregation instrumentType : SyncInstrumentAggregation.values()) {
         for (MemoryMode memoryMode : MemoryMode.values()) {
           for (InstrumentValueType instrumentValueType : InstrumentValueType.values()) {
             argumentsList.add(
@@ -260,17 +288,20 @@ class SynchronousInstrumentStressTest {
   }
 
   private static Instrument getInstrument(
-      Meter meter, InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
+      Meter meter,
+      SyncInstrumentAggregation instrumentType,
+      InstrumentValueType instrumentValueType) {
     switch (instrumentType) {
-      case COUNTER:
+      case COUNTER_SUM:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.counterBuilder(instrumentName).ofDoubles().build()::add
             : meter.counterBuilder(instrumentName).build()::add;
-      case UP_DOWN_COUNTER:
+      case UP_DOWN_COUNTER_SUM:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.upDownCounterBuilder(instrumentName).ofDoubles().build()::add
             : meter.upDownCounterBuilder(instrumentName).build()::add;
-      case HISTOGRAM:
+      case HISTOGRAM_EXPLICIT_HISTOGRAM:
+      case HISTOGRAM_EXPONENTIAL_HISTOGRAM:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter
                     .histogramBuilder(instrumentName)
@@ -283,13 +314,10 @@ class SynchronousInstrumentStressTest {
                     .ofLongs()
                     .build()
                 ::record;
-      case GAUGE:
+      case GAUGE_LAST_VALUE:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.gaugeBuilder(instrumentName).build()::set
             : meter.gaugeBuilder(instrumentName).ofLongs().build()::set;
-      case OBSERVABLE_COUNTER:
-      case OBSERVABLE_UP_DOWN_COUNTER:
-      case OBSERVABLE_GAUGE:
     }
     throw new IllegalArgumentException();
   }
@@ -398,11 +426,43 @@ class SynchronousInstrumentStressTest {
                                 p.hasMax(),
                                 p.getMax(),
                                 p.getBoundaries(),
-                                p.getCounts(),
+                                new ArrayList<>(p.getCounts()),
+                                p.getExemplars()))
+                    .collect(toList())));
+      case EXPONENTIAL_HISTOGRAM:
+        return ImmutableMetricData.createExponentialHistogram(
+            m.getResource(),
+            m.getInstrumentationScopeInfo(),
+            m.getName(),
+            m.getDescription(),
+            m.getUnit(),
+            ImmutableExponentialHistogramData.create(
+                m.getExponentialHistogramData().getAggregationTemporality(),
+                m.getExponentialHistogramData().getPoints().stream()
+                    .map(
+                        p ->
+                            ImmutableExponentialHistogramPointData.create(
+                                p.getScale(),
+                                p.getSum(),
+                                p.getZeroCount(),
+                                p.hasMin(),
+                                p.getMin(),
+                                p.hasMax(),
+                                p.getMax(),
+                                ExponentialHistogramBuckets.create(
+                                    p.getPositiveBuckets().getScale(),
+                                    p.getPositiveBuckets().getOffset(),
+                                    new ArrayList<>(p.getPositiveBuckets().getBucketCounts())),
+                                ExponentialHistogramBuckets.create(
+                                    p.getNegativeBuckets().getScale(),
+                                    p.getNegativeBuckets().getOffset(),
+                                    new ArrayList<>(p.getPositiveBuckets().getBucketCounts())),
+                                p.getStartEpochNanos(),
+                                p.getEpochNanos(),
+                                p.getAttributes(),
                                 p.getExemplars()))
                     .collect(toList())));
       case SUMMARY:
-      case EXPONENTIAL_HISTOGRAM:
     }
     throw new IllegalArgumentException();
   }
@@ -491,14 +551,66 @@ class SynchronousInstrumentStressTest {
                             p2.hasMax() || p1.hasMax(),
                             Math.max(p1.getMax(), p2.getMax()),
                             p2.getBoundaries(),
-                            mergeCounts(p1.getCounts(), p2.getCounts())));
+                            mergeBuckets(p1.getCounts(), p2.getCounts())));
       case EXPONENTIAL_HISTOGRAM:
+        List<ExponentialHistogramPointData> expoHistPoints =
+            metrics.stream()
+                .flatMap(m -> m.getExponentialHistogramData().getPoints().stream())
+                .filter(p -> attributes.equals(p.getAttributes()))
+                .collect(toList());
+        return isCumulative
+            ? expoHistPoints.get(expoHistPoints.size() - 1)
+            : expoHistPoints.stream()
+                .reduce(
+                    // NOTE: we're only testing the correctness of sum, count, min, and max, so we
+                    // skip the complexity of correctly merge which involves re-bucketing when the
+                    // scale changes. The result is bucket counts with meaningless values, but
+                    // correct aggregate counts.
+                    ImmutableExponentialHistogramPointData.create(
+                        0,
+                        0,
+                        0,
+                        /* hasMin= */ true,
+                        0,
+                        /* hasMax= */ true,
+                        0,
+                        ExponentialHistogramBuckets.create(0, 0, emptyList()),
+                        ExponentialHistogramBuckets.create(0, 0, emptyList()),
+                        0,
+                        0,
+                        empty(),
+                        emptyList()),
+                    (p1, p2) ->
+                        ImmutableExponentialHistogramPointData.create(
+                            Math.min(p1.getScale(), p2.getScale()),
+                            p1.getSum() + p2.getSum(),
+                            p1.getZeroCount() + p2.getZeroCount(),
+                            p1.hasMin() || p2.hasMin(),
+                            Math.min(p1.getMin(), p2.getMin()),
+                            p1.hasMax() || p2.hasMax(),
+                            Math.max(p1.getMax(), p2.getMax()),
+                            ExponentialHistogramBuckets.create(
+                                0,
+                                0,
+                                mergeBuckets(
+                                    p1.getPositiveBuckets().getBucketCounts(),
+                                    p2.getPositiveBuckets().getBucketCounts())),
+                            ExponentialHistogramBuckets.create(
+                                0,
+                                0,
+                                mergeBuckets(
+                                    p1.getNegativeBuckets().getBucketCounts(),
+                                    p2.getNegativeBuckets().getBucketCounts())),
+                            0,
+                            0,
+                            empty(),
+                            emptyList()));
       case SUMMARY:
     }
     throw new IllegalArgumentException();
   }
 
-  private static List<Long> mergeCounts(List<Long> l1, List<Long> l2) {
+  private static List<Long> mergeBuckets(List<Long> l1, List<Long> l2) {
     int size = Math.max(l1.size(), l2.size());
     List<Long> merged = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
@@ -512,5 +624,17 @@ class SynchronousInstrumentStressTest {
       merged.add(mergedCount);
     }
     return merged;
+  }
+
+  /**
+   * Enum that is the composite of the instrument type and aggregation. {@link InstrumentType} would
+   * be preferred, but doesn't include an option for the exponential histogram aggregation.
+   */
+  private enum SyncInstrumentAggregation {
+    COUNTER_SUM,
+    UP_DOWN_COUNTER_SUM,
+    GAUGE_LAST_VALUE,
+    HISTOGRAM_EXPLICIT_HISTOGRAM,
+    HISTOGRAM_EXPONENTIAL_HISTOGRAM
   }
 }
