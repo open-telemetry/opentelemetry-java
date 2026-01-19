@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -22,6 +21,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // testing deprecated code
 class SpanExporterConfigurationTest {
 
   private final SpiHelper spiHelper =
@@ -42,7 +42,7 @@ class SpanExporterConfigurationTest {
     assertThat(SpanExporterConfiguration.configureExporter("otlp", spiExportersManager))
         .isInstanceOf(OtlpGrpcSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("zipkin", spiExportersManager))
-        .isInstanceOf(ZipkinSpanExporter.class);
+        .isInstanceOf(io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.class);
   }
 
   @Test
