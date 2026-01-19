@@ -89,7 +89,7 @@ val DEPENDENCIES = listOf(
   "nl.jqno.equalsverifier:equalsverifier:3.19.4",
   "org.awaitility:awaitility:4.3.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
-  "org.codehaus.mojo:animal-sniffer-annotations:1.26",
+  "org.codehaus.mojo:animal-sniffer-annotations:1.27",
   "org.jctools:jctools-core:4.0.5",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.mock-server:mockserver-netty:5.15.0:shaded",
