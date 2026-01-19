@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.within;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -72,6 +74,7 @@ class MetricAssertionsTest {
       AttributeKey.booleanArrayKey("conditions");
   private static final AttributeKey<List<Long>> SCORES = AttributeKey.longArrayKey("scores");
   private static final AttributeKey<List<Double>> COINS = AttributeKey.doubleArrayKey("coins");
+  private static final AttributeKey<Value<?>> BYTES = valueKey("bytes");
 
   private static final Attributes ATTRIBUTES =
       Attributes.builder()
@@ -83,6 +86,7 @@ class MetricAssertionsTest {
           .put(CONDITIONS, Arrays.asList(false, true))
           .put(SCORES, Arrays.asList(0L, 1L))
           .put(COINS, Arrays.asList(0.01, 0.05, 0.1))
+          .put(BYTES, Value.of(new byte[] {1, 2, 3}))
           .build();
 
   private static final DoubleExemplarData DOUBLE_EXEMPLAR1 =
@@ -374,7 +378,8 @@ class MetricAssertionsTest {
                                             attributeEntry("colors", "red", "blue"),
                                             attributeEntry("conditions", false, true),
                                             attributeEntry("scores", 0L, 1L),
-                                            attributeEntry("coins", 0.01, 0.05, 0.1))
+                                            attributeEntry("coins", 0.01, 0.05, 0.1),
+                                            attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
                                         .hasFilteredAttributesSatisfying(
                                             equalTo(BEAR, "mya"),
                                             equalTo(WARM, true),
@@ -393,7 +398,11 @@ class MetricAssertionsTest {
                                                 val -> val.containsExactly(false, true)),
                                             satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
                                             satisfies(
-                                                COINS, val -> val.containsExactly(0.01, 0.05, 0.1)))
+                                                COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                                            satisfies(
+                                                BYTES,
+                                                val ->
+                                                    val.isEqualTo(Value.of(new byte[] {1, 2, 3}))))
                                         // Demonstrates common usage of many exact matches and one
                                         // needing a loose one.
                                         .hasFilteredAttributesSatisfying(
@@ -408,6 +417,7 @@ class MetricAssertionsTest {
                                             equalTo(CONDITIONS, Arrays.asList(false, true)),
                                             equalTo(SCORES, Arrays.asList(0L, 1L)),
                                             equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                                            equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
                                             satisfies(
                                                 LENGTH, val -> val.isCloseTo(1, offset(0.3))))),
                     point ->
@@ -426,7 +436,8 @@ class MetricAssertionsTest {
                                 attributeEntry("colors", "red", "blue"),
                                 attributeEntry("conditions", false, true),
                                 attributeEntry("scores", 0L, 1L),
-                                attributeEntry("coins", 0.01, 0.05, 0.1))
+                                attributeEntry("coins", 0.01, 0.05, 0.1),
+                                attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
                             .hasAttributesSatisfying(
                                 equalTo(BEAR, "mya"),
                                 equalTo(WARM, true),
@@ -435,7 +446,8 @@ class MetricAssertionsTest {
                                 equalTo(COLORS, Arrays.asList("red", "blue")),
                                 equalTo(CONDITIONS, Arrays.asList(false, true)),
                                 equalTo(SCORES, Arrays.asList(0L, 1L)),
-                                equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)))
+                                equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                                equalTo(BYTES, Value.of(new byte[] {1, 2, 3})))
                             .hasAttributesSatisfying(
                                 satisfies(BEAR, val -> val.startsWith("mya")),
                                 satisfies(WARM, val -> val.isTrue()),
@@ -444,7 +456,9 @@ class MetricAssertionsTest {
                                 satisfies(COLORS, val -> val.containsExactly("red", "blue")),
                                 satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
                                 satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                                satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)))
+                                satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                                satisfies(
+                                    BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3}))))
                             // Demonstrates common usage of many exact matches and one needing a
                             // loose one.
                             .hasAttributesSatisfying(
@@ -455,11 +469,12 @@ class MetricAssertionsTest {
                                 equalTo(CONDITIONS, Arrays.asList(false, true)),
                                 equalTo(SCORES, Arrays.asList(0L, 1L)),
                                 equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                                equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
                                 satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
                             .hasAttributesSatisfying(
                                 attributes ->
                                     assertThat(attributes)
-                                        .hasSize(8)
+                                        .hasSize(9)
                                         .containsEntry(stringKey("bear"), "mya")
                                         .containsEntry("warm", true)
                                         .containsEntry("temperature", 30L)
@@ -467,6 +482,7 @@ class MetricAssertionsTest {
                                         .containsEntry("conditions", false, true)
                                         .containsEntry("scores", 0L, 1L)
                                         .containsEntry("coins", 0.01, 0.05, 0.1)
+                                        .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
                                         .containsEntry("length", 1.2))));
   }
 
@@ -710,7 +726,12 @@ class MetricAssertionsTest {
                                                     SCORES, val -> val.containsExactly(0L, 1L)),
                                                 satisfies(
                                                     COINS,
-                                                    val -> val.containsExactly(0.01, 0.05, 0.1))),
+                                                    val -> val.containsExactly(0.01, 0.05, 0.1)),
+                                                satisfies(
+                                                    BYTES,
+                                                    val ->
+                                                        val.isEqualTo(
+                                                            Value.of(new byte[] {1, 2, 3})))),
                                         exemplar -> {}),
                                 point -> {})))
         .isInstanceOf(AssertionError.class);
@@ -741,7 +762,12 @@ class MetricAssertionsTest {
                                                     SCORES, val -> val.containsExactly(0L, 1L)),
                                                 satisfies(
                                                     COINS,
-                                                    val -> val.containsExactly(0.01, 0.05, 0.1))),
+                                                    val -> val.containsExactly(0.01, 0.05, 0.1)),
+                                                satisfies(
+                                                    BYTES,
+                                                    val ->
+                                                        val.isEqualTo(
+                                                            Value.of(new byte[] {1, 2, 3})))),
                                         exemplar -> {}),
                                 point -> {})))
         .isInstanceOf(AssertionError.class);
@@ -785,7 +811,11 @@ class MetricAssertionsTest {
                                             CONDITIONS, val -> val.containsExactly(false, true)),
                                         satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
                                         satisfies(
-                                            COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))))
+                                            COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                                        satisfies(
+                                            BYTES,
+                                            val ->
+                                                val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -798,7 +828,7 @@ class MetricAssertionsTest {
                                     point.hasAttributesSatisfying(
                                         attributes ->
                                             assertThat(attributes)
-                                                .hasSize(8)
+                                                .hasSize(9)
                                                 .containsEntry(
                                                     stringKey("bear"),
                                                     "WRONG BEAR NAME") // Failed here
@@ -808,6 +838,8 @@ class MetricAssertionsTest {
                                                 .containsEntry("conditions", false, true)
                                                 .containsEntry("scores", 0L, 1L)
                                                 .containsEntry("coins", 0.01, 0.05, 0.1)
+                                                .containsEntry(
+                                                    "bytes", Value.of(new byte[] {1, 2, 3}))
                                                 .containsEntry("length", 1.2)))))
         .isInstanceOf(AssertionError.class);
   }
@@ -844,6 +876,7 @@ class MetricAssertionsTest {
                                             equalTo(CONDITIONS, Arrays.asList(false, true)),
                                             equalTo(SCORES, Arrays.asList(0L, 1L)),
                                             equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+                                            equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
                                             satisfies(
                                                 LENGTH, val -> val.isCloseTo(1, offset(0.3))))),
                     point -> point.hasValue(1)));

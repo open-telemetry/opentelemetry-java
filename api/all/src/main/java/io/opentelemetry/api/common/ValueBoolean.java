@@ -35,6 +35,13 @@ final class ValueBoolean implements Value<Boolean> {
   }
 
   @Override
+  public String toProtoJson() {
+    StringBuilder sb = new StringBuilder();
+    ProtoJson.append(sb, this);
+    return sb.toString();
+  }
+
+  @Override
   public String toString() {
     return "ValueBoolean{" + asString() + "}";
   }

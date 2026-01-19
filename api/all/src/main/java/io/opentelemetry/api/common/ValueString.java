@@ -36,6 +36,13 @@ final class ValueString implements Value<String> {
   }
 
   @Override
+  public String toProtoJson() {
+    StringBuilder sb = new StringBuilder();
+    ProtoJson.append(sb, this);
+    return sb.toString();
+  }
+
+  @Override
   public String toString() {
     return "ValueString{" + value + "}";
   }

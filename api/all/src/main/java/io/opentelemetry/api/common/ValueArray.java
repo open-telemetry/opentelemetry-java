@@ -48,6 +48,13 @@ final class ValueArray implements Value<List<Value<?>>> {
   }
 
   @Override
+  public String toProtoJson() {
+    StringBuilder sb = new StringBuilder();
+    ProtoJson.append(sb, this);
+    return sb.toString();
+  }
+
+  @Override
   public String toString() {
     return "ValueArray{" + asString() + "}";
   }

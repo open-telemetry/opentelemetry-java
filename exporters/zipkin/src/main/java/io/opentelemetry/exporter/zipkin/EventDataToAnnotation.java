@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.zipkin;
 import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.trace.data.EventData;
 import java.util.List;
 
@@ -42,6 +43,9 @@ final class EventDataToAnnotation {
     if (o instanceof List) {
       return ((List<?>) o)
           .stream().map(EventDataToAnnotation::toValue).collect(joining(",", "[", "]"));
+    }
+    if (o instanceof Value) {
+      return ((Value<?>) o).toProtoJson();
     }
     return String.valueOf(o);
   }

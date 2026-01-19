@@ -33,11 +33,58 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface Attributes {
 
-  /** Returns the value for the given {@link AttributeKey}, or {@code null} if not found. */
+  /**
+   * Returns the value for the given {@link AttributeKey}, or {@code null} if not found.
+   *
+   * <p>Note: this method will automatically return the corresponding {@link
+   * io.opentelemetry.api.common.Value} instance when passed a key of type {@link
+   * AttributeType#VALUE} and a simple attribute is found. This is the inverse of {@link
+   * AttributesBuilder#put(AttributeKey, Object)} when the key is {@link AttributeType#VALUE}.
+   *
+   * <ul>
+   *   <li>If {@code put(AttributeKey.stringKey("key"), "a")} was called, then {@code
+   *       get(AttributeKey.valueKey("key"))} returns {@code Value.of("a")}.
+   *   <li>If {@code put(AttributeKey.longKey("key"), 1L)} was called, then {@code
+   *       get(AttributeKey.valueKey("key"))} returns {@code Value.of(1L)}.
+   *   <li>If {@code put(AttributeKey.doubleKey("key"), 1.0)} was called, then {@code
+   *       get(AttributeKey.valueKey("key"))} returns {@code Value.of(1.0)}.
+   *   <li>If {@code put(AttributeKey.booleanKey("key"), true)} was called, then {@code
+   *       get(AttributeKey.valueKey("key"))} returns {@code Value.of(true)}.
+   *   <li>If {@code put(AttributeKey.stringArrayKey("key"), Arrays.asList("a", "b"))} was called,
+   *       then {@code get(AttributeKey.valueKey("key"))} returns {@code Value.of(Value.of("a"),
+   *       Value.of("b"))}.
+   *   <li>If {@code put(AttributeKey.longArrayKey("key"), Arrays.asList(1L, 2L))} was called, then
+   *       {@code get(AttributeKey.valueKey("key"))} returns {@code Value.of(Value.of(1L),
+   *       Value.of(2L))}.
+   *   <li>If {@code put(AttributeKey.doubleArrayKey("key"), Arrays.asList(1.0, 2.0))} was called,
+   *       then {@code get(AttributeKey.valueKey("key"))} returns {@code Value.of(Value.of(1.0),
+   *       Value.of(2.0))}.
+   *   <li>If {@code put(AttributeKey.booleanArrayKey("key"), Arrays.asList(true, false))} was
+   *       called, then {@code get(AttributeKey.valueKey("key"))} returns {@code
+   *       Value.of(Value.of(true), Value.of(false))}.
+   * </ul>
+   *
+   * <p>Further, if {@code put(AttributeKey.valueKey("key"), Value.of(emptyList()))} was called,
+   * then
+   *
+   * <ul>
+   *   <li>{@code get(AttributeKey.stringArrayKey("key"))}
+   *   <li>{@code get(AttributeKey.longArrayKey("key"))}
+   *   <li>{@code get(AttributeKey.booleanArrayKey("key"))}
+   *   <li>{@code get(AttributeKey.doubleArrayKey("key"))}
+   * </ul>
+   *
+   * <p>all return an empty list (as opposed to {@code null}).
+   */
   @Nullable
   <T> T get(AttributeKey<T> key);
 
-  /** Iterates over all the key-value pairs of attributes contained by this instance. */
+  /**
+   * Iterates over all the key-value pairs of attributes contained by this instance.
+   *
+   * <p>Note: {@link AttributeType#VALUE} attributes will be represented as simple attributes if
+   * possible. See {@link AttributesBuilder#put(AttributeKey, Object)} for more details.
+   */
   void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer);
 
   /** The number of attributes contained in this. */
@@ -46,7 +93,12 @@ public interface Attributes {
   /** Whether there are any attributes contained in this. */
   boolean isEmpty();
 
-  /** Returns a read-only view of this {@link Attributes} as a {@link Map}. */
+  /**
+   * Returns a read-only view of this {@link Attributes} as a {@link Map}.
+   *
+   * <p>Note: {@link AttributeType#VALUE} attributes will be represented as simple attributes in
+   * this map if possible. See {@link AttributesBuilder#put(AttributeKey, Object)} for more details.
+   */
   Map<AttributeKey<?>, Object> asMap();
 
   /** Returns a {@link Attributes} instance with no attributes. */

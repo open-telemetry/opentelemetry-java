@@ -56,6 +56,13 @@ final class KeyValueList implements Value<List<KeyValue>> {
   }
 
   @Override
+  public String toProtoJson() {
+    StringBuilder sb = new StringBuilder();
+    ProtoJson.append(sb, this);
+    return sb.toString();
+  }
+
+  @Override
   public String toString() {
     return "KeyValueList{" + asString() + "}";
   }

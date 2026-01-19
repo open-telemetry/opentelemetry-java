@@ -39,6 +39,13 @@ final class ValueBytes implements Value<ByteBuffer> {
   }
 
   @Override
+  public String toProtoJson() {
+    StringBuilder sb = new StringBuilder();
+    ProtoJson.append(sb, this);
+    return sb.toString();
+  }
+
+  @Override
   public String toString() {
     return "ValueBytes{" + asString() + "}";
   }

@@ -120,6 +120,7 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
         }
       case KEY_VALUE_LIST:
       case BYTES:
+      case EMPTY:
         // Keep as VALUE type
         data.add(key);
         data.add(valueObj);
@@ -154,6 +155,7 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
       case ARRAY:
       case KEY_VALUE_LIST:
       case BYTES:
+      case EMPTY:
         return ExtendedAttributeType.VALUE;
     }
     throw new IllegalArgumentException("Unsupported element type: " + elementType);
