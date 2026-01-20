@@ -225,7 +225,7 @@ final class OtelToZipkinSpanTransformer {
       case DOUBLE_ARRAY:
         return commaSeparated((List<?>) attributeValue);
       case VALUE:
-        return ((Value<?>) attributeValue).toProtoJson();
+        return ((Value<?>) attributeValue).asString();
     }
     throw new IllegalStateException("Unknown attribute type: " + type);
   }

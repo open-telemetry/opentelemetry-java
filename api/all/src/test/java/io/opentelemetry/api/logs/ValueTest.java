@@ -172,18 +172,18 @@ class ValueTest {
   private static Stream<Arguments> asStringArgs() {
     return Stream.of(
         // primitives
-        arguments(Value.of("str"), "str"),
+        arguments(Value.of("str"), "\"str\""),
         arguments(Value.of(true), "true"),
         arguments(Value.of(1), "1"),
         arguments(Value.of(1.1), "1.1"),
         // heterogeneous array
         arguments(
             Value.of(Value.of("str"), Value.of(true), Value.of(1), Value.of(1.1)),
-            "[str, true, 1, 1.1]"),
+            "[\"str\",true,1,1.1]"),
         // key value list from KeyValue array
         arguments(
             Value.of(KeyValue.of("key1", Value.of("val1")), KeyValue.of("key2", Value.of(2))),
-            "[key1=val1, key2=2]"),
+            "{\"key1\":\"val1\",\"key2\":2}"),
         // key value list from map
         arguments(
             Value.of(
@@ -193,15 +193,16 @@ class ValueTest {
                     put("key2", Value.of(2));
                   }
                 }),
-            "[key1=val1, key2=2]"),
+            "{\"key1\":\"val1\",\"key2\":2}"),
         // map of map
         arguments(
             Value.of(
                 Collections.singletonMap(
                     "child", Value.of(Collections.singletonMap("grandchild", Value.of("str"))))),
-            "[child=[grandchild=str]]"),
+            "{\"child\":{\"grandchild\":\"str\"}}"),
         // bytes
-        arguments(Value.of("hello world".getBytes(StandardCharsets.UTF_8)), "aGVsbG8gd29ybGQ="));
+        arguments(
+            Value.of("hello world".getBytes(StandardCharsets.UTF_8)), "\"aGVsbG8gd29ybGQ=\""));
   }
 
   @Test
@@ -209,7 +210,9 @@ class ValueTest {
     // TODO: add more test cases
     String str = "hello world";
     String base64Encoded = Value.of(str.getBytes(StandardCharsets.UTF_8)).asString();
-    byte[] decodedBytes = Base64.getDecoder().decode(base64Encoded);
+    // Remove surrounding quotes from JSON string
+    String base64Value = base64Encoded.substring(1, base64Encoded.length() - 1);
+    byte[] decodedBytes = Base64.getDecoder().decode(base64Value);
     assertThat(new String(decodedBytes, StandardCharsets.UTF_8)).isEqualTo(str);
   }
 }

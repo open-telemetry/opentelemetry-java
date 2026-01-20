@@ -45,7 +45,7 @@ final class EventDataToAnnotation {
           .stream().map(EventDataToAnnotation::toValue).collect(joining(",", "[", "]"));
     }
     if (o instanceof Value) {
-      return ((Value<?>) o).toProtoJson();
+      return ((Value<?>) o).asString();
     }
     return String.valueOf(o);
   }

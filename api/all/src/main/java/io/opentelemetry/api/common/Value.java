@@ -113,17 +113,6 @@ public interface Value<T> {
   T getValue();
 
   /**
-   * Return a string encoding of this {@link Value}. This is intended to be a fallback serialized
-   * representation in case there is no suitable encoding that can utilize {@link #getType()} /
-   * {@link #getValue()} to serialize specific types.
-   *
-   * <p>WARNING: No guarantees are made about the encoding of this string response. It MAY change in
-   * a future minor release. If you need a reliable string encoding, write your own serializer.
-   */
-  // TODO deprecate in favor of toString() or toProtoJson()?
-  String asString();
-
-  /**
    * Returns a JSON encoding of this {@link Value}.
    *
    * <p>The output follows the <a href="https://protobuf.dev/programming-guides/json/">ProtoJSON</a>
@@ -145,7 +134,5 @@ public interface Value<T> {
    *
    * @return a JSON encoding of this value
    */
-  default String toProtoJson() {
-    return "\"unimplemented\"";
-  }
+  String asString();
 }

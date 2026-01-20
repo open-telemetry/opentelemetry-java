@@ -16,157 +16,156 @@ class ValueToProtoJsonTest {
 
   @Test
   void valueString_basic() {
-    assertThat(Value.of("hello").toProtoJson()).isEqualTo("\"hello\"");
+    assertThat(Value.of("hello").asString()).isEqualTo("\"hello\"");
   }
 
   @Test
   void valueString_empty() {
-    assertThat(Value.of("").toProtoJson()).isEqualTo("\"\"");
+    assertThat(Value.of("").asString()).isEqualTo("\"\"");
   }
 
   @Test
   void valueString_withEscapes() {
-    assertThat(Value.of("line1\nline2\ttab").toProtoJson()).isEqualTo("\"line1\\nline2\\ttab\"");
+    assertThat(Value.of("line1\nline2\ttab").asString()).isEqualTo("\"line1\\nline2\\ttab\"");
   }
 
   @Test
   void valueString_withQuotes() {
-    assertThat(Value.of("say \"hello\"").toProtoJson()).isEqualTo("\"say \\\"hello\\\"\"");
+    assertThat(Value.of("say \"hello\"").asString()).isEqualTo("\"say \\\"hello\\\"\"");
   }
 
   @Test
   void valueString_withBackslash() {
-    assertThat(Value.of("path\\to\\file").toProtoJson()).isEqualTo("\"path\\\\to\\\\file\"");
+    assertThat(Value.of("path\\to\\file").asString()).isEqualTo("\"path\\\\to\\\\file\"");
   }
 
   @Test
   void valueString_withControlCharacters() {
-    assertThat(Value.of("\u0000\u0001\u001F").toProtoJson()).isEqualTo("\"\\u0000\\u0001\\u001f\"");
+    assertThat(Value.of("\u0000\u0001\u001F").asString()).isEqualTo("\"\\u0000\\u0001\\u001f\"");
   }
 
   @Test
   void valueString_unicode() {
-    assertThat(Value.of("Hello 世界 🌍").toProtoJson()).isEqualTo("\"Hello 世界 🌍\"");
+    assertThat(Value.of("Hello 世界 🌍").asString()).isEqualTo("\"Hello 世界 🌍\"");
   }
 
   @Test
   void valueBoolean_true() {
-    assertThat(Value.of(true).toProtoJson()).isEqualTo("true");
+    assertThat(Value.of(true).asString()).isEqualTo("true");
   }
 
   @Test
   void valueBoolean_false() {
-    assertThat(Value.of(false).toProtoJson()).isEqualTo("false");
+    assertThat(Value.of(false).asString()).isEqualTo("false");
   }
 
   @Test
   void valueLong_positive() {
-    assertThat(Value.of(42L).toProtoJson()).isEqualTo("42");
+    assertThat(Value.of(42L).asString()).isEqualTo("42");
   }
 
   @Test
   void valueLong_negative() {
-    assertThat(Value.of(-123L).toProtoJson()).isEqualTo("-123");
+    assertThat(Value.of(-123L).asString()).isEqualTo("-123");
   }
 
   @Test
   void valueLong_zero() {
-    assertThat(Value.of(0L).toProtoJson()).isEqualTo("0");
+    assertThat(Value.of(0L).asString()).isEqualTo("0");
   }
 
   @Test
   void valueLong_maxValue() {
-    assertThat(Value.of(Long.MAX_VALUE).toProtoJson()).isEqualTo("9223372036854775807");
+    assertThat(Value.of(Long.MAX_VALUE).asString()).isEqualTo("9223372036854775807");
   }
 
   @Test
   void valueLong_minValue() {
-    assertThat(Value.of(Long.MIN_VALUE).toProtoJson()).isEqualTo("-9223372036854775808");
+    assertThat(Value.of(Long.MIN_VALUE).asString()).isEqualTo("-9223372036854775808");
   }
 
   @Test
   void valueDouble_regular() {
-    assertThat(Value.of(3.14).toProtoJson()).isEqualTo("3.14");
+    assertThat(Value.of(3.14).asString()).isEqualTo("3.14");
   }
 
   @Test
   void valueDouble_negative() {
-    assertThat(Value.of(-2.5).toProtoJson()).isEqualTo("-2.5");
+    assertThat(Value.of(-2.5).asString()).isEqualTo("-2.5");
   }
 
   @Test
   void valueDouble_zero() {
-    assertThat(Value.of(0.0).toProtoJson()).isEqualTo("0.0");
+    assertThat(Value.of(0.0).asString()).isEqualTo("0.0");
   }
 
   @Test
   void valueDouble_negativeZero() {
-    assertThat(Value.of(-0.0).toProtoJson()).isEqualTo("-0.0");
+    assertThat(Value.of(-0.0).asString()).isEqualTo("-0.0");
   }
 
   @Test
   void valueDouble_nan() {
-    assertThat(Value.of(Double.NaN).toProtoJson()).isEqualTo("\"NaN\"");
+    assertThat(Value.of(Double.NaN).asString()).isEqualTo("\"NaN\"");
   }
 
   @Test
   void valueDouble_positiveInfinity() {
-    assertThat(Value.of(Double.POSITIVE_INFINITY).toProtoJson()).isEqualTo("\"Infinity\"");
+    assertThat(Value.of(Double.POSITIVE_INFINITY).asString()).isEqualTo("\"Infinity\"");
   }
 
   @Test
   void valueDouble_negativeInfinity() {
-    assertThat(Value.of(Double.NEGATIVE_INFINITY).toProtoJson()).isEqualTo("\"-Infinity\"");
+    assertThat(Value.of(Double.NEGATIVE_INFINITY).asString()).isEqualTo("\"-Infinity\"");
   }
 
   @Test
   void valueDouble_scientificNotation() {
-    assertThat(Value.of(1.23e10).toProtoJson()).isEqualTo("1.23E10");
+    assertThat(Value.of(1.23e10).asString()).isEqualTo("1.23E10");
   }
 
   @Test
   void valueDouble_verySmall() {
-    assertThat(Value.of(1.23e-10).toProtoJson()).isEqualTo("1.23E-10");
+    assertThat(Value.of(1.23e-10).asString()).isEqualTo("1.23E-10");
   }
 
   @Test
   void valueBytes_empty() {
-    assertThat(Value.of(new byte[] {}).toProtoJson()).isEqualTo("\"\"");
+    assertThat(Value.of(new byte[] {}).asString()).isEqualTo("\"\"");
   }
 
   @Test
   void valueBytes_regular() {
     byte[] bytes = new byte[] {0, 1, 2, Byte.MAX_VALUE, Byte.MIN_VALUE};
-    assertThat(Value.of(bytes).toProtoJson())
+    assertThat(Value.of(bytes).asString())
         .isEqualTo('"' + Base64.getEncoder().encodeToString(bytes) + '"');
   }
 
   @Test
   void valueEmpty() {
-    assertThat(Value.empty().toProtoJson()).isEqualTo("null");
+    assertThat(Value.empty().asString()).isEqualTo("null");
   }
 
   @Test
   @SuppressWarnings("ExplicitArrayForVarargs")
   void valueArray_empty() {
-    assertThat(Value.of(new Value<?>[] {}).toProtoJson()).isEqualTo("[]");
+    assertThat(Value.of(new Value<?>[] {}).asString()).isEqualTo("[]");
   }
 
   @Test
   void valueArray_singleElement() {
-    assertThat(Value.of(Value.of("test")).toProtoJson()).isEqualTo("[\"test\"]");
+    assertThat(Value.of(Value.of("test")).asString()).isEqualTo("[\"test\"]");
   }
 
   @Test
   void valueArray_multipleStrings() {
-    assertThat(Value.of(Value.of("a"), Value.of("b"), Value.of("c")).toProtoJson())
+    assertThat(Value.of(Value.of("a"), Value.of("b"), Value.of("c")).asString())
         .isEqualTo("[\"a\",\"b\",\"c\"]");
   }
 
   @Test
   void valueArray_multipleNumbers() {
-    assertThat(Value.of(Value.of(1L), Value.of(2L), Value.of(3L)).toProtoJson())
-        .isEqualTo("[1,2,3]");
+    assertThat(Value.of(Value.of(1L), Value.of(2L), Value.of(3L)).asString()).isEqualTo("[1,2,3]");
   }
 
   @Test
@@ -179,7 +178,7 @@ class ValueToProtoJsonTest {
                     Value.of(true),
                     Value.of(false),
                     Value.empty())
-                .toProtoJson())
+                .asString())
         .isEqualTo("[\"string\",42,3.14,true,false,null]");
   }
 
@@ -190,7 +189,7 @@ class ValueToProtoJsonTest {
                     Value.of("outer"),
                     Value.of(Value.of("inner1"), Value.of("inner2")),
                     Value.of(42L))
-                .toProtoJson())
+                .asString())
         .isEqualTo("[\"outer\",[\"inner1\",\"inner2\"],42]");
   }
 
@@ -198,19 +197,19 @@ class ValueToProtoJsonTest {
   void valueArray_deeplyNested() {
     assertThat(
             Value.of(Value.of(Value.of(Value.of(Value.of(Value.of("deep"))))), Value.of("shallow"))
-                .toProtoJson())
+                .asString())
         .isEqualTo("[[[[[\"deep\"]]]],\"shallow\"]");
   }
 
   @Test
   @SuppressWarnings("ExplicitArrayForVarargs")
   void valueKeyValueList_empty() {
-    assertThat(Value.of(new KeyValue[] {}).toProtoJson()).isEqualTo("{}");
+    assertThat(Value.of(new KeyValue[] {}).asString()).isEqualTo("{}");
   }
 
   @Test
   void valueKeyValueList_singleEntry() {
-    assertThat(Value.of(KeyValue.of("key", Value.of("value"))).toProtoJson())
+    assertThat(Value.of(KeyValue.of("key", Value.of("value"))).asString())
         .isEqualTo("{\"key\":\"value\"}");
   }
 
@@ -221,7 +220,7 @@ class ValueToProtoJsonTest {
                     KeyValue.of("name", Value.of("Alice")),
                     KeyValue.of("age", Value.of(30L)),
                     KeyValue.of("active", Value.of(true)))
-                .toProtoJson())
+                .asString())
         .isEqualTo("{\"name\":\"Alice\",\"age\":30,\"active\":true}");
   }
 
@@ -235,7 +234,7 @@ class ValueToProtoJsonTest {
                         Value.of(
                             KeyValue.of("nested1", Value.of("a")),
                             KeyValue.of("nested2", Value.of("b")))))
-                .toProtoJson())
+                .asString())
         .isEqualTo("{\"outer\":\"value\",\"inner\":{\"nested1\":\"a\",\"nested2\":\"b\"}}");
   }
 
@@ -245,7 +244,7 @@ class ValueToProtoJsonTest {
             Value.of(
                     KeyValue.of("name", Value.of("test")),
                     KeyValue.of("items", Value.of(Value.of(1L), Value.of(2L), Value.of(3L))))
-                .toProtoJson())
+                .asString())
         .isEqualTo("{\"name\":\"test\",\"items\":[1,2,3]}");
   }
 
@@ -260,7 +259,7 @@ class ValueToProtoJsonTest {
                     KeyValue.of("empty", Value.empty()),
                     KeyValue.of("bytes", Value.of(new byte[] {1, 2})),
                     KeyValue.of("array", Value.of(Value.of("a"), Value.of("b"))))
-                .toProtoJson())
+                .asString())
         .isEqualTo(
             "{\"string\":\"text\",\"long\":42,\"double\":3.14,\"bool\":true,"
                 + "\"empty\":null,\"bytes\":\"AQI=\",\"array\":[\"a\",\"b\"]}");
@@ -271,7 +270,7 @@ class ValueToProtoJsonTest {
     Map<String, Value<?>> map = new LinkedHashMap<>();
     map.put("key1", Value.of("value1"));
     map.put("key2", Value.of(42L));
-    assertThat(Value.of(map).toProtoJson()).isEqualTo("{\"key1\":\"value1\",\"key2\":42}");
+    assertThat(Value.of(map).asString()).isEqualTo("{\"key1\":\"value1\",\"key2\":42}");
   }
 
   @Test
@@ -281,7 +280,7 @@ class ValueToProtoJsonTest {
                     KeyValue.of("key with spaces", Value.of("value1")),
                     KeyValue.of("key\"with\"quotes", Value.of("value2")),
                     KeyValue.of("key\nwith\nnewlines", Value.of("value3")))
-                .toProtoJson())
+                .asString())
         .isEqualTo(
             "{\"key with spaces\":\"value1\","
                 + "\"key\\\"with\\\"quotes\":\"value2\","
@@ -311,7 +310,7 @@ class ValueToProtoJsonTest {
                         Value.of(
                             Value.of("important"), Value.of("reviewed"), Value.of("final"))))));
 
-    assertThat(complexValue.toProtoJson())
+    assertThat(complexValue.asString())
         .isEqualTo(
             "{\"user\":\"Alice\","
                 + "\"scores\":[95,87.5,92,\"NaN\",\"Infinity\"],"
@@ -322,13 +321,13 @@ class ValueToProtoJsonTest {
 
   @Test
   void edgeCase_emptyStringKey() {
-    assertThat(Value.of(KeyValue.of("", Value.of("value"))).toProtoJson())
+    assertThat(Value.of(KeyValue.of("", Value.of("value"))).asString())
         .isEqualTo("{\"\":\"value\"}");
   }
 
   @Test
   void edgeCase_multipleEmptyValues() {
-    assertThat(Value.of(Value.empty(), Value.empty(), Value.empty()).toProtoJson())
+    assertThat(Value.of(Value.empty(), Value.empty(), Value.empty()).asString())
         .isEqualTo("[null,null,null]");
   }
 
@@ -339,7 +338,7 @@ class ValueToProtoJsonTest {
                     Value.of(KeyValue.of("id", Value.of(1L)), KeyValue.of("name", Value.of("A"))),
                     Value.of(KeyValue.of("id", Value.of(2L)), KeyValue.of("name", Value.of("B"))),
                     Value.of(KeyValue.of("id", Value.of(3L)), KeyValue.of("name", Value.of("C"))))
-                .toProtoJson())
+                .asString())
         .isEqualTo(
             "[{\"id\":1,\"name\":\"A\"},{\"id\":2,\"name\":\"B\"},{\"id\":3,\"name\":\"C\"}]");
   }
@@ -351,7 +350,7 @@ class ValueToProtoJsonTest {
             Value.of(
                     KeyValue.of("data", Value.of("test")),
                     KeyValue.of("items", Value.of(new Value<?>[] {})))
-                .toProtoJson())
+                .asString())
         .isEqualTo("{\"data\":\"test\",\"items\":[]}");
   }
 
@@ -362,31 +361,7 @@ class ValueToProtoJsonTest {
             Value.of(
                     KeyValue.of("data", Value.of("test")),
                     KeyValue.of("metadata", Value.of(new KeyValue[] {})))
-                .toProtoJson())
+                .asString())
         .isEqualTo("{\"data\":\"test\",\"metadata\":{}}");
-  }
-
-  @Test
-  void defaultImplementation_returnsUnimplemented() {
-    // Create a custom Value implementation that doesn't override toProtoJson()
-    Value<String> customValue =
-        new Value<String>() {
-          @Override
-          public ValueType getType() {
-            return ValueType.STRING;
-          }
-
-          @Override
-          public String getValue() {
-            return "test";
-          }
-
-          @Override
-          public String asString() {
-            return "test";
-          }
-        };
-
-    assertThat(customValue.toProtoJson()).isEqualTo("\"unimplemented\"");
   }
 }
