@@ -13,6 +13,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ExtendedAttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +45,7 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     loggerSharedState
         .getExceptionAttributeResolver()
         .setExceptionAttributes(
-            this::setAttribute,
+            new ExceptionAttributeSetterWithPrecedence(),
             throwable,
             loggerSharedState.getLogLimits().getMaxAttributeValueLength());
 
@@ -153,5 +154,24 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
                 severityText,
                 body,
                 extendedAttributes));
+  }
+
+  /**
+   * AttributeSetter that only sets attributes if they haven't already been set by the user. This
+   * ensures user-set attributes take precedence over exception-derived attributes.
+   */
+  private class ExceptionAttributeSetterWithPrecedence
+      implements ExceptionAttributeResolver.AttributeSetter {
+
+    @Override
+    public <T> void setAttribute(AttributeKey<T> key, @javax.annotation.Nullable T value) {
+      if (key == null || key.getKey().isEmpty() || value == null) {
+        return;
+      }
+      // Only set the attribute if it hasn't been set already
+      if (extendedAttributes == null || extendedAttributes.get(key) == null) {
+        ExtendedSdkLogRecordBuilder.this.setAttribute(key, value);
+      }
+    }
   }
 }
