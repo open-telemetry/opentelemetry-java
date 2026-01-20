@@ -9,13 +9,13 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.http.HttpSender;
-import io.opentelemetry.exporter.http.HttpSenderProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.HttpSender;
+import io.opentelemetry.sdk.common.export.HttpSenderProvider;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -51,7 +51,8 @@ public final class HttpExporterBuilder {
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
   private static final String OLD_SPI_PROPERTY =
       "io.opentelemetry.exporter.internal.http.HttpSenderProvider";
-  private static final String SPI_PROPERTY = "io.opentelemetry.exporter.http.HttpSenderProvider";
+  private static final String SPI_PROPERTY =
+      "io.opentelemetry.sdk.common.export.HttpSenderProvider";
 
   private StandardComponentId.ExporterType exporterType;
 
@@ -309,8 +310,9 @@ public final class HttpExporterBuilder {
    * <p>If multiple are available and..
    *
    * <ul>
-   *   <li>{@code io.opentelemetry.exporter.http.HttpSenderProvider} is empty, use the first found.
-   *   <li>{@code io.opentelemetry.exporter.http.HttpSenderProvider} is set, use the matching
+   *   <li>{@code io.opentelemetry.sdk.common.export.HttpSenderProvider} is empty, use the first
+   *       found.
+   *   <li>{@code io.opentelemetry.sdk.common.export.HttpSenderProvider} is set, use the matching
    *       provider. If none match, throw {@link IllegalStateException}.
    * </ul>
    */

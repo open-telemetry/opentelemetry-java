@@ -3,12 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.http;
+package io.opentelemetry.sdk.common.export;
 
-import io.opentelemetry.exporter.compressor.Compressor;
-import io.opentelemetry.exporter.marshal.MessageWriter;
-import io.opentelemetry.sdk.common.export.ProxyOptions;
-import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Duration;

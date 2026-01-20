@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal.compressor;
 
-import io.opentelemetry.exporter.compressor.Compressor;
+import io.opentelemetry.sdk.common.export.Compressor;
 import java.io.OutputStream;
 import java.util.Base64;
 

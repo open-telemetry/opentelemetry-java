@@ -6,15 +6,15 @@
 package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.http.HttpResponse;
-import io.opentelemetry.exporter.http.HttpSender;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
-import io.opentelemetry.exporter.marshal.MessageWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.HttpResponse;
+import io.opentelemetry.sdk.common.export.HttpSender;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;

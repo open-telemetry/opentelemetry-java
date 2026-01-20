@@ -9,7 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.compressor.Compressor;
+import io.opentelemetry.sdk.common.export.Compressor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;

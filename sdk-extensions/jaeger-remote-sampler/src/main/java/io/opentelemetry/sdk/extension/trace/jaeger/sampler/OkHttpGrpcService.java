@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.opentelemetry.exporter.grpc.GrpcStatusCode;
 import io.opentelemetry.exporter.sender.okhttp.internal.GrpcRequestBody;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.marshal;
+package io.opentelemetry.sdk.common.export;
 
 import java.io.IOException;
 import java.io.OutputStream;

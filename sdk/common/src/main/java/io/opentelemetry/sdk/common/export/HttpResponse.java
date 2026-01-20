@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.http;
+package io.opentelemetry.sdk.common.export;
 
-import io.opentelemetry.exporter.marshal.MessageWriter;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.Immutable;
 

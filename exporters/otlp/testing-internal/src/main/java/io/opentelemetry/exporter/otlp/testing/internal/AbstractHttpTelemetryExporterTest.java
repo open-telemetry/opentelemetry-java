@@ -572,7 +572,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   .satisfies(
                       response -> {
                         assertThat(response)
-                            .extracting(io.opentelemetry.exporter.http.HttpResponse::getStatusCode)
+                            .extracting(
+                                io.opentelemetry.sdk.common.export.HttpResponse::getStatusCode)
                             .isEqualTo(statusCode);
 
                         assertThatCode(response::getResponseBody).doesNotThrowAnyException();
@@ -877,7 +878,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       assertThat(classLoaderSpy.getResourcesNames)
           .isEqualTo(
               Collections.singletonList(
-                  "META-INF/services/io.opentelemetry.exporter.http.HttpSenderProvider"));
+                  "META-INF/services/io.opentelemetry.sdk.common.export.HttpSenderProvider"));
     }
   }
 

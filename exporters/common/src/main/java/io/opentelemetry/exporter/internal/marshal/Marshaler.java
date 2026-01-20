@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.internal.marshal;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import io.opentelemetry.exporter.marshal.MessageWriter;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 

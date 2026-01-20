@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal;
 
-import io.opentelemetry.exporter.grpc.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;

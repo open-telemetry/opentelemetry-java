@@ -44,7 +44,7 @@ class GrpcExporterTest {
 
     logCapturer.assertContains(
         "Multiple GrpcSenderProvider found. Please include only one, "
-            + "or specify preference setting io.opentelemetry.exporter.grpc.GrpcSenderProvider "
+            + "or specify preference setting io.opentelemetry.sdk.common.export.GrpcSenderProvider "
             + "to the FQCN of the preferred provider.");
   }
 
@@ -71,7 +71,7 @@ class GrpcExporterTest {
 
   @Test
   @SetSystemProperty(
-      key = "io.opentelemetry.exporter.grpc.GrpcSenderProvider",
+      key = "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
       value =
           "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider")
   void build_multipleSendersWithUpstream() throws URISyntaxException {
@@ -91,7 +91,7 @@ class GrpcExporterTest {
 
   @Test
   @SetSystemProperty(
-      key = "io.opentelemetry.exporter.grpc.GrpcSenderProvider",
+      key = "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
       value = "io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSenderProvider")
   void build_multipleSendersWithOkHttp() throws URISyntaxException {
     assertThat(
@@ -109,7 +109,7 @@ class GrpcExporterTest {
   }
 
   @Test
-  @SetSystemProperty(key = "io.opentelemetry.exporter.grpc.GrpcSenderProvider", value = "foo")
+  @SetSystemProperty(key = "io.opentelemetry.sdk.common.export.GrpcSenderProvider", value = "foo")
   void build_multipleSendersNoMatch() {
     assertThatThrownBy(
             () ->
@@ -122,7 +122,7 @@ class GrpcExporterTest {
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
-            "No GrpcSenderProvider matched configured io.opentelemetry.exporter.grpc.GrpcSenderProvider: foo");
+            "No GrpcSenderProvider matched configured io.opentelemetry.sdk.common.export.GrpcSenderProvider: foo");
 
     assertThat(logCapturer.getEvents()).isEmpty();
   }
