@@ -86,7 +86,7 @@ public interface Value<T> {
   }
 
   /** Returns an empty {@link Value}. */
-  static Value<Void> empty() {
+  static Value<Empty> empty() {
     return ValueEmpty.create();
   }
 
@@ -107,7 +107,7 @@ public interface Value<T> {
    *   <li>{@link ValueType#KEY_VALUE_LIST} returns {@link List} of {@link KeyValue}
    *   <li>{@link ValueType#BYTES} returns read only {@link ByteBuffer}. See {@link
    *       ByteBuffer#asReadOnlyBuffer()}.
-   *   <li>{@link ValueType#EMPTY} returns {@code null}
+   *   <li>{@link ValueType#EMPTY} returns {@link Empty}
    * </ul>
    */
   T getValue();

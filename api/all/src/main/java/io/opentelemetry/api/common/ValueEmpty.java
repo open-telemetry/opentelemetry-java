@@ -5,13 +5,13 @@
 
 package io.opentelemetry.api.common;
 
-final class ValueEmpty implements Value<Void> {
+final class ValueEmpty implements Value<Empty> {
 
   private static final ValueEmpty INSTANCE = new ValueEmpty();
 
   private ValueEmpty() {}
 
-  static Value<Void> create() {
+  static Value<Empty> create() {
     return INSTANCE;
   }
 
@@ -21,8 +21,8 @@ final class ValueEmpty implements Value<Void> {
   }
 
   @Override
-  public Void getValue() {
-    return null;
+  public Empty getValue() {
+    return Empty.getInstance();
   }
 
   @Override
