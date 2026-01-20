@@ -30,11 +30,7 @@ import javax.annotation.concurrent.Immutable;
  * </ul>
  *
  * @param <T> The type of value that can be set with the key.
- * @deprecated Use {@link io.opentelemetry.api.common.AttributeKey} instead. Complex attributes are
- *     now supported directly in the standard API via {@link
- *     io.opentelemetry.api.common.AttributeKey#valueKey(String)}.
  */
-@Deprecated
 @Immutable
 public interface ExtendedAttributeKey<T> {
   /** Returns the underlying String representation of the key. */

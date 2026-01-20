@@ -47,14 +47,7 @@ import javax.annotation.concurrent.Immutable;
  *       {@link ExtendedAttributes}
  *   <li>{@link #get(AttributeKey)} supports reading values using standard {@link AttributeKey}
  * </ul>
- *
- * @deprecated Use {@link io.opentelemetry.api.common.Attributes} instead. Complex attributes are
- *     now supported directly in the standard API via {@link
- *     io.opentelemetry.api.common.AttributeKey#valueKey(String)} and {@link
- *     io.opentelemetry.api.common.AttributesBuilder#put(io.opentelemetry.api.common.AttributeKey,
- *     Object)}.
  */
-@Deprecated
 @Immutable
 public interface ExtendedAttributes {
 

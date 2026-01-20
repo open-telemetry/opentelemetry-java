@@ -22,16 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * A builder of {@link ExtendedAttributes} supporting an arbitrary number of key-value pairs.
- *
- * @deprecated Use {@link io.opentelemetry.api.common.AttributesBuilder} instead. Complex attributes
- *     are now supported directly in the standard API via {@link
- *     io.opentelemetry.api.common.AttributeKey#valueKey(String)} and {@link
- *     io.opentelemetry.api.common.AttributesBuilder#put(io.opentelemetry.api.common.AttributeKey,
- *     Object)}.
- */
-@Deprecated
+/** A builder of {@link ExtendedAttributes} supporting an arbitrary number of key-value pairs. */
 public interface ExtendedAttributesBuilder {
   /** Create the {@link ExtendedAttributes} from this. */
   ExtendedAttributes build();
