@@ -200,7 +200,9 @@ public interface AttributesBuilder {
   }
 
   /**
-   * Puts a {@link Value} attribute into this.
+   * Puts a {@link Value} attribute into this. See {@link #put(AttributeKey, Object)} for details on
+   * how this method will automatically convert {@link Value} attributes to simple attributes when
+   * possible.
    *
    * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
    * your keys, if possible.
