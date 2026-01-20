@@ -50,6 +50,7 @@ import zipkin2.reporter.Encoding;
 import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
+@SuppressWarnings("deprecation") // testing deprecated code
 @Testcontainers(disabledWithoutDocker = true)
 class ZipkinSpanExporterEndToEndHttpTest {
   private static final WebClient client = WebClient.of();

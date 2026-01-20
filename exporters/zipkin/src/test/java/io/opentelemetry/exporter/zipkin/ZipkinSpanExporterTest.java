@@ -41,6 +41,7 @@ import zipkin2.reporter.Encoding;
 import zipkin2.reporter.SpanBytesEncoder;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("deprecation") // testing deprecated code
 class ZipkinSpanExporterTest {
 
   @Mock private BytesMessageSender mockSender;
