@@ -144,6 +144,19 @@ class SdkSpanTest {
         /* hasEnded= */ true);
   }
 
+  /**
+   * {@code SdkSpan.spanEndingThread} prevents concurrent modification of spans while in the ending
+   * phase such that only {@link ExtendedSpanProcessor#onEnding(ReadWriteSpan)} implementations can
+   * modify. Here, we verify the thread ref is released so the thread can be garbage collected. This
+   * is particularly important where processors hold refs to {@link ReadWriteSpan}.
+   */
+  @Test
+  void end_ReleasesSpanEndingThreadRef() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    span.end();
+    assertThat(span).extracting("spanEndingThread").isNull();
+  }
+
   @Test
   void endSpanTwice_DoNotCrash() {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
