@@ -10,7 +10,12 @@ package io.opentelemetry.api.incubator.common;
  * hence the types of values that are allowed for {@link ExtendedAttributes}.
  *
  * <p>This is a superset of {@link io.opentelemetry.api.common.AttributeType},
+ *
+ * @deprecated Use {@link io.opentelemetry.api.common.AttributeType} instead. Complex attributes are
+ *     now supported directly in the standard API via {@link
+ *     io.opentelemetry.api.common.AttributeType#VALUE}.
  */
+@Deprecated
 public enum ExtendedAttributeType {
   // Types copied AttributeType
   STRING,
