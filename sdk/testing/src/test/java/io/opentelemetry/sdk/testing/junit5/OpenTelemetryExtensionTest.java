@@ -27,9 +27,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -226,10 +226,9 @@ class OpenTelemetryExtensionTest {
 
     ExtensionContext parentContext = spy(ExtensionContext.class);
     when(parentContext.getTestClass()).thenReturn(Optional.empty());
-    
+
     ExtensionContext context = spy(ExtensionContext.class);
     when(context.getParent()).thenReturn(Optional.of(parentContext));
-
 
     extension.beforeAll(context);
 
