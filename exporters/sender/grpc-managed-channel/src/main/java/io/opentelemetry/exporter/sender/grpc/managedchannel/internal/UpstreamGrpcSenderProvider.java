@@ -5,22 +5,13 @@
 
 package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
-import io.grpc.Channel;
-import io.grpc.Codec;
-import io.grpc.CompressorRegistry;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.grpc.GrpcSender;
-import io.opentelemetry.exporter.internal.grpc.GrpcSenderConfig;
-import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
-import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import java.io.IOException;
-import java.io.OutputStream;
+import io.opentelemetry.exporter.internal.grpc.ExtendedGrpcSenderConfig;
+import io.opentelemetry.sdk.common.export.GrpcSender;
+import io.opentelemetry.sdk.common.export.GrpcSenderConfig;
+import io.opentelemetry.sdk.common.export.GrpcSenderProvider;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 
 /**
  * {@link GrpcSender} SPI implementation for {@link UpstreamGrpcSender}.
@@ -31,57 +22,36 @@ import java.util.Map;
 public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
 
   @Override
-  public <T extends Marshaler> GrpcSender<T> createSender(GrpcSenderConfig<T> grpcSenderConfig) {
+  public GrpcSender createSender(GrpcSenderConfig grpcSenderConfig) {
+    if (!(grpcSenderConfig instanceof ExtendedGrpcSenderConfig)) {
+      throw new IllegalStateException(
+          "grpcSenderConfig must be an instance of ExtendedGrpcSenderConfig for UpstreamGrpcSenderProvider");
+    }
+    ExtendedGrpcSenderConfig extendedSenderConfig = (ExtendedGrpcSenderConfig) grpcSenderConfig;
+
     boolean shutdownChannel = false;
-    Object managedChannel = grpcSenderConfig.getManagedChannel();
-    if (managedChannel == null) {
+    Object configManagedChannel = extendedSenderConfig.getMangedChannel();
+    ManagedChannel managedChannel;
+    if (configManagedChannel != null) {
+      if (!(configManagedChannel instanceof ManagedChannel)) {
+        throw new IllegalStateException(
+            "managedChannel must be an instance of ManagedChannel for UpstreamGrpcSenderProvider");
+      }
+      managedChannel = (ManagedChannel) configManagedChannel;
+    } else {
       // Shutdown the channel as part of the exporter shutdown sequence if
       shutdownChannel = true;
       managedChannel = minimalFallbackManagedChannel(grpcSenderConfig.getEndpoint());
     }
 
-    String authorityOverride = null;
-    Map<String, List<String>> headers = grpcSenderConfig.getHeadersSupplier().get();
-    if (headers != null) {
-      for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-        if (entry.getKey().equals("host") && !entry.getValue().isEmpty()) {
-          authorityOverride = entry.getValue().get(0);
-        }
-      }
-    }
-
-    String compression = Codec.Identity.NONE.getMessageEncoding();
-    Compressor compressor = grpcSenderConfig.getCompressor();
-    if (compressor != null) {
-      CompressorRegistry.getDefaultInstance()
-          .register(
-              new io.grpc.Compressor() {
-                @Override
-                public String getMessageEncoding() {
-                  return compressor.getEncoding();
-                }
-
-                @Override
-                public OutputStream compress(OutputStream os) throws IOException {
-                  return compressor.compress(os);
-                }
-              });
-      compression = compressor.getEncoding();
-    }
-
-    MarshalerServiceStub<T, ?, ?> stub =
-        grpcSenderConfig
-            .getStubFactory()
-            .get()
-            .apply((Channel) managedChannel, authorityOverride)
-            .withCompression(compression);
-
-    return new UpstreamGrpcSender<>(
-        stub,
+    return new UpstreamGrpcSender(
+        managedChannel,
+        extendedSenderConfig.getFullMethodName(),
+        extendedSenderConfig.getCompressor(),
         shutdownChannel,
-        grpcSenderConfig.getTimeoutNanos(),
-        grpcSenderConfig.getHeadersSupplier(),
-        grpcSenderConfig.getExecutorService());
+        extendedSenderConfig.getTimeout(),
+        extendedSenderConfig.getHeadersSupplier(),
+        extendedSenderConfig.getExecutorService());
   }
 
   /**

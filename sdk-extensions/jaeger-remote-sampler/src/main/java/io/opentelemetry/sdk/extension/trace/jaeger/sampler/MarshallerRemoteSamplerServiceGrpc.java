@@ -7,13 +7,8 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import io.grpc.CallOptions;
-import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
-import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
-import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +22,7 @@ class MarshallerRemoteSamplerServiceGrpc {
           new MethodDescriptor.Marshaller<SamplingStrategyParametersMarshaler>() {
             @Override
             public InputStream stream(SamplingStrategyParametersMarshaler value) {
-              return new MarshalerInputStream(value);
+              return new MarshalerInputStream(value.toBinaryMessageWriter());
             }
 
             @Override
@@ -59,7 +54,7 @@ class MarshallerRemoteSamplerServiceGrpc {
             }
           };
 
-  private static final MethodDescriptor<
+  static final MethodDescriptor<
           SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
       getPostSpansMethod =
           MethodDescriptor
@@ -70,33 +65,6 @@ class MarshallerRemoteSamplerServiceGrpc {
               .setRequestMarshaller(REQUEST_MARSHALLER)
               .setResponseMarshaller(RESPONSE_MARSHALLER)
               .build();
-
-  static SamplingManagerFutureStub newFutureStub(Channel channel) {
-    return SamplingManagerFutureStub.newStub(SamplingManagerFutureStub::new, channel);
-  }
-
-  static final class SamplingManagerFutureStub
-      extends MarshalerServiceStub<
-          SamplingStrategyParametersMarshaler,
-          SamplingStrategyResponseUnMarshaler,
-          SamplingManagerFutureStub> {
-
-    private SamplingManagerFutureStub(Channel channel, CallOptions callOptions) {
-      super(channel, callOptions);
-    }
-
-    @Override
-    protected SamplingManagerFutureStub build(Channel channel, CallOptions callOptions) {
-      return new SamplingManagerFutureStub(channel, callOptions);
-    }
-
-    @Override
-    public ListenableFuture<SamplingStrategyResponseUnMarshaler> export(
-        SamplingStrategyParametersMarshaler request) {
-      return ClientCalls.futureUnaryCall(
-          getChannel().newCall(getPostSpansMethod, getCallOptions()), request);
-    }
-  }
 
   private static byte[] readAllBytes(InputStream inputStream) throws IOException {
     int bufLen = 4 * 0x400; // 4KB

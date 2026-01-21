@@ -3,18 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.compression;
+package io.opentelemetry.sdk.common.export;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * An abstraction for compressing messages. Implementation MUST be thread safe as the same instance
- * is expected to be used many times and concurrently. Instances are usually singletons.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * A service provider interface (SPI) for compression. Implementation MUST be thread safe as the
+ * same instance is expected to be used many times and concurrently.
  */
 @ThreadSafe
 public interface Compressor {

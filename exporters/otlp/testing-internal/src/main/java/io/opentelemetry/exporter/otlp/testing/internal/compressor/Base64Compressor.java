@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal.compressor;
 
-import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.sdk.common.export.Compressor;
 import java.io.OutputStream;
 import java.util.Base64;
 
@@ -13,15 +13,9 @@ import java.util.Base64;
  * This exists to test the compressor SPI mechanism but does not actually compress data in any
  * useful way.
  */
-public class Base64Compressor implements Compressor {
+public final class Base64Compressor implements Compressor {
 
-  private static final Base64Compressor INSTANCE = new Base64Compressor();
-
-  private Base64Compressor() {}
-
-  public static Base64Compressor getInstance() {
-    return INSTANCE;
-  }
+  public Base64Compressor() {}
 
   @Override
   public String getEncoding() {

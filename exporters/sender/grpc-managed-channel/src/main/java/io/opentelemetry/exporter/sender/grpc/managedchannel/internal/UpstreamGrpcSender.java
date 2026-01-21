@@ -8,17 +8,29 @@ package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientInterceptors;
+import io.grpc.Compressor;
+import io.grpc.CompressorRegistry;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.ClientCalls;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
-import io.opentelemetry.exporter.internal.grpc.GrpcSender;
-import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.grpc.ImmutableGrpcResponse;
+import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
+import io.opentelemetry.sdk.common.export.GrpcSender;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -34,52 +46,123 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender<T> {
+public final class UpstreamGrpcSender implements GrpcSender {
 
-  private final MarshalerServiceStub<T, ?, ?> stub;
+  private static final MethodDescriptor.Marshaller<MessageWriter> REQUEST_MARSHALER =
+      new MethodDescriptor.Marshaller<MessageWriter>() {
+        @Override
+        public InputStream stream(MessageWriter value) {
+          return new MarshalerInputStream(value);
+        }
+
+        @Override
+        public MessageWriter parse(InputStream stream) {
+          throw new UnsupportedOperationException("Only for serializing");
+        }
+      };
+
+  private static final MethodDescriptor.Marshaller<byte[]> RESPONSE_MARSHALER =
+      new MethodDescriptor.Marshaller<byte[]>() {
+        @Override
+        public InputStream stream(byte[] value) {
+          throw new UnsupportedOperationException("Only for parsing");
+        }
+
+        @Override
+        public byte[] parse(InputStream stream) {
+          return new byte[] {}; // TODO: drain input to byte array
+        }
+      };
+
+  private final ManagedChannel channel;
+  private final MethodDescriptor<MessageWriter, byte[]> methodDescriptor;
+  @Nullable private final String compressorName;
   private final boolean shutdownChannel;
-  private final long timeoutNanos;
+  private final Duration timeout;
   private final Supplier<Map<String, List<String>>> headersSupplier;
   private final Executor executor;
 
   /** Creates a new {@link UpstreamGrpcSender}. */
   public UpstreamGrpcSender(
-      MarshalerServiceStub<T, ?, ?> stub,
+      ManagedChannel channel,
+      String fullMethodName,
+      @Nullable io.opentelemetry.sdk.common.export.Compressor compressor,
       boolean shutdownChannel,
-      long timeoutNanos,
+      Duration timeout,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable ExecutorService executorService) {
-    this.stub = stub;
+    this.channel = channel;
+    this.methodDescriptor =
+        MethodDescriptor.<MessageWriter, byte[]>newBuilder()
+            .setType(MethodDescriptor.MethodType.UNARY)
+            .setFullMethodName(fullMethodName)
+            .setRequestMarshaller(REQUEST_MARSHALER)
+            .setResponseMarshaller(RESPONSE_MARSHALER)
+            .build();
+    if (compressor != null) {
+      CompressorRegistry.getDefaultInstance()
+          .register(
+              new Compressor() {
+                @Override
+                public String getMessageEncoding() {
+                  return compressor.getEncoding();
+                }
+
+                @Override
+                public OutputStream compress(OutputStream os) throws IOException {
+                  return compressor.compress(os);
+                }
+              });
+      this.compressorName = compressor.getEncoding();
+    } else {
+      this.compressorName = null;
+    }
     this.shutdownChannel = shutdownChannel;
-    this.timeoutNanos = timeoutNanos;
+    this.timeout = timeout;
     this.headersSupplier = headersSupplier;
     this.executor = executorService == null ? MoreExecutors.directExecutor() : executorService;
   }
 
   @Override
-  public void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
-    MarshalerServiceStub<T, ?, ?> stub = this.stub;
-    if (timeoutNanos > 0) {
-      stub = stub.withDeadlineAfter(Duration.ofNanos(timeoutNanos));
+  public void send(
+      MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
+    CallOptions requestCallOptions = CallOptions.DEFAULT;
+    Channel requestChannel = channel;
+    if (timeout.toNanos() > 0) {
+      requestCallOptions = requestCallOptions.withDeadlineAfter(timeout);
     }
+    Metadata metadata = new Metadata();
     Map<String, List<String>> headers = headersSupplier.get();
     if (headers != null) {
-      Metadata metadata = new Metadata();
       for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
         metadata.put(
             Metadata.Key.of(entry.getKey(), Metadata.ASCII_STRING_MARSHALLER),
             String.join(",", entry.getValue()));
       }
-      stub = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata));
+      requestChannel =
+          ClientInterceptors.intercept(
+              requestChannel, MetadataUtils.newAttachHeadersInterceptor(metadata));
+
+      List<String> hostHeaders = headers.get("host");
+      if (hostHeaders != null && !hostHeaders.isEmpty()) {
+        requestCallOptions = requestCallOptions.withAuthority(hostHeaders.get(0));
+      }
+    }
+    if (this.compressorName != null) {
+      requestCallOptions = requestCallOptions.withCompression(compressorName);
     }
 
     Futures.addCallback(
-        stub.export(request),
-        new FutureCallback<Object>() {
+        ClientCalls.futureUnaryCall(
+            requestChannel.newCall(methodDescriptor, requestCallOptions), messageWriter),
+        new FutureCallback<byte[]>() {
           @Override
-          public void onSuccess(@Nullable Object unused) {
+          public void onSuccess(@Nullable byte[] result) {
             onResponse.accept(
-                GrpcResponse.create(Status.OK.getCode().value(), Status.OK.getDescription()));
+                ImmutableGrpcResponse.create(
+                    GrpcStatusCode.OK,
+                    Status.OK.getDescription(),
+                    result == null ? new byte[0] : result));
           }
 
           @Override
@@ -89,7 +172,10 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
               onError.accept(t);
             } else {
               onResponse.accept(
-                  GrpcResponse.create(status.getCode().value(), status.getDescription()));
+                  ImmutableGrpcResponse.create(
+                      GrpcStatusCode.fromValue(status.getCode().value()),
+                      status.getDescription(),
+                      new byte[0]));
             }
           }
         },
@@ -116,7 +202,6 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
   @Override
   public CompletableResultCode shutdown() {
     if (shutdownChannel) {
-      ManagedChannel channel = (ManagedChannel) stub.getChannel();
       channel.shutdownNow();
     }
     return CompletableResultCode.ofSuccess();

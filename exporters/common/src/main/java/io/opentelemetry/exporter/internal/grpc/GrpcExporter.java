@@ -5,17 +5,18 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE;
-import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNIMPLEMENTED;
-
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
+import io.opentelemetry.sdk.common.export.GrpcSender;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  * at any time.
  */
 @SuppressWarnings("checkstyle:JavadocMethod")
-public final class GrpcExporter<T extends Marshaler> {
+public final class GrpcExporter {
 
   private static final Logger internalLogger = Logger.getLogger(GrpcExporter.class.getName());
 
@@ -39,15 +40,15 @@ public final class GrpcExporter<T extends Marshaler> {
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final String type;
-  private final GrpcSender<T> grpcSender;
+  private final GrpcSender grpcSender;
   private final ExporterInstrumentation exporterMetrics;
 
   public GrpcExporter(
-      GrpcSender<T> grpcSender,
+      GrpcSender grpcSender,
       InternalTelemetryVersion internalTelemetryVersion,
       StandardComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
-      String endpoint) {
+      URI endpoint) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
     this.grpcSender = grpcSender;
     this.exporterMetrics =
@@ -55,7 +56,7 @@ public final class GrpcExporter<T extends Marshaler> {
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
   }
 
-  public CompletableResultCode export(T exportRequest, int numItems) {
+  public CompletableResultCode export(Marshaler exportRequest, int numItems) {
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }
@@ -66,7 +67,7 @@ public final class GrpcExporter<T extends Marshaler> {
     CompletableResultCode result = new CompletableResultCode();
 
     grpcSender.send(
-        exportRequest,
+        exportRequest.toBinaryMessageWriter(),
         grpcResponse -> onResponse(result, metricRecording, grpcResponse),
         throwable -> onError(result, metricRecording, throwable));
 
@@ -77,25 +78,25 @@ public final class GrpcExporter<T extends Marshaler> {
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
       GrpcResponse grpcResponse) {
-    int statusCode = grpcResponse.grpcStatusValue();
+    GrpcStatusCode statusCode = grpcResponse.getStatusCode();
 
-    metricRecording.setGrpcStatusCode(statusCode);
+    metricRecording.setGrpcStatusCode(statusCode.getValue());
 
-    if (statusCode == 0) {
+    if (statusCode == GrpcStatusCode.OK) {
       metricRecording.finishSuccessful();
       result.succeed();
       return;
     }
 
-    metricRecording.finishFailed(String.valueOf(statusCode));
+    metricRecording.finishFailed(String.valueOf(statusCode.getValue()));
     switch (statusCode) {
-      case GRPC_STATUS_UNIMPLEMENTED:
+      case UNIMPLEMENTED:
         if (loggedUnimplemented.compareAndSet(false, true)) {
           GrpcExporterUtil.logUnimplemented(
-              internalLogger, type, grpcResponse.grpcStatusDescription());
+              internalLogger, type, grpcResponse.getStatusDescription());
         }
         break;
-      case GRPC_STATUS_UNAVAILABLE:
+      case UNAVAILABLE:
         logger.log(
             Level.SEVERE,
             "Failed to export "
@@ -103,7 +104,7 @@ public final class GrpcExporter<T extends Marshaler> {
                 + "s. Server is UNAVAILABLE. "
                 + "Make sure your collector is running and reachable from this network. "
                 + "Full error message:"
-                + grpcResponse.grpcStatusDescription());
+                + grpcResponse.getStatusDescription());
         break;
       default:
         logger.log(
@@ -111,9 +112,9 @@ public final class GrpcExporter<T extends Marshaler> {
             "Failed to export "
                 + type
                 + "s. Server responded with gRPC status code "
-                + statusCode
+                + statusCode.getValue()
                 + ". Error message: "
-                + grpcResponse.grpcStatusDescription());
+                + grpcResponse.getStatusDescription());
         break;
     }
     result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));

@@ -199,7 +199,7 @@ public final class JaegerRemoteSamplerBuilder {
       return new UpstreamGrpcService(
           "remoteSampling",
           channel,
-          MarshallerRemoteSamplerServiceGrpc.newFutureStub(channel),
+          MarshallerRemoteSamplerServiceGrpc.getPostSpansMethod,
           TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS));
     }
   }

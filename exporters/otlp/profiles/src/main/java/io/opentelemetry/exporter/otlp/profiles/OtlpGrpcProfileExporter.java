@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.profiles;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collection;
 import java.util.StringJoiner;
@@ -17,8 +16,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public class OtlpGrpcProfileExporter implements ProfileExporter {
 
-  private final GrpcExporterBuilder<Marshaler> builder;
-  private final GrpcExporter<Marshaler> delegate;
+  private final GrpcExporterBuilder builder;
+  private final GrpcExporter delegate;
 
   /**
    * Returns a new {@link OtlpGrpcProfileExporter} using the default values.
@@ -41,8 +40,7 @@ public class OtlpGrpcProfileExporter implements ProfileExporter {
     return new OtlpGrpcProfilesExporterBuilder();
   }
 
-  OtlpGrpcProfileExporter(
-      GrpcExporterBuilder<Marshaler> builder, GrpcExporter<Marshaler> delegate) {
+  OtlpGrpcProfileExporter(GrpcExporterBuilder builder, GrpcExporter delegate) {
     this.builder = builder;
     this.delegate = delegate;
   }

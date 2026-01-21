@@ -9,9 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -20,12 +19,12 @@ import org.junit.jupiter.api.Test;
 
 class HttpExporterBuilderTest {
 
-  private HttpExporterBuilder<Marshaler> builder;
+  private HttpExporterBuilder builder;
 
   @BeforeEach
   void setUp() {
     builder =
-        new HttpExporterBuilder<>(
+        new HttpExporterBuilder(
             StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost:4318");
   }
 
@@ -43,14 +42,14 @@ class HttpExporterBuilderTest {
 
   @Test
   void compressionGzip() {
-    builder.setCompression(GzipCompressor.getInstance());
+    builder.setCompression(new GzipCompressor());
 
-    assertThat(builder).extracting("compressor").isEqualTo(GzipCompressor.getInstance());
+    assertThat(builder).extracting("compressor").isInstanceOf(GzipCompressor.class);
   }
 
   @Test
   void compressionEnabledAndDisabled() {
-    builder.setCompression(GzipCompressor.getInstance()).setCompression((Compressor) null);
+    builder.setCompression(new GzipCompressor()).setCompression((Compressor) null);
 
     assertThat(builder).extracting("compressor").isNull();
   }
@@ -66,7 +65,7 @@ class HttpExporterBuilderTest {
   void compressionString_gzip() {
     builder.setCompression("gzip");
 
-    assertThat(builder).extracting("compressor").isEqualTo(GzipCompressor.getInstance());
+    assertThat(builder).extracting("compressor").isInstanceOf(GzipCompressor.class);
   }
 
   @Test
@@ -78,14 +77,14 @@ class HttpExporterBuilderTest {
 
   @Test
   void compressionString_usesServiceClassLoader() {
-    // Create a class loader that cannot load CompressorProvider services
+    // Create a class loader that cannot load Compressor services
     ComponentLoader emptyComponentLoader =
         ComponentLoader.forClassLoader(new URLClassLoader(new URL[0], null));
     builder.setComponentLoader(emptyComponentLoader);
 
     // This should still work because gzip compressor is hardcoded
     builder.setCompression("gzip");
-    assertThat(builder).extracting("compressor").isEqualTo(GzipCompressor.getInstance());
+    assertThat(builder).extracting("compressor").isInstanceOf(GzipCompressor.class);
 
     // This should still work because "none" doesn't require loading services
     builder.setCompression("none");

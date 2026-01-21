@@ -6,10 +6,12 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import com.google.common.util.concurrent.Futures;
+import io.grpc.CallOptions;
 import io.grpc.ManagedChannel;
+import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
-import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.time.Duration;
 import java.util.Objects;
@@ -22,38 +24,40 @@ final class UpstreamGrpcService implements GrpcService {
 
   private final String type;
   private final ManagedChannel managedChannel;
-  private final MarshalerServiceStub<
-          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler, ?>
-      stub;
+  private final MethodDescriptor<
+          SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
+      methodDescriptor;
   private final long timeoutNanos;
 
   /** Creates a new {@link UpstreamGrpcService}. */
   UpstreamGrpcService(
       String type,
       ManagedChannel channel,
-      MarshalerServiceStub<
-              SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler, ?>
-          stub,
+      MethodDescriptor<SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler>
+          methodDescriptor,
       long timeoutNanos) {
     this.type = type;
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
-    this.stub = stub;
+    this.methodDescriptor = methodDescriptor;
   }
 
   @Override
   public SamplingStrategyResponseUnMarshaler execute(
       SamplingStrategyParametersMarshaler exportRequest,
       SamplingStrategyResponseUnMarshaler responseUnmarshaller) {
-    MarshalerServiceStub<
-            SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler, ?>
-        stub = this.stub;
+
+    CallOptions callOptions = CallOptions.DEFAULT;
+
     if (timeoutNanos > 0) {
-      stub = stub.withDeadlineAfter(Duration.ofNanos(timeoutNanos));
+      callOptions = callOptions.withDeadlineAfter(Duration.ofNanos(timeoutNanos));
     }
 
     try {
-      return Objects.requireNonNull(Futures.getUnchecked(stub.export(exportRequest)));
+      return Objects.requireNonNull(
+          Futures.getUnchecked(
+              ClientCalls.futureUnaryCall(
+                  managedChannel.newCall(methodDescriptor, callOptions), exportRequest)));
     } catch (Throwable t) {
       Status status = Status.fromThrowable(t);
 

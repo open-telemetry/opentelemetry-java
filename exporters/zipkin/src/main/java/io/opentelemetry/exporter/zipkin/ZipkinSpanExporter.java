@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -77,7 +78,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             internalTelemetryVersion,
             meterProviderSupplier,
             ComponentId.generateLazy(exporterType),
-            endpoint);
+            URI.create(endpoint));
   }
 
   @Override

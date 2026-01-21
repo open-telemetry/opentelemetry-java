@@ -14,14 +14,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
@@ -59,11 +60,10 @@ class JdkHttpSenderTest {
         new JdkHttpSender(
             mockHttpClient,
             // Connecting to a non-routable IP address to trigger connection timeout
-            "http://10.255.255.1",
-            null,
-            false,
+            URI.create("http://10.255.255.1"),
             "text/plain",
-            Duration.ofSeconds(10).toNanos(),
+            null,
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
             null);
@@ -98,7 +98,7 @@ class JdkHttpSenderTest {
 
   @Test
   void sendInternal_RetryableConnectTimeoutException() throws IOException, InterruptedException {
-    assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
+    assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
         .satisfies(
             e ->
                 assertThat((e instanceof HttpConnectTimeoutException) || (e instanceof IOException))
@@ -115,16 +115,15 @@ class JdkHttpSenderTest {
             // Connecting to localhost on an unused port address to trigger
             // java.net.ConnectException (or java.net.http.HttpConnectTimeoutException on linux java
             // 11+)
-            "http://localhost:" + freePort(),
-            null,
-            false,
+            URI.create("http://localhost:" + freePort()),
             "text/plain",
-            Duration.ofSeconds(10).toNanos(),
+            null,
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
             null);
 
-    assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
+    assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
         .satisfies(
             e ->
                 assertThat(
@@ -147,7 +146,7 @@ class JdkHttpSenderTest {
   void sendInternal_RetryableIoException() throws IOException, InterruptedException {
     doThrow(new IOException("error!")).when(mockHttpClient).send(any(), any());
 
-    assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
+    assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
         .isInstanceOf(IOException.class)
         .hasMessage("error!");
 
@@ -158,7 +157,7 @@ class JdkHttpSenderTest {
   void sendInternal_NonRetryableException() throws IOException, InterruptedException {
     doThrow(new SSLException("unknown error")).when(mockHttpClient).send(any(), any());
 
-    assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
+    assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
         .isInstanceOf(IOException.class)
         .hasMessage("unknown error");
 
@@ -169,12 +168,11 @@ class JdkHttpSenderTest {
   void connectTimeout() {
     sender =
         new JdkHttpSender(
-            "http://localhost",
-            null,
-            false,
+            URI.create("http://localhost"),
             "text/plain",
-            1,
-            TimeUnit.SECONDS.toNanos(10),
+            null,
+            Duration.ofNanos(1),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             null,
             null,
@@ -188,14 +186,13 @@ class JdkHttpSenderTest {
                 assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
   }
 
-  private static class NoOpMarshaler extends Marshaler {
+  private static class NoOpRequestBodyWriter implements MessageWriter {
+    @Override
+    public void writeMessage(OutputStream output) {}
 
     @Override
-    public int getBinarySerializedSize() {
+    public int getContentLength() {
       return 0;
     }
-
-    @Override
-    protected void writeTo(Serializer output) {}
   }
 }

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,13 +24,13 @@ public final class RetryUtil {
 
   static {
     Set<Integer> retryableGrpcStatusCodes = new HashSet<>();
-    retryableGrpcStatusCodes.add(GrpcExporterUtil.GRPC_STATUS_CANCELLED);
-    retryableGrpcStatusCodes.add(GrpcExporterUtil.GRPC_STATUS_DEADLINE_EXCEEDED);
-    retryableGrpcStatusCodes.add(GrpcExporterUtil.GRPC_STATUS_RESOURCE_EXHAUSTED);
-    retryableGrpcStatusCodes.add(GrpcExporterUtil.GRPC_STATUS_ABORTED);
-    retryableGrpcStatusCodes.add(GrpcExporterUtil.GRPC_STATUS_OUT_OF_RANGE);
-    retryableGrpcStatusCodes.add(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE);
-    retryableGrpcStatusCodes.add(GrpcExporterUtil.GRPC_STATUS_DATA_LOSS);
+    retryableGrpcStatusCodes.add(GrpcStatusCode.CANCELLED.getValue());
+    retryableGrpcStatusCodes.add(GrpcStatusCode.DEADLINE_EXCEEDED.getValue());
+    retryableGrpcStatusCodes.add(GrpcStatusCode.RESOURCE_EXHAUSTED.getValue());
+    retryableGrpcStatusCodes.add(GrpcStatusCode.ABORTED.getValue());
+    retryableGrpcStatusCodes.add(GrpcStatusCode.OUT_OF_RANGE.getValue());
+    retryableGrpcStatusCodes.add(GrpcStatusCode.UNAVAILABLE.getValue());
+    retryableGrpcStatusCodes.add(GrpcStatusCode.DATA_LOSS.getValue());
     RETRYABLE_GRPC_STATUS_CODES =
         Collections.unmodifiableSet(
             retryableGrpcStatusCodes.stream().map(Object::toString).collect(Collectors.toSet()));

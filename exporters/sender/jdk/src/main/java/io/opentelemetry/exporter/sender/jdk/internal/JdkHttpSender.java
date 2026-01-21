@@ -7,10 +7,10 @@ package io.opentelemetry.exporter.sender.jdk.internal;
 
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.http.HttpSender;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.HttpSender;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -66,11 +65,10 @@ public final class JdkHttpSender implements HttpSender {
   private final boolean managedExecutor;
   private final ExecutorService executorService;
   private final HttpClient client;
-  private final URI uri;
-  @Nullable private final Compressor compressor;
-  private final boolean exportAsJson;
+  private final URI endpoint;
   private final String contentType;
-  private final long timeoutNanos;
+  @Nullable private final Compressor compressor;
+  private final Duration timeout;
   private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
   private final Predicate<IOException> retryExceptionPredicate;
@@ -78,24 +76,18 @@ public final class JdkHttpSender implements HttpSender {
   // Visible for testing
   JdkHttpSender(
       HttpClient client,
-      String endpoint,
-      @Nullable Compressor compressor,
-      boolean exportAsJson,
+      URI endpoint,
       String contentType,
-      long timeoutNanos,
+      @Nullable Compressor compressor,
+      Duration timeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable ExecutorService executorService) {
     this.client = client;
-    try {
-      this.uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException(e);
-    }
-    this.compressor = compressor;
-    this.exportAsJson = exportAsJson;
+    this.endpoint = endpoint;
     this.contentType = contentType;
-    this.timeoutNanos = timeoutNanos;
+    this.compressor = compressor;
+    this.timeout = timeout;
     this.headerSupplier = headerSupplier;
     this.retryPolicy = retryPolicy;
     this.retryExceptionPredicate =
@@ -112,24 +104,22 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   JdkHttpSender(
-      String endpoint,
-      @Nullable Compressor compressor,
-      boolean exportAsJson,
+      URI endpoint,
       String contentType,
-      long timeoutNanos,
-      long connectTimeoutNanos,
+      @Nullable Compressor compressor,
+      Duration timeout,
+      Duration connectTimeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable ProxyOptions proxyOptions,
       @Nullable SSLContext sslContext,
       @Nullable ExecutorService executorService) {
     this(
-        configureClient(sslContext, connectTimeoutNanos, proxyOptions),
+        configureClient(sslContext, connectTimeout, proxyOptions),
         endpoint,
-        compressor,
-        exportAsJson,
         contentType,
-        timeoutNanos,
+        compressor,
+        timeout,
         headerSupplier,
         retryPolicy,
         executorService);
@@ -147,10 +137,9 @@ public final class JdkHttpSender implements HttpSender {
 
   private static HttpClient configureClient(
       @Nullable SSLContext sslContext,
-      long connectionTimeoutNanos,
+      Duration connectTimeout,
       @Nullable ProxyOptions proxyOptions) {
-    HttpClient.Builder builder =
-        HttpClient.newBuilder().connectTimeout(Duration.ofNanos(connectionTimeoutNanos));
+    HttpClient.Builder builder = HttpClient.newBuilder().connectTimeout(connectTimeout);
     if (sslContext != null) {
       builder.sslContext(sslContext);
     }
@@ -162,15 +151,14 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public void send(
-      Marshaler marshaler,
-      int contentLength,
-      Consumer<Response> onResponse,
+      MessageWriter messageWriter,
+      Consumer<io.opentelemetry.sdk.common.export.HttpResponse> onResponse,
       Consumer<Throwable> onError) {
     CompletableFuture<HttpResponse<byte[]>> unused =
         CompletableFuture.supplyAsync(
                 () -> {
                   try {
-                    return sendInternal(marshaler);
+                    return sendInternal(messageWriter);
                   } catch (IOException e) {
                     throw new UncheckedIOException(e);
                   }
@@ -187,10 +175,9 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   // Visible for testing
-  HttpResponse<byte[]> sendInternal(Marshaler marshaler) throws IOException {
+  HttpResponse<byte[]> sendInternal(MessageWriter requestBodyWriter) throws IOException {
     long startTimeNanos = System.nanoTime();
-    HttpRequest.Builder requestBuilder =
-        HttpRequest.newBuilder().uri(uri).timeout(Duration.ofNanos(timeoutNanos));
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(endpoint).timeout(timeout);
     Map<String, List<String>> headers = headerSupplier.get();
     if (headers != null) {
       headers.forEach((key, values) -> values.forEach(value -> requestBuilder.header(key, value)));
@@ -202,12 +189,12 @@ public final class JdkHttpSender implements HttpSender {
     if (compressor != null) {
       requestBuilder.header("Content-Encoding", compressor.getEncoding());
       try (OutputStream compressed = compressor.compress(os)) {
-        write(marshaler, compressed);
+        requestBodyWriter.writeMessage(compressed);
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }
     } else {
-      write(marshaler, os);
+      requestBodyWriter.writeMessage(os);
     }
 
     ByteBufferPool byteBufferPool = threadLocalByteBufPool.get();
@@ -238,13 +225,13 @@ public final class JdkHttpSender implements HttpSender {
         }
         // If after sleeping we've exceeded timeoutNanos, break out and return
         // response or throw
-        if ((System.nanoTime() - startTimeNanos) >= timeoutNanos) {
+        if ((System.nanoTime() - startTimeNanos) >= timeout.toNanos()) {
           break;
         }
       }
       httpResponse = null;
       exception = null;
-      requestBuilder.timeout(Duration.ofNanos(timeoutNanos - (System.nanoTime() - startTimeNanos)));
+      requestBuilder.timeout(timeout.minusNanos(System.nanoTime() - startTimeNanos));
       try {
         httpResponse = sendRequest(requestBuilder, byteBufferPool);
         boolean retryable = retryableStatusCodes.contains(httpResponse.statusCode());
@@ -297,14 +284,6 @@ public final class JdkHttpSender implements HttpSender {
     return joiner.toString();
   }
 
-  private void write(Marshaler marshaler, OutputStream os) throws IOException {
-    if (exportAsJson) {
-      marshaler.writeJsonTo(os);
-    } else {
-      marshaler.writeBinaryTo(os);
-    }
-  }
-
   private HttpResponse<byte[]> sendRequest(
       HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
@@ -340,20 +319,21 @@ public final class JdkHttpSender implements HttpSender {
     }
   }
 
-  private static Response toHttpResponse(HttpResponse<byte[]> response) {
-    return new Response() {
+  private static io.opentelemetry.sdk.common.export.HttpResponse toHttpResponse(
+      HttpResponse<byte[]> response) {
+    return new io.opentelemetry.sdk.common.export.HttpResponse() {
       @Override
-      public int statusCode() {
+      public int getStatusCode() {
         return response.statusCode();
       }
 
       @Override
-      public String statusMessage() {
+      public String getStatusMessage() {
         return String.valueOf(response.statusCode());
       }
 
       @Override
-      public byte[] responseBody() {
+      public byte[] getResponseBody() {
         return response.body();
       }
     };

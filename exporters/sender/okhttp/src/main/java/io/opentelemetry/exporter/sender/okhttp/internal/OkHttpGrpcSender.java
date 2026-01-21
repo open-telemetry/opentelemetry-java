@@ -25,12 +25,12 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
-import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
-import io.opentelemetry.exporter.internal.grpc.GrpcSender;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
+import io.opentelemetry.sdk.common.export.GrpcSender;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -59,6 +59,7 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * A {@link GrpcSender} which uses OkHttp instead of grpc-java.
@@ -66,7 +67,7 @@ import okhttp3.Response;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T> {
+public final class OkHttpGrpcSender implements GrpcSender {
 
   private static final Logger logger = Logger.getLogger(OkHttpGrpcSender.class.getName());
 
@@ -76,25 +77,23 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
-  private final Supplier<Map<String, List<String>>> headersSupplier;
   @Nullable private final Compressor compressor;
+  private final Supplier<Map<String, List<String>>> headersSupplier;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   @SuppressWarnings("TooManyParameters")
   public OkHttpGrpcSender(
       String endpoint,
       @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectTimeoutNanos,
+      Duration timeout,
+      Duration connectTimeout,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService) {
-    int callTimeoutMillis =
-        (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
-    int connectTimeoutMillis =
-        (int) Math.min(Duration.ofNanos(connectTimeoutNanos).toMillis(), Integer.MAX_VALUE);
+    int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
+    int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
     Dispatcher dispatcher;
     if (executorService == null) {
@@ -127,13 +126,14 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
     }
 
     this.client = clientBuilder.build();
+    this.compressor = compressor;
     this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
-    this.compressor = compressor;
   }
 
   @Override
-  public void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
+  public void send(
+      MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
     Map<String, List<String>> headers = headersSupplier.get();
@@ -145,7 +145,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
     if (compressor != null) {
       requestBuilder.addHeader("grpc-encoding", compressor.getEncoding());
     }
-    RequestBody requestBody = new GrpcRequestBody(request, compressor);
+    RequestBody requestBody = new GrpcRequestBody(messageWriter, compressor);
     requestBuilder.post(requestBody);
 
     InstrumentationUtil.suppressInstrumentation(
@@ -161,31 +161,41 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
 
                       @Override
                       public void onResponse(Call call, Response response) {
-                        // Response body is empty but must be consumed to access trailers.
-                        try {
-                          response.body().bytes();
-                        } catch (IOException e) {
-                          onError.accept(
-                              new RuntimeException("Could not consume server response", e));
-                          return;
-                        }
+                        try (ResponseBody body = response.body()) {
+                          // Must consume body before accessing trailers
+                          byte[] bodyBytes = null;
+                          try {
+                            bodyBytes = body.bytes();
+                          } catch (IOException e) {
+                            bodyBytes = new byte[0];
+                            logger.log(Level.WARNING, "Failed to read response body", e);
+                          }
+                          byte[] resolvedBodyBytes = bodyBytes;
+                          GrpcStatusCode status = grpcStatus(response);
+                          String description = grpcMessage(response);
+                          onResponse.accept(
+                              new GrpcResponse() {
+                                @Override
+                                public GrpcStatusCode getStatusCode() {
+                                  return status;
+                                }
 
-                        String status = grpcStatus(response);
+                                @Override
+                                public String getStatusDescription() {
+                                  return description;
+                                }
 
-                        String description = grpcMessage(response);
-                        int statusCode;
-                        try {
-                          statusCode = Integer.parseInt(status);
-                        } catch (NumberFormatException ex) {
-                          statusCode = GrpcExporterUtil.GRPC_STATUS_UNKNOWN;
+                                @Override
+                                public byte[] getResponseMessage() {
+                                  return resolvedBodyBytes;
+                                }
+                              });
                         }
-                        onResponse.accept(GrpcResponse.create(statusCode, description));
                       }
                     }));
   }
 
-  @Nullable
-  private static String grpcStatus(Response response) {
+  private static GrpcStatusCode grpcStatus(Response response) {
     // Status can either be in the headers or trailers depending on error
     String grpcStatus = response.header(GRPC_STATUS);
     if (grpcStatus == null) {
@@ -193,10 +203,17 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
         grpcStatus = response.trailers().get(GRPC_STATUS);
       } catch (IOException e) {
         // Could not read a status, this generally means the HTTP status is the error.
-        return null;
+        return GrpcStatusCode.UNKNOWN;
       }
     }
-    return grpcStatus;
+    if (grpcStatus == null) {
+      return GrpcStatusCode.UNKNOWN;
+    }
+    try {
+      return GrpcStatusCode.fromValue(Integer.parseInt(grpcStatus));
+    } catch (NumberFormatException ex) {
+      return GrpcStatusCode.UNKNOWN;
+    }
   }
 
   private static String grpcMessage(Response response) {

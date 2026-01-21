@@ -29,7 +29,7 @@ class HttpExporterTest {
   void build_multipleSendersNoConfiguration() {
     Assertions.assertThatCode(
             () ->
-                new HttpExporterBuilder<>(
+                new HttpExporterBuilder(
                         StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
                         "http://localhost")
                     .build())
@@ -37,7 +37,7 @@ class HttpExporterTest {
 
     logCapturer.assertContains(
         "Multiple HttpSenderProvider found. Please include only one, "
-            + "or specify preference setting io.opentelemetry.exporter.internal.http.HttpSenderProvider "
+            + "or specify preference setting io.opentelemetry.sdk.common.export.HttpSenderProvider "
             + "to the FQCN of the preferred provider.");
   }
 
@@ -45,9 +45,9 @@ class HttpExporterTest {
   @SetSystemProperty(
       key = "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
       value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
-  void build_multipleSendersWithJdk() {
+  void build_configureUsingOldSpi() {
     assertThat(
-            new HttpExporterBuilder<>(
+            new HttpExporterBuilder(
                     StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
                 .build())
         .extracting("httpSender")
@@ -58,11 +58,26 @@ class HttpExporterTest {
 
   @Test
   @SetSystemProperty(
-      key = "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
+      key = "io.opentelemetry.sdk.common.export.HttpSenderProvider",
+      value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
+  void build_multipleSendersWithJdk() {
+    assertThat(
+            new HttpExporterBuilder(
+                    StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
+                .build())
+        .extracting("httpSender")
+        .isInstanceOf(JdkHttpSender.class);
+
+    assertThat(logCapturer.getEvents()).isEmpty();
+  }
+
+  @Test
+  @SetSystemProperty(
+      key = "io.opentelemetry.sdk.common.export.HttpSenderProvider",
       value = "io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSenderProvider")
   void build_multipleSendersWithOkHttp() {
     assertThat(
-            new HttpExporterBuilder<>(
+            new HttpExporterBuilder(
                     StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
                 .build())
         .extracting("httpSender")
@@ -72,19 +87,17 @@ class HttpExporterTest {
   }
 
   @Test
-  @SetSystemProperty(
-      key = "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
-      value = "foo")
+  @SetSystemProperty(key = "io.opentelemetry.sdk.common.export.HttpSenderProvider", value = "foo")
   void build_multipleSendersNoMatch() {
     assertThatThrownBy(
             () ->
-                new HttpExporterBuilder<>(
+                new HttpExporterBuilder(
                         StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
                         "http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
-            "No HttpSenderProvider matched configured io.opentelemetry.exporter.internal.http.HttpSenderProvider: foo");
+            "No HttpSenderProvider matched configured io.opentelemetry.sdk.common.export.HttpSenderProvider: foo");
 
     assertThat(logCapturer.getEvents()).isEmpty();
   }
