@@ -250,6 +250,30 @@ class OpenTelemetryExtensionTest {
   }
 
   @Test
+  void afterAllNestedOnly() {
+    // Demonstrate specifically that Nested tests do not reset extension sdk
+    OpenTelemetryExtension extension = OpenTelemetryExtension.create();
+
+    ExtensionContext context = spy(ExtensionContext.class);
+    when(context.getParent()).thenReturn(Optional.empty());
+
+    extension.beforeAll(context);
+
+    Meter meter = extension.getOpenTelemetry().getMeter("meter");
+    Tracer tracer = extension.getOpenTelemetry().getTracer("tracer");
+
+    extension.afterAll(context);
+
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(OpenTelemetry.noop());
+
+    // GlobalTelemetry was reset, but extension's sdk was not closed
+    meter.counterBuilder("counter").build().add(10);
+    tracer.spanBuilder("span").startSpan().end();
+    assertThat(extension.getMetrics()).isNotEmpty();
+    assertThat(extension.getSpans()).isNotEmpty();
+  }
+
+  @Test
   void baggageAndTracePropagation() {
     OpenTelemetryExtension extension = OpenTelemetryExtension.create();
     Span span = extension.getOpenTelemetry().getTracer("test").spanBuilder("test").startSpan();
