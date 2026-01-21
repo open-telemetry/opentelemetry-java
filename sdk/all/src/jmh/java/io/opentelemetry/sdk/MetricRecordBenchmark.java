@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk;
 
 import static io.opentelemetry.sdk.metrics.InstrumentType.COUNTER;
 import static io.opentelemetry.sdk.metrics.InstrumentType.GAUGE;
@@ -15,8 +15,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -49,10 +53,10 @@ import org.openjdk.jmh.annotations.Warmup;
  * be the case until otel adds support for <a
  * href="https://github.com/open-telemetry/opentelemetry-specification/issues/4126">bound
  * instruments</a>. The cardinality dictates the size of this map, which has some impact on
- * performance. However, by far the dominant bottleneck is contention. That is, how many threads are
- * simultaneously trying to record to the same series? Increasing the threads increases contention.
- * Increasing cardinality decreases contention, as the threads are now spreading their record
- * activities over more distinct series. The highest contention scenario is cardinality=1,
+ * performance. However, by far the dominant bottleneck is contention. That is, the number of
+ * threads simultaneously trying to record to the same series. Increasing the threads increases
+ * contention. Increasing cardinality decreases contention, as the threads are now spreading their
+ * record activities over more distinct series. The highest contention scenario is cardinality=1,
  * threads=4. Any scenario with threads=1 has zero contention.
  *
  * <p>It's useful to characterize the performance of the metrics system under contention, as some
@@ -103,7 +107,6 @@ public class MetricRecordBenchmark {
     Instrument instrument;
     List<Long> measurements;
     List<Attributes> attributesList;
-    MetricsTestOperationBuilder.Operation op;
     Span span;
     io.opentelemetry.context.Scope contextScope;
 

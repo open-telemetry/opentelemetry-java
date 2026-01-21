@@ -42,10 +42,15 @@ jobs:
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
+      # TODO (jack-berg): Select or build appropriate benchmarks for other key areas:
+      # - Log SDK record & export
+      # - Trace SDK record & export
+      # - Metric SDK export
+      # - Noop implementation
       - name: Run Benchmark
         run: |
-          cd sdk/trace/build
-          java -jar libs/opentelemetry-sdk-trace-*-jmh.jar -rf json SpanBenchmark SpanPipelineBenchmark ExporterBenchmark
+          cd sdk/all/build
+          java -jar libs/opentelemetry-sdk-*-jmh.jar -rf json MetricRecordBenchmark
 
       - name: Use CLA approved github bot
         run: .github/scripts/use-cla-approved-bot.sh
@@ -54,7 +59,7 @@ jobs:
         uses: benchmark-action/github-action-benchmark@4bdcce38c94cec68da58d012ac24b7b1155efe8b # v1.20.7
         with:
           tool: 'jmh'
-          output-file-path: sdk/trace/build/jmh-result.json
+          output-file-path: sdk/all/build/jmh-result.json
           gh-pages-branch: benchmarks
           github-token: ${{ secrets.GITHUB_TOKEN }}
           benchmark-data-dir-path: "benchmarks"
