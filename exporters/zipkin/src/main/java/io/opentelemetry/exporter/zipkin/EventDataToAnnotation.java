@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.common.ValueType;
 import io.opentelemetry.sdk.trace.data.EventData;
 import java.util.List;
 
@@ -45,8 +46,31 @@ final class EventDataToAnnotation {
           .stream().map(EventDataToAnnotation::toValue).collect(joining(",", "[", "]"));
     }
     if (o instanceof Value) {
-      return ((Value<?>) o).asString();
+      return toJsonValue((Value<?>) o);
     }
     return String.valueOf(o);
+  }
+
+  // note: simple types (STRING, BOOLEAN, LONG, DOUBLE) won't actually come here
+  // but handling here for completeness
+  private static String toJsonValue(Value<?> value) {
+    ValueType type = value.getType();
+    switch (type) {
+      case STRING:
+      case BYTES:
+        // For JSON encoding, strings and bytes need to be quoted
+        return "\"" + value.asString() + "\"";
+      case EMPTY:
+        // For JSON encoding, empty values should be null
+        return "null";
+      case ARRAY:
+      case KEY_VALUE_LIST:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        // Arrays, maps, and primitives are already valid JSON from asString()
+        return value.asString();
+    }
+    throw new IllegalStateException("Unknown value type: " + type);
   }
 }

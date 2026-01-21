@@ -115,7 +115,7 @@ class LoggingSpanExporterTest {
         .isEqualTo(
             "'testSpan1' : 12345678876543211234567887654321 8765432112345678 "
                 + "INTERNAL [tracer: tracer1:] "
-                + "{animal=\"cat\", bytes=ValueBytes{\"AQID\"}, empty=ValueEmpty{}, "
+                + "{animal=\"cat\", bytes=ValueBytes{AQID}, empty=ValueEmpty{}, "
                 + "heterogeneousArray=ValueArray{[\"string\",123]}, lives=9, "
                 + "map=KeyValueList{{\"nested\":\"value\"}}}");
     assertThat(logs.getEvents().get(1).getMessage())

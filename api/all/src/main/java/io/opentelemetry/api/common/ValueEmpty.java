@@ -27,7 +27,7 @@ final class ValueEmpty implements Value<Empty> {
 
   @Override
   public String asString() {
-    return "null";
+    return "";
   }
 
   @Override

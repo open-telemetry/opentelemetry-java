@@ -7,6 +7,7 @@ package io.opentelemetry.api.common;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Objects;
 
 final class ValueBytes implements Value<ByteBuffer> {
@@ -34,9 +35,8 @@ final class ValueBytes implements Value<ByteBuffer> {
 
   @Override
   public String asString() {
-    StringBuilder sb = new StringBuilder();
-    ProtoJson.append(sb, this);
-    return sb.toString();
+    byte[] bytes = raw;
+    return Base64.getEncoder().encodeToString(bytes);
   }
 
   @Override

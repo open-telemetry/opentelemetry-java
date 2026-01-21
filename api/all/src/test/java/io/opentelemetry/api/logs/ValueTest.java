@@ -172,7 +172,7 @@ class ValueTest {
   private static Stream<Arguments> asStringArgs() {
     return Stream.of(
         // primitives
-        arguments(Value.of("str"), "\"str\""),
+        arguments(Value.of("str"), "str"),
         arguments(Value.of(true), "true"),
         arguments(Value.of(1), "1"),
         arguments(Value.of(1.1), "1.1"),
@@ -201,8 +201,7 @@ class ValueTest {
                     "child", Value.of(Collections.singletonMap("grandchild", Value.of("str"))))),
             "{\"child\":{\"grandchild\":\"str\"}}"),
         // bytes
-        arguments(
-            Value.of("hello world".getBytes(StandardCharsets.UTF_8)), "\"aGVsbG8gd29ybGQ=\""));
+        arguments(Value.of("hello world".getBytes(StandardCharsets.UTF_8)), "aGVsbG8gd29ybGQ="));
   }
 
   @Test
@@ -210,9 +209,7 @@ class ValueTest {
     // TODO: add more test cases
     String str = "hello world";
     String base64Encoded = Value.of(str.getBytes(StandardCharsets.UTF_8)).asString();
-    // Remove surrounding quotes from JSON string
-    String base64Value = base64Encoded.substring(1, base64Encoded.length() - 1);
-    byte[] decodedBytes = Base64.getDecoder().decode(base64Value);
+    byte[] decodedBytes = Base64.getDecoder().decode(base64Encoded);
     assertThat(new String(decodedBytes, StandardCharsets.UTF_8)).isEqualTo(str);
   }
 }

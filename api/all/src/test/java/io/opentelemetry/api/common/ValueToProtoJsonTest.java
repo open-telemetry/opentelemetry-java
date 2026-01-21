@@ -26,13 +26,13 @@ class ValueToProtoJsonTest {
 
   private static Stream<Arguments> stringValueProvider() {
     return Stream.of(
-        Arguments.of("hello", "\"hello\""),
-        Arguments.of("", "\"\""),
-        Arguments.of("line1\nline2\ttab", "\"line1\\nline2\\ttab\""),
-        Arguments.of("say \"hello\"", "\"say \\\"hello\\\"\""),
-        Arguments.of("path\\to\\file", "\"path\\\\to\\\\file\""),
-        Arguments.of("\u0000\u0001\u001F", "\"\\u0000\\u0001\\u001f\""),
-        Arguments.of("Hello 世界 🌍", "\"Hello 世界 🌍\""));
+        Arguments.of("hello", "hello"),
+        Arguments.of("", ""),
+        Arguments.of("line1\nline2\ttab", "line1\nline2\ttab"),
+        Arguments.of("say \"hello\"", "say \"hello\""),
+        Arguments.of("path\\to\\file", "path\\to\\file"),
+        Arguments.of("\u0000\u0001\u001F", "\u0000\u0001\u001F"),
+        Arguments.of("Hello 世界 🌍", "Hello 世界 🌍"));
   }
 
   @ParameterizedTest
@@ -88,13 +88,13 @@ class ValueToProtoJsonTest {
   private static Stream<Arguments> bytesValueProvider() {
     byte[] regularBytes = new byte[] {0, 1, 2, Byte.MAX_VALUE, Byte.MIN_VALUE};
     return Stream.of(
-        Arguments.of(new byte[] {}, "\"\""),
-        Arguments.of(regularBytes, '"' + Base64.getEncoder().encodeToString(regularBytes) + '"'));
+        Arguments.of(new byte[] {}, ""),
+        Arguments.of(regularBytes, Base64.getEncoder().encodeToString(regularBytes)));
   }
 
   @Test
   void valueEmpty() {
-    assertThat(Value.empty().asString()).isEqualTo("null");
+    assertThat(Value.empty().asString()).isEqualTo("");
   }
 
   @ParameterizedTest

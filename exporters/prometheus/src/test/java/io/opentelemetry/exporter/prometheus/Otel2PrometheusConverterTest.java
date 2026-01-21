@@ -352,14 +352,14 @@ class Otel2PrometheusConverterTest {
         Arguments.of(
             Attributes.of(doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE)),
             "[4.9E-324,1.7976931348623157E308]"),
-        Arguments.of(Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})), "\"AQID\""),
+        Arguments.of(Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})), "AQID"),
         Arguments.of(
             Attributes.of(valueKey("key"), Value.of(KeyValue.of("nested", Value.of("value")))),
             "{\"nested\":\"value\"}"),
         Arguments.of(
             Attributes.of(valueKey("key"), Value.of(Value.of("string"), Value.of(123L))),
             "[\"string\",123]"),
-        Arguments.of(Attributes.of(valueKey("key"), Value.empty()), "null"));
+        Arguments.of(Attributes.of(valueKey("key"), Value.empty()), ""));
   }
 
   static MetricData createSampleMetricData(

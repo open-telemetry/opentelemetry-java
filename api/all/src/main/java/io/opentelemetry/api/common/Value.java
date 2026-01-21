@@ -113,26 +113,32 @@ public interface Value<T> {
   T getValue();
 
   /**
-   * Returns a JSON encoding of this {@link Value}.
+   * Returns a string representation of this {@link Value}.
    *
-   * <p>The output follows the <a href="https://protobuf.dev/programming-guides/json/">ProtoJSON</a>
-   * specification:
+   * <p>The output follows the <a
+   * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#anyvalue-representation-for-non-otlp-protocols">
+   * string representation guidance</a> for complex attribute value types:
    *
    * <ul>
-   *   <li>{@link ValueType#STRING} JSON string (including escaping and surrounding quotes)
-   *   <li>{@link ValueType#BOOLEAN} JSON boolean ({@code true} or {@code false})
-   *   <li>{@link ValueType#LONG} JSON number
+   *   <li>{@link ValueType#STRING} String as-is without surrounding quotes. Examples: {@code hello
+   *       world}, (empty string)
+   *   <li>{@link ValueType#BOOLEAN} JSON boolean. Examples: {@code true}, {@code false}
+   *   <li>{@link ValueType#LONG} JSON number. Examples: {@code 42}, {@code -123}
    *   <li>{@link ValueType#DOUBLE} JSON number, or {@code "NaN"}, {@code "Infinity"}, {@code
-   *       "-Infinity"} for special values
-   *   <li>{@link ValueType#ARRAY} JSON array (e.g. {@code [1,"two",true]})
-   *   <li>{@link ValueType#KEY_VALUE_LIST} JSON object (e.g. {@code {"key1":"value1","key2":2}})
-   *   <li>{@link ValueType#BYTES} JSON string (including surrounding double quotes) containing
-   *       base64 encoded bytes
-   *   <li>{@link ValueType#EMPTY} JSON {@code null} (the string {@code "null"} without the
-   *       surrounding quotes)
+   *       "-Infinity"} for special values. Examples: {@code 3.14159}, {@code 1.23e10}, {@code
+   *       "NaN"}, {@code "-Infinity"}
+   *   <li>{@link ValueType#ARRAY} JSON array. Nested strings and byte arrays are encoded as JSON
+   *       strings (with surrounding quotes). Nested empty values are encoded as JSON {@code null}.
+   *       Examples: {@code []}, {@code [1, "a", true, {"nested": "aGVsbG8gd29ybGQ="}]}
+   *   <li>{@link ValueType#KEY_VALUE_LIST} JSON object. Nested strings and byte arrays are encoded
+   *       as JSON strings (with surrounding quotes). Nested empty values are encoded as JSON {@code
+   *       null}. Examples: {@code {}}, {@code {"a": "1", "b": 2, "c": [3, null]}}
+   *   <li>{@link ValueType#BYTES} Base64-encoded bytes without surrounding quotes. Example: {@code
+   *       aGVsbG8gd29ybGQ=}
+   *   <li>{@link ValueType#EMPTY} The empty string.
    * </ul>
    *
-   * @return a JSON encoding of this value
+   * @return a string representation of this value
    */
   String asString();
 }
