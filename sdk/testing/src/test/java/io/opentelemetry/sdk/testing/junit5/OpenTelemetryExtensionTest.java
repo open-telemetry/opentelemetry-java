@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.testing.junit5;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -25,10 +27,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class OpenTelemetryExtensionTest {
@@ -219,7 +223,14 @@ class OpenTelemetryExtensionTest {
   void afterAll() {
     // Use a different instance of OpenTelemetryExtension to avoid interfering with other tests
     OpenTelemetryExtension extension = OpenTelemetryExtension.create();
-    extension.beforeAll(null);
+
+    ExtensionContext parentContext = spy(ExtensionContext.class);
+    when(parentContext.getTestClass()).thenReturn(Optional.empty());
+
+    ExtensionContext context = spy(ExtensionContext.class);
+    when(context.getParent()).thenReturn(Optional.of(parentContext));
+
+    extension.beforeAll(context);
 
     Meter meter = extension.getOpenTelemetry().getMeter("meter");
     Tracer tracer = extension.getOpenTelemetry().getTracer("tracer");
@@ -229,13 +240,37 @@ class OpenTelemetryExtensionTest {
     assertThat(extension.getMetrics()).isNotEmpty();
     assertThat(extension.getSpans()).isNotEmpty();
 
-    extension.afterAll(null);
+    extension.afterAll(context);
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(OpenTelemetry.noop());
 
     meter.counterBuilder("counter").build().add(10);
     tracer.spanBuilder("span").startSpan().end();
     assertThat(extension.getMetrics()).isEmpty();
     assertThat(extension.getSpans()).isEmpty();
+  }
+
+  @Test
+  void afterAllNestedOnly() {
+    // Demonstrate specifically that Nested tests do not reset extension sdk
+    OpenTelemetryExtension extension = OpenTelemetryExtension.create();
+
+    ExtensionContext context = spy(ExtensionContext.class);
+    when(context.getParent()).thenReturn(Optional.empty());
+
+    extension.beforeAll(context);
+
+    Meter meter = extension.getOpenTelemetry().getMeter("meter");
+    Tracer tracer = extension.getOpenTelemetry().getTracer("tracer");
+
+    extension.afterAll(context);
+
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(OpenTelemetry.noop());
+
+    // GlobalTelemetry was reset, but extension's sdk was not closed
+    meter.counterBuilder("counter").build().add(10);
+    tracer.spanBuilder("span").startSpan().end();
+    assertThat(extension.getMetrics()).isNotEmpty();
+    assertThat(extension.getSpans()).isNotEmpty();
   }
 
   @Test
