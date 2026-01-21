@@ -34,8 +34,7 @@ class ResourceConfigurationTest {
     Map<String, String> props = new HashMap<>();
     props.put("otel.service.name", "test-service");
     props.put(
-        "otel.resource.attributes",
-        "food=cheesecake,drink=juice,animal=  ,color=,shape=square,animal=d g");
+        "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
     props.put("otel.resource.disabled-keys", "drink");
 
     assertThat(
