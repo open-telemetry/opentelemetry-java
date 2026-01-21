@@ -52,7 +52,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * {@link #stressTest(AggregationTemporality, SyncInstrumentAggregation, MemoryMode,
+ * {@link #stressTest(AggregationTemporality, InstrumentTypeAndAggregation, MemoryMode,
  * InstrumentValueType)} performs a stress test to confirm simultaneous record and collections do
  * not have concurrency issues like lost writes, partial writes, duplicate writes, etc. All
  * combinations of the following dimensions are tested: aggregation temporality, instrument type
@@ -66,6 +66,22 @@ class SynchronousInstrumentStressTest {
       ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES;
   private static final double[] bucketBoundariesArr =
       bucketBoundaries.stream().mapToDouble(Double::doubleValue).toArray();
+
+  /**
+   * Tracks the unique combinations of synchronous {@link InstrumentType} and {@link Aggregation}.
+   * {@link InstrumentType#HISTOGRAM} aggregates to either explicit or base2 exponential histogram.
+   * Other instrument types have a single (typical) aggregation.
+   */
+  private static final List<InstrumentTypeAndAggregation> instrumentAggregations =
+      Arrays.asList(
+          new InstrumentTypeAndAggregation(InstrumentType.COUNTER, Aggregation.sum()),
+          new InstrumentTypeAndAggregation(InstrumentType.UP_DOWN_COUNTER, Aggregation.sum()),
+          new InstrumentTypeAndAggregation(
+              InstrumentType.HISTOGRAM, Aggregation.explicitBucketHistogram()),
+          new InstrumentTypeAndAggregation(InstrumentType.GAUGE, Aggregation.lastValue()),
+          new InstrumentTypeAndAggregation(
+              InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
+
   private static final AttributeKey<String> attributesKey = AttributeKey.stringKey("key");
   private static final Attributes attr1 = Attributes.of(attributesKey, "value1");
   private static final Attributes attr2 = Attributes.of(attributesKey, "value2");
@@ -78,16 +94,14 @@ class SynchronousInstrumentStressTest {
   @MethodSource("stressTestArgs")
   void stressTest(
       AggregationTemporality aggregationTemporality,
-      SyncInstrumentAggregation instrumentType,
+      InstrumentTypeAndAggregation instrumentTypeAndAggregation,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType) {
+    InstrumentType instrumentType = instrumentTypeAndAggregation.instrumentType;
+    Aggregation aggregation = instrumentTypeAndAggregation.aggregation;
     // Initialize metric SDK
-    DefaultAggregationSelector aggregationSelector = DefaultAggregationSelector.getDefault();
-    if (instrumentType == SyncInstrumentAggregation.HISTOGRAM_EXPONENTIAL_HISTOGRAM) {
-      aggregationSelector =
-          aggregationSelector.with(
-              InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
-    }
+    DefaultAggregationSelector aggregationSelector =
+        DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);
     InMemoryMetricReader reader =
         InMemoryMetricReader.builder()
             .setDefaultAggregationSelector(aggregationSelector)
@@ -98,7 +112,7 @@ class SynchronousInstrumentStressTest {
         SdkMeterProvider.builder().registerMetricReader(reader).build();
     cleanup.addCloseable(meterProvider);
     Meter meter = meterProvider.get("test");
-    Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
+    Instrument instrument = getInstrument(meter, instrumentTypeAndAggregation, instrumentValueType);
 
     // Define list of measurements to record
     // Later, we'll assert that the data collected matches these measurements, with no lost writes,
@@ -196,8 +210,7 @@ class SynchronousInstrumentStressTest {
         Stream.of(attr1, attr2, attr3, attr4)
             .map(attr -> getReducedPointData(collectedMetrics, isCumulative, attr))
             .collect(toList());
-    if (instrumentType == SyncInstrumentAggregation.COUNTER_SUM
-        || instrumentType == SyncInstrumentAggregation.UP_DOWN_COUNTER_SUM) {
+    if (aggregation == Aggregation.sum()) {
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
         assertThat(points)
             .allSatisfy(
@@ -216,7 +229,7 @@ class SynchronousInstrumentStressTest {
                             LongPointData.class,
                             p -> assertThat(p.getValue()).isEqualTo(sum.get())));
       }
-    } else if (instrumentType == SyncInstrumentAggregation.GAUGE_LAST_VALUE) {
+    } else if (aggregation == Aggregation.lastValue()) {
       if (instrumentValueType == InstrumentValueType.DOUBLE) {
         assertThat(points)
             .allSatisfy(
@@ -234,7 +247,7 @@ class SynchronousInstrumentStressTest {
                             LongPointData.class,
                             p -> assertThat(p.getValue()).isEqualTo(lastValue.get())));
       }
-    } else if (instrumentType == SyncInstrumentAggregation.HISTOGRAM_EXPLICIT_HISTOGRAM) {
+    } else if (aggregation == Aggregation.explicitBucketHistogram()) {
       assertThat(points)
           .allSatisfy(
               point ->
@@ -249,7 +262,7 @@ class SynchronousInstrumentStressTest {
                                 .isEqualTo(bucketCounts.stream().reduce(0L, Long::sum));
                             assertThat(p.getCounts()).isEqualTo(bucketCounts);
                           }));
-    } else if (instrumentType == SyncInstrumentAggregation.HISTOGRAM_EXPONENTIAL_HISTOGRAM) {
+    } else if (aggregation == Aggregation.base2ExponentialBucketHistogram()) {
       assertThat(points)
           .allSatisfy(
               point ->
@@ -274,12 +287,15 @@ class SynchronousInstrumentStressTest {
   private static Stream<Arguments> stressTestArgs() {
     List<Arguments> argumentsList = new ArrayList<>();
     for (AggregationTemporality aggregationTemporality : AggregationTemporality.values()) {
-      for (SyncInstrumentAggregation instrumentType : SyncInstrumentAggregation.values()) {
+      for (InstrumentTypeAndAggregation instrumentTypeAndAggregation : instrumentAggregations) {
         for (MemoryMode memoryMode : MemoryMode.values()) {
           for (InstrumentValueType instrumentValueType : InstrumentValueType.values()) {
             argumentsList.add(
                 Arguments.of(
-                    aggregationTemporality, instrumentType, memoryMode, instrumentValueType));
+                    aggregationTemporality,
+                    instrumentTypeAndAggregation,
+                    memoryMode,
+                    instrumentValueType));
           }
         }
       }
@@ -289,19 +305,18 @@ class SynchronousInstrumentStressTest {
 
   private static Instrument getInstrument(
       Meter meter,
-      SyncInstrumentAggregation instrumentType,
+      InstrumentTypeAndAggregation instrumentTypeAndAggregation,
       InstrumentValueType instrumentValueType) {
-    switch (instrumentType) {
-      case COUNTER_SUM:
+    switch (instrumentTypeAndAggregation.instrumentType) {
+      case COUNTER:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.counterBuilder(instrumentName).ofDoubles().build()::add
             : meter.counterBuilder(instrumentName).build()::add;
-      case UP_DOWN_COUNTER_SUM:
+      case UP_DOWN_COUNTER:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.upDownCounterBuilder(instrumentName).ofDoubles().build()::add
             : meter.upDownCounterBuilder(instrumentName).build()::add;
-      case HISTOGRAM_EXPLICIT_HISTOGRAM:
-      case HISTOGRAM_EXPONENTIAL_HISTOGRAM:
+      case HISTOGRAM:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter
                     .histogramBuilder(instrumentName)
@@ -314,10 +329,13 @@ class SynchronousInstrumentStressTest {
                     .ofLongs()
                     .build()
                 ::record;
-      case GAUGE_LAST_VALUE:
+      case GAUGE:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.gaugeBuilder(instrumentName).build()::set
             : meter.gaugeBuilder(instrumentName).ofLongs().build()::set;
+      case OBSERVABLE_COUNTER:
+      case OBSERVABLE_UP_DOWN_COUNTER:
+      case OBSERVABLE_GAUGE:
     }
     throw new IllegalArgumentException();
   }
@@ -626,15 +644,13 @@ class SynchronousInstrumentStressTest {
     return merged;
   }
 
-  /**
-   * Enum that is the composite of the instrument type and aggregation. {@link InstrumentType} would
-   * be preferred, but doesn't include an option for the exponential histogram aggregation.
-   */
-  private enum SyncInstrumentAggregation {
-    COUNTER_SUM,
-    UP_DOWN_COUNTER_SUM,
-    GAUGE_LAST_VALUE,
-    HISTOGRAM_EXPLICIT_HISTOGRAM,
-    HISTOGRAM_EXPONENTIAL_HISTOGRAM
+  private static class InstrumentTypeAndAggregation {
+    private final InstrumentType instrumentType;
+    private final Aggregation aggregation;
+
+    private InstrumentTypeAndAggregation(InstrumentType instrumentType, Aggregation aggregation) {
+      this.instrumentType = instrumentType;
+      this.aggregation = aggregation;
+    }
   }
 }
