@@ -9,9 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.YamlDeclarativeConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.internal.all.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -61,10 +60,9 @@ class InstrumentationConfigUtilTest {
       toConfigProvider("instrumentation/development:\n  general:\n    http:\n");
 
   private static ConfigProvider toConfigProvider(String configYaml) {
-    OpenTelemetryConfigurationModel configuration =
-        DeclarativeConfiguration.parse(
-            new ByteArrayInputStream(configYaml.getBytes(StandardCharsets.UTF_8)));
-    return SdkConfigProvider.create(configuration);
+    return SdkConfigProvider.create(
+        DeclarativeConfiguration.toConfigProperties(
+            new ByteArrayInputStream(configYaml.getBytes(StandardCharsets.UTF_8))));
   }
 
   @Test

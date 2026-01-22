@@ -29,8 +29,8 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.OpenTelemetrySdkBuilderUtil;
+import io.opentelemetry.sdk.internal.all.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.internal.all.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -124,7 +124,7 @@ class DeclarativeConfigurationTest {
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     Resource resource = Resource.getDefault().toBuilder().put("service.name", "test").build();
     OpenTelemetrySdk expectedSdk =
-        OpenTelemetrySdkBuilderUtil.setSdkConfigProvider(
+        OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder()
                     .setTracerProvider(
                         SdkTracerProvider.builder()

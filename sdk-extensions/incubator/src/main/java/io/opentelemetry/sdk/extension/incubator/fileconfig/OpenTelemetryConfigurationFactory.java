@@ -6,10 +6,13 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.internal.all.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.internal.all.OpenTelemetrySdkBuilderUtil;
+import io.opentelemetry.sdk.internal.all.SdkConfigProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
@@ -32,10 +35,12 @@ final class OpenTelemetryConfigurationFactory
   @Override
   public ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
-    SdkConfigProvider sdkConfigProvider =
-        SdkConfigProvider.create(model, context.getSpiHelper().getComponentLoader());
+    DeclarativeConfigProperties modelProperties =
+        DeclarativeConfiguration.toConfigProperties(
+            model, context.getSpiHelper().getComponentLoader());
+    SdkConfigProvider sdkConfigProvider = SdkConfigProvider.create(modelProperties);
     OpenTelemetrySdkBuilder builder =
-        OpenTelemetrySdkBuilderUtil.setSdkConfigProvider(
+        OpenTelemetrySdkBuilderUtil.setConfigProvider(
             OpenTelemetrySdk.builder(), sdkConfigProvider);
     String fileFormat = model.getFileFormat();
     if (fileFormat == null || !SUPPORTED_FILE_FORMATS.matcher(fileFormat).matches()) {
