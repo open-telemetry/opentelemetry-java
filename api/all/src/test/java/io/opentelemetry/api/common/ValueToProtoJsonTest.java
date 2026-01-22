@@ -72,9 +72,9 @@ class ValueToProtoJsonTest {
         Arguments.of(-2.5, "-2.5"),
         Arguments.of(0.0, "0.0"),
         Arguments.of(-0.0, "-0.0"),
-        Arguments.of(Double.NaN, "\"NaN\""),
-        Arguments.of(Double.POSITIVE_INFINITY, "\"Infinity\""),
-        Arguments.of(Double.NEGATIVE_INFINITY, "\"-Infinity\""),
+        Arguments.of(Double.NaN, "NaN"),
+        Arguments.of(Double.POSITIVE_INFINITY, "Infinity"),
+        Arguments.of(Double.NEGATIVE_INFINITY, "-Infinity"),
         Arguments.of(1.23e10, "1.23E10"),
         Arguments.of(1.23e-10, "1.23E-10"));
   }
@@ -213,7 +213,7 @@ class ValueToProtoJsonTest {
     assertThat(complexValue.asString())
         .isEqualTo(
             "{\"user\":\"Alice\","
-                + "\"scores\":[95,87.5,92,\"NaN\",\"Infinity\"],"
+                + "\"scores\":[95,87.5,92,NaN,Infinity],"
                 + "\"passed\":true,"
                 + "\"metadata\":{\"timestamp\":1234567890,"
                 + "\"tags\":[\"important\",\"reviewed\",\"final\"]}}");

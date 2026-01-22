@@ -31,9 +31,12 @@ final class ValueDouble implements Value<Double> {
 
   @Override
   public String asString() {
-    StringBuilder sb = new StringBuilder();
-    ProtoJson.append(sb, this);
-    return sb.toString();
+    if (Double.isNaN(value)) {
+      return "NaN";
+    } else if (Double.isInfinite(value)) {
+      return value > 0 ? "Infinity" : "-Infinity";
+    }
+    return String.valueOf(value);
   }
 
   @Override
