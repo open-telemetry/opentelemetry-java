@@ -9,11 +9,17 @@ Comparing source compatibility of opentelemetry-api-1.59.0-SNAPSHOT.jar against 
 ***  MODIFIED ENUM: PUBLIC FINAL io.opentelemetry.api.common.AttributeType  (compatible)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.AttributeType VALUE
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.api.common.Empty  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) boolean equals(java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Empty getInstance()
+	+++  NEW METHOD: PUBLIC(+) int hashCode()
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.Value  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	GENERIC TEMPLATES: === T:java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.lang.Void> empty()
-	+++  NEW METHOD: PUBLIC(+) java.lang.String toProtoJson()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<io.opentelemetry.api.common.Empty> empty()
 ***  MODIFIED ENUM: PUBLIC FINAL io.opentelemetry.api.common.ValueType  (compatible)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType EMPTY
