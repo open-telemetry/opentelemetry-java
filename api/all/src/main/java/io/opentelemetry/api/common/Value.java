@@ -124,15 +124,19 @@ public interface Value<T> {
    *       world}, (empty string)
    *   <li>{@link ValueType#BOOLEAN} JSON boolean. Examples: {@code true}, {@code false}
    *   <li>{@link ValueType#LONG} JSON number. Examples: {@code 42}, {@code -123}
-   *   <li>{@link ValueType#DOUBLE} JSON number, or {@code "NaN"}, {@code "Infinity"}, {@code
-   *       "-Infinity"} for special values. Examples: {@code 3.14159}, {@code 1.23e10}, {@code
-   *       "NaN"}, {@code "-Infinity"}
-   *   <li>{@link ValueType#ARRAY} JSON array. Nested strings and byte arrays are encoded as JSON
-   *       strings (with surrounding quotes). Nested empty values are encoded as JSON {@code null}.
-   *       Examples: {@code []}, {@code [1, "a", true, {"nested": "aGVsbG8gd29ybGQ="}]}
-   *   <li>{@link ValueType#KEY_VALUE_LIST} JSON object. Nested strings and byte arrays are encoded
-   *       as JSON strings (with surrounding quotes). Nested empty values are encoded as JSON {@code
-   *       null}. Examples: {@code {}}, {@code {"a": "1", "b": 2, "c": [3, null]}}
+   *   <li>{@link ValueType#DOUBLE} JSON number, or {@code NaN}, {@code Infinity}, {@code -Infinity}
+   *       for special values (without surrounding quotes). Examples: {@code 3.14159}, {@code
+   *       1.23e10}, {@code NaN}, {@code -Infinity}
+   *   <li>{@link ValueType#ARRAY} JSON array. Nested byte arrays are encoded as Base64-encoded JSON
+   *       strings. Nested empty values are encoded as JSON {@code null}. The special floating point
+   *       values NaN and Infinity are encoded as JSON strings {@code "NaN"}, {@code "Infinity"},
+   *       and {@code "-Infinity"}. Examples: {@code []}, {@code [1, "-Infinity", "a", true,
+   *       {"nested": "aGVsbG8gd29ybGQ="}]}
+   *   <li>{@link ValueType#KEY_VALUE_LIST} JSON object. Nested byte arrays are encoded as
+   *       Base64-encoded JSON strings. Nested empty values are encoded as JSON {@code null}. The
+   *       special floating point values NaN and Infinity are encoded as JSON strings {@code "NaN"},
+   *       {@code "Infinity"}, and {@code "-Infinity"}. Examples: {@code {}}, {@code {"a":
+   *       "-Infinity", "b": 2, "c": [3, null]}}
    *   <li>{@link ValueType#BYTES} Base64-encoded bytes without surrounding quotes. Example: {@code
    *       aGVsbG8gd29ybGQ=}
    *   <li>{@link ValueType#EMPTY} The empty string.
