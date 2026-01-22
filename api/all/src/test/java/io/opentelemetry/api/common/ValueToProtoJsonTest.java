@@ -213,7 +213,7 @@ class ValueToProtoJsonTest {
     assertThat(complexValue.asString())
         .isEqualTo(
             "{\"user\":\"Alice\","
-                + "\"scores\":[95,87.5,92,NaN,Infinity],"
+                + "\"scores\":[95,87.5,92,\"NaN\",\"Infinity\"],"
                 + "\"passed\":true,"
                 + "\"metadata\":{\"timestamp\":1234567890,"
                 + "\"tags\":[\"important\",\"reviewed\",\"final\"]}}");
