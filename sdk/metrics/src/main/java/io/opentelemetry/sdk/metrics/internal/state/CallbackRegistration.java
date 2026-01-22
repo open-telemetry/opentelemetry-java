@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
+import static io.opentelemetry.sdk.common.internal.ThrowableUtil.propagateIfFatal;
 import static java.util.stream.Collectors.toList;
 
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.data;
 
-import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
+import io.opentelemetry.sdk.common.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import java.util.List;
 import java.util.Objects;

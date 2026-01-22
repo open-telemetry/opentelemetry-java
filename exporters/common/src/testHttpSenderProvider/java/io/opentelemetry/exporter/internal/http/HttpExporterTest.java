@@ -12,7 +12,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
