@@ -22,4 +22,6 @@ dependencies {
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
+
+  jmh(project(":sdk:testing"))
 }
