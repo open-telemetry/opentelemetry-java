@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;

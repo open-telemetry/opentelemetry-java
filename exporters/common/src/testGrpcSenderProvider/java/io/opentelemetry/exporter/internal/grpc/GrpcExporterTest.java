@@ -14,7 +14,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;

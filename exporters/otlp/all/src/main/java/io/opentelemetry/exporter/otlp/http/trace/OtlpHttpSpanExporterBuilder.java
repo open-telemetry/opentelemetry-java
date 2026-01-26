@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
