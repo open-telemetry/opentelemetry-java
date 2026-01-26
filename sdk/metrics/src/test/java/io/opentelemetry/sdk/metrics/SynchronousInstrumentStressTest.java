@@ -6,6 +6,10 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.Attributes.empty;
+import static io.opentelemetry.sdk.metrics.InstrumentType.COUNTER;
+import static io.opentelemetry.sdk.metrics.InstrumentType.GAUGE;
+import static io.opentelemetry.sdk.metrics.InstrumentType.HISTOGRAM;
+import static io.opentelemetry.sdk.metrics.InstrumentType.UP_DOWN_COUNTER;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -52,7 +56,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * {@link #stressTest(AggregationTemporality, InstrumentTypeAndAggregation, MemoryMode,
+ * {@link #stressTest(AggregationTemporality, InstrumentType, Aggregation, MemoryMode,
  * InstrumentValueType)} performs a stress test to confirm simultaneous record and collections do
  * not have concurrency issues like lost writes, partial writes, duplicate writes, etc. All
  * combinations of the following dimensions are tested: aggregation temporality, instrument type
@@ -60,33 +64,18 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 class SynchronousInstrumentStressTest {
 
-  private static final String instrumentName = "instrument";
-  private static final Duration oneMicrosecond = Duration.ofNanos(1000);
-  private static final List<Double> bucketBoundaries =
+  private static final String INSTRUMENT_NAME = "instrument";
+  private static final Duration ONE_MICROSECOND = Duration.ofNanos(1000);
+  private static final List<Double> BUCKET_BOUNDARIES =
       ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES;
-  private static final double[] bucketBoundariesArr =
-      bucketBoundaries.stream().mapToDouble(Double::doubleValue).toArray();
+  private static final double[] BUCKET_BOUNDARIES_ARR =
+      BUCKET_BOUNDARIES.stream().mapToDouble(Double::doubleValue).toArray();
 
-  /**
-   * Tracks the unique combinations of synchronous {@link InstrumentType} and {@link Aggregation}.
-   * {@link InstrumentType#HISTOGRAM} aggregates to either explicit or base2 exponential histogram.
-   * Other instrument types have a single (typical) aggregation.
-   */
-  private static final List<InstrumentTypeAndAggregation> instrumentAggregations =
-      Arrays.asList(
-          new InstrumentTypeAndAggregation(InstrumentType.COUNTER, Aggregation.sum()),
-          new InstrumentTypeAndAggregation(InstrumentType.UP_DOWN_COUNTER, Aggregation.sum()),
-          new InstrumentTypeAndAggregation(
-              InstrumentType.HISTOGRAM, Aggregation.explicitBucketHistogram()),
-          new InstrumentTypeAndAggregation(InstrumentType.GAUGE, Aggregation.lastValue()),
-          new InstrumentTypeAndAggregation(
-              InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
-
-  private static final AttributeKey<String> attributesKey = AttributeKey.stringKey("key");
-  private static final Attributes attr1 = Attributes.of(attributesKey, "value1");
-  private static final Attributes attr2 = Attributes.of(attributesKey, "value2");
-  private static final Attributes attr3 = Attributes.of(attributesKey, "value3");
-  private static final Attributes attr4 = Attributes.of(attributesKey, "value4");
+  private static final AttributeKey<String> KEY = AttributeKey.stringKey("key");
+  private static final Attributes ATTR_1 = Attributes.of(KEY, "value1");
+  private static final Attributes ATTR_2 = Attributes.of(KEY, "value2");
+  private static final Attributes ATTR_3 = Attributes.of(KEY, "value3");
+  private static final Attributes ATTR_4 = Attributes.of(KEY, "value4");
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
@@ -94,11 +83,10 @@ class SynchronousInstrumentStressTest {
   @MethodSource("stressTestArgs")
   void stressTest(
       AggregationTemporality aggregationTemporality,
-      InstrumentTypeAndAggregation instrumentTypeAndAggregation,
+      InstrumentType instrumentType,
+      Aggregation aggregation,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType) {
-    InstrumentType instrumentType = instrumentTypeAndAggregation.instrumentType;
-    Aggregation aggregation = instrumentTypeAndAggregation.aggregation;
     // Initialize metric SDK
     DefaultAggregationSelector aggregationSelector =
         DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);
@@ -112,7 +100,7 @@ class SynchronousInstrumentStressTest {
         SdkMeterProvider.builder().registerMetricReader(reader).build();
     cleanup.addCloseable(meterProvider);
     Meter meter = meterProvider.get("test");
-    Instrument instrument = getInstrument(meter, instrumentTypeAndAggregation, instrumentValueType);
+    Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
 
     // Define list of measurements to record
     // Later, we'll assert that the data collected matches these measurements, with no lost writes,
@@ -128,30 +116,30 @@ class SynchronousInstrumentStressTest {
     int threadCount = 4;
     List<Thread> recordThreads = new ArrayList<>();
     CountDownLatch latch = new CountDownLatch(threadCount);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < threadCount; i++) {
       recordThreads.add(
           new Thread(
               () -> {
-                List<Attributes> attributes = Arrays.asList(attr1, attr2, attr3, attr4);
+                List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
                 Collections.shuffle(attributes);
                 for (Long measurement : measurements) {
                   for (Attributes attr : attributes) {
                     instrument.record(measurement, attr);
                   }
-                  Uninterruptibles.sleepUninterruptibly(oneMicrosecond);
+                  Uninterruptibles.sleepUninterruptibly(ONE_MICROSECOND);
                 }
                 latch.countDown();
               }));
     }
 
     // Define collecting thread
-    // NOTE: collect makes a copy of MetricData because REUSEABLE_MEMORY mode reuses MetricData
+    // NOTE: collect makes a copy of MetricData because REUSABLE_DATA mode reuses MetricData
     List<MetricData> collectedMetrics = new ArrayList<>();
     Thread collectThread =
         new Thread(
             () -> {
               while (latch.getCount() != 0) {
-                Uninterruptibles.sleepUninterruptibly(oneMicrosecond);
+                Uninterruptibles.sleepUninterruptibly(ONE_MICROSECOND);
                 collectedMetrics.addAll(
                     reader.collectAllMetrics().stream()
                         .map(SynchronousInstrumentStressTest::copy)
@@ -175,14 +163,14 @@ class SynchronousInstrumentStressTest {
     // NOTE: this does not validate the absence of partial writes for cumulative instruments which
     // track multiple fields. For example, explicit histogram tracks sum and bucket counts. These
     // should be atomically updated such that we never collect the sum without corresponding bucket
-    // counts update, or vice verse. This test asserts that the cumulative state at the end is
+    // counts update, or vice versa. This test asserts that the cumulative state at the end is
     // consistent, and interim collects unknowingly see partial writes.
     AtomicLong lastValue = new AtomicLong(0);
     AtomicLong sum = new AtomicLong(0);
     AtomicLong min = new AtomicLong(Long.MAX_VALUE);
     AtomicLong max = new AtomicLong(-1);
     List<Long> bucketCounts = new ArrayList<>();
-    for (int i = 0; i < bucketBoundaries.size() + 1; i++) {
+    for (int i = 0; i < BUCKET_BOUNDARIES.size() + 1; i++) {
       bucketCounts.add(0L);
     }
     AtomicLong totalCount = new AtomicLong(0);
@@ -198,7 +186,7 @@ class SynchronousInstrumentStressTest {
               totalCount.incrementAndGet();
               int bucketIndex =
                   ExplicitBucketHistogramUtils.findBucketIndex(
-                      bucketBoundariesArr, (double) measurement);
+                      BUCKET_BOUNDARIES_ARR, (double) measurement);
               bucketCounts.set(bucketIndex, bucketCounts.get(bucketIndex) + 1);
               if (measurement == 0) {
                 zeroCount.incrementAndGet();
@@ -207,7 +195,7 @@ class SynchronousInstrumentStressTest {
 
     boolean isCumulative = aggregationTemporality == AggregationTemporality.CUMULATIVE;
     List<PointData> points =
-        Stream.of(attr1, attr2, attr3, attr4)
+        Stream.of(ATTR_1, ATTR_2, ATTR_3, ATTR_4)
             .map(attr -> getReducedPointData(collectedMetrics, isCumulative, attr))
             .collect(toList());
     if (aggregation == Aggregation.sum()) {
@@ -287,13 +275,15 @@ class SynchronousInstrumentStressTest {
   private static Stream<Arguments> stressTestArgs() {
     List<Arguments> argumentsList = new ArrayList<>();
     for (AggregationTemporality aggregationTemporality : AggregationTemporality.values()) {
-      for (InstrumentTypeAndAggregation instrumentTypeAndAggregation : instrumentAggregations) {
+      for (InstrumentTypeAndAggregation instrumentTypeAndAggregation :
+          InstrumentTypeAndAggregation.values()) {
         for (MemoryMode memoryMode : MemoryMode.values()) {
           for (InstrumentValueType instrumentValueType : InstrumentValueType.values()) {
             argumentsList.add(
                 Arguments.of(
                     aggregationTemporality,
-                    instrumentTypeAndAggregation,
+                    instrumentTypeAndAggregation.instrumentType,
+                    instrumentTypeAndAggregation.aggregation,
                     memoryMode,
                     instrumentValueType));
           }
@@ -304,35 +294,33 @@ class SynchronousInstrumentStressTest {
   }
 
   private static Instrument getInstrument(
-      Meter meter,
-      InstrumentTypeAndAggregation instrumentTypeAndAggregation,
-      InstrumentValueType instrumentValueType) {
-    switch (instrumentTypeAndAggregation.instrumentType) {
+      Meter meter, InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
+    switch (instrumentType) {
       case COUNTER:
         return instrumentValueType == InstrumentValueType.DOUBLE
-            ? meter.counterBuilder(instrumentName).ofDoubles().build()::add
-            : meter.counterBuilder(instrumentName).build()::add;
+            ? meter.counterBuilder(INSTRUMENT_NAME).ofDoubles().build()::add
+            : meter.counterBuilder(INSTRUMENT_NAME).build()::add;
       case UP_DOWN_COUNTER:
         return instrumentValueType == InstrumentValueType.DOUBLE
-            ? meter.upDownCounterBuilder(instrumentName).ofDoubles().build()::add
-            : meter.upDownCounterBuilder(instrumentName).build()::add;
+            ? meter.upDownCounterBuilder(INSTRUMENT_NAME).ofDoubles().build()::add
+            : meter.upDownCounterBuilder(INSTRUMENT_NAME).build()::add;
       case HISTOGRAM:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter
-                    .histogramBuilder(instrumentName)
-                    .setExplicitBucketBoundariesAdvice(bucketBoundaries)
+                    .histogramBuilder(INSTRUMENT_NAME)
+                    .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
                     .build()
                 ::record
             : meter
-                    .histogramBuilder(instrumentName)
-                    .setExplicitBucketBoundariesAdvice(bucketBoundaries)
+                    .histogramBuilder(INSTRUMENT_NAME)
+                    .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
                     .ofLongs()
                     .build()
                 ::record;
       case GAUGE:
         return instrumentValueType == InstrumentValueType.DOUBLE
-            ? meter.gaugeBuilder(instrumentName).build()::set
-            : meter.gaugeBuilder(instrumentName).ofLongs().build()::set;
+            ? meter.gaugeBuilder(INSTRUMENT_NAME).build()::set
+            : meter.gaugeBuilder(INSTRUMENT_NAME).ofLongs().build()::set;
       case OBSERVABLE_COUNTER:
       case OBSERVABLE_UP_DOWN_COUNTER:
       case OBSERVABLE_GAUGE:
@@ -474,7 +462,7 @@ class SynchronousInstrumentStressTest {
                                 ExponentialHistogramBuckets.create(
                                     p.getNegativeBuckets().getScale(),
                                     p.getNegativeBuckets().getOffset(),
-                                    new ArrayList<>(p.getPositiveBuckets().getBucketCounts())),
+                                    new ArrayList<>(p.getNegativeBuckets().getBucketCounts())),
                                 p.getStartEpochNanos(),
                                 p.getEpochNanos(),
                                 p.getAttributes(),
@@ -491,8 +479,7 @@ class SynchronousInstrumentStressTest {
    */
   private static PointData getReducedPointData(
       List<MetricData> metrics, boolean isCumulative, Attributes attributes) {
-    metrics.stream()
-        .forEach(metricData -> assertThat(metricData.getName()).isEqualTo(instrumentName));
+    metrics.forEach(metricData -> assertThat(metricData.getName()).isEqualTo(INSTRUMENT_NAME));
     MetricData first = metrics.get(0);
     switch (first.getType()) {
       case LONG_GAUGE:
@@ -644,13 +631,20 @@ class SynchronousInstrumentStressTest {
     return merged;
   }
 
-  private static class InstrumentTypeAndAggregation {
-    private final InstrumentType instrumentType;
-    private final Aggregation aggregation;
+  @SuppressWarnings("ImmutableEnumChecker")
+  private enum InstrumentTypeAndAggregation {
+    COUNTER_SUM(COUNTER, Aggregation.sum()),
+    UP_DOWN_COUNTER_SUM(UP_DOWN_COUNTER, Aggregation.sum()),
+    GAUGE_LAST_VALUE(GAUGE, Aggregation.lastValue()),
+    HISTOGRAM_EXPLICIT(HISTOGRAM, Aggregation.explicitBucketHistogram()),
+    HISTOGRAM_BASE2_EXPONENTIAL(HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
 
-    private InstrumentTypeAndAggregation(InstrumentType instrumentType, Aggregation aggregation) {
+    InstrumentTypeAndAggregation(InstrumentType instrumentType, Aggregation aggregation) {
       this.instrumentType = instrumentType;
       this.aggregation = aggregation;
     }
+
+    private final InstrumentType instrumentType;
+    private final Aggregation aggregation;
   }
 }
