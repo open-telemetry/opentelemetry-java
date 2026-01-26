@@ -13,7 +13,7 @@ import static org.mockito.Mockito.spy;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.builder.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.resources.Resource;
@@ -28,17 +28,20 @@ class DeclarativeConfigurationSpiTest {
 
   @Test
   void configFromSpi() {
-    ExtendedOpenTelemetrySdk expectedSdk =
-        ExtendedOpenTelemetrySdk.create(
-            OpenTelemetrySdk.builder()
-                .setTracerProvider(
-                    SdkTracerProvider.builder()
-                        .setResource(
-                            Resource.getDefault().toBuilder().put("service.name", "test").build())
-                        .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
-                        .build())
-                .build(),
-            SdkConfigProvider.create(new OpenTelemetryConfigurationModel()));
+    OpenTelemetrySdk expectedSdk =
+        OpenTelemetrySdkBuilderUtil.setSdkConfigProvider(
+                OpenTelemetrySdk.builder()
+                    .setTracerProvider(
+                        SdkTracerProvider.builder()
+                            .setResource(
+                                Resource.getDefault().toBuilder()
+                                    .put("service.name", "test")
+                                    .build())
+                            .addSpanProcessor(
+                                SimpleSpanProcessor.create(LoggingSpanExporter.create()))
+                            .build()),
+                SdkConfigProvider.create(new OpenTelemetryConfigurationModel()))
+            .build();
     cleanup.addCloseable(expectedSdk);
     AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
     Thread thread = new Thread();
