@@ -196,6 +196,8 @@ public final class OpenTelemetryExtension
   @Override
   public void afterAll(ExtensionContext context) {
     GlobalOpenTelemetry.resetForTest();
-    openTelemetry.close();
+    if (context.getParent().isPresent() && !context.getParent().get().getTestClass().isPresent()) {
+      openTelemetry.close();
+    }
   }
 }

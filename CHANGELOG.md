@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Add AlwaysRecordSampler
+  ([#7877](https://github.com/open-telemetry/opentelemetry-java/pull/7877))
+
 ## Version 1.58.0 (2026-01-09)
 
 ### API

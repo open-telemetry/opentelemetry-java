@@ -15,46 +15,52 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
-import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
-import com.linecorp.armeria.server.logging.LoggingService;
+import com.linecorp.armeria.server.SimpleDecoratingHttpService;
+import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.grpc.Decompressor;
+import io.grpc.DecompressorRegistry;
 import io.grpc.ManagedChannel;
+import io.grpc.stub.StreamObserver;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
-import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
-import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
+import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
+import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceRequest;
 import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceResponse;
+import io.opentelemetry.proto.collector.profiles.v1development.ProfilesServiceGrpc;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
+import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.AttributeAssertion;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -64,16 +70,14 @@ import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -84,7 +88,6 @@ import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -132,70 +135,109 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         @Override
         protected void configure(ServerBuilder sb) {
           sb.service(
-              "/opentelemetry.proto.collector.trace.v1.TraceService/Export",
-              new CollectorService<>(
-                  ExportTraceServiceRequest::parseFrom,
-                  ExportTraceServiceRequest::getResourceSpansList,
-                  ExportTraceServiceResponse.getDefaultInstance().toByteArray()));
-          sb.service(
-              "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export",
-              new CollectorService<>(
-                  ExportMetricsServiceRequest::parseFrom,
-                  ExportMetricsServiceRequest::getResourceMetricsList,
-                  ExportMetricsServiceResponse.getDefaultInstance().toByteArray()));
-          sb.service(
-              "/opentelemetry.proto.collector.logs.v1.LogsService/Export",
-              new CollectorService<>(
-                  ExportLogsServiceRequest::parseFrom,
-                  ExportLogsServiceRequest::getResourceLogsList,
-                  ExportLogsServiceResponse.getDefaultInstance().toByteArray()));
-          sb.service(
-              "/opentelemetry.proto.collector.profiles.v1development.ProfilesService/Export",
-              new CollectorService<>(
-                  ExportProfilesServiceRequest::parseFrom,
-                  ExportProfilesServiceRequest::getResourceProfilesList,
-                  ExportProfilesServiceResponse.getDefaultInstance().toByteArray()));
+              GrpcService.builder()
+                  .addService(
+                      new LogsServiceGrpc.LogsServiceImplBase() {
+                        @Override
+                        public void export(
+                            ExportLogsServiceRequest request,
+                            StreamObserver<ExportLogsServiceResponse> responseObserver) {
+                          exportedResourceTelemetry.addAll(request.getResourceLogsList());
+                          ArmeriaStatusException grpcError = grpcErrors.poll();
+                          if (grpcError != null) {
+                            responseObserver.onError(grpcError);
+                          } else {
+                            responseObserver.onNext(ExportLogsServiceResponse.getDefaultInstance());
+                            responseObserver.onCompleted();
+                          }
+                        }
+                      })
+                  .addService(
+                      new MetricsServiceGrpc.MetricsServiceImplBase() {
+                        @Override
+                        public void export(
+                            ExportMetricsServiceRequest request,
+                            StreamObserver<ExportMetricsServiceResponse> responseObserver) {
+                          exportedResourceTelemetry.addAll(request.getResourceMetricsList());
+                          ArmeriaStatusException grpcError = grpcErrors.poll();
+                          if (grpcError != null) {
+                            responseObserver.onError(grpcError);
+                          } else {
+                            responseObserver.onNext(
+                                ExportMetricsServiceResponse.getDefaultInstance());
+                            responseObserver.onCompleted();
+                          }
+                        }
+                      })
+                  .addService(
+                      new TraceServiceGrpc.TraceServiceImplBase() {
+                        @Override
+                        public void export(
+                            ExportTraceServiceRequest request,
+                            StreamObserver<ExportTraceServiceResponse> responseObserver) {
+                          exportedResourceTelemetry.addAll(request.getResourceSpansList());
+                          ArmeriaStatusException grpcError = grpcErrors.poll();
+                          if (grpcError != null) {
+                            responseObserver.onError(grpcError);
+                          } else {
+                            responseObserver.onNext(
+                                ExportTraceServiceResponse.getDefaultInstance());
+                            responseObserver.onCompleted();
+                          }
+                        }
+                      })
+                  .addService(
+                      new ProfilesServiceGrpc.ProfilesServiceImplBase() {
+                        @Override
+                        public void export(
+                            ExportProfilesServiceRequest request,
+                            StreamObserver<ExportProfilesServiceResponse> responseObserver) {
+                          exportedResourceTelemetry.addAll(request.getResourceProfilesList());
+                          ArmeriaStatusException grpcError = grpcErrors.poll();
+                          if (grpcError != null) {
+                            responseObserver.onError(grpcError);
+                          } else {
+                            responseObserver.onNext(
+                                ExportProfilesServiceResponse.getDefaultInstance());
+                            responseObserver.onCompleted();
+                          }
+                        }
+                      })
+                  .decompressorRegistry(
+                      DecompressorRegistry.getDefaultInstance()
+                          .with(
+                              new Decompressor() {
+                                @Override
+                                public String getMessageEncoding() {
+                                  return "base64";
+                                }
+
+                                @Override
+                                public InputStream decompress(InputStream is) {
+                                  return Base64.getDecoder().wrap(is);
+                                }
+                              },
+                              true))
+                  .build(),
+              service ->
+                  new SimpleDecoratingHttpService(service) {
+                    @Override
+                    public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req)
+                        throws Exception {
+                      httpRequests.add(req);
+                      attempts.incrementAndGet();
+                      return unwrap().serve(ctx, req);
+                    }
+                  });
 
           sb.http(0);
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
           sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
-          sb.decorator(LoggingService.newDecorator());
+          // Uncomment for detailed request / response logs from server
+          // sb.decorator(LoggingService.newDecorator());
         }
       };
-
-  private static class CollectorService<T> extends AbstractUnaryGrpcService {
-    private final ThrowingExtractor<byte[], T, InvalidProtocolBufferException> parse;
-    private final Function<T, List<? extends Object>> getResourceTelemetry;
-    private final byte[] successResponse;
-
-    private CollectorService(
-        ThrowingExtractor<byte[], T, InvalidProtocolBufferException> parse,
-        Function<T, List<? extends Object>> getResourceTelemetry,
-        byte[] successResponse) {
-      this.parse = parse;
-      this.getResourceTelemetry = getResourceTelemetry;
-      this.successResponse = successResponse;
-    }
-
-    @Override
-    protected CompletionStage<byte[]> handleMessage(ServiceRequestContext ctx, byte[] message) {
-      httpRequests.add(ctx.request());
-      attempts.incrementAndGet();
-      T request;
-      try {
-        request = parse.extractThrows(message);
-      } catch (InvalidProtocolBufferException e) {
-        throw new UncheckedIOException(e);
-      }
-      exportedResourceTelemetry.addAll(getResourceTelemetry.apply(request));
-      ArmeriaStatusException grpcError = grpcErrors.poll();
-      if (grpcError != null) {
-        throw grpcError;
-      }
-      return CompletableFuture.completedFuture(successResponse);
-    }
-  }
 
   @RegisterExtension
   protected LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
@@ -268,10 +310,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(exporter.unwrap())
           .extracting(
-              "delegate.grpcSender.stub",
-              as(InstanceOfAssertFactories.type(MarshalerServiceStub.class)))
-          .satisfies(
-              stub -> assertThat(((ManagedChannel) stub.getChannel()).isShutdown()).isTrue());
+              "delegate.grpcSender.channel",
+              as(InstanceOfAssertFactories.type(ManagedChannel.class)))
+          .satisfies(channel -> assertThat(channel.isShutdown()).isTrue());
     }
   }
 
@@ -306,11 +347,16 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void compressionWithNone() {
     try (TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("none").build()) {
-      // UpstreamGrpcSender doesn't support compression, so we skip the assertion
-      assumeThat(exporter.unwrap())
-          .extracting("delegate.grpcSender")
-          .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
-      assertThat(exporter.unwrap()).extracting("delegate.grpcSender.compressor").isNull();
+
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .isSuccess())
+          .isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("grpc-encoding")).isNull());
     }
   }
 
@@ -318,13 +364,16 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void compressionWithGzip() {
     try (TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("gzip").build()) {
-      // UpstreamGrpcSender doesn't support compression, so we skip the assertion
-      assumeThat(exporter.unwrap())
-          .extracting("delegate.grpcSender")
-          .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
-      assertThat(exporter.unwrap())
-          .extracting("delegate.grpcSender.compressor")
-          .isEqualTo(GzipCompressor.getInstance());
+
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .isSuccess())
+          .isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("grpc-encoding")).isEqualTo("gzip"));
     }
   }
 
@@ -335,13 +384,15 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
             .setEndpoint(server.httpUri().toString())
             .setCompression("base64")
             .build()) {
-      // UpstreamGrpcSender doesn't support compression, so we skip the assertion
-      assumeThat(exporter.unwrap())
-          .extracting("delegate.grpcSender")
-          .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
-      assertThat(exporter.unwrap())
-          .extracting("delegate.grpcSender.compressor")
-          .isEqualTo(Base64Compressor.getInstance());
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .isSuccess())
+          .isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("grpc-encoding")).isEqualTo("base64"));
     }
   }
 
@@ -551,7 +602,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void error() {
-    int statusCode = 13;
+    GrpcStatusCode statusCode = GrpcStatusCode.INTERNAL;
     addGrpcError(statusCode, null);
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
@@ -570,7 +621,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
               ex -> {
                 assertThat(ex.getResponse())
                     .isNotNull()
-                    .extracting(GrpcResponse::grpcStatusValue)
+                    .extracting(GrpcResponse::getStatusCode)
                     .isEqualTo(statusCode);
 
                 assertThat(ex.getCause()).isNull();
@@ -588,7 +639,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void errorWithUnknownError() {
-    addGrpcError(2, null);
+    addGrpcError(GrpcStatusCode.UNKNOWN, null);
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -611,7 +662,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void errorWithMessage() {
-    addGrpcError(8, "out of quota");
+    addGrpcError(GrpcStatusCode.RESOURCE_EXHAUSTED, "out of quota");
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -632,7 +683,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void errorWithEscapedMessage() {
-    addGrpcError(5, "クマ🐻");
+    addGrpcError(GrpcStatusCode.NOT_FOUND, "クマ🐻");
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -653,7 +704,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void testExport_Unavailable() {
-    addGrpcError(14, null);
+    addGrpcError(GrpcStatusCode.UNAVAILABLE, null);
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -675,7 +726,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   protected void testExport_Unimplemented() {
-    addGrpcError(12, "UNIMPLEMENTED");
+    addGrpcError(GrpcStatusCode.UNIMPLEMENTED, "UNIMPLEMENTED");
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -721,7 +772,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @ValueSource(ints = {1, 4, 8, 10, 11, 14, 15})
   @SuppressLogger(GrpcExporter.class)
   void retryableError(int code) {
-    addGrpcError(code, null);
+    addGrpcError(GrpcStatusCode.fromValue(code), null);
 
     assertThat(
             exporter
@@ -736,8 +787,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void retryableError_tooManyAttempts() {
-    addGrpcError(1, null);
-    addGrpcError(1, null);
+    addGrpcError(GrpcStatusCode.CANCELLED, null);
+    addGrpcError(GrpcStatusCode.CANCELLED, null);
 
     assertThat(
             exporter
@@ -753,7 +804,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @ValueSource(ints = {2, 3, 5, 6, 7, 9, 12, 13, 16})
   @SuppressLogger(GrpcExporter.class)
   void nonRetryableError(int code) {
-    addGrpcError(code, null);
+    addGrpcError(GrpcStatusCode.fromValue(code), null);
 
     assertThat(
             exporter
@@ -878,7 +929,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(classLoaderSpy.getResourcesNames)
           .isEqualTo(
               Collections.singletonList(
-                  "META-INF/services/io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider"));
+                  "META-INF/services/io.opentelemetry.sdk.common.export.GrpcSenderProvider"));
     }
   }
 
@@ -1019,7 +1070,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
                   + "endpoint=http://localhost:4317, "
-                  + "endpointPath=.*, "
+                  + "fullMethodName=.*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
@@ -1055,7 +1106,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
                   + "endpoint=http://example:4317, "
-                  + "endpointPath=.*, "
+                  + "fullMethodName=.*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
                   + ", "
@@ -1222,7 +1273,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     return exporterBuilder().setEndpoint(server.httpUri().toString()).setRetryPolicy(null).build();
   }
 
-  protected static void addGrpcError(int code, @Nullable String message) {
-    grpcErrors.add(new ArmeriaStatusException(code, message));
+  protected static void addGrpcError(GrpcStatusCode code, @Nullable String message) {
+    grpcErrors.add(new ArmeriaStatusException(code.getValue(), message));
   }
 }

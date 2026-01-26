@@ -13,6 +13,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
@@ -21,7 +22,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Experi
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableRuleBasedSamplerBuilder;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.SamplingPredicate;
-import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.HashSet;
 import java.util.List;

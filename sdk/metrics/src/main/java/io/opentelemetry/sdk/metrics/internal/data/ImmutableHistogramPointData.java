@@ -10,7 +10,7 @@ import static io.opentelemetry.sdk.metrics.internal.data.HistogramPointDataValid
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.internal.PrimitiveLongList;
+import io.opentelemetry.sdk.common.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.ArrayList;

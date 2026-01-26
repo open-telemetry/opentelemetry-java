@@ -9,7 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.export.MemoryMode;
-import io.opentelemetry.sdk.internal.RandomSupplier;
+import io.opentelemetry.sdk.common.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;

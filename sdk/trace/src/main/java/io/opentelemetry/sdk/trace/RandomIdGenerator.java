@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.sdk.internal.RandomSupplier;
+import io.opentelemetry.sdk.common.internal.RandomSupplier;
 import java.util.Random;
 import java.util.function.Supplier;
 

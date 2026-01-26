@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.GlobUtil;
+import io.opentelemetry.sdk.common.internal.GlobUtil;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;

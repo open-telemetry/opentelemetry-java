@@ -38,9 +38,9 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.AttributesMap;
-import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
-import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
+import io.opentelemetry.sdk.common.internal.AttributesMap;
+import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
+import io.opentelemetry.sdk.common.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -142,6 +142,19 @@ class SdkSpanTest {
         START_EPOCH_NANOS,
         StatusData.unset(),
         /* hasEnded= */ true);
+  }
+
+  /**
+   * {@code SdkSpan.spanEndingThread} prevents concurrent modification of spans while in the ending
+   * phase such that only {@link ExtendedSpanProcessor#onEnding(ReadWriteSpan)} implementations can
+   * modify. Here, we verify the thread ref is released so the thread can be garbage collected. This
+   * is particularly important where processors hold refs to {@link ReadWriteSpan}.
+   */
+  @Test
+  void end_ReleasesSpanEndingThreadRef() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    span.end();
+    assertThat(span).extracting("spanEndingThread").isNull();
   }
 
   @Test

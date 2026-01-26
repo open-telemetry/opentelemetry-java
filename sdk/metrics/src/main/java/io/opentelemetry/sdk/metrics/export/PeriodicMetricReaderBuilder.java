@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.export;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

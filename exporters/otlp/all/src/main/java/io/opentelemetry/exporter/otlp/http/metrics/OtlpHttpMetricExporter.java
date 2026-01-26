@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricReusableDataMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -30,8 +29,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpMetricExporter implements MetricExporter {
 
-  private final HttpExporterBuilder<Marshaler> builder;
-  private final HttpExporter<Marshaler> delegate;
+  private final HttpExporterBuilder builder;
+  private final HttpExporter delegate;
   // Visible for testing
   final AggregationTemporalitySelector aggregationTemporalitySelector;
   // Visible for testing
@@ -39,8 +38,8 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   private final MetricReusableDataMarshaler marshaler;
 
   OtlpHttpMetricExporter(
-      HttpExporterBuilder<Marshaler> builder,
-      HttpExporter<Marshaler> delegate,
+      HttpExporterBuilder builder,
+      HttpExporter delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector,
       MemoryMode memoryMode) {

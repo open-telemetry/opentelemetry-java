@@ -26,7 +26,7 @@ class CompressorUtilTest {
   @Test
   void validateAndResolveCompressor_gzip() {
     assertThat(CompressorUtil.validateAndResolveCompressor("gzip"))
-        .isEqualTo(GzipCompressor.getInstance());
+        .isInstanceOf(GzipCompressor.class);
   }
 
   @Test
@@ -44,7 +44,7 @@ class CompressorUtilTest {
   @Test
   void validateAndResolveCompressor_withClassLoader_gzip() {
     assertThat(CompressorUtil.validateAndResolveCompressor("gzip", componentLoader))
-        .isEqualTo(GzipCompressor.getInstance());
+        .isInstanceOf(GzipCompressor.class);
   }
 
   @Test
@@ -57,13 +57,13 @@ class CompressorUtilTest {
 
   @Test
   void validateAndResolveCompressor_emptyClassLoader() {
-    // Create a class loader that cannot load CompressorProvider services
+    // Create a class loader that cannot load Compressor services
     ComponentLoader emptyComponentLoader =
         ComponentLoader.forClassLoader(new URLClassLoader(new URL[0], null));
 
     // Gzip should still work because it's hardcoded
     assertThat(CompressorUtil.validateAndResolveCompressor("gzip", emptyComponentLoader))
-        .isEqualTo(GzipCompressor.getInstance());
+        .isInstanceOf(GzipCompressor.class);
 
     // None should still work because it doesn't require loading services
     assertThat(CompressorUtil.validateAndResolveCompressor("none", emptyComponentLoader)).isNull();

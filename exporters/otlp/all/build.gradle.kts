@@ -94,7 +94,7 @@ testing {
         all {
           testTask {
             systemProperty(
-              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
               "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
             )
           }
@@ -114,7 +114,7 @@ testing {
         all {
           testTask {
             systemProperty(
-              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
               "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
             )
           }
@@ -134,7 +134,7 @@ testing {
         all {
           testTask {
             systemProperty(
-              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
               "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
             )
           }
@@ -152,7 +152,7 @@ testing {
         all {
           testTask {
             systemProperty(
-              "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
+              "io.opentelemetry.sdk.common.export.HttpSenderProvider",
               "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider"
             )
             enabled = !testJavaVersion.equals("8")

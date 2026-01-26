@@ -30,11 +30,8 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
-import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
-import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -46,7 +43,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.AttributeAssertion;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -315,7 +312,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithNone() {
     try (TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build()) {
-      assertThat(exporter.unwrap()).extracting("delegate.httpSender.compressor").isNull();
 
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -330,9 +326,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithGzip() {
     try (TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build()) {
-      assertThat(exporter.unwrap())
-          .extracting("delegate.httpSender.compressor")
-          .isEqualTo(GzipCompressor.getInstance());
 
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -347,9 +340,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithSpiCompressor() {
     try (TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("base64").build()) {
-      assertThat(exporter.unwrap())
-          .extracting("delegate.httpSender.compressor")
-          .isEqualTo(Base64Compressor.getInstance());
 
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -582,10 +572,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   .satisfies(
                       response -> {
                         assertThat(response)
-                            .extracting(HttpSender.Response::statusCode)
+                            .extracting(
+                                io.opentelemetry.sdk.common.export.HttpResponse::getStatusCode)
                             .isEqualTo(statusCode);
 
-                        assertThatCode(response::responseBody).doesNotThrowAnyException();
+                        assertThatCode(response::getResponseBody).doesNotThrowAnyException();
                       });
 
               assertThat(ex.getCause()).isNull();
@@ -887,7 +878,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       assertThat(classLoaderSpy.getResourcesNames)
           .isEqualTo(
               Collections.singletonList(
-                  "META-INF/services/io.opentelemetry.exporter.internal.http.HttpSenderProvider"));
+                  "META-INF/services/io.opentelemetry.sdk.common.export.HttpSenderProvider"));
     }
   }
 

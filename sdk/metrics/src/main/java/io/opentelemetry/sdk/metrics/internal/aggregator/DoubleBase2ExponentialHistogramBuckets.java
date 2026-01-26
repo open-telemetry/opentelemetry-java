@@ -9,8 +9,8 @@ import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
-import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
-import io.opentelemetry.sdk.internal.PrimitiveLongList;
+import io.opentelemetry.sdk.common.internal.DynamicPrimitiveLongList;
+import io.opentelemetry.sdk.common.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import java.util.Collections;
 import java.util.List;

@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.zipkin.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
@@ -15,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // testing deprecated code
 class ZipkinSpanExporterProviderTest {
 
   private static final ZipkinSpanExporterProvider provider = new ZipkinSpanExporterProvider();
@@ -28,7 +28,8 @@ class ZipkinSpanExporterProviderTest {
   void createExporter_Default() {
     try (SpanExporter spanExporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
-      assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
+      assertThat(spanExporter)
+          .isInstanceOf(io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.class);
       assertThat(spanExporter)
           .extracting("sender")
           .extracting("delegate")
@@ -50,7 +51,8 @@ class ZipkinSpanExporterProviderTest {
 
     try (SpanExporter spanExporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
-      assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
+      assertThat(spanExporter)
+          .isInstanceOf(io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.class);
       assertThat(spanExporter)
           .extracting("sender")
           .extracting("delegate")

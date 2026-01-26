@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.http.logs;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.LogReusableDataMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -25,14 +24,12 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
 
-  private final HttpExporterBuilder<Marshaler> builder;
-  private final HttpExporter<Marshaler> delegate;
+  private final HttpExporterBuilder builder;
+  private final HttpExporter delegate;
   private final LogReusableDataMarshaler marshaler;
 
   OtlpHttpLogRecordExporter(
-      HttpExporterBuilder<Marshaler> builder,
-      HttpExporter<Marshaler> delegate,
-      MemoryMode memoryMode) {
+      HttpExporterBuilder builder, HttpExporter delegate, MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
     this.marshaler = new LogReusableDataMarshaler(memoryMode, delegate::export);

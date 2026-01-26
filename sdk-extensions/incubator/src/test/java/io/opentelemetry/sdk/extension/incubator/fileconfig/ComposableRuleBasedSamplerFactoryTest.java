@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.ComposableRuleBasedSamplerFactory.AttributeMatcher;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableAlwaysOffSamplerModel;
@@ -35,7 +36,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Experi
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalSpanParent;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanKind;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
-import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Arrays;
 import java.util.Collections;

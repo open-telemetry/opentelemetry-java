@@ -5,10 +5,9 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcSender;
-import io.opentelemetry.exporter.internal.grpc.GrpcSenderConfig;
-import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.export.GrpcSender;
+import io.opentelemetry.sdk.common.export.GrpcSenderConfig;
+import io.opentelemetry.sdk.common.export.GrpcSenderProvider;
 
 /**
  * {@link GrpcSender} SPI implementation for {@link OkHttpGrpcSender}.
@@ -19,12 +18,15 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
 
   @Override
-  public <T extends Marshaler> GrpcSender<T> createSender(GrpcSenderConfig<T> grpcSenderConfig) {
-    return new OkHttpGrpcSender<>(
-        grpcSenderConfig.getEndpoint().resolve(grpcSenderConfig.getEndpointPath()).toString(),
+  public GrpcSender createSender(GrpcSenderConfig grpcSenderConfig) {
+    return new OkHttpGrpcSender(
+        grpcSenderConfig
+            .getEndpoint()
+            .resolve("/" + grpcSenderConfig.getFullMethodName())
+            .toString(),
         grpcSenderConfig.getCompressor(),
-        grpcSenderConfig.getTimeoutNanos(),
-        grpcSenderConfig.getConnectTimeoutNanos(),
+        grpcSenderConfig.getTimeout(),
+        grpcSenderConfig.getConnectTimeout(),
         grpcSenderConfig.getHeadersSupplier(),
         grpcSenderConfig.getRetryPolicy(),
         grpcSenderConfig.getSslContext(),
