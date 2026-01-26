@@ -9,8 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.internal.all.OpenTelemetrySdkBuilderUtil;
-import io.opentelemetry.sdk.internal.all.SdkConfigProvider;
+import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
+import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;

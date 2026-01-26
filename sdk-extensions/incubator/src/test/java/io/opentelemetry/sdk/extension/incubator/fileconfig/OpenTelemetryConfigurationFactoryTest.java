@@ -52,9 +52,9 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Tracer
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
-import io.opentelemetry.sdk.internal.all.ExtendedOpenTelemetrySdk;
-import io.opentelemetry.sdk.internal.all.OpenTelemetrySdkBuilderUtil;
-import io.opentelemetry.sdk.internal.all.SdkConfigProvider;
+import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
+import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;

@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.sdk.internal.all.ExtendedOpenTelemetrySdk;
-import io.opentelemetry.sdk.internal.all.SdkConfigProvider;
+import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import javax.annotation.Nullable;
 
 /**

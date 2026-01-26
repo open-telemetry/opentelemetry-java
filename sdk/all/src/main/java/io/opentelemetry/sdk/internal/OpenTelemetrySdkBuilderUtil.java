@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.internal.all;
+package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
