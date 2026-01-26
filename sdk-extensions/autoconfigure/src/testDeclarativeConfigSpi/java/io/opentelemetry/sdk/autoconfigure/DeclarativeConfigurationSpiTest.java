@@ -10,12 +10,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.OpenTelemetrySdkBuilderUtil;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.internal.all.OpenTelemetrySdkBuilderUtil;
+import io.opentelemetry.sdk.internal.all.SdkConfigProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -29,7 +29,7 @@ class DeclarativeConfigurationSpiTest {
   @Test
   void configFromSpi() {
     OpenTelemetrySdk expectedSdk =
-        OpenTelemetrySdkBuilderUtil.setSdkConfigProvider(
+        OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder()
                     .setTracerProvider(
                         SdkTracerProvider.builder()
@@ -40,7 +40,7 @@ class DeclarativeConfigurationSpiTest {
                             .addSpanProcessor(
                                 SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                             .build()),
-                SdkConfigProvider.create(new OpenTelemetryConfigurationModel()))
+                SdkConfigProvider.create(DeclarativeConfigProperties.empty()))
             .build();
     cleanup.addCloseable(expectedSdk);
     AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());

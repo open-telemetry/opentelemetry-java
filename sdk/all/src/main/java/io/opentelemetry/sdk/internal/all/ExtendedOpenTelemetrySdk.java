@@ -3,19 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.incubator;
+package io.opentelemetry.sdk.internal.all;
 
 import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
-import java.io.Closeable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A new interface for creating OpenTelemetrySdk that supports getting {@link ConfigProvider}. */
+/**
+ * {@link ExtendedOpenTelemetrySdk} is SDK implementation of {@link ExtendedOpenTelemetry}.
+ *
+ * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
+ * APIs (or a version of them) may be promoted to the public stable API in the future, but no
+ * guarantees are made.
+ */
 public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
-    implements ExtendedOpenTelemetry, Closeable {
+    implements ExtendedOpenTelemetry {
 
   private final OpenTelemetrySdk openTelemetrySdk;
   private final ObfuscatedConfigProvider configProvider;

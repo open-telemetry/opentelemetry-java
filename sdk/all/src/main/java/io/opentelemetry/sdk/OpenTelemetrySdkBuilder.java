@@ -9,6 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.internal.all.OpenTelemetrySdkBuilderUtil;
+import io.opentelemetry.sdk.internal.all.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -23,20 +25,14 @@ public final class OpenTelemetrySdkBuilder {
   @Nullable private SdkTracerProvider tracerProvider;
   @Nullable private SdkMeterProvider meterProvider;
   @Nullable private SdkLoggerProvider loggerProvider;
-
-  @Nullable
-  private Object sdkConfigProvider =
-      INCUBATOR_AVAILABLE ? IncubatingUtil.noopSdkConfigProvider() : null;
+  @Nullable private Object configProvider;
 
   private static final boolean INCUBATOR_AVAILABLE;
 
   static {
     boolean incubatorAvailable = false;
     try {
-      Class.forName(
-          "io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider",
-          false,
-          OpenTelemetrySdkBuilder.class.getClassLoader());
+      Class.forName("io.opentelemetry.api.incubator.ExtendedOpenTelemetry");
       incubatorAvailable = true;
     } catch (ClassNotFoundException e) {
       // Not available
@@ -92,9 +88,14 @@ public final class OpenTelemetrySdkBuilder {
     return this;
   }
 
-  // called via reflection from incubator module
-  OpenTelemetrySdkBuilder setSdkConfigProvider(Object sdkConfigProvider) {
-    this.sdkConfigProvider = requireNonNull(sdkConfigProvider);
+  /**
+   * Sets the {@link SdkConfigProvider} to use.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * OpenTelemetrySdkBuilderUtil#setConfigProvider(OpenTelemetrySdkBuilder, SdkConfigProvider)}.
+   */
+  OpenTelemetrySdkBuilder setConfigProvider(SdkConfigProvider configProvider) {
+    this.configProvider = requireNonNull(configProvider);
     return this;
   }
 
@@ -142,8 +143,7 @@ public final class OpenTelemetrySdkBuilder {
     OpenTelemetrySdk openTelemetrySdk =
         new OpenTelemetrySdk(tracerProvider, meterProvider, loggerProvider, propagators);
     return INCUBATOR_AVAILABLE
-        ? IncubatingUtil.createExtendedOpenTelemetrySdk(
-            openTelemetrySdk, requireNonNull(sdkConfigProvider))
+        ? IncubatingUtil.createExtendedOpenTelemetrySdk(openTelemetrySdk, configProvider)
         : openTelemetrySdk;
   }
 }
