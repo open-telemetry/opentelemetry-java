@@ -13,7 +13,10 @@ import javax.annotation.concurrent.Immutable;
 final class ImmutableTraceFlags implements TraceFlags {
   private static final ImmutableTraceFlags[] INSTANCES = buildInstances();
   // Bit to represent whether trace is sampled or not.
-  private static final byte SAMPLED_BIT = 0x01;
+  static final byte SAMPLED_BIT = 0x01;
+  // Bit to indicate that the lower 56 bits of the trace id have been randomly generated with
+  // uniform distribution
+  static final byte RANDOM_TRACE_ID_BIT = 0x02;
 
   static final ImmutableTraceFlags DEFAULT = fromByte((byte) 0x00);
   static final ImmutableTraceFlags SAMPLED = fromByte(SAMPLED_BIT);
@@ -53,6 +56,11 @@ final class ImmutableTraceFlags implements TraceFlags {
   @Override
   public boolean isSampled() {
     return (this.byteRep & SAMPLED_BIT) != 0;
+  }
+
+  @Override
+  public boolean isTraceIdRandom() {
+    return (this.byteRep & RANDOM_TRACE_ID_BIT) != 0;
   }
 
   @Override

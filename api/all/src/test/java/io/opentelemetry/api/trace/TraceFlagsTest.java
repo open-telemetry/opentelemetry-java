@@ -15,15 +15,39 @@ class TraceFlagsTest {
   @Test
   void defaultInstances() {
     assertThat(TraceFlags.getDefault().asHex()).isEqualTo("00");
-    assertThat(TraceFlags.getSampled().asHex()).isEqualTo("01");
+    assertThat(TraceFlags.getDefault().withSampledBit().asHex()).isEqualTo("01");
+    assertThat(TraceFlags.getDefault().withRandomTraceIdBit().asHex()).isEqualTo("02");
+    assertThat(TraceFlags.getDefault().withRandomTraceIdBit().withSampledBit().asHex())
+        .isEqualTo("03");
+    assertThat(TraceFlags.getDefault().withSampledBit().withRandomTraceIdBit().asHex())
+        .isEqualTo("03");
+  }
+
+  @Test
+  void idempotency() {
+    assertThat(TraceFlags.getDefault().withRandomTraceIdBit().withRandomTraceIdBit().asHex())
+        .isEqualTo("02");
+    assertThat(TraceFlags.getDefault().withSampledBit().withSampledBit().asHex()).isEqualTo("01");
   }
 
   @Test
   void isSampled() {
     assertThat(TraceFlags.fromByte((byte) 0xff).isSampled()).isTrue();
     assertThat(TraceFlags.fromByte((byte) 0x01).isSampled()).isTrue();
+    assertThat(TraceFlags.fromByte((byte) 0x02).isSampled()).isFalse();
+    assertThat(TraceFlags.fromByte((byte) 0x03).isSampled()).isTrue();
     assertThat(TraceFlags.fromByte((byte) 0x05).isSampled()).isTrue();
     assertThat(TraceFlags.fromByte((byte) 0x00).isSampled()).isFalse();
+  }
+
+  @Test
+  void isTraceIdRandom() {
+    assertThat(TraceFlags.fromByte((byte) 0xff).isTraceIdRandom()).isTrue();
+    assertThat(TraceFlags.fromByte((byte) 0x01).isTraceIdRandom()).isFalse();
+    assertThat(TraceFlags.fromByte((byte) 0x02).isTraceIdRandom()).isTrue();
+    assertThat(TraceFlags.fromByte((byte) 0x03).isTraceIdRandom()).isTrue();
+    assertThat(TraceFlags.fromByte((byte) 0x05).isTraceIdRandom()).isFalse();
+    assertThat(TraceFlags.fromByte((byte) 0x00).isTraceIdRandom()).isFalse();
   }
 
   @Test
