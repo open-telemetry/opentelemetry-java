@@ -71,7 +71,8 @@ import org.openjdk.jmh.annotations.Warmup;
  */
 public class MetricRecordBenchmark {
 
-  private static final int recordCount = 10 * 1024;
+  private static final int INITIAL_SEED = 513423236;
+  private static final int RECORD_COUNT = 10 * 1024;
 
   @State(Scope.Benchmark)
   public static class ThreadState {
@@ -141,7 +142,7 @@ public class MetricRecordBenchmark {
       // We suppress warnings on closing here, as we rely on tests to make sure context is closed.
       contextScope = span.makeCurrent();
 
-      Random random = new Random();
+      Random random = new Random(INITIAL_SEED);
       attributesList = new ArrayList<>(cardinality);
       AttributeKey<String> key = AttributeKey.stringKey("key");
       String last = "aaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -153,8 +154,8 @@ public class MetricRecordBenchmark {
       }
       Collections.shuffle(attributesList);
 
-      measurements = new ArrayList<>(recordCount);
-      for (int i = 0; i < recordCount; i++) {
+      measurements = new ArrayList<>(RECORD_COUNT);
+      for (int i = 0; i < RECORD_COUNT; i++) {
         measurements.add((long) random.nextInt(2000));
       }
       Collections.shuffle(measurements);
@@ -189,7 +190,7 @@ public class MetricRecordBenchmark {
   }
 
   private static void record(ThreadState threadState) {
-    for (int i = 0; i < recordCount; i++) {
+    for (int i = 0; i < RECORD_COUNT; i++) {
       Attributes attributes = threadState.attributesList.get(i % threadState.attributesList.size());
       long value = threadState.measurements.get(i % threadState.measurements.size());
       threadState.instrument.record(value, attributes);
