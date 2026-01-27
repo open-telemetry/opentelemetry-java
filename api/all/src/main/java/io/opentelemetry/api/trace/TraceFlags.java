@@ -114,7 +114,7 @@ public interface TraceFlags {
   }
 
   /**
-   * Returns a new instance of {@link TraceFlags} whose value is the result of a bitwise OR between
+   * Returns an instance of {@link TraceFlags} whose value is the result of a bitwise OR between
    * this object and the RANDOM_TRACE_ID bit. This operation does not modify this object.
    *
    * @return a new {@link TraceFlags} object representing {@code this | RANDOM_TRACE_ID_BIT}
