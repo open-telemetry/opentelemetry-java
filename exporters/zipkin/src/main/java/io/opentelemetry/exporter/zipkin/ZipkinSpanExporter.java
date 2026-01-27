@@ -34,8 +34,8 @@ import zipkin2.reporter.Encoding;
  * href="https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin">OpenCensus
  * zipkin exporter</a> code.
  *
- * @deprecated Zipkin exporter is deprecated in OpenTelemetry spec (see the <a
- *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/4715">PR</a>).
+ * @deprecated Zipkin exporter is deprecated in the OpenTelemetry specification (see <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/4715">#4715</a>).
  *     Expect this artifact to no longer be published in approximately 6 months (mid 2026).
  */
 @Deprecated
