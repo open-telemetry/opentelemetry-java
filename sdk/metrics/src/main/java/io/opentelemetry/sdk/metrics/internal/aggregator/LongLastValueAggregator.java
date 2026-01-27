@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
@@ -88,8 +89,8 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData> 
   }
 
   static final class Handle extends AggregatorHandle<LongPointData> {
-    @Nullable private static final Long DEFAULT_VALUE = null;
-    private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
+    private final AtomicReference<AtomicLong> current = new AtomicReference<>(null);
+    private final AtomicLong value = new AtomicLong();
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePoint;
@@ -110,21 +111,22 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData> 
         Attributes attributes,
         List<LongExemplarData> exemplars,
         boolean reset) {
-      Long value = reset ? this.current.getAndSet(DEFAULT_VALUE) : this.current.get();
-
+      AtomicLong value =
+          Objects.requireNonNull(reset ? this.current.getAndSet(null) : this.current.get());
+      long currentValue = value.get();
       if (reusablePoint != null) {
-        reusablePoint.set(
-            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+        reusablePoint.set(startEpochNanos, epochNanos, attributes, currentValue, exemplars);
         return reusablePoint;
       } else {
         return ImmutableLongPointData.create(
-            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+            startEpochNanos, epochNanos, attributes, currentValue, exemplars);
       }
     }
 
     @Override
     protected void doRecordLong(long value) {
-      current.set(value);
+      this.value.set(value);
+      this.current.compareAndSet(null, this.value);
     }
   }
 }
