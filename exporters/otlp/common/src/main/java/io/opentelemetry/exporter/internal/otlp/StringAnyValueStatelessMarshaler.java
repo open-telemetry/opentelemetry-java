@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import java.io.IOException;
 
@@ -26,13 +27,12 @@ final class StringAnyValueStatelessMarshaler implements StatelessMarshaler<Strin
   @Override
   public void writeTo(Serializer output, String value, MarshalerContext context)
       throws IOException {
-    output.writeString(AnyValue.STRING_VALUE, value, context.getSize(), context);
+    output.writeStringWithContext(AnyValue.STRING_VALUE, value, context);
   }
 
   @Override
   public int getBinarySerializedSize(String value, MarshalerContext context) {
-    int utf8Size = context.getStringEncoder().getUtf8Size(value);
-    context.addSize(utf8Size);
+    int utf8Size = StatelessMarshalerUtil.getUtf8Size(value, context);
     return AnyValue.STRING_VALUE.getTagSize()
         + CodedOutputStream.computeUInt32SizeNoTag(utf8Size)
         + utf8Size;
