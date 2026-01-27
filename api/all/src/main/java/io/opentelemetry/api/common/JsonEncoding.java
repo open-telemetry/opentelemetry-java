@@ -99,7 +99,7 @@ final class JsonEncoding {
 
   private static void appendBytes(StringBuilder sb, ByteBuffer value) {
     byte[] bytes = new byte[value.remaining()];
-    value.duplicate().get(bytes);
+    value.get(bytes);
     sb.append('"').append(Base64.getEncoder().encodeToString(bytes)).append('"');
   }
 
