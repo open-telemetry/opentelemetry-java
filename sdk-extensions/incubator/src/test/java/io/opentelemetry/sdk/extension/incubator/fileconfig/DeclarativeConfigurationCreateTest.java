@@ -82,6 +82,10 @@ class DeclarativeConfigurationCreateTest {
           new String(Files.readAllBytes(example.toPath()), StandardCharsets.UTF_8);
       String rewrittenExampleContent =
           exampleContent
+              // TODO: remove ottrace workagrounds after updating to next version of declarative
+              // configuration
+              .replaceAll(".*- ottrace:.*\n", "")
+              .replaceAll("ottrace", "")
               .replaceAll(
                   "ca_file: .*\n",
                   "ca_file: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())

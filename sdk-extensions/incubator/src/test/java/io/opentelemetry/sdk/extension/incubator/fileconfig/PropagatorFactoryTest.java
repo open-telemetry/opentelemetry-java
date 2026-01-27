@@ -16,14 +16,12 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
-import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.TextMapPropagatorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.B3MultiPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.B3PropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BaggagePropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerPropagatorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTracingPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceContextPropagatorModel;
@@ -48,6 +46,7 @@ class PropagatorFactoryTest {
     assertThat(propagators.toString()).isEqualTo(expectedPropagators.toString());
   }
 
+  @SuppressWarnings("deprecation")
   private static Stream<Arguments> createArguments() {
     return Stream.of(
         // structured list
@@ -58,7 +57,6 @@ class PropagatorFactoryTest {
                         new TextMapPropagatorModel()
                             .withTracecontext(new TraceContextPropagatorModel()),
                         new TextMapPropagatorModel().withBaggage(new BaggagePropagatorModel()),
-                        new TextMapPropagatorModel().withOttrace(new OpenTracingPropagatorModel()),
                         new TextMapPropagatorModel().withB3multi(new B3MultiPropagatorModel()),
                         new TextMapPropagatorModel().withB3(new B3PropagatorModel()),
                         new TextMapPropagatorModel().withJaeger(new JaegerPropagatorModel()))),
@@ -66,19 +64,16 @@ class PropagatorFactoryTest {
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(),
                     W3CBaggagePropagator.getInstance(),
-                    OtTracePropagator.getInstance(),
                     B3Propagator.injectingMultiHeaders(),
                     B3Propagator.injectingSingleHeader(),
                     JaegerPropagator.getInstance()))),
         // string list
         Arguments.of(
-            new PropagatorModel()
-                .withCompositeList("tracecontext,baggage,ottrace,b3multi,b3,jaeger ,none"),
+            new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3,jaeger ,none"),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(),
                     W3CBaggagePropagator.getInstance(),
-                    OtTracePropagator.getInstance(),
                     B3Propagator.injectingMultiHeaders(),
                     B3Propagator.injectingSingleHeader(),
                     JaegerPropagator.getInstance()))),
@@ -90,12 +85,11 @@ class PropagatorFactoryTest {
                         new TextMapPropagatorModel()
                             .withTracecontext(new TraceContextPropagatorModel()),
                         new TextMapPropagatorModel().withBaggage(new BaggagePropagatorModel())))
-                .withCompositeList("ottrace,b3multi,b3,jaeger"),
+                .withCompositeList("b3multi,b3,jaeger"),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(),
                     W3CBaggagePropagator.getInstance(),
-                    OtTracePropagator.getInstance(),
                     B3Propagator.injectingMultiHeaders(),
                     B3Propagator.injectingSingleHeader(),
                     JaegerPropagator.getInstance()))),
@@ -107,12 +101,11 @@ class PropagatorFactoryTest {
                         new TextMapPropagatorModel()
                             .withTracecontext(new TraceContextPropagatorModel()),
                         new TextMapPropagatorModel().withBaggage(new BaggagePropagatorModel())))
-                .withCompositeList("tracecontext,ottrace,b3multi,b3,jaeger"),
+                .withCompositeList("tracecontext,b3multi,b3,jaeger"),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(),
                     W3CBaggagePropagator.getInstance(),
-                    OtTracePropagator.getInstance(),
                     B3Propagator.injectingMultiHeaders(),
                     B3Propagator.injectingSingleHeader(),
                     JaegerPropagator.getInstance()))),

@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation")
 class OtTracePropagatorTest {
 
   private static final String TRACE_ID = "ff000000000000000000000000000041";
