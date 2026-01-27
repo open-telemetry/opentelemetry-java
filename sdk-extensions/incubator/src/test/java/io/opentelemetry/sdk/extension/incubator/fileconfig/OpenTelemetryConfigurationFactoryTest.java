@@ -19,7 +19,6 @@ import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
-import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -190,8 +189,7 @@ class OpenTelemetryConfigurationFactoryTest {
         new OpenTelemetryConfigurationModel()
             .withFileFormat("1.0-rc.1")
             .withPropagator(
-                new PropagatorModel()
-                    .withCompositeList("tracecontext,baggage,ottrace,b3multi,b3,jaeger"))
+                new PropagatorModel().withCompositeList("tracecontext,baggage,ottrace,b3multi,b3"))
             .withResource(
                 new ResourceModel()
                     .withDetectionDevelopment(
@@ -273,8 +271,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                 W3CBaggagePropagator.getInstance(),
                                 OtTracePropagator.getInstance(),
                                 B3Propagator.injectingMultiHeaders(),
-                                B3Propagator.injectingSingleHeader(),
-                                JaegerPropagator.getInstance())))
+                                B3Propagator.injectingSingleHeader())))
                     .setLoggerProvider(
                         SdkLoggerProvider.builder()
                             .setResource(expectedResource)

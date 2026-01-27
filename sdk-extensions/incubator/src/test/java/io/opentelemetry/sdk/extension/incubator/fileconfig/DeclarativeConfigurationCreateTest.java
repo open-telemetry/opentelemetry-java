@@ -82,6 +82,9 @@ class DeclarativeConfigurationCreateTest {
           new String(Files.readAllBytes(example.toPath()), StandardCharsets.UTF_8);
       String rewrittenExampleContent =
           exampleContent
+              // TODO: remove jaeger workarounds after next release
+              .replaceAll(".*- jaeger:.*\n", "")
+              .replaceAll("jaeger", "")
               .replaceAll(
                   "ca_file: .*\n",
                   "ca_file: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
