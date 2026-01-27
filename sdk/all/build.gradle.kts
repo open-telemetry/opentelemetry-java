@@ -17,6 +17,8 @@ dependencies {
   api(project(":sdk:metrics"))
   api(project(":sdk:logs"))
 
+  compileOnly(project(":api:incubator"))
+
   annotationProcessor("com.google.auto.value:auto-value")
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
