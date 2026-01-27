@@ -13,8 +13,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.internal.Signal;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.Signal;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 

@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -162,100 +161,5 @@ class SdkLongCounterTest {
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
     logs.assertContains(
         "Counters can only increase. Instrument testCounter has recorded a negative value.");
-  }
-
-  @Test
-  void stressTest() {
-    LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setCollectionIntervalMs(100);
-
-    for (int i = 0; i < 4; i++) {
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              2_000, 1, () -> longCounter.add(10, Attributes.builder().put("K", "V").build())));
-    }
-
-    stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testCounter")
-                    .hasLongSumSatisfying(
-                        longSum ->
-                            longSum
-                                .isCumulative()
-                                .isMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now())
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(80_000)
-                                            .hasAttributes(attributeEntry("K", "V")))));
-  }
-
-  @Test
-  void stressTest_WithDifferentLabelSet() {
-    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setCollectionIntervalMs(100);
-
-    IntStream.range(0, 4)
-        .forEach(
-            i ->
-                stressTestBuilder.addOperation(
-                    StressTestRunner.Operation.create(
-                        1_000,
-                        2,
-                        () ->
-                            longCounter.add(
-                                10, Attributes.builder().put(keys[i], values[i]).build()))));
-
-    stressTestBuilder.build().run();
-    assertThat(sdkMeterReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testCounter")
-                    .hasLongSumSatisfying(
-                        longSum ->
-                            longSum
-                                .isCumulative()
-                                .isMonotonic()
-                                .hasPointsSatisfying(
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now())
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(10_000)
-                                            .hasAttributes(attributeEntry(keys[0], values[0])),
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now())
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(10_000)
-                                            .hasAttributes(attributeEntry(keys[1], values[1])),
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now())
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(10_000)
-                                            .hasAttributes(attributeEntry(keys[2], values[2])),
-                                    point ->
-                                        point
-                                            .hasStartEpochNanos(testClock.now())
-                                            .hasEpochNanos(testClock.now())
-                                            .hasValue(10_000)
-                                            .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
 }

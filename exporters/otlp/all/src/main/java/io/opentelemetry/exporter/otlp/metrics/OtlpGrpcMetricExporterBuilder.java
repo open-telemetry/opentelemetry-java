@@ -12,14 +12,13 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -43,27 +42,25 @@ import javax.net.ssl.X509TrustManager;
  */
 public final class OtlpGrpcMetricExporterBuilder {
 
-  private static final String GRPC_SERVICE_NAME =
-      "opentelemetry.proto.collector.metrics.v1.MetricsService";
-  // Visible for testing
-  static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/Export";
+  private static final String GRPC_FULL_METHOD_NAME =
+      "opentelemetry.proto.collector.metrics.v1.MetricsService/Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
-  private static final long DEFAULT_TIMEOUT_SECS = 10;
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   // Visible for testing
-  final GrpcExporterBuilder<Marshaler> delegate;
+  final GrpcExporterBuilder delegate;
 
   private AggregationTemporalitySelector aggregationTemporalitySelector;
   private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
   OtlpGrpcMetricExporterBuilder(
-      GrpcExporterBuilder<Marshaler> delegate,
+      GrpcExporterBuilder delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector,
       MemoryMode memoryMode) {
@@ -76,12 +73,11 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   OtlpGrpcMetricExporterBuilder() {
     this(
-        new GrpcExporterBuilder<>(
+        new GrpcExporterBuilder(
             StandardComponentId.ExporterType.OTLP_GRPC_METRIC_EXPORTER,
-            DEFAULT_TIMEOUT_SECS,
+            DEFAULT_TIMEOUT,
             DEFAULT_ENDPOINT,
-            () -> MarshalerMetricsServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH),
+            GRPC_FULL_METHOD_NAME),
         DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
         DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
@@ -108,18 +104,17 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@link #DEFAULT_TIMEOUT}.
    */
   public OtlpGrpcMetricExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setTimeout(timeout, unit);
-    return this;
+    return setTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@link #DEFAULT_TIMEOUT}.
    */
   public OtlpGrpcMetricExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -136,8 +131,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   public OtlpGrpcMetricExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setConnectTimeout(timeout, unit);
-    return this;
+    return setConnectTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
@@ -148,7 +142,8 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
-    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+    delegate.setConnectTimeout(timeout);
+    return this;
   }
 
   /**

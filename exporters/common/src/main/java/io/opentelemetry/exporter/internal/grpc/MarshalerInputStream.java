@@ -25,7 +25,7 @@ package io.opentelemetry.exporter.internal.grpc;
 import com.google.common.io.ByteStreams;
 import io.grpc.Drainable;
 import io.grpc.KnownLength;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,7 +34,7 @@ import java.io.OutputStream;
 import javax.annotation.Nullable;
 
 /**
- * Adapter from {@link Marshaler} to gRPC types.
+ * Adapter from {@link MessageWriter} to gRPC types.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -43,11 +43,11 @@ import javax.annotation.Nullable;
 // https://github.com/grpc/grpc-java/blob/2c2ebaebd5a93acec92fbd2708faac582db99371/protobuf-lite/src/main/java/io/grpc/protobuf/lite/ProtoInputStream.java
 public final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {
 
-  @Nullable private Marshaler message;
+  @Nullable private MessageWriter message;
   @Nullable private ByteArrayInputStream partial;
 
   /** Creates a new {@link MarshalerInputStream}. */
-  public MarshalerInputStream(Marshaler message) {
+  public MarshalerInputStream(MessageWriter message) {
     this.message = message;
   }
 
@@ -55,8 +55,8 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   public int drainTo(OutputStream target) throws IOException {
     int written;
     if (message != null) {
-      written = message.getBinarySerializedSize();
-      message.writeBinaryTo(target);
+      written = message.getContentLength();
+      message.writeMessage(target);
       message = null;
     } else if (partial != null) {
       written = (int) ByteStreams.copy(partial, target);
@@ -82,7 +82,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   @Override
   public int read(byte[] b, int off, int len) throws IOException {
     if (message != null) {
-      int size = message.getBinarySerializedSize();
+      int size = message.getContentLength();
       if (size == 0) {
         message = null;
         partial = null;
@@ -103,16 +103,16 @@ public final class MarshalerInputStream extends InputStream implements Drainable
     return -1;
   }
 
-  private static byte[] toByteArray(Marshaler message) throws IOException {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getBinarySerializedSize());
-    message.writeBinaryTo(bos);
+  private static byte[] toByteArray(MessageWriter message) throws IOException {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getContentLength());
+    message.writeMessage(bos);
     return bos.toByteArray();
   }
 
   @Override
   public int available() {
     if (message != null) {
-      return message.getBinarySerializedSize();
+      return message.getContentLength();
     } else if (partial != null) {
       return partial.available();
     }

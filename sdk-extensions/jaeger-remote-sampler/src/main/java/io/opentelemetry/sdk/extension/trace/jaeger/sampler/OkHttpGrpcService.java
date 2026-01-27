@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.sender.okhttp.internal.GrpcRequestBody;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -52,7 +52,7 @@ final class OkHttpGrpcService implements GrpcService {
       SamplingStrategyResponseUnMarshaler responseUnmarshaller) {
     Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
 
-    RequestBody requestBody = new GrpcRequestBody(exportRequest, null);
+    RequestBody requestBody = new GrpcRequestBody(exportRequest.toBinaryMessageWriter(), null);
     requestBuilder.post(requestBody);
 
     try {
@@ -68,8 +68,8 @@ final class OkHttpGrpcService implements GrpcService {
         // HTTP error.
       }
 
-      String status = grpcStatus(response);
-      if ("0".equals(status)) {
+      GrpcStatusCode status = grpcStatus(response);
+      if (GrpcStatusCode.OK == status) {
         if (bodyBytes.length > 5) {
           ByteArrayInputStream bodyStream = new ByteArrayInputStream(bodyBytes);
           bodyStream.skip(5);
@@ -88,11 +88,8 @@ final class OkHttpGrpcService implements GrpcService {
       }
 
       // handle non OK status codes
-      String codeMessage =
-          status != null ? "gRPC status code " + status : "HTTP status code " + response.code();
       String errorMessage = grpcMessage(response);
-
-      if (String.valueOf(GrpcExporterUtil.GRPC_STATUS_UNIMPLEMENTED).equals(status)) {
+      if (GrpcStatusCode.UNIMPLEMENTED == status) {
         logger.log(
             Level.SEVERE,
             "Failed to execute "
@@ -100,7 +97,7 @@ final class OkHttpGrpcService implements GrpcService {
                 + "s. Server responded with UNIMPLEMENTED. "
                 + "Full error message: "
                 + errorMessage);
-      } else if (String.valueOf(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE).equals(status)) {
+      } else if (GrpcStatusCode.UNAVAILABLE == status) {
         logger.log(
             Level.SEVERE,
             "Failed to execute "
@@ -110,6 +107,8 @@ final class OkHttpGrpcService implements GrpcService {
                 + "Full error message:"
                 + errorMessage);
       } else {
+        String codeMessage =
+            status != null ? "gRPC status code " + status : "HTTP status code " + response.code();
         logger.log(
             Level.WARNING,
             "Failed to execute "
@@ -132,18 +131,26 @@ final class OkHttpGrpcService implements GrpcService {
   }
 
   @Nullable
-  private static String grpcStatus(Response response) {
+  private static GrpcStatusCode grpcStatus(Response response) {
     // Status can either be in the headers or trailers depending on error
     String grpcStatus = response.header(GRPC_STATUS);
     if (grpcStatus == null) {
       try {
         grpcStatus = response.trailers().get(GRPC_STATUS);
+        if (grpcStatus == null) {
+          return null;
+        }
       } catch (IOException e) {
         // Could not read a status, this generally means the HTTP status is the error.
         return null;
       }
     }
-    return grpcStatus;
+    try {
+      return GrpcStatusCode.fromValue(Integer.parseInt(grpcStatus));
+    } catch (NumberFormatException ex) {
+      // If grpcStatus is not an integer, it's not a valid grpc status code
+      return null;
+    }
   }
 
   private static String grpcMessage(Response response) {

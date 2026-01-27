@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.defaultConfig;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.disabled;
@@ -17,7 +17,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;

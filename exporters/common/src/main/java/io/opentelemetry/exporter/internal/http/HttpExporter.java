@@ -12,9 +12,13 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.internal.StandardComponentId;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.common.export.HttpResponse;
+import io.opentelemetry.sdk.common.export.HttpSender;
+import io.opentelemetry.sdk.common.export.MessageWriter;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -28,7 +32,7 @@ import javax.annotation.Nullable;
  * at any time.
  */
 @SuppressWarnings("checkstyle:JavadocMethod")
-public final class HttpExporter<T extends Marshaler> {
+public final class HttpExporter {
 
   private static final Logger internalLogger = Logger.getLogger(HttpExporter.class.getName());
 
@@ -38,21 +42,24 @@ public final class HttpExporter<T extends Marshaler> {
   private final String type;
   private final HttpSender httpSender;
   private final ExporterInstrumentation exporterMetrics;
+  private final boolean exportAsJson;
 
   public HttpExporter(
       StandardComponentId componentId,
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetryVersion internalTelemetryVersion,
-      String endpoint) {
+      URI endpoint,
+      boolean exportAsJson) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
     this.httpSender = httpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
+    this.exportAsJson = exportAsJson;
   }
 
-  public CompletableResultCode export(T exportRequest, int numItems) {
+  public CompletableResultCode export(Marshaler exportRequest, int numItems) {
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }
@@ -61,10 +68,11 @@ public final class HttpExporter<T extends Marshaler> {
         exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
+    MessageWriter messageWriter =
+        exportAsJson ? exportRequest.toJsonMessageWriter() : exportRequest.toBinaryMessageWriter();
 
     httpSender.send(
-        exportRequest,
-        exportRequest.getBinarySerializedSize(),
+        messageWriter,
         httpResponse -> onResponse(result, metricRecording, httpResponse),
         throwable -> onError(result, metricRecording, throwable));
 
@@ -74,8 +82,8 @@ public final class HttpExporter<T extends Marshaler> {
   private void onResponse(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
-      HttpSender.Response httpResponse) {
-    int statusCode = httpResponse.statusCode();
+      HttpResponse httpResponse) {
+    int statusCode = httpResponse.getStatusCode();
 
     metricRecording.setHttpStatusCode(statusCode);
 
@@ -87,14 +95,9 @@ public final class HttpExporter<T extends Marshaler> {
 
     metricRecording.finishFailed(String.valueOf(statusCode));
 
-    byte[] body = null;
-    try {
-      body = httpResponse.responseBody();
-    } catch (IOException ex) {
-      logger.log(Level.FINE, "Unable to obtain response body", ex);
-    }
+    byte[] body = httpResponse.getResponseBody();
 
-    String status = extractErrorStatus(httpResponse.statusMessage(), body);
+    String status = extractErrorStatus(httpResponse.getStatusMessage(), body);
 
     logger.log(
         Level.WARNING,

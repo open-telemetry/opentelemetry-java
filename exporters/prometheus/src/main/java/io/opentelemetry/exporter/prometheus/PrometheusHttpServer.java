@@ -14,7 +14,7 @@ import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
-import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;

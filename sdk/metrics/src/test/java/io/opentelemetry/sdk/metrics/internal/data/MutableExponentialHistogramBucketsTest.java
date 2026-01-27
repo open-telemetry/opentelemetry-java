@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
+import io.opentelemetry.sdk.common.internal.DynamicPrimitiveLongList;
 import org.junit.jupiter.api.Test;
 
 class MutableExponentialHistogramBucketsTest {

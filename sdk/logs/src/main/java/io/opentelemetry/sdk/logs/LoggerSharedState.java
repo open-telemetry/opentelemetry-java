@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
+import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;

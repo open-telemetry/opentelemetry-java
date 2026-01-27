@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.metrics.internal.data.HistogramPointDataValid
 import static io.opentelemetry.sdk.metrics.internal.data.HistogramPointDataValidations.validateIsStrictlyIncreasing;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
+import io.opentelemetry.sdk.common.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.Collections;

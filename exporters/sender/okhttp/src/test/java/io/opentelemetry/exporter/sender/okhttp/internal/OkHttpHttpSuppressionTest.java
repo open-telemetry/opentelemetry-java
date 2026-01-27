@@ -5,11 +5,12 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
-import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 
 class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttpSender> {
@@ -17,31 +18,29 @@ class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttp
   @Override
   void send(OkHttpHttpSender sender, Runnable onSuccess, Runnable onFailure) {
     byte[] content = "A".getBytes(StandardCharsets.UTF_8);
-    Marshaler marshaler =
-        new Marshaler() {
+    MessageWriter requestBodyWriter =
+        new MessageWriter() {
           @Override
-          public int getBinarySerializedSize() {
-            return content.length;
+          public void writeMessage(OutputStream output) throws IOException {
+            output.write(content);
           }
 
           @Override
-          protected void writeTo(Serializer output) throws IOException {
-            output.serializeBytes(ProtoFieldInfo.create(1, 1, "field"), content);
+          public int getContentLength() {
+            return content.length;
           }
         };
-    sender.send(
-        marshaler, content.length, (response) -> onSuccess.run(), (error) -> onFailure.run());
+    sender.send(requestBodyWriter, (response) -> onSuccess.run(), (error) -> onFailure.run());
   }
 
   @Override
   OkHttpHttpSender createSender(String endpoint) {
     return new OkHttpHttpSender(
-        endpoint,
-        null,
-        false,
+        URI.create(endpoint),
         "text/plain",
-        10L,
-        10L,
+        null,
+        Duration.ofNanos(10),
+        Duration.ofNanos(10),
         Collections::emptyMap,
         null,
         null,

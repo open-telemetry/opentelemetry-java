@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.internal;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
-import io.opentelemetry.exporter.internal.http.HttpSender;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
+import io.opentelemetry.sdk.common.export.HttpResponse;
 import javax.annotation.Nullable;
 
 /**
@@ -24,7 +24,7 @@ public abstract class FailedExportException extends Exception {
   }
 
   /** Indicates an HTTP export failed after receiving a response from the server. */
-  public static HttpExportException httpFailedWithResponse(HttpSender.Response response) {
+  public static HttpExportException httpFailedWithResponse(HttpResponse response) {
     return new HttpExportException(response, null);
   }
 
@@ -56,10 +56,10 @@ public abstract class FailedExportException extends Exception {
 
     private static final long serialVersionUID = -6787390183017184775L;
 
-    @Nullable private final HttpSender.Response response;
+    @Nullable private final HttpResponse response;
     @Nullable private final Throwable cause;
 
-    private HttpExportException(@Nullable HttpSender.Response response, @Nullable Throwable cause) {
+    private HttpExportException(@Nullable HttpResponse response, @Nullable Throwable cause) {
       super(cause);
       this.response = response;
       this.cause = cause;
@@ -75,7 +75,7 @@ public abstract class FailedExportException extends Exception {
      * export failed exceptionally with no response.
      */
     @Nullable
-    public HttpSender.Response getResponse() {
+    public HttpResponse getResponse() {
       return response;
     }
 

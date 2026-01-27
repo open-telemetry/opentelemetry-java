@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.internal.SemConvAttributes.ERROR_TYPE;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_COMPONENT_NAME;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_COMPONENT_TYPE;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.ERROR_TYPE;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_COMPONENT_NAME;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_COMPONENT_TYPE;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;

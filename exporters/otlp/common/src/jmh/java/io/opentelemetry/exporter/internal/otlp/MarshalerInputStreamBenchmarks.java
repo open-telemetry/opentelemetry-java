@@ -33,7 +33,8 @@ public class MarshalerInputStreamBenchmarks {
   @Threads(1)
   public void marshalToNettyBuffer(RequestMarshalState state) throws IOException {
     MarshalerInputStream stream =
-        new MarshalerInputStream(TraceRequestMarshaler.create(state.spanDataList));
+        new MarshalerInputStream(
+            TraceRequestMarshaler.create(state.spanDataList).toBinaryMessageWriter());
     // Roughly reproduce how grpc-netty should behave.
     ByteBuf buf = PooledByteBufAllocator.DEFAULT.buffer(stream.available());
     stream.drainTo(new ByteBufOutputStream(buf));
@@ -44,7 +45,8 @@ public class MarshalerInputStreamBenchmarks {
   @Threads(1)
   public void marshalToByteArray(RequestMarshalState state) throws IOException {
     MarshalerInputStream stream =
-        new MarshalerInputStream(TraceRequestMarshaler.create(state.spanDataList));
+        new MarshalerInputStream(
+            TraceRequestMarshaler.create(state.spanDataList).toBinaryMessageWriter());
     stream.drainTo(new ByteArrayOutputStream(stream.available()));
   }
 }
