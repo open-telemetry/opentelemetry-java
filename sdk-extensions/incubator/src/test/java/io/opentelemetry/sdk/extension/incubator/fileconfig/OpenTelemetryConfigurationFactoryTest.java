@@ -20,7 +20,6 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
-import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -174,6 +173,7 @@ class OpenTelemetryConfigurationFactoryTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void create_Configured() throws NoSuchFieldException, IllegalAccessException {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.resources.Resource expectedResource =
@@ -190,8 +190,7 @@ class OpenTelemetryConfigurationFactoryTest {
         new OpenTelemetryConfigurationModel()
             .withFileFormat("1.0-rc.1")
             .withPropagator(
-                new PropagatorModel()
-                    .withCompositeList("tracecontext,baggage,ottrace,b3multi,b3,jaeger"))
+                new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3,jaeger"))
             .withResource(
                 new ResourceModel()
                     .withDetectionDevelopment(
@@ -271,7 +270,6 @@ class OpenTelemetryConfigurationFactoryTest {
                             TextMapPropagator.composite(
                                 W3CTraceContextPropagator.getInstance(),
                                 W3CBaggagePropagator.getInstance(),
-                                OtTracePropagator.getInstance(),
                                 B3Propagator.injectingMultiHeaders(),
                                 B3Propagator.injectingSingleHeader(),
                                 JaegerPropagator.getInstance())))
