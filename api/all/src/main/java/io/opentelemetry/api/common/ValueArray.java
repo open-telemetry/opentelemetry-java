@@ -43,7 +43,7 @@ final class ValueArray implements Value<List<Value<?>>> {
   @Override
   public String asString() {
     StringBuilder sb = new StringBuilder();
-    ProtoJson.append(sb, this);
+    JsonEncoding.append(sb, this);
     return sb.toString();
   }
 

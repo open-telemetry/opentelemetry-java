@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.List;
 
-final class ProtoJson {
+final class JsonEncoding {
 
   private static final char[] HEX_DIGITS = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
@@ -128,5 +128,5 @@ final class ProtoJson {
     sb.append('}');
   }
 
-  private ProtoJson() {}
+  private JsonEncoding() {}
 }
