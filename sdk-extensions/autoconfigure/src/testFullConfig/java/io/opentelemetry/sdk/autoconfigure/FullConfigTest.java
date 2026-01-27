@@ -166,6 +166,7 @@ public class FullConfigTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void configures() throws Exception {
     Collection<String> fields =
         GlobalOpenTelemetry.get().getPropagators().getTextMapPropagator().fields();
