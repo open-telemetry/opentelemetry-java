@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.common.internal.Signal;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
@@ -84,7 +85,7 @@ public class ExporterInstrumentation {
 
     private final ExporterMetrics.Recording delegate;
     @Nullable private Long httpStatusCode;
-    @Nullable private Long grpcStatusCode;
+    @Nullable private GrpcStatusCode grpcStatusCode;
 
     private Recording(ExporterMetrics.Recording delegate) {
       this.delegate = delegate;
@@ -98,7 +99,7 @@ public class ExporterInstrumentation {
       this.httpStatusCode = httpStatusCode;
     }
 
-    public void setGrpcStatusCode(long grpcStatusCode) {
+    public void setGrpcStatusCode(GrpcStatusCode grpcStatusCode) {
       if (httpStatusCode != null) {
         throw new IllegalStateException(
             "HTTP status code already set, can only set either gRPC or HTTP");
@@ -135,7 +136,7 @@ public class ExporterInstrumentation {
         return Attributes.of(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, httpStatusCode);
       }
       if (grpcStatusCode != null) {
-        return Attributes.of(SemConvAttributes.RPC_GRPC_STATUS_CODE, grpcStatusCode);
+        return Attributes.of(SemConvAttributes.RPC_RESPONSE_STATUS_CODE, grpcStatusCode.name());
       }
       return Attributes.empty();
     }

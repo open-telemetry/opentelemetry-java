@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 class SemConvAttributesTest {
 
   @Test
+  @SuppressWarnings("deprecation") // Using RpcIncubatingAttributes.RPC_GRPC_STATUS_CODE
   void testAttributeKeys() {
     assertThat(SemConvAttributes.OTEL_COMPONENT_NAME)
         .isEqualTo(OtelIncubatingAttributes.OTEL_COMPONENT_NAME);
@@ -27,8 +28,8 @@ class SemConvAttributesTest {
 
     assertThat(SemConvAttributes.SERVER_ADDRESS).isEqualTo(ServerAttributes.SERVER_ADDRESS);
     assertThat(SemConvAttributes.SERVER_PORT).isEqualTo(ServerAttributes.SERVER_PORT);
-    assertThat(SemConvAttributes.RPC_GRPC_STATUS_CODE)
-        .isEqualTo(RpcIncubatingAttributes.RPC_GRPC_STATUS_CODE);
+    assertThat(SemConvAttributes.RPC_RESPONSE_STATUS_CODE)
+        .isEqualTo(RpcIncubatingAttributes.RPC_RESPONSE_STATUS_CODE);
     assertThat(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE)
         .isEqualTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE);
 
