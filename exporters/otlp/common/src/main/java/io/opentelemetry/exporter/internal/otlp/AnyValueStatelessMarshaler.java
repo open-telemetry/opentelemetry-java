@@ -65,6 +65,9 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
         BytesAnyValueStatelessMarshaler.INSTANCE.writeTo(
             output, (ByteBuffer) value.getValue(), context);
         return;
+      case EMPTY:
+        // no field to write
+        return;
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.
@@ -102,6 +105,8 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
       case BYTES:
         return BytesAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
             (ByteBuffer) value.getValue(), context);
+      case EMPTY:
+        return 0;
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.

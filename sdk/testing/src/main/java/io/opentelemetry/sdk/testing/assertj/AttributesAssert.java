@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -88,6 +89,11 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   /** Asserts the attributes have the given key and double array value. */
   public AttributesAssert containsEntry(String key, Double... value) {
     return containsEntry(AttributeKey.doubleArrayKey(key), Arrays.asList(value));
+  }
+
+  /** Asserts the attributes have the given key and {@link Value} value. */
+  public AttributesAssert containsEntry(String key, Value<?> value) {
+    return containsEntry(AttributeKey.valueKey(key), value);
   }
 
   /** Asserts the attributes have the given key and string array value. */

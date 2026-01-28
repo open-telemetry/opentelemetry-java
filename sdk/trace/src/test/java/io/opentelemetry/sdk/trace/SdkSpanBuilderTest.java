@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -367,8 +369,10 @@ class SdkSpanBuilderTest {
     spanBuilder.setAttribute(booleanArrayKey("boolArrayAttribute"), Arrays.asList(true, null));
     spanBuilder.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
     spanBuilder.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
+    spanBuilder.setAttribute(valueKey("emptyValue"), Value.empty());
+    spanBuilder.setAttribute(valueKey("nullValue"), null);
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
   }
 
   @Test
@@ -383,8 +387,9 @@ class SdkSpanBuilderTest {
     spanBuilder.setAttribute(booleanArrayKey("boolArrayAttribute"), Arrays.asList(true, null));
     spanBuilder.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
     spanBuilder.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
+    spanBuilder.setAttribute(valueKey("emptyValue"), Value.empty());
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
     span.end();
     span.setAttribute("emptyString", null);
     span.setAttribute(stringKey("emptyStringAttributeValue"), null);
@@ -395,7 +400,8 @@ class SdkSpanBuilderTest {
     span.setAttribute(booleanArrayKey("boolArrayAttribute"), null);
     span.setAttribute(longArrayKey("longArrayAttribute"), null);
     span.setAttribute(doubleArrayKey("doubleArrayAttribute"), null);
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+    span.setAttribute(valueKey("emptyValue"), null);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
   }
 
   @Test

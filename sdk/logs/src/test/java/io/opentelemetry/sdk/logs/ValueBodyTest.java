@@ -132,15 +132,15 @@ class ValueBodyTest {
                                             }))));
                         assertThat(body.asString())
                             .isEqualTo(
-                                "["
-                                    + "str_key=value, "
-                                    + "bool_key=true, "
-                                    + "long_key=1, "
-                                    + "double_key=1.1, "
-                                    + "bytes_key=Ynl0ZXM=, "
-                                    + "arr_key=[entry1, 2, 3.3], "
-                                    + "key_value_list_key=[child_str_key1=child_value1, child_str_key2=child_value2]"
-                                    + "]");
+                                "{"
+                                    + "\"str_key\":\"value\","
+                                    + "\"bool_key\":true,"
+                                    + "\"long_key\":1,"
+                                    + "\"double_key\":1.1,"
+                                    + "\"bytes_key\":\"Ynl0ZXM=\","
+                                    + "\"arr_key\":[\"entry1\",2,3.3],"
+                                    + "\"key_value_list_key\":{\"child_str_key1\":\"child_value1\",\"child_str_key2\":\"child_value2\"}"
+                                    + "}");
                       });
             });
     exporter.reset();
