@@ -257,6 +257,16 @@ public abstract class Serializer implements AutoCloseable {
     if (string == null || string.isEmpty()) {
       return;
     }
+    writeStringWithContext(field, string, context);
+  }
+
+  /**
+   * Writes a protobuf {@code string} field, even if it matches the default value. This method reads
+   * elements from context, use together with {@link StatelessMarshalerUtil#getUtf8Size(String,
+   * MarshalerContext)}.
+   */
+  public void writeStringWithContext(ProtoFieldInfo field, String string, MarshalerContext context)
+      throws IOException {
     if (context.marshalStringNoAllocation()) {
       writeString(field, string, context.getSize(), context);
     } else {

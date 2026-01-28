@@ -147,8 +147,14 @@ class TraceRequestMarshalerTest {
                             .put("long_array", 12L, 23L)
                             .put("double_array", 12.3, 23.1)
                             .put("boolean_array", true, false)
+                            .put("empty_string", "")
+                            .put("false_value", false)
+                            .put("zero_int", 0L)
+                            .put("zero_double", 0.0)
+                            // TODO: add empty array, empty map, empty bytes, and true empty value
+                            // after https://github.com/open-telemetry/opentelemetry-java/pull/7973
                             .build())
-                    .setTotalAttributeCount(9)
+                    .setTotalAttributeCount(13)
                     .setEvents(
                         Collections.singletonList(
                             EventData.create(12347, "my_event", Attributes.empty())))
@@ -231,6 +237,22 @@ class TraceRequestMarshalerTest {
                                 .addValues(AnyValue.newBuilder().setBoolValue(false).build())
                                 .build())
                         .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_string")
+                .setValue(AnyValue.newBuilder().setStringValue("").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("false_value")
+                .setValue(AnyValue.newBuilder().setBoolValue(false).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("zero_int")
+                .setValue(AnyValue.newBuilder().setIntValue(0).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("zero_double")
+                .setValue(AnyValue.newBuilder().setDoubleValue(0.0).build())
                 .build());
     assertThat(protoSpan.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(protoSpan.getEventsList())
