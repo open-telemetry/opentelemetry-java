@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 class SemConvAttributesTest {
 
   @Test
-  @SuppressWarnings("deprecation") // Using RpcIncubatingAttributes.RPC_GRPC_STATUS_CODE
   void testAttributeKeys() {
     assertThat(SemConvAttributes.OTEL_COMPONENT_NAME)
         .isEqualTo(OtelIncubatingAttributes.OTEL_COMPONENT_NAME);
