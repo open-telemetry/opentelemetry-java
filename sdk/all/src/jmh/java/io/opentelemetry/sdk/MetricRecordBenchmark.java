@@ -43,7 +43,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * This benchmark measures the performance of recording metrics and includes the following
+ * This benchmark measures the performance of recording metrics. It includes the following
  * dimensions:
  *
  * <ul>

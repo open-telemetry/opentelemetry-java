@@ -7,6 +7,8 @@ package io.opentelemetry.sdk;
 
 public class BenchmarkUtils {
 
+  private BenchmarkUtils() {}
+
   /**
    * The number of record operations per benchmark invocation. By using a constant across benchmarks
    * of different signals, it's easier to compare benchmark results across signals.

@@ -33,7 +33,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * This benchmark measures the performance of recording spans and includes the following dimensions:
+ * This benchmark measures the performance of recording spans. It includes the following dimensions:
  *
  * <ul>
  *   <li>{@link BenchmarkState#spanSize}: the size of the span, which is a composite of the number
