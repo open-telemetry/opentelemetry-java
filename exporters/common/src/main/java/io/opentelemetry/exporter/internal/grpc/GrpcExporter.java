@@ -80,7 +80,7 @@ public final class GrpcExporter {
       GrpcResponse grpcResponse) {
     GrpcStatusCode statusCode = grpcResponse.getStatusCode();
 
-    metricRecording.setGrpcStatusCode(statusCode.getValue());
+    metricRecording.setGrpcStatusCode(statusCode);
 
     if (statusCode == GrpcStatusCode.OK) {
       metricRecording.finishSuccessful();
