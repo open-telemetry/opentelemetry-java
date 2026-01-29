@@ -2,3 +2,6 @@ Comparing source compatibility of opentelemetry-extension-trace-propagators-1.59
 ===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.extension.trace.propagation.JaegerPropagator  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.extension.trace.propagation.OtTracePropagator  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
