@@ -903,6 +903,38 @@ class SdkSpanBuilderTest {
   }
 
   @Test
+  void propagateRandomTraceIdFlag() {
+    Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
+    assertThat(parent.getSpanContext().getTraceFlags().isTraceIdRandom()).isTrue();
+    try (Scope ignored = parent.makeCurrent()) {
+      Span span = (SdkSpan) sdkTracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getSpanContext().getTraceId())
+          .isEqualTo(parent.getSpanContext().getTraceId());
+      assertThat(span.getSpanContext().getTraceFlags().isTraceIdRandom()).isTrue();
+      try (Scope spanScope = span.makeCurrent()) {
+        // Nested span
+        Span nestedSpan = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
+        // check that still the same trace
+        assertThat(nestedSpan.getSpanContext().getTraceId())
+            .isEqualTo(parent.getSpanContext().getTraceId());
+        // check if RandomTraceIdFlag is still there
+        assertThat(nestedSpan.getSpanContext().getTraceFlags().isTraceIdRandom()).isTrue();
+        try (Scope nestedScope = span.makeCurrent()) {
+          Context nestedContext = Context.current();
+          Span currentSpan = Span.fromContext(nestedContext);
+          assertThat(currentSpan.getSpanContext().getTraceFlags().isTraceIdRandom()).isTrue();
+        } finally {
+          nestedSpan.end();
+        }
+      } finally {
+        span.end();
+      }
+    } finally {
+      parent.end();
+    }
+  }
+
+  @Test
   void startTimestamp_numeric() {
     SdkSpan span =
         (SdkSpan)
@@ -983,7 +1015,7 @@ class SdkSpanBuilderTest {
             "SpanData\\{spanContext=ImmutableSpanContext\\{"
                 + "traceId=[0-9a-f]{32}, "
                 + "spanId=[0-9a-f]{16}, "
-                + "traceFlags=01, "
+                + "traceFlags=03, "
                 + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=true}, "
                 + "parentSpanContext=ImmutableSpanContext\\{"
                 + "traceId=00000000000000000000000000000000, "
