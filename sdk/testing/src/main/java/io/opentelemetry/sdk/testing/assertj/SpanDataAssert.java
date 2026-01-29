@@ -375,18 +375,27 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
 
   /**
    * Asserts the span has an exception event for the given {@link Throwable}. The stack trace is not
-   * matched against.
+   * matched against. If {@code exception} is {@code null}, asserts the span has no exception event.
    */
   // Workaround "passing @Nullable parameter 'stackTrace' where @NonNull is required", Nullaway
   // seems to think assertThat is supposed to be passed NonNull even though we know that can't be
   // true for assertions.
   @SuppressWarnings("NullAway")
-  public SpanDataAssert hasException(Throwable exception) {
+  public SpanDataAssert hasException(@Nullable Throwable exception) {
     EventData exceptionEvent =
         actual.getEvents().stream()
             .filter(event -> event.getName().equals(EXCEPTION_EVENT_NAME))
             .findFirst()
             .orElse(null);
+
+    if (exception == null) {
+      if (exceptionEvent != null) {
+        failWithMessage(
+            "Expected span [%s] to have no exception event but had <%s>",
+            actual.getName(), exceptionEvent);
+      }
+      return this;
+    }
 
     if (exceptionEvent == null) {
       failWithMessage(

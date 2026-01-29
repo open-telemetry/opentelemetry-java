@@ -301,6 +301,8 @@ class TraceAssertionsTest {
 
     assertThat(RESOURCE.getAttributes())
         .containsOnly(entry(DOG, "bark"), entry(AttributeKey.booleanKey("dog is cute"), true));
+
+    assertThat(buildTestSpan(SPAN_ID1, "span")).hasException(null);
   }
 
   @Test
@@ -563,6 +565,8 @@ class TraceAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasException(new IllegalArgumentException("good argument")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(SPAN1).hasException(null))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasLinks()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasLinks(Collections.emptyList()))
