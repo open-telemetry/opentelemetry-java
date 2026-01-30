@@ -146,7 +146,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   /**
    * Sets the {@link MeterProvider} to export metrics about this {@link PeriodicMetricReader} to.
-   * Automatically called by the meter provide the reader is registered to.
+   * Automatically called by the meter provider the reader is registered to.
    */
   void setMeterProvider(MeterProvider meterProvider) {
     this.scheduled.setMeterProvider(meterProvider);
