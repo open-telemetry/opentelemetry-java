@@ -6,9 +6,11 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
@@ -42,7 +44,18 @@ class SdkMeterProviderMetricsTest {
               m -> {
                 assertThat(m)
                     .hasName("otel.sdk.metric_reader.collection.duration")
-                    .hasHistogramSatisfying(h -> h.hasPointsSatisfying(p -> p.hasCount(1)));
+                    .hasHistogramSatisfying(
+                        h ->
+                            h.hasPointsSatisfying(
+                                p ->
+                                    p.hasCount(1)
+                                        .hasAttributesSatisfying(
+                                            equalTo(
+                                                SemConvAttributes.OTEL_COMPONENT_TYPE,
+                                                "periodic_metric_reader"),
+                                            equalTo(
+                                                SemConvAttributes.OTEL_COMPONENT_NAME,
+                                                "periodic_metric_reader/0"))));
               });
     }
   }
