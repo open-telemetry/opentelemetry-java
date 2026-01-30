@@ -220,6 +220,8 @@ public class FullConfigTest {
     assertHasKeyValue(span.getAttributesList(), "cat", "meow");
     assertHasKeyValue(span.getAttributesList(), "extra-key", "extra-value");
 
+    // Flush again to get metric exporter metrics.
+    openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
     // await on assertions since metrics may come in different order for BatchSpanProcessor,
     // exporter, or the ones we created in the test.
     await()
@@ -252,19 +254,105 @@ public class FullConfigTest {
                                 })
                             // This verifies that AutoConfigureListener was invoked and the OTLP
                             // span / log exporters received the autoconfigured OpenTelemetrySdk
-                            // instance
+                            // instance as well as setting telemetry version.
                             .anySatisfy(
                                 scopeMetrics -> {
                                   assertThat(scopeMetrics.getScope().getName())
-                                      .isEqualTo("io.opentelemetry.exporters.otlp-grpc");
+                                      .isEqualTo(
+                                          "io.opentelemetry.exporters.otlp_grpc_metric_exporter");
                                   assertThat(scopeMetrics.getMetricsList())
                                       .satisfiesExactlyInAnyOrder(
                                           metric ->
                                               assertThat(metric.getName())
-                                                  .isEqualTo("otlp.exporter.seen"),
+                                                  .isEqualTo(
+                                                      "otel.sdk.exporter.metric_data_point.inflight"),
                                           metric ->
                                               assertThat(metric.getName())
-                                                  .isEqualTo("otlp.exporter.exported"));
+                                                  .isEqualTo(
+                                                      "otel.sdk.exporter.operation.duration"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo(
+                                                      "otel.sdk.exporter.metric_data_point.exported"));
+                                })
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo(
+                                          "io.opentelemetry.exporters.otlp_grpc_log_exporter");
+                                  assertThat(scopeMetrics.getMetricsList())
+                                      .satisfiesExactlyInAnyOrder(
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.exporter.log.inflight"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo(
+                                                      "otel.sdk.exporter.operation.duration"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.exporter.log.exported"));
+                                })
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo(
+                                          "io.opentelemetry.exporters.otlp_grpc_span_exporter");
+                                  assertThat(scopeMetrics.getMetricsList())
+                                      .satisfiesExactlyInAnyOrder(
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.exporter.span.inflight"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo(
+                                                      "otel.sdk.exporter.operation.duration"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.exporter.span.exported"));
+                                })
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo("io.opentelemetry.sdk.logs");
+                                  assertThat(scopeMetrics.getMetricsList())
+                                      .satisfiesExactlyInAnyOrder(
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.log.created"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.processor.log.processed"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo(
+                                                      "otel.sdk.processor.log.queue.capacity"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.processor.log.queue.size"));
+                                })
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo("io.opentelemetry.sdk.trace");
+                                  assertThat(scopeMetrics.getMetricsList())
+                                      .satisfiesExactlyInAnyOrder(
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.span.live"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.span.started"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.processor.span.processed"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo(
+                                                      "otel.sdk.processor.span.queue.capacity"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otel.sdk.processor.span.queue.size"));
                                 });
                       });
             });
