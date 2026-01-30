@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
@@ -94,10 +95,12 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     for (RegisteredReader registeredReader : registeredReaders) {
       List<MetricProducer> readerMetricProducers = new ArrayList<>(metricProducers);
       readerMetricProducers.add(new LeasedMetricProducer(registry, sharedState, registeredReader));
-      registeredReader
-          .getReader()
-          .register(new SdkCollectionRegistration(readerMetricProducers, sharedState));
+      MetricReader reader = registeredReader.getReader();
+      reader.register(new SdkCollectionRegistration(readerMetricProducers, sharedState));
       registeredReader.setLastCollectEpochNanos(startEpochNanos);
+      if (reader instanceof PeriodicMetricReader) {
+        SdkMeterProviderUtil.setMeterProvider((PeriodicMetricReader) reader, this);
+      }
     }
   }
 

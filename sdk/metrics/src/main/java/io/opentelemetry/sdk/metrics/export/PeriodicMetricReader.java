@@ -5,8 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -34,11 +37,17 @@ import javax.annotation.Nullable;
 public final class PeriodicMetricReader implements MetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
 
+  private static final Clock CLOCK = Clock.getDefault();
+
+  private static final ComponentId COMPONENT_ID =
+      ComponentId.generateLazy("periodic_metric_reader");
+
   private final MetricExporter exporter;
   private final long intervalNanos;
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
   private final Object lock = new Object();
+
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
@@ -135,6 +144,14 @@ public final class PeriodicMetricReader implements MetricReader {
     start();
   }
 
+  /**
+   * Sets the {@link MeterProvider} to export metrics about this {@link PeriodicMetricReader} to.
+   * Automatically called by the meter provide the reader is registered to.
+   */
+  void setMeterProvider(MeterProvider meterProvider) {
+    this.scheduled.setMeterProvider(meterProvider);
+  }
+
   @Override
   public String toString() {
     return "PeriodicMetricReader{"
@@ -157,9 +174,17 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   private final class Scheduled implements Runnable {
+
     private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
 
+    private MetricReaderInstrumentation instrumentation =
+        new MetricReaderInstrumentation(COMPONENT_ID, MeterProvider.noop());
+
     private Scheduled() {}
+
+    void setMeterProvider(MeterProvider meterProvider) {
+      instrumentation = new MetricReaderInstrumentation(COMPONENT_ID, meterProvider);
+    }
 
     @Override
     public void run() {
@@ -172,7 +197,18 @@ public final class PeriodicMetricReader implements MetricReader {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          Collection<MetricData> metricData = collectionRegistration.collectAllMetrics();
+          long startNanoTime = CLOCK.nanoTime();
+          String error = null;
+          Collection<MetricData> metricData;
+          try {
+            metricData = collectionRegistration.collectAllMetrics();
+          } catch (Throwable t) {
+            error = t.getClass().getName();
+            throw t;
+          } finally {
+            long durationNanos = CLOCK.nanoTime() - startNanoTime;
+            instrumentation.recordCollection(durationNanos / 1_000_000_000.0, error);
+          }
           if (metricData.isEmpty()) {
             logger.log(Level.FINE, "No metric data to export - skipping export.");
             flushResult.succeed();
@@ -184,6 +220,7 @@ public final class PeriodicMetricReader implements MetricReader {
                   if (!result.isSuccess()) {
                     logger.log(Level.FINE, "Exporter failed");
                   }
+
                   flushResult.succeed();
                   exportAvailable.set(true);
                 });
