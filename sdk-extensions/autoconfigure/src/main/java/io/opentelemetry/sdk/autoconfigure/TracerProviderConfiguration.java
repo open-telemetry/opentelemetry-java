@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
@@ -123,6 +124,11 @@ final class TracerProviderConfiguration {
     Duration timeout = config.getDuration("otel.bsp.export.timeout");
     if (timeout != null) {
       builder.setExporterTimeout(timeout);
+    }
+
+    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
+    if (telemetryVersion != null) {
+      builder.setInternalTelemetryVersion(telemetryVersion);
     }
 
     return builder.build();

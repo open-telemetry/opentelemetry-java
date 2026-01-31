@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.autoconfigure.LogRecordExporterConfiguration.
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
@@ -117,6 +118,11 @@ final class LoggerProviderConfiguration {
     Duration timeout = config.getDuration("otel.blrp.export.timeout");
     if (timeout != null) {
       builder.setExporterTimeout(timeout);
+    }
+
+    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
+    if (telemetryVersion != null) {
+      builder.setInternalTelemetryVersion(telemetryVersion);
     }
 
     return builder.build();

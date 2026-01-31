@@ -77,6 +77,7 @@ testing {
             environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
             environment("OTEL_TEST_CONFIGURED", "true")
             environment("OTEL_TEST_WRAPPED", "1")
+            environment("OTEL_EXPERIMENTAL_SDK_TELEMETRY_VERSION", "latest")
           }
         }
       }
