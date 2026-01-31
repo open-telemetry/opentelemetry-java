@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.offset;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -28,6 +30,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +62,7 @@ class TraceAssertionsTest {
       AttributeKey.booleanArrayKey("conditions");
   private static final AttributeKey<List<Long>> SCORES = AttributeKey.longArrayKey("scores");
   private static final AttributeKey<List<Double>> COINS = AttributeKey.doubleArrayKey("coins");
+  private static final AttributeKey<Value<?>> BYTES = valueKey("bytes");
   private static final AttributeKey<String> UNSET = stringKey("unset");
 
   private static final Attributes ATTRIBUTES =
@@ -71,6 +75,7 @@ class TraceAssertionsTest {
           .put(CONDITIONS, Arrays.asList(false, true))
           .put(SCORES, Arrays.asList(0L, 1L))
           .put(COINS, Arrays.asList(0.01, 0.05, 0.1))
+          .put(BYTES, Value.of(new byte[] {1, 2, 3}))
           .build();
   private static final List<EventData> EVENTS =
       Arrays.asList(
@@ -189,7 +194,8 @@ class TraceAssertionsTest {
             attributeEntry("colors", "red", "blue"),
             attributeEntry("conditions", false, true),
             attributeEntry("scores", 0L, 1L),
-            attributeEntry("coins", 0.01, 0.05, 0.1))
+            attributeEntry("coins", 0.01, 0.05, 0.1),
+            attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
         .hasAttributesSatisfying(
             equalTo(BEAR, "mya"), equalTo(WARM, true), equalTo(TEMPERATURE, 30))
         .hasAttributesSatisfyingExactly(
@@ -200,7 +206,8 @@ class TraceAssertionsTest {
             equalTo(COLORS, Arrays.asList("red", "blue")),
             equalTo(CONDITIONS, Arrays.asList(false, true)),
             equalTo(SCORES, Arrays.asList(0L, 1L)),
-            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)))
+            equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+            equalTo(BYTES, Value.of(new byte[] {1, 2, 3})))
         .hasAttributesSatisfyingExactly(
             satisfies(BEAR, val -> val.startsWith("mya")),
             satisfies(WARM, val -> val.isTrue()),
@@ -209,7 +216,8 @@ class TraceAssertionsTest {
             satisfies(COLORS, val -> val.containsExactly("red", "blue")),
             satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
             satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-            satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)))
+            satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+            satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3}))))
         // Demonstrates common usage of many exact matches and one needing a loose one.
         .hasAttributesSatisfyingExactly(
             equalTo(BEAR, "mya"),
@@ -219,11 +227,12 @@ class TraceAssertionsTest {
             equalTo(CONDITIONS, Arrays.asList(false, true)),
             equalTo(SCORES, Arrays.asList(0L, 1L)),
             equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
+            equalTo(BYTES, Value.of(new byte[] {1, 2, 3})),
             satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
         .hasAttributesSatisfying(
             attributes ->
                 assertThat(attributes)
-                    .hasSize(8)
+                    .hasSize(9)
                     .containsEntry(stringKey("bear"), "mya")
                     .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
                     .containsEntry("bear", "mya")
@@ -240,6 +249,7 @@ class TraceAssertionsTest {
                     .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
                     .containsEntry("coins", 0.01, 0.05, 0.1)
                     .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
+                    .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
                     .containsKey(stringKey("bear"))
                     .containsKey("bear")
                     .doesNotContainKey(stringKey("cat"))
@@ -252,7 +262,8 @@ class TraceAssertionsTest {
                         attributeEntry("colors", "red", "blue"),
                         attributeEntry("conditions", false, true),
                         attributeEntry("scores", 0L, 1L),
-                        attributeEntry("coins", 0.01, 0.05, 0.1)))
+                        attributeEntry("coins", 0.01, 0.05, 0.1),
+                        attributeEntry("bytes", Value.of(new byte[] {1, 2, 3}))))
         .hasEvents(EVENTS)
         .hasEvents(EVENTS.toArray(new EventData[0]))
         .hasEventsSatisfying(
@@ -421,7 +432,8 @@ class TraceAssertionsTest {
                         satisfies(COLORS, val -> val.containsExactly("red", "blue")),
                         satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
                         satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                        satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -434,7 +446,8 @@ class TraceAssertionsTest {
                         satisfies(COLORS, val -> val.containsExactly("red", "blue")),
                         satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
                         satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                        satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -449,7 +462,8 @@ class TraceAssertionsTest {
                         satisfies(COLORS, val -> val.containsExactly("red", "blue")),
                         satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
                         satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                        satisfies(BYTES, val -> val.isEqualTo(Value.of(new byte[] {1, 2, 3})))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -636,7 +650,11 @@ class TraceAssertionsTest {
             satisfies(COLORS, val -> val.containsExactly("red", "blue")),
             satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
             satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-            satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)));
+            satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+            satisfies(
+                BYTES,
+                val ->
+                    val.extracting(v -> ((ByteBuffer) v.getValue()).get(0)).isEqualTo((byte) 1)));
 
     assertThatThrownBy(
             () ->
@@ -655,7 +673,12 @@ class TraceAssertionsTest {
                         satisfies(COLORS, val -> val.containsExactly("red", "blue")),
                         satisfies(CONDITIONS, val -> val.containsExactly(false, true)),
                         satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
-                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))
+                        satisfies(COINS, val -> val.containsExactly(0.01, 0.05, 0.1)),
+                        satisfies(
+                            BYTES,
+                            val ->
+                                val.extracting(v -> ((ByteBuffer) v.getValue()).get(0))
+                                    .isEqualTo((byte) 1))))
         .isInstanceOf(AssertionError.class);
   }
 
