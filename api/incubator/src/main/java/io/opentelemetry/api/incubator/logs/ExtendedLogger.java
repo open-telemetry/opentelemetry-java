@@ -5,9 +5,12 @@
 
 package io.opentelemetry.api.incubator.logs;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
+import javax.annotation.Nullable;
 
 /** Extended {@link Logger} with experimental APIs. */
 public interface ExtendedLogger extends Logger {
@@ -40,6 +43,130 @@ public interface ExtendedLogger extends Logger {
   default boolean isEnabled() {
     return isEnabled(Severity.UNDEFINED_SEVERITY_NUMBER);
   }
+
+  // Fluent log API
+
+  /**
+   * A fluent log event API, with convenience methods for incrementally adding fields and
+   * attributes.
+   *
+   * <p>Callers must call {@link LogEventBuilder#emit()}.
+   */
+  LogEventBuilder logBuilder(Severity severity, String eventName);
+
+  // Low allocation log APIs
+
+  /**
+   * A low-allocation alternative to {@link #logBuilder(Severity, String)} which prevents the need
+   * for allocating a builder instance.
+   *
+   * @param severity the log severity number
+   * @param eventName the name that identifies the class / type of event which uniquely identifies
+   *     the event structure (attributes and body)
+   * @param attributes the log attributes, or {@link Attributes#empty()}
+   * @param body the log body, or {@code null}
+   * @param exception the exception, or {@code null}
+   * @param context the context, or {@link Context#current()}
+   */
+  void log(
+      Severity severity,
+      String eventName,
+      Attributes attributes,
+      @Nullable Value<?> body,
+      @Nullable Throwable exception,
+      Context context);
+
+  default void log(
+      Severity severity,
+      String eventName,
+      Attributes attributes,
+      Value<?> body,
+      Throwable exception) {
+    log(severity, eventName, attributes, body, exception, Context.current());
+  }
+
+  default void log(Severity severity, String eventName, Attributes attributes, Value<?> body) {
+    log(severity, eventName, attributes, body, null, Context.current());
+  }
+
+  default void log(
+      Severity severity,
+      String eventName,
+      Attributes attributes,
+      String body,
+      Throwable exception) {
+    log(severity, eventName, attributes, Value.of(body), exception, Context.current());
+  }
+
+  default void log(Severity severity, String eventName, Attributes attributes, String body) {
+    log(severity, eventName, attributes, Value.of(body));
+  }
+
+  default void log(
+      Severity severity, String eventName, Attributes attributes, Throwable exception) {
+    log(severity, eventName, attributes, null, exception, Context.current());
+  }
+
+  default void log(Severity severity, String eventName, Attributes attributes) {
+    log(severity, eventName, attributes, null, null, Context.current());
+  }
+
+  default void log(Severity severity, String eventName, Throwable exception) {
+    log(severity, eventName, Attributes.empty(), null, exception, Context.current());
+  }
+
+  default void log(Severity severity, String eventName) {
+    log(severity, eventName, Attributes.empty(), null, null, Context.current());
+  }
+
+  // info overloads of log(..)
+
+  /**
+   * Overload of {@link #log(Severity, String, Attributes, Value, Throwable, Context)} assuming
+   * {@link Severity#INFO}.
+   */
+  default void info(
+      String eventName,
+      Attributes attributes,
+      @Nullable Value<?> body,
+      @Nullable Throwable exception,
+      Context context) {
+    log(Severity.INFO, eventName, attributes, body, exception, context);
+  }
+
+  default void info(String eventName, Attributes attributes, Value<?> body, Throwable exception) {
+    info(eventName, attributes, body, exception, Context.current());
+  }
+
+  default void info(String eventName, Attributes attributes, Value<?> body) {
+    info(eventName, attributes, body, null, Context.current());
+  }
+
+  default void info(String eventName, Attributes attributes, String body, Throwable exception) {
+    info(eventName, attributes, Value.of(body), exception, Context.current());
+  }
+
+  default void info(String eventName, Attributes attributes, String body) {
+    info(eventName, attributes, Value.of(body));
+  }
+
+  default void info(String eventName, Attributes attributes, Throwable exception) {
+    info(eventName, attributes, null, exception, Context.current());
+  }
+
+  default void info(String eventName, Attributes attributes) {
+    info(eventName, attributes, null, null, Context.current());
+  }
+
+  default void info(String eventName, Throwable exception) {
+    info(eventName, Attributes.empty(), null, exception, Context.current());
+  }
+
+  default void info(String eventName) {
+    info(eventName, Attributes.empty(), null, null, Context.current());
+  }
+
+  // TODO: add severity overloads for trace, debug, warn, error, fatal
 
   @Override
   ExtendedLogRecordBuilder logRecordBuilder();
