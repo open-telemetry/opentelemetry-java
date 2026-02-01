@@ -123,7 +123,23 @@ class ValueMarshalerTest {
             of("hello world".getBytes(StandardCharsets.UTF_8)),
             AnyValue.newBuilder()
                 .setBytesValue(ByteString.copyFrom("hello world".getBytes(StandardCharsets.UTF_8)))
-                .build()));
+                .build()),
+        // empty values
+        arguments(of(""), AnyValue.newBuilder().setStringValue("").build()),
+        arguments(of(false), AnyValue.newBuilder().setBoolValue(false).build()),
+        arguments(of(0), AnyValue.newBuilder().setIntValue(0).build()),
+        arguments(of(0.0), AnyValue.newBuilder().setDoubleValue(0.0).build()),
+        arguments(
+            Value.of(Collections.emptyList()),
+            AnyValue.newBuilder().setArrayValue(ArrayValue.newBuilder().build()).build()),
+        arguments(
+            of(Collections.emptyMap()),
+            AnyValue.newBuilder().setKvlistValue(KeyValueList.newBuilder().build()).build()),
+        arguments(of(new byte[0]), AnyValue.newBuilder().setBytesValue(ByteString.EMPTY).build())
+        // TODO add test for true empty value
+        // after https://github.com/open-telemetry/opentelemetry-java/pull/7973
+        // arguments(Value.empty(), AnyValue.newBuilder().build())
+        );
   }
 
   @SuppressWarnings("unchecked")
