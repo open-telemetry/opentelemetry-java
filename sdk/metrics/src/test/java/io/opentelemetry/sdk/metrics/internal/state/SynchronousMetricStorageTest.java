@@ -9,6 +9,8 @@ import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 import static io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal.asExemplarFilterInternal;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static org.assertj.core.api.BDDAssertions.as;
+import static org.assertj.core.api.InstanceOfAssertFactories.collection;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -30,6 +32,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -101,7 +104,7 @@ public class SynchronousMetricStorageTest {
   void recordDouble_NaN(MemoryMode memoryMode) {
     initialize(memoryMode);
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -128,7 +131,7 @@ public class SynchronousMetricStorageTest {
         AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
     AttributesProcessor spyAttributesProcessor = spy(attributesProcessor);
     SynchronousMetricStorage storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -152,7 +155,7 @@ public class SynchronousMetricStorageTest {
     initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -163,7 +166,6 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
         .hasDoubleSumSatisfying(
             sum ->
@@ -175,7 +177,6 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 30
     storage.recordDouble(3, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
         .hasDoubleSumSatisfying(
             sum ->
@@ -187,7 +188,6 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 35
     storage.recordDouble(2, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 35))
         .hasDoubleSumSatisfying(
             sum ->
@@ -201,7 +201,7 @@ public class SynchronousMetricStorageTest {
     initialize(IMMUTABLE_DATA);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -212,14 +212,18 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
                     .hasPointsSatisfying(
                         point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(1);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(1);
     deltaReader.setLastCollectEpochNanos(10);
 
     // Record measurement and collect at time 30
@@ -227,27 +231,35 @@ public class SynchronousMetricStorageTest {
     // AggregatorHandle should be returned to the pool on reset so shouldn't create additional
     // handles
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
                     .hasPointsSatisfying(
                         point -> point.hasStartEpochNanos(10).hasEpochNanos(30).hasValue(3)));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(1);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(1);
     deltaReader.setLastCollectEpochNanos(30);
 
     // Record measurement and collect at time 35
     storage.recordDouble(2, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 35))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
                     .hasPointsSatisfying(
                         point -> point.hasStartEpochNanos(30).hasEpochNanos(35).hasValue(2)));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(1);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(1);
   }
 
   @Test
@@ -255,7 +267,7 @@ public class SynchronousMetricStorageTest {
     initialize(MemoryMode.REUSABLE_DATA);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -266,14 +278,18 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
                     .hasPointsSatisfying(
                         point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
 
     deltaReader.setLastCollectEpochNanos(10);
 
@@ -282,14 +298,18 @@ public class SynchronousMetricStorageTest {
 
     // We're switched to secondary map so a handle will be created
     verify(aggregator, times(2)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
                     .hasPointsSatisfying(
                         point -> point.hasStartEpochNanos(10).hasEpochNanos(30).hasValue(3)));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
 
     deltaReader.setLastCollectEpochNanos(30);
 
@@ -301,7 +321,9 @@ public class SynchronousMetricStorageTest {
     // aggregator handle is still there, thus no handle was created for empty(), but it will for
     // the "foo"
     verify(aggregator, times(3)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
 
     MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 35);
     assertThat(metricData).hasDoubleSumSatisfying(DoubleSumAssert::isDelta);
@@ -329,7 +351,9 @@ public class SynchronousMetricStorageTest {
                                           Attributes.of(AttributeKey.stringKey("foo"), "bar"));
                                 })));
 
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
 
     deltaReader.setLastCollectEpochNanos(40);
     storage.recordDouble(6, Attributes.of(AttributeKey.stringKey("foo"), "bar"), Context.current());
@@ -358,7 +382,7 @@ public class SynchronousMetricStorageTest {
     initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             cumulativeReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -373,7 +397,6 @@ public class SynchronousMetricStorageTest {
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
     verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
         .hasDoubleSumSatisfying(
             sum ->
@@ -387,7 +410,6 @@ public class SynchronousMetricStorageTest {
                                   assertThat(point.getEpochNanos()).isEqualTo(10);
                                   assertThat(point.getValue()).isEqualTo(3);
                                 })));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(logs.getEvents()).isEmpty();
     cumulativeReader.setLastCollectEpochNanos(10);
 
@@ -396,7 +418,6 @@ public class SynchronousMetricStorageTest {
         3, Attributes.builder().put("key", "value" + CARDINALITY_LIMIT).build(), Context.current());
     // Should not create an additional handles for the overflow series
     verify(aggregator, times(CARDINALITY_LIMIT)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
         .hasDoubleSumSatisfying(
             sum ->
@@ -421,7 +442,6 @@ public class SynchronousMetricStorageTest {
                                 point ->
                                     assertThat(point.getAttributes())
                                         .isEqualTo(MetricStorage.CARDINALITY_OVERFLOW))));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
 
@@ -430,7 +450,7 @@ public class SynchronousMetricStorageTest {
     initialize(IMMUTABLE_DATA);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -445,7 +465,9 @@ public class SynchronousMetricStorageTest {
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
     verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
         .hasDoubleSumSatisfying(
             sum ->
@@ -459,7 +481,9 @@ public class SynchronousMetricStorageTest {
                                   assertThat(point.getEpochNanos()).isEqualTo(10);
                                   assertThat(point.getValue()).isEqualTo(3);
                                 })));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(CARDINALITY_LIMIT - 1);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(CARDINALITY_LIMIT - 1);
 
     assertThat(logs.getEvents()).isEmpty();
     deltaReader.setLastCollectEpochNanos(10);
@@ -469,7 +493,9 @@ public class SynchronousMetricStorageTest {
         3, Attributes.builder().put("key", "value" + CARDINALITY_LIMIT).build(), Context.current());
     // Should use handle returned to pool instead of creating new ones
     verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(CARDINALITY_LIMIT - 2);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(CARDINALITY_LIMIT - 2);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
         .hasDoubleSumSatisfying(
             sum ->
@@ -484,7 +510,9 @@ public class SynchronousMetricStorageTest {
                                     Attributes.builder()
                                         .put("key", "value" + CARDINALITY_LIMIT)
                                         .build())));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(CARDINALITY_LIMIT - 1);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(CARDINALITY_LIMIT - 1);
     assertThat(logs.getEvents()).isEmpty();
     deltaReader.setLastCollectEpochNanos(20);
 
@@ -496,7 +524,9 @@ public class SynchronousMetricStorageTest {
     }
     // Should use handles returned to pool instead of creating new ones
     verify(aggregator, times(CARDINALITY_LIMIT)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(0);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
         .hasDoubleSumSatisfying(
             sum ->
@@ -522,7 +552,9 @@ public class SynchronousMetricStorageTest {
                                     assertThat(point.getAttributes())
                                         .isEqualTo(MetricStorage.CARDINALITY_OVERFLOW))));
 
-    assertThat(storage.getAggregatorHandlePool()).hasSize(CARDINALITY_LIMIT);
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .hasSize(CARDINALITY_LIMIT);
     logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
 
@@ -531,7 +563,7 @@ public class SynchronousMetricStorageTest {
     initialize(MemoryMode.REUSABLE_DATA);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -608,7 +640,9 @@ public class SynchronousMetricStorageTest {
                                     assertThat(point.getAttributes())
                                         .isEqualTo(MetricStorage.CARDINALITY_OVERFLOW))));
 
-    assertThat(storage.getAggregatorHandlePool()).isEmpty();
+    assertThat(storage)
+        .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
+        .isEmpty();
 
     logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
@@ -618,7 +652,7 @@ public class SynchronousMetricStorageTest {
     initialize(MemoryMode.REUSABLE_DATA);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -763,7 +797,7 @@ public class SynchronousMetricStorageTest {
     initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -782,7 +816,7 @@ public class SynchronousMetricStorageTest {
     initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -802,7 +836,7 @@ public class SynchronousMetricStorageTest {
     initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
@@ -823,7 +857,7 @@ public class SynchronousMetricStorageTest {
     initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?> storage =
-        new DefaultSynchronousMetricStorage<>(
+        DefaultSynchronousMetricStorage.create(
             deltaReader,
             METRIC_DESCRIPTOR,
             aggregator,
