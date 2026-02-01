@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -31,28 +30,31 @@ class ResourceFactoryTest {
   private final DeclarativeConfigContext context =
       new DeclarativeConfigContext(SpiHelper.create(ResourceFactoryTest.class.getClassLoader()));
 
-  @Test
-  void create() {
-    assertThat(
-            ResourceFactory.getInstance()
-                .create(
-                    new ResourceModel()
-                        .withAttributes(
-                            Arrays.asList(
-                                new AttributeNameValueModel()
-                                    .withName("service.name")
-                                    .withValue("my-service"),
-                                new AttributeNameValueModel().withName("key").withValue("val"),
-                                new AttributeNameValueModel()
-                                    .withName("shape")
-                                    .withValue("circle"))),
-                    context))
-        .isEqualTo(
+  @ParameterizedTest
+  @MethodSource("createArgs")
+  void create(ResourceModel model, Resource expectedResource) {
+    assertThat(ResourceFactory.getInstance().create(model, context)).isEqualTo(expectedResource);
+  }
+
+  private static Stream<Arguments> createArgs() {
+    return Stream.of(
+        Arguments.of(
+            new ResourceModel()
+                .withAttributes(
+                    Arrays.asList(
+                        new AttributeNameValueModel()
+                            .withName("service.name")
+                            .withValue("my-service"),
+                        new AttributeNameValueModel().withName("key").withValue("val"),
+                        new AttributeNameValueModel().withName("shape").withValue("circle"))),
             Resource.getDefault().toBuilder()
                 .put("shape", "circle")
                 .put("service.name", "my-service")
                 .put("key", "val")
-                .build());
+                .build()),
+        Arguments.of(
+            new ResourceModel().withSchemaUrl("http://foo"),
+            Resource.getDefault().toBuilder().setSchemaUrl("http://foo").build()));
   }
 
   @ParameterizedTest
