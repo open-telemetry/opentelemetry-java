@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -60,6 +61,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.GzipSource;
+import okio.Okio;
 
 /**
  * A {@link GrpcSender} which uses OkHttp instead of grpc-java.
@@ -165,10 +169,10 @@ public final class OkHttpGrpcSender implements GrpcSender {
                           // Must consume body before accessing trailers
                           byte[] bodyBytes = null;
                           try {
-                            bodyBytes = body.bytes();
+                            bodyBytes = getResponseMessageBytes(body.bytes());
                           } catch (IOException e) {
                             bodyBytes = new byte[0];
-                            logger.log(Level.WARNING, "Failed to read response body", e);
+                            logger.log(Level.FINE, "Failed to read response body", e);
                           }
                           byte[] resolvedBodyBytes = bodyBytes;
                           GrpcStatusCode status = grpcStatus(response);
@@ -193,6 +197,24 @@ public final class OkHttpGrpcSender implements GrpcSender {
                         }
                       }
                     }));
+  }
+
+  private static byte[] getResponseMessageBytes(byte[] bodyBytes) throws IOException {
+    if (bodyBytes.length > 5) {
+      ByteArrayInputStream bodyStream = new ByteArrayInputStream(bodyBytes);
+      bodyStream.skip(5);
+      if (bodyBytes[0] == '1') {
+        Buffer buffer = new Buffer();
+        buffer.readFrom(bodyStream);
+        GzipSource gzipSource = new GzipSource(buffer);
+        bodyBytes = Okio.buffer(gzipSource).getBuffer().readByteArray();
+      } else {
+        bodyBytes = Arrays.copyOfRange(bodyBytes, 5, bodyBytes.length);
+      }
+      return bodyBytes;
+    } else {
+      throw new IOException("Invalid response");
+    }
   }
 
   private static GrpcStatusCode grpcStatus(Response response) {
