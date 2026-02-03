@@ -82,8 +82,8 @@ class ExtendedLoggerBuilderTest {
     Logger logger = loggerProviderBuilder.build().get("logger");
 
     ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
-        .setException(new Exception("error"))
         .setAttribute(EXCEPTION_MESSAGE, "custom message")
+        .setException(new Exception("error"))
         .emit();
 
     assertThat(exporter.getFinishedLogRecordItems())
