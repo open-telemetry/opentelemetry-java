@@ -20,6 +20,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -31,6 +34,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramP
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
@@ -497,6 +501,42 @@ class Otel2PrometheusConverterTest {
     throw new IllegalArgumentException("Unsupported metric data type: " + metricDataType);
   }
 
+  static MetricData createLongMetricDataWithExemplar(
+      String metricName,
+      String metricUnit,
+      @Nullable Attributes attributes,
+      @Nullable Resource resource,
+      Attributes exemplarFilteredAttributes) {
+    Attributes attributesToUse = attributes == null ? Attributes.empty() : attributes;
+    Resource resourceToUse = resource == null ? Resource.getDefault() : resource;
+
+    return ImmutableMetricData.createLongSum(
+        resourceToUse,
+        InstrumentationScopeInfo.create("scope"),
+        metricName,
+        "description",
+        metricUnit,
+        ImmutableSumData.create(
+            true,
+            AggregationTemporality.CUMULATIVE,
+            Collections.singletonList(
+                ImmutableLongPointData.create(
+                    0,
+                    100000,
+                    attributesToUse,
+                    1L,
+                    Collections.singletonList(
+                        ImmutableLongExemplarData.create(
+                            exemplarFilteredAttributes,
+                            1L,
+                            SpanContext.create(
+                                "0669315b30dbe08683c19ed9bd24068b",
+                                "049178b29912fdb4",
+                                TraceFlags.getDefault(),
+                                TraceState.getDefault()),
+                            2))))));
+  }
+
   @Test
   void validateCacheIsBounded() {
     AtomicInteger predicateCalledCount = new AtomicInteger();
@@ -555,5 +595,98 @@ class Otel2PrometheusConverterTest {
     // but if the cache was cleared, it used the predicate for each resource, since it as if
     // it never saw those resources before.
     assertThat(predicateCalledCount.get()).isEqualTo(2);
+  }
+
+  @Test
+  void exemplarLabelsWithinLimit() throws IOException {
+
+    Otel2PrometheusConverter converter = new Otel2PrometheusConverter(true, null);
+    Attributes exemplarfilteredAttributes =
+        Attributes.of(
+            stringKey("client_address"),
+            "127.0.0.6",
+            stringKey("network_peer_address"),
+            "127.0.0.6");
+
+    MetricData metricDataWithExemplar =
+        createLongMetricDataWithExemplar(
+            "metric_hertz",
+            "hertz",
+            Attributes.of(stringKey("foo1"), "bar1", stringKey("foo2"), "bar2"),
+            Resource.create(
+                Attributes.of(stringKey("host"), "localhost", stringKey("cluster"), "mycluster")),
+            exemplarfilteredAttributes);
+    String expectedExemplarLabels =
+        "client_address=\"127.0.0.6\""
+            + ",network_peer_address=\"127.0.0.6\",span_id=\"049178b29912fdb4\""
+            + ",trace_id=\"0669315b30dbe08683c19ed9bd24068b\"";
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    MetricSnapshots snapshots =
+        converter.convert(Collections.singletonList(metricDataWithExemplar));
+    ExpositionFormats.init().getOpenMetricsTextFormatWriter().write(out, snapshots);
+    String expositionFormat = new String(out.toByteArray(), StandardCharsets.UTF_8);
+
+    // extract the only metric line
+    List<String> metricLines =
+        Arrays.stream(expositionFormat.split("\n"))
+            .filter(line -> line.startsWith("metric_hertz"))
+            .collect(Collectors.toList());
+    assertThat(metricLines).hasSize(1);
+
+    //  metric_hertz_total{foo1="bar1",foo2="bar2",otel_scope_name="scope"} 1.0 #
+    // {client_address="127.0.0.6",network_peer_address="127.0.0.6",span_id="0002",trace_id="0001"}
+    // 2.0
+    String metricLine = metricLines.get(0);
+    String exemplarPart = metricLine.substring(metricLine.indexOf("#") + 2);
+
+    String exemplarLabels =
+        exemplarPart.substring(exemplarPart.indexOf("{") + 1, exemplarPart.indexOf("}"));
+    assertThat(exemplarLabels).isEqualTo(expectedExemplarLabels);
+  }
+
+  @Test
+  void exemplarLabelsAboveLimit() throws IOException {
+
+    Otel2PrometheusConverter converter = new Otel2PrometheusConverter(true, null);
+    Attributes exemplarfilteredAttributes =
+        Attributes.of(
+            stringKey("client_address"),
+            "127.0.0.6",
+            stringKey("network_peer_address"),
+            "127.0.0.6",
+            stringKey("network_peer_port"),
+            "55579",
+            stringKey("server_address"),
+            "10.3.17.168",
+            stringKey("server_port"),
+            "8081",
+            stringKey("url_path"),
+            "/foo/bar");
+    MetricData metricDataWithExemplar =
+        createLongMetricDataWithExemplar(
+            "metric_hertz",
+            "hertz",
+            Attributes.of(stringKey("foo1"), "bar1", stringKey("foo2"), "bar2"),
+            Resource.create(
+                Attributes.of(stringKey("host"), "localhost", stringKey("cluster"), "mycluster")),
+            exemplarfilteredAttributes);
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    MetricSnapshots snapshots =
+        converter.convert(Collections.singletonList(metricDataWithExemplar));
+    ExpositionFormats.init().getOpenMetricsTextFormatWriter().write(out, snapshots);
+    String expositionFormat = new String(out.toByteArray(), StandardCharsets.UTF_8);
+
+    // extract the only metric line
+    List<String> metricLines =
+        Arrays.stream(expositionFormat.split("\n"))
+            .filter(line -> line.startsWith("metric_hertz"))
+            .collect(Collectors.toList());
+    assertThat(metricLines).hasSize(1);
+
+    // metric_hertz_total{foo1="bar1",foo2="bar2",otel_scope_name="scope"} 1.0
+    // no exemplar data as runes limit was reached
+    String metricLine = metricLines.get(0);
+    int exemplarDelimitterPos = metricLine.indexOf("#");
+    assertThat(exemplarDelimitterPos).isEqualTo(-1);
   }
 }

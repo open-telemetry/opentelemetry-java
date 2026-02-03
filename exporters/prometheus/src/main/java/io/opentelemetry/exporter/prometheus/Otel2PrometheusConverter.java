@@ -42,6 +42,7 @@ import io.prometheus.metrics.model.snapshots.HistogramSnapshot;
 import io.prometheus.metrics.model.snapshots.HistogramSnapshot.HistogramDataPointSnapshot;
 import io.prometheus.metrics.model.snapshots.InfoSnapshot;
 import io.prometheus.metrics.model.snapshots.InfoSnapshot.InfoDataPointSnapshot;
+import io.prometheus.metrics.model.snapshots.Label;
 import io.prometheus.metrics.model.snapshots.Labels;
 import io.prometheus.metrics.model.snapshots.MetricMetadata;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
@@ -79,6 +80,7 @@ final class Otel2PrometheusConverter {
   private static final String OTEL_SCOPE_ATTRIBUTE_PREFIX = "otel_scope_";
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
+  static final int EXEMPLAR_MAX_CODE_POINTS = 128;
 
   private final boolean otelScopeLabelsEnabled;
   private final boolean targetInfoMetricEnabled;
@@ -413,11 +415,12 @@ final class Otel2PrometheusConverter {
     return Exemplars.of(result);
   }
 
+  @Nullable
   private Exemplar convertExemplar(double value, ExemplarData exemplar) {
     SpanContext spanContext = exemplar.getSpanContext();
+    Labels labels = Labels.EMPTY;
     if (spanContext.isValid()) {
-      return new Exemplar(
-          value,
+      labels =
           convertAttributes(
               null, // resource attributes are only copied for point's attributes
               null, // scope attributes are only needed for point's attributes
@@ -425,17 +428,31 @@ final class Otel2PrometheusConverter {
               "trace_id",
               spanContext.getTraceId(),
               "span_id",
-              spanContext.getSpanId()),
-          exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
+              spanContext.getSpanId());
     } else {
-      return new Exemplar(
-          value,
-          convertAttributes(
-              null, // resource attributes are only copied for point's attributes
-              null, // scope attributes are only needed for point's attributes
-              exemplar.getFilteredAttributes()),
-          exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
+      labels = convertAttributes(null, null, exemplar.getFilteredAttributes());
     }
+    int codePoints = getCodePoints(labels);
+    if (codePoints > EXEMPLAR_MAX_CODE_POINTS) {
+      THROTTLING_LOGGER.log(
+          Level.WARNING,
+          "exemplar labels have "
+              + codePoints
+              + " unicode code points, exceeding the limit of "
+              + EXEMPLAR_MAX_CODE_POINTS);
+      return null;
+    }
+    return new Exemplar(value, labels, exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
+  }
+
+  private static int getCodePoints(Labels labels) {
+    int codePoints = 0;
+    for (Label label : labels) {
+      codePoints +=
+          label.getName().codePointCount(0, label.getName().length())
+              + label.getValue().codePointCount(0, label.getValue().length());
+    }
+    return codePoints;
   }
 
   private InfoSnapshot makeTargetInfo(Resource resource) {
