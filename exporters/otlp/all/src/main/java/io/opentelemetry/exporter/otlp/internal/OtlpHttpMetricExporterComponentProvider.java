@@ -7,11 +7,12 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_METRICS;
 
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedComponentProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
@@ -20,7 +21,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpHttpMetricExporterComponentProvider implements ComponentProvider {
+public class OtlpHttpMetricExporterComponentProvider implements ExtendedComponentProvider {
 
   @Override
   public Class<MetricExporter> getType() {
@@ -33,12 +34,13 @@ public class OtlpHttpMetricExporterComponentProvider implements ComponentProvide
   }
 
   @Override
-  public MetricExporter create(DeclarativeConfigProperties config) {
+  public MetricExporter create(DeclarativeConfigProperties config, ConfigProvider configProvider) {
     OtlpHttpMetricExporterBuilder builder = httpBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_METRICS,
         config,
+        configProvider,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
@@ -48,7 +50,8 @@ public class OtlpHttpMetricExporterComponentProvider implements ComponentProvide
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
-        /* isHttpProtobuf= */ true);
+        /* isHttpProtobuf= */ true,
+        builder::setInternalTelemetryVersion);
     IncubatingExporterBuilderUtil.configureOtlpAggregationTemporality(
         config, builder::setAggregationTemporalitySelector);
     IncubatingExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(

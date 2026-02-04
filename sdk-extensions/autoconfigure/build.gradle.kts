@@ -85,7 +85,12 @@ testing {
       dependencies {
         implementation(project(":sdk-extensions:incubator"))
         implementation(project(":exporters:logging"))
+        implementation(project(":exporters:otlp:all"))
         implementation(project(":sdk:testing"))
+
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+        implementation("com.linecorp.armeria:armeria-junit5")
+        implementation("com.linecorp.armeria:armeria-grpc")
       }
     }
 

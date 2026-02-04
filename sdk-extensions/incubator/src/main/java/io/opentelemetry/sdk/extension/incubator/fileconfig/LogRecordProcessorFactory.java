@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
@@ -70,6 +71,10 @@ final class LogRecordProcessorFactory
     MeterProvider meterProvider = context.getMeterProvider();
     if (meterProvider != null) {
       builder.setMeterProvider(meterProvider);
+    }
+    InternalTelemetryVersion telemetryVersion = context.getInternalTelemetryVersion();
+    if (telemetryVersion != null) {
+      builder.setInternalTelemetryVersion(telemetryVersion);
     }
 
     return context.addCloseable(builder.build());

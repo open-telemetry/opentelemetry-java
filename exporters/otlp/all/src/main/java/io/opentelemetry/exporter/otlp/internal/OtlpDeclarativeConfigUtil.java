@@ -10,20 +10,25 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.configureOt
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.readFileBytes;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.validateEndpoint;
 
+import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -48,6 +53,7 @@ public final class OtlpDeclarativeConfigUtil {
   public static void configureOtlpExporterBuilder(
       String dataType,
       DeclarativeConfigProperties config,
+      ConfigProvider configProvider,
       Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
@@ -57,7 +63,8 @@ public final class OtlpDeclarativeConfigUtil {
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
       Consumer<MemoryMode> setMemoryMode,
-      boolean isHttpProtobuf) {
+      boolean isHttpProtobuf,
+      Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer) {
     setComponentLoader.accept(config.getComponentLoader());
 
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
@@ -119,6 +126,30 @@ public final class OtlpDeclarativeConfigUtil {
     }
 
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
+
+    InternalTelemetryVersion internalTelemetryVersion = getInternalTelemetryVersion(configProvider);
+    if (internalTelemetryVersion != null) {
+      internalTelemetryVersionConsumer.accept(internalTelemetryVersion);
+    }
+  }
+
+  @Nullable
+  private static InternalTelemetryVersion getInternalTelemetryVersion(
+      ConfigProvider configProvider) {
+    String internalTelemetryVersion =
+        configProvider.getInstrumentationConfig("otel_sdk").getString("internal_telemetry_version");
+    if (internalTelemetryVersion == null) {
+      return null;
+    }
+    switch (internalTelemetryVersion.toLowerCase(Locale.ROOT)) {
+      case "legacy":
+        return InternalTelemetryVersion.LEGACY;
+      case "latest":
+        return InternalTelemetryVersion.LATEST;
+      default:
+        throw new DeclarativeConfigException(
+            "Invalid sdk telemetry version: " + internalTelemetryVersion);
+    }
   }
 
   private OtlpDeclarativeConfigUtil() {}

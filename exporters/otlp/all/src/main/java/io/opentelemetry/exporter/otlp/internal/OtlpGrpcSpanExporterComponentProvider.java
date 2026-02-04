@@ -7,10 +7,11 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_TRACES;
 
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedComponentProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
@@ -19,7 +20,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpGrpcSpanExporterComponentProvider implements ComponentProvider {
+public class OtlpGrpcSpanExporterComponentProvider implements ExtendedComponentProvider {
 
   @Override
   public Class<SpanExporter> getType() {
@@ -32,12 +33,13 @@ public class OtlpGrpcSpanExporterComponentProvider implements ComponentProvider 
   }
 
   @Override
-  public SpanExporter create(DeclarativeConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config, ConfigProvider configProvider) {
     OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_TRACES,
         config,
+        configProvider,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
@@ -47,7 +49,8 @@ public class OtlpGrpcSpanExporterComponentProvider implements ComponentProvider 
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
-        /* isHttpProtobuf= */ false);
+        /* isHttpProtobuf= */ false,
+        builder::setInternalTelemetryVersion);
 
     return builder.build();
   }

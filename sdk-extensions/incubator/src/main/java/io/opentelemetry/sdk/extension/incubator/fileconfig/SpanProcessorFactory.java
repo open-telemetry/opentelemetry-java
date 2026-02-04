@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
@@ -66,6 +67,10 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
     MeterProvider meterProvider = context.getMeterProvider();
     if (meterProvider != null) {
       builder.setMeterProvider(() -> meterProvider);
+    }
+    InternalTelemetryVersion telemetryVersion = context.getInternalTelemetryVersion();
+    if (telemetryVersion != null) {
+      builder.setInternalTelemetryVersion(telemetryVersion);
     }
 
     return context.addCloseable(builder.build());

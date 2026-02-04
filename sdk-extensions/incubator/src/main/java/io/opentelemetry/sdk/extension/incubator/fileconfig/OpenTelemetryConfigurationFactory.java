@@ -39,6 +39,7 @@ final class OpenTelemetryConfigurationFactory
         DeclarativeConfiguration.toConfigProperties(
             model, context.getSpiHelper().getComponentLoader());
     SdkConfigProvider sdkConfigProvider = SdkConfigProvider.create(modelProperties);
+    context.setConfigProvider(sdkConfigProvider);
     OpenTelemetrySdkBuilder builder =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
             OpenTelemetrySdk.builder(), sdkConfigProvider);
