@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -24,6 +25,7 @@ import org.assertj.core.api.AbstractLongAssert;
 import org.assertj.core.api.AbstractStringAssert;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.ListAssert;
+import org.assertj.core.api.ObjectAssert;
 
 /**
  * Entry point for assertion methods for OpenTelemetry types. To use type-specific assertions,
@@ -139,6 +141,15 @@ public final class OpenTelemetryAssertions extends Assertions {
   }
 
   /**
+   * Returns an attribute entry with a Value for use with {@link
+   * AttributesAssert#containsOnly(java.util.Map.Entry[])}.
+   */
+  public static Map.Entry<AttributeKey<Value<?>>, Value<?>> attributeEntry(
+      String key, Value<?> value) {
+    return new AbstractMap.SimpleImmutableEntry<>(AttributeKey.valueKey(key), value);
+  }
+
+  /**
    * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
    * value satisfying {@code assertion}.
    */
@@ -213,6 +224,15 @@ public final class OpenTelemetryAssertions extends Assertions {
   }
 
   /**
+   * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
+   * value satisfying {@code assertion}.
+   */
+  public static AttributeAssertion satisfies(
+      AttributeKey<Value<?>> key, ValueAssertConsumer assertion) {
+    return AttributeAssertion.create(key, assertion);
+  }
+
+  /**
    * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with the
    * given {@code value}.
    */
@@ -246,6 +266,8 @@ public final class OpenTelemetryAssertions extends Assertions {
   public interface LongListAssertConsumer extends Consumer<ListAssert<Long>> {}
 
   public interface DoubleListAssertConsumer extends Consumer<ListAssert<Double>> {}
+
+  public interface ValueAssertConsumer extends Consumer<ObjectAssert<Value<?>>> {}
 
   private static List<Boolean> toList(boolean... values) {
     Boolean[] boxed = new Boolean[values.length];

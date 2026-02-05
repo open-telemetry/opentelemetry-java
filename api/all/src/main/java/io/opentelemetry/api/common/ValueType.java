@@ -19,5 +19,6 @@ public enum ValueType {
   DOUBLE,
   ARRAY,
   KEY_VALUE_LIST,
-  BYTES
+  BYTES,
+  EMPTY
 }

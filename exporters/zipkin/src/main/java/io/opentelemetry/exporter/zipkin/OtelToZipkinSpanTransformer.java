@@ -12,6 +12,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -223,6 +224,8 @@ final class OtelToZipkinSpanTransformer {
       case LONG_ARRAY:
       case DOUBLE_ARRAY:
         return commaSeparated((List<?>) attributeValue);
+      case VALUE:
+        return ((Value<?>) attributeValue).asString();
     }
     throw new IllegalStateException("Unknown attribute type: " + type);
   }

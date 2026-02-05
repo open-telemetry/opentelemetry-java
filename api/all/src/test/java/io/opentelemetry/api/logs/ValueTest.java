@@ -179,11 +179,11 @@ class ValueTest {
         // heterogeneous array
         arguments(
             Value.of(Value.of("str"), Value.of(true), Value.of(1), Value.of(1.1)),
-            "[str, true, 1, 1.1]"),
+            "[\"str\",true,1,1.1]"),
         // key value list from KeyValue array
         arguments(
             Value.of(KeyValue.of("key1", Value.of("val1")), KeyValue.of("key2", Value.of(2))),
-            "[key1=val1, key2=2]"),
+            "{\"key1\":\"val1\",\"key2\":2}"),
         // key value list from map
         arguments(
             Value.of(
@@ -193,13 +193,13 @@ class ValueTest {
                     put("key2", Value.of(2));
                   }
                 }),
-            "[key1=val1, key2=2]"),
+            "{\"key1\":\"val1\",\"key2\":2}"),
         // map of map
         arguments(
             Value.of(
                 Collections.singletonMap(
                     "child", Value.of(Collections.singletonMap("grandchild", Value.of("str"))))),
-            "[child=[grandchild=str]]"),
+            "{\"child\":{\"grandchild\":\"str\"}}"),
         // bytes
         arguments(Value.of("hello world".getBytes(StandardCharsets.UTF_8)), "aGVsbG8gd29ybGQ="));
   }

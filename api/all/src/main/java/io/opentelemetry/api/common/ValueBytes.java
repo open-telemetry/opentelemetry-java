@@ -35,7 +35,8 @@ final class ValueBytes implements Value<ByteBuffer> {
 
   @Override
   public String asString() {
-    return Base64.getEncoder().encodeToString(raw);
+    byte[] bytes = raw;
+    return Base64.getEncoder().encodeToString(bytes);
   }
 
   @Override

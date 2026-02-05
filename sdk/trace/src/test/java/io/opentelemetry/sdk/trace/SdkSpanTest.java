@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static java.util.Collections.singletonList;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -566,16 +568,18 @@ class SdkSpanTest {
       span.setAttribute(longArrayKey("NullArrayLongKey"), null);
       span.setAttribute(doubleArrayKey("NullArrayDoubleKey"), null);
       span.setAttribute(booleanArrayKey("NullArrayBooleanKey"), null);
+      span.setAttribute(valueKey("NullValueKey"), null);
       // These should be maintained
       span.setAttribute(longArrayKey("ArrayWithNullLongKey"), singletonList(null));
       span.setAttribute(stringArrayKey("ArrayWithNullStringKey"), singletonList(null));
       span.setAttribute(doubleArrayKey("ArrayWithNullDoubleKey"), singletonList(null));
       span.setAttribute(booleanArrayKey("ArrayWithNullBooleanKey"), singletonList(null));
+      span.setAttribute(valueKey("ValueKey"), Value.of(new byte[] {0}));
     } finally {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getAttributes().size()).isEqualTo(16);
+    assertThat(spanData.getAttributes().size()).isEqualTo(17);
     assertThat(spanData.getAttributes().get(stringKey("StringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringKey("EmptyStringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringKey("EmptyStringAttributeValue"))).isNotNull();
@@ -593,6 +597,7 @@ class SdkSpanTest {
     assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayWithNullDoubleKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayWithNullBooleanKey")))
         .isNotNull();
+    assertThat(spanData.getAttributes().get(valueKey("ValueKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey")).size()).isEqualTo(4);
     assertThat(spanData.getAttributes().get(longArrayKey("ArrayLongKey")).size()).isEqualTo(5);
     assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayDoubleKey")).size()).isEqualTo(5);
@@ -625,6 +630,7 @@ class SdkSpanTest {
     span.setAttribute(null, Collections.emptyList());
     span.setAttribute(null, Collections.emptyList());
     span.setAttribute(null, Collections.emptyList());
+    span.setAttribute(null, Value.empty());
     assertThat(span.toSpanData().getAttributes().size()).isZero();
   }
 
@@ -673,7 +679,9 @@ class SdkSpanTest {
     span.setAttribute(booleanArrayKey("boolArrayAttribute"), Arrays.asList(true, null));
     span.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
     span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+    span.setAttribute(valueKey("emptyValue"), Value.empty());
+    span.setAttribute(valueKey("nullValue"), null);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
   }
 
   @Test
