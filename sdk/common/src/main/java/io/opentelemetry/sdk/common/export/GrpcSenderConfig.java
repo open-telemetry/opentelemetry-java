@@ -21,6 +21,8 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Configuration for {@link GrpcSender} implementations, provided via {@link
  * GrpcSenderProvider#createSender(GrpcSenderConfig)}.
+ *
+ * @since 1.59.0
  */
 @Immutable
 public interface GrpcSenderConfig {

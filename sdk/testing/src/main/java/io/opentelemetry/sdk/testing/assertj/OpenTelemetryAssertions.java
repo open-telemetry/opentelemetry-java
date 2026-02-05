@@ -143,6 +143,8 @@ public final class OpenTelemetryAssertions extends Assertions {
   /**
    * Returns an attribute entry with a Value for use with {@link
    * AttributesAssert#containsOnly(java.util.Map.Entry[])}.
+   *
+   * @since 1.59.0
    */
   public static Map.Entry<AttributeKey<Value<?>>, Value<?>> attributeEntry(
       String key, Value<?> value) {
@@ -226,6 +228,8 @@ public final class OpenTelemetryAssertions extends Assertions {
   /**
    * Returns an {@link AttributeAssertion} that asserts the given {@code key} is present with a
    * value satisfying {@code assertion}.
+   *
+   * @since 1.59.0
    */
   public static AttributeAssertion satisfies(
       AttributeKey<Value<?>> key, ValueAssertConsumer assertion) {

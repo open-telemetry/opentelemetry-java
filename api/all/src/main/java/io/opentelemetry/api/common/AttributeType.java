@@ -18,5 +18,8 @@ public enum AttributeType {
   BOOLEAN_ARRAY,
   LONG_ARRAY,
   DOUBLE_ARRAY,
+  /**
+   * @since 1.59.0
+   */
   VALUE
 }

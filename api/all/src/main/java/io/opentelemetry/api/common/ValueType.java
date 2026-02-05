@@ -20,5 +20,8 @@ public enum ValueType {
   ARRAY,
   KEY_VALUE_LIST,
   BYTES,
+  /**
+   * @since 1.59.0
+   */
   EMPTY
 }
