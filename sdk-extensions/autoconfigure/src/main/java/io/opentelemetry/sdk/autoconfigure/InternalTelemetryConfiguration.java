@@ -11,7 +11,13 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.util.Locale;
 import javax.annotation.Nullable;
 
-/** Reads the desired SDK internal telemetry version from {@link ConfigProperties}. */
+/**
+ * Reads the desired SDK internal telemetry version from {@link ConfigProperties}.
+ *
+ * <p>This is the same as {@code
+ * io.opentelemetry.exporter.otlp.internal.InternalTelemetryConfiguration}. Any changes should be
+ * reflected there as well.
+ */
 final class InternalTelemetryConfiguration {
 
   @Nullable

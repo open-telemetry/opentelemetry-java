@@ -35,6 +35,7 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -260,99 +262,56 @@ public class FullConfigTest {
                                   assertThat(scopeMetrics.getScope().getName())
                                       .isEqualTo(
                                           "io.opentelemetry.exporters.otlp_grpc_metric_exporter");
-                                  assertThat(scopeMetrics.getMetricsList())
-                                      .satisfiesExactlyInAnyOrder(
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo(
-                                                      "otel.sdk.exporter.metric_data_point.inflight"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo(
-                                                      "otel.sdk.exporter.operation.duration"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo(
-                                                      "otel.sdk.exporter.metric_data_point.exported"));
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.exporter.metric_data_point.inflight",
+                                      "otel.sdk.exporter.operation.duration",
+                                      "otel.sdk.exporter.metric_data_point.exported");
                                 })
                             .anySatisfy(
                                 scopeMetrics -> {
                                   assertThat(scopeMetrics.getScope().getName())
                                       .isEqualTo(
                                           "io.opentelemetry.exporters.otlp_grpc_log_exporter");
-                                  assertThat(scopeMetrics.getMetricsList())
-                                      .satisfiesExactlyInAnyOrder(
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.exporter.log.inflight"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo(
-                                                      "otel.sdk.exporter.operation.duration"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.exporter.log.exported"));
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.exporter.log.inflight",
+                                      "otel.sdk.exporter.operation.duration",
+                                      "otel.sdk.exporter.log.exported");
                                 })
                             .anySatisfy(
                                 scopeMetrics -> {
                                   assertThat(scopeMetrics.getScope().getName())
                                       .isEqualTo(
                                           "io.opentelemetry.exporters.otlp_grpc_span_exporter");
-                                  assertThat(scopeMetrics.getMetricsList())
-                                      .satisfiesExactlyInAnyOrder(
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.exporter.span.inflight"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo(
-                                                      "otel.sdk.exporter.operation.duration"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.exporter.span.exported"));
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.exporter.span.inflight",
+                                      "otel.sdk.exporter.operation.duration",
+                                      "otel.sdk.exporter.span.exported");
                                 })
                             .anySatisfy(
                                 scopeMetrics -> {
                                   assertThat(scopeMetrics.getScope().getName())
                                       .isEqualTo("io.opentelemetry.sdk.logs");
-                                  assertThat(scopeMetrics.getMetricsList())
-                                      .satisfiesExactlyInAnyOrder(
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.log.created"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.processor.log.processed"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo(
-                                                      "otel.sdk.processor.log.queue.capacity"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.processor.log.queue.size"));
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.log.created",
+                                      "otel.sdk.processor.log.processed",
+                                      "otel.sdk.processor.log.queue.capacity",
+                                      "otel.sdk.processor.log.queue.size");
                                 })
                             .anySatisfy(
                                 scopeMetrics -> {
                                   assertThat(scopeMetrics.getScope().getName())
                                       .isEqualTo("io.opentelemetry.sdk.trace");
-                                  assertThat(scopeMetrics.getMetricsList())
-                                      .satisfiesExactlyInAnyOrder(
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.span.live"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.span.started"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.processor.span.processed"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo(
-                                                      "otel.sdk.processor.span.queue.capacity"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otel.sdk.processor.span.queue.size"));
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.span.live",
+                                      "otel.sdk.span.started",
+                                      "otel.sdk.processor.span.processed",
+                                      "otel.sdk.processor.span.queue.capacity",
+                                      "otel.sdk.processor.span.queue.size");
                                 });
                       });
             });
@@ -404,6 +363,12 @@ public class FullConfigTest {
                 .setKey(key)
                 .setValue(AnyValue.newBuilder().setStringValue(value))
                 .build());
+  }
+
+  private static void assertMetricNames(ScopeMetrics scopeMetrics, String... names) {
+    assertThat(
+            scopeMetrics.getMetricsList().stream().map(Metric::getName).collect(Collectors.toSet()))
+        .containsExactlyInAnyOrder(names);
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {
