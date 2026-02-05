@@ -21,6 +21,8 @@ public enum ValueType {
   KEY_VALUE_LIST,
   BYTES,
   /**
+   * Empty value.
+   *
    * @since 1.59.0
    */
   EMPTY
