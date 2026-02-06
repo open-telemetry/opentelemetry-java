@@ -110,9 +110,7 @@ public final class OtlpConfigUtil {
     }
 
     InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
-    if (telemetryVersion != null) {
-      setInternalTelemetryVersion.accept(telemetryVersion);
-    }
+    setInternalTelemetryVersion.accept(telemetryVersion);
 
     String certificatePath =
         config.getString(
