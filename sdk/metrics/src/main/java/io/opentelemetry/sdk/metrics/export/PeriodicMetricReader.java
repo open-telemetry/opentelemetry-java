@@ -148,7 +148,8 @@ public final class PeriodicMetricReader implements MetricReader {
    * Sets the {@link MeterProvider} to export metrics about this {@link PeriodicMetricReader} to.
    * Automatically called by the meter provider the reader is registered to.
    */
-  void setMeterProvider(MeterProvider meterProvider) {
+  @SuppressWarnings("UnusedMethod")
+  private void setMeterProvider(MeterProvider meterProvider) {
     this.scheduled.setMeterProvider(meterProvider);
   }
 
@@ -202,9 +203,6 @@ public final class PeriodicMetricReader implements MetricReader {
           Collection<MetricData> metricData;
           try {
             metricData = collectionRegistration.collectAllMetrics();
-          } catch (Throwable t) {
-            error = t.getClass().getName();
-            throw t;
           } finally {
             long durationNanos = CLOCK.nanoTime() - startNanoTime;
             instrumentation.recordCollection(durationNanos / 1_000_000_000.0, error);
