@@ -275,29 +275,6 @@ class SdkSpanBuilder implements SpanBuilder {
         recordEndSpanMetrics);
   }
 
-  /*
-   * A primordial context can be passed as the parent context for a root span
-   * if a non-default TraceFlags or TraceState need to be passed to the sampler
-   */
-  private static Context preparePrimordialContext(
-      Context parentContext, TraceFlags traceFlags, TraceState traceState) {
-    SpanContext spanContext =
-        SpanContext.create(TraceId.getInvalid(), SpanId.getInvalid(), traceFlags, traceState);
-    Span span = Span.wrap(spanContext);
-    return span.storeInContext(parentContext);
-  }
-
-  private static TraceFlags newTraceFlags(boolean randomTraceId, boolean sampled) {
-    TraceFlags traceFlags = TraceFlags.getDefault();
-    if (randomTraceId) {
-      traceFlags = traceFlags.withRandomTraceIdBit();
-    }
-    if (sampled) {
-      traceFlags = traceFlags.withSampledBit();
-    }
-    return traceFlags;
-  }
-
   private AttributesMap attributes() {
     AttributesMap attributes = this.attributes;
     if (attributes == null) {
