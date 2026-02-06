@@ -8,6 +8,8 @@ package io.opentelemetry.api.common;
 /**
  * A singleton class representing an empty value, used as the generic type parameter for {@link
  * Value} when representing empty values.
+ *
+ * @since 1.59.0
  */
 public final class Empty {
 

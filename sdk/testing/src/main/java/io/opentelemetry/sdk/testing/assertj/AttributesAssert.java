@@ -91,7 +91,11 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
     return containsEntry(AttributeKey.doubleArrayKey(key), Arrays.asList(value));
   }
 
-  /** Asserts the attributes have the given key and {@link Value} value. */
+  /**
+   * Asserts the attributes have the given key and {@link Value} value.
+   *
+   * @since 1.59.0
+   */
   public AttributesAssert containsEntry(String key, Value<?> value) {
     return containsEntry(AttributeKey.valueKey(key), value);
   }

@@ -81,6 +81,8 @@ public interface AttributeKey<T> {
    * that backends do not index individual properties of complex attributes, that querying or
    * aggregating on such properties is inefficient and complicated, and that reporting complex
    * attributes carries higher performance overhead.
+   *
+   * @since 1.59.0
    */
   static AttributeKey<Value<?>> valueKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.VALUE);

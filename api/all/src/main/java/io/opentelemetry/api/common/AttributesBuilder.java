@@ -208,6 +208,7 @@ public interface AttributesBuilder {
    * your keys, if possible.
    *
    * @return this Builder
+   * @since 1.59.0
    */
   default AttributesBuilder put(String key, Value<?> value) {
     return put(valueKey(key), value);

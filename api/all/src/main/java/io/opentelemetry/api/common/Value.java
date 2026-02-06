@@ -85,7 +85,11 @@ public interface Value<T> {
     return KeyValueList.createFromMap(value);
   }
 
-  /** Returns an empty {@link Value}. */
+  /**
+   * Returns an empty {@link Value}.
+   *
+   * @since 1.59.0
+   */
   static Value<Empty> empty() {
     return ValueEmpty.create();
   }
