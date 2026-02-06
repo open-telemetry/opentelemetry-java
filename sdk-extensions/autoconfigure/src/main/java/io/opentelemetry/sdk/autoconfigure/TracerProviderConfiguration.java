@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
@@ -50,7 +51,10 @@ final class TracerProviderConfiguration {
       List<Closeable> closeables) {
 
     tracerProviderBuilder.setSpanLimits(configureSpanLimits(config));
-    tracerProviderBuilder.setMeterProvider(() -> meterProvider);
+    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
+    if (telemetryVersion != InternalTelemetryVersion.LEGACY) {
+      tracerProviderBuilder.setMeterProvider(() -> meterProvider);
+    }
 
     String sampler = config.getString("otel.traces.sampler", PARENTBASED_ALWAYS_ON);
     tracerProviderBuilder.setSampler(
@@ -61,7 +65,8 @@ final class TracerProviderConfiguration {
             config, spiHelper, spanExporterCustomizer, closeables);
 
     List<SpanProcessor> processors =
-        configureSpanProcessors(config, exportersByName, meterProvider, closeables);
+        configureSpanProcessors(
+            config, exportersByName, telemetryVersion, meterProvider, closeables);
     for (SpanProcessor processor : processors) {
       SpanProcessor wrapped = spanProcessorCustomizer.apply(processor, config);
       if (wrapped != processor) {
@@ -74,6 +79,7 @@ final class TracerProviderConfiguration {
   static List<SpanProcessor> configureSpanProcessors(
       ConfigProperties config,
       Map<String, SpanExporter> exportersByName,
+      InternalTelemetryVersion telemetryVersion,
       MeterProvider meterProvider,
       List<Closeable> closeables) {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
@@ -82,8 +88,11 @@ final class TracerProviderConfiguration {
     for (String simpleProcessorExporterNames : simpleProcessorExporterNames) {
       SpanExporter exporter = exportersByNameCopy.remove(simpleProcessorExporterNames);
       if (exporter != null) {
-        SpanProcessor spanProcessor =
-            SimpleSpanProcessor.builder(exporter).setMeterProvider(() -> meterProvider).build();
+        SimpleSpanProcessorBuilder spanProcessorBuilder = SimpleSpanProcessor.builder(exporter);
+        if (telemetryVersion != InternalTelemetryVersion.LEGACY) {
+          spanProcessorBuilder.setMeterProvider(() -> meterProvider);
+        }
+        SpanProcessor spanProcessor = spanProcessorBuilder.build();
         closeables.add(spanProcessor);
         spanProcessors.add(spanProcessor);
       }
@@ -92,7 +101,8 @@ final class TracerProviderConfiguration {
     if (!exportersByNameCopy.isEmpty()) {
       SpanExporter compositeSpanExporter = SpanExporter.composite(exportersByNameCopy.values());
       SpanProcessor spanProcessor =
-          configureBatchSpanProcessor(config, compositeSpanExporter, meterProvider);
+          configureBatchSpanProcessor(
+              config, compositeSpanExporter, telemetryVersion, meterProvider);
       closeables.add(spanProcessor);
       spanProcessors.add(spanProcessor);
     }
@@ -102,7 +112,10 @@ final class TracerProviderConfiguration {
 
   // VisibleForTesting
   static BatchSpanProcessor configureBatchSpanProcessor(
-      ConfigProperties config, SpanExporter exporter, MeterProvider meterProvider) {
+      ConfigProperties config,
+      SpanExporter exporter,
+      InternalTelemetryVersion telemetryVersion,
+      MeterProvider meterProvider) {
     BatchSpanProcessorBuilder builder =
         BatchSpanProcessor.builder(exporter).setMeterProvider(() -> meterProvider);
 
@@ -126,10 +139,7 @@ final class TracerProviderConfiguration {
       builder.setExporterTimeout(timeout);
     }
 
-    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
-    if (telemetryVersion != null) {
-      builder.setInternalTelemetryVersion(telemetryVersion);
-    }
+    builder.setInternalTelemetryVersion(telemetryVersion);
 
     return builder.build();
   }

@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -93,6 +94,7 @@ class LoggerProviderConfigurationTest {
         LoggerProviderConfiguration.configureLogRecordProcessors(
             DefaultConfigProperties.createFromMap(Collections.emptyMap()),
             exportersByName,
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
@@ -123,6 +125,7 @@ class LoggerProviderConfigurationTest {
         LoggerProviderConfiguration.configureBatchLogRecordProcessor(
             DefaultConfigProperties.createFromMap(properties),
             SystemOutLogRecordExporter.create(),
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")

@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.util.Locale;
-import javax.annotation.Nullable;
 
 /**
  * Reads the desired SDK internal telemetry version from {@link ConfigProperties}.
@@ -19,12 +18,12 @@ import javax.annotation.Nullable;
  */
 final class InternalTelemetryConfiguration {
 
-  @Nullable
   static InternalTelemetryVersion getVersion(ConfigProperties config) {
     String version = config.getString("otel.experimental.sdk.telemetry.version");
     if (version == null) {
-      return null;
+      return InternalTelemetryVersion.LEGACY;
     }
+
     switch (version.toLowerCase(Locale.ROOT)) {
       case "legacy":
         return InternalTelemetryVersion.LEGACY;
