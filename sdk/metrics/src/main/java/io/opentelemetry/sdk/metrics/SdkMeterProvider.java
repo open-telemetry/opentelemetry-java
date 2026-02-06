@@ -29,6 +29,8 @@ import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -99,7 +101,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       reader.register(new SdkCollectionRegistration(readerMetricProducers, sharedState));
       registeredReader.setLastCollectEpochNanos(startEpochNanos);
       if (reader instanceof PeriodicMetricReader) {
-        SdkMeterProviderUtil.setMeterProvider((PeriodicMetricReader) reader, this);
+        setReaderMeterProvider((PeriodicMetricReader) reader, this);
       }
     }
   }
@@ -196,6 +198,18 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
         + ", meterConfigurator="
         + meterConfigurator
         + "}";
+  }
+
+  private static void setReaderMeterProvider(
+      PeriodicMetricReader metricReader, SdkMeterProvider meterProvider) {
+    try {
+      Method method =
+          PeriodicMetricReader.class.getDeclaredMethod("setMeterProvider", MeterProvider.class);
+      method.setAccessible(true);
+      method.invoke(metricReader, meterProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException("Error calling setMeterProvider on PeriodicMetricReader", e);
+    }
   }
 
   /** Helper class to expose registered metric exports. */

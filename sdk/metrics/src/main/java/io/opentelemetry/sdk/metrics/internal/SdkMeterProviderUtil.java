@@ -5,13 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.internal;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.lang.reflect.InvocationTargetException;
@@ -76,19 +74,6 @@ public final class SdkMeterProviderUtil {
           "Error calling addMeterConfiguratorCondition on SdkMeterProviderBuilder", e);
     }
     return sdkMeterProviderBuilder;
-  }
-
-  /** Reflectively sets the meter provider for a PeriodicMetricReader to export metrics to. */
-  public static void setMeterProvider(
-      PeriodicMetricReader metricReader, SdkMeterProvider meterProvider) {
-    try {
-      Method method =
-          PeriodicMetricReader.class.getDeclaredMethod("setMeterProvider", MeterProvider.class);
-      method.setAccessible(true);
-      method.invoke(metricReader, meterProvider);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException("Error calling setMeterProvider on PeriodicMetricReader", e);
-    }
   }
 
   /**
