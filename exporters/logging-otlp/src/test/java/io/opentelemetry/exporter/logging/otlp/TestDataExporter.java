@@ -8,9 +8,12 @@ package io.opentelemetry.exporter.logging.otlp;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 
 import com.google.common.io.Resources;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -59,8 +62,16 @@ abstract class TestDataExporter<T> {
           .setSeverityText("INFO")
           .setTimestamp(100L, TimeUnit.NANOSECONDS)
           .setObservedTimestamp(200L, TimeUnit.NANOSECONDS)
-          .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
-          .setTotalAttributeCount(2)
+          .setAttributes(
+              Attributes.builder()
+                  .put(stringKey("animal"), "cat")
+                  .put(longKey("lives"), 9L)
+                  .put(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+                  .put(valueKey("map"), Value.of(KeyValue.of("nested", Value.of("value"))))
+                  .put(valueKey("heterogeneousArray"), Value.of(Value.of("string"), Value.of(123L)))
+                  .put(valueKey("empty"), Value.empty())
+                  .build())
+          .setTotalAttributeCount(6)
           .setSpanContext(
               SpanContext.create(
                   "12345678876543211234567887654322",
@@ -103,7 +114,15 @@ abstract class TestDataExporter<T> {
           .setStatus(StatusData.ok())
           .setName("testSpan1")
           .setKind(SpanKind.INTERNAL)
-          .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
+          .setAttributes(
+              Attributes.builder()
+                  .put(stringKey("animal"), "cat")
+                  .put(longKey("lives"), 9L)
+                  .put(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+                  .put(valueKey("map"), Value.of(KeyValue.of("nested", Value.of("value"))))
+                  .put(valueKey("heterogeneousArray"), Value.of(Value.of("string"), Value.of(123L)))
+                  .put(valueKey("empty"), Value.empty())
+                  .build())
           .setEvents(
               Collections.singletonList(
                   EventData.create(
@@ -155,7 +174,18 @@ abstract class TestDataExporter<T> {
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
                   ImmutableDoublePointData.create(
-                      1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
+                      1,
+                      2,
+                      Attributes.builder()
+                          .put(stringKey("cat"), "meow")
+                          .put(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+                          .put(valueKey("map"), Value.of(KeyValue.of("nested", Value.of("value"))))
+                          .put(
+                              valueKey("heterogeneousArray"),
+                              Value.of(Value.of("string"), Value.of(123L)))
+                          .put(valueKey("empty"), Value.empty())
+                          .build(),
+                      4))));
 
   private static final MetricData METRIC2 =
       ImmutableMetricData.createDoubleSum(

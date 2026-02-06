@@ -29,7 +29,8 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -122,16 +123,18 @@ class DeclarativeConfigurationTest {
 
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     Resource resource = Resource.getDefault().toBuilder().put("service.name", "test").build();
-    ExtendedOpenTelemetrySdk expectedSdk =
-        ExtendedOpenTelemetrySdk.create(
-            OpenTelemetrySdk.builder()
-                .setTracerProvider(
-                    SdkTracerProvider.builder()
-                        .setResource(resource)
-                        .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
-                        .build())
-                .build(),
-            ((ExtendedOpenTelemetrySdk) openTelemetrySdk).getSdkConfigProvider());
+    OpenTelemetrySdk expectedSdk =
+        OpenTelemetrySdkBuilderUtil.setConfigProvider(
+                OpenTelemetrySdk.builder()
+                    .setTracerProvider(
+                        SdkTracerProvider.builder()
+                            .setResource(resource)
+                            .addSpanProcessor(
+                                SimpleSpanProcessor.create(LoggingSpanExporter.create()))
+                            .build()),
+                ((ExtendedOpenTelemetrySdk) openTelemetrySdk).getSdkConfigProvider())
+            .build();
+
     cleanup.addCloseable(expectedSdk);
     assertThat(openTelemetrySdk.toString()).hasToString(expectedSdk.toString());
     // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from

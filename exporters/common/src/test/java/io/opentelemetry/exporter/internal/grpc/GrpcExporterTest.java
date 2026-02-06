@@ -18,9 +18,9 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
-import io.opentelemetry.sdk.internal.ComponentId;
-import io.opentelemetry.sdk.internal.SemConvAttributes;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.ComponentId;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -198,7 +198,9 @@ class GrpcExporterTest {
                                   pa ->
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
-                                                  .put(SemConvAttributes.RPC_GRPC_STATUS_CODE, 0)
+                                                  .put(
+                                                      SemConvAttributes.RPC_RESPONSE_STATUS_CODE,
+                                                      GrpcStatusCode.OK.name())
                                                   .build())
                                           .hasBucketCounts(1),
                                   pa ->
@@ -208,8 +210,8 @@ class GrpcExporterTest {
                                                       SemConvAttributes.ERROR_TYPE,
                                                       "" + UNAVAILABLE.getValue())
                                                   .put(
-                                                      SemConvAttributes.RPC_GRPC_STATUS_CODE,
-                                                      UNAVAILABLE.getValue())
+                                                      SemConvAttributes.RPC_RESPONSE_STATUS_CODE,
+                                                      UNAVAILABLE.name())
                                                   .build())
                                           .hasBucketCounts(1),
                                   pa ->

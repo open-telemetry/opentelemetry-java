@@ -15,11 +15,11 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -130,11 +130,13 @@ class InstrumentationConfigUtilTest {
     ExperimentalLanguageSpecificInstrumentationModel javaConfig =
         new ExperimentalLanguageSpecificInstrumentationModel();
     javaConfig.setAdditionalProperty(instrumentationName, instrumentationConfig);
+    DeclarativeConfigProperties modelProperties =
+        DeclarativeConfiguration.toConfigProperties(
+            new OpenTelemetryConfigurationModel()
+                .withInstrumentationDevelopment(
+                    new ExperimentalInstrumentationModel().withJava(javaConfig)));
 
-    return SdkConfigProvider.create(
-        new OpenTelemetryConfigurationModel()
-            .withInstrumentationDevelopment(
-                new ExperimentalInstrumentationModel().withJava(javaConfig)));
+    return SdkConfigProvider.create(modelProperties);
   }
 
   private static class Model {

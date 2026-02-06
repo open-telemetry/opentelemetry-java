@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.incubator.metrics;
 
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameEquals;
 import static io.opentelemetry.sdk.metrics.internal.MeterConfig.disabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 

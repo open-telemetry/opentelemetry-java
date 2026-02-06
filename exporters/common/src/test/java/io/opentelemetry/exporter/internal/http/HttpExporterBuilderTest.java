@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.sdk.common.export.Compressor;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.net.URL;
 import java.net.URLClassLoader;
 import org.junit.jupiter.api.BeforeEach;

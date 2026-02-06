@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SdkDoubleGauge}. */
@@ -270,99 +269,5 @@ class SdkDoubleGaugeTest {
                                         .hasEpochNanos(testClock.now())
                                         .hasValue(222d)
                                         .hasAttributes(attributeEntry("K", "V")))));
-  }
-
-  @Test
-  void stressTest() {
-    DoubleGauge doubleGauge = sdkMeter.gaugeBuilder("testGauge").build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setCollectionIntervalMs(100);
-
-    for (int i = 0; i < 4; i++) {
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              1_000,
-              1,
-              () -> {
-                doubleGauge.set(10, Attributes.builder().put("K", "V").build());
-                doubleGauge.set(11, Attributes.builder().put("K", "V").build());
-              }));
-    }
-
-    stressTestBuilder.build().run();
-    assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testGauge")
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(11)
-                                        .hasAttributes(attributeEntry("K", "V")))));
-  }
-
-  @Test
-  void stressTest_WithDifferentLabelSet() {
-    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    DoubleGauge doubleGauge = sdkMeter.gaugeBuilder("testGauge").build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setCollectionIntervalMs(100);
-
-    IntStream.range(0, 4)
-        .forEach(
-            i ->
-                stressTestBuilder.addOperation(
-                    StressTestRunner.Operation.create(
-                        2_000,
-                        1,
-                        () -> {
-                          doubleGauge.set(10, Attributes.builder().put(keys[i], values[i]).build());
-                          doubleGauge.set(11, Attributes.builder().put(keys[i], values[i]).build());
-                        })));
-
-    stressTestBuilder.build().run();
-    assertThat(cumulativeReader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasDoubleGaugeSatisfying(
-                        gauge ->
-                            gauge.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(11)
-                                        .hasAttributes(attributeEntry(keys[0], values[0])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(11)
-                                        .hasAttributes(attributeEntry(keys[1], values[1])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(11)
-                                        .hasAttributes(attributeEntry(keys[2], values[2])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasValue(11)
-                                        .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
 }

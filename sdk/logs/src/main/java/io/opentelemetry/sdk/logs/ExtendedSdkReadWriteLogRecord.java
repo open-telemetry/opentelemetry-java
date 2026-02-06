@@ -14,7 +14,7 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ExtendedAttributesMap;
+import io.opentelemetry.sdk.common.internal.ExtendedAttributesMap;
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.logs.internal.ExtendedReadWriteLogRecord;
 import io.opentelemetry.sdk.resources.Resource;

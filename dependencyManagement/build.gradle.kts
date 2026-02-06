@@ -9,14 +9,14 @@ rootProject.extra["versions"] = dependencyVersions
 
 
 val autoValueVersion = "1.11.1"
-val errorProneVersion = "2.45.0"
+val errorProneVersion = "2.46.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
-val armeriaVersion = "1.35.0"
+val armeriaVersion = "1.36.0"
 val junitVersion = "5.14.2"
 val okhttpVersion = "5.3.2"
 
@@ -28,14 +28,14 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.21.0",
   "com.google.guava:guava-bom:33.5.0-jre",
-  "com.google.protobuf:protobuf-bom:4.33.4",
+  "com.google.protobuf:protobuf-bom:4.33.5",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.16.4", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.78.0",
-  "io.netty:netty-bom:4.2.9.Final",
+  "io.grpc:grpc-bom:1.79.0",
+  "io.netty:netty-bom:4.2.10.Final",
   "io.zipkin.brave:brave-bom:6.3.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.1",
-  "org.assertj:assertj-bom:3.27.6",
+  "org.assertj:assertj-bom:3.27.7",
   "org.testcontainers:testcontainers-bom:2.0.3",
   "org.snakeyaml:snakeyaml-engine:2.10"
 )
@@ -69,19 +69,19 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.64.1",
+  "com.google.api.grpc:proto-google-common-protos:2.65.1",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.4.1",
-  "com.uber.nullaway:nullaway:0.13.0",
+  "com.uber.nullaway:nullaway:0.13.1",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.11",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.53.0-alpha",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.37.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.39.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.9.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",

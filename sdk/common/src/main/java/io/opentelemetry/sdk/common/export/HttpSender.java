@@ -17,6 +17,7 @@ import java.util.function.Consumer;
  * cases.
  *
  * @see HttpSenderProvider
+ * @since 1.59.0
  */
 public interface HttpSender {
 

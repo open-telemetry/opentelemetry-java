@@ -19,12 +19,9 @@ import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
-import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
-import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
@@ -53,6 +50,9 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Tracer
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
+import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
+import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -123,9 +123,11 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.1");
-    ExtendedOpenTelemetrySdk expectedSdk =
-        ExtendedOpenTelemetrySdk.create(
-            OpenTelemetrySdk.builder().build(), SdkConfigProvider.create(model));
+    OpenTelemetrySdk expectedSdk =
+        OpenTelemetrySdkBuilderUtil.setConfigProvider(
+                OpenTelemetrySdk.builder(),
+                SdkConfigProvider.create(DeclarativeConfiguration.toConfigProperties(model)))
+            .build();
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
@@ -154,9 +156,11 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .withExporter(
                                             new LogRecordExporterModel()
                                                 .withOtlpHttp(new OtlpHttpExporterModel()))))));
-    ExtendedOpenTelemetrySdk expectedSdk =
-        ExtendedOpenTelemetrySdk.create(
-            OpenTelemetrySdk.builder().build(), SdkConfigProvider.create(model));
+    OpenTelemetrySdk expectedSdk =
+        OpenTelemetrySdkBuilderUtil.setConfigProvider(
+                OpenTelemetrySdk.builder(),
+                SdkConfigProvider.create(DeclarativeConfiguration.toConfigProperties(model)))
+            .build();
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
@@ -168,7 +172,7 @@ class OpenTelemetryConfigurationFactoryTest {
   }
 
   @Test
-  void create_Configured() throws NoSuchFieldException, IllegalAccessException {
+  void create_Configured() throws NoSuchFieldException {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.resources.Resource expectedResource =
         io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder()
@@ -184,8 +188,7 @@ class OpenTelemetryConfigurationFactoryTest {
         new OpenTelemetryConfigurationModel()
             .withFileFormat("1.0-rc.1")
             .withPropagator(
-                new PropagatorModel()
-                    .withCompositeList("tracecontext,baggage,ottrace,b3multi,b3,jaeger"))
+                new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3"))
             .withResource(
                 new ResourceModel()
                     .withDetectionDevelopment(
@@ -257,63 +260,62 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .withName("stream-name")
                                         .withAttributeKeys(null)))));
 
-    ExtendedOpenTelemetrySdk expectedSdk =
-        ExtendedOpenTelemetrySdk.create(
-            OpenTelemetrySdk.builder()
-                .setPropagators(
-                    ContextPropagators.create(
-                        TextMapPropagator.composite(
-                            W3CTraceContextPropagator.getInstance(),
-                            W3CBaggagePropagator.getInstance(),
-                            OtTracePropagator.getInstance(),
-                            B3Propagator.injectingMultiHeaders(),
-                            B3Propagator.injectingSingleHeader(),
-                            JaegerPropagator.getInstance())))
-                .setLoggerProvider(
-                    SdkLoggerProvider.builder()
-                        .setResource(expectedResource)
-                        .setLogLimits(
-                            () ->
-                                LogLimits.builder()
-                                    .setMaxAttributeValueLength(1)
-                                    .setMaxNumberOfAttributes(2)
+    OpenTelemetrySdk expectedSdk =
+        OpenTelemetrySdkBuilderUtil.setConfigProvider(
+                OpenTelemetrySdk.builder()
+                    .setPropagators(
+                        ContextPropagators.create(
+                            TextMapPropagator.composite(
+                                W3CTraceContextPropagator.getInstance(),
+                                W3CBaggagePropagator.getInstance(),
+                                B3Propagator.injectingMultiHeaders(),
+                                B3Propagator.injectingSingleHeader())))
+                    .setLoggerProvider(
+                        SdkLoggerProvider.builder()
+                            .setResource(expectedResource)
+                            .setLogLimits(
+                                () ->
+                                    LogLimits.builder()
+                                        .setMaxAttributeValueLength(1)
+                                        .setMaxNumberOfAttributes(2)
+                                        .build())
+                            .addLogRecordProcessor(
+                                io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
+                                        OtlpHttpLogRecordExporter.getDefault())
                                     .build())
-                        .addLogRecordProcessor(
-                            io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                                    OtlpHttpLogRecordExporter.getDefault())
-                                .build())
-                        .build())
-                .setTracerProvider(
-                    SdkTracerProvider.builder()
-                        .setResource(expectedResource)
-                        .setSpanLimits(
-                            SpanLimits.builder()
-                                .setMaxNumberOfAttributes(1)
-                                .setMaxAttributeValueLength(2)
-                                .setMaxNumberOfEvents(3)
-                                .setMaxNumberOfLinks(4)
-                                .setMaxNumberOfAttributesPerEvent(5)
-                                .setMaxNumberOfAttributesPerLink(6)
-                                .build())
-                        .setSampler(alwaysOn())
-                        .addSpanProcessor(
-                            io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                                    OtlpHttpSpanExporter.getDefault())
-                                .build())
-                        .build())
-                .setMeterProvider(
-                    SdkMeterProvider.builder()
-                        .setResource(expectedResource)
-                        .registerMetricReader(
-                            io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                                    OtlpHttpMetricExporter.getDefault())
-                                .build())
-                        .registerView(
-                            InstrumentSelector.builder().setName("instrument-name").build(),
-                            View.builder().setName("stream-name").build())
-                        .build())
-                .build(),
-            SdkConfigProvider.create(model));
+                            .build())
+                    .setTracerProvider(
+                        SdkTracerProvider.builder()
+                            .setResource(expectedResource)
+                            .setSpanLimits(
+                                SpanLimits.builder()
+                                    .setMaxNumberOfAttributes(1)
+                                    .setMaxAttributeValueLength(2)
+                                    .setMaxNumberOfEvents(3)
+                                    .setMaxNumberOfLinks(4)
+                                    .setMaxNumberOfAttributesPerEvent(5)
+                                    .setMaxNumberOfAttributesPerLink(6)
+                                    .build())
+                            .setSampler(alwaysOn())
+                            .addSpanProcessor(
+                                io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
+                                        OtlpHttpSpanExporter.getDefault())
+                                    .build())
+                            .build())
+                    .setMeterProvider(
+                        SdkMeterProvider.builder()
+                            .setResource(expectedResource)
+                            .registerMetricReader(
+                                io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
+                                        OtlpHttpMetricExporter.getDefault())
+                                    .build())
+                            .registerView(
+                                InstrumentSelector.builder().setName("instrument-name").build(),
+                                View.builder().setName("stream-name").build())
+                            .build()),
+                SdkConfigProvider.create(DeclarativeConfiguration.toConfigProperties(model)))
+            .build();
+
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =

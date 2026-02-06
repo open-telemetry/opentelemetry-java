@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
 import static io.opentelemetry.sdk.logs.internal.LoggerConfig.defaultConfig;
 import static io.opentelemetry.sdk.logs.internal.LoggerConfig.disabled;
 import static io.opentelemetry.sdk.logs.internal.LoggerConfig.enabled;
@@ -17,7 +17,7 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;

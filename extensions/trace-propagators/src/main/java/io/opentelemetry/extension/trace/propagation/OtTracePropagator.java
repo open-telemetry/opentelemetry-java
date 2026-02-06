@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -33,8 +34,13 @@ import javax.annotation.concurrent.Immutable;
  * See <a
  * href=https://github.com/opentracing/basictracer-python/blob/master/basictracer/text_propagator.py>OT
  * Python Propagation TextMapPropagator</a>.
+ *
+ * @deprecated the OT trace propagation format is deprecated in the OpenTelemetry specification (see
+ *     <a href="https://github.com/open-telemetry/opentelemetry-specification/pull/4851">#4851</a>).
+ *     Please use {@link W3CTraceContextPropagator} instead.
  */
 @Immutable
+@Deprecated
 public final class OtTracePropagator implements TextMapPropagator {
 
   static final String TRACE_ID_HEADER = "ot-tracer-traceid";

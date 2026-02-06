@@ -14,8 +14,8 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
-import io.opentelemetry.sdk.internal.StandardComponentId;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -80,7 +80,7 @@ public final class GrpcExporter {
       GrpcResponse grpcResponse) {
     GrpcStatusCode statusCode = grpcResponse.getStatusCode();
 
-    metricRecording.setGrpcStatusCode(statusCode.getValue());
+    metricRecording.setGrpcStatusCode(statusCode);
 
     if (statusCode == GrpcStatusCode.OK) {
       metricRecording.finishSuccessful();
