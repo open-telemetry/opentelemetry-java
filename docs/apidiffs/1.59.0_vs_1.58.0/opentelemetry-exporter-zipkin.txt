@@ -1,0 +1,7 @@
+Comparing source compatibility of opentelemetry-exporter-zipkin-1.60.0-SNAPSHOT.jar against opentelemetry-exporter-zipkin-1.58.0.jar
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.exporter.zipkin.ZipkinSpanExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
