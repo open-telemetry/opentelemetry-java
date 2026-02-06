@@ -102,25 +102,8 @@ public interface TraceFlags {
    */
   byte asByte();
 
-  /**
-   * Returns an instance of {@link TraceFlags} whose value is the result of a bitwise OR between
-   * this object and the SAMPLED bit. This operation does not modify this object.
-   *
-   * @return a new {@link TraceFlags} object representing {@code this | SAMPLED_BIT}
-   */
-  default TraceFlags withSampledBit() {
-    byte newByte = (byte) (asByte() | ImmutableTraceFlags.SAMPLED_BIT);
-    return ImmutableTraceFlags.fromByte(newByte);
-  }
-
-  /**
-   * Returns an instance of {@link TraceFlags} whose value is the result of a bitwise OR between
-   * this object and the RANDOM_TRACE_ID bit. This operation does not modify this object.
-   *
-   * @return a new {@link TraceFlags} object representing {@code this | RANDOM_TRACE_ID_BIT}
-   */
-  default TraceFlags withRandomTraceIdBit() {
-    byte newByte = (byte) (asByte() | ImmutableTraceFlags.RANDOM_TRACE_ID_BIT);
-    return ImmutableTraceFlags.fromByte(newByte);
+  /** Returns an instance of {@link TraceFlagsBuilder} for {@link TraceFlags}. */
+  static TraceFlagsBuilder builder() {
+    return ImmutableTraceFlags.DEFAULT;
   }
 }
