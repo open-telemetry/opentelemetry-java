@@ -72,6 +72,72 @@ class ResourceConfigurationTest {
   }
 
   @Test
+  void decodePercentEncodedSpace() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.resource.attributes", "key=hello%20world");
+
+    assertThat(
+            ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createFromMap(props)))
+        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "hello world")));
+  }
+
+  @Test
+  void decodeInvalidPercentEncodingPreservesLiteral() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.resource.attributes", "key=abc%2Gdef");
+
+    assertThat(
+            ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createFromMap(props)))
+        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "abc%2Gdef")));
+  }
+
+  @Test
+  void decodeIncompletePercentEncodingPreservesLiteral() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.resource.attributes", "key=abc%2");
+
+    assertThat(
+            ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createFromMap(props)))
+        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "abc%2")));
+  }
+
+  @Test
+  void decodePercentAtEndPreservesLiteral() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.resource.attributes", "key=abc%");
+
+    assertThat(
+            ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createFromMap(props)))
+        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "abc%")));
+  }
+
+  @Test
+  void decodeMultiplePercentEncodings() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.resource.attributes", "key=a%20b%2Bc%3Dd");
+
+    assertThat(
+            ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createFromMap(props)))
+        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "a b+c=d")));
+  }
+
+  @Test
+  void decodeNoPercentEncoding() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.resource.attributes", "key=plain-value");
+
+    assertThat(
+            ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createFromMap(props)))
+        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "plain-value")));
+  }
+
+  @Test
   void createEnvironmentResource_Empty() {
     Attributes attributes = ResourceConfiguration.createEnvironmentResource().getAttributes();
 
