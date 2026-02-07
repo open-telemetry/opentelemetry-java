@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Value;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -58,6 +59,8 @@ public abstract class AttributeAssertion {
       case LONG_ARRAY:
       case DOUBLE_ARRAY:
         return assertThat((List<?>) value);
+      case VALUE:
+        return assertThat((Value<?>) value);
     }
     throw new IllegalArgumentException("Unknown type for key " + key);
   }

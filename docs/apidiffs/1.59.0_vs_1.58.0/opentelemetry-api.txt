@@ -1,0 +1,25 @@
+Comparing source compatibility of opentelemetry-api-1.60.0-SNAPSHOT.jar against opentelemetry-api-1.58.0.jar
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.AttributeKey  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	GENERIC TEMPLATES: === T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.AttributeKey<io.opentelemetry.api.common.Value<?>> valueKey(java.lang.String)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.AttributesBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributesBuilder put(java.lang.String, io.opentelemetry.api.common.Value<?>)
+***  MODIFIED ENUM: PUBLIC FINAL io.opentelemetry.api.common.AttributeType  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.AttributeType VALUE
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.api.common.Empty  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) boolean equals(java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Empty getInstance()
+	+++  NEW METHOD: PUBLIC(+) int hashCode()
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.Value  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	GENERIC TEMPLATES: === T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<io.opentelemetry.api.common.Empty> empty()
+***  MODIFIED ENUM: PUBLIC FINAL io.opentelemetry.api.common.ValueType  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType EMPTY

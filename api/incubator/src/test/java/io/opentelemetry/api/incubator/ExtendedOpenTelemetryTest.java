@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.logs.ExtendedDefaultLoggerProvider;
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.incubator.metrics.ExtendedDefaultMeterProvider;
@@ -24,10 +25,9 @@ import io.opentelemetry.api.testing.internal.AbstractOpenTelemetryTest;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.extension.incubator.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -67,7 +67,7 @@ class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
     GlobalOpenTelemetry.set(
         ExtendedOpenTelemetrySdk.create(
             OpenTelemetrySdk.builder().build(),
-            SdkConfigProvider.create(new OpenTelemetryConfigurationModel())));
+            SdkConfigProvider.create(DeclarativeConfigProperties.empty())));
     assertThat(GlobalOpenTelemetry.get()).isInstanceOf(ExtendedOpenTelemetry.class);
   }
 
@@ -92,10 +92,10 @@ class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
             + "    example:\n"
             + "      property: \"value\"";
 
-    OpenTelemetryConfigurationModel configuration =
-        DeclarativeConfiguration.parse(
-            new ByteArrayInputStream(configYaml.getBytes(StandardCharsets.UTF_8)));
-    SdkConfigProvider configProvider = SdkConfigProvider.create(configuration);
+    SdkConfigProvider configProvider =
+        SdkConfigProvider.create(
+            DeclarativeConfiguration.toConfigProperties(
+                new ByteArrayInputStream(configYaml.getBytes(StandardCharsets.UTF_8))));
     ExtendedOpenTelemetry openTelemetry =
         ExtendedOpenTelemetrySdk.create(OpenTelemetrySdk.builder().build(), configProvider);
 

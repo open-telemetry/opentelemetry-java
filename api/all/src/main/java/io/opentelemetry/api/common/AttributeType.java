@@ -17,5 +17,11 @@ public enum AttributeType {
   STRING_ARRAY,
   BOOLEAN_ARRAY,
   LONG_ARRAY,
-  DOUBLE_ARRAY
+  DOUBLE_ARRAY,
+  /**
+   * {@link Value}-based attributes.
+   *
+   * @since 1.59.0
+   */
+  VALUE
 }

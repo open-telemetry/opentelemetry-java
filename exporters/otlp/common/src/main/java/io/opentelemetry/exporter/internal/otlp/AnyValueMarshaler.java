@@ -38,6 +38,8 @@ public final class AnyValueMarshaler {
         return KeyValueListAnyValueMarshaler.create((List<KeyValue>) value.getValue());
       case BYTES:
         return BytesAnyValueMarshaler.create((ByteBuffer) value.getValue());
+      case EMPTY:
+        return EmptyAnyValueMarshaler.INSTANCE;
     }
     throw new IllegalArgumentException("Unsupported Value type: " + value.getType());
   }

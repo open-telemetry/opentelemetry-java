@@ -21,7 +21,7 @@ tasks {
       errorprone {
         if (disableErrorProne) {
           logger.warn("Errorprone has been disabled. Build may not result in a valid PR build.")
-          isEnabled.set(false)
+          enabled.set(false)
         }
 
         disableWarningsInGeneratedCode.set(true)
@@ -88,6 +88,7 @@ tasks {
         // We annotate packages with @ParametersAreNonnullByDefault from com.google.code.findbugs:jsr305.
         // @NullMarked is the equivalent from jspecify.
         disable("AddNullMarkedToPackageInfo")
+        disable("AddNullMarkedToClass")
 
         // This check causes too many changes to be introduced at once to be manageable.
         disable("SuppressWarningsWithoutExplanation")

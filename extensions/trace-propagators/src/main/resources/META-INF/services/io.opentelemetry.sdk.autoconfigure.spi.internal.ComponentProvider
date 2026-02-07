@@ -1,4 +1,2 @@
 io.opentelemetry.extension.trace.propagation.internal.B3ComponentProvider
 io.opentelemetry.extension.trace.propagation.internal.B3MultiComponentProvider
-io.opentelemetry.extension.trace.propagation.internal.JaegerComponentProvider
-io.opentelemetry.extension.trace.propagation.internal.OtTraceComponentProvider

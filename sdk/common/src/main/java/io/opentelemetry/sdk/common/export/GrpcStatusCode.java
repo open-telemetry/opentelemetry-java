@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.common.export;
 /**
  * gRPC status codes. See <a href="https://grpc.io/docs/guides/status-codes/">official grpc.io
  * docs</a> for usage.
+ *
+ * @since 1.59.0
  */
 public enum GrpcStatusCode {
   OK(0),

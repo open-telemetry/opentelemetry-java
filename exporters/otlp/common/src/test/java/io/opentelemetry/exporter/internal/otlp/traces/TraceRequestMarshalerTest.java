@@ -18,6 +18,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -34,6 +35,7 @@ import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.common.v1.KeyValueList;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -147,6 +149,14 @@ class TraceRequestMarshalerTest {
                             .put("long_array", 12L, 23L)
                             .put("double_array", 12.3, 23.1)
                             .put("boolean_array", true, false)
+                            .put("bytes", Value.of(new byte[] {1, 2, 3}))
+                            .put(
+                                "map",
+                                Value.of(
+                                    io.opentelemetry.api.common.KeyValue.of(
+                                        "nested", Value.of("value"))))
+                            .put("heterogeneousArray", Value.of(Value.of("string"), Value.of(123L)))
+                            .put("empty", Value.empty())
                             .put("empty_string", "")
                             .put("false_value", false)
                             .put("zero_int", 0L)
@@ -154,7 +164,7 @@ class TraceRequestMarshalerTest {
                             // TODO: add empty array, empty map, empty bytes, and true empty value
                             // after https://github.com/open-telemetry/opentelemetry-java/pull/7973
                             .build())
-                    .setTotalAttributeCount(13)
+                    .setTotalAttributeCount(17)
                     .setEvents(
                         Collections.singletonList(
                             EventData.create(12347, "my_event", Attributes.empty())))
@@ -235,6 +245,40 @@ class TraceRequestMarshalerTest {
                             ArrayValue.newBuilder()
                                 .addValues(AnyValue.newBuilder().setBoolValue(true).build())
                                 .addValues(AnyValue.newBuilder().setBoolValue(false).build())
+                                .build())
+                        .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("bytes")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setBytesValue(ByteString.copyFrom(new byte[] {1, 2, 3}))
+                        .build())
+                .build(),
+            KeyValue.newBuilder().setKey("empty").setValue(AnyValue.newBuilder().build()).build(),
+            KeyValue.newBuilder()
+                .setKey("heterogeneousArray")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setStringValue("string").build())
+                                .addValues(AnyValue.newBuilder().setIntValue(123).build())
+                                .build())
+                        .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("map")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setKvlistValue(
+                            KeyValueList.newBuilder()
+                                .addValues(
+                                    KeyValue.newBuilder()
+                                        .setKey("nested")
+                                        .setValue(
+                                            AnyValue.newBuilder().setStringValue("value").build())
+                                        .build())
                                 .build())
                         .build())
                 .build(),

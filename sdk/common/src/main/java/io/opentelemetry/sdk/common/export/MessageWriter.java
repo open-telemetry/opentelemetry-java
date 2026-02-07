@@ -8,7 +8,11 @@ package io.opentelemetry.sdk.common.export;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/** Responsible for writing messages to an output stream. */
+/**
+ * Responsible for writing messages to an output stream.
+ *
+ * @since 1.59.0
+ */
 public interface MessageWriter {
 
   /** Write the message to the {@link OutputStream}. */

@@ -91,7 +91,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   private static OpenTelemetry unobfuscate(OpenTelemetry openTelemetry) {
     try {
       Field delegateField =
-          Class.forName("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry")
+          Class.forName("io.opentelemetry.api.incubator.internal.ObfuscatedExtendedOpenTelemetry")
               .getDeclaredField("delegate");
       delegateField.setAccessible(true);
       Object delegate = delegateField.get(openTelemetry);

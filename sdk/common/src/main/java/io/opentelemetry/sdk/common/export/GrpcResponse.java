@@ -13,6 +13,7 @@ import javax.annotation.concurrent.Immutable;
  * A gRPC response.
  *
  * @see GrpcSender#send(MessageWriter, Consumer, Consumer)
+ * @since 1.59.0
  */
 @Immutable
 public interface GrpcResponse {

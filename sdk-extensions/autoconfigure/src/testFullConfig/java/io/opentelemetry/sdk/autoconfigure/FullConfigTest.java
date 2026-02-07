@@ -23,8 +23,6 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
-import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
-import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
@@ -167,6 +165,7 @@ public class FullConfigTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void configures() throws Exception {
     Collection<String> fields =
         GlobalOpenTelemetry.get().getPropagators().getTextMapPropagator().fields();
@@ -175,8 +174,10 @@ public class FullConfigTest {
     keys.addAll(W3CBaggagePropagator.getInstance().fields());
     keys.addAll(B3Propagator.injectingSingleHeader().fields());
     keys.addAll(B3Propagator.injectingMultiHeaders().fields());
-    keys.addAll(JaegerPropagator.getInstance().fields());
-    keys.addAll(OtTracePropagator.getInstance().fields());
+    keys.addAll(
+        io.opentelemetry.extension.trace.propagation.JaegerPropagator.getInstance().fields());
+    keys.addAll(
+        io.opentelemetry.extension.trace.propagation.OtTracePropagator.getInstance().fields());
     // Added by TestPropagatorProvider
     keys.add("test");
     assertThat(fields).containsExactlyInAnyOrderElementsOf(keys);
