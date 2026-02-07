@@ -9,11 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation")
 class ExtendedAttributesValueTest {
 
   @Test
@@ -22,9 +22,10 @@ class ExtendedAttributesValueTest {
     byte[] bytes = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     Value<ByteBuffer> value = Value.of(bytes);
 
-    map.put(ExtendedAttributeKey.valueKey("key"), value);
+    map.put(io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey("key"), value);
 
-    Value<?> result = map.get(ExtendedAttributeKey.valueKey("key"));
+    Value<?> result =
+        map.get(io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey("key"));
     ByteBuffer buffer = (ByteBuffer) result.getValue();
     byte[] resultBytes = new byte[buffer.remaining()];
     buffer.get(resultBytes);
@@ -37,9 +38,10 @@ class ExtendedAttributesValueTest {
 
     Value<?> arrayValue = Value.of(Value.of("short"), Value.of("this is too long"));
 
-    map.put(ExtendedAttributeKey.valueKey("key"), arrayValue);
+    map.put(io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey("key"), arrayValue);
 
-    Value<?> result = map.get(ExtendedAttributeKey.valueKey("key"));
+    Value<?> result =
+        map.get(io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey("key"));
     @SuppressWarnings("unchecked")
     List<Value<?>> resultList = (List<Value<?>>) result.getValue();
     assertThat(resultList).hasSize(2);
@@ -56,9 +58,11 @@ class ExtendedAttributesValueTest {
             KeyValue.of("key1", Value.of("short")),
             KeyValue.of("key2", Value.of("this is too long")));
 
-    map.put(ExtendedAttributeKey.valueKey("key"), kvListValue);
+    map.put(
+        io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey("key"), kvListValue);
 
-    Value<?> result = map.get(ExtendedAttributeKey.valueKey("key"));
+    Value<?> result =
+        map.get(io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey("key"));
     @SuppressWarnings("unchecked")
     List<KeyValue> resultList = (List<KeyValue>) result.getValue();
     assertThat(resultList).hasSize(2);

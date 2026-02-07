@@ -6,9 +6,6 @@
 package io.opentelemetry.sdk.common.internal;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
-import io.opentelemetry.api.incubator.common.ExtendedAttributes;
-import io.opentelemetry.api.incubator.common.ExtendedAttributesBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,13 +16,16 @@ import javax.annotation.Nullable;
  * A map with a fixed capacity that drops attributes when the map gets full, and which truncates
  * string and array string attribute values to the {@link #lengthLimit}.
  *
- * <p>{@link ExtendedAttributes} analog of {@link AttributesMap}.
+ * <p>{@link io.opentelemetry.api.incubator.common.ExtendedAttributes} analog of {@link
+ * AttributesMap}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>, Object>
-    implements ExtendedAttributes {
+@SuppressWarnings("deprecation")
+public final class ExtendedAttributesMap
+    extends HashMap<io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?>, Object>
+    implements io.opentelemetry.api.incubator.common.ExtendedAttributes {
 
   private static final long serialVersionUID = -2674974862318200501L;
 
@@ -51,7 +51,8 @@ public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>
   /** Add the attribute key value pair, applying capacity and length limits. */
   @Override
   @Nullable
-  public Object put(ExtendedAttributeKey<?> key, @Nullable Object value) {
+  public Object put(
+      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?> key, @Nullable Object value) {
     if (value == null) {
       return null;
     }
@@ -62,7 +63,8 @@ public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>
     return super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
   }
 
-  public <T> void putIfCapacity(ExtendedAttributeKey<T> key, @Nullable T value) {
+  public <T> void putIfCapacity(
+      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> key, @Nullable T value) {
     put(key, value);
   }
 
@@ -76,12 +78,12 @@ public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>
   @SuppressWarnings("unchecked")
   @Nullable
   @Override
-  public <T> T get(ExtendedAttributeKey<T> key) {
+  public <T> T get(io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> key) {
     return (T) super.get(key);
   }
 
   @Override
-  public Map<ExtendedAttributeKey<?>, Object> asMap() {
+  public Map<io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?>, Object> asMap() {
     // Because ExtendedAttributes is marked Immutable, IDEs may recognize this as redundant usage.
     // However, this class is private and is actually mutable, so we need to wrap with
     // unmodifiableMap anyways. We implement the immutable ExtendedAttributes for this class to
@@ -91,12 +93,15 @@ public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>
   }
 
   @Override
-  public ExtendedAttributesBuilder toBuilder() {
-    return ExtendedAttributes.builder().putAll(this);
+  public io.opentelemetry.api.incubator.common.ExtendedAttributesBuilder toBuilder() {
+    return io.opentelemetry.api.incubator.common.ExtendedAttributes.builder().putAll(this);
   }
 
   @Override
-  public void forEach(BiConsumer<? super ExtendedAttributeKey<?>, ? super Object> action) {
+  public void forEach(
+      BiConsumer<
+              ? super io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?>, ? super Object>
+          action) {
     // https://github.com/open-telemetry/opentelemetry-java/issues/4161
     // Help out android desugaring by having an explicit call to HashMap.forEach, when forEach is
     // just called through ExtendedAttributes.forEach desugaring is unable to correctly handle it.
@@ -121,7 +126,7 @@ public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>
   }
 
   /** Create an immutable copy of the extended attributes in this map. */
-  public ExtendedAttributes immutableCopy() {
-    return ExtendedAttributes.builder().putAll(this).build();
+  public io.opentelemetry.api.incubator.common.ExtendedAttributes immutableCopy() {
+    return io.opentelemetry.api.incubator.common.ExtendedAttributes.builder().putAll(this).build();
   }
 }
