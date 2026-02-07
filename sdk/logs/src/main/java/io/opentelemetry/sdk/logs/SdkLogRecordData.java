@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -59,10 +60,8 @@ abstract class SdkLogRecordData implements LogRecordData {
 
   @Override
   @SuppressWarnings("deprecation") // Implementation of deprecated method
-  public io.opentelemetry.sdk.logs.data.Body getBody() {
+  public Body getBody() {
     Value<?> valueBody = getBodyValue();
-    return valueBody == null
-        ? io.opentelemetry.sdk.logs.data.Body.empty()
-        : io.opentelemetry.sdk.logs.data.Body.string(valueBody.asString());
+    return valueBody == null ? Body.empty() : Body.string(valueBody.asString());
   }
 }

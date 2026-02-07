@@ -151,4 +151,21 @@ class OtelDeprecatedApiUsageTest {
             "}")
         .doTest();
   }
+
+  @Test
+  void positiveCases_externalDeprecatedApi() {
+    // Verify the check detects deprecated APIs from external code (JDK in this case)
+    CompilationTestHelper.newInstance(
+            OtelDeprecatedApiUsage.class, OtelDeprecatedApiUsageTest.class)
+        .addSourceLines(
+            "ExternalDeprecated.java",
+            "package test;",
+            "public class ExternalDeprecated {",
+            "  void method(Thread t) {",
+            "    // BUG: Diagnostic contains: Use of deprecated API",
+            "    t.stop();",
+            "  }",
+            "}")
+        .doTest();
+  }
 }

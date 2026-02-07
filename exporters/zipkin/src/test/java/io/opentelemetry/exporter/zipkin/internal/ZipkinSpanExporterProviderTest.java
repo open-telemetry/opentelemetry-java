@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.zipkin.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
@@ -28,8 +29,7 @@ class ZipkinSpanExporterProviderTest {
   void createExporter_Default() {
     try (SpanExporter spanExporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
-      assertThat(spanExporter)
-          .isInstanceOf(io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.class);
+      assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
       assertThat(spanExporter)
           .extracting("sender")
           .extracting("delegate")
