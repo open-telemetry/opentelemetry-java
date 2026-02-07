@@ -47,7 +47,11 @@ import javax.annotation.concurrent.Immutable;
  *       {@link ExtendedAttributes}
  *   <li>{@link #get(AttributeKey)} supports reading values using standard {@link AttributeKey}
  * </ul>
+ *
+ * @deprecated Use {@link Attributes} with {@link
+ *     io.opentelemetry.api.common.AttributeKey#valueKey(String)} instead.
  */
+@Deprecated
 @Immutable
 public interface ExtendedAttributes {
 

@@ -13,8 +13,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
-import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -31,6 +29,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Logs Bridge API. */
+@SuppressWarnings("deprecation")
 class ExtendedLogsBridgeApiUsageTest {
 
   private static final java.util.logging.Logger logger =
@@ -106,15 +105,16 @@ class ExtendedLogsBridgeApiUsageTest {
   AttributeKey<List<Double>> doubleArrKey = AttributeKey.doubleArrayKey("acme.double_array");
 
   // VALUE key
-  ExtendedAttributeKey<Value<?>> valueKey = ExtendedAttributeKey.valueKey("acme.value");
+  io.opentelemetry.api.incubator.common.ExtendedAttributeKey<Value<?>> valueKey =
+      io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey("acme.value");
 
   @Test
   @SuppressLogger(ExtendedLogsBridgeApiUsageTest.class)
   void extendedAttributesUsage() {
     // Initialize from builder. Varargs style initialization (ExtendedAttributes.of(...) not
     // supported.
-    ExtendedAttributes extendedAttributes =
-        ExtendedAttributes.builder()
+    io.opentelemetry.api.incubator.common.ExtendedAttributes extendedAttributes =
+        io.opentelemetry.api.incubator.common.ExtendedAttributes.builder()
             .put(strKey, "value")
             .put(longKey, 1L)
             .put(booleanKey, true)
@@ -191,7 +191,10 @@ class ExtendedLogsBridgeApiUsageTest {
             Value.of(
                 KeyValue.of("childStr", Value.of("value")), KeyValue.of("childLong", Value.of(1L))))
         .setAllAttributes(Attributes.builder().put("key1", "value").build())
-        .setAllAttributes(ExtendedAttributes.builder().put("key2", "value").build())
+        .setAllAttributes(
+            io.opentelemetry.api.incubator.common.ExtendedAttributes.builder()
+                .put("key2", "value")
+                .build())
         .emit();
 
     assertThat(exporter.getFinishedLogRecordItems())
@@ -225,7 +228,7 @@ class ExtendedLogsBridgeApiUsageTest {
               // But preferably access and serialize full extended attributes
               assertThat(extendedLogRecordData.getExtendedAttributes())
                   .isEqualTo(
-                      ExtendedAttributes.builder()
+                      io.opentelemetry.api.incubator.common.ExtendedAttributes.builder()
                           .put(strKey, "value")
                           .put(longKey, 1L)
                           .put(booleanKey, true)

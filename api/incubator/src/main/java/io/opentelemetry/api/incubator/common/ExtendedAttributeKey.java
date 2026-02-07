@@ -30,7 +30,9 @@ import javax.annotation.concurrent.Immutable;
  * </ul>
  *
  * @param <T> The type of value that can be set with the key.
+ * @deprecated Use {@link AttributeKey} with {@link AttributeKey#valueKey(String)} instead.
  */
+@Deprecated
 @Immutable
 public interface ExtendedAttributeKey<T> {
   /** Returns the underlying String representation of the key. */

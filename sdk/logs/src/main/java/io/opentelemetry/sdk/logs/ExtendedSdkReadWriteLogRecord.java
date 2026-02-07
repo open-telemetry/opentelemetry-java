@@ -8,8 +8,6 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
-import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -22,6 +20,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
+@SuppressWarnings("deprecation")
 class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
     implements ExtendedReadWriteLogRecord {
 
@@ -91,11 +90,13 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    return setAttribute(ExtendedAttributeKey.fromAttributeKey(key), value);
+    return setAttribute(
+        io.opentelemetry.api.incubator.common.ExtendedAttributeKey.fromAttributeKey(key), value);
   }
 
   @Override
-  public <T> ExtendedSdkReadWriteLogRecord setAttribute(ExtendedAttributeKey<T> key, T value) {
+  public <T> ExtendedSdkReadWriteLogRecord setAttribute(
+      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> key, T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -110,10 +111,11 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
     return this;
   }
 
-  private ExtendedAttributes getImmutableExtendedAttributes() {
+  private io.opentelemetry.api.incubator.common.ExtendedAttributes
+      getImmutableExtendedAttributes() {
     synchronized (lock) {
       if (extendedAttributes == null) {
-        return ExtendedAttributes.empty();
+        return io.opentelemetry.api.incubator.common.ExtendedAttributes.empty();
       }
       return extendedAttributes.immutableCopy();
     }
@@ -145,12 +147,13 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
   @Nullable
   @Override
   public <T> T getAttribute(AttributeKey<T> key) {
-    return getAttribute(ExtendedAttributeKey.fromAttributeKey(key));
+    return getAttribute(
+        io.opentelemetry.api.incubator.common.ExtendedAttributeKey.fromAttributeKey(key));
   }
 
   @Nullable
   @Override
-  public <T> T getAttribute(ExtendedAttributeKey<T> key) {
+  public <T> T getAttribute(io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> key) {
     synchronized (lock) {
       if (extendedAttributes == null || extendedAttributes.isEmpty()) {
         return null;
@@ -160,7 +163,7 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
   }
 
   @Override
-  public ExtendedAttributes getExtendedAttributes() {
+  public io.opentelemetry.api.incubator.common.ExtendedAttributes getExtendedAttributes() {
     return getImmutableExtendedAttributes();
   }
 }
