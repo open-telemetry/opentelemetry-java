@@ -17,8 +17,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvid
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
@@ -67,18 +65,14 @@ public final class ResourceConfiguration {
    */
   public static Resource createEnvironmentResource(ConfigProperties config) {
     AttributesBuilder resourceAttributes = Attributes.builder();
-    try {
-      for (Map.Entry<String, String> entry : config.getMap(ATTRIBUTE_PROPERTY).entrySet()) {
-        resourceAttributes.put(
-            entry.getKey(),
-            // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
-            // characters outside the baggage-octet range are percent encoded
-            // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-            URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8.displayName()));
-      }
-    } catch (UnsupportedEncodingException e) {
-      // Should not happen since always using standard charset
-      throw new ConfigurationException("Unable to decode resource attributes.", e);
+    for (Map.Entry<String, String> entry : config.getMap(ATTRIBUTE_PROPERTY).entrySet()) {
+      resourceAttributes.put(
+          entry.getKey(),
+          // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
+          // characters outside the baggage-octet range are percent encoded
+          // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
+
+          decodeResourceAttributes(entry.getValue()));
     }
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);
     if (serviceName != null) {
@@ -130,6 +124,36 @@ public final class ResourceConfiguration {
     }
 
     return builder.build();
+  }
+
+  private static String decodeResourceAttributes(String value) {
+    try {
+      if (value.indexOf('%') < 0) {
+        return value;
+      }
+
+      int n = value.length();
+      byte[] bytes = new byte[n];
+      int pos = 0;
+
+      for (int i = 0; i < n; i++) {
+        char c = value.charAt(i);
+        if (c == '%' && i + 2 < n) {
+          int d1 = Character.digit(value.charAt(i + 1), 16);
+          int d2 = Character.digit(value.charAt(i + 2), 16);
+          if (d1 != -1 && d2 != -1) {
+            bytes[pos++] = (byte) ((d1 << 4) + d2);
+            i += 2;
+            continue;
+          }
+        }
+        // Keep '+' as '+' and any other non-encoded chars
+        bytes[pos++] = (byte) c;
+      }
+      return new String(bytes, 0, pos, StandardCharsets.UTF_8);
+    } catch (RuntimeException e) {
+      throw new ConfigurationException("Failed to decode resource attributes: " + value, e);
+    }
   }
 
   private ResourceConfiguration() {}

@@ -51,6 +51,27 @@ class ResourceConfigurationTest {
   }
 
   @Test
+  void decodePlusSignInCustomConfigResource() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "my-app");
+    props.put(
+        "otel.resource.attributes", "food=cheese+cake,drink=juice,animal=  ,color=,shape=square");
+
+    assertThat(
+            ResourceConfiguration.configureResource(
+                DefaultConfigProperties.create(props, componentLoader),
+                SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+                (r, c) -> r))
+        .isEqualTo(
+            Resource.getDefault().toBuilder()
+                .put(stringKey("service.name"), "my-app")
+                .put("food", "cheese+cake")
+                .put("drink", "juice")
+                .put("shape", "square")
+                .build());
+  }
+
+  @Test
   void createEnvironmentResource_Empty() {
     Attributes attributes = ResourceConfiguration.createEnvironmentResource().getAttributes();
 
