@@ -20,7 +20,8 @@ public final class ParentBasedSamplerBuilder {
   @Nullable private Sampler localParentNotSampled;
 
   ParentBasedSamplerBuilder(Sampler root) {
-    maybeLogTraceIdSamplerWarning(root, "root");
+    // This is the only valid traceIdSampler location according to Spec
+    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/sdk.md#compatibility-warnings-for-traceidratiobased-sampler
     this.root = root;
   }
 
