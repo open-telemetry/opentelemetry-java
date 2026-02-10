@@ -1134,6 +1134,7 @@ class PrometheusMetricReaderTest {
     return regexBuilder.toString();
   }
 
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   private static String toOpenMetrics(MetricSnapshots snapshots) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     OpenMetricsTextFormatWriter writer = new OpenMetricsTextFormatWriter(true, true);

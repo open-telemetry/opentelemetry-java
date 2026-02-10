@@ -150,6 +150,7 @@ public final class OtlpConfigUtil {
     ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
   }
 
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   static void configureOtlpHeaders(
       ConfigProperties config, String dataType, BiConsumer<String, String> addHeader) {
     Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
@@ -162,7 +163,7 @@ public final class OtlpConfigUtil {
       try {
         // headers are encoded as URL - see
         // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
-        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
+        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.name()));
       } catch (Exception e) {
         throw new ConfigurationException("Cannot decode header value: " + value, e);
       }
