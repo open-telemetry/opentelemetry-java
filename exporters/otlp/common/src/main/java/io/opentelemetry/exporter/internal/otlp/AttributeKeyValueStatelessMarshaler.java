@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
@@ -100,6 +101,9 @@ public final class AttributeKeyValueStatelessMarshaler
               (List<Object>) value,
               AttributeArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
+        case VALUE:
+          return AnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
+              (Value<?>) value, context);
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with
       // unaligned versions which are not supported.
@@ -135,6 +139,9 @@ public final class AttributeKeyValueStatelessMarshaler
               (List<Object>) value,
               AttributeArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
+          return;
+        case VALUE:
+          AnyValueStatelessMarshaler.INSTANCE.writeTo(output, (Value<?>) value, context);
           return;
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with

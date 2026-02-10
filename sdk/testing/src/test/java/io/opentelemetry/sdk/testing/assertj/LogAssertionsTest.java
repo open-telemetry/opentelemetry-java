@@ -53,6 +53,7 @@ public class LogAssertionsTest {
           .put("conditions", false, true)
           .put("scores", 0L, 1L)
           .put("coins", 0.01, 0.05, 0.1)
+          .put("bytes", Value.of(new byte[] {1, 2, 3}))
           .build();
 
   private static final LogRecordData LOG_DATA =
@@ -124,11 +125,12 @@ public class LogAssertionsTest {
             attributeEntry("colors", "red", "blue"),
             attributeEntry("conditions", false, true),
             attributeEntry("scores", 0L, 1L),
-            attributeEntry("coins", 0.01, 0.05, 0.1))
+            attributeEntry("coins", 0.01, 0.05, 0.1),
+            attributeEntry("bytes", Value.of(new byte[] {1, 2, 3})))
         .hasAttributesSatisfying(
             attributes ->
                 OpenTelemetryAssertions.assertThat(attributes)
-                    .hasSize(8)
+                    .hasSize(9)
                     .containsEntry(stringKey("bear"), "mya")
                     .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
                     .containsEntry("bear", "mya")
@@ -145,6 +147,7 @@ public class LogAssertionsTest {
                     .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
                     .containsEntry("coins", 0.01, 0.05, 0.1)
                     .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
+                    .containsEntry("bytes", Value.of(new byte[] {1, 2, 3}))
                     .containsKey(stringKey("bear"))
                     .containsKey("bear")
                     .containsOnly(
@@ -155,7 +158,8 @@ public class LogAssertionsTest {
                         attributeEntry("colors", "red", "blue"),
                         attributeEntry("conditions", false, true),
                         attributeEntry("scores", 0L, 1L),
-                        attributeEntry("coins", 0.01, 0.05, 0.1)))
+                        attributeEntry("coins", 0.01, 0.05, 0.1),
+                        attributeEntry("bytes", Value.of(new byte[] {1, 2, 3}))))
         .hasAttributesSatisfying(
             equalTo(stringKey("bear"), "mya"),
             equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)))
@@ -167,7 +171,8 @@ public class LogAssertionsTest {
             equalTo(AttributeKey.stringArrayKey("colors"), Arrays.asList("red", "blue")),
             equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)),
             equalTo(AttributeKey.longArrayKey("scores"), Arrays.asList(0L, 1L)),
-            equalTo(AttributeKey.doubleArrayKey("coins"), Arrays.asList(0.01, 0.05, 0.1)))
+            equalTo(AttributeKey.doubleArrayKey("coins"), Arrays.asList(0.01, 0.05, 0.1)),
+            equalTo(AttributeKey.valueKey("bytes"), Value.of(new byte[] {1, 2, 3})))
         .hasTotalAttributeCount(999);
   }
 
@@ -313,7 +318,8 @@ public class LogAssertionsTest {
                 KeyValue.of(
                     "fooboola",
                     Value.of(Value.of(true), Value.of(true), Value.of(true), Value.of(false))),
-                KeyValue.of("fooany", Value.of("grim"))))
+                KeyValue.of("fooany", Value.of("grim")),
+                KeyValue.of("foobytes", Value.of(new byte[] {1, 2, 3}))))
         .emit();
     List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
     assertThat(logs).hasSize(1);
@@ -326,6 +332,46 @@ public class LogAssertionsTest {
         .hasBodyField("foolonga", 9, 0, 2, 1, 0)
         .hasBodyField("foodbla", 9.1, 0.2, 2.3, 1.4, 0.5)
         .hasBodyField("fooboola", true, true, true, false)
-        .hasBodyField("fooany", Value.of("grim"));
+        .hasBodyField("fooany", Value.of("grim"))
+        .hasBodyField("foobytes", Value.of(new byte[] {1, 2, 3}));
+  }
+
+  @Test
+  void logBodyAssertions_withAttributeKeys() {
+    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
+            .build();
+    Logger logger = loggerProvider.get("test.test");
+
+    logger
+        .logRecordBuilder()
+        .setBody(
+            Value.of(
+                KeyValue.of("strField", Value.of("value1")),
+                KeyValue.of("boolField", Value.of(false)),
+                KeyValue.of("longField", Value.of(42L)),
+                KeyValue.of("doubleField", Value.of(3.14)),
+                KeyValue.of("strArrayField", Value.of(Value.of("a"), Value.of("b"))),
+                KeyValue.of("boolArrayField", Value.of(Value.of(true), Value.of(false))),
+                KeyValue.of("longArrayField", Value.of(Value.of(1L), Value.of(2L))),
+                KeyValue.of("doubleArrayField", Value.of(Value.of(1.1), Value.of(2.2))),
+                KeyValue.of("bytes", Value.of(new byte[] {1, 2, 3}))))
+        .emit();
+
+    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
+    assertThat(logs).hasSize(1);
+
+    assertThat(logs.get(0))
+        .hasBodyField(AttributeKey.stringKey("strField"), "value1")
+        .hasBodyField(AttributeKey.booleanKey("boolField"), false)
+        .hasBodyField(AttributeKey.longKey("longField"), 42L)
+        .hasBodyField(AttributeKey.doubleKey("doubleField"), 3.14)
+        .hasBodyField(AttributeKey.stringArrayKey("strArrayField"), Arrays.asList("a", "b"))
+        .hasBodyField(AttributeKey.booleanArrayKey("boolArrayField"), Arrays.asList(true, false))
+        .hasBodyField(AttributeKey.longArrayKey("longArrayField"), Arrays.asList(1L, 2L))
+        .hasBodyField(AttributeKey.doubleArrayKey("doubleArrayField"), Arrays.asList(1.1, 2.2))
+        .hasBodyField(AttributeKey.valueKey("bytes"), Value.of(new byte[] {1, 2, 3}));
   }
 }

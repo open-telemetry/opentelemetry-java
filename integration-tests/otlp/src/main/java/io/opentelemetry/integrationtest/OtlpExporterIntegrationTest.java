@@ -113,7 +113,7 @@ abstract class OtlpExporterIntegrationTest {
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   private static final String COLLECTOR_IMAGE =
-      "otel/opentelemetry-collector-contrib:0.144.0@sha256:213886eb6407af91b87fa47551c3632be1a6419ff3a5114ef1e6fc364628496f";
+      "otel/opentelemetry-collector-contrib:0.145.0@sha256:a7343f01869071ea3f4c5e1e97df1bb1b3c4d5c77247db80e053a80b9df530c4";
 
   private static final Integer COLLECTOR_OTLP_GRPC_PORT = 4317;
   private static final Integer COLLECTOR_OTLP_HTTP_PORT = 4318;

@@ -12,6 +12,8 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * A service provider interface (SPI) for compression. Implementation MUST be thread safe as the
  * same instance is expected to be used many times and concurrently.
+ *
+ * @since 1.59.0
  */
 @ThreadSafe
 public interface Compressor {

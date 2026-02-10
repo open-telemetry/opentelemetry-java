@@ -12,6 +12,7 @@ import javax.annotation.concurrent.Immutable;
  * A HTTP response.
  *
  * @see HttpSender#send(MessageWriter, Consumer, Consumer)
+ * @since 1.59.0
  */
 @Immutable
 public interface HttpResponse {

@@ -35,6 +35,7 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -220,6 +222,8 @@ public class FullConfigTest {
     assertHasKeyValue(span.getAttributesList(), "cat", "meow");
     assertHasKeyValue(span.getAttributesList(), "extra-key", "extra-value");
 
+    // Flush again to get metric exporter metrics.
+    openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
     // await on assertions since metrics may come in different order for BatchSpanProcessor,
     // exporter, or the ones we created in the test.
     await()
@@ -252,19 +256,62 @@ public class FullConfigTest {
                                 })
                             // This verifies that AutoConfigureListener was invoked and the OTLP
                             // span / log exporters received the autoconfigured OpenTelemetrySdk
-                            // instance
+                            // instance as well as setting telemetry version.
                             .anySatisfy(
                                 scopeMetrics -> {
                                   assertThat(scopeMetrics.getScope().getName())
-                                      .isEqualTo("io.opentelemetry.exporters.otlp-grpc");
-                                  assertThat(scopeMetrics.getMetricsList())
-                                      .satisfiesExactlyInAnyOrder(
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otlp.exporter.seen"),
-                                          metric ->
-                                              assertThat(metric.getName())
-                                                  .isEqualTo("otlp.exporter.exported"));
+                                      .isEqualTo(
+                                          "io.opentelemetry.exporters.otlp_grpc_metric_exporter");
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.exporter.metric_data_point.inflight",
+                                      "otel.sdk.exporter.operation.duration",
+                                      "otel.sdk.exporter.metric_data_point.exported");
+                                })
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo(
+                                          "io.opentelemetry.exporters.otlp_grpc_log_exporter");
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.exporter.log.inflight",
+                                      "otel.sdk.exporter.operation.duration",
+                                      "otel.sdk.exporter.log.exported");
+                                })
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo(
+                                          "io.opentelemetry.exporters.otlp_grpc_span_exporter");
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.exporter.span.inflight",
+                                      "otel.sdk.exporter.operation.duration",
+                                      "otel.sdk.exporter.span.exported");
+                                })
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo("io.opentelemetry.sdk.logs");
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.log.created",
+                                      "otel.sdk.processor.log.processed",
+                                      "otel.sdk.processor.log.queue.capacity",
+                                      "otel.sdk.processor.log.queue.size");
+                                })
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo("io.opentelemetry.sdk.trace");
+                                  assertMetricNames(
+                                      scopeMetrics,
+                                      "otel.sdk.span.live",
+                                      "otel.sdk.span.started",
+                                      "otel.sdk.processor.span.processed",
+                                      "otel.sdk.processor.span.queue.capacity",
+                                      "otel.sdk.processor.span.queue.size");
                                 });
                       });
             });
@@ -316,6 +363,12 @@ public class FullConfigTest {
                 .setKey(key)
                 .setValue(AnyValue.newBuilder().setStringValue(value))
                 .build());
+  }
+
+  private static void assertMetricNames(ScopeMetrics scopeMetrics, String... names) {
+    assertThat(
+            scopeMetrics.getMetricsList().stream().map(Metric::getName).collect(Collectors.toSet()))
+        .containsExactlyInAnyOrder(names);
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {

@@ -9,6 +9,7 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.File;
@@ -62,7 +63,8 @@ public final class OtlpConfigUtil {
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
-      Consumer<MemoryMode> setMemoryMode) {
+      Consumer<MemoryMode> setMemoryMode,
+      Consumer<InternalTelemetryVersion> setInternalTelemetryVersion) {
     setComponentLoader.accept(config.getComponentLoader());
 
     String protocol = getOtlpProtocol(dataType, config);
@@ -106,6 +108,9 @@ public final class OtlpConfigUtil {
     if (timeout != null) {
       setTimeout.accept(timeout);
     }
+
+    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
+    setInternalTelemetryVersion.accept(telemetryVersion);
 
     String certificatePath =
         config.getString(
