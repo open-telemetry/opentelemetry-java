@@ -74,7 +74,7 @@ fun getAllPublishedModules(): List<Project> {
   }.toList()
 }
 
-fun getOldClassPath(version: String): List<File> {
+fun getClasspathForVersion(version: String): List<File> {
   // Temporarily change the group name because we want to fetch an artifact with the same
   // Maven coordinates as the project, which Gradle would not allow otherwise.
   val existingGroup = group
@@ -95,7 +95,7 @@ fun getOldClassPath(version: String): List<File> {
   }
 }
 
-fun getNewClassPath(): List<File> {
+fun getCurrentClassPath(): List<File> {
   return getAllPublishedModules().map {
     val archiveFile = it.tasks.getByName<Jar>("jar").archiveFile
     archiveFile.get().asFile
@@ -125,8 +125,8 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         // and generates false positive compatibility errors when methods are lifted into superclasses,
         // superinterfaces.
         val archiveName = base.archivesName.get()
-        val newClassPath = getNewClassPath()
-        val oldClassPath = getOldClassPath(baselineVersion)
+        val newClassPath = apiNewVersion?.let { getClasspathForVersion(it) } ?: getCurrentClassPath()
+        val oldClassPath = getClasspathForVersion(baselineVersion)
         val pattern = (archiveName + "-([0-9\\.]*)(-SNAPSHOT)?.jar").toRegex()
         val newArchive = newClassPath.singleOrNull { it.name.matches(pattern) }
         val oldArchive = oldClassPath.singleOrNull { it.name.matches(pattern) }

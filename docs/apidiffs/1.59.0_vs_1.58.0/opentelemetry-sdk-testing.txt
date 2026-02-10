@@ -1,0 +1,12 @@
+Comparing source compatibility of opentelemetry-sdk-testing-1.59.0.jar against opentelemetry-sdk-testing-1.58.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.AttributesAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.AttributesAssert containsEntry(java.lang.String, io.opentelemetry.api.common.Value<?>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.Map$Entry<io.opentelemetry.api.common.AttributeKey<io.opentelemetry.api.common.Value<?>>,io.opentelemetry.api.common.Value<?>> attributeEntry(java.lang.String, io.opentelemetry.api.common.Value<?>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.AttributeAssertion satisfies(io.opentelemetry.api.common.AttributeKey<io.opentelemetry.api.common.Value<?>>, io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions$ValueAssertConsumer)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions$ValueAssertConsumer  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.util.function.Consumer
+	+++  NEW SUPERCLASS: java.lang.Object

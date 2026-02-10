@@ -33,16 +33,10 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
 
   @Override
   public void writeTo(Serializer output) throws IOException {
-    if (valueUtf8.length == 0) {
-      return;
-    }
     output.writeString(AnyValue.STRING_VALUE, valueUtf8);
   }
 
   private static int calculateSize(byte[] valueUtf8) {
-    if (valueUtf8.length == 0) {
-      return 0;
-    }
     return AnyValue.STRING_VALUE.getTagSize()
         + CodedOutputStream.computeByteArraySizeNoTag(valueUtf8);
   }
