@@ -64,7 +64,8 @@ public final class OtlpDeclarativeConfigUtil {
       Consumer<RetryPolicy> setRetryPolicy,
       Consumer<MemoryMode> setMemoryMode,
       boolean isHttpProtobuf,
-      Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer) {
+      Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer,
+      Runnable setNoopMeterProvider) {
     setComponentLoader.accept(config.getComponentLoader());
 
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
@@ -127,9 +128,13 @@ public final class OtlpDeclarativeConfigUtil {
 
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
 
-    InternalTelemetryVersion internalTelemetryVersion = getInternalTelemetryVersion(configProvider);
-    if (internalTelemetryVersion != null) {
-      internalTelemetryVersionConsumer.accept(internalTelemetryVersion);
+    // InternalTelemetryVersion defaults to disabled (i.e. null) until semantic conventions are
+    // stable. To disable, set a noop meter provider.
+    InternalTelemetryVersion telemetryVersion = getInternalTelemetryVersion(configProvider);
+    if (telemetryVersion == null) {
+      setNoopMeterProvider.run();
+    } else {
+      internalTelemetryVersionConsumer.accept(telemetryVersion);
     }
   }
 

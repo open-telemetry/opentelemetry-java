@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
 import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfigModel;
@@ -46,10 +45,7 @@ final class LoggerProviderFactory
       return builder;
     }
 
-    MeterProvider meterProvider = context.getMeterProvider();
-    if (meterProvider != null) {
-      builder.setMeterProvider(() -> meterProvider);
-    }
+    context.setInternalTelemetry(unused -> {}, builder::setMeterProvider);
 
     LogLimits logLimits =
         LogLimitsFactory.getInstance()

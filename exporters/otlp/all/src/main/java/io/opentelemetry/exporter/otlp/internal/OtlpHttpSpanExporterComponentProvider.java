@@ -9,6 +9,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_T
 
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedComponentProvider;
@@ -50,7 +51,8 @@ public class OtlpHttpSpanExporterComponentProvider implements ExtendedComponentP
         builder::setRetryPolicy,
         builder::setMemoryMode,
         /* isHttpProtobuf= */ true,
-        builder::setInternalTelemetryVersion);
+        builder::setInternalTelemetryVersion,
+        () -> builder.setMeterProvider(MeterProvider::noop));
 
     return builder.build();
   }

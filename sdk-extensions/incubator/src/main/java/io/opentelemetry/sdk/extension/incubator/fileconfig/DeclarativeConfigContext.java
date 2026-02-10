@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -54,11 +57,6 @@ class DeclarativeConfigContext {
     return Collections.unmodifiableList(closeables);
   }
 
-  @Nullable
-  public MeterProvider getMeterProvider() {
-    return meterProvider;
-  }
-
   public void setMeterProvider(MeterProvider meterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -79,8 +77,20 @@ class DeclarativeConfigContext {
     this.resource = resource;
   }
 
+  public void setInternalTelemetry(
+      Consumer<InternalTelemetryVersion> internalTelemetrySetter,
+      Consumer<Supplier<MeterProvider>> meterProviderSetter) {
+    InternalTelemetryVersion telemetryVersion = getInternalTelemetryVersion();
+    if (telemetryVersion != null) {
+      meterProviderSetter.accept(() -> Objects.requireNonNull(meterProvider));
+      internalTelemetrySetter.accept(telemetryVersion);
+    } else {
+      meterProviderSetter.accept(MeterProvider::noop);
+    }
+  }
+
   @Nullable
-  InternalTelemetryVersion getInternalTelemetryVersion() {
+  private InternalTelemetryVersion getInternalTelemetryVersion() {
     if (configProvider == null) {
       return null;
     }
