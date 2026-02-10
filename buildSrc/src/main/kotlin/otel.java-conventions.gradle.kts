@@ -93,7 +93,7 @@ tasks {
             "-Xlint:-this-escape",
             // We suppress the "deprecation" warning because --release 8 causes javac to warn on
             // importing deprecated classes (fixed in JDK 9+, see https://bugs.openjdk.org/browse/JDK-8032211).
-            // We use Error Prone's OtelDeprecatedApiUsage check instead, which honors @SuppressWarnings.
+            // We use a custom Error Prone check instead (OtelDeprecatedApiUsage).
             "-Xlint:-deprecation",
             // Fail build on any warning
             "-Werror",
