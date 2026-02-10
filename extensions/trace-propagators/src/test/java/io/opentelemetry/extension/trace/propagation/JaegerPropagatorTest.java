@@ -24,6 +24,7 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -357,13 +358,15 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   void extract_UrlEncodedContext() throws UnsupportedEncodingException {
     Map<String, String> carrier = new LinkedHashMap<>();
     JaegerSpanContext context =
         new JaegerSpanContext(
             TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 5);
     carrier.put(
-        PROPAGATION_HEADER, URLEncoder.encode(TextMapCodec.contextAsString(context), "UTF-8"));
+        PROPAGATION_HEADER,
+        URLEncoder.encode(TextMapCodec.contextAsString(context), StandardCharsets.UTF_8.name()));
 
     assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(

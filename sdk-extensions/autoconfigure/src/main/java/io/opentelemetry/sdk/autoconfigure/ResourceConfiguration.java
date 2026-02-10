@@ -65,6 +65,7 @@ public final class ResourceConfiguration {
    * @param config the {@link ConfigProperties} used to obtain resource properties
    * @return the resource.
    */
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   public static Resource createEnvironmentResource(ConfigProperties config) {
     AttributesBuilder resourceAttributes = Attributes.builder();
     try {
@@ -74,7 +75,7 @@ public final class ResourceConfiguration {
             // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
             // characters outside the baggage-octet range are percent encoded
             // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-            URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8.displayName()));
+            URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8.name()));
       }
     } catch (UnsupportedEncodingException e) {
       // Should not happen since always using standard charset
