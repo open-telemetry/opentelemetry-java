@@ -7,10 +7,12 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_LOGS;
 
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedComponentProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
@@ -19,7 +21,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpGrpcLogRecordExporterComponentProvider implements ComponentProvider {
+public class OtlpGrpcLogRecordExporterComponentProvider implements ExtendedComponentProvider {
 
   @Override
   public Class<LogRecordExporter> getType() {
@@ -32,12 +34,14 @@ public class OtlpGrpcLogRecordExporterComponentProvider implements ComponentProv
   }
 
   @Override
-  public LogRecordExporter create(DeclarativeConfigProperties config) {
+  public LogRecordExporter create(
+      DeclarativeConfigProperties config, ConfigProvider configProvider) {
     OtlpGrpcLogRecordExporterBuilder builder = grpcBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_LOGS,
         config,
+        configProvider,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
@@ -47,7 +51,9 @@ public class OtlpGrpcLogRecordExporterComponentProvider implements ComponentProv
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
-        /* isHttpProtobuf= */ false);
+        /* isHttpProtobuf= */ false,
+        builder::setInternalTelemetryVersion,
+        () -> builder.setMeterProvider(MeterProvider::noop));
 
     return builder.build();
   }

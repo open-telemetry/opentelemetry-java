@@ -5,17 +5,24 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedComponentProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -26,6 +33,7 @@ class DeclarativeConfigContext {
   private final List<Closeable> closeables = new ArrayList<>();
   @Nullable private volatile MeterProvider meterProvider;
   @Nullable private Resource resource = null;
+  @Nullable private ConfigProvider configProvider;
 
   // Visible for testing
   DeclarativeConfigContext(SpiHelper spiHelper) {
@@ -49,13 +57,12 @@ class DeclarativeConfigContext {
     return Collections.unmodifiableList(closeables);
   }
 
-  @Nullable
-  public MeterProvider getMeterProvider() {
-    return meterProvider;
-  }
-
   public void setMeterProvider(MeterProvider meterProvider) {
     this.meterProvider = meterProvider;
+  }
+
+  public void setConfigProvider(ConfigProvider configProvider) {
+    this.configProvider = configProvider;
   }
 
   Resource getResource() {
@@ -68,6 +75,39 @@ class DeclarativeConfigContext {
 
   void setResource(Resource resource) {
     this.resource = resource;
+  }
+
+  public void setInternalTelemetry(
+      Consumer<InternalTelemetryVersion> internalTelemetrySetter,
+      Consumer<Supplier<MeterProvider>> meterProviderSetter) {
+    InternalTelemetryVersion telemetryVersion = getInternalTelemetryVersion();
+    if (telemetryVersion != null) {
+      meterProviderSetter.accept(() -> Objects.requireNonNull(meterProvider));
+      internalTelemetrySetter.accept(telemetryVersion);
+    } else {
+      meterProviderSetter.accept(MeterProvider::noop);
+    }
+  }
+
+  @Nullable
+  private InternalTelemetryVersion getInternalTelemetryVersion() {
+    if (configProvider == null) {
+      return null;
+    }
+    String internalTelemetryVersion =
+        configProvider.getInstrumentationConfig("otel_sdk").getString("internal_telemetry_version");
+    if (internalTelemetryVersion == null) {
+      return null;
+    }
+    switch (internalTelemetryVersion.toLowerCase(Locale.ROOT)) {
+      case "legacy":
+        return InternalTelemetryVersion.LEGACY;
+      case "latest":
+        return InternalTelemetryVersion.LATEST;
+      default:
+        throw new DeclarativeConfigException(
+            "Invalid sdk telemetry version: " + internalTelemetryVersion);
+    }
   }
 
   SpiHelper getSpiHelper() {
@@ -112,9 +152,16 @@ class DeclarativeConfigContext {
     }
     // Exactly one matching component provider
     ComponentProvider provider = matchedProviders.get(0);
+    ConfigProvider configProvider = this.configProvider;
+    if (configProvider == null) {
+      configProvider = ConfigProvider.noop();
+    }
 
     try {
-      Object component = provider.create(config);
+      Object component =
+          (provider instanceof ExtendedComponentProvider)
+              ? ((ExtendedComponentProvider) provider).create(config, configProvider)
+              : provider.create(config);
       if (component instanceof Closeable) {
         closeables.add((Closeable) component);
       }
