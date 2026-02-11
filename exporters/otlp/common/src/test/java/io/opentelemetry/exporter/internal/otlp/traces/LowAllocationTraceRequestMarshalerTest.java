@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -41,6 +43,11 @@ class LowAllocationTraceRequestMarshalerTest {
       AttributeKey.doubleArrayKey("key_double_array");
   private static final AttributeKey<List<Boolean>> KEY_BOOLEAN_ARRAY =
       AttributeKey.booleanArrayKey("key_boolean_array");
+  private static final AttributeKey<Value<?>> KEY_BYTES = AttributeKey.valueKey("key_bytes");
+  private static final AttributeKey<Value<?>> KEY_MAP = AttributeKey.valueKey("key_map");
+  private static final AttributeKey<Value<?>> KEY_HETEROGENEOUS_ARRAY =
+      AttributeKey.valueKey("key_heterogeneous_array");
+  private static final AttributeKey<Value<?>> KEY_EMPTY = AttributeKey.valueKey("key_empty");
   private static final AttributeKey<String> LINK_ATTR_KEY = AttributeKey.stringKey("link_attr_key");
 
   private static final Resource RESOURCE =
@@ -54,6 +61,10 @@ class LowAllocationTraceRequestMarshalerTest {
               .put(KEY_LONG_ARRAY, Arrays.asList(12L, 23L))
               .put(KEY_DOUBLE_ARRAY, Arrays.asList(12.3, 23.1))
               .put(KEY_BOOLEAN_ARRAY, Arrays.asList(true, false))
+              .put(KEY_BYTES, Value.of(new byte[] {1, 2, 3}))
+              .put(KEY_MAP, Value.of(KeyValue.of("nested", Value.of("value"))))
+              .put(KEY_HETEROGENEOUS_ARRAY, Value.of(Value.of("string"), Value.of(123L)))
+              .put(KEY_EMPTY, Value.empty())
               .build());
 
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =

@@ -11,6 +11,8 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
@@ -217,6 +219,14 @@ class LowAllocationMetricsRequestMarshalerTest {
                         .put(
                             AttributeKey.booleanArrayKey("key_boolean_array"),
                             Arrays.asList(true, false))
+                        .put(AttributeKey.valueKey("key_bytes"), Value.of(new byte[] {1, 2, 3}))
+                        .put(
+                            AttributeKey.valueKey("key_map"),
+                            Value.of(KeyValue.of("nested", Value.of("value"))))
+                        .put(
+                            AttributeKey.valueKey("key_heterogeneous_array"),
+                            Value.of(Value.of("string"), Value.of(123L)))
+                        .put(AttributeKey.valueKey("key_empty"), Value.empty())
                         .build()))
             .build();
     metricProducer.accept(meterProvider);

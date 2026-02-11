@@ -21,6 +21,8 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Configuration for {@link HttpSender} implementations, provided via {@link
  * HttpSenderProvider#createSender(HttpSenderConfig)}.
+ *
+ * @since 1.59.0
  */
 @Immutable
 public interface HttpSenderConfig {

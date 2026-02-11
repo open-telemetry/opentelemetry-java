@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.common.export;
 /**
  * A service provider interface (SPI) for providing {@link GrpcSender}s backed by different client
  * libraries.
+ *
+ * @since 1.59.0
  */
 public interface GrpcSenderProvider {
 

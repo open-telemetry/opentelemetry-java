@@ -22,6 +22,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -156,6 +157,7 @@ public final class JaegerPropagator implements TextMapPropagator {
     return "JaegerPropagator";
   }
 
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   private static <C> SpanContext getSpanContextFromHeader(
       @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
@@ -168,7 +170,7 @@ public final class JaegerPropagator implements TextMapPropagator {
     if (value.lastIndexOf(PROPAGATION_HEADER_DELIMITER) == -1) {
       try {
         // the propagation value
-        value = URLDecoder.decode(value, "UTF-8");
+        value = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException e) {
         logger.fine(
             "Error decoding '"

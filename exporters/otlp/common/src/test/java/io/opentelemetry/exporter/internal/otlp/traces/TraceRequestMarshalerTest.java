@@ -18,6 +18,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -34,6 +35,7 @@ import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.common.v1.KeyValueList;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -147,8 +149,23 @@ class TraceRequestMarshalerTest {
                             .put("long_array", 12L, 23L)
                             .put("double_array", 12.3, 23.1)
                             .put("boolean_array", true, false)
+                            .put("bytes", Value.of(new byte[] {1, 2, 3}))
+                            .put(
+                                "map",
+                                Value.of(
+                                    io.opentelemetry.api.common.KeyValue.of(
+                                        "nested", Value.of("value"))))
+                            .put("heterogeneousArray", Value.of(Value.of("string"), Value.of(123L)))
+                            .put("empty", Value.empty())
+                            .put("empty_string", "")
+                            .put("false_value", false)
+                            .put("zero_int", 0L)
+                            .put("zero_double", 0.0)
+                            .put("empty_array", Value.of(Collections.emptyList()))
+                            .put("empty_map", Value.of(Collections.emptyMap()))
+                            .put("empty_bytes", Value.of(new byte[] {}))
                             .build())
-                    .setTotalAttributeCount(9)
+                    .setTotalAttributeCount(20)
                     .setEvents(
                         Collections.singletonList(
                             EventData.create(12347, "my_event", Attributes.empty())))
@@ -231,6 +248,71 @@ class TraceRequestMarshalerTest {
                                 .addValues(AnyValue.newBuilder().setBoolValue(false).build())
                                 .build())
                         .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("bytes")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setBytesValue(ByteString.copyFrom(new byte[] {1, 2, 3}))
+                        .build())
+                .build(),
+            KeyValue.newBuilder().setKey("empty").setValue(AnyValue.newBuilder().build()).build(),
+            KeyValue.newBuilder()
+                .setKey("heterogeneousArray")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setStringValue("string").build())
+                                .addValues(AnyValue.newBuilder().setIntValue(123).build())
+                                .build())
+                        .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("map")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setKvlistValue(
+                            KeyValueList.newBuilder()
+                                .addValues(
+                                    KeyValue.newBuilder()
+                                        .setKey("nested")
+                                        .setValue(
+                                            AnyValue.newBuilder().setStringValue("value").build())
+                                        .build())
+                                .build())
+                        .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_string")
+                .setValue(AnyValue.newBuilder().setStringValue("").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("false_value")
+                .setValue(AnyValue.newBuilder().setBoolValue(false).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("zero_int")
+                .setValue(AnyValue.newBuilder().setIntValue(0).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("zero_double")
+                .setValue(AnyValue.newBuilder().setDoubleValue(0.0).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_array")
+                .setValue(
+                    AnyValue.newBuilder().setArrayValue(ArrayValue.newBuilder().build()).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_map")
+                .setValue(
+                    AnyValue.newBuilder().setKvlistValue(KeyValueList.newBuilder().build()).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_bytes")
+                .setValue(
+                    AnyValue.newBuilder().setBytesValue(ByteString.copyFrom(new byte[] {})).build())
                 .build());
     assertThat(protoSpan.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(protoSpan.getEventsList())
