@@ -26,6 +26,7 @@ class DeclarativeConfigContext {
   private final List<Closeable> closeables = new ArrayList<>();
   @Nullable private volatile MeterProvider meterProvider;
   @Nullable private Resource resource = null;
+  @Nullable private List<ComponentProvider> componentProviders = null;
 
   // Visible for testing
   DeclarativeConfigContext(SpiHelper spiHelper) {
@@ -87,8 +88,9 @@ class DeclarativeConfigContext {
     String name = configKeyValue.getKey();
     DeclarativeConfigProperties config = configKeyValue.getValue();
 
-    // TODO(jack-berg): cache loaded component providers
-    List<ComponentProvider> componentProviders = spiHelper.load(ComponentProvider.class);
+    if (componentProviders == null) {
+      componentProviders = spiHelper.load(ComponentProvider.class);
+    }
     List<ComponentProvider> matchedProviders =
         componentProviders.stream()
             .filter(
