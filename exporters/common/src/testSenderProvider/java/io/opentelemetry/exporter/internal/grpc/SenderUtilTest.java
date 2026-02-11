@@ -48,11 +48,15 @@ class SenderUtilTest {
       key = "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
       value =
           "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider")
+  @SuppressLogger(SenderUtil.class)
   void resolveGrpcSenderProvider_configureUsingOldSpi() {
     assertThat(SenderUtil.resolveGrpcSenderProvider(componentLoader))
         .isInstanceOf(UpstreamGrpcSenderProvider.class);
 
-    assertThat(logCapturer.getEvents()).isEmpty();
+    logCapturer.assertContains(
+        "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider "
+            + "was used to set GrpcSenderProvider. Please use io.opentelemetry.sdk.common.export.GrpcSenderProvider "
+            + "instead.");
   }
 
   @Test
@@ -106,11 +110,15 @@ class SenderUtilTest {
   @SetSystemProperty(
       key = "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
       value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
+  @SuppressLogger(SenderUtil.class)
   void build_configureUsingOldSpi() {
     assertThat(SenderUtil.resolveHttpSenderProvider(componentLoader))
         .isInstanceOf(JdkHttpSenderProvider.class);
 
-    assertThat(logCapturer.getEvents()).isEmpty();
+    logCapturer.assertContains(
+        "io.opentelemetry.exporter.internal.http.HttpSenderProvider "
+            + "was used to set HttpSenderProvider. Please use io.opentelemetry.sdk.common.export.HttpSenderProvider "
+            + "instead.");
   }
 
   @Test

@@ -74,7 +74,7 @@ public final class SenderUtil {
     // TODO: remove support for reading OLD_SPI_PROPERTY after 1.61.0
     if (configuredSender.isEmpty()) {
       configuredSender = ConfigUtil.getString(OLD_GRPC_SPI_PROPERTY, "");
-      if (configuredSender.isEmpty()) {
+      if (!configuredSender.isEmpty()) {
         LOGGER.log(
             Level.WARNING,
             OLD_GRPC_SPI_PROPERTY
@@ -146,7 +146,7 @@ public final class SenderUtil {
     // TODO: remove support for reading OLD_SPI_PROPERTY after 1.61.0
     if (configuredSender.isEmpty()) {
       configuredSender = ConfigUtil.getString(OLD_HTTP_SPI_PROPERTY, "");
-      if (configuredSender.isEmpty()) {
+      if (!configuredSender.isEmpty()) {
         LOGGER.log(
             Level.WARNING,
             OLD_HTTP_SPI_PROPERTY

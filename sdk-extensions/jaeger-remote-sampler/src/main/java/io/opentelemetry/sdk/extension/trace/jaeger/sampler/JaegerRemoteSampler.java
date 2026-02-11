@@ -71,8 +71,12 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   private void getAndUpdateSampler() {
     SamplingStrategyParametersMarshaler marsher =
         SamplingStrategyParametersMarshaler.create(this.serviceName);
-    MessageWriter messageWriter = marsher.toBinaryMessageWriter();
-    grpcSender.send(messageWriter, this::onResponse, JaegerRemoteSampler::onError);
+    try {
+      MessageWriter messageWriter = marsher.toBinaryMessageWriter();
+      grpcSender.send(messageWriter, this::onResponse, JaegerRemoteSampler::onError);
+    } catch (Throwable e) { // Catch all to ensure scheduled task continues
+      logger.log(Level.WARNING, "Failed to update sampler", e);
+    }
   }
 
   private void onResponse(GrpcResponse grpcResponse) {
@@ -106,13 +110,13 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
                 + type
                 + "s. Server is UNAVAILABLE. "
                 + "Make sure your service is running and reachable from this network. "
-                + "Full error message:"
+                + "Full error message: "
                 + grpcResponse.getStatusDescription());
         break;
       default:
         logger.log(
             Level.WARNING,
-            "Failed to export "
+            "Failed to execute "
                 + type
                 + "s. Server responded with gRPC status code "
                 + statusCode.name()
@@ -125,13 +129,13 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   private static void onError(Throwable e) {
     logger.log(
         Level.SEVERE,
-        "Failed to export "
+        "Failed to execute "
             + type
             + "s. The request could not be executed. Error message: "
             + e.getMessage(),
         e);
     if (logger.isLoggable(Level.FINEST)) {
-      logger.log(Level.FINEST, "Failed to export " + type + "s. Details follow: " + e);
+      logger.log(Level.FINEST, "Failed to execute " + type + "s. Details follow: " + e);
     }
   }
 
