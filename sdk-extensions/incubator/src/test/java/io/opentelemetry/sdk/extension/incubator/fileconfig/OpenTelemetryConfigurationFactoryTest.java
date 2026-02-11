@@ -135,9 +135,8 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance().create(model, context);
     cleanup.addCloseable(sdk);
 
-    logCapturer
-        .assertContains(
-            "Configuration file_format '1.0-rc.2' does not exactly match expected version '1.0.0-rc.3'");
+    logCapturer.assertContains(
+        "Configuration file_format '1.0-rc.2' does not exactly match expected version '1.0.0-rc.3'");
   }
 
   @Test
