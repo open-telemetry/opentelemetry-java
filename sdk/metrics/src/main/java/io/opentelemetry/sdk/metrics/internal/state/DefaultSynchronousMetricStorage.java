@@ -238,18 +238,15 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
      * #releaseHolderForRecord(AggregatorHolder)} when record operation completes to signal to that
      * its safe to proceed with Collect operations.
      */
+    @SuppressWarnings("ThreadPriorityCheck")
     private AggregatorHolder<T> getHolderForRecord() {
-      do {
-        AggregatorHolder<T> aggregatorHolder = this.aggregatorHolder;
-        int recordsInProgress = aggregatorHolder.activeRecordingThreads.addAndGet(2);
-        if (recordsInProgress % 2 == 0) {
-          return aggregatorHolder;
-        } else {
-          // Collect is in progress, decrement recordsInProgress to allow collect to proceed and
-          // re-read aggregatorHolder
-          aggregatorHolder.activeRecordingThreads.addAndGet(-2);
-        }
-      } while (true);
+      AggregatorHolder<T> aggregatorHolder = this.aggregatorHolder;
+      while (!aggregatorHolder.tryAcquireForRecord()) {
+        aggregatorHolder.releaseForRecord();
+        aggregatorHolder = this.aggregatorHolder;
+        Thread.yield();
+      }
+      return aggregatorHolder;
     }
 
     /**
@@ -257,7 +254,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
      * indicate that recording is complete, and it is safe to collect.
      */
     private void releaseHolderForRecord(AggregatorHolder<T> aggregatorHolder) {
-      aggregatorHolder.activeRecordingThreads.addAndGet(-2);
+      aggregatorHolder.releaseForRecord();
     }
 
     @Override
@@ -266,22 +263,14 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         InstrumentationScopeInfo instrumentationScopeInfo,
         long startEpochNanos,
         long epochNanos) {
-      ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles;
       AggregatorHolder<T> holder = this.aggregatorHolder;
       this.aggregatorHolder =
           (memoryMode == REUSABLE_DATA)
               ? new AggregatorHolder<>(previousCollectionAggregatorHandles)
               : new AggregatorHolder<>();
 
-      // Increment recordsInProgress by 1, which produces an odd number acting as a signal that
-      // record operations should re-read the volatile this.aggregatorHolder.
-      // Repeatedly grab recordsInProgress until it is <= 1, which signals all active record
-      // operations are complete.
-      int recordsInProgress = holder.activeRecordingThreads.addAndGet(1);
-      while (recordsInProgress > 1) {
-        recordsInProgress = holder.activeRecordingThreads.get();
-      }
-      aggregatorHandles = holder.aggregatorHandles;
+      holder.acquireForCollect();
+      ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles = holder.aggregatorHandles;
 
       List<T> points;
       if (memoryMode == REUSABLE_DATA) {
@@ -379,14 +368,44 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     // (AggregatorHolder), and so if a recording thread encounters an odd value,
     // all it needs to do is release the "read lock" it just obtained (decrementing by 2),
     // and then grab and record against the new current interval (AggregatorHolder).
-    private final AtomicInteger activeRecordingThreads = new AtomicInteger(0);
+    private final AtomicInteger[] activeRecordingThreads;
 
     private AggregatorHolder() {
-      aggregatorHandles = new ConcurrentHashMap<>();
+      this(new ConcurrentHashMap<>());
     }
 
     private AggregatorHolder(ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles) {
       this.aggregatorHandles = aggregatorHandles;
+      activeRecordingThreads = new AtomicInteger[Runtime.getRuntime().availableProcessors()];
+      for (int i = 0; i < activeRecordingThreads.length; i++) {
+        activeRecordingThreads[i] = new AtomicInteger(0);
+      }
+    }
+
+    private boolean tryAcquireForRecord() {
+      return forThread().addAndGet(2) % 2 == 0;
+    }
+
+    private void releaseForRecord() {
+      forThread().addAndGet(-2);
+    }
+
+    @SuppressWarnings("ThreadPriorityCheck")
+    private void acquireForCollect() {
+      for (int i = 0; i < activeRecordingThreads.length; i++) {
+        activeRecordingThreads[i].addAndGet(1);
+      }
+      for (int i = 0; i < activeRecordingThreads.length; i++) {
+        AtomicInteger val = activeRecordingThreads[i];
+        while (val.get() > 1) {
+          Thread.yield();
+        }
+      }
+    }
+
+    private AtomicInteger forThread() {
+      int index = Math.abs((int) (Thread.currentThread().getId() % activeRecordingThreads.length));
+      return activeRecordingThreads[index];
     }
   }
 
