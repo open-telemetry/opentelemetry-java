@@ -66,8 +66,8 @@ public interface ConfigProvider {
   }
 
   /**
-   * Registers an {@link InstrumentationConfigChangeListener} to receive updates when instrumentation
-   * configuration changes.
+   * Registers an {@link InstrumentationConfigChangeListener} to receive updates when
+   * instrumentation configuration changes.
    *
    * <p>The default implementation performs no registration and returns a no-op handle.
    *
