@@ -26,7 +26,7 @@ class ConfigProviderTest {
     assertThat(configProvider.getInstrumentationConfig("servlet")).isNotNull();
     assertThat(configProvider.getGeneralInstrumentationConfig()).isNotNull();
     AutoCloseable listenerRegistration =
-        configProvider.addInstrumentationConfigChangeListener(config -> {});
+        configProvider.addInstrumentationConfigChangeListener((name, previous, current) -> {});
     assertThatCode(listenerRegistration::close).doesNotThrowAnyException();
   }
 }

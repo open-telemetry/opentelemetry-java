@@ -5,14 +5,27 @@
 
 package io.opentelemetry.api.incubator.config;
 
+import javax.annotation.Nullable;
+
 /** Listener notified when instrumentation configuration changes. */
 @FunctionalInterface
 public interface InstrumentationConfigChangeListener {
 
   /**
-   * Called when instrumentation configuration changes.
+   * Called when the effective config for one top-level instrumentation node changes (for example
+   * {@code methods}, {@code kafka}, or {@code grpc}).
    *
-   * @param instrumentationConfig the updated instrumentation configuration
+   * <p>Both config arguments are scoped to {@code instrumentationName}.
+   *
+   * <p>{@code newConfig} is never null. If the node is unset or cleared, {@code newConfig} is
+   * {@link DeclarativeConfigProperties#empty()}.
+   *
+   * @param instrumentationName the top-level instrumentation name that changed
+   * @param previousConfig the previous effective configuration, or {@code null} if unavailable
+   * @param newConfig the updated effective configuration for {@code instrumentationName}
    */
-  void onChange(DeclarativeConfigProperties instrumentationConfig);
+  void onChange(
+      String instrumentationName,
+      @Nullable DeclarativeConfigProperties previousConfig,
+      DeclarativeConfigProperties newConfig);
 }
