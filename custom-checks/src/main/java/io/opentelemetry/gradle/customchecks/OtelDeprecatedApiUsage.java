@@ -5,6 +5,7 @@
 
 package io.opentelemetry.gradle.customchecks;
 
+import static com.google.errorprone.BugPattern.LinkType.NONE;
 import static com.google.errorprone.BugPattern.SeverityLevel.ERROR;
 
 import com.google.errorprone.BugPattern;
@@ -34,6 +35,7 @@ import javax.annotation.Nullable;
 @BugPattern(
     summary = "Use of deprecated API",
     severity = ERROR,
+    linkType = NONE,
     altNames = "deprecation", // so it can be suppressed with @SuppressWarnings("deprecation")
     suppressionAnnotations = SuppressWarnings.class)
 public class OtelDeprecatedApiUsage extends BugChecker
