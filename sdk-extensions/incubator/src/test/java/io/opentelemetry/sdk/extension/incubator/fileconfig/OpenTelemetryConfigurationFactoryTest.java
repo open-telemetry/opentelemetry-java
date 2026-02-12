@@ -117,12 +117,12 @@ class OpenTelemetryConfigurationFactoryTest {
         Arguments.of("1.0-rc.a", false),
         Arguments.of("1.0.0", false),
         Arguments.of("1.0.3", false),
+        Arguments.of("1.0.0-rc.3", false),
         // Valid file formats
         Arguments.of("0.4", true),
         Arguments.of("1.0-rc.1", true),
         Arguments.of("1.0-rc.2", true),
         Arguments.of("1.0-rc.3", true),
-        Arguments.of("1.0.0-rc.3", true),
         Arguments.of("1.0", true));
   }
 
@@ -136,13 +136,13 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(sdk);
 
     logCapturer.assertContains(
-        "Configuration file_format '1.0-rc.2' does not exactly match expected version '1.0.0-rc.3'");
+        "Configuration file_format '1.0-rc.2' does not exactly match expected version '1.0-rc.3'");
   }
 
   @Test
   void create_FileFormatExactMatch_NoWarning() {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0.0-rc.3");
+        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
 
     ExtendedOpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance().create(model, context);
