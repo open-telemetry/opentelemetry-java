@@ -153,6 +153,26 @@ class OtelDeprecatedApiUsageTest {
   }
 
   @Test
+  void negativeCases_importDeprecatedClass() {
+    CompilationTestHelper.newInstance(
+            OtelDeprecatedApiUsage.class, OtelDeprecatedApiUsageTest.class)
+        .addSourceLines(
+            "deprecated/DeprecatedClass.java",
+            "package deprecated;",
+            "@Deprecated",
+            "public class DeprecatedClass {}")
+        .addSourceLines(
+            "NegativeCases.java",
+            "package test;",
+            "import deprecated.DeprecatedClass;", // Should NOT warn on import
+            "@SuppressWarnings(\"deprecation\")",
+            "public class NegativeCases {",
+            "  void method(DeprecatedClass obj) {}",
+            "}")
+        .doTest();
+  }
+
+  @Test
   void positiveCases_externalDeprecatedApi() {
     // Verify the check detects deprecated APIs from external code (JDK in this case)
     CompilationTestHelper.newInstance(
