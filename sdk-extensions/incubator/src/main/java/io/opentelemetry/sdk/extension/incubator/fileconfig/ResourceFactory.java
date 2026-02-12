@@ -72,6 +72,10 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
           .build();
     }
 
+    if (model.getSchemaUrl() != null) {
+      builder.setSchemaUrl(model.getSchemaUrl());
+    }
+
     return builder.build();
   }
 
