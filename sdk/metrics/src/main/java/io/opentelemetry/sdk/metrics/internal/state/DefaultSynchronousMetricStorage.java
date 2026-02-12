@@ -270,7 +270,8 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
               : new AggregatorHolder<>();
 
       holder.acquireForCollect();
-      ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles = holder.aggregatorHandles;
+      ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles =
+          holder.aggregatorHandles;
 
       List<T> points;
       if (memoryMode == REUSABLE_DATA) {
