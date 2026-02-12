@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -242,7 +242,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     private AggregatorHolder<T> getHolderForRecord() {
       AggregatorHolder<T> aggregatorHolder = this.aggregatorHolder;
       while (!aggregatorHolder.tryAcquireForRecord()) {
-        aggregatorHolder.releaseForRecord();
         aggregatorHolder = this.aggregatorHolder;
         Thread.yield();
       }
@@ -369,7 +368,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     // (AggregatorHolder), and so if a recording thread encounters an odd value,
     // all it needs to do is release the "read lock" it just obtained (decrementing by 2),
     // and then grab and record against the new current interval (AggregatorHolder).
-    private final AtomicInteger[] activeRecordingThreads;
+    private final ReentrantLock[] locks;
 
     private AggregatorHolder() {
       this(new ConcurrentHashMap<>());
@@ -377,36 +376,30 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
     private AggregatorHolder(ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles) {
       this.aggregatorHandles = aggregatorHandles;
-      activeRecordingThreads = new AtomicInteger[Runtime.getRuntime().availableProcessors()];
-      for (int i = 0; i < activeRecordingThreads.length; i++) {
-        activeRecordingThreads[i] = new AtomicInteger(0);
+      locks = new ReentrantLock[Runtime.getRuntime().availableProcessors()];
+      for (int i = 0; i < locks.length; i++) {
+        locks[i] = new ReentrantLock();
       }
     }
 
     private boolean tryAcquireForRecord() {
-      return forThread().addAndGet(2) % 2 == 0;
+      return forThread().tryLock();
     }
 
     private void releaseForRecord() {
-      forThread().addAndGet(-2);
+      forThread().unlock();
     }
 
     @SuppressWarnings("ThreadPriorityCheck")
     private void acquireForCollect() {
-      for (int i = 0; i < activeRecordingThreads.length; i++) {
-        activeRecordingThreads[i].addAndGet(1);
-      }
-      for (int i = 0; i < activeRecordingThreads.length; i++) {
-        AtomicInteger val = activeRecordingThreads[i];
-        while (val.get() > 1) {
-          Thread.yield();
-        }
+      for (int i = 0; i < locks.length; i++) {
+        locks[i].lock();
       }
     }
 
-    private AtomicInteger forThread() {
-      int index = Math.abs((int) (Thread.currentThread().getId() % activeRecordingThreads.length));
-      return activeRecordingThreads[index];
+    private ReentrantLock forThread() {
+      int index = Math.abs((int) (Thread.currentThread().getId() % locks.length));
+      return locks[index];
     }
   }
 
