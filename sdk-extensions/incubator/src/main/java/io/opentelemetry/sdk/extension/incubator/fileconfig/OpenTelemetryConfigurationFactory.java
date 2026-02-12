@@ -24,8 +24,7 @@ final class OpenTelemetryConfigurationFactory
 
   private static final Logger logger =
       Logger.getLogger(OpenTelemetryConfigurationFactory.class.getName());
-  private static final Pattern SUPPORTED_FILE_FORMATS =
-      Pattern.compile("^(0.4)|(1.0(-rc.\\d*)?)$");
+  private static final Pattern SUPPORTED_FILE_FORMATS = Pattern.compile("^(0.4)|(1.0(-rc.\\d*)?)$");
   private static final String EXPECTED_FILE_FORMAT = "1.0-rc.3";
 
   private static final OpenTelemetryConfigurationFactory INSTANCE =
