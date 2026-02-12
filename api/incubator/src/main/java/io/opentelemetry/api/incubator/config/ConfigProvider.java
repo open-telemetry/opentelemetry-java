@@ -65,6 +65,20 @@ public interface ConfigProvider {
     return getInstrumentationConfig().get("general");
   }
 
+  /**
+   * Registers an {@link InstrumentationConfigChangeListener} to receive updates when instrumentation
+   * configuration changes.
+   *
+   * <p>The default implementation performs no registration and returns a no-op handle.
+   *
+   * @param listener the listener to notify when instrumentation configuration changes
+   * @return an {@link AutoCloseable} handle that can be closed to unregister the listener
+   */
+  default AutoCloseable addInstrumentationConfigChangeListener(
+      InstrumentationConfigChangeListener listener) {
+    return () -> {};
+  }
+
   /** Returns a no-op {@link ConfigProvider}. */
   static ConfigProvider noop() {
     return DeclarativeConfigProperties::empty;
