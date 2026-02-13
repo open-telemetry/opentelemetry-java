@@ -27,7 +27,7 @@ dependencies {
 
   api("io.opentelemetry.proto:opentelemetry-proto")
   api("org.junit.jupiter:junit-jupiter-api")
-  implementation("com.squareup.okhttp3:okhttp")
+  implementation("com.squareup.okhttp3:okhttp:5.3.2")
   implementation("org.junit.jupiter:junit-jupiter-params")
 
   implementation("com.linecorp.armeria:armeria-grpc")

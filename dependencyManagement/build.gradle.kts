@@ -18,7 +18,6 @@ val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
 val armeriaVersion = "1.36.0"
 val junitVersion = "5.14.2"
-val okhttpVersion = "5.3.2"
 
 val DEPENDENCY_BOMS = listOf(
   // for some reason boms show up as runtime dependencies in license and vulnerability scans
@@ -29,7 +28,6 @@ val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.21.0",
   "com.google.guava:guava-bom:33.5.0-jre",
   "com.google.protobuf:protobuf-bom:4.33.5",
-  "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.16.4", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.79.0",
   "io.netty:netty-bom:4.2.10.Final",
@@ -73,7 +71,6 @@ val DEPENDENCIES = listOf(
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
-  "com.squareup.okhttp3:okhttp:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.4.1",
   "com.uber.nullaway:nullaway:0.13.1",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
