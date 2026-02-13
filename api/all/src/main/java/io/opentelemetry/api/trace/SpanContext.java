@@ -12,9 +12,8 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A class that represents a span context. A span context contains the state that must propagate to
  * child {@link Span}s and across process boundaries. It contains the identifiers (a {@link TraceId
- * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of options
- * (currently only whether the context is sampled or not), as well as the {@link TraceState
- * traceState} and the {@link boolean remote} flag.
+ * trace_id} and {@link SpanId span_id}) associated with the {@link Span}, {@link TraceFlags}, as
+ * well as the {@link TraceState traceState} and the {@link boolean remote} flag.
  *
  * <p>Implementations of this interface *must* be immutable and have well-defined value-based
  * equals/hashCode implementations. If an implementation does not strictly conform to these
