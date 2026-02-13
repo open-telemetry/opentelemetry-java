@@ -343,4 +343,19 @@ class LogRecordExporterFactoryTest {
                 .config.getString("key1"))
         .isEqualTo("value1");
   }
+
+  @Test
+  void create_CustomizerReturnsNull() {
+    // Set up a customizer that returns null
+    context.setLogRecordExporterCustomizer((name, exporter) -> null);
+
+    assertThatThrownBy(
+            () ->
+                LogRecordExporterFactory.getInstance()
+                    .create(
+                        new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
+                        context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage("Log record exporter customizer returned null for exporter: otlp_http");
+  }
 }

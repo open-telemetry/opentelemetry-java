@@ -33,7 +33,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -198,5 +200,96 @@ class DeclarativeConfigurationCreateTest {
                 DeclarativeConfiguration.callAutoConfigureListeners(
                     spiHelper, OpenTelemetrySdk.builder().build()))
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  void create_ExporterCustomizer() {
+    // Track which exporters were customized
+    List<String> customizedExporters = new ArrayList<>();
+
+    OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
+    model.withFileFormat("1.0-rc.1");
+    model.withTracerProvider(
+        new TracerProviderModel()
+            .withProcessors(
+                Collections.singletonList(
+                    new SpanProcessorModel()
+                        .withBatch(
+                            new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                                    .BatchSpanProcessorModel()
+                                .withExporter(
+                                    new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
+                                            .model.SpanExporterModel()
+                                        .withConsole(
+                                            new io.opentelemetry.sdk.extension.incubator.fileconfig
+                                                .internal.model.ConsoleExporterModel()))))));
+
+    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+    builder.addSpanExporterCustomizer(
+        (name, exporter) -> {
+          customizedExporters.add(name);
+          return exporter;
+        });
+
+    DeclarativeConfigContext context =
+        DeclarativeConfigContext.create(
+            ComponentLoader.forClassLoader(
+                DeclarativeConfigurationCreateTest.class.getClassLoader()));
+    context.setSpanExporterCustomizer(builder.getSpanExporterCustomizer());
+
+    ExtendedOpenTelemetrySdk sdk =
+        DeclarativeConfiguration.createAndMaybeCleanup(
+            OpenTelemetryConfigurationFactory.getInstance(), context, model);
+    cleanup.addCloseable(sdk);
+
+    assertThat(customizedExporters).containsExactly("console");
+  }
+
+  @Test
+  void create_ExporterCustomizer_MultipleCompose() {
+    List<String> customizationOrder = new ArrayList<>();
+
+    OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
+    model.withFileFormat("1.0-rc.1");
+    model.withTracerProvider(
+        new TracerProviderModel()
+            .withProcessors(
+                Collections.singletonList(
+                    new SpanProcessorModel()
+                        .withBatch(
+                            new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                                    .BatchSpanProcessorModel()
+                                .withExporter(
+                                    new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
+                                            .model.SpanExporterModel()
+                                        .withConsole(
+                                            new io.opentelemetry.sdk.extension.incubator.fileconfig
+                                                .internal.model.ConsoleExporterModel()))))));
+
+    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+    builder.addSpanExporterCustomizer(
+        (name, exporter) -> {
+          customizationOrder.add("first");
+          return exporter;
+        });
+    builder.addSpanExporterCustomizer(
+        (name, exporter) -> {
+          customizationOrder.add("second");
+          return exporter;
+        });
+
+    DeclarativeConfigContext context =
+        DeclarativeConfigContext.create(
+            ComponentLoader.forClassLoader(
+                DeclarativeConfigurationCreateTest.class.getClassLoader()));
+    context.setSpanExporterCustomizer(builder.getSpanExporterCustomizer());
+
+    ExtendedOpenTelemetrySdk sdk =
+        DeclarativeConfiguration.createAndMaybeCleanup(
+            OpenTelemetryConfigurationFactory.getInstance(), context, model);
+    cleanup.addCloseable(sdk);
+
+    // Verify customizers composed in registration order
+    assertThat(customizationOrder).containsExactly("first", "second");
   }
 }

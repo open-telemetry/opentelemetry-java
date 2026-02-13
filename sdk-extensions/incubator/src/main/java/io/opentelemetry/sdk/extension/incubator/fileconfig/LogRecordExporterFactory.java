@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
@@ -21,6 +22,18 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
   public LogRecordExporter create(LogRecordExporterModel model, DeclarativeConfigContext context) {
     ConfigKeyValue logRecordExporterKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "log record exporter");
-    return context.loadComponent(LogRecordExporter.class, logRecordExporterKeyValue);
+
+    String exporterName = logRecordExporterKeyValue.getKey();
+    LogRecordExporter exporter =
+        context.loadComponent(LogRecordExporter.class, logRecordExporterKeyValue);
+
+    // Apply customizer
+    LogRecordExporter customized =
+        context.getLogRecordExporterCustomizer().apply(exporterName, exporter);
+    if (customized == null) {
+      throw new DeclarativeConfigException(
+          "Log record exporter customizer returned null for exporter: " + exporterName);
+    }
+    return customized;
   }
 }

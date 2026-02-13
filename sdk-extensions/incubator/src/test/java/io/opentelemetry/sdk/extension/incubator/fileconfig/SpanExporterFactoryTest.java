@@ -356,4 +356,63 @@ class SpanExporterFactoryTest {
                 .config.getString("key1"))
         .isEqualTo("value1");
   }
+
+  @Test
+  void create_CustomizerApplied() {
+    // Set up a customizer that wraps the exporter
+    context.setSpanExporterCustomizer(
+        (name, exporter) -> {
+          assertThat(name).isEqualTo("console");
+          return new SpanExporterWrapper(exporter, "customized");
+        });
+
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
+            .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
+    cleanup.addCloseable(exporter);
+
+    assertThat(exporter).isInstanceOf(SpanExporterWrapper.class);
+    assertThat(((SpanExporterWrapper) exporter).tag).isEqualTo("customized");
+  }
+
+  @Test
+  void create_CustomizerReturnsNull() {
+    // Set up a customizer that returns null
+    context.setSpanExporterCustomizer((name, exporter) -> null);
+
+    assertThatThrownBy(
+            () ->
+                SpanExporterFactory.getInstance()
+                    .create(
+                        new SpanExporterModel().withConsole(new ConsoleExporterModel()), context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage("Span exporter customizer returned null for exporter: console");
+  }
+
+  /** Test wrapper for verifying customizer behavior. */
+  private static class SpanExporterWrapper implements SpanExporter {
+    final SpanExporter delegate;
+    final String tag;
+
+    SpanExporterWrapper(SpanExporter delegate, String tag) {
+      this.delegate = delegate;
+      this.tag = tag;
+    }
+
+    @Override
+    public io.opentelemetry.sdk.common.CompletableResultCode export(
+        java.util.Collection<io.opentelemetry.sdk.trace.data.SpanData> spans) {
+      return delegate.export(spans);
+    }
+
+    @Override
+    public io.opentelemetry.sdk.common.CompletableResultCode flush() {
+      return delegate.flush();
+    }
+
+    @Override
+    public io.opentelemetry.sdk.common.CompletableResultCode shutdown() {
+      return delegate.shutdown();
+    }
+  }
 }

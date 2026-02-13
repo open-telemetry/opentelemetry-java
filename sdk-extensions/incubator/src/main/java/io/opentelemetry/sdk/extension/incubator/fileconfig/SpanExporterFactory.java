@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
@@ -22,6 +23,16 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
   public SpanExporter create(SpanExporterModel model, DeclarativeConfigContext context) {
     ConfigKeyValue spanExporterKeyValue =
         FileConfigUtil.validateSingleKeyValue(context, model, "span exporter");
-    return context.loadComponent(SpanExporter.class, spanExporterKeyValue);
+
+    String exporterName = spanExporterKeyValue.getKey();
+    SpanExporter exporter = context.loadComponent(SpanExporter.class, spanExporterKeyValue);
+
+    // Apply customizer
+    SpanExporter customized = context.getSpanExporterCustomizer().apply(exporterName, exporter);
+    if (customized == null) {
+      throw new DeclarativeConfigException(
+          "Span exporter customizer returned null for exporter: " + exporterName);
+    }
+    return customized;
   }
 }
