@@ -78,19 +78,19 @@ public class PropagatorContextExtractBenchmark {
     private static final List<Map<String, String>> traceHeaders =
         Arrays.asList(
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "905734c59b913b4a905734c59b913b4a:9909983295041501:0:1"),
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "21196a77f299580e21196a77f299580e:993a97ee3691eb26:0:0"),
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "2e7d0ad2390617702e7d0ad239061770:d49582a2de984b86:0:1"),
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "905734c59b913b4a905734c59b913b4a:776ff807b787538a:0:0"),
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee:68ec932c33b3f2ee:0:0"));
 
     private final TextMapGetter<Map<String, String>> getter =
@@ -106,8 +106,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final io.opentelemetry.extension.trace.propagation.JaegerPropagator jaegerPropagator =
-        io.opentelemetry.extension.trace.propagation.JaegerPropagator.getInstance();
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
     @Override
     protected Context doExtract() {
@@ -128,19 +127,19 @@ public class PropagatorContextExtractBenchmark {
     private static final List<Map<String, String>> traceHeaders =
         Arrays.asList(
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "905734c59b913b4a905734c59b913b4a%3A9909983295041501%3A0%3A1"),
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "21196a77f299580e21196a77f299580e%3A993a97ee3691eb26%3A0%3A0"),
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "2e7d0ad2390617702e7d0ad239061770%3Ad49582a2de984b86%3A0%3A1"),
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "905734c59b913b4a905734c59b913b4a%3A776ff807b787538a%3A0%3A0"),
             Collections.singletonMap(
-                io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee%3A68ec932c33b3f2ee%3A0%3A0"));
 
     private final TextMapGetter<Map<String, String>> getter =
@@ -156,8 +155,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final io.opentelemetry.extension.trace.propagation.JaegerPropagator jaegerPropagator =
-        io.opentelemetry.extension.trace.propagation.JaegerPropagator.getInstance();
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
     @Override
     protected Context doExtract() {

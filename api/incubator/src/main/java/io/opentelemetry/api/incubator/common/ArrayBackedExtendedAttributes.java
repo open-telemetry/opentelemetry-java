@@ -119,7 +119,7 @@ final class ArrayBackedExtendedAttributes
     return null;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "deprecation"}) // deprecation: EXTENDED_ATTRIBUTES
   @Nullable
   private static Value<?> asValue(ExtendedAttributeType type, Object value) {
     switch (type) {
