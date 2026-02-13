@@ -42,45 +42,38 @@ val testJavaVersion: String? by project
 
 testing {
   suites {
-    listOf(
-      "LATEST",
-      "4.11.0"
-    ).forEach {
-      register<JvmTestSuite>("testOkHttpVersion$it") {
-        sources {
-          java {
-            setSrcDirs(listOf("src/testDefaultSender/java"))
-          }
-        }
-        dependencies {
-          implementation(project(":exporters:sender:okhttp"))
-          implementation(project(":exporters:otlp:testing-internal"))
+    register<JvmTestSuite>("testOkHttp5") {
+      dependencies {
+        implementation(project(":exporters:sender:okhttp"))
+        implementation(project(":exporters:otlp:testing-internal"))
 
-          implementation(platform("com.squareup.okhttp3:okhttp-bom")) {
-            // Only impose dependency constraint if not testing the LATEST version, which is defined in /dependencyManagement/build.gradle.kts
-            if (!it.equals("LATEST")) {
-              version {
-                strictly(it)
-              }
-            }
-          }
+        implementation("com.squareup.okhttp3:okhttp:5.3.2")
+        implementation("io.grpc:grpc-stub")
+      }
+    }
+    register<JvmTestSuite>("testOkHttp4") {
+      dependencies {
+        implementation(project(":exporters:sender:okhttp4"))
+        implementation(project(":exporters:otlp:testing-internal"))
 
-          implementation("com.squareup.okhttp3:okhttp")
-          implementation("io.grpc:grpc-stub")
-        }
-
-        targets {
-          all {
-            testTask {
-              // Only enable test suite for non-LATEST in GitHub CI (CI=true)
-              enabled = it.equals("LATEST") || "true".equals(System.getenv("CI"))
-              systemProperty("expected.okhttp.version", it)
-            }
+        implementation("com.squareup.okhttp3:okhttp:4.12.0")
+        implementation("io.grpc:grpc-stub")
+      }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.okhttp4.internal.OkHttpGrpcSenderProvider"
+            )
+            systemProperty(
+              "io.opentelemetry.sdk.common.export.HttpSenderProvider",
+              "io.opentelemetry.exporter.sender.okhttp4.internal.OkHttpHttpSenderProvider"
+            )
           }
         }
       }
     }
-
     register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":exporters:sender:grpc-managed-channel"))

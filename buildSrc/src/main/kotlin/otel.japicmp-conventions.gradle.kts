@@ -81,15 +81,20 @@ fun getClasspathForVersion(version: String): List<File> {
   group = "virtual_group"
   try {
     return getAllPublishedModules().map {
-      val depModule = "io.opentelemetry:${it.base.archivesName.get()}:$version@jar"
-      val depJar = "${it.base.archivesName.get()}-$version.jar"
-      val configuration: Configuration = configurations.detachedConfiguration(
-        dependencies.create(depModule),
-      )
-      files(configuration.files).filter { file ->
-        file.name.equals(depJar)
-      }.singleFile
-    }.toList()
+      try {
+        val depModule = "io.opentelemetry:${it.base.archivesName.get()}:$version@jar"
+        val depJar = "${it.base.archivesName.get()}-$version.jar"
+        val configuration: Configuration = configurations.detachedConfiguration(
+          dependencies.create(depModule),
+        )
+        files(configuration.files).filter { file ->
+          file.name.equals(depJar)
+        }.singleFile
+      } catch (e: Exception) {
+        println("Failed to fetch artifact for version ${it.base.archivesName.get()}:$version. If this artifact is has not yet been published, ignore.")
+        null
+      }
+    }.toList().filterNotNull()
   } finally {
     group = existingGroup
   }
