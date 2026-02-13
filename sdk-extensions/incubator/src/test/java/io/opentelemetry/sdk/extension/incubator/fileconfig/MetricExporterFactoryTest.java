@@ -393,4 +393,19 @@ class MetricExporterFactoryTest {
                 .config.getString("key1"))
         .isEqualTo("value1");
   }
+
+  @Test
+  void create_CustomizerReturnsNull() {
+    // Set up a customizer that returns null
+    context.setMetricExporterCustomizer((name, exporter) -> null);
+
+    assertThatThrownBy(
+            () ->
+                MetricExporterFactory.getInstance()
+                    .create(
+                        new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+                        context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage("Metric exporter customizer returned null for exporter: console");
+  }
 }
