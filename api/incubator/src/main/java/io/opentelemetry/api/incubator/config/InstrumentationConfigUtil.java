@@ -116,6 +116,22 @@ public class InstrumentationConfigUtil {
   }
 
   /**
+   * Return {@code .instrumentation.general.sanitization.url.sensitive_query_parameters}, or null if
+   * none is configured.
+   *
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
+   */
+  @Nullable
+  public static List<String> sensitiveQueryParameters(ConfigProvider configProvider) {
+    return getOrNull(
+        configProvider,
+        config -> config.getScalarList("sensitive_query_parameters", String.class),
+        "general",
+        "sanitization",
+        "url");
+  }
+
+  /**
    * Return {@code .instrumentation.java.<instrumentationName>}, or null if none is configured.
    *
    * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property

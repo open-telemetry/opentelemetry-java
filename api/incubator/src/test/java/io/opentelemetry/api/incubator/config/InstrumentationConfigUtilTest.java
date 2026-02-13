@@ -46,6 +46,13 @@ class InstrumentationConfigUtilTest {
           + "        response_captured_headers:\n"
           + "          - server-response-header1\n"
           + "          - server-response-header2\n"
+          + "    sanitization:\n"
+          + "      url:\n"
+          + "        sensitive_query_parameters:\n"
+          + "          - AWSAccessKeyId\n"
+          + "          - Signature\n"
+          + "          - sig\n"
+          + "          - X-Goog-Signature\n"
           + "  java:\n"
           + "    example:\n"
           + "      property: \"value\"";
@@ -58,6 +65,8 @@ class InstrumentationConfigUtilTest {
       toConfigProvider("instrumentation/development:\n  general:\n");
   private static final ConfigProvider emptyHttpConfigProvider =
       toConfigProvider("instrumentation/development:\n  general:\n    http:\n");
+  private static final ConfigProvider emptySanitizationConfigProvider =
+      toConfigProvider("instrumentation/development:\n  general:\n    sanitization:\n");
 
   private static ConfigProvider toConfigProvider(String configYaml) {
     return SdkConfigProvider.create(
@@ -137,6 +146,19 @@ class InstrumentationConfigUtilTest {
             InstrumentationConfigUtil.httpServerResponseCapturedHeaders(emptyGeneralConfigProvider))
         .isNull();
     assertThat(InstrumentationConfigUtil.httpServerResponseCapturedHeaders(emptyHttpConfigProvider))
+        .isNull();
+  }
+
+  @Test
+  void sensitiveQueryParameters() {
+    assertThat(InstrumentationConfigUtil.sensitiveQueryParameters(kitchenSinkConfigProvider))
+        .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
+    assertThat(
+            InstrumentationConfigUtil.sensitiveQueryParameters(emptyInstrumentationConfigProvider))
+        .isNull();
+    assertThat(InstrumentationConfigUtil.sensitiveQueryParameters(emptyGeneralConfigProvider))
+        .isNull();
+    assertThat(InstrumentationConfigUtil.sensitiveQueryParameters(emptySanitizationConfigProvider))
         .isNull();
   }
 
