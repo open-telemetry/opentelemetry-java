@@ -1156,7 +1156,7 @@ class DeclarativeConfigurationParseTest {
   }
 
   @SuppressWarnings("unchecked")
-  private static java.util.stream.Stream<Arguments> sysPropertySubstitutionArgs() {
+  private Stream<Arguments> sysPropertySubstitutionArgs() {
     return java.util.stream.Stream.of(
         // Simple cases with sys: prefix
         Arguments.of("key1: ${sys:str.1}\n", mapOf(entry("key1", "value1"))),
