@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.data.internal;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 
 /**
@@ -16,11 +17,8 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 @SuppressWarnings("deprecation")
 public interface ExtendedLogRecordData extends LogRecordData {
 
-  /**
-   * Returns the attributes for this log, or {@link
-   * io.opentelemetry.api.incubator.common.ExtendedAttributes#empty()} if unset.
-   */
-  io.opentelemetry.api.incubator.common.ExtendedAttributes getExtendedAttributes();
+  /** Returns the attributes for this log, or {@link ExtendedAttributes#empty()} if unset. */
+  ExtendedAttributes getExtendedAttributes();
 
   /**
    * Returns the attributes for this log, or {@link Attributes#empty()} if unset.
