@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLabelName;
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
@@ -474,7 +475,7 @@ final class Otel2PrometheusConverter {
     attributes.forEach(
         (key, value) ->
             labelNameToValue.put(
-                sanitizeLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+                convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
@@ -504,7 +505,7 @@ final class Otel2PrometheusConverter {
         Object attributeValue = resourceAttributes.get(attributeKey);
         if (attributeValue != null) {
           labelNameToValue.putIfAbsent(
-              sanitizeLabelName(attributeKey.getKey()), attributeValue.toString());
+              convertLabelName(attributeKey.getKey()), attributeValue.toString());
         }
       }
     }
@@ -544,14 +545,24 @@ final class Otel2PrometheusConverter {
     return allowedAttributeKeys;
   }
 
+  /**
+   * Convert an attribute key to a legacy Prometheus label name. {@code prometheusName} converts
+   * non-standard characters (dots, dashes, etc.) to underscores, and {@code sanitizeLabelName}
+   * strips invalid leading prefixes.
+   */
+  private static String convertLabelName(String key) {
+    return sanitizeLabelName(prometheusName(key));
+  }
+
   private static MetricMetadata convertMetadata(MetricData metricData) {
-    String name = sanitizeMetricName(metricData.getName());
+    String name = sanitizeMetricName(prometheusName(metricData.getName()));
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    // Repeated __ are not allowed according to spec, although this is allowed in prometheus
+    // Repeated __ are discouraged according to spec, although this is allowed in prometheus, see
+    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1
     while (name.contains("__")) {
       name = name.replace("__", "_");
     }
