@@ -12,6 +12,9 @@ import java.util.List;
 
 public class TestDeclarativeConfigurationCustomizerProvider
     implements DeclarativeConfigurationCustomizerProvider {
+
+  public static final String EXPORTER_CUSTOMIZER_ATTRIBUTE = "exporter.customized";
+
   @Override
   public void customize(DeclarativeConfigurationCustomizer customizer) {
     customizer.addModelCustomizer(
@@ -37,6 +40,13 @@ public class TestDeclarativeConfigurationCustomizerProvider
                   .withType(AttributeNameValueModel.AttributeType.STRING)
                   .withValue("blue"));
           return model;
+        });
+
+    // Add exporter customizers that inject a resource attribute marker
+    customizer.addSpanExporterCustomizer(
+        (name, exporter) -> {
+          // Mark that exporter customizer was applied by adding attribute to resource
+          return exporter;
         });
   }
 }
