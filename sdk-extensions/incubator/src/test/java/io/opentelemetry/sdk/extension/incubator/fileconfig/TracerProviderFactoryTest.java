@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Tracer
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.io.Closeable;
@@ -120,9 +121,7 @@ class TracerProviderFactoryTest {
                         .build())
                 .setSampler(alwaysOn())
                 .addSpanProcessor(
-                    io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                            OtlpHttpSpanExporter.getDefault())
-                        .build())
+                    BatchSpanProcessor.builder(OtlpHttpSpanExporter.getDefault()).build())
                 .build()));
   }
 

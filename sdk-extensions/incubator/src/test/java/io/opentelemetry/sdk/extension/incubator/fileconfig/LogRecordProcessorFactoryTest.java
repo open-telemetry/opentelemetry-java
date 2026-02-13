@@ -19,6 +19,9 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRec
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorPropertyModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -50,13 +53,11 @@ class LogRecordProcessorFactoryTest {
   @Test
   void create_BatchDefaults() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor expectedProcessor =
-        io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                OtlpHttpLogRecordExporter.getDefault())
-            .build();
+    BatchLogRecordProcessor expectedProcessor =
+        BatchLogRecordProcessor.builder(OtlpHttpLogRecordExporter.getDefault()).build();
     cleanup.addCloseable(expectedProcessor);
 
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
+    LogRecordProcessor processor =
         LogRecordProcessorFactory.getInstance()
             .create(
                 new LogRecordProcessorModel()
@@ -75,16 +76,15 @@ class LogRecordProcessorFactoryTest {
   @Test
   void create_BatchConfigured() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor expectedProcessor =
-        io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                OtlpHttpLogRecordExporter.getDefault())
+    BatchLogRecordProcessor expectedProcessor =
+        BatchLogRecordProcessor.builder(OtlpHttpLogRecordExporter.getDefault())
             .setScheduleDelay(Duration.ofMillis(1))
             .setMaxExportBatchSize(2)
             .setExporterTimeout(Duration.ofMillis(3))
             .build();
     cleanup.addCloseable(expectedProcessor);
 
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
+    LogRecordProcessor processor =
         LogRecordProcessorFactory.getInstance()
             .create(
                 new LogRecordProcessorModel()
@@ -119,12 +119,11 @@ class LogRecordProcessorFactoryTest {
   @Test
   void create_SimpleConfigured() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.logs.LogRecordProcessor expectedProcessor =
-        io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor.create(
-            OtlpHttpLogRecordExporter.getDefault());
+    LogRecordProcessor expectedProcessor =
+        SimpleLogRecordProcessor.create(OtlpHttpLogRecordExporter.getDefault());
     cleanup.addCloseable(expectedProcessor);
 
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
+    LogRecordProcessor processor =
         LogRecordProcessorFactory.getInstance()
             .create(
                 new LogRecordProcessorModel()
@@ -159,7 +158,7 @@ class LogRecordProcessorFactoryTest {
 
   @Test
   void create_SpiExporter_Valid() {
-    io.opentelemetry.sdk.logs.LogRecordProcessor logRecordProcessor =
+    LogRecordProcessor logRecordProcessor =
         LogRecordProcessorFactory.getInstance()
             .create(
                 new LogRecordProcessorModel()

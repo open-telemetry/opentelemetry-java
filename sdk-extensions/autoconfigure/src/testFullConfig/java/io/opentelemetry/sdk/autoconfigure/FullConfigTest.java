@@ -38,6 +38,7 @@ import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
+import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -215,8 +216,7 @@ public class FullConfigTest {
         traceRequest.getResourceSpans(0).getResource().getAttributesList();
     assertHasKeyValue(spanResourceAttributes, "service.name", "test");
     assertHasKeyValue(spanResourceAttributes, "cat", "meow");
-    io.opentelemetry.proto.trace.v1.Span span =
-        traceRequest.getResourceSpans(0).getScopeSpans(0).getSpans(0);
+    Span span = traceRequest.getResourceSpans(0).getScopeSpans(0).getSpans(0);
     assertHasKeyValue(span.getAttributesList(), "configured", true);
     assertHasKeyValue(span.getAttributesList(), "wrapped", 1);
     assertHasKeyValue(span.getAttributesList(), "cat", "meow");

@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributeUtil;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
@@ -301,7 +302,7 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   @Deprecated
-  public io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
     return InstrumentationScopeUtil.toInstrumentationLibraryInfo(getInstrumentationScopeInfo());
   }
 

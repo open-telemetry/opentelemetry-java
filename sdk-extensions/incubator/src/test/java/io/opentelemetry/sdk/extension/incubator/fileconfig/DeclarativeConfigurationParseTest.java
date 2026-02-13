@@ -111,6 +111,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -1004,8 +1005,8 @@ class DeclarativeConfigurationParseTest {
   }
 
   @SuppressWarnings("unchecked")
-  private static java.util.stream.Stream<Arguments> coreSchemaValuesArgs() {
-    return java.util.stream.Stream.of(
+  private static Stream<Arguments> coreSchemaValuesArgs() {
+    return Stream.of(
         Arguments.of("key1: 0o123\n", mapOf(entry("key1", 83))),
         Arguments.of("key1: 0123\n", mapOf(entry("key1", 123))),
         Arguments.of("key1: 0xdeadbeef\n", mapOf(entry("key1", 3735928559L))),
@@ -1034,8 +1035,8 @@ class DeclarativeConfigurationParseTest {
   }
 
   @SuppressWarnings("unchecked")
-  private static java.util.stream.Stream<Arguments> envVarSubstitutionArgs() {
-    return java.util.stream.Stream.of(
+  private static Stream<Arguments> envVarSubstitutionArgs() {
+    return Stream.of(
         // Simple cases
         Arguments.of("key1: ${STR_1}\n", mapOf(entry("key1", "value1"))),
         Arguments.of("key1: ${BOOL}\n", mapOf(entry("key1", true))),
