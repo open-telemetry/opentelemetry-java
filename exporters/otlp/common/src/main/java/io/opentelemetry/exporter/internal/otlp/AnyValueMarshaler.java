@@ -37,7 +37,7 @@ public final class AnyValueMarshaler {
       case KEY_VALUE_LIST:
         return KeyValueListAnyValueMarshaler.create((List<KeyValue>) value.getValue());
       case BYTES:
-        return BytesAnyValueMarshaler.create((ByteBuffer) value.getValue());
+        return BytesAnyValueMarshaler.create((Value<ByteBuffer>) value);
       case EMPTY:
         return EmptyAnyValueMarshaler.INSTANCE;
     }

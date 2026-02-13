@@ -63,7 +63,7 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
         return;
       case BYTES:
         BytesAnyValueStatelessMarshaler.INSTANCE.writeTo(
-            output, (ByteBuffer) value.getValue(), context);
+            output, (Value<ByteBuffer>) value, context);
         return;
       case EMPTY:
         // no field to write
@@ -104,7 +104,7 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
             context);
       case BYTES:
         return BytesAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
-            (ByteBuffer) value.getValue(), context);
+            (Value<ByteBuffer>) value, context);
       case EMPTY:
         return 0;
     }
