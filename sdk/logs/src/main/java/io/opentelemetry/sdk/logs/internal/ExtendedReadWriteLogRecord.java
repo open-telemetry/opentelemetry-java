@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.logs.internal;
 
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
+import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import javax.annotation.Nullable;
@@ -26,8 +28,7 @@ public interface ExtendedReadWriteLogRecord extends ReadWriteLogRecord {
    *
    * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
    */
-  <T> ExtendedReadWriteLogRecord setAttribute(
-      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> key, T value);
+  <T> ExtendedReadWriteLogRecord setAttribute(ExtendedAttributeKey<T> key, T value);
 
   /**
    * Sets attributes to the {@link ReadWriteLogRecord}. If the {@link ReadWriteLogRecord} previously
@@ -37,16 +38,13 @@ public interface ExtendedReadWriteLogRecord extends ReadWriteLogRecord {
    * @return this.
    */
   @SuppressWarnings("unchecked")
-  default ExtendedReadWriteLogRecord setAllAttributes(
-      io.opentelemetry.api.incubator.common.ExtendedAttributes extendedAttributes) {
+  default ExtendedReadWriteLogRecord setAllAttributes(ExtendedAttributes extendedAttributes) {
     if (extendedAttributes == null || extendedAttributes.isEmpty()) {
       return this;
     }
     extendedAttributes.forEach(
         (attributeKey, value) ->
-            this.setAttribute(
-                (io.opentelemetry.api.incubator.common.ExtendedAttributeKey<Object>) attributeKey,
-                value));
+            this.setAttribute((ExtendedAttributeKey<Object>) attributeKey, value));
     return this;
   }
 
@@ -59,11 +57,8 @@ public interface ExtendedReadWriteLogRecord extends ReadWriteLogRecord {
    * getAttributes().get(key)
    */
   @Nullable
-  <T> T getAttribute(io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> key);
+  <T> T getAttribute(ExtendedAttributeKey<T> key);
 
-  /**
-   * Returns the attributes for this log, or {@link
-   * io.opentelemetry.api.incubator.common.ExtendedAttributes#empty()} if unset.
-   */
-  io.opentelemetry.api.incubator.common.ExtendedAttributes getExtendedAttributes();
+  /** Returns the attributes for this log, or {@link ExtendedAttributes#empty()} if unset. */
+  ExtendedAttributes getExtendedAttributes();
 }

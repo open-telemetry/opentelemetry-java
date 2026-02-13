@@ -14,6 +14,8 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
+import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -97,7 +99,7 @@ class LogsRequestMarshalerIncubatingTest {
                     // Extended fields
                     .setEventName(EVENT_NAME)
                     .setExtendedAttributes(
-                        io.opentelemetry.api.incubator.common.ExtendedAttributes.builder()
+                        ExtendedAttributes.builder()
                             .put("str_key", "str_value")
                             .put("str_arr_key", "str_value1", "str_value2")
                             .put("bool_key", true)
@@ -108,21 +110,19 @@ class LogsRequestMarshalerIncubatingTest {
                             .put("int_arr_key", 1, 2)
                             .put(
                                 "kv_list_key",
-                                io.opentelemetry.api.incubator.common.ExtendedAttributes.builder()
+                                ExtendedAttributes.builder()
                                     .put("bool_key", true)
                                     .put("double_key", 1.1)
                                     .put("int_key", 1)
                                     .put(
                                         "kv_list_key",
-                                        io.opentelemetry.api.incubator.common.ExtendedAttributes
-                                            .builder()
+                                        ExtendedAttributes.builder()
                                             .put("str_key", "str_value")
                                             .build())
                                     .put("str_key", "str_value")
                                     .build())
                             .put(
-                                io.opentelemetry.api.incubator.common.ExtendedAttributeKey.valueKey(
-                                    "value_key"),
+                                ExtendedAttributeKey.valueKey("value_key"),
                                 Value.of(
                                     io.opentelemetry.api.common.KeyValue.of(
                                         "bool_key", Value.of(true)),

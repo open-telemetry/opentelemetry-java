@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
@@ -108,8 +109,7 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
-  public <T> ExtendedSdkLogRecordBuilder setAttribute(
-      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> key, T value) {
+  public <T> ExtendedSdkLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -127,8 +127,7 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    return setAttribute(
-        io.opentelemetry.api.incubator.common.ExtendedAttributeKey.fromAttributeKey(key), value);
+    return setAttribute(ExtendedAttributeKey.fromAttributeKey(key), value);
   }
 
   @Override

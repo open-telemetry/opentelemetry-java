@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.testing.logs.internal;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -187,17 +188,13 @@ public abstract class TestExtendedLogRecordData implements ExtendedLogRecordData
 
     /** Set the attributes. */
     public Builder setAttributes(Attributes attributes) {
-      return setExtendedAttributes(
-          io.opentelemetry.api.incubator.common.ExtendedAttributes.builder()
-              .putAll(attributes)
-              .build());
+      return setExtendedAttributes(ExtendedAttributes.builder().putAll(attributes).build());
     }
 
     /** Set the total attribute count. */
     public abstract Builder setTotalAttributeCount(int totalAttributeCount);
 
     /** Set extended attributes. * */
-    public abstract Builder setExtendedAttributes(
-        io.opentelemetry.api.incubator.common.ExtendedAttributes extendedAttributes);
+    public abstract Builder setExtendedAttributes(ExtendedAttributes extendedAttributes);
   }
 }

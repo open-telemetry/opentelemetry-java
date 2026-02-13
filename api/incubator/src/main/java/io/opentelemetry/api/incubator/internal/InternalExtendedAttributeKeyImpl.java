@@ -7,6 +7,8 @@ package io.opentelemetry.api.incubator.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeType;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
@@ -16,18 +18,16 @@ import javax.annotation.Nullable;
  * any time.
  */
 @SuppressWarnings("deprecation")
-public final class InternalExtendedAttributeKeyImpl<T>
-    implements io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> {
+public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttributeKey<T> {
 
-  private final io.opentelemetry.api.incubator.common.ExtendedAttributeType type;
+  private final ExtendedAttributeType type;
   private final String key;
   private final int hashCode;
 
   @Nullable private byte[] keyUtf8;
   @Nullable private AttributeKey<T> attributeKey;
 
-  private InternalExtendedAttributeKeyImpl(
-      io.opentelemetry.api.incubator.common.ExtendedAttributeType type, String key) {
+  private InternalExtendedAttributeKeyImpl(ExtendedAttributeType type, String key) {
     if (type == null) {
       throw new NullPointerException("Null type");
     }
@@ -39,13 +39,13 @@ public final class InternalExtendedAttributeKeyImpl<T>
     this.hashCode = buildHashCode(type, key);
   }
 
-  public static <T> io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> create(
-      @Nullable String key, io.opentelemetry.api.incubator.common.ExtendedAttributeType type) {
+  public static <T> ExtendedAttributeKey<T> create(
+      @Nullable String key, ExtendedAttributeType type) {
     return new InternalExtendedAttributeKeyImpl<>(type, key != null ? key : "");
   }
 
   @Override
-  public io.opentelemetry.api.incubator.common.ExtendedAttributeType getType() {
+  public ExtendedAttributeType getType() {
     return type;
   }
 
@@ -101,8 +101,7 @@ public final class InternalExtendedAttributeKeyImpl<T>
     return buildHashCode(type, key);
   }
 
-  private static int buildHashCode(
-      io.opentelemetry.api.incubator.common.ExtendedAttributeType type, String key) {
+  private static int buildHashCode(ExtendedAttributeType type, String key) {
     int result = 1;
     result *= 1000003;
     result ^= type.hashCode();
@@ -112,13 +111,12 @@ public final class InternalExtendedAttributeKeyImpl<T>
   }
 
   /**
-   * Return the equivalent {@link AttributeKey} for the {@link
-   * io.opentelemetry.api.incubator.common.ExtendedAttributeKey}, or {@code null} if the {@link
-   * #getType()} has no equivalent {@link io.opentelemetry.api.common.AttributeType}.
+   * Return the equivalent {@link AttributeKey} for the {@link ExtendedAttributeKey}, or {@code
+   * null} if the {@link #getType()} has no equivalent {@link
+   * io.opentelemetry.api.common.AttributeType}.
    */
   @Nullable
-  public static <T> AttributeKey<T> toAttributeKey(
-      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> extendedAttributeKey) {
+  public static <T> AttributeKey<T> toAttributeKey(ExtendedAttributeKey<T> extendedAttributeKey) {
     switch (extendedAttributeKey.getType()) {
       case STRING:
         return InternalAttributeKeyImpl.create(extendedAttributeKey.getKey(), AttributeType.STRING);
@@ -150,50 +148,36 @@ public final class InternalExtendedAttributeKeyImpl<T>
         "Unrecognized extendedAttributeKey type: " + extendedAttributeKey.getType());
   }
 
-  /**
-   * Return the equivalent {@link io.opentelemetry.api.incubator.common.ExtendedAttributeKey} for
-   * the {@link AttributeKey}.
-   */
-  public static <T>
-      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T> toExtendedAttributeKey(
-          AttributeKey<T> attributeKey) {
+  /** Return the equivalent {@link ExtendedAttributeKey} for the {@link AttributeKey}. */
+  public static <T> ExtendedAttributeKey<T> toExtendedAttributeKey(AttributeKey<T> attributeKey) {
     switch (attributeKey.getType()) {
       case STRING:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.STRING);
+            attributeKey.getKey(), ExtendedAttributeType.STRING);
       case BOOLEAN:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.BOOLEAN);
+            attributeKey.getKey(), ExtendedAttributeType.BOOLEAN);
       case LONG:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.LONG);
+            attributeKey.getKey(), ExtendedAttributeType.LONG);
       case DOUBLE:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.DOUBLE);
+            attributeKey.getKey(), ExtendedAttributeType.DOUBLE);
       case STRING_ARRAY:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.STRING_ARRAY);
+            attributeKey.getKey(), ExtendedAttributeType.STRING_ARRAY);
       case BOOLEAN_ARRAY:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.BOOLEAN_ARRAY);
+            attributeKey.getKey(), ExtendedAttributeType.BOOLEAN_ARRAY);
       case LONG_ARRAY:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.LONG_ARRAY);
+            attributeKey.getKey(), ExtendedAttributeType.LONG_ARRAY);
       case DOUBLE_ARRAY:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.DOUBLE_ARRAY);
+            attributeKey.getKey(), ExtendedAttributeType.DOUBLE_ARRAY);
       case VALUE:
         return InternalExtendedAttributeKeyImpl.create(
-            attributeKey.getKey(),
-            io.opentelemetry.api.incubator.common.ExtendedAttributeType.VALUE);
+            attributeKey.getKey(), ExtendedAttributeType.VALUE);
     }
     throw new IllegalArgumentException("Unrecognized attributeKey type: " + attributeKey.getType());
   }

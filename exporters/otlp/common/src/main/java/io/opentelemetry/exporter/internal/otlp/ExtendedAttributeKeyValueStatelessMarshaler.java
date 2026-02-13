@@ -6,6 +6,9 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeType;
+import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.incubator.internal.InternalExtendedAttributeKeyImpl;
 import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
@@ -24,16 +27,14 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A Marshaler of {@link io.opentelemetry.api.incubator.common.ExtendedAttributes} key value pairs.
- * See {@link KeyValueMarshaler}.
+ * A Marshaler of {@link ExtendedAttributes} key value pairs. See {@link KeyValueMarshaler}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
 @SuppressWarnings("deprecation")
 public final class ExtendedAttributeKeyValueStatelessMarshaler
-    implements StatelessMarshaler2<
-        io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?>, Object> {
+    implements StatelessMarshaler2<ExtendedAttributeKey<?>, Object> {
   private static final ExtendedAttributeKeyValueStatelessMarshaler INSTANCE =
       new ExtendedAttributeKeyValueStatelessMarshaler();
   private static final byte[] EMPTY_BYTES = new byte[0];
@@ -43,12 +44,12 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
   /**
    * Serializes the {@code attributes}. This method reads elements from context, use together with
    * {@link ExtendedAttributeKeyValueStatelessMarshaler#sizeExtendedAttributes(ProtoFieldInfo,
-   * io.opentelemetry.api.incubator.common.ExtendedAttributes, MarshalerContext)}.
+   * ExtendedAttributes, MarshalerContext)}.
    */
   public static void serializeExtendedAttributes(
       Serializer output,
       ProtoFieldInfo field,
-      io.opentelemetry.api.incubator.common.ExtendedAttributes attributes,
+      ExtendedAttributes attributes,
       MarshalerContext context)
       throws IOException {
     output.writeStartRepeated(field);
@@ -76,12 +77,10 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
   /**
    * Sizes the {@code attributes}. This method adds elements to context, use together with {@link
    * ExtendedAttributeKeyValueStatelessMarshaler#serializeExtendedAttributes(Serializer,
-   * ProtoFieldInfo, io.opentelemetry.api.incubator.common.ExtendedAttributes, MarshalerContext)}.
+   * ProtoFieldInfo, ExtendedAttributes, MarshalerContext)}.
    */
   public static int sizeExtendedAttributes(
-      ProtoFieldInfo field,
-      io.opentelemetry.api.incubator.common.ExtendedAttributes attributes,
-      MarshalerContext context) {
+      ProtoFieldInfo field, ExtendedAttributes attributes, MarshalerContext context) {
     if (attributes.isEmpty()) {
       return 0;
     }
@@ -103,7 +102,7 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
   @Override
   public void writeTo(
       Serializer output,
-      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?> attributeKey,
+      ExtendedAttributeKey<?> attributeKey,
       Object value,
       MarshalerContext context)
       throws IOException {
@@ -121,9 +120,7 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
 
   @Override
   public int getBinarySerializedSize(
-      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?> attributeKey,
-      Object value,
-      MarshalerContext context) {
+      ExtendedAttributeKey<?> attributeKey, Object value, MarshalerContext context) {
     int size = 0;
     if (!attributeKey.getKey().isEmpty()) {
       if (attributeKey instanceof InternalExtendedAttributeKeyImpl) {
@@ -142,19 +139,15 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
   }
 
   private static class ValueStatelessMarshaler
-      implements StatelessMarshaler2<
-          io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?>, Object> {
+      implements StatelessMarshaler2<ExtendedAttributeKey<?>, Object> {
     static final ValueStatelessMarshaler INSTANCE = new ValueStatelessMarshaler();
 
     // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
     @SuppressWarnings("unchecked")
     @Override
     public int getBinarySerializedSize(
-        io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?> attributeKey,
-        Object value,
-        MarshalerContext context) {
-      io.opentelemetry.api.incubator.common.ExtendedAttributeType attributeType =
-          attributeKey.getType();
+        ExtendedAttributeKey<?> attributeKey, Object value, MarshalerContext context) {
+      ExtendedAttributeType attributeType = attributeKey.getType();
       switch (attributeType) {
         case STRING:
           return StringAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
@@ -181,7 +174,7 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
         case EXTENDED_ATTRIBUTES:
           return StatelessMarshalerUtil.sizeMessageWithContext(
               AnyValue.KVLIST_VALUE,
-              (io.opentelemetry.api.incubator.common.ExtendedAttributes) value,
+              (ExtendedAttributes) value,
               ExtendedAttributesKeyValueListStatelessMarshaler.INSTANCE,
               context);
         case VALUE:
@@ -198,12 +191,11 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
     @Override
     public void writeTo(
         Serializer output,
-        io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?> attributeKey,
+        ExtendedAttributeKey<?> attributeKey,
         Object value,
         MarshalerContext context)
         throws IOException {
-      io.opentelemetry.api.incubator.common.ExtendedAttributeType attributeType =
-          attributeKey.getType();
+      ExtendedAttributeType attributeType = attributeKey.getType();
       switch (attributeType) {
         case STRING:
           StringAnyValueStatelessMarshaler.INSTANCE.writeTo(output, (String) value, context);
@@ -231,7 +223,7 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
         case EXTENDED_ATTRIBUTES:
           output.serializeMessageWithContext(
               AnyValue.KVLIST_VALUE,
-              (io.opentelemetry.api.incubator.common.ExtendedAttributes) value,
+              (ExtendedAttributes) value,
               ExtendedAttributesKeyValueListStatelessMarshaler.INSTANCE,
               context);
           return;
@@ -246,24 +238,20 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
   }
 
   private static class ExtendedAttributesKeyValueListStatelessMarshaler
-      implements StatelessMarshaler<io.opentelemetry.api.incubator.common.ExtendedAttributes> {
+      implements StatelessMarshaler<ExtendedAttributes> {
     private static final ExtendedAttributesKeyValueListStatelessMarshaler INSTANCE =
         new ExtendedAttributesKeyValueListStatelessMarshaler();
 
     private ExtendedAttributesKeyValueListStatelessMarshaler() {}
 
     @Override
-    public void writeTo(
-        Serializer output,
-        io.opentelemetry.api.incubator.common.ExtendedAttributes value,
-        MarshalerContext context)
+    public void writeTo(Serializer output, ExtendedAttributes value, MarshalerContext context)
         throws IOException {
       serializeExtendedAttributes(output, KeyValueList.VALUES, value, context);
     }
 
     @Override
-    public int getBinarySerializedSize(
-        io.opentelemetry.api.incubator.common.ExtendedAttributes value, MarshalerContext context) {
+    public int getBinarySerializedSize(ExtendedAttributes value, MarshalerContext context) {
       return sizeExtendedAttributes(KeyValueList.VALUES, value, context);
     }
   }

@@ -6,6 +6,8 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
+import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.incubator.internal.InternalExtendedAttributeKeyImpl;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -61,21 +63,18 @@ public class IncubatingUtil {
   }
 
   // TODO(jack-berg): move to KeyValueMarshaler when ExtendedAttributes is stable
-  private static KeyValueMarshaler[] createForExtendedAttributes(
-      io.opentelemetry.api.incubator.common.ExtendedAttributes attributes) {
+  private static KeyValueMarshaler[] createForExtendedAttributes(ExtendedAttributes attributes) {
     if (attributes.isEmpty()) {
       return EMPTY_REPEATED;
     }
 
     KeyValueMarshaler[] marshalers = new KeyValueMarshaler[attributes.size()];
     attributes.forEach(
-        new BiConsumer<io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?>, Object>() {
+        new BiConsumer<ExtendedAttributeKey<?>, Object>() {
           int index = 0;
 
           @Override
-          public void accept(
-              io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?> attributeKey,
-              Object o) {
+          public void accept(ExtendedAttributeKey<?> attributeKey, Object o) {
             marshalers[index++] = create(attributeKey, o);
           }
         });
@@ -85,8 +84,7 @@ public class IncubatingUtil {
   // TODO(jack-berg): move to KeyValueMarshaler when ExtendedAttributes is stable
   // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
   @SuppressWarnings("unchecked")
-  private static KeyValueMarshaler create(
-      io.opentelemetry.api.incubator.common.ExtendedAttributeKey<?> attributeKey, Object value) {
+  private static KeyValueMarshaler create(ExtendedAttributeKey<?> attributeKey, Object value) {
     byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {
       keyUtf8 = EMPTY_BYTES;
@@ -120,8 +118,7 @@ public class IncubatingUtil {
             keyUtf8,
             new KeyValueListAnyValueMarshaler(
                 new KeyValueListAnyValueMarshaler.KeyValueListMarshaler(
-                    createForExtendedAttributes(
-                        (io.opentelemetry.api.incubator.common.ExtendedAttributes) value))));
+                    createForExtendedAttributes((ExtendedAttributes) value))));
       case VALUE:
         return new KeyValueMarshaler(keyUtf8, AnyValueMarshaler.create((Value<?>) value));
     }
@@ -141,8 +138,7 @@ public class IncubatingUtil {
         output, LogRecord.ATTRIBUTES, getExtendedAttributes(log), context);
   }
 
-  private static io.opentelemetry.api.incubator.common.ExtendedAttributes getExtendedAttributes(
-      LogRecordData logRecordData) {
+  private static ExtendedAttributes getExtendedAttributes(LogRecordData logRecordData) {
     if (!(logRecordData instanceof ExtendedLogRecordData)) {
       throw new IllegalArgumentException("logRecordData must be ExtendedLogRecordData");
     }
