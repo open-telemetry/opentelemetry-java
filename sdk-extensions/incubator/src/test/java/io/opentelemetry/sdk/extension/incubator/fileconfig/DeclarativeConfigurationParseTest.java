@@ -111,6 +111,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -1156,7 +1157,7 @@ class DeclarativeConfigurationParseTest {
   }
 
   @SuppressWarnings("unchecked")
-  private Stream<Arguments> sysPropertySubstitutionArgs() {
+  private static Stream<Arguments> sysPropertySubstitutionArgs() {
     return java.util.stream.Stream.of(
         // Simple cases with sys: prefix
         Arguments.of("key1: ${sys:str.1}\n", mapOf(entry("key1", "value1"))),
