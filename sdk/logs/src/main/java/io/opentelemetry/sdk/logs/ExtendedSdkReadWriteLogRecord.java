@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
+@SuppressWarnings("deprecation")
 class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
     implements ExtendedReadWriteLogRecord {
 
