@@ -27,14 +27,14 @@ import javax.annotation.Nullable;
 final class TracerShim implements Tracer {
   private static final Logger logger = Logger.getLogger(TracerShim.class.getName());
 
-  private final io.opentelemetry.api.trace.TracerProvider provider;
+  private final TracerProvider provider;
   private final io.opentelemetry.api.trace.Tracer tracer;
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   TracerShim(
-      io.opentelemetry.api.trace.TracerProvider provider,
+      TracerProvider provider,
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {
     this.provider = provider;

@@ -11,6 +11,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
+import io.grpc.okhttp.OkHttpChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
@@ -286,8 +287,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
         if (sslContext == null) {
           return;
         }
-        io.grpc.okhttp.OkHttpChannelBuilder okHttpBuilder =
-            (io.grpc.okhttp.OkHttpChannelBuilder) managedChannelBuilder;
+        OkHttpChannelBuilder okHttpBuilder = (OkHttpChannelBuilder) managedChannelBuilder;
         okHttpBuilder.sslSocketFactory(sslContext.getSocketFactory());
         break;
       default:

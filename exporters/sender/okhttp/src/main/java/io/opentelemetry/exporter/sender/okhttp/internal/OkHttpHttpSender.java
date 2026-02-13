@@ -37,6 +37,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
@@ -139,7 +140,7 @@ public final class OkHttpHttpSender implements HttpSender {
                       }
 
                       @Override
-                      public void onResponse(Call call, okhttp3.Response response) {
+                      public void onResponse(Call call, Response response) {
                         try (ResponseBody body = response.body()) {
                           onResponse.accept(
                               new HttpResponse() {
@@ -183,7 +184,7 @@ public final class OkHttpHttpSender implements HttpSender {
     return CompletableResultCode.ofSuccess();
   }
 
-  static boolean isRetryable(okhttp3.Response response) {
+  static boolean isRetryable(Response response) {
     return RetryUtil.retryableHttpResponseCodes().contains(response.code());
   }
 

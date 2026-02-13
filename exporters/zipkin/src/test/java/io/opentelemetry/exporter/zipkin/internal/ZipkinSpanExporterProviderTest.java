@@ -51,8 +51,7 @@ class ZipkinSpanExporterProviderTest {
 
     try (SpanExporter spanExporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
-      assertThat(spanExporter)
-          .isInstanceOf(io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.class);
+      assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
       assertThat(spanExporter)
           .extracting("sender")
           .extracting("delegate")
