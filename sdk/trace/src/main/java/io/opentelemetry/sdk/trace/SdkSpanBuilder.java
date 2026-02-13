@@ -126,7 +126,7 @@ class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, String value) {
+  public SpanBuilder setAttribute(String key, @Nullable String value) {
     return setAttribute(stringKey(key), value);
   }
 
@@ -146,7 +146,7 @@ class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public <T> SpanBuilder setAttribute(AttributeKey<T> key, T value) {
+  public <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
