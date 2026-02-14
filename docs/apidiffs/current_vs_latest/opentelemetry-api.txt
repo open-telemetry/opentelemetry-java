@@ -1,4 +1,7 @@
 Comparing source compatibility of opentelemetry-api-1.60.0-SNAPSHOT.jar against opentelemetry-api-1.59.0.jar
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.logs.LogRecordBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setException(java.lang.Throwable)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.TraceFlags  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.trace.TraceFlagsBuilder builder()

@@ -1,2 +1,4 @@
 Comparing source compatibility of opentelemetry-sdk-testing-1.60.0-SNAPSHOT.jar against opentelemetry-sdk-testing-1.59.0.jar
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasException(java.lang.Throwable)
