@@ -28,6 +28,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
@@ -63,6 +64,8 @@ class SdkLogRecordBuilderTest {
     when(loggerSharedState.getClock()).thenReturn(clock);
     when(loggerSharedState.getLoggerInstrumentation())
         .thenReturn(new SdkLoggerInstrumentation(MeterProvider::noop));
+    when(loggerSharedState.getExceptionAttributeResolver())
+        .thenReturn(ExceptionAttributeResolver.getDefault());
 
     SdkLogger logger = new SdkLogger(loggerSharedState, SCOPE_INFO, LoggerConfig.enabled());
     builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO, logger);
@@ -165,5 +168,32 @@ class SdkLogRecordBuilderTest {
             equalTo(doubleKey("dk"), 12.123),
             equalTo(booleanKey("bk"), true),
             equalTo(longKey("ik"), 13L));
+  }
+
+  @Test
+  void setException() {
+    Exception exception = new Exception("error");
+
+    builder.setException(exception).emit();
+
+    assertThat(emittedLog.get().toLogRecordData()).hasException(exception);
+  }
+
+  @Test
+  void setException_UserAttributesTakePrecedence() {
+    builder
+        .setAttribute(stringKey("exception.message"), "custom message")
+        .setException(new Exception("error"))
+        .emit();
+
+    assertThat(emittedLog.get().toLogRecordData())
+        .hasAttributesSatisfying(
+            attributes -> {
+              assertThat(attributes.get(stringKey("exception.type")))
+                  .isEqualTo("java.lang.Exception");
+              assertThat(attributes.get(stringKey("exception.message")))
+                  .isEqualTo("custom message");
+              assertThat(attributes.get(stringKey("exception.stacktrace"))).isNotNull();
+            });
   }
 }
