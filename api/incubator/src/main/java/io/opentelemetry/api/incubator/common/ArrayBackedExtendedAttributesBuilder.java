@@ -56,7 +56,7 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
     return this;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "deprecation"}) // deprecation: EXTENDED_ATTRIBUTES
   private void putValue(ExtendedAttributeKey<?> key, Value<?> valueObj) {
     // Convert VALUE type to narrower type when possible
     String keyName = key.getKey();

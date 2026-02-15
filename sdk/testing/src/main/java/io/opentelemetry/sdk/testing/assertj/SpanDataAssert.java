@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -185,7 +186,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
    */
   @Deprecated
   public SpanDataAssert hasInstrumentationLibraryInfo(
-      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     isNotNull();
     if (!actual.getInstrumentationLibraryInfo().equals(instrumentationLibraryInfo)) {
       failWithActualExpectedAndMessage(

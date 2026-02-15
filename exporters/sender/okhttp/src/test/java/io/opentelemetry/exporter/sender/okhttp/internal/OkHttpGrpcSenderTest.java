@@ -108,7 +108,7 @@ class OkHttpGrpcSenderTest {
         "CompletableResultCode should not be done immediately - it should wait for thread termination");
 
     // Now wait for it to complete
-    shutdownResult.join(10, java.util.concurrent.TimeUnit.SECONDS);
+    shutdownResult.join(10, TimeUnit.SECONDS);
     assertTrue(shutdownResult.isDone(), "CompletableResultCode should be done after waiting");
     assertTrue(shutdownResult.isSuccess(), "Shutdown should complete successfully");
   }

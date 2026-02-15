@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -68,10 +69,8 @@ class MetricReaderFactoryTest {
   @Test
   void create_PeriodicDefaults() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.metrics.export.PeriodicMetricReader expectedReader =
-        io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                OtlpHttpMetricExporter.getDefault())
-            .build();
+    PeriodicMetricReader expectedReader =
+        PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault()).build();
     cleanup.addCloseable(expectedReader);
 
     MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
@@ -96,8 +95,7 @@ class MetricReaderFactoryTest {
   void create_PeriodicConfigured() {
     List<Closeable> closeables = new ArrayList<>();
     MetricReader expectedReader =
-        io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                OtlpHttpMetricExporter.getDefault())
+        PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault())
             .setInterval(Duration.ofMillis(1))
             .build();
     cleanup.addCloseable(expectedReader);

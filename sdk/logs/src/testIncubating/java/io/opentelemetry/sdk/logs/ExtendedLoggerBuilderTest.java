@@ -76,4 +76,27 @@ class ExtendedLoggerBuilderTest {
                         equalTo(EXCEPTION_TYPE, "type"),
                         equalTo(EXCEPTION_STACKTRACE, "stacktrace")));
   }
+
+  @Test
+  void setException_UserAttributesTakePrecedence() {
+    Logger logger = loggerProviderBuilder.build().get("logger");
+
+    ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
+        .setAttribute(EXCEPTION_MESSAGE, "custom message")
+        .setException(new Exception("error"))
+        .emit();
+
+    assertThat(exporter.getFinishedLogRecordItems())
+        .satisfiesExactly(
+            logRecord ->
+                assertThat(logRecord)
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(EXCEPTION_TYPE, "java.lang.Exception"),
+                        equalTo(EXCEPTION_MESSAGE, "custom message"),
+                        satisfies(
+                            EXCEPTION_STACKTRACE,
+                            stacktrace ->
+                                stacktrace.startsWith(
+                                    "java.lang.Exception: error" + System.lineSeparator()))));
+  }
 }

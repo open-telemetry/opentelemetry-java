@@ -9,6 +9,7 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.File;
@@ -62,7 +63,8 @@ public final class OtlpConfigUtil {
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
-      Consumer<MemoryMode> setMemoryMode) {
+      Consumer<MemoryMode> setMemoryMode,
+      Consumer<InternalTelemetryVersion> setInternalTelemetryVersion) {
     setComponentLoader.accept(config.getComponentLoader());
 
     String protocol = getOtlpProtocol(dataType, config);
@@ -107,6 +109,9 @@ public final class OtlpConfigUtil {
       setTimeout.accept(timeout);
     }
 
+    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
+    setInternalTelemetryVersion.accept(telemetryVersion);
+
     String certificatePath =
         config.getString(
             determinePropertyByType(config, "otel.exporter.otlp", dataType, "certificate"));
@@ -145,6 +150,7 @@ public final class OtlpConfigUtil {
     ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
   }
 
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   static void configureOtlpHeaders(
       ConfigProperties config, String dataType, BiConsumer<String, String> addHeader) {
     Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
@@ -157,7 +163,7 @@ public final class OtlpConfigUtil {
       try {
         // headers are encoded as URL - see
         // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
-        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
+        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.name()));
       } catch (Exception e) {
         throw new ConfigurationException("Cannot decode header value: " + value, e);
       }

@@ -190,7 +190,7 @@ public final class SdkLoggerProviderBuilder {
 
   /**
    * Sets the {@link MeterProvider} to use to generate <a
-   * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
+   * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#log-metrics">SDK Log
    * Metrics</a>.
    *
    * @since 1.58.0

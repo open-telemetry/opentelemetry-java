@@ -45,10 +45,6 @@ tasks {
         // Suggests using Guava types for fields but we don't use Guava
         disable("ImmutableMemberCollection")
 
-        // Fully qualified names may be necessary when deprecating a class to avoid
-        // deprecation warning.
-        disable("UnnecessarilyFullyQualified")
-
         // We use animal sniffer
         disable("Java8ApiChecker")
 

@@ -63,6 +63,7 @@ public final class ResourceConfiguration {
    * @param config the {@link ConfigProperties} used to obtain resource properties
    * @return the resource.
    */
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   public static Resource createEnvironmentResource(ConfigProperties config) {
     AttributesBuilder resourceAttributes = Attributes.builder();
     for (Map.Entry<String, String> entry : config.getMap(ATTRIBUTE_PROPERTY).entrySet()) {

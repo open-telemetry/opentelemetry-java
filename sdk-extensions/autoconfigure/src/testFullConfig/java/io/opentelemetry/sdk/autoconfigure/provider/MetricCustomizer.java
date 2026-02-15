@@ -55,7 +55,11 @@ public class MetricCustomizer implements AutoConfigurationCustomizerProvider {
                             || metricData
                                 .getInstrumentationScopeInfo()
                                 .getName()
-                                .startsWith("io.opentelemetry.exporters"))
+                                .startsWith("io.opentelemetry.exporters")
+                            || metricData
+                                .getInstrumentationScopeInfo()
+                                .getName()
+                                .startsWith("io.opentelemetry.sdk"))
                 .collect(Collectors.toList());
         return delegate.export(filtered);
       }

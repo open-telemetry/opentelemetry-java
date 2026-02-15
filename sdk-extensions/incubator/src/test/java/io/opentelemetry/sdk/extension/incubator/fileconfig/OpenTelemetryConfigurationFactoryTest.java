@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -55,11 +56,15 @@ import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.Closeable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -72,10 +77,16 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.event.Level;
 
 class OpenTelemetryConfigurationFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
+
+  @RegisterExtension
+  LogCapturer logCapturer =
+      LogCapturer.create()
+          .captureForLogger(OpenTelemetryConfigurationFactory.class.getName(), Level.WARN);
 
   private final DeclarativeConfigContext context =
       new DeclarativeConfigContext(
@@ -110,12 +121,38 @@ class OpenTelemetryConfigurationFactoryTest {
         Arguments.of("1.0-rc.a", false),
         Arguments.of("1.0.0", false),
         Arguments.of("1.0.3", false),
+        Arguments.of("1.0.0-rc.3", false),
         // Valid file formats
         Arguments.of("0.4", true),
         Arguments.of("1.0-rc.1", true),
         Arguments.of("1.0-rc.2", true),
         Arguments.of("1.0-rc.3", true),
         Arguments.of("1.0", true));
+  }
+
+  @Test
+  void create_FileFormatVersionMismatch_LogsWarning() {
+    OpenTelemetryConfigurationModel model =
+        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.2");
+
+    ExtendedOpenTelemetrySdk sdk =
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+    cleanup.addCloseable(sdk);
+
+    logCapturer.assertContains(
+        "Configuration file_format '1.0-rc.2' does not exactly match expected version '1.0-rc.3'");
+  }
+
+  @Test
+  void create_FileFormatExactMatch_NoWarning() {
+    OpenTelemetryConfigurationModel model =
+        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
+
+    ExtendedOpenTelemetrySdk sdk =
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+    cleanup.addCloseable(sdk);
+
+    assertThat(logCapturer.size()).isEqualTo(0);
   }
 
   @Test
@@ -174,8 +211,8 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Configured() throws NoSuchFieldException {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.resources.Resource expectedResource =
-        io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder()
+    Resource expectedResource =
+        Resource.getDefault().toBuilder()
             .put("service.name", "my-service")
             .put("key", "val")
             // resource attributes from resource ComponentProviders
@@ -280,7 +317,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .setMaxNumberOfAttributes(2)
                                         .build())
                             .addLogRecordProcessor(
-                                io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
+                                BatchLogRecordProcessor.builder(
                                         OtlpHttpLogRecordExporter.getDefault())
                                     .build())
                             .build())
@@ -298,16 +335,14 @@ class OpenTelemetryConfigurationFactoryTest {
                                     .build())
                             .setSampler(alwaysOn())
                             .addSpanProcessor(
-                                io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                                        OtlpHttpSpanExporter.getDefault())
+                                BatchSpanProcessor.builder(OtlpHttpSpanExporter.getDefault())
                                     .build())
                             .build())
                     .setMeterProvider(
                         SdkMeterProvider.builder()
                             .setResource(expectedResource)
                             .registerMetricReader(
-                                io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                                        OtlpHttpMetricExporter.getDefault())
+                                PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault())
                                     .build())
                             .registerView(
                                 InstrumentSelector.builder().setName("instrument-name").build(),

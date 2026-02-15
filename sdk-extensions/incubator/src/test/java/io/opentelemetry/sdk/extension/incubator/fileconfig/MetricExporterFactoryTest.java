@@ -324,7 +324,7 @@ class MetricExporterFactoryTest {
     LoggingMetricExporter expectedExporter = LoggingMetricExporter.create();
     cleanup.addCloseable(expectedExporter);
 
-    io.opentelemetry.sdk.metrics.export.MetricExporter exporter =
+    MetricExporter exporter =
         MetricExporterFactory.getInstance()
             .create(
                 new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),

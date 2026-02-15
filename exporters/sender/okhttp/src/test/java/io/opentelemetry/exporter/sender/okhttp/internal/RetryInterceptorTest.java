@@ -68,7 +68,7 @@ class RetryInterceptorTest {
 
   @BeforeEach
   void setUp() {
-    Logger logger = java.util.logging.Logger.getLogger(RetryInterceptor.class.getName());
+    Logger logger = Logger.getLogger(RetryInterceptor.class.getName());
     logger.setLevel(Level.FINER);
     retryExceptionPredicate =
         spy(

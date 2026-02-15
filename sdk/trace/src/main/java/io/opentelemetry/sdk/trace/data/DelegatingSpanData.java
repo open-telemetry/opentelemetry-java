@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -67,7 +68,7 @@ public abstract class DelegatingSpanData implements SpanData {
 
   @Override
   @Deprecated
-  public io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
     return delegate.getInstrumentationLibraryInfo();
   }
 

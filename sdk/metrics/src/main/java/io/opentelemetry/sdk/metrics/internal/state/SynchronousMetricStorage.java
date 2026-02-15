@@ -52,7 +52,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
     if (Aggregator.drop() == aggregator) {
       return empty();
     }
-    return new DefaultSynchronousMetricStorage<>(
+    return DefaultSynchronousMetricStorage.create(
         registeredReader,
         metricDescriptor,
         aggregator,

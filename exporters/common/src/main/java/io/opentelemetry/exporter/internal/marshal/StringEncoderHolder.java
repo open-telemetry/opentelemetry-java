@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +52,7 @@ public final class StringEncoderHolder {
     try {
       Class<?> varHandleClass =
           Class.forName("io.opentelemetry.exporter.internal.marshal.VarHandleStringEncoder");
-      java.lang.reflect.Method createMethod = varHandleClass.getMethod("createIfAvailable");
+      Method createMethod = varHandleClass.getMethod("createIfAvailable");
       return (StringEncoder) createMethod.invoke(null);
     } catch (Throwable t) {
       return null;

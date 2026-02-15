@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.internal.OtlpSpanExporterProvider;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -20,6 +21,7 @@ import io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableSpanExporterP
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -149,6 +151,7 @@ class ConfigurableSpanExporterTest {
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", "console,logging")),
             exportersByName,
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
@@ -168,9 +171,8 @@ class ConfigurableSpanExporterTest {
         TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
-            ImmutableMap.of(
-                exporterName,
-                io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.builder().build()),
+            ImmutableMap.of(exporterName, ZipkinSpanExporter.builder().build()),
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
@@ -191,7 +193,8 @@ class ConfigurableSpanExporterTest {
                 "otlp",
                 OtlpGrpcSpanExporter.builder().build(),
                 "zipkin",
-                io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.builder().build()),
+                ZipkinSpanExporter.builder().build()),
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
@@ -214,8 +217,7 @@ class ConfigurableSpanExporterTest {
                       spanExporters -> {
                         assertThat(spanExporters.length).isEqualTo(2);
                         assertThat(spanExporters)
-                            .hasAtLeastOneElementOfType(
-                                io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.class)
+                            .hasAtLeastOneElementOfType(ZipkinSpanExporter.class)
                             .hasAtLeastOneElementOfType(OtlpGrpcSpanExporter.class);
                       });
             });
@@ -234,7 +236,8 @@ class ConfigurableSpanExporterTest {
                 "logging",
                 LoggingSpanExporter.create(),
                 "zipkin",
-                io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.builder().build()),
+                ZipkinSpanExporter.builder().build()),
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
