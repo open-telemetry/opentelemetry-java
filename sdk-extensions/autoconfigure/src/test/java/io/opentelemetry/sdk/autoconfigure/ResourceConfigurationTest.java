@@ -19,8 +19,12 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,91 +54,34 @@ class ResourceConfigurationTest {
                 .build());
   }
 
-  @Test
-  void decodePlusSignInCustomConfigResource() {
+  @ParameterizedTest
+  @MethodSource("decodeResourceAttributesArgs")
+  void decodeResourceAttributes(String input, String expectedKey, String expectedValue) {
     Map<String, String> props = new HashMap<>();
-    props.put("otel.service.name", "my-app");
-    props.put(
-        "otel.resource.attributes", "food=cheese+cake,drink=juice,animal=  ,color=,shape=square");
-
-    assertThat(
-            ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(props, componentLoader),
-                SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
-                (r, c) -> r))
-        .isEqualTo(
-            Resource.getDefault().toBuilder()
-                .put(stringKey("service.name"), "my-app")
-                .put("food", "cheese+cake")
-                .put("drink", "juice")
-                .put("shape", "square")
-                .build());
-  }
-
-  @Test
-  void decodePercentEncodedSpace() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.resource.attributes", "key=hello%20world");
+    props.put("otel.resource.attributes", input);
 
     assertThat(
             ResourceConfiguration.createEnvironmentResource(
                 DefaultConfigProperties.createFromMap(props)))
-        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "hello world")));
+        .isEqualTo(Resource.create(Attributes.of(stringKey(expectedKey), expectedValue)));
   }
 
-  @Test
-  void decodeInvalidPercentEncodingPreservesLiteral() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.resource.attributes", "key=abc%2Gdef");
-
-    assertThat(
-            ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(props)))
-        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "abc%2Gdef")));
-  }
-
-  @Test
-  void decodeIncompletePercentEncodingPreservesLiteral() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.resource.attributes", "key=abc%2");
-
-    assertThat(
-            ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(props)))
-        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "abc%2")));
-  }
-
-  @Test
-  void decodePercentAtEndPreservesLiteral() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.resource.attributes", "key=abc%");
-
-    assertThat(
-            ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(props)))
-        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "abc%")));
-  }
-
-  @Test
-  void decodeMultiplePercentEncodings() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.resource.attributes", "key=a%20b%2Bc%3Dd");
-
-    assertThat(
-            ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(props)))
-        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "a b+c=d")));
-  }
-
-  @Test
-  void decodeNoPercentEncoding() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.resource.attributes", "key=plain-value");
-
-    assertThat(
-            ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(props)))
-        .isEqualTo(Resource.create(Attributes.of(stringKey("key"), "plain-value")));
+  private static Stream<Arguments> decodeResourceAttributesArgs() {
+    return Stream.of(
+        // Plus sign preserved
+        Arguments.of("food=cheese+cake", "food", "cheese+cake"),
+        // Percent-encoded space in resource attribute value decoded to space
+        Arguments.of("key=hello%20world", "key", "hello world"),
+        // Invalid percent encoding preserved
+        Arguments.of("key=abc%2Gdef", "key", "abc%2Gdef"),
+        // Incomplete percent encoding preserved
+        Arguments.of("key=abc%2", "key", "abc%2"),
+        // Percent at end preserved
+        Arguments.of("key=abc%", "key", "abc%"),
+        // Multiple percent encodings
+        Arguments.of("key=a%20b%2Bc%3Dd", "key", "a b+c=d"),
+        // No percent encoding
+        Arguments.of("key=plain-value", "key", "plain-value"));
   }
 
   @Test

@@ -11,7 +11,6 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -72,7 +71,6 @@ public final class ResourceConfiguration {
           // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
           // characters outside the baggage-octet range are percent encoded
           // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-
           decodeResourceAttributes(entry.getValue()));
     }
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);
@@ -127,34 +125,51 @@ public final class ResourceConfiguration {
     return builder.build();
   }
 
+  /**
+   * Decodes percent-encoded characters in resource attribute values per W3C Baggage spec.
+   *
+   * <p>Unlike {@link java.net.URLDecoder}, this method:
+   *
+   * <ul>
+   *   <li>Preserves '+' as a literal plus sign (URLDecoder decodes '+' as space)
+   *   <li>Preserves invalid percent sequences as literals (e.g., "%2G", "%", "%2")
+   *   <li>Supports multi-byte UTF-8 sequences (e.g., "%C3%A9" decodes to "é")
+   * </ul>
+   *
+   * @param value the percent-encoded string
+   * @return the decoded string
+   */
   private static String decodeResourceAttributes(String value) {
-    try {
-      if (value.indexOf('%') < 0) {
-        return value;
-      }
-
-      int n = value.length();
-      byte[] bytes = new byte[n];
-      int pos = 0;
-
-      for (int i = 0; i < n; i++) {
-        char c = value.charAt(i);
-        if (c == '%' && i + 2 < n) {
-          int d1 = Character.digit(value.charAt(i + 1), 16);
-          int d2 = Character.digit(value.charAt(i + 2), 16);
-          if (d1 != -1 && d2 != -1) {
-            bytes[pos++] = (byte) ((d1 << 4) + d2);
-            i += 2;
-            continue;
-          }
-        }
-        // Keep '+' as '+' and any other non-encoded chars
-        bytes[pos++] = (byte) c;
-      }
-      return new String(bytes, 0, pos, StandardCharsets.UTF_8);
-    } catch (RuntimeException e) {
-      throw new ConfigurationException("Failed to decode resource attributes: " + value, e);
+    // no percent signs means nothing to decode
+    if (value.indexOf('%') < 0) {
+      return value;
     }
+
+    int n = value.length();
+    // Use byte array to properly handle multi-byte UTF-8 sequences
+    byte[] bytes = new byte[n];
+    int pos = 0;
+
+    for (int i = 0; i < n; i++) {
+      char c = value.charAt(i);
+      // Check for percent-encoded sequence i.e. '%' followed by two hex digits
+      if (c == '%' && i + 2 < n) {
+        int d1 = Character.digit(value.charAt(i + 1), 16);
+        int d2 = Character.digit(value.charAt(i + 2), 16);
+        // Valid hex digits return 0-15, invalid returns -1
+        if (d1 != -1 && d2 != -1) {
+          // Combine two hex digits into a single byte (e.g., "2F" becomes 0x2F)
+          bytes[pos++] = (byte) ((d1 << 4) + d2);
+          // Skip the two hex digits (loop will also do i++)
+          i += 2;
+          continue;
+        }
+      }
+      // Keep '+' as '+' (unlike URLDecoder) and preserve invalid percent sequences which will be
+      // treated as literals
+      bytes[pos++] = (byte) c;
+    }
+    return new String(bytes, 0, pos, StandardCharsets.UTF_8);
   }
 
   private ResourceConfiguration() {}
