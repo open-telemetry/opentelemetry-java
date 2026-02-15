@@ -16,9 +16,9 @@ class EnvironmentSetterTest {
   @Test
   void set() {
     Map<String, String> carrier = new HashMap<>();
-    EnvironmentSetter.INSTANCE.set(carrier, "traceparent", "val1");
-    EnvironmentSetter.INSTANCE.set(carrier, "TRACESTATE", "val2");
-    EnvironmentSetter.INSTANCE.set(carrier, "Baggage", "val3");
+    EnvironmentSetter.getInstance().set(carrier, "traceparent", "val1");
+    EnvironmentSetter.getInstance().set(carrier, "TRACESTATE", "val2");
+    EnvironmentSetter.getInstance().set(carrier, "Baggage", "val3");
 
     assertThat(carrier).containsEntry("TRACEPARENT", "val1");
     assertThat(carrier).containsEntry("TRACESTATE", "val2");
@@ -26,16 +26,26 @@ class EnvironmentSetterTest {
   }
 
   @Test
+  void set_sanitization() {
+    Map<String, String> carrier = new HashMap<>();
+    EnvironmentSetter.getInstance().set(carrier, "otel.trace.id", "val1");
+    EnvironmentSetter.getInstance().set(carrier, "otel-baggage-key", "val2");
+
+    assertThat(carrier).containsEntry("OTEL_TRACE_ID", "val1");
+    assertThat(carrier).containsEntry("OTEL_BAGGAGE_KEY", "val2");
+  }
+
+  @Test
   void set_null() {
     Map<String, String> carrier = new HashMap<>();
-    EnvironmentSetter.INSTANCE.set(null, "key", "val");
-    EnvironmentSetter.INSTANCE.set(carrier, null, "val");
-    EnvironmentSetter.INSTANCE.set(carrier, "key", null);
+    EnvironmentSetter.getInstance().set(null, "key", "val");
+    EnvironmentSetter.getInstance().set(carrier, null, "val");
+    EnvironmentSetter.getInstance().set(carrier, "key", null);
     assertThat(carrier).isEmpty();
   }
 
   @Test
   void testToString() {
-    assertThat(EnvironmentSetter.INSTANCE.toString()).isEqualTo("EnvironmentSetter");
+    assertThat(EnvironmentSetter.getInstance().toString()).isEqualTo("EnvironmentSetter");
   }
 }
