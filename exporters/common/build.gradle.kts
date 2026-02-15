@@ -84,10 +84,11 @@ val testJavaVersion: String? by project
 
 testing {
   suites {
-    register<JvmTestSuite>("testHttpSenderProvider") {
+    register<JvmTestSuite>("testSenderProvider") {
       dependencies {
         implementation(project(":exporters:sender:jdk"))
         implementation(project(":exporters:sender:okhttp"))
+        implementation(project(":exporters:sender:grpc-managed-channel"))
       }
       targets {
         all {
@@ -95,18 +96,6 @@ testing {
             enabled = !testJavaVersion.equals("8")
           }
         }
-      }
-    }
-  }
-  suites {
-    register<JvmTestSuite>("testGrpcSenderProvider") {
-      dependencies {
-        implementation(project(":exporters:sender:okhttp"))
-        implementation(project(":exporters:sender:grpc-managed-channel"))
-
-        implementation("io.grpc:grpc-stub")
-        implementation("io.grpc:grpc-netty")
-        implementation("com.fasterxml.jackson.core:jackson-core")
       }
     }
   }
@@ -131,7 +120,7 @@ tasks {
 }
 
 afterEvaluate {
-  tasks.named<JavaCompile>("compileTestHttpSenderProviderJava") {
+  tasks.named<JavaCompile>("compileTestSenderProviderJava") {
     options.release.set(11)
   }
 }

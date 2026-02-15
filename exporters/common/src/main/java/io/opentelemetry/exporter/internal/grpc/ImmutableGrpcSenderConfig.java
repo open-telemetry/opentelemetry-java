@@ -18,11 +18,15 @@ import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 @AutoValue
-abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderConfig {
+public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderConfig {
 
   @SuppressWarnings("TooManyParameters")
-  static ImmutableGrpcSenderConfig create(
+  public static ImmutableGrpcSenderConfig create(
       URI endpoint,
       String fullMethodName,
       @Nullable Compressor compressor,
