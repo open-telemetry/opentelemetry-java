@@ -230,8 +230,11 @@ class YamlDeclarativeConfigPropertiesTest {
     assertThat(otherProps.getDouble("str_key")).isNull();
     assertThat(otherProps.getBoolean("str_key")).isNull();
     assertThat(otherProps.getScalarList("str_key", String.class)).isNull();
+    assertThat(otherProps.getScalarList("str_list_key", Long.class)).isNull();
     assertThat(otherProps.getStructured("str_key")).isNull();
     assertThat(otherProps.getStructuredList("str_key")).isNull();
+    assertThat(otherProps.getStructured("str_list_key")).isNull();
+    assertThat(otherProps.getStructuredList("map_key")).isNull();
 
     assertWarning("Ignoring value for key [int_key] because it is Integer instead of String: 1");
     assertWarning(
@@ -240,6 +243,8 @@ class YamlDeclarativeConfigPropertiesTest {
         "Ignoring value for key [str_key] because it is String instead of Double: str_value");
     assertWarning(
         "Ignoring value for key [str_key] because it is String instead of Boolean: str_value");
+    assertWarning(
+        "Ignoring value for key [str_list_key] because it is String instead of Long: val1");
   }
 
   private void assertWarning(String message) {
