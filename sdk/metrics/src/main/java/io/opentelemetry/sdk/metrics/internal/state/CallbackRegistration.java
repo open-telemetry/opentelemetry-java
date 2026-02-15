@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * A registered callback.
@@ -29,11 +30,13 @@ public final class CallbackRegistration {
   private final Runnable callback;
   private final List<InstrumentDescriptor> instrumentDescriptors;
   private final boolean hasStorages;
+  @Nullable private final ClassLoader contextClassLoader;
 
   private CallbackRegistration(
       List<SdkObservableMeasurement> observableMeasurements, Runnable callback) {
     this.observableMeasurements = observableMeasurements;
     this.callback = callback;
+    this.contextClassLoader = Thread.currentThread().getContextClassLoader();
     this.instrumentDescriptors =
         observableMeasurements.stream()
             .map(SdkObservableMeasurement::getInstrumentDescriptor)
@@ -80,6 +83,10 @@ public final class CallbackRegistration {
     observableMeasurements.forEach(
         observableMeasurement ->
             observableMeasurement.setActiveReader(reader, startEpochNanos, epochNanos));
+    // Restore the context class loader that was active when the callback was registered.
+    Thread currentThread = Thread.currentThread();
+    ClassLoader previousContextClassLoader = currentThread.getContextClassLoader();
+    currentThread.setContextClassLoader(contextClassLoader);
     try {
       callback.run();
     } catch (Throwable e) {
@@ -87,6 +94,7 @@ public final class CallbackRegistration {
       throttlingLogger.log(
           Level.WARNING, "An exception occurred invoking callback for " + this + ".", e);
     } finally {
+      currentThread.setContextClassLoader(previousContextClassLoader);
       observableMeasurements.forEach(SdkObservableMeasurement::unsetActiveReader);
     }
   }
