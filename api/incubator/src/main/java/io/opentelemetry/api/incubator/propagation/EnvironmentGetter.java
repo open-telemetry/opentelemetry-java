@@ -20,7 +20,7 @@ import javax.annotation.concurrent.Immutable;
  * TRACESTATE}, {@code BAGGAGE}). This getter translates keys to uppercase and replaces characters
  * not allowed in environment variables (e.g., {@code .} and {@code -}) with underscores before
  * looking them up in the carrier.
-
+ *
  * @see <a href=
  *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/context/env-carriers.md#format-restrictions">Environment
  *     Variable Format Restrictions</a>
