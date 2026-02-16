@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
@@ -13,7 +16,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.YamlObjectMapper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
@@ -51,6 +53,31 @@ import org.snakeyaml.engine.v2.schema.CoreSchema;
  * <a
  * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#yaml-file-format">YAML
  * configuration file</a>.
+ *
+ * <h2>For Implementers</h2>
+ *
+ * <p>External consumers needing to parse OpenTelemetry YAML configuration files should use the same
+ * Jackson ObjectMapper configuration for compatibility. This configuration is intentionally not
+ * exposed as API to avoid coupling. Instead, copy the following setup:
+ *
+ * <pre>{@code
+ * ObjectMapper mapper = new ObjectMapper()
+ *     // Create empty object instances for keys which are present but have null values
+ *     .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+ * // Boxed primitives which are present but have null values should be set to null,
+ * // rather than empty instances
+ * mapper.configOverride(String.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Integer.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Double.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * }</pre>
+ *
+ * <p><b>Why this configuration:</b>
+ *
+ * <ul>
+ *   <li>Default behavior creates empty objects for null values to match YAML schema expectations
+ *   <li>Boxed primitives remain null to distinguish between absent and explicitly null values
+ * </ul>
  */
 public final class DeclarativeConfiguration {
 
@@ -59,6 +86,35 @@ public final class DeclarativeConfiguration {
       Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
+
+  /**
+   * ObjectMapper configured for YAML declarative configuration parsing.
+   *
+   * <p>Configuration:
+   *
+   * <ul>
+   *   <li>Default: Creates empty objects for present keys with null values
+   *   <li>Boxed primitives (String, Integer, Double, Boolean): Remain null when null
+   * </ul>
+   *
+   * <p>External consumers needing compatible parsing should copy this configuration. See class
+   * javadoc for details and code example.
+   */
+  // Visible for testing
+  static final ObjectMapper MAPPER;
+
+  static {
+    MAPPER =
+        new ObjectMapper()
+            // Create empty object instances for keys which are present but have null values
+            .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+    // Boxed primitives which are present but have null values should be set to null, rather than
+    // empty instances
+    MAPPER.configOverride(String.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+    MAPPER.configOverride(Integer.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+    MAPPER.configOverride(Double.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+    MAPPER.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+  }
 
   private DeclarativeConfiguration() {}
 
@@ -140,8 +196,7 @@ public final class DeclarativeConfiguration {
   static OpenTelemetryConfigurationModel parse(
       InputStream configuration, Map<String, String> environmentVariables) {
     Object yamlObj = loadYaml(configuration, environmentVariables);
-    return YamlObjectMapper.getInstance()
-        .convertValue(yamlObj, OpenTelemetryConfigurationModel.class);
+    return MAPPER.convertValue(yamlObj, OpenTelemetryConfigurationModel.class);
   }
 
   // Visible for testing
@@ -175,8 +230,7 @@ public final class DeclarativeConfiguration {
   static DeclarativeConfigProperties toConfigProperties(
       Object model, ComponentLoader componentLoader) {
     Map<String, Object> configurationMap =
-        YamlObjectMapper.getInstance()
-            .convertValue(model, new TypeReference<Map<String, Object>>() {});
+        MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
     if (configurationMap == null) {
       configurationMap = Collections.emptyMap();
     }
@@ -197,10 +251,8 @@ public final class DeclarativeConfiguration {
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
         requireYamlDeclarativeConfigProperties(genericSamplerModel);
     SamplerModel samplerModel =
-        YamlObjectMapper.getInstance()
-            .convertValue(
-                DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties),
-                SamplerModel.class);
+        MAPPER.convertValue(
+            DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
         DeclarativeConfigContext.create(yamlDeclarativeConfigProperties.getComponentLoader()),
