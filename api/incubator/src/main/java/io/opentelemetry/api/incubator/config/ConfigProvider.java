@@ -66,16 +66,24 @@ public interface ConfigProvider {
   }
 
   /**
-   * Registers an {@link InstrumentationConfigChangeListener} to receive updates when
-   * instrumentation configuration changes.
+   * Registers a {@link ConfigChangeListener} for changes to a specific declarative configuration
+   * path.
+   *
+   * <p>Example paths include {@code .instrumentation/development.general.http} and {@code
+   * .instrumentation/development.java.methods}.
+   *
+   * <p>When a watched path changes, {@link ConfigChangeListener#onChange(String,
+   * DeclarativeConfigProperties)} is invoked with the changed path and updated configuration for
+   * that path.
    *
    * <p>The default implementation performs no registration and returns a no-op handle.
    *
-   * @param listener the listener to notify when instrumentation configuration changes
-   * @return an {@link AutoCloseable} handle that can be closed to unregister the listener
+   * @param path the declarative configuration path to watch
+   * @param listener the listener to notify when the watched path changes
+   * @return a {@link ConfigChangeRegistration} that can be closed to unregister the listener
    */
-  default AutoCloseable addInstrumentationConfigChangeListener(
-      InstrumentationConfigChangeListener listener) {
+  default ConfigChangeRegistration addConfigChangeListener(
+      String path, ConfigChangeListener listener) {
     return () -> {};
   }
 
