@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * A {@link TextMapGetter} that extracts context from a map carrier, intended for use with
@@ -25,7 +24,6 @@ import javax.annotation.concurrent.Immutable;
  *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/context/env-carriers.md#format-restrictions">Environment
  *     Variable Format Restrictions</a>
  */
-@Immutable
 public final class EnvironmentGetter implements TextMapGetter<Map<String, String>> {
 
   private static final EnvironmentGetter INSTANCE = new EnvironmentGetter();
