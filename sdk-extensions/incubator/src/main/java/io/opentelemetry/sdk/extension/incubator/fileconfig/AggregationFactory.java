@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggreg
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import java.util.List;
 
 final class AggregationFactory implements Factory<AggregationModel, Aggregation> {
@@ -44,8 +45,10 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
       if (maxSize == null) {
         maxSize = 160;
       }
+      Boolean recordMinMax = exponentialBucketHistogram.getRecordMinMax();
+      boolean shouldRecordMinMax = recordMinMax != null ? recordMinMax : true;
       try {
-        return Aggregation.base2ExponentialBucketHistogram(maxSize, maxScale);
+        return Aggregation.base2ExponentialBucketHistogram(maxSize, maxScale, shouldRecordMinMax);
       } catch (IllegalArgumentException e) {
         throw new DeclarativeConfigException("Invalid exponential bucket histogram", e);
       }
@@ -54,11 +57,15 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
         model.getExplicitBucketHistogram();
     if (explicitBucketHistogram != null) {
       List<Double> boundaries = explicitBucketHistogram.getBoundaries();
+      Boolean recordMinMax = explicitBucketHistogram.getRecordMinMax();
+      boolean shouldRecordMinMax = recordMinMax != null ? recordMinMax : true;
       if (boundaries == null) {
-        return Aggregation.explicitBucketHistogram();
+        // Use default boundaries with recordMinMax parameter
+        return Aggregation.explicitBucketHistogram(
+            ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES, shouldRecordMinMax);
       }
       try {
-        return Aggregation.explicitBucketHistogram(boundaries);
+        return Aggregation.explicitBucketHistogram(boundaries, shouldRecordMinMax);
       } catch (IllegalArgumentException e) {
         throw new DeclarativeConfigException("Invalid explicit bucket histogram", e);
       }

@@ -70,7 +70,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   private void init(MemoryMode memoryMode) {
     aggregator =
         new DoubleExplicitBucketHistogramAggregator(
-            boundaries, ExemplarReservoirFactory.noSamples(), memoryMode);
+            boundaries, /* recordMinMax= */ true, ExemplarReservoirFactory.noSamples(), memoryMode);
   }
 
   @ParameterizedTest
@@ -123,7 +123,8 @@ class DoubleExplicitBucketHistogramAggregatorTest {
     List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndResetDoubles(Attributes.empty())).thenReturn(exemplars);
     DoubleExplicitBucketHistogramAggregator aggregator =
-        new DoubleExplicitBucketHistogramAggregator(boundaries, reservoirFactory, memoryMode);
+        new DoubleExplicitBucketHistogramAggregator(
+            boundaries, /* recordMinMax= */ true, reservoirFactory, memoryMode);
     AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(

@@ -28,23 +28,30 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
 
   private static final Aggregation DEFAULT =
       new ExplicitBucketHistogramAggregation(
-          ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+          ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES,
+          /* recordMinMax= */ true);
 
   public static Aggregation getDefault() {
     return DEFAULT;
   }
 
   public static Aggregation create(List<Double> bucketBoundaries) {
-    return new ExplicitBucketHistogramAggregation(bucketBoundaries);
+    return new ExplicitBucketHistogramAggregation(bucketBoundaries, /* recordMinMax= */ true);
+  }
+
+  public static Aggregation create(List<Double> bucketBoundaries, boolean recordMinMax) {
+    return new ExplicitBucketHistogramAggregation(bucketBoundaries, recordMinMax);
   }
 
   private final List<Double> bucketBoundaries;
   private final double[] bucketBoundaryArray;
+  private final boolean recordMinMax;
 
-  private ExplicitBucketHistogramAggregation(List<Double> bucketBoundaries) {
+  private ExplicitBucketHistogramAggregation(List<Double> bucketBoundaries, boolean recordMinMax) {
     this.bucketBoundaries = bucketBoundaries;
     // We need to fail here if our bucket boundaries are ill-configured.
     this.bucketBoundaryArray = ExplicitBucketHistogramUtils.createBoundaryArray(bucketBoundaries);
+    this.recordMinMax = recordMinMax;
   }
 
   @Override
@@ -56,6 +63,7 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
     return (Aggregator<T>)
         new DoubleExplicitBucketHistogramAggregator(
             bucketBoundaryArray,
+            recordMinMax,
             ExemplarReservoirFactory.filtered(
                 exemplarFilter,
                 ExemplarReservoirFactory.histogramBucketReservoir(

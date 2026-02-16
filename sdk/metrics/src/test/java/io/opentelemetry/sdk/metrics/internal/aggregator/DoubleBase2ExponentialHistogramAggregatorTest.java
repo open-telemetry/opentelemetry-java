@@ -82,10 +82,14 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     for (MemoryMode memoryMode : MemoryMode.values()) {
       parameters.add(
           new DoubleBase2ExponentialHistogramAggregator(
-              ExemplarReservoirFactory.noSamples(), 160, 20, memoryMode));
+              ExemplarReservoirFactory.noSamples(), 160, 20, /* recordMinMax= */ true, memoryMode));
       parameters.add(
           new DoubleBase2ExponentialHistogramAggregator(
-              ExemplarReservoirFactory.noSamples(), 160, MAX_SCALE, memoryMode));
+              ExemplarReservoirFactory.noSamples(),
+              160,
+              MAX_SCALE,
+              /* recordMinMax= */ true,
+              memoryMode));
     }
     return parameters.stream();
   }
@@ -98,7 +102,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   private void initialize(MemoryMode memoryMode) {
     aggregator =
         new DoubleBase2ExponentialHistogramAggregator(
-            ExemplarReservoirFactory.noSamples(), 160, 20, memoryMode);
+            ExemplarReservoirFactory.noSamples(), 160, 20, /* recordMinMax= */ true, memoryMode);
   }
 
   @ParameterizedTest
@@ -230,7 +234,8 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset_WithExemplars(MemoryMode memoryMode) {
     DoubleBase2ExponentialHistogramAggregator agg =
-        new DoubleBase2ExponentialHistogramAggregator(reservoirFactory, 160, MAX_SCALE, memoryMode);
+        new DoubleBase2ExponentialHistogramAggregator(
+            reservoirFactory, 160, MAX_SCALE, /* recordMinMax= */ true, memoryMode);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -348,7 +353,8 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
         .thenReturn(Collections.singletonList(exemplar));
 
     DoubleBase2ExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleBase2ExponentialHistogramAggregator(reservoirFactory, 160, MAX_SCALE, memoryMode);
+        new DoubleBase2ExponentialHistogramAggregator(
+            reservoirFactory, 160, MAX_SCALE, /* recordMinMax= */ true, memoryMode);
 
     AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle =
         cumulativeAggregator.createHandle();

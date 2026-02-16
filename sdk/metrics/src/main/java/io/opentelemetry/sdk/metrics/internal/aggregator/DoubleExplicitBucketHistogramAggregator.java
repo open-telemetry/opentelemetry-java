@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 public final class DoubleExplicitBucketHistogramAggregator
     implements Aggregator<HistogramPointData> {
   private final double[] boundaries;
+  private final boolean recordMinMax;
   private final MemoryMode memoryMode;
 
   // a cache for converting to MetricData
@@ -49,12 +50,17 @@ public final class DoubleExplicitBucketHistogramAggregator
    * Constructs an explicit bucket histogram aggregator.
    *
    * @param boundaries Bucket boundaries, in-order.
+   * @param recordMinMax whether to record min and max values
    * @param reservoirFactory Supplier of exemplar reservoirs per-stream.
    * @param memoryMode The {@link MemoryMode} to use in this aggregator.
    */
   public DoubleExplicitBucketHistogramAggregator(
-      double[] boundaries, ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      double[] boundaries,
+      boolean recordMinMax,
+      ExemplarReservoirFactory reservoirFactory,
+      MemoryMode memoryMode) {
     this.boundaries = boundaries;
+    this.recordMinMax = recordMinMax;
     this.memoryMode = memoryMode;
 
     List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
@@ -67,7 +73,7 @@ public final class DoubleExplicitBucketHistogramAggregator
 
   @Override
   public AggregatorHandle<HistogramPointData> createHandle() {
-    return new Handle(boundaryList, boundaries, reservoirFactory, memoryMode);
+    return new Handle(boundaryList, boundaries, recordMinMax, reservoirFactory, memoryMode);
   }
 
   @Override
@@ -91,6 +97,8 @@ public final class DoubleExplicitBucketHistogramAggregator
     private final List<Double> boundaryList;
     // read-only
     private final double[] boundaries;
+    // read-only
+    private final boolean recordMinMax;
 
     private final Object lock = new Object();
 
@@ -115,11 +123,13 @@ public final class DoubleExplicitBucketHistogramAggregator
     Handle(
         List<Double> boundaryList,
         double[] boundaries,
+        boolean recordMinMax,
         ExemplarReservoirFactory reservoirFactory,
         MemoryMode memoryMode) {
       super(reservoirFactory, /* isDoubleType= */ true);
       this.boundaryList = boundaryList;
       this.boundaries = boundaries;
+      this.recordMinMax = recordMinMax;
       this.counts = new long[this.boundaries.length + 1];
       this.sum = 0;
       this.min = Double.MAX_VALUE;
@@ -156,10 +166,10 @@ public final class DoubleExplicitBucketHistogramAggregator
                   epochNanos,
                   attributes,
                   sum,
-                  this.count > 0,
-                  this.min,
-                  this.count > 0,
-                  this.max,
+                  recordMinMax && this.count > 0,
+                  recordMinMax ? this.min : 0,
+                  recordMinMax && this.count > 0,
+                  recordMinMax ? this.max : 0,
                   boundaryList,
                   PrimitiveLongList.wrap(Arrays.copyOf(counts, counts.length)),
                   exemplars);
@@ -170,10 +180,10 @@ public final class DoubleExplicitBucketHistogramAggregator
                   epochNanos,
                   attributes,
                   sum,
-                  this.count > 0,
-                  this.min,
-                  this.count > 0,
-                  this.max,
+                  recordMinMax && this.count > 0,
+                  recordMinMax ? this.min : 0,
+                  recordMinMax && this.count > 0,
+                  recordMinMax ? this.max : 0,
                   boundaryList,
                   counts,
                   exemplars);
@@ -195,8 +205,10 @@ public final class DoubleExplicitBucketHistogramAggregator
 
       synchronized (lock) {
         this.sum += value;
-        this.min = Math.min(this.min, value);
-        this.max = Math.max(this.max, value);
+        if (recordMinMax) {
+          this.min = Math.min(this.min, value);
+          this.max = Math.max(this.max, value);
+        }
         this.count++;
         this.counts[bucketIndex]++;
       }
