@@ -287,4 +287,27 @@ class DoubleExplicitBucketHistogramAggregatorTest {
     // The point data instance should be reused
     assertThat(anotherPointData).isSameAs(pointData);
   }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testRecordMinMaxDisabled(MemoryMode memoryMode) {
+    DoubleExplicitBucketHistogramAggregator aggregator =
+        new DoubleExplicitBucketHistogramAggregator(
+            boundaries,
+            /* recordMinMax= */ false,
+            ExemplarReservoirFactory.noSamples(),
+            memoryMode);
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    aggregatorHandle.recordLong(20, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(5, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(150, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(2000, Attributes.empty(), Context.current());
+    HistogramPointData point =
+        aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
+    assertThat(point.getSum()).isEqualTo(2175);
+    assertThat(point.hasMin()).isFalse();
+    assertThat(point.hasMax()).isFalse();
+    assertThat(point.getBoundaries()).isEqualTo(boundariesList);
+    assertThat(point.getCounts()).isEqualTo(Arrays.asList(1L, 1L, 1L, 1L));
+  }
 }
