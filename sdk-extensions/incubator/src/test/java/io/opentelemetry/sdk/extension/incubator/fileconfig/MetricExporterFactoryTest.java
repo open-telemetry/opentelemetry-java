@@ -397,7 +397,9 @@ class MetricExporterFactoryTest {
   @Test
   void create_CustomizerReturnsNull() {
     // Set up a customizer that returns null
-    context.setMetricExporterCustomizer((name, exporter) -> null);
+    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+    builder.addMetricExporterCustomizer((name, exporter) -> null);
+    context.setBuilder(builder);
 
     assertThatThrownBy(
             () ->

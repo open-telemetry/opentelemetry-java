@@ -31,13 +31,7 @@ class DeclarativeConfigContext {
   @Nullable private volatile MeterProvider meterProvider;
   @Nullable private Resource resource = null;
   @Nullable private List<ComponentProvider> componentProviders = null;
-
-  private BiFunction<String, SpanExporter, SpanExporter> spanExporterCustomizer =
-      (name, exporter) -> exporter;
-  private BiFunction<String, MetricExporter, MetricExporter> metricExporterCustomizer =
-      (name, exporter) -> exporter;
-  private BiFunction<String, LogRecordExporter, LogRecordExporter> logRecordExporterCustomizer =
-      (name, exporter) -> exporter;
+  @Nullable private DeclarativeConfigurationBuilder builder = null;
 
   // Visible for testing
   DeclarativeConfigContext(SpiHelper spiHelper) {
@@ -82,29 +76,22 @@ class DeclarativeConfigContext {
     this.resource = resource;
   }
 
-  void setSpanExporterCustomizer(BiFunction<String, SpanExporter, SpanExporter> customizer) {
-    this.spanExporterCustomizer = customizer;
+  void setBuilder(DeclarativeConfigurationBuilder builder) {
+    this.builder = builder;
   }
 
   BiFunction<String, SpanExporter, SpanExporter> getSpanExporterCustomizer() {
-    return spanExporterCustomizer;
-  }
-
-  void setMetricExporterCustomizer(BiFunction<String, MetricExporter, MetricExporter> customizer) {
-    this.metricExporterCustomizer = customizer;
+    return builder != null ? builder.getSpanExporterCustomizer() : (name, exporter) -> exporter;
   }
 
   BiFunction<String, MetricExporter, MetricExporter> getMetricExporterCustomizer() {
-    return metricExporterCustomizer;
-  }
-
-  void setLogRecordExporterCustomizer(
-      BiFunction<String, LogRecordExporter, LogRecordExporter> customizer) {
-    this.logRecordExporterCustomizer = customizer;
+    return builder != null ? builder.getMetricExporterCustomizer() : (name, exporter) -> exporter;
   }
 
   BiFunction<String, LogRecordExporter, LogRecordExporter> getLogRecordExporterCustomizer() {
-    return logRecordExporterCustomizer;
+    return builder != null
+        ? builder.getLogRecordExporterCustomizer()
+        : (name, exporter) -> exporter;
   }
 
   SpiHelper getSpiHelper() {

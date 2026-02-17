@@ -360,11 +360,13 @@ class SpanExporterFactoryTest {
   @Test
   void create_CustomizerApplied() {
     // Set up a customizer that wraps the exporter
-    context.setSpanExporterCustomizer(
+    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+    builder.addSpanExporterCustomizer(
         (name, exporter) -> {
           assertThat(name).isEqualTo("console");
           return new SpanExporterWrapper(exporter, "customized");
         });
+    context.setBuilder(builder);
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
@@ -378,7 +380,9 @@ class SpanExporterFactoryTest {
   @Test
   void create_CustomizerReturnsNull() {
     // Set up a customizer that returns null
-    context.setSpanExporterCustomizer((name, exporter) -> null);
+    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+    builder.addSpanExporterCustomizer((name, exporter) -> null);
+    context.setBuilder(builder);
 
     assertThatThrownBy(
             () ->

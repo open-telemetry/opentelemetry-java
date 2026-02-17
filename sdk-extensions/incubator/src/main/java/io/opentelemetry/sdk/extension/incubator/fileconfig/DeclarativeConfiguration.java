@@ -128,10 +128,7 @@ public final class DeclarativeConfiguration {
       provider.customize(builder);
     }
 
-    // Pass exporter customizers to context
-    context.setSpanExporterCustomizer(builder.getSpanExporterCustomizer());
-    context.setMetricExporterCustomizer(builder.getMetricExporterCustomizer());
-    context.setLogRecordExporterCustomizer(builder.getLogRecordExporterCustomizer());
+    context.setBuilder(builder);
 
     ExtendedOpenTelemetrySdk sdk =
         createAndMaybeCleanup(

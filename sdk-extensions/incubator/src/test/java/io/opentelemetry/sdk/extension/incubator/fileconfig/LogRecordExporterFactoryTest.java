@@ -347,7 +347,9 @@ class LogRecordExporterFactoryTest {
   @Test
   void create_CustomizerReturnsNull() {
     // Set up a customizer that returns null
-    context.setLogRecordExporterCustomizer((name, exporter) -> null);
+    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+    builder.addLogRecordExporterCustomizer((name, exporter) -> null);
+    context.setBuilder(builder);
 
     assertThatThrownBy(
             () ->

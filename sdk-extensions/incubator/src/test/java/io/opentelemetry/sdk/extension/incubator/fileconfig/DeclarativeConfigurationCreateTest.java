@@ -235,7 +235,7 @@ class DeclarativeConfigurationCreateTest {
         DeclarativeConfigContext.create(
             ComponentLoader.forClassLoader(
                 DeclarativeConfigurationCreateTest.class.getClassLoader()));
-    context.setSpanExporterCustomizer(builder.getSpanExporterCustomizer());
+    context.setBuilder(builder);
 
     ExtendedOpenTelemetrySdk sdk =
         DeclarativeConfiguration.createAndMaybeCleanup(
@@ -282,7 +282,7 @@ class DeclarativeConfigurationCreateTest {
         DeclarativeConfigContext.create(
             ComponentLoader.forClassLoader(
                 DeclarativeConfigurationCreateTest.class.getClassLoader()));
-    context.setSpanExporterCustomizer(builder.getSpanExporterCustomizer());
+    context.setBuilder(builder);
 
     ExtendedOpenTelemetrySdk sdk =
         DeclarativeConfiguration.createAndMaybeCleanup(
