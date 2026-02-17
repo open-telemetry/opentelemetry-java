@@ -8,11 +8,16 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
+import io.opentelemetry.sdk.common.export.GrpcSender;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,23 +33,23 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private static final String WORKER_THREAD_NAME =
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
+  private static final String TYPE = "remoteSampling";
 
   private final String serviceName;
-
   private final ScheduledExecutorService pollExecutor;
   private final ScheduledFuture<?> pollFuture;
 
   private volatile Sampler sampler;
 
-  private final GrpcService delegate;
+  private final GrpcSender grpcSender;
 
   JaegerRemoteSampler(
-      GrpcService delegate,
+      GrpcSender grpcSender,
       @Nullable String serviceName,
       int pollingIntervalMs,
       Sampler initialSampler) {
     this.serviceName = serviceName != null ? serviceName : "";
-    this.delegate = delegate;
+    this.grpcSender = grpcSender;
     this.sampler = initialSampler;
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     pollFuture =
@@ -64,17 +69,73 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   }
 
   private void getAndUpdateSampler() {
+    SamplingStrategyParametersMarshaler marshaler =
+        SamplingStrategyParametersMarshaler.create(this.serviceName);
     try {
-      SamplingStrategyResponseUnMarshaler samplingStrategyResponseUnMarshaler =
-          delegate.execute(
-              SamplingStrategyParametersMarshaler.create(this.serviceName),
-              new SamplingStrategyResponseUnMarshaler());
-      SamplingStrategyResponse response = samplingStrategyResponseUnMarshaler.get();
-      if (response != null) {
-        this.sampler = updateSampler(response);
-      }
-    } catch (Throwable e) { // keep the timer thread alive
+      MessageWriter messageWriter = marshaler.toBinaryMessageWriter();
+      grpcSender.send(messageWriter, this::onResponse, JaegerRemoteSampler::onError);
+    } catch (Throwable e) { // Catch all to ensure scheduled task continues
       logger.log(Level.WARNING, "Failed to update sampler", e);
+    }
+  }
+
+  private void onResponse(GrpcResponse grpcResponse) {
+    GrpcStatusCode statusCode = grpcResponse.getStatusCode();
+
+    if (statusCode == GrpcStatusCode.OK) {
+      try {
+        SamplingStrategyResponse strategyResponse =
+            SamplingStrategyResponseUnMarshaler.read(grpcResponse.getResponseMessage());
+        sampler = updateSampler(strategyResponse);
+      } catch (IOException e) {
+        logger.log(Level.WARNING, "Failed to unmarshal strategy response", e);
+      }
+      return;
+    }
+
+    switch (statusCode) {
+      case UNIMPLEMENTED:
+        logger.log(
+            Level.SEVERE,
+            "Failed to execute "
+                + TYPE
+                + "s. Server responded with UNIMPLEMENTED. "
+                + "Full error message: "
+                + grpcResponse.getStatusDescription());
+        break;
+      case UNAVAILABLE:
+        logger.log(
+            Level.SEVERE,
+            "Failed to execute "
+                + TYPE
+                + "s. Server is UNAVAILABLE. "
+                + "Make sure your service is running and reachable from this network. "
+                + "Full error message: "
+                + grpcResponse.getStatusDescription());
+        break;
+      default:
+        logger.log(
+            Level.WARNING,
+            "Failed to execute "
+                + TYPE
+                + "s. Server responded with gRPC status code "
+                + statusCode.name()
+                + ". Error message: "
+                + grpcResponse.getStatusDescription());
+        break;
+    }
+  }
+
+  private static void onError(Throwable e) {
+    logger.log(
+        Level.SEVERE,
+        "Failed to execute "
+            + TYPE
+            + "s. The request could not be executed. Error message: "
+            + e.getMessage(),
+        e);
+    if (logger.isLoggable(Level.FINEST)) {
+      logger.log(Level.FINEST, "Failed to execute " + TYPE + "s. Details follow: " + e);
     }
   }
 
@@ -124,6 +185,6 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   public void close() {
     pollFuture.cancel(true);
     pollExecutor.shutdownNow();
-    delegate.shutdown();
+    grpcSender.shutdown();
   }
 }

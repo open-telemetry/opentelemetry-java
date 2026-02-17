@@ -6,10 +6,10 @@
 package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.SenderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -49,10 +49,6 @@ public final class HttpExporterBuilder {
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
 
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
-  private static final String OLD_SPI_PROPERTY =
-      "io.opentelemetry.exporter.internal.http.HttpSenderProvider";
-  private static final String SPI_PROPERTY =
-      "io.opentelemetry.sdk.common.export.HttpSenderProvider";
 
   private StandardComponentId.ExporterType exporterType;
 
@@ -235,7 +231,7 @@ public final class HttpExporterBuilder {
         };
 
     boolean isPlainHttp = endpoint.getScheme().equals("http");
-    HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
+    HttpSenderProvider httpSenderProvider = SenderUtil.resolveHttpSenderProvider(componentLoader);
     HttpSender httpSender =
         httpSenderProvider.createSender(
             ImmutableHttpSenderConfig.create(
@@ -298,77 +294,5 @@ public final class HttpExporterBuilder {
   @Override
   public String toString() {
     return toString(true);
-  }
-
-  /**
-   * Resolve the {@link HttpSenderProvider}.
-   *
-   * <p>If no {@link HttpSenderProvider} is available, throw {@link IllegalStateException}.
-   *
-   * <p>If only one {@link HttpSenderProvider} is available, use it.
-   *
-   * <p>If multiple are available and..
-   *
-   * <ul>
-   *   <li>{@code io.opentelemetry.sdk.common.export.HttpSenderProvider} is empty, use the first
-   *       found.
-   *   <li>{@code io.opentelemetry.sdk.common.export.HttpSenderProvider} is set, use the matching
-   *       provider. If none match, throw {@link IllegalStateException}.
-   * </ul>
-   */
-  private HttpSenderProvider resolveHttpSenderProvider() {
-    Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
-    for (HttpSenderProvider spi : componentLoader.load(HttpSenderProvider.class)) {
-      httpSenderProviders.put(spi.getClass().getName(), spi);
-    }
-
-    // No provider on classpath, throw
-    if (httpSenderProviders.isEmpty()) {
-      throw new IllegalStateException(
-          "No HttpSenderProvider found on classpath. Please add dependency on "
-              + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-jdk");
-    }
-
-    // Exactly one provider on classpath, use it
-    if (httpSenderProviders.size() == 1) {
-      return httpSenderProviders.values().stream().findFirst().get();
-    }
-
-    // If we've reached here, there are multiple HttpSenderProviders
-    String configuredSender = ConfigUtil.getString(SPI_PROPERTY, "");
-    // TODO: remove support for reading OLD_SPI_PROPERTY after 1.61.0
-    if (configuredSender.isEmpty()) {
-      configuredSender = ConfigUtil.getString(OLD_SPI_PROPERTY, "");
-      if (configuredSender.isEmpty()) {
-        LOGGER.log(
-            Level.WARNING,
-            OLD_SPI_PROPERTY
-                + " was used to set HttpSenderProvider. Please use "
-                + SPI_PROPERTY
-                + " instead. "
-                + OLD_SPI_PROPERTY
-                + " will be removed after 1.61.0");
-      }
-    }
-
-    // Multiple providers but none configured, use first we find and log a warning
-    if (configuredSender.isEmpty()) {
-      LOGGER.log(
-          Level.WARNING,
-          "Multiple HttpSenderProvider found. Please include only one, "
-              + "or specify preference setting "
-              + SPI_PROPERTY
-              + " to the FQCN of the preferred provider.");
-      return httpSenderProviders.values().stream().findFirst().get();
-    }
-
-    // Multiple providers with configuration match, use configuration match
-    if (httpSenderProviders.containsKey(configuredSender)) {
-      return httpSenderProviders.get(configuredSender);
-    }
-
-    // Multiple providers, configured does not match, throw
-    throw new IllegalStateException(
-        "No HttpSenderProvider matched configured " + SPI_PROPERTY + ": " + configuredSender);
   }
 }

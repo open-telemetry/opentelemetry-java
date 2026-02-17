@@ -15,23 +15,26 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
-import com.linecorp.armeria.server.ServiceRequestContext;
-import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
+import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.grpc.stub.StreamObserver;
 import io.netty.handler.ssl.ClientAuth;
 import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
+import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
+import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -55,7 +58,7 @@ import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
-@SuppressLogger(OkHttpGrpcService.class)
+@SuppressLogger(JaegerRemoteSampler.class)
 class JaegerRemoteSamplerTest {
 
   private static final String SERVICE_NAME = "my-service";
@@ -67,12 +70,12 @@ class JaegerRemoteSamplerTest {
   private static final ConcurrentLinkedQueue<Sampling.SamplingStrategyResponse> responses =
       new ConcurrentLinkedQueue<>();
 
-  private static void addGrpcError(int code, @Nullable String message) {
-    grpcErrors.add(new ArmeriaStatusException(code, message));
+  private static void addGrpcError(GrpcStatusCode code, @Nullable String message) {
+    grpcErrors.add(new ArmeriaStatusException(code.getValue(), message));
   }
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcService.class, Level.TRACE);
+  LogCapturer logs = LogCapturer.create().captureForType(JaegerRemoteSampler.class, Level.TRACE);
 
   @Order(1)
   @RegisterExtension
@@ -90,33 +93,38 @@ class JaegerRemoteSamplerTest {
         @Override
         protected void configure(ServerBuilder sb) {
           sb.service(
-              JaegerRemoteSamplerBuilder.GRPC_ENDPOINT_PATH,
-              new AbstractUnaryGrpcService() {
-                @Override
-                protected CompletionStage<byte[]> handleMessage(
-                    ServiceRequestContext ctx, byte[] message) {
-
-                  ArmeriaStatusException grpcError = grpcErrors.peek();
-                  if (grpcError != null) {
-                    throw grpcError;
-                  }
-
-                  Sampling.SamplingStrategyResponse response = responses.poll();
-                  // use default
-                  if (response == null) {
-                    response =
-                        Sampling.SamplingStrategyResponse.newBuilder()
-                            .setStrategyType(SamplingStrategyType.RATE_LIMITING)
-                            .setRateLimitingSampling(
-                                RateLimitingSamplingStrategy.newBuilder()
-                                    .setMaxTracesPerSecond(RATE)
-                                    .build())
-                            .build();
-                  }
-
-                  return CompletableFuture.completedFuture(response.toByteArray());
-                }
-              });
+              GrpcService.builder()
+                  .addService(
+                      new SamplingManagerGrpc.SamplingManagerImplBase() {
+                        @Override
+                        public void getSamplingStrategy(
+                            SamplingStrategyParameters request,
+                            StreamObserver<
+                                    io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2
+                                        .Sampling.SamplingStrategyResponse>
+                                responseObserver) {
+                          ArmeriaStatusException grpcError = grpcErrors.peek();
+                          if (grpcError != null) {
+                            responseObserver.onError(grpcError);
+                          }
+                          Sampling.SamplingStrategyResponse response = responses.poll();
+                          // use default
+                          if (response == null) {
+                            response =
+                                Sampling.SamplingStrategyResponse.newBuilder()
+                                    .setStrategyType(SamplingStrategyType.RATE_LIMITING)
+                                    .setRateLimitingSampling(
+                                        RateLimitingSamplingStrategy.newBuilder()
+                                            .setMaxTracesPerSecond(RATE)
+                                            .build())
+                                    .build();
+                          }
+                          responseObserver.onNext(response);
+                          responseObserver.onCompleted();
+                        }
+                      })
+                  .autoCompression(true)
+                  .build());
           sb.http(0);
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
@@ -142,7 +150,7 @@ class JaegerRemoteSamplerTest {
             .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -160,7 +168,7 @@ class JaegerRemoteSamplerTest {
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .setServiceName(SERVICE_NAME)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -181,7 +189,7 @@ class JaegerRemoteSamplerTest {
                 privateKey, Files.readAllBytes(clientCertificate.certificateFile().toPath()))
             .setServiceName(SERVICE_NAME)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -220,7 +228,25 @@ class JaegerRemoteSamplerTest {
             .setSslContext(sslContext, trustManager)
             .setServiceName(SERVICE_NAME)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
+
+      await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+
+      // verify
+      assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
+    }
+  }
+
+  @Test
+  void gzipResponse() {
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
+            .setHeaders(() -> Collections.singletonMap("grpc-accept-encoding", "gzip"))
+            .setServiceName(SERVICE_NAME)
+            .build()) {
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -237,7 +263,7 @@ class JaegerRemoteSamplerTest {
             .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -255,7 +281,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription()).startsWith("JaegerRemoteSampler{AlwaysOnSampler}");
     }
@@ -269,7 +295,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(1, TimeUnit.MILLISECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -284,7 +310,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(Duration.ofMillis(1))
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -329,7 +355,7 @@ class JaegerRemoteSamplerTest {
             // Make sure only polls once.
             .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       await()
           .untilAsserted(
@@ -343,9 +369,8 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcService.class)
   void internal_error_server_response() {
-    addGrpcError(13, "internal error");
+    addGrpcError(GrpcStatusCode.INTERNAL, "internal error");
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
@@ -353,7 +378,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -369,9 +394,8 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcService.class)
   void unavailable_error_server_response() {
-    addGrpcError(14, "クマ🐻 resource exhausted");
+    addGrpcError(GrpcStatusCode.UNAVAILABLE, "クマ🐻 resource exhausted");
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
@@ -379,7 +403,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -394,9 +418,8 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcService.class)
   void unimplemented_error_server_response() {
-    addGrpcError(12, null);
+    addGrpcError(GrpcStatusCode.UNIMPLEMENTED, null);
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
@@ -404,7 +427,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
