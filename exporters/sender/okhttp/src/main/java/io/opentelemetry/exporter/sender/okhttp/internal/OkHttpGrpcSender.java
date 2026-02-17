@@ -203,7 +203,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
     if (bodyBytes.length > 5) {
       ByteArrayInputStream bodyStream = new ByteArrayInputStream(bodyBytes);
       bodyStream.skip(5);
-      if (bodyBytes[0] == '1') {
+      if (bodyBytes[0] == 1) {
         Buffer buffer = new Buffer();
         buffer.readFrom(bodyStream);
         GzipSource gzipSource = new GzipSource(buffer);

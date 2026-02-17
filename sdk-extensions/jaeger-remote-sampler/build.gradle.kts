@@ -29,6 +29,7 @@ dependencies {
   testImplementation("com.google.guava:guava")
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.linecorp.armeria:armeria-junit5")
+  testImplementation("com.linecorp.armeria:armeria-grpc")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }

@@ -20,7 +20,11 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -43,6 +47,7 @@ public final class JaegerRemoteSamplerBuilder {
   private Sampler initialSampler = INITIAL_SAMPLER;
   private int pollingIntervalMillis = DEFAULT_POLLING_INTERVAL_MILLIS;
   private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
+  private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
 
   @Nullable private String serviceName;
 
@@ -99,6 +104,16 @@ public final class JaegerRemoteSamplerBuilder {
   public JaegerRemoteSamplerBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
     tlsConfigHelper.setSslContext(sslContext, trustManager);
+    return this;
+  }
+
+  /**
+   * Set the supplier of headers to add to requests. Applicable only if {@link
+   * JaegerRemoteSamplerBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   */
+  // TODO(jack-berg): Make public
+  JaegerRemoteSamplerBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    this.headerSupplier = headerSupplier;
     return this;
   }
 
@@ -160,6 +175,14 @@ public final class JaegerRemoteSamplerBuilder {
     ComponentLoader componentLoader =
         ComponentLoader.forClassLoader(JaegerRemoteSamplerBuilder.class.getClassLoader());
     GrpcSenderProvider grpcSenderProvider = SenderUtil.resolveGrpcSenderProvider(componentLoader);
+    Supplier<Map<String, List<String>>> headerSupplier =
+        () -> {
+          Map<String, List<String>> result = new HashMap<>();
+          Map<String, String> supplierResult = this.headerSupplier.get();
+          supplierResult.forEach((key, value) -> result.put(key, Collections.singletonList(value)));
+          return result;
+        };
+
     ImmutableGrpcSenderConfig grpcSenderConfig =
         ImmutableGrpcSenderConfig.create(
             endpoint,
@@ -167,7 +190,7 @@ public final class JaegerRemoteSamplerBuilder {
             null,
             DEFAULT_TIMEOUT,
             DEFAULT_TIMEOUT,
-            Collections::emptyMap,
+            headerSupplier,
             null,
             tlsConfigHelper.getSslContext(),
             tlsConfigHelper.getTrustManager(),
