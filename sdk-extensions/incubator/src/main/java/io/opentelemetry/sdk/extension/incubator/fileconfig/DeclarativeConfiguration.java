@@ -53,6 +53,31 @@ import org.snakeyaml.engine.v2.schema.CoreSchema;
  * <a
  * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#yaml-file-format">YAML
  * configuration file</a>.
+ *
+ * <h2>For Implementers</h2>
+ *
+ * <p>External consumers needing to parse OpenTelemetry YAML configuration files should use the same
+ * Jackson ObjectMapper configuration for compatibility. This configuration is intentionally not
+ * exposed as API to avoid coupling. Instead, copy the following setup:
+ *
+ * <pre>{@code
+ * ObjectMapper mapper = new ObjectMapper()
+ *     // Create empty object instances for keys which are present but have null values
+ *     .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+ * // Boxed primitives which are present but have null values should be set to null,
+ * // rather than empty instances
+ * mapper.configOverride(String.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Integer.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Double.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * }</pre>
+ *
+ * <p><b>Why this configuration:</b>
+ *
+ * <ul>
+ *   <li>Default behavior creates empty objects for null values to match YAML schema expectations
+ *   <li>Boxed primitives remain null to distinguish between absent and explicitly null values
+ * </ul>
  */
 public final class DeclarativeConfiguration {
 
@@ -62,6 +87,19 @@ public final class DeclarativeConfiguration {
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
 
+  /**
+   * ObjectMapper configured for YAML declarative configuration parsing.
+   *
+   * <p>Configuration:
+   *
+   * <ul>
+   *   <li>Default: Creates empty objects for present keys with null values
+   *   <li>Boxed primitives (String, Integer, Double, Boolean): Remain null when null
+   * </ul>
+   *
+   * <p>External consumers needing compatible parsing should copy this configuration. See class
+   * javadoc for details and code example.
+   */
   // Visible for testing
   static final ObjectMapper MAPPER;
 
