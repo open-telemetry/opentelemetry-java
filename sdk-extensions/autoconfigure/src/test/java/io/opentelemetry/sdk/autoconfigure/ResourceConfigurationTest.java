@@ -19,8 +19,12 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +52,36 @@ class ResourceConfigurationTest {
                 .put("food", "cheesecake")
                 .put("shape", "square")
                 .build());
+  }
+
+  @ParameterizedTest
+  @MethodSource("decodeResourceAttributesArgs")
+  void decodeResourceAttributes(String input, String expectedKey, String expectedValue) {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.resource.attributes", input);
+
+    assertThat(
+            ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createFromMap(props)))
+        .isEqualTo(Resource.create(Attributes.of(stringKey(expectedKey), expectedValue)));
+  }
+
+  private static Stream<Arguments> decodeResourceAttributesArgs() {
+    return Stream.of(
+        // Plus sign preserved
+        Arguments.of("food=cheese+cake", "food", "cheese+cake"),
+        // Percent-encoded space in resource attribute value decoded to space
+        Arguments.of("key=hello%20world", "key", "hello world"),
+        // Invalid percent encoding preserved
+        Arguments.of("key=abc%2Gdef", "key", "abc%2Gdef"),
+        // Incomplete percent encoding preserved
+        Arguments.of("key=abc%2", "key", "abc%2"),
+        // Percent at end preserved
+        Arguments.of("key=abc%", "key", "abc%"),
+        // Multiple percent encodings
+        Arguments.of("key=a%20b%2Bc%3Dd", "key", "a b+c=d"),
+        // No percent encoding
+        Arguments.of("key=plain-value", "key", "plain-value"));
   }
 
   @Test
