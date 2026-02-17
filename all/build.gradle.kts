@@ -1,5 +1,3 @@
-import java.util.stream.Collectors
-
 plugins {
   id("otel.java-conventions")
 }
@@ -27,7 +25,7 @@ dependencies {
           testTasks.add(this)
         }
         subproject.tasks.withType<Jar>().forEach {
-          if (it.archiveClassifier.get().isEmpty() && !it.archiveFile.get().toString().contains("jmh")) {
+          if (it.archiveClassifier.get().isEmpty() && !it.name.contains("jmh")) {
             jarTasks.add(it)
           }
         }
@@ -38,26 +36,44 @@ dependencies {
   testImplementation("com.tngtech.archunit:archunit-junit5")
 }
 
-val artifactsAndJarsFile = layout.buildDirectory.file("artifacts_and_jars.txt").get().asFile
+// Custom task type for writing artifacts and jars - configuration cache compatible
+abstract class WriteArtifactsAndJars : DefaultTask() {
+  @get:Input
+  abstract val artifactData: MapProperty<String, String>
 
-var writeArtifactsAndJars = tasks.register("writeArtifactsAndJars") {
+  @get:OutputFile
+  abstract val outputFile: RegularFileProperty
 
+  @TaskAction
+  fun writeFile() {
+    val file = outputFile.get().asFile
+    file.parentFile.mkdirs()
+    val content = artifactData.get().entries.joinToString("\n") { (baseName, filePath) ->
+      "$baseName:$filePath"
+    }
+    file.writeText(content)
+  }
+}
+
+val artifactsAndJarsFile = layout.buildDirectory.file("artifacts_and_jars.txt")
+
+val writeArtifactsAndJars = tasks.register<WriteArtifactsAndJars>("writeArtifactsAndJars") {
+  // Set up task dependencies
   dependsOn(jarTasks)
-  artifactsAndJarsFile.parentFile.mkdirs()
-  artifactsAndJarsFile.createNewFile()
-  val content = jarTasks.stream()
-    .map {
-      it.archiveBaseName.get() + ":" + it.archiveFile.get().toString()
-    }.collect(Collectors.joining("\n"))
-  artifactsAndJarsFile.writeText(content)
+
+  // Configure the task inputs and outputs using providers
+  artifactData.set(provider {
+    jarTasks.associate { jar ->
+      jar.archiveBaseName.get() to jar.archiveFile.get().asFile.absolutePath
+    }
+  })
+  outputFile.set(artifactsAndJarsFile)
 }
 
 tasks {
-  // We don't compile much here, just some API boundary tests. This project is mostly for
-  // aggregating jacoco reports and it doesn't work if this isn't at least as high as the
-  // highest supported Java version in any of our projects. All of our
-  // projects target Java 8 except :exporters:http-sender:jdk, which targets
-  // Java 11
+  // This module depends on all published subprojects (for JaCoCo coverage aggregation and
+  // arch tests). Since :exporters:http-sender:jdk targets Java 11, the compiler needs
+  // release 11 to resolve its classes on the classpath.
   withType(JavaCompile::class) {
     options.release.set(11)
   }
@@ -66,7 +82,7 @@ tasks {
   test {
     enabled = testJavaVersion != "8"
     dependsOn(writeArtifactsAndJars)
-    environment("ARTIFACTS_AND_JARS", artifactsAndJarsFile.absolutePath)
+    environment("ARTIFACTS_AND_JARS", artifactsAndJarsFile.get().asFile.absolutePath)
   }
 }
 
