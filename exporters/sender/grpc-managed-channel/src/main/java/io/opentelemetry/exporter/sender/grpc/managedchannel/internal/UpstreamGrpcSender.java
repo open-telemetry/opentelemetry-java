@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,8 +70,37 @@ public final class UpstreamGrpcSender implements GrpcSender {
         }
 
         @Override
-        public byte[] parse(InputStream stream) {
-          return new byte[] {}; // TODO: drain input to byte array
+        public byte[] parse(InputStream inputStream) {
+          try {
+            int bufLen = 4 * 0x400; // 4KB
+            byte[] buf = new byte[bufLen];
+            int readLen;
+            IOException exception = null;
+
+            try {
+              try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                while ((readLen = inputStream.read(buf, 0, bufLen)) != -1) {
+                  outputStream.write(buf, 0, readLen);
+                }
+                return outputStream.toByteArray();
+              }
+            } catch (IOException e) {
+              exception = e;
+              throw e;
+            } finally {
+              if (exception == null) {
+                inputStream.close();
+              } else {
+                try {
+                  inputStream.close();
+                } catch (IOException e) {
+                  exception.addSuppressed(e);
+                }
+              }
+            }
+          } catch (IOException e) {
+            throw new IllegalStateException("Failed to read response", e);
+          }
         }
       };
 

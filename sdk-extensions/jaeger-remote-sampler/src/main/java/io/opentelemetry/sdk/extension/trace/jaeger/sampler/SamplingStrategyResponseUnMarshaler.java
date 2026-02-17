@@ -7,26 +7,16 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.opentelemetry.exporter.internal.marshal.CodedInputStream;
 import java.io.IOException;
-import javax.annotation.Nullable;
 
 class SamplingStrategyResponseUnMarshaler {
 
-  @Nullable private SamplingStrategyResponse samplingStrategyResponse;
+  private SamplingStrategyResponseUnMarshaler() {}
 
-  @Nullable
-  public SamplingStrategyResponse get() {
-    return samplingStrategyResponse;
-  }
-
-  public void read(byte[] payload) throws IOException {
+  static SamplingStrategyResponse read(byte[] payload) throws IOException {
     SamplingStrategyResponse.Builder responseBuilder = new SamplingStrategyResponse.Builder();
-    try {
-      CodedInputStream codedInputStream = CodedInputStream.newInstance(payload);
-      parseResponse(responseBuilder, codedInputStream);
-      samplingStrategyResponse = responseBuilder.build();
-    } catch (IOException ex) {
-      // use null message
-    }
+    CodedInputStream codedInputStream = CodedInputStream.newInstance(payload);
+    parseResponse(responseBuilder, codedInputStream);
+    return responseBuilder.build();
   }
 
   private static void parseResponse(
