@@ -207,7 +207,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
         Buffer buffer = new Buffer();
         buffer.readFrom(bodyStream);
         GzipSource gzipSource = new GzipSource(buffer);
-        bodyBytes = Okio.buffer(gzipSource).getBuffer().readByteArray();
+        bodyBytes = Okio.buffer(gzipSource).readByteArray();
       } else {
         bodyBytes = Arrays.copyOfRange(bodyBytes, 5, bodyBytes.length);
       }

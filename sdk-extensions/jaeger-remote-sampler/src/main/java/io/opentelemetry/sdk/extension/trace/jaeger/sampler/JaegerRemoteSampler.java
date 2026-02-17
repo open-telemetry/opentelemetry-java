@@ -33,7 +33,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private static final String WORKER_THREAD_NAME =
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
-  private static final String type = "remoteSampling";
+  private static final String TYPE = "remoteSampling";
 
   private final String serviceName;
   private final ScheduledExecutorService pollExecutor;
@@ -69,10 +69,10 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   }
 
   private void getAndUpdateSampler() {
-    SamplingStrategyParametersMarshaler marsher =
+    SamplingStrategyParametersMarshaler marshaler =
         SamplingStrategyParametersMarshaler.create(this.serviceName);
     try {
-      MessageWriter messageWriter = marsher.toBinaryMessageWriter();
+      MessageWriter messageWriter = marshaler.toBinaryMessageWriter();
       grpcSender.send(messageWriter, this::onResponse, JaegerRemoteSampler::onError);
     } catch (Throwable e) { // Catch all to ensure scheduled task continues
       logger.log(Level.WARNING, "Failed to update sampler", e);
@@ -98,7 +98,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
         logger.log(
             Level.SEVERE,
             "Failed to execute "
-                + type
+                + TYPE
                 + "s. Server responded with UNIMPLEMENTED. "
                 + "Full error message: "
                 + grpcResponse.getStatusDescription());
@@ -107,7 +107,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
         logger.log(
             Level.SEVERE,
             "Failed to execute "
-                + type
+                + TYPE
                 + "s. Server is UNAVAILABLE. "
                 + "Make sure your service is running and reachable from this network. "
                 + "Full error message: "
@@ -117,7 +117,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
         logger.log(
             Level.WARNING,
             "Failed to execute "
-                + type
+                + TYPE
                 + "s. Server responded with gRPC status code "
                 + statusCode.name()
                 + ". Error message: "
@@ -130,12 +130,12 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     logger.log(
         Level.SEVERE,
         "Failed to execute "
-            + type
+            + TYPE
             + "s. The request could not be executed. Error message: "
             + e.getMessage(),
         e);
     if (logger.isLoggable(Level.FINEST)) {
-      logger.log(Level.FINEST, "Failed to execute " + type + "s. Details follow: " + e);
+      logger.log(Level.FINEST, "Failed to execute " + TYPE + "s. Details follow: " + e);
     }
   }
 
