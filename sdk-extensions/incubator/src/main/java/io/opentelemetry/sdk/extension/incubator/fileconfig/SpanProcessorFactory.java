@@ -62,7 +62,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
     if (batchModel.getScheduleDelay() != null) {
       builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
     }
-    context.setInternalTelemetry(builder::setInternalTelemetryVersion, builder::setMeterProvider);
+    context.setInternalTelemetry(builder::setMeterProvider, builder::setInternalTelemetryVersion);
 
     return context.addCloseable(builder.build());
   }
@@ -73,7 +73,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
         FileConfigUtil.requireNonNull(simpleModel.getExporter(), "simple span processor exporter");
     SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
     SimpleSpanProcessorBuilder builder = SimpleSpanProcessor.builder(spanExporter);
-    context.setInternalTelemetry(unused -> {}, builder::setMeterProvider);
+    context.setInternalTelemetry(builder::setMeterProvider);
     return context.addCloseable(builder.build());
   }
 }

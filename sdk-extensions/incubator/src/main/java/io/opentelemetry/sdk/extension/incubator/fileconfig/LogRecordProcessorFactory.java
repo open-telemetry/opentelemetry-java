@@ -67,7 +67,7 @@ final class LogRecordProcessorFactory
     if (batchModel.getScheduleDelay() != null) {
       builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
     }
-    context.setInternalTelemetry(builder::setInternalTelemetryVersion, builder::setMeterProvider);
+    context.setInternalTelemetry(builder::setMeterProvider, builder::setInternalTelemetryVersion);
 
     return context.addCloseable(builder.build());
   }
@@ -80,7 +80,7 @@ final class LogRecordProcessorFactory
     LogRecordExporter logRecordExporter =
         LogRecordExporterFactory.getInstance().create(exporterModel, context);
     SimpleLogRecordProcessorBuilder builder = SimpleLogRecordProcessor.builder(logRecordExporter);
-    context.setInternalTelemetry(unused -> {}, builder::setMeterProvider);
+    context.setInternalTelemetry(builder::setMeterProvider);
     return context.addCloseable(builder.build());
   }
 }

@@ -42,7 +42,7 @@ final class TracerProviderFactory
       return builder;
     }
 
-    context.setInternalTelemetry(unused -> {}, builder::setMeterProvider);
+    context.setInternalTelemetry(builder::setMeterProvider);
 
     SpanLimits spanLimits =
         SpanLimitsFactory.getInstance()

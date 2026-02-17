@@ -78,9 +78,24 @@ class DeclarativeConfigContext {
     this.resource = resource;
   }
 
+  /**
+   * Overload of {@link #setInternalTelemetry(Consumer, Consumer)} for components which do not
+   * support setting {@link InternalTelemetryVersion} because they only support {@link
+   * InternalTelemetryVersion#LATEST}.
+   */
+  public void setInternalTelemetry(Consumer<Supplier<MeterProvider>> meterProviderSetter) {
+    setInternalTelemetry(meterProviderSetter, unused -> {});
+  }
+
+  /**
+   * Set internal telemetry on built-in components.
+   *
+   * @param meterProviderSetter the component meter provider setter
+   * @param internalTelemetrySetter the component internal telemetry setter
+   */
   public void setInternalTelemetry(
-      Consumer<InternalTelemetryVersion> internalTelemetrySetter,
-      Consumer<Supplier<MeterProvider>> meterProviderSetter) {
+      Consumer<Supplier<MeterProvider>> meterProviderSetter,
+      Consumer<InternalTelemetryVersion> internalTelemetrySetter) {
     InternalTelemetryVersion telemetryVersion = getInternalTelemetryVersion();
     if (telemetryVersion != null) {
       meterProviderSetter.accept(() -> Objects.requireNonNull(meterProvider));
