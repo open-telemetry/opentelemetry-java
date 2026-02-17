@@ -7,12 +7,11 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_LOGS;
 
-import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
@@ -21,7 +20,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpHttpLogRecordExporterComponentProvider implements ExtendedComponentProvider {
+public class OtlpHttpLogRecordExporterComponentProvider implements ComponentProvider {
 
   @Override
   public Class<LogRecordExporter> getType() {
@@ -34,14 +33,12 @@ public class OtlpHttpLogRecordExporterComponentProvider implements ExtendedCompo
   }
 
   @Override
-  public LogRecordExporter create(
-      DeclarativeConfigProperties config, ConfigProvider configProvider) {
+  public LogRecordExporter create(DeclarativeConfigProperties config) {
     OtlpHttpLogRecordExporterBuilder builder = httpBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_LOGS,
         config,
-        configProvider,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,

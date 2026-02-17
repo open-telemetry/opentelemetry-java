@@ -18,6 +18,7 @@ import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -52,8 +53,7 @@ public final class OtlpDeclarativeConfigUtil {
   @SuppressWarnings("TooManyParameters")
   public static void configureOtlpExporterBuilder(
       String dataType,
-      DeclarativeConfigProperties config,
-      ConfigProvider configProvider,
+      DeclarativeConfigProperties baseConfig,
       Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
@@ -66,6 +66,11 @@ public final class OtlpDeclarativeConfigUtil {
       boolean isHttpProtobuf,
       Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer,
       Runnable setNoopMeterProvider) {
+    if (!(baseConfig instanceof ExtendedDeclarativeConfigProperties)) {
+      throw new IllegalArgumentException("Expected ExtendedDeclarativeConfigProperties");
+    }
+    ExtendedDeclarativeConfigProperties config = (ExtendedDeclarativeConfigProperties) baseConfig;
+
     setComponentLoader.accept(config.getComponentLoader());
 
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
@@ -130,7 +135,8 @@ public final class OtlpDeclarativeConfigUtil {
 
     // InternalTelemetryVersion defaults to disabled (i.e. null) until semantic conventions are
     // stable. To disable, set a noop meter provider.
-    InternalTelemetryVersion telemetryVersion = getInternalTelemetryVersion(configProvider);
+    InternalTelemetryVersion telemetryVersion =
+        getInternalTelemetryVersion(config.getConfigProvider());
     if (telemetryVersion == null) {
       setNoopMeterProvider.run();
     } else {

@@ -12,7 +12,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -125,7 +126,10 @@ class DeclarativeConfigContext {
   @SuppressWarnings({"unchecked"})
   <T> T loadComponent(Class<T> type, ConfigKeyValue configKeyValue) {
     String name = configKeyValue.getKey();
-    DeclarativeConfigProperties config = configKeyValue.getValue();
+    ExtendedDeclarativeConfigProperties config =
+        new ExtendedDeclarativeConfigPropertiesImpl(
+            configKeyValue.getValue(),
+            configProvider == null ? ConfigProvider.noop() : configProvider);
 
     // TODO(jack-berg): cache loaded component providers
     List<ComponentProvider> componentProviders = spiHelper.load(ComponentProvider.class);
@@ -152,16 +156,9 @@ class DeclarativeConfigContext {
     }
     // Exactly one matching component provider
     ComponentProvider provider = matchedProviders.get(0);
-    ConfigProvider configProvider = this.configProvider;
-    if (configProvider == null) {
-      configProvider = ConfigProvider.noop();
-    }
 
     try {
-      Object component =
-          (provider instanceof ExtendedComponentProvider)
-              ? ((ExtendedComponentProvider) provider).create(config, configProvider)
-              : provider.create(config);
+      Object component = provider.create(config);
       if (component instanceof Closeable) {
         closeables.add((Closeable) component);
       }
@@ -180,6 +177,87 @@ class DeclarativeConfigContext {
     } catch (Throwable throwable) {
       throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
+    }
+  }
+
+  private static class ExtendedDeclarativeConfigPropertiesImpl
+      implements ExtendedDeclarativeConfigProperties {
+
+    private final DeclarativeConfigProperties delegate;
+    private final ConfigProvider configProvider;
+
+    ExtendedDeclarativeConfigPropertiesImpl(
+        DeclarativeConfigProperties delegate, ConfigProvider configProvider) {
+      this.delegate = delegate;
+      this.configProvider = configProvider;
+    }
+
+    @Override
+    public ConfigProvider getConfigProvider() {
+      return configProvider;
+    }
+
+    @Nullable
+    @Override
+    public String getString(String name) {
+      return delegate.getString(name);
+    }
+
+    @Nullable
+    @Override
+    public Boolean getBoolean(String name) {
+      return delegate.getBoolean(name);
+    }
+
+    @Nullable
+    @Override
+    public Integer getInt(String name) {
+      return delegate.getInt(name);
+    }
+
+    @Nullable
+    @Override
+    public Long getLong(String name) {
+      return delegate.getLong(name);
+    }
+
+    @Nullable
+    @Override
+    public Double getDouble(String name) {
+      return delegate.getDouble(name);
+    }
+
+    @Nullable
+    @Override
+    public <T> List<T> getScalarList(String name, Class<T> scalarType) {
+      return delegate.getScalarList(name, scalarType);
+    }
+
+    @Nullable
+    @Override
+    public DeclarativeConfigProperties getStructured(String name) {
+      return delegate.getStructured(name);
+    }
+
+    @Nullable
+    @Override
+    public List<DeclarativeConfigProperties> getStructuredList(String name) {
+      return delegate.getStructuredList(name);
+    }
+
+    @Override
+    public Set<String> getPropertyKeys() {
+      return delegate.getPropertyKeys();
+    }
+
+    @Override
+    public ComponentLoader getComponentLoader() {
+      return delegate.getComponentLoader();
+    }
+
+    @Override
+    public String toString() {
+      return "ExtendedDeclarativeConfigPropertiesImpl{" + delegate + '}';
     }
   }
 }

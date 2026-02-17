@@ -7,13 +7,12 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_METRICS;
 
-import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
@@ -22,7 +21,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpGrpcMetricExporterComponentProvider implements ExtendedComponentProvider {
+public class OtlpGrpcMetricExporterComponentProvider implements ComponentProvider {
 
   @Override
   public Class<MetricExporter> getType() {
@@ -35,13 +34,12 @@ public class OtlpGrpcMetricExporterComponentProvider implements ExtendedComponen
   }
 
   @Override
-  public MetricExporter create(DeclarativeConfigProperties config, ConfigProvider configProvider) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     OtlpGrpcMetricExporterBuilder builder = grpcBuilder();
 
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_METRICS,
         config,
-        configProvider,
         builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
