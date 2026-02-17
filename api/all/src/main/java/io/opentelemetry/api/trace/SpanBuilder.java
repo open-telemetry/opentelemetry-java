@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * {@link SpanBuilder} is used to construct {@link Span} instances which define arbitrary scopes of
@@ -175,8 +176,7 @@ public interface SpanBuilder {
    * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
-   * <p>If a null or empty String {@code value} is passed in, the behavior is undefined, and hence
-   * strongly discouraged.
+   * <p>Note: Providing a null value is a no-op and will not remove previously set values.
    *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
    * pre-allocate your keys, if possible.
@@ -185,7 +185,7 @@ public interface SpanBuilder {
    * @param value the value for this attribute.
    * @return this.
    */
-  SpanBuilder setAttribute(String key, String value);
+  SpanBuilder setAttribute(String key, @Nullable String value);
 
   /**
    * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
@@ -230,13 +230,13 @@ public interface SpanBuilder {
    * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
-   * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
+   * <p>Note: Providing a null value is a no-op.
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
    */
-  <T> SpanBuilder setAttribute(AttributeKey<T> key, T value);
+  <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value);
 
   /**
    * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously

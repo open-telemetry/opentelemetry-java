@@ -9,7 +9,7 @@ rootProject.extra["versions"] = dependencyVersions
 
 
 val autoValueVersion = "1.11.1"
-val errorProneVersion = "2.46.0"
+val errorProneVersion = "2.47.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -17,7 +17,7 @@ val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
 val armeriaVersion = "1.36.0"
-val junitVersion = "5.14.2"
+val junitVersion = "5.14.3"
 val okhttpVersion = "5.3.2"
 
 val DEPENDENCY_BOMS = listOf(

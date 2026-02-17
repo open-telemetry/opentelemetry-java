@@ -23,6 +23,8 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
+import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
+import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
@@ -36,6 +38,7 @@ import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
+import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -176,10 +179,8 @@ public class FullConfigTest {
     keys.addAll(W3CBaggagePropagator.getInstance().fields());
     keys.addAll(B3Propagator.injectingSingleHeader().fields());
     keys.addAll(B3Propagator.injectingMultiHeaders().fields());
-    keys.addAll(
-        io.opentelemetry.extension.trace.propagation.JaegerPropagator.getInstance().fields());
-    keys.addAll(
-        io.opentelemetry.extension.trace.propagation.OtTracePropagator.getInstance().fields());
+    keys.addAll(JaegerPropagator.getInstance().fields());
+    keys.addAll(OtTracePropagator.getInstance().fields());
     // Added by TestPropagatorProvider
     keys.add("test");
     assertThat(fields).containsExactlyInAnyOrderElementsOf(keys);
@@ -215,8 +216,7 @@ public class FullConfigTest {
         traceRequest.getResourceSpans(0).getResource().getAttributesList();
     assertHasKeyValue(spanResourceAttributes, "service.name", "test");
     assertHasKeyValue(spanResourceAttributes, "cat", "meow");
-    io.opentelemetry.proto.trace.v1.Span span =
-        traceRequest.getResourceSpans(0).getScopeSpans(0).getSpans(0);
+    Span span = traceRequest.getResourceSpans(0).getScopeSpans(0).getSpans(0);
     assertHasKeyValue(span.getAttributesList(), "configured", true);
     assertHasKeyValue(span.getAttributesList(), "wrapped", 1);
     assertHasKeyValue(span.getAttributesList(), "cat", "meow");

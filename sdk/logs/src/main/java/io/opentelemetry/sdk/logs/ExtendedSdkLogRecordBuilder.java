@@ -46,7 +46,7 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     loggerSharedState
         .getExceptionAttributeResolver()
         .setExceptionAttributes(
-            this::setAttribute,
+            this::setExceptionAttribute,
             throwable,
             loggerSharedState.getLogLimits().getMaxAttributeValueLength());
 
@@ -143,5 +143,18 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
         severityText,
         body,
         extendedAttributes);
+  }
+
+  /**
+   * Sets an exception-derived attribute only if it hasn't already been set by the user. This
+   * ensures user-set attributes take precedence over exception-derived attributes.
+   */
+  private <T> void setExceptionAttribute(AttributeKey<T> key, @Nullable T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return;
+    }
+    if (extendedAttributes == null || extendedAttributes.get(key) == null) {
+      setAttribute(key, value);
+    }
   }
 }

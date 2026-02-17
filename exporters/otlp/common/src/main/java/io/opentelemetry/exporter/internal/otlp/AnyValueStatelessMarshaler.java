@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
+import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -49,21 +50,21 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
         return;
       case ARRAY:
         output.serializeMessageWithContext(
-            io.opentelemetry.proto.common.v1.internal.AnyValue.ARRAY_VALUE,
+            AnyValue.ARRAY_VALUE,
             (List<Value<?>>) value.getValue(),
             ArrayAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
       case KEY_VALUE_LIST:
         output.serializeMessageWithContext(
-            io.opentelemetry.proto.common.v1.internal.AnyValue.KVLIST_VALUE,
+            AnyValue.KVLIST_VALUE,
             (List<KeyValue>) value.getValue(),
             KeyValueListAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
       case BYTES:
         BytesAnyValueStatelessMarshaler.INSTANCE.writeTo(
-            output, (ByteBuffer) value.getValue(), context);
+            output, (Value<ByteBuffer>) value, context);
         return;
       case EMPTY:
         // no field to write
@@ -92,19 +93,19 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
             (Double) value.getValue(), context);
       case ARRAY:
         return StatelessMarshalerUtil.sizeMessageWithContext(
-            io.opentelemetry.proto.common.v1.internal.AnyValue.ARRAY_VALUE,
+            AnyValue.ARRAY_VALUE,
             (List<Value<?>>) value.getValue(),
             ArrayAnyValueStatelessMarshaler.INSTANCE,
             context);
       case KEY_VALUE_LIST:
         return StatelessMarshalerUtil.sizeMessageWithContext(
-            io.opentelemetry.proto.common.v1.internal.AnyValue.KVLIST_VALUE,
+            AnyValue.KVLIST_VALUE,
             (List<KeyValue>) value.getValue(),
             KeyValueListAnyValueStatelessMarshaler.INSTANCE,
             context);
       case BYTES:
         return BytesAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
-            (ByteBuffer) value.getValue(), context);
+            (Value<ByteBuffer>) value, context);
       case EMPTY:
         return 0;
     }

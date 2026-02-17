@@ -50,6 +50,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.KeyValueList;
+import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
@@ -689,7 +690,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(ilLogs.getLogRecordsCount()).isEqualTo(1);
 
     // LogRecord via Logger.logRecordBuilder()...emit()
-    io.opentelemetry.proto.logs.v1.LogRecord protoLog1 = ilLogs.getLogRecords(0);
+    LogRecord protoLog1 = ilLogs.getLogRecords(0);
     assertThat(protoLog1.getEventName()).isEqualTo("event name");
     assertThat(protoLog1.getBody())
         .isEqualTo(

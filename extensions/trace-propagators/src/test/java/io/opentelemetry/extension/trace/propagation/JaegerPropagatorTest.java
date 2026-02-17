@@ -24,26 +24,23 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link io.opentelemetry.extension.trace.propagation.JaegerPropagator}. */
+/** Unit tests for {@link JaegerPropagator}. */
 @SuppressWarnings("deprecation")
 class JaegerPropagatorTest {
 
-  private static final String BAGGAGE_HEADER =
-      io.opentelemetry.extension.trace.propagation.JaegerPropagator.BAGGAGE_HEADER;
-  private static final String BAGGAGE_PREFIX =
-      io.opentelemetry.extension.trace.propagation.JaegerPropagator.BAGGAGE_PREFIX;
-  private static final char DEPRECATED_PARENT_SPAN =
-      io.opentelemetry.extension.trace.propagation.JaegerPropagator.DEPRECATED_PARENT_SPAN;
-  private static final String PROPAGATION_HEADER =
-      io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER;
+  private static final String BAGGAGE_HEADER = JaegerPropagator.BAGGAGE_HEADER;
+  private static final String BAGGAGE_PREFIX = JaegerPropagator.BAGGAGE_PREFIX;
+  private static final char DEPRECATED_PARENT_SPAN = JaegerPropagator.DEPRECATED_PARENT_SPAN;
+  private static final String PROPAGATION_HEADER = JaegerPropagator.PROPAGATION_HEADER;
   private static final char PROPAGATION_HEADER_DELIMITER =
-      io.opentelemetry.extension.trace.propagation.JaegerPropagator.PROPAGATION_HEADER_DELIMITER;
+      JaegerPropagator.PROPAGATION_HEADER_DELIMITER;
 
   private static final long TRACE_ID_HI = 77L;
   private static final long TRACE_ID_LOW = 22L;
@@ -69,8 +66,7 @@ class JaegerPropagatorTest {
         }
       };
 
-  private final io.opentelemetry.extension.trace.propagation.JaegerPropagator jaegerPropagator =
-      io.opentelemetry.extension.trace.propagation.JaegerPropagator.getInstance();
+  private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
     return Span.fromContext(context).getSpanContext();
@@ -357,13 +353,15 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   void extract_UrlEncodedContext() throws UnsupportedEncodingException {
     Map<String, String> carrier = new LinkedHashMap<>();
     JaegerSpanContext context =
         new JaegerSpanContext(
             TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 5);
     carrier.put(
-        PROPAGATION_HEADER, URLEncoder.encode(TextMapCodec.contextAsString(context), "UTF-8"));
+        PROPAGATION_HEADER,
+        URLEncoder.encode(TextMapCodec.contextAsString(context), StandardCharsets.UTF_8.name()));
 
     assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(

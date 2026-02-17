@@ -82,8 +82,7 @@ public class PropagatorContextInjectBenchmark {
   public static class JaegerContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
     @SuppressWarnings("deprecation")
-    private final io.opentelemetry.extension.trace.propagation.JaegerPropagator jaegerPropagator =
-        io.opentelemetry.extension.trace.propagation.JaegerPropagator.getInstance();
+    private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
 
     private final TextMapSetter<Map<String, String>> setter = Map::put;
 

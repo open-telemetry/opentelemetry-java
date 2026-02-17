@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.context.Context;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -22,7 +23,7 @@ final class ScopeManagerShim implements ScopeManager {
   public Span activeSpan() {
     SpanShim spanShim = SpanShim.current();
     io.opentelemetry.api.trace.Span span = io.opentelemetry.api.trace.Span.current();
-    io.opentelemetry.api.baggage.Baggage baggage = io.opentelemetry.api.baggage.Baggage.current();
+    Baggage baggage = Baggage.current();
 
     if (!span.getSpanContext().isValid()) {
       if (baggage.isEmpty()) {

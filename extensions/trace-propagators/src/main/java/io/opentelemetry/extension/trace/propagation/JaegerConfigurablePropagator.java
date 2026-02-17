@@ -10,15 +10,14 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
 
 /**
- * A {@link ConfigurablePropagatorProvider} which allows enabling the {@link
- * io.opentelemetry.extension.trace.propagation.JaegerPropagator} with the propagator name {@code
- * jaeger}.
+ * A {@link ConfigurablePropagatorProvider} which allows enabling the {@link JaegerPropagator} with
+ * the propagator name {@code jaeger}.
  */
 @SuppressWarnings("deprecation")
 public final class JaegerConfigurablePropagator implements ConfigurablePropagatorProvider {
   @Override
   public TextMapPropagator getPropagator(ConfigProperties config) {
-    return io.opentelemetry.extension.trace.propagation.JaegerPropagator.getInstance();
+    return JaegerPropagator.getInstance();
   }
 
   @Override

@@ -16,12 +16,16 @@ import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 final class OpenTelemetryConfigurationFactory
     implements Factory<OpenTelemetryConfigurationModel, ExtendedOpenTelemetrySdk> {
 
+  private static final Logger logger =
+      Logger.getLogger(OpenTelemetryConfigurationFactory.class.getName());
   private static final Pattern SUPPORTED_FILE_FORMATS = Pattern.compile("^(0.4)|(1.0(-rc.\\d*)?)$");
+  private static final String EXPECTED_FILE_FORMAT = "1.0-rc.3";
 
   private static final OpenTelemetryConfigurationFactory INSTANCE =
       new OpenTelemetryConfigurationFactory();
@@ -48,8 +52,14 @@ final class OpenTelemetryConfigurationFactory
       throw new DeclarativeConfigException(
           "Unsupported file format '" + fileFormat + "'. Supported formats include 0.4, 1.0*");
     }
-    // TODO(jack-berg): log warning if version is not exact match, which may result in unexpected
-    // behavior for experimental properties.
+    if (!EXPECTED_FILE_FORMAT.equals(fileFormat)) {
+      logger.warning(
+          "Configuration file_format '"
+              + fileFormat
+              + "' does not exactly match expected version '"
+              + EXPECTED_FILE_FORMAT
+              + "'. This may result in unexpected behavior for experimental properties.");
+    }
 
     if (Objects.equals(true, model.getDisabled())) {
       return (ExtendedOpenTelemetrySdk) builder.build();

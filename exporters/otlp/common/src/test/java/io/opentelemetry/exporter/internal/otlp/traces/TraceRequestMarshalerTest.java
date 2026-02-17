@@ -157,8 +157,15 @@ class TraceRequestMarshalerTest {
                                         "nested", Value.of("value"))))
                             .put("heterogeneousArray", Value.of(Value.of("string"), Value.of(123L)))
                             .put("empty", Value.empty())
+                            .put("empty_string", "")
+                            .put("false_value", false)
+                            .put("zero_int", 0L)
+                            .put("zero_double", 0.0)
+                            .put("empty_array", Value.of(Collections.emptyList()))
+                            .put("empty_map", Value.of(Collections.emptyMap()))
+                            .put("empty_bytes", Value.of(new byte[] {}))
                             .build())
-                    .setTotalAttributeCount(13)
+                    .setTotalAttributeCount(20)
                     .setEvents(
                         Collections.singletonList(
                             EventData.create(12347, "my_event", Attributes.empty())))
@@ -275,6 +282,37 @@ class TraceRequestMarshalerTest {
                                         .build())
                                 .build())
                         .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_string")
+                .setValue(AnyValue.newBuilder().setStringValue("").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("false_value")
+                .setValue(AnyValue.newBuilder().setBoolValue(false).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("zero_int")
+                .setValue(AnyValue.newBuilder().setIntValue(0).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("zero_double")
+                .setValue(AnyValue.newBuilder().setDoubleValue(0.0).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_array")
+                .setValue(
+                    AnyValue.newBuilder().setArrayValue(ArrayValue.newBuilder().build()).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_map")
+                .setValue(
+                    AnyValue.newBuilder().setKvlistValue(KeyValueList.newBuilder().build()).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("empty_bytes")
+                .setValue(
+                    AnyValue.newBuilder().setBytesValue(ByteString.copyFrom(new byte[] {})).build())
                 .build());
     assertThat(protoSpan.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(protoSpan.getEventsList())
