@@ -8,6 +8,7 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentracing.Tracer;
 
 /**
  * Factory for creating an OpenTracing {@link io.opentracing.Tracer} that is implemented using the
@@ -26,7 +27,7 @@ public final class OpenTracingShim {
    * @param openTelemetry the {@code OpenTelemetry} instance used to create this shim.
    * @return a {@code io.opentracing.Tracer}.
    */
-  public static io.opentracing.Tracer createTracerShim(OpenTelemetry openTelemetry) {
+  public static Tracer createTracerShim(OpenTelemetry openTelemetry) {
     TextMapPropagator propagator = openTelemetry.getPropagators().getTextMapPropagator();
     return createTracerShim(openTelemetry.getTracerProvider(), propagator, propagator);
   }
@@ -42,7 +43,7 @@ public final class OpenTracingShim {
    *     io.opentracing.propagation.Format.Builtin#HTTP_HEADERS} format.
    * @return a {@code io.opentracing.Tracer}.
    */
-  public static io.opentracing.Tracer createTracerShim(
+  public static Tracer createTracerShim(
       TracerProvider provider,
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {

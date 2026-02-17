@@ -8,6 +8,7 @@ package io.opentelemetry.opencensusshim;
 import io.opencensus.common.Function;
 import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Span.Kind;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
 import io.opencensus.trace.TraceId;
@@ -28,7 +29,7 @@ final class SpanConverter {
 
   private SpanConverter() {}
 
-  static SpanKind mapKind(@Nullable io.opencensus.trace.Span.Kind ocKind) {
+  static SpanKind mapKind(@Nullable Kind ocKind) {
     if (ocKind == null) {
       return SpanKind.INTERNAL;
     }

@@ -56,11 +56,15 @@ import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.Closeable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -207,8 +211,8 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Configured() throws NoSuchFieldException {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.resources.Resource expectedResource =
-        io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder()
+    Resource expectedResource =
+        Resource.getDefault().toBuilder()
             .put("service.name", "my-service")
             .put("key", "val")
             // resource attributes from resource ComponentProviders
@@ -313,7 +317,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .setMaxNumberOfAttributes(2)
                                         .build())
                             .addLogRecordProcessor(
-                                io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
+                                BatchLogRecordProcessor.builder(
                                         OtlpHttpLogRecordExporter.getDefault())
                                     .build())
                             .build())
@@ -331,16 +335,14 @@ class OpenTelemetryConfigurationFactoryTest {
                                     .build())
                             .setSampler(alwaysOn())
                             .addSpanProcessor(
-                                io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                                        OtlpHttpSpanExporter.getDefault())
+                                BatchSpanProcessor.builder(OtlpHttpSpanExporter.getDefault())
                                     .build())
                             .build())
                     .setMeterProvider(
                         SdkMeterProvider.builder()
                             .setResource(expectedResource)
                             .registerMetricReader(
-                                io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                                        OtlpHttpMetricExporter.getDefault())
+                                PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault())
                                     .build())
                             .registerView(
                                 InstrumentSelector.builder().setName("instrument-name").build(),

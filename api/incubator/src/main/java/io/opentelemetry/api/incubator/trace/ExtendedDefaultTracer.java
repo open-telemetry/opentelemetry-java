@@ -94,7 +94,7 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
     }
 
     @Override
-    public NoopSpanBuilder setAttribute(String key, String value) {
+    public NoopSpanBuilder setAttribute(String key, @Nullable String value) {
       return this;
     }
 
@@ -114,7 +114,7 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
     }
 
     @Override
-    public <T> NoopSpanBuilder setAttribute(AttributeKey<T> key, T value) {
+    public <T> NoopSpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
       return this;
     }
 

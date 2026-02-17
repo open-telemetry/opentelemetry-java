@@ -10,21 +10,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-/** Tests for {@link io.opentelemetry.sdk.common.InstrumentationLibraryInfo}. */
+/** Tests for {@link InstrumentationLibraryInfo}. */
 @SuppressWarnings("deprecation") // Testing deprecated code
 class InstrumentationLibraryInfoTest {
 
   @Test
   void emptyLibraryInfo() {
-    assertThat(io.opentelemetry.sdk.common.InstrumentationLibraryInfo.empty().getName()).isEmpty();
-    assertThat(io.opentelemetry.sdk.common.InstrumentationLibraryInfo.empty().getVersion())
-        .isNull();
+    assertThat(InstrumentationLibraryInfo.empty().getName()).isEmpty();
+    assertThat(InstrumentationLibraryInfo.empty().getVersion()).isNull();
   }
 
   @Test
   void nullName() {
-    assertThatThrownBy(
-            () -> io.opentelemetry.sdk.common.InstrumentationLibraryInfo.create(null, "1.0.0"))
+    assertThatThrownBy(() -> InstrumentationLibraryInfo.create(null, "1.0.0"))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("name");
   }
