@@ -35,6 +35,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Group;
 import org.openjdk.jmh.annotations.GroupThreads;
 import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.OperationsPerInvocation;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
@@ -189,6 +190,7 @@ public class MetricRecordBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 5, time = 1)
+  @OperationsPerInvocation(RECORDS_PER_INVOCATION)
   public void record_SingleThread(BenchmarkState benchmarkState) {
     record(benchmarkState);
   }
@@ -199,6 +201,7 @@ public class MetricRecordBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 5, time = 1)
+  @OperationsPerInvocation(RECORDS_PER_INVOCATION)
   public void record_MultipleThreads(BenchmarkState benchmarkState) {
     record(benchmarkState);
   }
