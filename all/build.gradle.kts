@@ -5,30 +5,13 @@ plugins {
 description = "OpenTelemetry All"
 otelJava.moduleName.set("io.opentelemetry.all")
 
-tasks {
-  // We don't compile much here, just some API boundary tests. This project is mostly for
-  // aggregating jacoco reports and it doesn't work if this isn't at least as high as the
-  // highest supported Java version in any of our projects. All of our
-  // projects target Java 8 except :exporters:http-sender:jdk, which targets
-  // Java 11
-  withType(JavaCompile::class) {
-    options.release.set(11)
-  }
-
-  val testJavaVersion: String? by project
-  if (testJavaVersion == "8") {
-    test {
-      enabled = false
-    }
-  }
-}
-
 // Skip OWASP dependencyCheck task on test module
 dependencyCheck {
   skip = true
 }
 
 val testTasks = mutableListOf<Task>()
+val jarTasks = mutableListOf<Jar>()
 
 dependencies {
   rootProject.subprojects.forEach { subproject ->
@@ -41,11 +24,66 @@ dependencies {
         subproject.tasks.withType<Test>().configureEach {
           testTasks.add(this)
         }
+        subproject.tasks.withType<Jar>().forEach {
+          if (it.archiveClassifier.get().isEmpty() && !it.name.contains("jmh")) {
+            jarTasks.add(it)
+          }
+        }
       }
     }
   }
 
   testImplementation("com.tngtech.archunit:archunit-junit5")
+}
+
+// Custom task type for writing artifacts and jars - configuration cache compatible
+abstract class WriteArtifactsAndJars : DefaultTask() {
+  @get:Input
+  abstract val artifactData: MapProperty<String, String>
+
+  @get:OutputFile
+  abstract val outputFile: RegularFileProperty
+
+  @TaskAction
+  fun writeFile() {
+    val file = outputFile.get().asFile
+    file.parentFile.mkdirs()
+    val content = artifactData.get().entries.joinToString("\n") { (baseName, filePath) ->
+      "$baseName:$filePath"
+    }
+    file.writeText(content)
+  }
+}
+
+val artifactsAndJarsFile = layout.buildDirectory.file("artifacts_and_jars.txt")
+
+val writeArtifactsAndJars = tasks.register<WriteArtifactsAndJars>("writeArtifactsAndJars") {
+  // Set up task dependencies
+  dependsOn(jarTasks)
+
+  // Configure the task inputs and outputs using providers
+  artifactData.set(provider {
+    jarTasks.associate { jar ->
+      jar.archiveBaseName.get() to jar.archiveFile.get().asFile.absolutePath
+    }
+  })
+  outputFile.set(artifactsAndJarsFile)
+}
+
+tasks {
+  // This module depends on all published subprojects (for JaCoCo coverage aggregation and
+  // arch tests). Since :exporters:http-sender:jdk targets Java 11, the compiler needs
+  // release 11 to resolve its classes on the classpath.
+  withType(JavaCompile::class) {
+    options.release.set(11)
+  }
+
+  val testJavaVersion: String? by project
+  test {
+    enabled = testJavaVersion != "8"
+    dependsOn(writeArtifactsAndJars)
+    environment("ARTIFACTS_AND_JARS", artifactsAndJarsFile.get().asFile.absolutePath)
+  }
 }
 
 // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
