@@ -14,8 +14,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -217,21 +215,6 @@ public interface LogRecordBuilder {
    * attributes based on the {@code throwable}.
    */
   default LogRecordBuilder setException(Throwable throwable) {
-    if (throwable != null) {
-      String exceptionType = throwable.getClass().getCanonicalName();
-      if (exceptionType != null) {
-        setAttribute("exception.type", exceptionType);
-      }
-      String exceptionMessage = throwable.getMessage();
-      if (exceptionMessage != null) {
-        setAttribute("exception.message", exceptionMessage);
-      }
-      StringWriter stringWriter = new StringWriter();
-      try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-        throwable.printStackTrace(printWriter);
-      }
-      setAttribute("exception.stacktrace", stringWriter.toString());
-    }
     return this;
   }
 
