@@ -5,7 +5,11 @@
 
 package io.opentelemetry.api.incubator.config;
 
+import static java.util.Collections.emptyList;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +21,10 @@ import javax.annotation.Nullable;
  * ConfigProvider#getInstrumentationConfig()}.
  */
 public class InstrumentationConfigUtil {
+
+  private static final List<String> DEFAULT_SENSITIVE_QUERY_PARAMETERS =
+      Collections.unmodifiableList(
+          Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
 
   /**
    * Return a map representation of the peer service map entries in {@code
@@ -52,83 +60,80 @@ public class InstrumentationConfigUtil {
   }
 
   /**
-   * Return {@code .instrumentation.general.http.client.request_captured_headers}, or null if none
-   * is configured.
-   *
-   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
-   */
-  @Nullable
-  public static List<String> httpClientRequestCapturedHeaders(ConfigProvider configProvider) {
-    return getOrNull(
-        configProvider,
-        config -> config.getScalarList("request_captured_headers", String.class),
-        "general",
-        "http",
-        "client");
-  }
-
-  /**
-   * Return {@code .instrumentation.general.http.client.response_captured_headers}, or null if none
-   * is configured.
-   *
-   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
-   */
-  @Nullable
-  public static List<String> httpClientResponseCapturedHeaders(ConfigProvider configProvider) {
-    return getOrNull(
-        configProvider,
-        config -> config.getScalarList("response_captured_headers", String.class),
-        "general",
-        "http",
-        "client");
-  }
-
-  /**
-   * Return {@code .instrumentation.general.http.server.request_captured_headers}, or null if none
-   * is configured.
-   *
-   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
-   */
-  @Nullable
-  public static List<String> httpServerRequestCapturedHeaders(ConfigProvider configProvider) {
-    return getOrNull(
-        configProvider,
-        config -> config.getScalarList("request_captured_headers", String.class),
-        "general",
-        "http",
-        "server");
-  }
-
-  /**
-   * Return {@code .instrumentation.general.http.server.response_captured_headers}, or null if none
-   * is configured.
-   *
-   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
-   */
-  @Nullable
-  public static List<String> httpServerResponseCapturedHeaders(ConfigProvider configProvider) {
-    return getOrNull(
-        configProvider,
-        config -> config.getScalarList("response_captured_headers", String.class),
-        "general",
-        "http",
-        "server");
-  }
-
-  /**
-   * Return {@code .instrumentation.general.sanitization.url.sensitive_query_parameters}, or null if
+   * Return {@code .instrumentation.general.http.client.request_captured_headers}, or empty list if
    * none is configured.
    *
    * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
    */
-  @Nullable
+  public static List<String> httpClientRequestCapturedHeaders(ConfigProvider configProvider) {
+    return configProvider
+        .getInstrumentationConfig()
+        .get("general")
+        .get("http")
+        .get("client")
+        .getScalarList("request_captured_headers", String.class, emptyList());
+  }
+
+  /**
+   * Return {@code .instrumentation.general.http.client.response_captured_headers}, or empty list if
+   * none is configured.
+   *
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
+   */
+  public static List<String> httpClientResponseCapturedHeaders(ConfigProvider configProvider) {
+    return configProvider
+        .getInstrumentationConfig()
+        .get("general")
+        .get("http")
+        .get("client")
+        .getScalarList("response_captured_headers", String.class, emptyList());
+  }
+
+  /**
+   * Return {@code .instrumentation.general.http.server.request_captured_headers}, or empty list if
+   * none is configured.
+   *
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
+   */
+  public static List<String> httpServerRequestCapturedHeaders(ConfigProvider configProvider) {
+    return configProvider
+        .getInstrumentationConfig()
+        .get("general")
+        .get("http")
+        .get("server")
+        .getScalarList("request_captured_headers", String.class, emptyList());
+  }
+
+  /**
+   * Return {@code .instrumentation.general.http.server.response_captured_headers}, or empty list if
+   * none is configured.
+   *
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
+   */
+  public static List<String> httpServerResponseCapturedHeaders(ConfigProvider configProvider) {
+    return configProvider
+        .getInstrumentationConfig()
+        .get("general")
+        .get("http")
+        .get("server")
+        .getScalarList("response_captured_headers", String.class, emptyList());
+  }
+
+  /**
+   * Return {@code .instrumentation.general.sanitization.url.sensitive_query_parameters}, or the
+   * default list (currently {@code AWSAccessKeyId}, {@code Signature}, {@code sig}, {@code
+   * X-Goog-Signature}) if none is configured.
+   *
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
+   */
   public static List<String> sensitiveQueryParameters(ConfigProvider configProvider) {
-    return getOrNull(
-        configProvider,
-        config -> config.getScalarList("sensitive_query_parameters", String.class),
-        "general",
-        "sanitization",
-        "url");
+    return configProvider
+        .getInstrumentationConfig()
+        .get("general")
+        .get("sanitization")
+        .get("url")
+        .getScalarList(
+            "sensitive_query_parameters", String.class, DEFAULT_SENSITIVE_QUERY_PARAMETERS);
   }
 
   /**
@@ -149,7 +154,10 @@ public class InstrumentationConfigUtil {
    * {@code segments}, or if {@code accessor} returns null.
    *
    * <p>See other methods in {@link InstrumentationConfigUtil} for usage examples.
+   *
+   * @deprecated Use {@link DeclarativeConfigProperties#get(String)} to walk segments.
    */
+  @Deprecated
   @Nullable
   public static <T> T getOrNull(
       ConfigProvider configProvider,

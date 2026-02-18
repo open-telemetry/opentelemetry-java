@@ -93,12 +93,12 @@ class InstrumentationConfigUtilTest {
     assertThat(
             InstrumentationConfigUtil.httpClientRequestCapturedHeaders(
                 emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(
             InstrumentationConfigUtil.httpClientRequestCapturedHeaders(emptyGeneralConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(InstrumentationConfigUtil.httpClientRequestCapturedHeaders(emptyHttpConfigProvider))
-        .isNull();
+        .isEmpty();
   }
 
   @Test
@@ -109,12 +109,12 @@ class InstrumentationConfigUtilTest {
     assertThat(
             InstrumentationConfigUtil.httpClientResponseCapturedHeaders(
                 emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(
             InstrumentationConfigUtil.httpClientResponseCapturedHeaders(emptyGeneralConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(InstrumentationConfigUtil.httpClientResponseCapturedHeaders(emptyHttpConfigProvider))
-        .isNull();
+        .isEmpty();
   }
 
   @Test
@@ -125,12 +125,12 @@ class InstrumentationConfigUtilTest {
     assertThat(
             InstrumentationConfigUtil.httpServerRequestCapturedHeaders(
                 emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(
             InstrumentationConfigUtil.httpServerRequestCapturedHeaders(emptyGeneralConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(InstrumentationConfigUtil.httpServerRequestCapturedHeaders(emptyHttpConfigProvider))
-        .isNull();
+        .isEmpty();
   }
 
   @Test
@@ -141,12 +141,12 @@ class InstrumentationConfigUtilTest {
     assertThat(
             InstrumentationConfigUtil.httpServerResponseCapturedHeaders(
                 emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(
             InstrumentationConfigUtil.httpServerResponseCapturedHeaders(emptyGeneralConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(InstrumentationConfigUtil.httpServerResponseCapturedHeaders(emptyHttpConfigProvider))
-        .isNull();
+        .isEmpty();
   }
 
   @Test
@@ -155,11 +155,11 @@ class InstrumentationConfigUtilTest {
         .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
     assertThat(
             InstrumentationConfigUtil.sensitiveQueryParameters(emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
     assertThat(InstrumentationConfigUtil.sensitiveQueryParameters(emptyGeneralConfigProvider))
-        .isNull();
+        .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
     assertThat(InstrumentationConfigUtil.sensitiveQueryParameters(emptySanitizationConfigProvider))
-        .isNull();
+        .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
   }
 
   @Test
