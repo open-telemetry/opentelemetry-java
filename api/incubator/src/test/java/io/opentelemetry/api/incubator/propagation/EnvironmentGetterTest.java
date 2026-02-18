@@ -55,6 +55,30 @@ class EnvironmentGetterTest {
   }
 
   @Test
+  void get_validHeaderValues() {
+    Map<String, String> carrier = new HashMap<>();
+    carrier.put("KEY1", "simple-value");
+    carrier.put("KEY2", "value with spaces");
+    carrier.put("KEY3", "value\twith\ttabs");
+
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key1")).isEqualTo("simple-value");
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key2")).isEqualTo("value with spaces");
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key3")).isEqualTo("value\twith\ttabs");
+  }
+
+  @Test
+  void get_invalidHeaderValues() {
+    Map<String, String> carrier = new HashMap<>();
+    carrier.put("KEY1", "value\u0000with\u0001control");
+    carrier.put("KEY2", "value\nwith\nnewlines");
+    carrier.put("KEY3", "value\u0080non-ascii");
+
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key1")).isNull();
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key2")).isNull();
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key3")).isNull();
+  }
+
+  @Test
   void testToString() {
     assertThat(EnvironmentGetter.getInstance().toString()).isEqualTo("EnvironmentGetter");
   }

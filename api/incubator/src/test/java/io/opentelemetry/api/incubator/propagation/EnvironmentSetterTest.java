@@ -45,6 +45,31 @@ class EnvironmentSetterTest {
   }
 
   @Test
+  void set_validHeaderValues() {
+    Map<String, String> carrier = new HashMap<>();
+    // Printable ASCII and tab are valid per RFC 9110
+    EnvironmentSetter.getInstance().set(carrier, "key1", "simple-value");
+    EnvironmentSetter.getInstance().set(carrier, "key2", "value with spaces");
+    EnvironmentSetter.getInstance().set(carrier, "key3", "value\twith\ttabs");
+
+    assertThat(carrier).containsEntry("KEY1", "simple-value");
+    assertThat(carrier).containsEntry("KEY2", "value with spaces");
+    assertThat(carrier).containsEntry("KEY3", "value\twith\ttabs");
+  }
+
+  @Test
+  void set_invalidHeaderValues() {
+    Map<String, String> carrier = new HashMap<>();
+    // Control characters and non-ASCII are invalid per RFC 9110
+    EnvironmentSetter.getInstance().set(carrier, "key1", "value\u0000with\u0001control");
+    EnvironmentSetter.getInstance().set(carrier, "key2", "value\nwith\nnewlines");
+    EnvironmentSetter.getInstance().set(carrier, "key3", "value\rwith\rcarriage");
+    EnvironmentSetter.getInstance().set(carrier, "key4", "value\u0080non-ascii");
+
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
   void testToString() {
     assertThat(EnvironmentSetter.getInstance().toString()).isEqualTo("EnvironmentSetter");
   }
