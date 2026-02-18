@@ -10,6 +10,7 @@ import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
 import io.opentelemetry.common.ComponentLoader;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -59,6 +60,7 @@ public interface DeclarativeConfigProperties {
    *     {@code name} has not been configured or is not a valid scalar string
    */
   default String getString(String name, String defaultValue) {
+    Objects.requireNonNull(defaultValue, "Null default value");
     return defaultIfNull(getString(name), defaultValue);
   }
 
