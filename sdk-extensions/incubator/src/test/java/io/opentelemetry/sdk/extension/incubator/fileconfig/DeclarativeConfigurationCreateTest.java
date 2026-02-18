@@ -20,10 +20,14 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -215,19 +219,16 @@ class DeclarativeConfigurationCreateTest {
                 Collections.singletonList(
                     new SpanProcessorModel()
                         .withBatch(
-                            new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                    .BatchSpanProcessorModel()
+                            new BatchSpanProcessorModel()
                                 .withExporter(
-                                    new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
-                                            .model.SpanExporterModel()
-                                        .withConsole(
-                                            new io.opentelemetry.sdk.extension.incubator.fileconfig
-                                                .internal.model.ConsoleExporterModel()))))));
+                                    new SpanExporterModel()
+                                        .withConsole(new ConsoleExporterModel()))))));
 
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
     builder.addSpanExporterCustomizer(
-        (name, exporter) -> {
-          customizedExporters.add(name);
+        SpanExporter.class,
+        (exporter, properties) -> {
+          customizedExporters.add("console");
           return exporter;
         });
 
@@ -257,23 +258,21 @@ class DeclarativeConfigurationCreateTest {
                 Collections.singletonList(
                     new SpanProcessorModel()
                         .withBatch(
-                            new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                    .BatchSpanProcessorModel()
+                            new BatchSpanProcessorModel()
                                 .withExporter(
-                                    new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
-                                            .model.SpanExporterModel()
-                                        .withConsole(
-                                            new io.opentelemetry.sdk.extension.incubator.fileconfig
-                                                .internal.model.ConsoleExporterModel()))))));
+                                    new SpanExporterModel()
+                                        .withConsole(new ConsoleExporterModel()))))));
 
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
     builder.addSpanExporterCustomizer(
-        (name, exporter) -> {
+        SpanExporter.class,
+        (exporter, properties) -> {
           customizationOrder.add("first");
           return exporter;
         });
     builder.addSpanExporterCustomizer(
-        (name, exporter) -> {
+        SpanExporter.class,
+        (exporter, properties) -> {
           customizationOrder.add("second");
           return exporter;
         });

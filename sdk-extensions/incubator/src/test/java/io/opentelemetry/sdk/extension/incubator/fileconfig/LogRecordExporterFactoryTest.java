@@ -348,16 +348,15 @@ class LogRecordExporterFactoryTest {
   void create_CustomizerReturnsNull() {
     // Set up a customizer that returns null
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addLogRecordExporterCustomizer((name, exporter) -> null);
+    builder.addLogRecordExporterCustomizer(LogRecordExporter.class, (exporter, properties) -> null);
     context.setBuilder(builder);
 
-    assertThatThrownBy(
-            () ->
-                LogRecordExporterFactory.getInstance()
-                    .create(
-                        new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
-                        context))
-        .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage("Log record exporter customizer returned null for exporter: otlp_http");
+    LogRecordExporter result =
+        LogRecordExporterFactory.getInstance()
+            .create(
+                new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()), context);
+
+    // Should return original exporter when customizer returns null
+    assertThat(result).isInstanceOf(OtlpHttpLogRecordExporter.class);
   }
 }

@@ -18,6 +18,7 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
@@ -28,6 +29,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGr
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterPropertyModel;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -362,10 +365,8 @@ class SpanExporterFactoryTest {
     // Set up a customizer that wraps the exporter
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
     builder.addSpanExporterCustomizer(
-        (name, exporter) -> {
-          assertThat(name).isEqualTo("console");
-          return new SpanExporterWrapper(exporter, "customized");
-        });
+        SpanExporter.class,
+        (exporter, properties) -> new SpanExporterWrapper(exporter, "customized"));
     context.setBuilder(builder);
 
     SpanExporter exporter =
@@ -381,16 +382,15 @@ class SpanExporterFactoryTest {
   void create_CustomizerReturnsNull() {
     // Set up a customizer that returns null
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addSpanExporterCustomizer((name, exporter) -> null);
+    builder.addSpanExporterCustomizer(SpanExporter.class, (exporter, properties) -> null);
     context.setBuilder(builder);
 
-    assertThatThrownBy(
-            () ->
-                SpanExporterFactory.getInstance()
-                    .create(
-                        new SpanExporterModel().withConsole(new ConsoleExporterModel()), context))
-        .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage("Span exporter customizer returned null for exporter: console");
+    SpanExporter result =
+        SpanExporterFactory.getInstance()
+            .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
+
+    // Should return original exporter when customizer returns null
+    assertThat(result).isInstanceOf(LoggingSpanExporter.class);
   }
 
   /** Test wrapper for verifying customizer behavior. */
@@ -404,18 +404,17 @@ class SpanExporterFactoryTest {
     }
 
     @Override
-    public io.opentelemetry.sdk.common.CompletableResultCode export(
-        java.util.Collection<io.opentelemetry.sdk.trace.data.SpanData> spans) {
+    public CompletableResultCode export(Collection<SpanData> spans) {
       return delegate.export(spans);
     }
 
     @Override
-    public io.opentelemetry.sdk.common.CompletableResultCode flush() {
+    public CompletableResultCode flush() {
       return delegate.flush();
     }
 
     @Override
-    public io.opentelemetry.sdk.common.CompletableResultCode shutdown() {
+    public CompletableResultCode shutdown() {
       return delegate.shutdown();
     }
   }

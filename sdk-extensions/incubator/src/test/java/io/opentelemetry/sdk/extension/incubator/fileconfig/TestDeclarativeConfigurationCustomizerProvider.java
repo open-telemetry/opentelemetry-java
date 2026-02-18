@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,8 @@ public class TestDeclarativeConfigurationCustomizerProvider
 
     // Add exporter customizers that inject a resource attribute marker
     customizer.addSpanExporterCustomizer(
-        (name, exporter) -> {
+        SpanExporter.class,
+        (exporter, properties) -> {
           // Mark that exporter customizer was applied by adding attribute to resource
           return exporter;
         });

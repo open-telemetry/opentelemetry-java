@@ -18,106 +18,66 @@ class DeclarativeConfigurationBuilderTest {
   @Test
   void spanExporterCustomizer_Single() {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    SpanExporter mockExporter = mock(SpanExporter.class);
 
-    builder.addSpanExporterCustomizer((name, exporter) -> mockExporter);
+    builder.addSpanExporterCustomizer(
+        SpanExporter.class, (exporter, properties) -> mock(SpanExporter.class));
 
-    SpanExporter result =
-        builder.getSpanExporterCustomizer().apply("test", mock(SpanExporter.class));
-    assertThat(result).isSameAs(mockExporter);
+    assertThat(builder.getSpanExporterCustomizers()).hasSize(1);
   }
 
   @Test
   void spanExporterCustomizer_Multiple_Compose() {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    SpanExporter originalExporter = mock(SpanExporter.class);
-    SpanExporter firstResult = mock(SpanExporter.class);
-    SpanExporter secondResult = mock(SpanExporter.class);
 
     builder.addSpanExporterCustomizer(
-        (name, exporter) -> {
-          assertThat(exporter).isSameAs(originalExporter);
-          return firstResult;
-        });
-
+        SpanExporter.class, (exporter, properties) -> mock(SpanExporter.class));
     builder.addSpanExporterCustomizer(
-        (name, exporter) -> {
-          assertThat(exporter).isSameAs(firstResult);
-          return secondResult;
-        });
+        SpanExporter.class, (exporter, properties) -> mock(SpanExporter.class));
 
-    SpanExporter result = builder.getSpanExporterCustomizer().apply("test", originalExporter);
-    assertThat(result).isSameAs(secondResult);
+    assertThat(builder.getSpanExporterCustomizers()).hasSize(2);
   }
 
   @Test
   void metricExporterCustomizer_Single() {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    MetricExporter mockExporter = mock(MetricExporter.class);
 
-    builder.addMetricExporterCustomizer((name, exporter) -> mockExporter);
+    builder.addMetricExporterCustomizer(
+        MetricExporter.class, (exporter, properties) -> mock(MetricExporter.class));
 
-    MetricExporter result =
-        builder.getMetricExporterCustomizer().apply("test", mock(MetricExporter.class));
-    assertThat(result).isSameAs(mockExporter);
+    assertThat(builder.getMetricExporterCustomizers()).hasSize(1);
   }
 
   @Test
   void metricExporterCustomizer_Multiple_Compose() {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    MetricExporter originalExporter = mock(MetricExporter.class);
-    MetricExporter firstResult = mock(MetricExporter.class);
-    MetricExporter secondResult = mock(MetricExporter.class);
 
     builder.addMetricExporterCustomizer(
-        (name, exporter) -> {
-          assertThat(exporter).isSameAs(originalExporter);
-          return firstResult;
-        });
-
+        MetricExporter.class, (exporter, properties) -> mock(MetricExporter.class));
     builder.addMetricExporterCustomizer(
-        (name, exporter) -> {
-          assertThat(exporter).isSameAs(firstResult);
-          return secondResult;
-        });
+        MetricExporter.class, (exporter, properties) -> mock(MetricExporter.class));
 
-    MetricExporter result = builder.getMetricExporterCustomizer().apply("test", originalExporter);
-    assertThat(result).isSameAs(secondResult);
+    assertThat(builder.getMetricExporterCustomizers()).hasSize(2);
   }
 
   @Test
   void logRecordExporterCustomizer_Single() {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    LogRecordExporter mockExporter = mock(LogRecordExporter.class);
 
-    builder.addLogRecordExporterCustomizer((name, exporter) -> mockExporter);
+    builder.addLogRecordExporterCustomizer(
+        LogRecordExporter.class, (exporter, properties) -> mock(LogRecordExporter.class));
 
-    LogRecordExporter result =
-        builder.getLogRecordExporterCustomizer().apply("test", mock(LogRecordExporter.class));
-    assertThat(result).isSameAs(mockExporter);
+    assertThat(builder.getLogRecordExporterCustomizers()).hasSize(1);
   }
 
   @Test
   void logRecordExporterCustomizer_Multiple_Compose() {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    LogRecordExporter originalExporter = mock(LogRecordExporter.class);
-    LogRecordExporter firstResult = mock(LogRecordExporter.class);
-    LogRecordExporter secondResult = mock(LogRecordExporter.class);
 
     builder.addLogRecordExporterCustomizer(
-        (name, exporter) -> {
-          assertThat(exporter).isSameAs(originalExporter);
-          return firstResult;
-        });
-
+        LogRecordExporter.class, (exporter, properties) -> mock(LogRecordExporter.class));
     builder.addLogRecordExporterCustomizer(
-        (name, exporter) -> {
-          assertThat(exporter).isSameAs(firstResult);
-          return secondResult;
-        });
+        LogRecordExporter.class, (exporter, properties) -> mock(LogRecordExporter.class));
 
-    LogRecordExporter result =
-        builder.getLogRecordExporterCustomizer().apply("test", originalExporter);
-    assertThat(result).isSameAs(secondResult);
+    assertThat(builder.getLogRecordExporterCustomizers()).hasSize(2);
   }
 }

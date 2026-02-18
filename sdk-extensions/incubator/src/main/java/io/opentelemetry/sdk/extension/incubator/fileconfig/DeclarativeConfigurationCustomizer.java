@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -27,27 +28,35 @@ public interface DeclarativeConfigurationCustomizer {
    * Add customizer for {@link SpanExporter} instances created from declarative configuration.
    * Multiple customizers compose in registration order.
    *
-   * @param customizer function receiving (exporterName, exporter) and returning customized exporter
+   * @param exporterType the exporter type to customize
+   * @param customizer function receiving (exporter, properties) and returning customized exporter
+   * @param <T> the exporter type
    */
-  void addSpanExporterCustomizer(BiFunction<String, SpanExporter, SpanExporter> customizer);
+  <T extends SpanExporter> void addSpanExporterCustomizer(
+      Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer);
 
   /**
    * Add customizer for {@link MetricExporter} instances created from declarative configuration.
    * Multiple customizers compose in registration order.
    *
-   * @param customizer function receiving (exporterName, exporter) and returning customized exporter
+   * @param exporterType the exporter type to customize
+   * @param customizer function receiving (exporter, properties) and returning customized exporter
+   * @param <T> the exporter type
    */
-  void addMetricExporterCustomizer(BiFunction<String, MetricExporter, MetricExporter> customizer);
+  <T extends MetricExporter> void addMetricExporterCustomizer(
+      Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer);
 
   /**
    * Add customizer for {@link LogRecordExporter} instances created from declarative configuration.
    * Multiple customizers compose in registration order.
    *
-   * <p>Important: Customizers must not return null. If the customizer wraps the exporter in a new
-   * {@link java.io.Closeable} instance, the customizer is responsible for resource cleanup.
+   * <p>Important: If the customizer wraps the exporter in a new {@link java.io.Closeable} instance,
+   * the customizer is responsible for resource cleanup.
    *
-   * @param customizer function receiving (exporterName, exporter) and returning customized exporter
+   * @param exporterType the exporter type to customize
+   * @param customizer function receiving (exporter, properties) and returning customized exporter
+   * @param <T> the exporter type
    */
-  void addLogRecordExporterCustomizer(
-      BiFunction<String, LogRecordExporter, LogRecordExporter> customizer);
+  <T extends LogRecordExporter> void addLogRecordExporterCustomizer(
+      Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer);
 }

@@ -11,15 +11,11 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -80,18 +76,9 @@ class DeclarativeConfigContext {
     this.builder = builder;
   }
 
-  BiFunction<String, SpanExporter, SpanExporter> getSpanExporterCustomizer() {
-    return builder != null ? builder.getSpanExporterCustomizer() : (name, exporter) -> exporter;
-  }
-
-  BiFunction<String, MetricExporter, MetricExporter> getMetricExporterCustomizer() {
-    return builder != null ? builder.getMetricExporterCustomizer() : (name, exporter) -> exporter;
-  }
-
-  BiFunction<String, LogRecordExporter, LogRecordExporter> getLogRecordExporterCustomizer() {
-    return builder != null
-        ? builder.getLogRecordExporterCustomizer()
-        : (name, exporter) -> exporter;
+  @Nullable
+  DeclarativeConfigurationBuilder getBuilder() {
+    return builder;
   }
 
   SpiHelper getSpiHelper() {

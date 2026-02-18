@@ -398,16 +398,16 @@ class MetricExporterFactoryTest {
   void create_CustomizerReturnsNull() {
     // Set up a customizer that returns null
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addMetricExporterCustomizer((name, exporter) -> null);
+    builder.addMetricExporterCustomizer(MetricExporter.class, (exporter, properties) -> null);
     context.setBuilder(builder);
 
-    assertThatThrownBy(
-            () ->
-                MetricExporterFactory.getInstance()
-                    .create(
-                        new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
-                        context))
-        .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage("Metric exporter customizer returned null for exporter: console");
+    MetricExporter result =
+        MetricExporterFactory.getInstance()
+            .create(
+                new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+                context);
+
+    // Should return original exporter when customizer returns null
+    assertThat(result).isInstanceOf(LoggingMetricExporter.class);
   }
 }

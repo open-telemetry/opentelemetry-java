@@ -5,11 +5,12 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.logging.Logger;
 
 final class MetricExporterFactory implements Factory<PushMetricExporterModel, MetricExporter> {
+  private static final Logger logger = Logger.getLogger(MetricExporterFactory.class.getName());
   private static final MetricExporterFactory INSTANCE = new MetricExporterFactory();
 
   private MetricExporterFactory() {}
@@ -26,12 +27,25 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
     String exporterName = metricExporterKeyValue.getKey();
     MetricExporter exporter = context.loadComponent(MetricExporter.class, metricExporterKeyValue);
 
-    // Apply customizer
-    MetricExporter customized = context.getMetricExporterCustomizer().apply(exporterName, exporter);
-    if (customized == null) {
-      throw new DeclarativeConfigException(
-          "Metric exporter customizer returned null for exporter: " + exporterName);
+    // Apply customizers
+    DeclarativeConfigurationBuilder builder = context.getBuilder();
+    if (builder != null) {
+      for (DeclarativeConfigurationBuilder.ExporterCustomizer<MetricExporter> customizerEntry :
+          builder.getMetricExporterCustomizers()) {
+        if (customizerEntry.getExporterType().isInstance(exporter)) {
+          MetricExporter customized =
+              customizerEntry.getCustomizer().apply(exporter, metricExporterKeyValue.getValue());
+          if (customized == null) {
+            logger.warning(
+                "Metric exporter customizer returned null for exporter: "
+                    + exporterName
+                    + ", using original exporter");
+          } else {
+            exporter = customized;
+          }
+        }
+      }
     }
-    return customized;
+    return exporter;
   }
 }

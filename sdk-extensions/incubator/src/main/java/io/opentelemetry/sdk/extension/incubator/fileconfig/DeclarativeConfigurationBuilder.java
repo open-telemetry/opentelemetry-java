@@ -5,10 +5,13 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -17,12 +20,31 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
   private Function<OpenTelemetryConfigurationModel, OpenTelemetryConfigurationModel>
       modelCustomizer = Function.identity();
 
-  private BiFunction<String, SpanExporter, SpanExporter> spanExporterCustomizer =
-      (name, exporter) -> exporter;
-  private BiFunction<String, MetricExporter, MetricExporter> metricExporterCustomizer =
-      (name, exporter) -> exporter;
-  private BiFunction<String, LogRecordExporter, LogRecordExporter> logRecordExporterCustomizer =
-      (name, exporter) -> exporter;
+  private final List<ExporterCustomizer<SpanExporter>> spanExporterCustomizers = new ArrayList<>();
+  private final List<ExporterCustomizer<MetricExporter>> metricExporterCustomizers =
+      new ArrayList<>();
+  private final List<ExporterCustomizer<LogRecordExporter>> logRecordExporterCustomizers =
+      new ArrayList<>();
+
+  static class ExporterCustomizer<T> {
+    private final Class<? extends T> exporterType;
+    private final BiFunction<T, DeclarativeConfigProperties, T> customizer;
+
+    @SuppressWarnings("unchecked")
+    <E extends T> ExporterCustomizer(
+        Class<E> exporterType, BiFunction<E, DeclarativeConfigProperties, E> customizer) {
+      this.exporterType = exporterType;
+      this.customizer = (BiFunction<T, DeclarativeConfigProperties, T>) customizer;
+    }
+
+    Class<? extends T> getExporterType() {
+      return exporterType;
+    }
+
+    BiFunction<T, DeclarativeConfigProperties, T> getCustomizer() {
+      return customizer;
+    }
+  }
 
   @Override
   public void addModelCustomizer(
@@ -31,21 +53,21 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
   }
 
   @Override
-  public void addSpanExporterCustomizer(BiFunction<String, SpanExporter, SpanExporter> customizer) {
-    spanExporterCustomizer = mergeBiFunctionCustomizer(spanExporterCustomizer, customizer);
+  public <T extends SpanExporter> void addSpanExporterCustomizer(
+      Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer) {
+    spanExporterCustomizers.add(new ExporterCustomizer<>(exporterType, customizer));
   }
 
   @Override
-  public void addMetricExporterCustomizer(
-      BiFunction<String, MetricExporter, MetricExporter> customizer) {
-    metricExporterCustomizer = mergeBiFunctionCustomizer(metricExporterCustomizer, customizer);
+  public <T extends MetricExporter> void addMetricExporterCustomizer(
+      Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer) {
+    metricExporterCustomizers.add(new ExporterCustomizer<>(exporterType, customizer));
   }
 
   @Override
-  public void addLogRecordExporterCustomizer(
-      BiFunction<String, LogRecordExporter, LogRecordExporter> customizer) {
-    logRecordExporterCustomizer =
-        mergeBiFunctionCustomizer(logRecordExporterCustomizer, customizer);
+  public <T extends LogRecordExporter> void addLogRecordExporterCustomizer(
+      Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer) {
+    logRecordExporterCustomizers.add(new ExporterCustomizer<>(exporterType, customizer));
   }
 
   private static <I, O1, O2> Function<I, O2> mergeCustomizer(
@@ -56,29 +78,21 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
     };
   }
 
-  private static <K, V> BiFunction<K, V, V> mergeBiFunctionCustomizer(
-      BiFunction<K, V, V> first, BiFunction<K, V, V> second) {
-    return (K key, V value) -> {
-      V firstResult = first.apply(key, value);
-      return second.apply(key, firstResult);
-    };
-  }
-
   /** Customize the configuration model. */
   public OpenTelemetryConfigurationModel customizeModel(
       OpenTelemetryConfigurationModel configurationModel) {
     return modelCustomizer.apply(configurationModel);
   }
 
-  BiFunction<String, SpanExporter, SpanExporter> getSpanExporterCustomizer() {
-    return spanExporterCustomizer;
+  List<ExporterCustomizer<SpanExporter>> getSpanExporterCustomizers() {
+    return spanExporterCustomizers;
   }
 
-  BiFunction<String, MetricExporter, MetricExporter> getMetricExporterCustomizer() {
-    return metricExporterCustomizer;
+  List<ExporterCustomizer<MetricExporter>> getMetricExporterCustomizers() {
+    return metricExporterCustomizers;
   }
 
-  BiFunction<String, LogRecordExporter, LogRecordExporter> getLogRecordExporterCustomizer() {
-    return logRecordExporterCustomizer;
+  List<ExporterCustomizer<LogRecordExporter>> getLogRecordExporterCustomizers() {
+    return logRecordExporterCustomizers;
   }
 }
