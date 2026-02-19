@@ -73,31 +73,15 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
     // cross-platform compatibility.
     String sanitizedKey = key.replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
     String value = carrier.get(sanitizedKey);
-    if (value != null && !isValidHttpHeaderValue(value)) {
+    if (value != null && !EnvironmentSetter.isValidHttpHeaderValue(value)) {
       logger.log(
           Level.FINE,
-          "Ignoring environment variable ''{0}'': "
+          "Ignoring environment variable '{0}': "
               + "value contains characters not valid in HTTP header fields per RFC 9110.",
           sanitizedKey);
       return null;
     }
     return value;
-  }
-
-  /**
-   * Checks whether a string contains only characters valid in HTTP header field values per <a
-   * href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.5">RFC 9110 Section 5.5</a>.
-   * Valid characters are: visible ASCII (0x21-0x7E), space (0x20), and horizontal tab (0x09).
-   */
-  private static boolean isValidHttpHeaderValue(String value) {
-    for (int i = 0; i < value.length(); i++) {
-      char ch = value.charAt(i);
-      // VCHAR (0x21-0x7E), SP (0x20), HTAB (0x09)
-      if (ch != '\t' && (ch < ' ' || ch > '~')) {
-        return false;
-      }
-    }
-    return true;
   }
 
   @Override

@@ -84,7 +84,7 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
    * href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.5">RFC 9110 Section 5.5</a>.
    * Valid characters are: visible ASCII (0x21-0x7E), space (0x20), and horizontal tab (0x09).
    */
-  private static boolean isValidHttpHeaderValue(String value) {
+  static boolean isValidHttpHeaderValue(String value) {
     for (int i = 0; i < value.length(); i++) {
       char ch = value.charAt(i);
       // VCHAR (0x21-0x7E), SP (0x20), HTAB (0x09)
