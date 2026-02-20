@@ -124,7 +124,7 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
     output.serializeFixed64(ExponentialHistogramDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
     output.serializeFixed64(ExponentialHistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
     output.serializeFixed64(ExponentialHistogramDataPoint.COUNT, count);
-    output.serializeDouble(ExponentialHistogramDataPoint.SUM, sum);
+    output.serializeDoubleOptional(ExponentialHistogramDataPoint.SUM, sum);
     if (hasMin) {
       output.serializeDoubleOptional(ExponentialHistogramDataPoint.MIN, min);
     }
@@ -161,7 +161,7 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
     size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.SCALE, scale);
     size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.COUNT, count);
-    size += MarshalerUtil.sizeDouble(ExponentialHistogramDataPoint.SUM, sum);
+    size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.SUM, sum);
     if (hasMin) {
       size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.MIN, min);
     }

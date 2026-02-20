@@ -531,6 +531,42 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void exponentialHistogramZeroSum(MarshalerSource marshalerSource) {
+    assertThat(
+            toExponentialHistogramDataPoints(
+                marshalerSource,
+                ImmutableList.of(
+                    ImmutableExponentialHistogramPointData.create(
+                        0,
+                        0,
+                        0,
+                        /* hasMin= */ false,
+                        0,
+                        /* hasMax= */ false,
+                        0,
+                        ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
+                        ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
+                        123,
+                        456,
+                        Attributes.empty(),
+                        Collections.emptyList()))))
+        .containsExactly(
+            ExponentialHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .setCount(0)
+                .setScale(0)
+                .setSum(0)
+                .setZeroCount(0)
+                .setPositive(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .setNegative(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .build());
+  }
+
   @SuppressWarnings("PointlessArithmeticExpression")
   @ParameterizedTest
   @EnumSource(MarshalerSource.class)
