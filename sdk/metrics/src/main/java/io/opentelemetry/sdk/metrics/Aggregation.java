@@ -66,7 +66,18 @@ public interface Aggregation {
    *     order from lowest to highest.
    */
   static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
-    return ExplicitBucketHistogramAggregation.create(bucketBoundaries);
+    return ExplicitBucketHistogramAggregation.create(bucketBoundaries, /* recordMinMax= */ true);
+  }
+
+  /**
+   * Aggregates measurements into an explicit bucket {@link MetricDataType#HISTOGRAM}.
+   *
+   * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
+   *     order from lowest to highest.
+   * @param recordMinMax whether to record min and max values
+   */
+  static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries, boolean recordMinMax) {
+    return ExplicitBucketHistogramAggregation.create(bucketBoundaries, recordMinMax);
   }
 
   /**
@@ -91,6 +102,23 @@ public interface Aggregation {
    * @since 1.23.0
    */
   static Aggregation base2ExponentialBucketHistogram(int maxBuckets, int maxScale) {
-    return Base2ExponentialHistogramAggregation.create(maxBuckets, maxScale);
+    return Base2ExponentialHistogramAggregation.create(
+        maxBuckets, maxScale, /* recordMinMax= */ true);
+  }
+
+  /**
+   * Aggregates measurements into a base-2 {@link MetricDataType#EXPONENTIAL_HISTOGRAM}.
+   *
+   * @param maxBuckets the max number of positive buckets and negative buckets (max total buckets is
+   *     2 * {@code maxBuckets} + 1 zero bucket).
+   * @param maxScale the maximum and initial scale. If measurements can't fit in a particular scale
+   *     given the {@code maxBuckets}, the scale is reduced until the measurements can be
+   *     accommodated. Setting maxScale may reduce the number of downscales. Additionally, the
+   *     performance of computing bucket index is improved when scale is {@code <= 0}.
+   * @param recordMinMax whether to record min and max values
+   */
+  static Aggregation base2ExponentialBucketHistogram(
+      int maxBuckets, int maxScale, boolean recordMinMax) {
+    return Base2ExponentialHistogramAggregation.create(maxBuckets, maxScale, recordMinMax);
   }
 }

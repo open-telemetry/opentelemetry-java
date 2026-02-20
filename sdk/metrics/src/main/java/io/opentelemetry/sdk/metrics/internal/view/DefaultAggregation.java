@@ -45,7 +45,7 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
       case HISTOGRAM:
         if (withAdvice && instrument.getAdvice().getExplicitBucketBoundaries() != null) {
           return ExplicitBucketHistogramAggregation.create(
-              instrument.getAdvice().getExplicitBucketBoundaries());
+              instrument.getAdvice().getExplicitBucketBoundaries(), /* recordMinMax= */ true);
         }
         return ExplicitBucketHistogramAggregation.getDefault();
       case OBSERVABLE_GAUGE:

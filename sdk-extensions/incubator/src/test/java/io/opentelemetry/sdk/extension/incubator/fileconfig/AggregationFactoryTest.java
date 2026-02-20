@@ -62,6 +62,49 @@ class AggregationFactoryTest {
                 .withExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
                         .withBoundaries(Arrays.asList(1.0, 2.0))),
-            Aggregation.explicitBucketHistogram(Arrays.asList(1.0, 2.0))));
+            Aggregation.explicitBucketHistogram(Arrays.asList(1.0, 2.0))),
+        // Test recordMinMax parameter for explicit bucket histogram
+        Arguments.of(
+            new AggregationModel()
+                .withExplicitBucketHistogram(
+                    new ExplicitBucketHistogramAggregationModel()
+                        .withBoundaries(Arrays.asList(1.0, 2.0))
+                        .withRecordMinMax(true)),
+            Aggregation.explicitBucketHistogram(Arrays.asList(1.0, 2.0), true)),
+        Arguments.of(
+            new AggregationModel()
+                .withExplicitBucketHistogram(
+                    new ExplicitBucketHistogramAggregationModel()
+                        .withBoundaries(Arrays.asList(1.0, 2.0))
+                        .withRecordMinMax(false)),
+            Aggregation.explicitBucketHistogram(Arrays.asList(1.0, 2.0), false)),
+        Arguments.of(
+            new AggregationModel()
+                .withExplicitBucketHistogram(
+                    new ExplicitBucketHistogramAggregationModel()
+                        .withBoundaries(null)
+                        .withRecordMinMax(false)),
+            Aggregation.explicitBucketHistogram(
+                Arrays.asList(
+                    0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, 2500.0,
+                    5000.0, 7500.0, 10000.0),
+                false)),
+        // Test recordMinMax parameter for exponential bucket histogram
+        Arguments.of(
+            new AggregationModel()
+                .withBase2ExponentialBucketHistogram(
+                    new Base2ExponentialBucketHistogramAggregationModel()
+                        .withMaxSize(2)
+                        .withMaxScale(2)
+                        .withRecordMinMax(true)),
+            Aggregation.base2ExponentialBucketHistogram(2, 2, true)),
+        Arguments.of(
+            new AggregationModel()
+                .withBase2ExponentialBucketHistogram(
+                    new Base2ExponentialBucketHistogramAggregationModel()
+                        .withMaxSize(2)
+                        .withMaxScale(2)
+                        .withRecordMinMax(false)),
+            Aggregation.base2ExponentialBucketHistogram(2, 2, false)));
   }
 }
