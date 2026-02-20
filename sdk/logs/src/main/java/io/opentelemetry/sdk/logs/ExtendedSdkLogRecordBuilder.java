@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** SDK implementation of {@link ExtendedLogRecordBuilder}. */
+@SuppressWarnings("deprecation")
 final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     implements ExtendedLogRecordBuilder {
 

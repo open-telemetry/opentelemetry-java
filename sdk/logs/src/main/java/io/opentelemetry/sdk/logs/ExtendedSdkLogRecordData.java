@@ -20,6 +20,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @AutoValue.CopyAnnotations
 @Immutable
+@SuppressWarnings("deprecation")
 abstract class ExtendedSdkLogRecordData implements ExtendedLogRecordData {
 
   ExtendedSdkLogRecordData() {}

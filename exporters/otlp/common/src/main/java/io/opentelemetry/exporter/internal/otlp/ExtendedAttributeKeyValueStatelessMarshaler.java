@@ -32,6 +32,7 @@ import java.util.Objects;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@SuppressWarnings("deprecation")
 public final class ExtendedAttributeKeyValueStatelessMarshaler
     implements StatelessMarshaler2<ExtendedAttributeKey<?>, Object> {
   private static final ExtendedAttributeKeyValueStatelessMarshaler INSTANCE =
@@ -142,7 +143,7 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
     static final ValueStatelessMarshaler INSTANCE = new ValueStatelessMarshaler();
 
     // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
-    @SuppressWarnings({"unchecked", "deprecation"})
+    @SuppressWarnings("unchecked")
     @Override
     public int getBinarySerializedSize(
         ExtendedAttributeKey<?> attributeKey, Object value, MarshalerContext context) {
@@ -186,7 +187,7 @@ public final class ExtendedAttributeKeyValueStatelessMarshaler
     }
 
     // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
-    @SuppressWarnings({"unchecked", "deprecation"})
+    @SuppressWarnings("unchecked")
     @Override
     public void writeTo(
         Serializer output,

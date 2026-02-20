@@ -27,6 +27,7 @@ import java.util.function.BiConsumer;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@SuppressWarnings("deprecation")
 public class IncubatingUtil {
 
   private static final boolean INCUBATOR_AVAILABLE;
@@ -82,7 +83,7 @@ public class IncubatingUtil {
 
   // TODO(jack-berg): move to KeyValueMarshaler when ExtendedAttributes is stable
   // Supporting deprecated EXTENDED_ATTRIBUTES type until removed
-  @SuppressWarnings({"unchecked", "deprecation"})
+  @SuppressWarnings("unchecked")
   private static KeyValueMarshaler create(ExtendedAttributeKey<?> attributeKey, Object value) {
     byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {

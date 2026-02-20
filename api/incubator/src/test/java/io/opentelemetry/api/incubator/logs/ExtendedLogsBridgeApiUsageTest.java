@@ -31,6 +31,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Logs Bridge API. */
+@SuppressWarnings("deprecation")
 class ExtendedLogsBridgeApiUsageTest {
 
   private static final java.util.logging.Logger logger =
