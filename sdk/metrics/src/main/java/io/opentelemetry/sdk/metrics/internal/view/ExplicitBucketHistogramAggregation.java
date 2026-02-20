@@ -35,10 +35,6 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
     return DEFAULT;
   }
 
-  public static Aggregation create(List<Double> bucketBoundaries) {
-    return new ExplicitBucketHistogramAggregation(bucketBoundaries, /* recordMinMax= */ true);
-  }
-
   public static Aggregation create(List<Double> bucketBoundaries, boolean recordMinMax) {
     return new ExplicitBucketHistogramAggregation(bucketBoundaries, recordMinMax);
   }

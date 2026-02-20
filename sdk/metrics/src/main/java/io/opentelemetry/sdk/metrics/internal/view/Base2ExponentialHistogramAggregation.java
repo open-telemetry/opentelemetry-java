@@ -58,23 +58,6 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
    *     given the {@code maxBuckets}, the scale is reduced until the measurements can be
    *     accommodated. Setting maxScale may reduce the number of downscales. Additionally, the
    *     performance of computing bucket index is improved when scale is <= 0.
-   * @return the aggregation
-   */
-  public static Aggregation create(int maxBuckets, int maxScale) {
-    checkArgument(maxBuckets >= 2, "maxBuckets must be >= 2");
-    checkArgument(maxScale <= 20 && maxScale >= -10, "maxScale must be -10 <= x <= 20");
-    return new Base2ExponentialHistogramAggregation(maxBuckets, maxScale, /* recordMinMax= */ true);
-  }
-
-  /**
-   * Aggregations measurements into an {@link MetricDataType#EXPONENTIAL_HISTOGRAM}.
-   *
-   * @param maxBuckets the max number of positive buckets and negative buckets (max total buckets is
-   *     2 * {@code maxBuckets} + 1 zero bucket).
-   * @param maxScale the maximum and initial scale. If measurements can't fit in a particular scale
-   *     given the {@code maxBuckets}, the scale is reduced until the measurements can be
-   *     accommodated. Setting maxScale may reduce the number of downscales. Additionally, the
-   *     performance of computing bucket index is improved when scale is <= 0.
    * @param recordMinMax whether to record min and max values
    * @return the aggregation
    */

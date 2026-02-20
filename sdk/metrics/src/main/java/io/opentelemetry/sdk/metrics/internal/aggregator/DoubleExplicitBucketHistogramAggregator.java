@@ -97,7 +97,6 @@ public final class DoubleExplicitBucketHistogramAggregator
     private final List<Double> boundaryList;
     // read-only
     private final double[] boundaries;
-    // read-only
     private final boolean recordMinMax;
 
     private final Object lock = new Object();
