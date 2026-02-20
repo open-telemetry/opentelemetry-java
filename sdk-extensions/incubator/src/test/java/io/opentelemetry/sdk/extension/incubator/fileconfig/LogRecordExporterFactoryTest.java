@@ -12,12 +12,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GrpcTlsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpTlsModel;
@@ -35,6 +37,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -59,6 +62,7 @@ class LogRecordExporterFactoryTest {
     capturingComponentLoader = new CapturingComponentLoader();
     spiHelper = SpiHelper.create(capturingComponentLoader);
     context = new DeclarativeConfigContext(spiHelper);
+    context.setBuilder(new DeclarativeConfigurationBuilder());
   }
 
   @Test
@@ -345,18 +349,76 @@ class LogRecordExporterFactoryTest {
   }
 
   @Test
-  void create_CustomizerReturnsNull() {
-    // Set up a customizer that returns null
-    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addLogRecordExporterCustomizer(LogRecordExporter.class, (exporter, properties) -> null);
-    context.setBuilder(builder);
+  void create_Customizer() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addLogRecordExporterCustomizer(
+            LogRecordExporter.class, (exporter, properties) -> SystemOutLogRecordExporter.create());
+
+    LogRecordExporter result =
+        LogRecordExporterFactory.getInstance()
+            .create(new LogRecordExporterModel().withConsole(new ConsoleExporterModel()), context);
+    cleanup.addCloseable(result);
+
+    assertThat(result).isInstanceOf(SystemOutLogRecordExporter.class);
+  }
+
+  @Test
+  void create_Customizer_TypeSafe() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addLogRecordExporterCustomizer(
+            OtlpGrpcLogRecordExporter.class,
+            (exporter, properties) ->
+                exporter.toBuilder().setTimeout(Duration.ofSeconds(42)).build());
 
     LogRecordExporter result =
         LogRecordExporterFactory.getInstance()
             .create(
-                new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()), context);
+                new LogRecordExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()), context);
+    cleanup.addCloseable(result);
 
-    // Should return original exporter when customizer returns null
-    assertThat(result).isInstanceOf(OtlpHttpLogRecordExporter.class);
+    assertThat(result).isInstanceOf(OtlpGrpcLogRecordExporter.class);
+    assertThat(result.toString()).contains("timeoutNanos=42000000000");
+  }
+
+  @Test
+  void create_Customizer_TypeMismatch() {
+    AtomicInteger callCount = new AtomicInteger(0);
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addLogRecordExporterCustomizer(
+            OtlpGrpcLogRecordExporter.class,
+            (exporter, properties) -> {
+              callCount.incrementAndGet();
+              return exporter;
+            });
+
+    LogRecordExporter result =
+        LogRecordExporterFactory.getInstance()
+            .create(new LogRecordExporterModel().withConsole(new ConsoleExporterModel()), context);
+    cleanup.addCloseable(result);
+
+    assertThat(callCount.get()).isEqualTo(0);
+  }
+
+  @Test
+  void create_Customizer_ReturnsNull() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addLogRecordExporterCustomizer(LogRecordExporter.class, (exporter, properties) -> null);
+
+    assertThatThrownBy(
+            () ->
+                LogRecordExporterFactory.getInstance()
+                    .create(
+                        new LogRecordExporterModel().withConsole(new ConsoleExporterModel()),
+                        context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessageContaining("Customizer returned null for LogRecordExporter: console");
   }
 }

@@ -41,6 +41,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -65,6 +66,7 @@ class MetricExporterFactoryTest {
     capturingComponentLoader = new CapturingComponentLoader();
     spiHelper = SpiHelper.create(capturingComponentLoader);
     context = new DeclarativeConfigContext(spiHelper);
+    context.setBuilder(new DeclarativeConfigurationBuilder());
   }
 
   @Test
@@ -395,19 +397,81 @@ class MetricExporterFactoryTest {
   }
 
   @Test
-  void create_CustomizerReturnsNull() {
-    // Set up a customizer that returns null
-    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addMetricExporterCustomizer(MetricExporter.class, (exporter, properties) -> null);
-    context.setBuilder(builder);
+  void create_Customizer() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addMetricExporterCustomizer(
+            MetricExporter.class, (exporter, properties) -> LoggingMetricExporter.create());
 
     MetricExporter result =
         MetricExporterFactory.getInstance()
             .create(
                 new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
                 context);
+    cleanup.addCloseable(result);
 
-    // Should return original exporter when customizer returns null
     assertThat(result).isInstanceOf(LoggingMetricExporter.class);
+  }
+
+  @Test
+  void create_Customizer_TypeSafe() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addMetricExporterCustomizer(
+            OtlpGrpcMetricExporter.class,
+            (exporter, properties) ->
+                exporter.toBuilder().setTimeout(Duration.ofSeconds(42)).build());
+
+    MetricExporter result =
+        MetricExporterFactory.getInstance()
+            .create(
+                new PushMetricExporterModel().withOtlpGrpc(new OtlpGrpcMetricExporterModel()),
+                context);
+    cleanup.addCloseable(result);
+
+    assertThat(result).isInstanceOf(OtlpGrpcMetricExporter.class);
+    assertThat(result.toString()).contains("timeoutNanos=42000000000");
+  }
+
+  @Test
+  void create_Customizer_TypeMismatch() {
+    AtomicInteger callCount = new AtomicInteger(0);
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addMetricExporterCustomizer(
+            OtlpGrpcMetricExporter.class,
+            (exporter, properties) -> {
+              callCount.incrementAndGet();
+              return exporter;
+            });
+
+    MetricExporter result =
+        MetricExporterFactory.getInstance()
+            .create(
+                new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+                context);
+    cleanup.addCloseable(result);
+
+    assertThat(callCount.get()).isEqualTo(0);
+  }
+
+  @Test
+  void create_Customizer_ReturnsNull() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addMetricExporterCustomizer(MetricExporter.class, (exporter, properties) -> null);
+
+    assertThatThrownBy(
+            () ->
+                MetricExporterFactory.getInstance()
+                    .create(
+                        new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+                        context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessageContaining("Customizer returned null for MetricExporter: console");
   }
 }

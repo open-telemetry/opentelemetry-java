@@ -18,7 +18,6 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
@@ -29,7 +28,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGr
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterPropertyModel;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -38,8 +36,8 @@ import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -64,6 +62,7 @@ class SpanExporterFactoryTest {
     capturingComponentLoader = new CapturingComponentLoader();
     spiHelper = SpiHelper.create(capturingComponentLoader);
     context = new DeclarativeConfigContext(spiHelper);
+    context.setBuilder(new DeclarativeConfigurationBuilder());
   }
 
   @Test
@@ -361,61 +360,81 @@ class SpanExporterFactoryTest {
   }
 
   @Test
-  void create_CustomizerApplied() {
-    // Set up a customizer that wraps the exporter
-    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addSpanExporterCustomizer(
-        SpanExporter.class,
-        (exporter, properties) -> new SpanExporterWrapper(exporter, "customized"));
-    context.setBuilder(builder);
-
-    SpanExporter exporter =
-        SpanExporterFactory.getInstance()
-            .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
-    cleanup.addCloseable(exporter);
-
-    assertThat(exporter).isInstanceOf(SpanExporterWrapper.class);
-    assertThat(((SpanExporterWrapper) exporter).tag).isEqualTo("customized");
-  }
-
-  @Test
-  void create_CustomizerReturnsNull() {
-    // Set up a customizer that returns null
-    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addSpanExporterCustomizer(SpanExporter.class, (exporter, properties) -> null);
-    context.setBuilder(builder);
+  void create_Customizer() {
+    // Generic customizer applied to all span exporters
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addSpanExporterCustomizer(
+            SpanExporter.class,
+            (exporter, properties) ->
+                SpanExporter.composite(exporter, LoggingSpanExporter.create()));
 
     SpanExporter result =
         SpanExporterFactory.getInstance()
             .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
+    cleanup.addCloseable(result);
 
-    // Should return original exporter when customizer returns null
-    assertThat(result).isInstanceOf(LoggingSpanExporter.class);
+    // Result should be wrapped in composite
+    assertThat(result.toString()).contains("LoggingSpanExporter");
   }
 
-  /** Test wrapper for verifying customizer behavior. */
-  private static class SpanExporterWrapper implements SpanExporter {
-    final SpanExporter delegate;
-    final String tag;
+  @Test
+  void create_Customizer_TypeSafe() {
+    // Customizer for specific type gets type-safe access to exporter builder methods
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addSpanExporterCustomizer(
+            OtlpGrpcSpanExporter.class,
+            (exporter, properties) ->
+                exporter.toBuilder().setTimeout(Duration.ofSeconds(42)).build());
 
-    SpanExporterWrapper(SpanExporter delegate, String tag) {
-      this.delegate = delegate;
-      this.tag = tag;
-    }
+    SpanExporter result =
+        SpanExporterFactory.getInstance()
+            .create(new SpanExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()), context);
+    cleanup.addCloseable(result);
 
-    @Override
-    public CompletableResultCode export(Collection<SpanData> spans) {
-      return delegate.export(spans);
-    }
+    assertThat(result).isInstanceOf(OtlpGrpcSpanExporter.class);
+    assertThat(result.toString()).contains("timeoutNanos=42000000000");
+  }
 
-    @Override
-    public CompletableResultCode flush() {
-      return delegate.flush();
-    }
+  @Test
+  void create_Customizer_TypeMismatch() {
+    // Customizer registered for OtlpGrpcSpanExporter should NOT be called for other types
+    AtomicInteger callCount = new AtomicInteger(0);
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addSpanExporterCustomizer(
+            OtlpGrpcSpanExporter.class,
+            (exporter, properties) -> {
+              callCount.incrementAndGet();
+              return exporter;
+            });
 
-    @Override
-    public CompletableResultCode shutdown() {
-      return delegate.shutdown();
-    }
+    SpanExporter result =
+        SpanExporterFactory.getInstance()
+            .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
+    cleanup.addCloseable(result);
+
+    // Customizer should not have been called since types don't match
+    assertThat(callCount.get()).isEqualTo(0);
+  }
+
+  @Test
+  void create_Customizer_ReturnsNull() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+    context
+        .getBuilder()
+        .addSpanExporterCustomizer(SpanExporter.class, (exporter, properties) -> null);
+
+    assertThatThrownBy(
+            () ->
+                SpanExporterFactory.getInstance()
+                    .create(
+                        new SpanExporterModel().withConsole(new ConsoleExporterModel()), context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessageContaining("Customizer returned null for SpanExporter: console");
   }
 }
