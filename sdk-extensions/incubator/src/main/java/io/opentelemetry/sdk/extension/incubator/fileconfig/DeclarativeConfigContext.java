@@ -36,6 +36,7 @@ class DeclarativeConfigContext {
   @Nullable private Resource resource = null;
   @Nullable private ConfigProvider configProvider;
   @Nullable private List<ComponentProvider> componentProviders = null;
+  @Nullable private DeclarativeConfigurationBuilder builder;
 
   // Visible for testing
   DeclarativeConfigContext(SpiHelper spiHelper) {
@@ -77,6 +78,14 @@ class DeclarativeConfigContext {
 
   void setResource(Resource resource) {
     this.resource = resource;
+  }
+
+  void setBuilder(DeclarativeConfigurationBuilder builder) {
+    this.builder = builder;
+  }
+
+  DeclarativeConfigurationBuilder getBuilder() {
+    return Objects.requireNonNull(builder, "builder has not been set");
   }
 
   /**

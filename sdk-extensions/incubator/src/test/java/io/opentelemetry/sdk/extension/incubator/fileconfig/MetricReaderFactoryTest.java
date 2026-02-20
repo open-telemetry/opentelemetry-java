@@ -38,6 +38,7 @@ import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -53,6 +54,11 @@ class MetricReaderFactoryTest {
       spy(
           new DeclarativeConfigContext(
               SpiHelper.create(MetricReaderFactoryTest.class.getClassLoader())));
+
+  @BeforeEach
+  void setup() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+  }
 
   @Test
   void create_PeriodicNullExporter() {
