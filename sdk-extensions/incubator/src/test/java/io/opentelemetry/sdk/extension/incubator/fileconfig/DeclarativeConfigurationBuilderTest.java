@@ -7,7 +7,10 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -79,5 +82,35 @@ class DeclarativeConfigurationBuilderTest {
         LogRecordExporter.class, (exporter, properties) -> mock(LogRecordExporter.class));
 
     assertThat(builder.getLogRecordExporterCustomizers()).hasSize(2);
+  }
+
+  @Test
+  void customizer_ClosesOriginalWhenReplaced() throws Exception {
+    SpanExporter original = mock(SpanExporter.class);
+    SpanExporter replacement = mock(SpanExporter.class);
+    DeclarativeConfigProperties props = mock(DeclarativeConfigProperties.class);
+
+    DeclarativeConfigurationBuilder.Customizer<SpanExporter> customizer =
+        new DeclarativeConfigurationBuilder.Customizer<>(
+            SpanExporter.class, (exporter, properties) -> replacement);
+
+    SpanExporter result = customizer.maybeCustomize(original, "test", props);
+
+    assertThat(result).isSameAs(replacement);
+    verify(original).close();
+  }
+
+  @Test
+  void customizer_DoesNotCloseWhenSameInstance() throws Exception {
+    SpanExporter exporter = mock(SpanExporter.class);
+    DeclarativeConfigProperties props = mock(DeclarativeConfigProperties.class);
+
+    DeclarativeConfigurationBuilder.Customizer<SpanExporter> customizer =
+        new DeclarativeConfigurationBuilder.Customizer<>(SpanExporter.class, (e, properties) -> e);
+
+    SpanExporter result = customizer.maybeCustomize(exporter, "test", props);
+
+    assertThat(result).isSameAs(exporter);
+    verify(exporter, never()).close();
   }
 }

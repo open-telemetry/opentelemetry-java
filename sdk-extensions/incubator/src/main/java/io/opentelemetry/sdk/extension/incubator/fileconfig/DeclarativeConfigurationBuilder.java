@@ -11,11 +11,15 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTe
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Builder for the declarative configuration. */
 public class DeclarativeConfigurationBuilder implements DeclarativeConfigurationCustomizer {
@@ -78,6 +82,8 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
   }
 
   static class Customizer<T> {
+    private static final Logger logger = Logger.getLogger(Customizer.class.getName());
+
     private final Class<? extends T> exporterType;
     private final BiFunction<T, DeclarativeConfigProperties, T> customizer;
 
@@ -96,6 +102,13 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
       if (customized == null) {
         throw new DeclarativeConfigException(
             "Customizer returned null for " + exporterType.getSimpleName() + ": " + name);
+      }
+      if (customized != exporter && exporter instanceof Closeable) {
+        try {
+          ((Closeable) exporter).close();
+        } catch (IOException e) {
+          logger.log(Level.WARNING, "Failed to close exporter after customization", e);
+        }
       }
       return customized;
     }
