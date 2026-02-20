@@ -31,8 +31,7 @@ public interface LogRecordBuilder {
   /**
    * Set the epoch {@code timestamp}, using the timestamp and unit.
    *
-   * <p>Note: If the event timestamp is unset, it will NOT be automatically populated when
-   * {@link #emit()} is called. Only the observed timestamp receives a default value.
+   * <p>Note: If not set, the emitted log will not have a timestamp.
    */
   LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit);
 
