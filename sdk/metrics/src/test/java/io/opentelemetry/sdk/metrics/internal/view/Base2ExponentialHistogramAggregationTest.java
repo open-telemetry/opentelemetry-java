@@ -29,25 +29,30 @@ class Base2ExponentialHistogramAggregationTest {
   @Test
   void goodConfig() {
     assertThat(Base2ExponentialHistogramAggregation.getDefault()).isNotNull();
-    assertThat(Base2ExponentialHistogramAggregation.create(10, 20, /* recordMinMax= */ true)).isNotNull();
+    assertThat(Base2ExponentialHistogramAggregation.create(10, 20, /* recordMinMax= */ true))
+        .isNotNull();
   }
 
   @Test
   void invalidConfig_Throws() {
-    assertThatThrownBy(() -> Base2ExponentialHistogramAggregation.create(0, 20, /* recordMinMax= */ true))
+    assertThatThrownBy(
+            () -> Base2ExponentialHistogramAggregation.create(0, 20, /* recordMinMax= */ true))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxBuckets must be >= 2");
-    assertThatThrownBy(() -> Base2ExponentialHistogramAggregation.create(2, 21, /* recordMinMax= */ true))
+    assertThatThrownBy(
+            () -> Base2ExponentialHistogramAggregation.create(2, 21, /* recordMinMax= */ true))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxScale must be -10 <= x <= 20");
-    assertThatThrownBy(() -> Base2ExponentialHistogramAggregation.create(2, -11, /* recordMinMax= */ true))
+    assertThatThrownBy(
+            () -> Base2ExponentialHistogramAggregation.create(2, -11, /* recordMinMax= */ true))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxScale must be -10 <= x <= 20");
   }
 
   @Test
   void minimumBucketsCanAccommodateMaxRange() {
-    Aggregation aggregation = Base2ExponentialHistogramAggregation.create(2, 20, /* recordMinMax= */ true);
+    Aggregation aggregation =
+        Base2ExponentialHistogramAggregation.create(2, 20, /* recordMinMax= */ true);
     Aggregator<ExponentialHistogramPointData> aggregator =
         ((AggregatorFactory) aggregation)
             .createAggregator(

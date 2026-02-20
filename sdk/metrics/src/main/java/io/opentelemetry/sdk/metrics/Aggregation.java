@@ -102,7 +102,8 @@ public interface Aggregation {
    * @since 1.23.0
    */
   static Aggregation base2ExponentialBucketHistogram(int maxBuckets, int maxScale) {
-    return Base2ExponentialHistogramAggregation.create(maxBuckets, maxScale, /* recordMinMax= */ true);
+    return Base2ExponentialHistogramAggregation.create(
+        maxBuckets, maxScale, /* recordMinMax= */ true);
   }
 
   /**

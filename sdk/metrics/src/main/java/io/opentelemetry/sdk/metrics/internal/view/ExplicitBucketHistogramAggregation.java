@@ -81,8 +81,10 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
   @Override
   public String toString() {
     return "ExplicitBucketHistogramAggregation{"
-        + "bucketBoundaries=" + bucketBoundaries
-        + ",recordMinMax=" + recordMinMax
+        + "bucketBoundaries="
+        + bucketBoundaries
+        + ",recordMinMax="
+        + recordMinMax
         + "}";
   }
 }

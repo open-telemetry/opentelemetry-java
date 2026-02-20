@@ -30,10 +30,12 @@ class AggregationTest {
         .contains("ExplicitBucketHistogramAggregation");
     assertThat(Aggregation.base2ExponentialBucketHistogram())
         .asString()
-        .isEqualTo("Base2ExponentialHistogramAggregation{maxBuckets=160,maxScale=20,recordMinMax=true}");
+        .isEqualTo(
+            "Base2ExponentialHistogramAggregation{maxBuckets=160,maxScale=20,recordMinMax=true}");
     assertThat(Aggregation.base2ExponentialBucketHistogram(2, 0))
         .asString()
-        .isEqualTo("Base2ExponentialHistogramAggregation{maxBuckets=2,maxScale=0,recordMinMax=true}");
+        .isEqualTo(
+            "Base2ExponentialHistogramAggregation{maxBuckets=2,maxScale=0,recordMinMax=true}");
   }
 
   @Test
