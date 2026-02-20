@@ -40,9 +40,20 @@ dependencies {
 
 val testJavaVersion: String? by project
 
+// Source files for testOkHttp4 are generated from testOkhttp5 by replacing version-specific
+// references. Do not edit files under src/testOkhttp4 directly - edit testOkhttp5 instead.
+val generateTestOkhttp4Sources by tasks.registering(Sync::class) {
+  from("src/testOkhttp5/java")
+  into(layout.buildDirectory.dir("generated/sources/testOkhttp4/java"))
+  filter { line: String ->
+    line.replace("sender.okhttp.internal", "sender.okhttp4.internal")
+  }
+  includeEmptyDirs = false
+}
+
 testing {
   suites {
-    register<JvmTestSuite>("testOkHttp5") {
+    register<JvmTestSuite>("testOkhttp5") {
       dependencies {
         implementation(project(":exporters:sender:okhttp"))
         implementation(project(":exporters:otlp:testing-internal"))
@@ -50,8 +61,16 @@ testing {
         implementation("com.squareup.okhttp3:okhttp:5.3.2")
         implementation("io.grpc:grpc-stub")
       }
+      targets {
+        all {
+          testTask {
+            systemProperty("expectedOkHttpMajorVersion", "5")
+          }
+        }
+      }
     }
-    register<JvmTestSuite>("testOkHttp4") {
+    register<JvmTestSuite>("testOkhttp4") {
+      sources.java.srcDir(generateTestOkhttp4Sources)
       dependencies {
         implementation(project(":exporters:sender:okhttp4"))
         implementation(project(":exporters:otlp:testing-internal"))
@@ -62,6 +81,7 @@ testing {
       targets {
         all {
           testTask {
+            systemProperty("expectedOkHttpMajorVersion", "4")
             systemProperty(
               "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
               "io.opentelemetry.exporter.sender.okhttp4.internal.OkHttpGrpcSenderProvider"
