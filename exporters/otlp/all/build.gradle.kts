@@ -58,7 +58,7 @@ testing {
         implementation(project(":exporters:sender:okhttp"))
         implementation(project(":exporters:otlp:testing-internal"))
 
-        implementation("com.squareup.okhttp3:okhttp:5.3.2")
+        implementation("com.squareup.okhttp3:okhttp")
         implementation("io.grpc:grpc-stub")
       }
       targets {
@@ -75,7 +75,11 @@ testing {
         implementation(project(":exporters:sender:okhttp4"))
         implementation(project(":exporters:otlp:testing-internal"))
 
-        implementation("com.squareup.okhttp3:okhttp:4.12.0")
+        // okhttp v4 is pinned explicitly because dependencyManagement manages okhttp v5 as the
+        // project-wide default. strictly() is required to override the v5 BOM constraint.
+        // This version must be kept in sync with the version declared in
+        // exporters/sender/okhttp4/build.gradle.kts.
+        implementation("com.squareup.okhttp3:okhttp") { version { strictly("4.12.0") } }
         implementation("io.grpc:grpc-stub")
       }
       targets {

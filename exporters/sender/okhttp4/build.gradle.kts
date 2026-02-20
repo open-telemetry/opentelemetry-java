@@ -54,7 +54,11 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
 
-  implementation("com.squareup.okhttp3:okhttp:4.12.0")
+  // okhttp v4 is pinned explicitly because dependencyManagement manages okhttp v5 as the
+  // project-wide default. strictly() is required to override the v5 BOM constraint.
+  // This version must be kept in sync with the version declared in
+  // exporters/otlp/all/build.gradle.kts (testOkhttp4 suite).
+  implementation("com.squareup.okhttp3:okhttp") { version { strictly("4.12.0") } }
 
   compileOnly("io.grpc:grpc-stub")
   compileOnly("com.fasterxml.jackson.core:jackson-core")

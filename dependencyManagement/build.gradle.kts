@@ -8,6 +8,7 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 
+val okhttp5Version = "5.3.2"
 val autoValueVersion = "1.11.1"
 val errorProneVersion = "2.47.0"
 val jmhVersion = "1.37"
@@ -45,7 +46,6 @@ val DEPENDENCIES = listOf(
   "com.linecorp.armeria:armeria-grpc:${armeriaVersion}",
   "com.linecorp.armeria:armeria-grpc-protocol:${armeriaVersion}",
   "com.linecorp.armeria:armeria-junit5:${armeriaVersion}",
-
   "com.google.auto.value:auto-value:${autoValueVersion}",
   "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
   "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
@@ -71,6 +71,7 @@ val DEPENDENCIES = listOf(
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
+  "com.squareup.okhttp3:okhttp:${okhttp5Version}",
   "com.tngtech.archunit:archunit-junit5:1.4.1",
   "com.uber.nullaway:nullaway:0.13.1",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+

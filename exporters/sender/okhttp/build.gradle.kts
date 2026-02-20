@@ -16,7 +16,7 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
 
-  implementation("com.squareup.okhttp3:okhttp:5.3.2")
+  implementation("com.squareup.okhttp3:okhttp")
 
   compileOnly("io.grpc:grpc-stub")
   compileOnly("com.fasterxml.jackson.core:jackson-core")
