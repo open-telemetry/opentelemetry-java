@@ -17,6 +17,7 @@ tasks {
   shadowJar {
     minimize()
 
+    exclude("META-INF/maven/**")
     relocate("org.jctools", "io.opentelemetry.internal.shaded.jctools")
   }
 
