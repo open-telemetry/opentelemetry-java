@@ -1000,6 +1000,7 @@ class DeclarativeConfigurationParseTest {
     Object yaml =
         DeclarativeConfiguration.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
+            Collections.emptyMap(),
             Collections.emptyMap());
     assertThat(yaml).isEqualTo(expectedYamlResult);
   }
@@ -1030,7 +1031,8 @@ class DeclarativeConfigurationParseTest {
     Object yaml =
         DeclarativeConfiguration.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
-            environmentVariables);
+            environmentVariables,
+            Collections.emptyMap());
     assertThat(yaml).isEqualTo(expectedYamlResult);
   }
 
@@ -1132,6 +1134,64 @@ class DeclarativeConfigurationParseTest {
     return result;
   }
 
+  @ParameterizedTest
+  @MethodSource("sysPropertySubstitutionArgs")
+  void sysPropertySubstituteAndLoadYaml(String rawYaml, Object expectedYamlResult) {
+    Map<Object, Object> systemProperties = new HashMap<>();
+    systemProperties.put("foo.bar", "BAR");
+    systemProperties.put("str.1", "value1");
+    systemProperties.put("str.2", "value2");
+    systemProperties.put("value.with.escape", "value$$");
+    systemProperties.put("empty.str", "");
+    systemProperties.put("bool.prop", "true");
+    systemProperties.put("int.prop", "1");
+    systemProperties.put("float.prop", "1.1");
+    systemProperties.put("hex.prop", "0xdeadbeef");
+
+    Object yaml =
+        DeclarativeConfiguration.loadYaml(
+            new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
+            Collections.emptyMap(),
+            systemProperties);
+    assertThat(yaml).isEqualTo(expectedYamlResult);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Stream<Arguments> sysPropertySubstitutionArgs() {
+    return Stream.of(
+        // Simple cases with sys: prefix
+        Arguments.of("key1: ${sys:str.1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${sys:bool.prop}\n", mapOf(entry("key1", true))),
+        Arguments.of("key1: ${sys:int.prop}\n", mapOf(entry("key1", 1))),
+        Arguments.of("key1: ${sys:float.prop}\n", mapOf(entry("key1", 1.1))),
+        Arguments.of("key1: ${sys:hex.prop}\n", mapOf(entry("key1", 3735928559L))),
+        // Default values
+        Arguments.of("key1: ${sys:not.set:-value1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${sys:not.set:-true}\n", mapOf(entry("key1", true))),
+        Arguments.of("key1: ${sys:not.set:-1}\n", mapOf(entry("key1", 1))),
+        // Multiple property references
+        Arguments.of("key1: ${sys:str.1}${sys:str.2}\n", mapOf(entry("key1", "value1value2"))),
+        Arguments.of("key1: ${sys:str.1} ${sys:str.2}\n", mapOf(entry("key1", "value1 value2"))),
+        Arguments.of(
+            "key1: ${sys:str.1} ${sys:not.set:-default} ${sys:str.2}\n",
+            mapOf(entry("key1", "value1 default value2"))),
+        // Undefined / empty system property
+        Arguments.of("key1: ${sys:empty.str}\n", mapOf(entry("key1", null))),
+        Arguments.of("key1: ${sys:str.3}\n", mapOf(entry("key1", null))),
+        Arguments.of("key1: ${sys:str.1} ${sys:str.3}\n", mapOf(entry("key1", "value1 "))),
+        // Quoted system properties
+        Arguments.of("key1: \"${sys:hex.prop}\"\n", mapOf(entry("key1", "0xdeadbeef"))),
+        Arguments.of("key1: \"${sys:str.1}\"\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: '${sys:str.1}'\n", mapOf(entry("key1", "value1"))),
+        // Escaped
+        Arguments.of("key1: ${sys:foo.bar}\n", mapOf(entry("key1", "BAR"))),
+        Arguments.of("key1: $${sys:foo.bar}\n", mapOf(entry("key1", "${sys:foo.bar}"))),
+        Arguments.of("key1: $$${sys:foo.bar}\n", mapOf(entry("key1", "$BAR"))),
+        Arguments.of("key1: $$$${sys:foo.bar}\n", mapOf(entry("key1", "$${sys:foo.bar}"))),
+        // Mixed env and sys
+        Arguments.of("key1: ${sys:value.with.escape}\n", mapOf(entry("key1", "value$$"))));
+  }
+
   @Test
   void read_WithEnvironmentVariables() {
     String yaml =
@@ -1150,7 +1210,9 @@ class DeclarativeConfigurationParseTest {
     envVars.put("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4317");
     OpenTelemetryConfigurationModel model =
         DeclarativeConfiguration.parse(
-            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)), envVars);
+            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)),
+            envVars,
+            Collections.emptyMap());
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
@@ -1175,5 +1237,90 @@ class DeclarativeConfigurationParseTest {
                                                 new SpanExporterModel()
                                                     .withOtlpHttp(
                                                         new OtlpHttpExporterModel())))))));
+  }
+
+  @Test
+  void read_WithSystemProperties() {
+    String yaml =
+        "file_format: \"1.0-rc.1\"\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - batch:\n"
+            + "        exporter:\n"
+            + "          otlp_http:\n"
+            + "            endpoint: ${sys:otel.exporter.otlp.endpoint}\n"
+            + "    - batch:\n"
+            + "        exporter:\n"
+            + "          otlp_http:\n"
+            + "            endpoint: ${sys:unset.sys.prop}\n";
+    Map<Object, Object> sysProps = new HashMap<>();
+    sysProps.put("otel.exporter.otlp.endpoint", "http://collector:4318");
+    OpenTelemetryConfigurationModel model =
+        DeclarativeConfiguration.parse(
+            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)),
+            Collections.emptyMap(),
+            sysProps);
+    assertThat(model)
+        .isEqualTo(
+            new OpenTelemetryConfigurationModel()
+                .withFileFormat("1.0-rc.1")
+                .withTracerProvider(
+                    new TracerProviderModel()
+                        .withProcessors(
+                            Arrays.asList(
+                                new SpanProcessorModel()
+                                    .withBatch(
+                                        new BatchSpanProcessorModel()
+                                            .withExporter(
+                                                new SpanExporterModel()
+                                                    .withOtlpHttp(
+                                                        new OtlpHttpExporterModel()
+                                                            .withEndpoint(
+                                                                "http://collector:4318")))),
+                                new SpanProcessorModel()
+                                    .withBatch(
+                                        new BatchSpanProcessorModel()
+                                            .withExporter(
+                                                new SpanExporterModel()
+                                                    .withOtlpHttp(
+                                                        new OtlpHttpExporterModel())))))));
+  }
+
+  @Test
+  void read_WithMixedEnvVarsAndSystemProperties() {
+    String yaml =
+        "file_format: \"1.0-rc.1\"\n"
+            + "resource:\n"
+            + "  attributes:\n"
+            + "    - name: service.name\n"
+            + "      value: ${SERVICE_NAME}\n"
+            + "    - name: service.version\n"
+            + "      value: ${sys:app.version}\n"
+            + "    - name: deployment.environment\n"
+            + "      value: ${env:DEPLOYMENT_ENV:-production}\n";
+    Map<String, String> envVars = new HashMap<>();
+    envVars.put("SERVICE_NAME", "my-service");
+    Map<Object, Object> sysProps = new HashMap<>();
+    sysProps.put("app.version", "1.2.3");
+    OpenTelemetryConfigurationModel model =
+        DeclarativeConfiguration.parse(
+            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)), envVars, sysProps);
+    assertThat(model)
+        .isEqualTo(
+            new OpenTelemetryConfigurationModel()
+                .withFileFormat("1.0-rc.1")
+                .withResource(
+                    new ResourceModel()
+                        .withAttributes(
+                            Arrays.asList(
+                                new AttributeNameValueModel()
+                                    .withName("service.name")
+                                    .withValue("my-service"),
+                                new AttributeNameValueModel()
+                                    .withName("service.version")
+                                    .withValue("1.2.3"),
+                                new AttributeNameValueModel()
+                                    .withName("deployment.environment")
+                                    .withValue("production")))));
   }
 }

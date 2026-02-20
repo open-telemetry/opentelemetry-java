@@ -20,8 +20,6 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":exporters:sender:okhttp"))
 
-  implementation("com.squareup.okhttp3:okhttp")
-
   compileOnly("io.grpc:grpc-api")
   compileOnly("io.grpc:grpc-protobuf")
   compileOnly("io.grpc:grpc-stub")
@@ -31,6 +29,7 @@ dependencies {
   testImplementation("com.google.guava:guava")
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.linecorp.armeria:armeria-junit5")
+  testImplementation("com.linecorp.armeria:armeria-grpc")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }
@@ -41,12 +40,23 @@ testing {
       dependencies {
         implementation(project(":sdk:testing"))
         implementation(project(":exporters:common"))
+        implementation(project(":exporters:sender:grpc-managed-channel"))
         implementation("com.google.protobuf:protobuf-java")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")
         implementation("org.testcontainers:testcontainers-junit-jupiter")
         implementation("io.grpc:grpc-netty")
         implementation("io.grpc:grpc-stub")
+      }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
+            )
+          }
+        }
       }
     }
   }

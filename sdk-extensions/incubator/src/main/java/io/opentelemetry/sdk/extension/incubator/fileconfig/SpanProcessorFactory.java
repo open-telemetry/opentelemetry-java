@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
@@ -63,10 +62,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
     if (batchModel.getScheduleDelay() != null) {
       builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
     }
-    MeterProvider meterProvider = context.getMeterProvider();
-    if (meterProvider != null) {
-      builder.setMeterProvider(() -> meterProvider);
-    }
+    context.setInternalTelemetry(builder::setMeterProvider, builder::setInternalTelemetryVersion);
 
     return context.addCloseable(builder.build());
   }
@@ -77,10 +73,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
         FileConfigUtil.requireNonNull(simpleModel.getExporter(), "simple span processor exporter");
     SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
     SimpleSpanProcessorBuilder builder = SimpleSpanProcessor.builder(spanExporter);
-    MeterProvider meterProvider = context.getMeterProvider();
-    if (meterProvider != null) {
-      builder.setMeterProvider(() -> meterProvider);
-    }
+    context.setInternalTelemetry(builder::setMeterProvider);
     return context.addCloseable(builder.build());
   }
 }
