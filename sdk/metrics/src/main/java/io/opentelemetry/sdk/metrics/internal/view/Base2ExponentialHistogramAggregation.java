@@ -104,6 +104,8 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
         + maxBuckets
         + ",maxScale="
         + maxScale
+        + ",recordMinMax="
+        + recordMinMax
         + "}";
   }
 }
