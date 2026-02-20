@@ -46,6 +46,13 @@ class InstrumentationConfigUtilTest {
           + "        response_captured_headers:\n"
           + "          - server-response-header1\n"
           + "          - server-response-header2\n"
+          + "    sanitization:\n"
+          + "      url:\n"
+          + "        sensitive_query_parameters:\n"
+          + "          - AWSAccessKeyId\n"
+          + "          - Signature\n"
+          + "          - sig\n"
+          + "          - X-Goog-Signature\n"
           + "  java:\n"
           + "    example:\n"
           + "      property: \"value\"";
@@ -58,6 +65,8 @@ class InstrumentationConfigUtilTest {
       toConfigProvider("instrumentation/development:\n  general:\n");
   private static final ConfigProvider emptyHttpConfigProvider =
       toConfigProvider("instrumentation/development:\n  general:\n    http:\n");
+  private static final ConfigProvider emptySanitizationConfigProvider =
+      toConfigProvider("instrumentation/development:\n  general:\n    sanitization:\n");
 
   private static ConfigProvider toConfigProvider(String configYaml) {
     return SdkConfigProvider.create(
@@ -84,12 +93,12 @@ class InstrumentationConfigUtilTest {
     assertThat(
             InstrumentationConfigUtil.httpClientRequestCapturedHeaders(
                 emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(
             InstrumentationConfigUtil.httpClientRequestCapturedHeaders(emptyGeneralConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(InstrumentationConfigUtil.httpClientRequestCapturedHeaders(emptyHttpConfigProvider))
-        .isNull();
+        .isEmpty();
   }
 
   @Test
@@ -100,12 +109,12 @@ class InstrumentationConfigUtilTest {
     assertThat(
             InstrumentationConfigUtil.httpClientResponseCapturedHeaders(
                 emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(
             InstrumentationConfigUtil.httpClientResponseCapturedHeaders(emptyGeneralConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(InstrumentationConfigUtil.httpClientResponseCapturedHeaders(emptyHttpConfigProvider))
-        .isNull();
+        .isEmpty();
   }
 
   @Test
@@ -116,12 +125,12 @@ class InstrumentationConfigUtilTest {
     assertThat(
             InstrumentationConfigUtil.httpServerRequestCapturedHeaders(
                 emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(
             InstrumentationConfigUtil.httpServerRequestCapturedHeaders(emptyGeneralConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(InstrumentationConfigUtil.httpServerRequestCapturedHeaders(emptyHttpConfigProvider))
-        .isNull();
+        .isEmpty();
   }
 
   @Test
@@ -132,12 +141,25 @@ class InstrumentationConfigUtilTest {
     assertThat(
             InstrumentationConfigUtil.httpServerResponseCapturedHeaders(
                 emptyInstrumentationConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(
             InstrumentationConfigUtil.httpServerResponseCapturedHeaders(emptyGeneralConfigProvider))
-        .isNull();
+        .isEmpty();
     assertThat(InstrumentationConfigUtil.httpServerResponseCapturedHeaders(emptyHttpConfigProvider))
-        .isNull();
+        .isEmpty();
+  }
+
+  @Test
+  void sensitiveQueryParameters() {
+    assertThat(InstrumentationConfigUtil.sensitiveQueryParameters(kitchenSinkConfigProvider))
+        .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
+    assertThat(
+            InstrumentationConfigUtil.sensitiveQueryParameters(emptyInstrumentationConfigProvider))
+        .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
+    assertThat(InstrumentationConfigUtil.sensitiveQueryParameters(emptyGeneralConfigProvider))
+        .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
+    assertThat(InstrumentationConfigUtil.sensitiveQueryParameters(emptySanitizationConfigProvider))
+        .isEqualTo(Arrays.asList("AWSAccessKeyId", "Signature", "sig", "X-Goog-Signature"));
   }
 
   @Test
