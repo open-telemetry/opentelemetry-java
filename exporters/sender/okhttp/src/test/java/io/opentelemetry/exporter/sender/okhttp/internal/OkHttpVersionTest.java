@@ -16,9 +16,6 @@ class OkHttpVersionTest {
     String expectedMajorVersion = System.getProperty("expectedOkHttpMajorVersion");
     assertTrue(
         OkHttp.VERSION.startsWith(expectedMajorVersion),
-        "Expected OkHttp major version "
-            + expectedMajorVersion
-            + " but got "
-            + OkHttp.VERSION);
+        "Expected OkHttp major version " + expectedMajorVersion + " but got " + OkHttp.VERSION);
   }
 }

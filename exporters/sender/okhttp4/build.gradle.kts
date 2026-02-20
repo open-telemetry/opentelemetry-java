@@ -1,13 +1,12 @@
 plugins {
   id("otel.java-conventions")
-  // TODO: enable to publish
-  // id("otel.publish-conventions")
+  id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry OkHttp4 Senders"
-otelJava.moduleName.set("io.opentelemetry.exporter.sender.okhttp.internal")
+otelJava.moduleName.set("io.opentelemetry.exporter.sender.okhttp4.internal")
 
 // Source files are generated from the okhttp (v5) module by replacing the package name.
 // Do not edit files under src/ directly - edit the okhttp module instead.

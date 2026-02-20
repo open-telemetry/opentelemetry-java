@@ -140,6 +140,9 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         newArchives.from(newArchive)
         oldArchives.from(oldArchive)
 
+        // Skip comparison for modules that have never been published (no old archive available).
+        enabled = oldArchive != null
+
         // Only generate API diff for changes.
         onlyModified.set(true)
 
