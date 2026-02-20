@@ -26,4 +26,5 @@ dependencies {
   testImplementation(project(":sdk:testing"))
 
   jmh(project(":sdk:testing"))
+  jmh(project(":api:incubator"))
 }
