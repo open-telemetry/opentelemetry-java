@@ -17,7 +17,9 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
@@ -36,7 +38,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
-@SuppressLogger(UpstreamGrpcService.class)
+@SuppressLogger(JaegerRemoteSampler.class)
 @SuppressWarnings("deprecation") // Testing deprecated code
 class JaegerRemoteSamplerGrpcNettyTest {
 
@@ -49,12 +51,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
   private static final ConcurrentLinkedQueue<Sampling.SamplingStrategyResponse> responses =
       new ConcurrentLinkedQueue<>();
 
-  private static void addGrpcError(int code, @Nullable String message) {
-    grpcErrors.add(new ArmeriaStatusException(code, message));
+  private static void addGrpcError(GrpcStatusCode code, @Nullable String message) {
+    grpcErrors.add(new ArmeriaStatusException(code.getValue(), message));
   }
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(UpstreamGrpcService.class, Level.TRACE);
+  LogCapturer logs = LogCapturer.create().captureForType(JaegerRemoteSampler.class, Level.TRACE);
 
   @Order(1)
   @RegisterExtension
@@ -67,7 +69,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
         @Override
         protected void configure(ServerBuilder sb) {
           sb.service(
-              JaegerRemoteSamplerBuilder.GRPC_ENDPOINT_PATH,
+              "/jaeger.api_v2.SamplingManager/GetSamplingStrategy",
               new AbstractUnaryGrpcService() {
                 @Override
                 protected CompletionStage<byte[]> handleMessage(
@@ -117,7 +119,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -134,7 +136,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -152,7 +154,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription()).startsWith("JaegerRemoteSampler{AlwaysOnSampler}");
     }
@@ -166,7 +168,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(1, TimeUnit.MILLISECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -181,7 +183,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(Duration.ofMillis(1))
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -226,7 +228,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             // Make sure only polls once.
             .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       await()
           .untilAsserted(
@@ -241,7 +243,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
   @Test
   void internal_error_server_response() {
-    addGrpcError(13, "internal error");
+    addGrpcError(GrpcStatusCode.INTERNAL, "internal error");
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
@@ -250,7 +252,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             // Make sure only polls once.
             .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -259,7 +261,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
           .untilAsserted(
               () -> {
                 LoggingEvent log =
-                    logs.assertContains(" Server responded with gRPC status code 13");
+                    logs.assertContains(" Server responded with gRPC status code INTERNAL");
                 assertThat(log.getLevel()).isEqualTo(Level.WARN);
               });
     }
@@ -267,7 +269,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
   @Test
   void unavailable_error_server_response() {
-    addGrpcError(14, "クマ🐻 resource exhausted");
+    addGrpcError(GrpcStatusCode.UNAVAILABLE, "クマ🐻 resource exhausted");
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
@@ -276,7 +278,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             // Make sure only polls once.
             .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -292,7 +294,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
   @Test
   void unimplemented_error_server_response() {
-    addGrpcError(12, null);
+    addGrpcError(GrpcStatusCode.UNIMPLEMENTED, null);
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
@@ -301,7 +303,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
             // Make sure only polls once.
             .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
-      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");

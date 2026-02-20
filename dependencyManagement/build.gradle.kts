@@ -17,7 +17,7 @@ val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
 val armeriaVersion = "1.36.0"
-val junitVersion = "5.14.2"
+val junitVersion = "5.14.3"
 
 val DEPENDENCY_BOMS = listOf(
   // for some reason boms show up as runtime dependencies in license and vulnerability scans
@@ -67,7 +67,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.65.1",
+  "com.google.api.grpc:proto-google-common-protos:2.66.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
@@ -77,8 +77,8 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.11",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.53.0-alpha",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.39.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.54.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.40.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.9.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",

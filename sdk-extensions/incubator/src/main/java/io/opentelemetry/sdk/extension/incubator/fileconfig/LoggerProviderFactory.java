@@ -45,6 +45,8 @@ final class LoggerProviderFactory
       return builder;
     }
 
+    context.setInternalTelemetry(builder::setMeterProvider);
+
     LogLimits logLimits =
         LogLimitsFactory.getInstance()
             .create(

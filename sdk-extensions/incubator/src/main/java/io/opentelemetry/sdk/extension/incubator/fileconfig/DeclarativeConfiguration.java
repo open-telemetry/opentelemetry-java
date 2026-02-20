@@ -53,15 +53,54 @@ import org.snakeyaml.engine.v2.schema.CoreSchema;
  * <a
  * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#yaml-file-format">YAML
  * configuration file</a>.
+ *
+ * <h2>For Implementers</h2>
+ *
+ * <p>External consumers needing to parse OpenTelemetry YAML configuration files should use the same
+ * Jackson ObjectMapper configuration for compatibility. This configuration is intentionally not
+ * exposed as API to avoid coupling. Instead, copy the following setup:
+ *
+ * <pre>{@code
+ * ObjectMapper mapper = new ObjectMapper()
+ *     // Create empty object instances for keys which are present but have null values
+ *     .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+ * // Boxed primitives which are present but have null values should be set to null,
+ * // rather than empty instances
+ * mapper.configOverride(String.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Integer.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Double.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * mapper.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
+ * }</pre>
+ *
+ * <p><b>Why this configuration:</b>
+ *
+ * <ul>
+ *   <li>Default behavior creates empty objects for null values to match YAML schema expectations
+ *   <li>Boxed primitives remain null to distinguish between absent and explicitly null values
+ * </ul>
  */
 public final class DeclarativeConfiguration {
 
   private static final Logger logger = Logger.getLogger(DeclarativeConfiguration.class.getName());
+  // Matches ${VAR_NAME}, ${env:VAR_NAME}, or ${sys:property.name} with optional :-default
   private static final Pattern ENV_VARIABLE_REFERENCE =
-      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
+      Pattern.compile("\\$\\{(?:(env|sys):)?([a-zA-Z_][a-zA-Z0-9_.]*)(?::-([^\\n}]*))?}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
 
+  /**
+   * ObjectMapper configured for YAML declarative configuration parsing.
+   *
+   * <p>Configuration:
+   *
+   * <ul>
+   *   <li>Default: Creates empty objects for present keys with null values
+   *   <li>Boxed primitives (String, Integer, Double, Boolean): Remain null when null
+   * </ul>
+   *
+   * <p>External consumers needing compatible parsing should copy this configuration. See class
+   * javadoc for details and code example.
+   */
   // Visible for testing
   static final ObjectMapper MAPPER;
 
@@ -140,7 +179,8 @@ public final class DeclarativeConfiguration {
   /**
    * Parse the {@code configuration} YAML and return the {@link OpenTelemetryConfigurationModel}.
    *
-   * <p>During parsing, environment variable substitution is performed as defined in the <a
+   * <p>During parsing, environment variable and system property substitution is performed as
+   * defined in the <a
    * href="https://opentelemetry.io/docs/specs/otel/configuration/data-model/#environment-variable-substitution">
    * OpenTelemetry Configuration Data Model specification</a>.
    *
@@ -148,7 +188,7 @@ public final class DeclarativeConfiguration {
    */
   public static OpenTelemetryConfigurationModel parse(InputStream configuration) {
     try {
-      return parse(configuration, System.getenv());
+      return parse(configuration, System.getenv(), System.getProperties());
     } catch (RuntimeException e) {
       throw new DeclarativeConfigException("Unable to parse configuration input stream", e);
     }
@@ -156,15 +196,20 @@ public final class DeclarativeConfiguration {
 
   // Visible for testing
   static OpenTelemetryConfigurationModel parse(
-      InputStream configuration, Map<String, String> environmentVariables) {
-    Object yamlObj = loadYaml(configuration, environmentVariables);
+      InputStream configuration,
+      Map<String, String> environmentVariables,
+      Map<Object, Object> systemProperties) {
+    Object yamlObj = loadYaml(configuration, environmentVariables, systemProperties);
     return MAPPER.convertValue(yamlObj, OpenTelemetryConfigurationModel.class);
   }
 
   // Visible for testing
-  static Object loadYaml(InputStream inputStream, Map<String, String> environmentVariables) {
+  static Object loadYaml(
+      InputStream inputStream,
+      Map<String, String> environmentVariables,
+      Map<Object, Object> systemProperties) {
     LoadSettings settings = LoadSettings.builder().setSchema(new CoreSchema()).build();
-    Load yaml = new EnvLoad(settings, environmentVariables);
+    Load yaml = new EnvLoad(settings, environmentVariables, systemProperties);
     return yaml.loadFromInputStream(inputStream);
   }
 
@@ -185,7 +230,7 @@ public final class DeclarativeConfiguration {
    * @return a generic {@link DeclarativeConfigProperties} representation of the model
    */
   public static DeclarativeConfigProperties toConfigProperties(InputStream configuration) {
-    Object yamlObj = loadYaml(configuration, System.getenv());
+    Object yamlObj = loadYaml(configuration, System.getenv(), System.getProperties());
     return toConfigProperties(yamlObj, DEFAULT_COMPONENT_LOADER);
   }
 
@@ -256,11 +301,16 @@ public final class DeclarativeConfiguration {
 
     private final LoadSettings settings;
     private final Map<String, String> environmentVariables;
+    private final Map<Object, Object> systemProperties;
 
-    private EnvLoad(LoadSettings settings, Map<String, String> environmentVariables) {
+    private EnvLoad(
+        LoadSettings settings,
+        Map<String, String> environmentVariables,
+        Map<Object, Object> systemProperties) {
       super(settings);
       this.settings = settings;
       this.environmentVariables = environmentVariables;
+      this.systemProperties = systemProperties;
     }
 
     @Override
@@ -271,12 +321,14 @@ public final class DeclarativeConfiguration {
               settings,
               new ParserImpl(
                   settings, new StreamReader(settings, new YamlUnicodeReader(yamlStream))),
-              environmentVariables));
+              environmentVariables,
+              systemProperties));
     }
   }
 
   /**
-   * A YAML Composer that performs environment variable substitution according to the <a
+   * A YAML Composer that performs environment variable and system property substitution according
+   * to the <a
    * href="https://opentelemetry.io/docs/specs/otel/configuration/data-model/#environment-variable-substitution">
    * OpenTelemetry Configuration Data Model specification</a>.
    *
@@ -284,22 +336,24 @@ public final class DeclarativeConfiguration {
    *
    * <ul>
    *   <li>Environment variable references: {@code ${ENV_VAR}} or {@code ${env:ENV_VAR}}
+   *   <li>System property references: {@code ${sys:property.name}}
    *   <li>Default values: {@code ${ENV_VAR:-default_value}}
    *   <li>Escape sequences: {@code $$} is replaced with a single {@code $}
    * </ul>
    *
-   * <p>Environment variable substitution only applies to scalar values. Mapping keys are not
-   * candidates for substitution. Referenced environment variables that are undefined, null, or
-   * empty are replaced with empty values unless a default value is provided.
+   * <p>Substitution only applies to scalar values. Mapping keys are not candidates for
+   * substitution. Referenced variables that are undefined, null, or empty are replaced with empty
+   * values unless a default value is provided.
    *
    * <p>The {@code $} character serves as an escape sequence where {@code $$} in the input is
-   * translated to a single {@code $} in the output. This prevents environment variable substitution
-   * for the escaped content.
+   * translated to a single {@code $} in the output. This prevents substitution for the escaped
+   * content.
    */
   private static final class EnvComposer extends Composer {
 
     private final Load load;
     private final Map<String, String> environmentVariables;
+    private final Map<Object, Object> systemProperties;
     private final ScalarResolver scalarResolver;
 
     private static final String ESCAPE_SEQUENCE = "$$";
@@ -307,10 +361,14 @@ public final class DeclarativeConfiguration {
     private static final char ESCAPE_SEQUENCE_REPLACEMENT = '$';
 
     private EnvComposer(
-        LoadSettings settings, ParserImpl parser, Map<String, String> environmentVariables) {
+        LoadSettings settings,
+        ParserImpl parser,
+        Map<String, String> environmentVariables,
+        Map<Object, Object> systemProperties) {
       super(settings, parser);
       this.load = new Load(settings);
       this.environmentVariables = environmentVariables;
+      this.systemProperties = systemProperties;
       this.scalarResolver = settings.getSchema().getScalarResolver();
     }
 
@@ -397,12 +455,23 @@ public final class DeclarativeConfiguration {
       int offset = 0;
       do {
         MatchResult matchResult = matcher.toMatchResult();
-        String envVarKey = matcher.group(1);
+        String prefix = matcher.group(1); // "env", "sys", or null
+        String key = matcher.group(2); // variable/property name
         String defaultValue = matcher.group(3);
         if (defaultValue == null) {
           defaultValue = "";
         }
-        String replacement = environmentVariables.getOrDefault(envVarKey, defaultValue);
+
+        String replacement;
+        if ("sys".equals(prefix)) {
+          // System property substitution
+          Object sysProp = systemProperties.get(key);
+          replacement = sysProp != null ? sysProp.toString() : defaultValue;
+        } else {
+          // Environment variable substitution (default or explicit "env:" prefix)
+          replacement = environmentVariables.getOrDefault(key, defaultValue);
+        }
+
         newVal.append(val, offset, matchResult.start()).append(replacement);
         offset = matchResult.end();
       } while (matcher.find());

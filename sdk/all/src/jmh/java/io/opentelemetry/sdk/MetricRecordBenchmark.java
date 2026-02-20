@@ -35,6 +35,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Group;
 import org.openjdk.jmh.annotations.GroupThreads;
 import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.OperationsPerInvocation;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
@@ -43,15 +44,28 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * Notes on interpreting the data:
+ * This benchmark measures the performance of recording metrics. It includes the following
+ * dimensions:
  *
- * <p>The benchmark has two dimensions which partially overlap: cardinality and thread count.
- * Cardinality dictates how many unique attribute sets (i.e. series) are recorded to, and thread
- * count dictates how many threads are simultaneously recording to those series. In all cases, the
- * record path needs to look up an aggregation handle for the series corresponding to the
- * measurement's {@link Attributes} in a {@link java.util.concurrent.ConcurrentHashMap}. That will
- * be the case until otel adds support for <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/issues/4126">bound
+ * <ul>
+ *   <li>{@link BenchmarkState#instrumentTypeAndAggregation} composite of {@link InstrumentType} and
+ *       {@link Aggregation}, including all relevant combinations for synchronous instruments.
+ *   <li>{@link BenchmarkState#aggregationTemporality}
+ *   <li>{@link BenchmarkState#cardinality}
+ *   <li>thread count
+ *   <li>{@link BenchmarkState#instrumentValueType}, {@link BenchmarkState#memoryMode}, and {@link
+ *       BenchmarkState#exemplars} are disabled to reduce combinatorial explosion.
+ * </ul>
+ *
+ * <p>Each operation consists of recording {@link MetricRecordBenchmark#RECORDS_PER_INVOCATION}
+ * measurements.
+ *
+ * <p>The cardinality and thread count dimensions partially overlap. Cardinality dictates how many
+ * unique attribute sets (i.e. series) are recorded to, and thread count dictates how many threads
+ * are simultaneously recording to those series. In all cases, the record path needs to look up an
+ * aggregation handle for the series corresponding to the measurement's {@link Attributes} in a
+ * {@link java.util.concurrent.ConcurrentHashMap}. That will be the case until otel adds support for
+ * <a href="https://github.com/open-telemetry/opentelemetry-specification/issues/4126">bound
  * instruments</a>. The cardinality dictates the size of this map, which has some impact on
  * performance. However, by far the dominant bottleneck is contention. That is, the number of
  * threads simultaneously trying to record to the same series. Increasing the threads increases
@@ -72,10 +86,11 @@ import org.openjdk.jmh.annotations.Warmup;
 public class MetricRecordBenchmark {
 
   private static final int INITIAL_SEED = 513423236;
-  private static final int RECORD_COUNT = 10 * 1024;
+  private static final int MAX_THREADS = 4;
+  private static final int RECORDS_PER_INVOCATION = BenchmarkUtils.RECORDS_PER_INVOCATION;
 
   @State(Scope.Benchmark)
-  public static class ThreadState {
+  public static class BenchmarkState {
 
     @Param InstrumentTypeAndAggregation instrumentTypeAndAggregation;
 
@@ -154,8 +169,8 @@ public class MetricRecordBenchmark {
       }
       Collections.shuffle(attributesList);
 
-      measurements = new ArrayList<>(RECORD_COUNT);
-      for (int i = 0; i < RECORD_COUNT; i++) {
+      measurements = new ArrayList<>(RECORDS_PER_INVOCATION);
+      for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
         measurements.add((long) random.nextInt(2000));
       }
       Collections.shuffle(measurements);
@@ -175,25 +190,28 @@ public class MetricRecordBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 5, time = 1)
-  public void record_1Thread(ThreadState threadState) {
-    record(threadState);
+  @OperationsPerInvocation(RECORDS_PER_INVOCATION)
+  public void record_SingleThread(BenchmarkState benchmarkState) {
+    record(benchmarkState);
   }
 
   @Benchmark
-  @Group("threads4")
-  @GroupThreads(4)
+  @Group("threads" + MAX_THREADS)
+  @GroupThreads(MAX_THREADS)
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 5, time = 1)
-  public void record_4Threads(ThreadState threadState) {
-    record(threadState);
+  @OperationsPerInvocation(RECORDS_PER_INVOCATION)
+  public void record_MultipleThreads(BenchmarkState benchmarkState) {
+    record(benchmarkState);
   }
 
-  private static void record(ThreadState threadState) {
-    for (int i = 0; i < RECORD_COUNT; i++) {
-      Attributes attributes = threadState.attributesList.get(i % threadState.attributesList.size());
-      long value = threadState.measurements.get(i % threadState.measurements.size());
-      threadState.instrument.record(value, attributes);
+  private static void record(BenchmarkState benchmarkState) {
+    for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
+      Attributes attributes =
+          benchmarkState.attributesList.get(i % benchmarkState.attributesList.size());
+      long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
+      benchmarkState.instrument.record(value, attributes);
     }
   }
 

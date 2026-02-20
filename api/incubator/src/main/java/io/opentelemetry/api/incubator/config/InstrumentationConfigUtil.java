@@ -23,7 +23,11 @@ public class InstrumentationConfigUtil {
    * .instrumentation.general.peer.service_mapping}, or null if none is configured.
    *
    * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
+   * @deprecated Peer service mapping was removed from the general instrumentation configuration
+   *     schema. See <a
+   *     href="https://github.com/open-telemetry/opentelemetry-configuration/pull/526">opentelemetry-configuration#526</a>.
    */
+  @Deprecated
   @Nullable
   public static Map<String, String> peerServiceMapping(ConfigProvider configProvider) {
     List<DeclarativeConfigProperties> serviceMappingList =

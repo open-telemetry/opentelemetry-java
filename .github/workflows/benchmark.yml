@@ -44,13 +44,13 @@ jobs:
 
       # TODO (jack-berg): Select or build appropriate benchmarks for other key areas:
       # - Log SDK record & export
-      # - Trace SDK record & export
+      # - Trace SDK export
       # - Metric SDK export
       # - Noop implementation
       - name: Run Benchmark
         run: |
           cd sdk/all/build
-          java -jar libs/opentelemetry-sdk-*-jmh.jar -rf json MetricRecordBenchmark
+          java -jar libs/opentelemetry-sdk-*-jmh.jar -rf json MetricRecordBenchmark SpanRecordBenchmark
 
       - name: Use CLA approved github bot
         run: .github/scripts/use-cla-approved-bot.sh
