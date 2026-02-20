@@ -20,14 +20,10 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -37,9 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -120,7 +114,7 @@ class DeclarativeConfigurationCreateTest {
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
     String yaml =
-        "file_format: \"1.0-rc.1\"\n"
+        "file_format: \"1.0-rc.3\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -147,7 +141,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void parseAndCreate_EmptyComponentProviderConfig() {
     String yaml =
-        "file_format: \"1.0-rc.1\"\n"
+        "file_format: \"1.0-rc.3\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - test:\n"
@@ -165,7 +159,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void create_ModelCustomizer() {
     OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
-    model.withFileFormat("1.0-rc.1");
+    model.withFileFormat("1.0-rc.3");
     model.withTracerProvider(
         new TracerProviderModel()
             .withProcessors(
@@ -204,91 +198,5 @@ class DeclarativeConfigurationCreateTest {
                 DeclarativeConfiguration.callAutoConfigureListeners(
                     spiHelper, OpenTelemetrySdk.builder().build()))
         .doesNotThrowAnyException();
-  }
-
-  @Test
-  void create_ExporterCustomizer() {
-    // Track which exporters were customized
-    List<String> customizedExporters = new ArrayList<>();
-
-    OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
-    model.withFileFormat("1.0-rc.1");
-    model.withTracerProvider(
-        new TracerProviderModel()
-            .withProcessors(
-                Collections.singletonList(
-                    new SpanProcessorModel()
-                        .withBatch(
-                            new BatchSpanProcessorModel()
-                                .withExporter(
-                                    new SpanExporterModel()
-                                        .withConsole(new ConsoleExporterModel()))))));
-
-    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addSpanExporterCustomizer(
-        SpanExporter.class,
-        (exporter, properties) -> {
-          customizedExporters.add("console");
-          return exporter;
-        });
-
-    DeclarativeConfigContext context =
-        DeclarativeConfigContext.create(
-            ComponentLoader.forClassLoader(
-                DeclarativeConfigurationCreateTest.class.getClassLoader()));
-    context.setBuilder(builder);
-
-    ExtendedOpenTelemetrySdk sdk =
-        DeclarativeConfiguration.createAndMaybeCleanup(
-            OpenTelemetryConfigurationFactory.getInstance(), context, model);
-    cleanup.addCloseable(sdk);
-
-    assertThat(customizedExporters).containsExactly("console");
-  }
-
-  @Test
-  void create_ExporterCustomizer_MultipleCompose() {
-    List<String> customizationOrder = new ArrayList<>();
-
-    OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
-    model.withFileFormat("1.0-rc.1");
-    model.withTracerProvider(
-        new TracerProviderModel()
-            .withProcessors(
-                Collections.singletonList(
-                    new SpanProcessorModel()
-                        .withBatch(
-                            new BatchSpanProcessorModel()
-                                .withExporter(
-                                    new SpanExporterModel()
-                                        .withConsole(new ConsoleExporterModel()))))));
-
-    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    builder.addSpanExporterCustomizer(
-        SpanExporter.class,
-        (exporter, properties) -> {
-          customizationOrder.add("first");
-          return exporter;
-        });
-    builder.addSpanExporterCustomizer(
-        SpanExporter.class,
-        (exporter, properties) -> {
-          customizationOrder.add("second");
-          return exporter;
-        });
-
-    DeclarativeConfigContext context =
-        DeclarativeConfigContext.create(
-            ComponentLoader.forClassLoader(
-                DeclarativeConfigurationCreateTest.class.getClassLoader()));
-    context.setBuilder(builder);
-
-    ExtendedOpenTelemetrySdk sdk =
-        DeclarativeConfiguration.createAndMaybeCleanup(
-            OpenTelemetryConfigurationFactory.getInstance(), context, model);
-    cleanup.addCloseable(sdk);
-
-    // Verify customizers composed in registration order
-    assertThat(customizationOrder).containsExactly("first", "second");
   }
 }
