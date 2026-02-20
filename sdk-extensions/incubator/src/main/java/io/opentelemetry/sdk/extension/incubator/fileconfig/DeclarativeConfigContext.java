@@ -16,6 +16,7 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -27,7 +28,7 @@ class DeclarativeConfigContext {
   @Nullable private volatile MeterProvider meterProvider;
   @Nullable private Resource resource = null;
   @Nullable private List<ComponentProvider> componentProviders = null;
-  @Nullable private DeclarativeConfigurationBuilder builder = null;
+  @Nullable private DeclarativeConfigurationBuilder builder;
 
   // Visible for testing
   DeclarativeConfigContext(SpiHelper spiHelper) {
@@ -76,9 +77,8 @@ class DeclarativeConfigContext {
     this.builder = builder;
   }
 
-  @Nullable
   DeclarativeConfigurationBuilder getBuilder() {
-    return builder;
+    return Objects.requireNonNull(builder, "builder has not been set");
   }
 
   SpiHelper getSpiHelper() {

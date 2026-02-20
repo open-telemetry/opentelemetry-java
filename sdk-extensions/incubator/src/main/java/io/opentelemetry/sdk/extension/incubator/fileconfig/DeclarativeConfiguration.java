@@ -160,14 +160,13 @@ public final class DeclarativeConfiguration {
   private static ExtendedOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, DeclarativeConfigContext context) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+    context.setBuilder(builder);
 
     SpiHelper spiHelper = context.getSpiHelper();
     for (DeclarativeConfigurationCustomizerProvider provider :
         spiHelper.loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
       provider.customize(builder);
     }
-
-    context.setBuilder(builder);
 
     ExtendedOpenTelemetrySdk sdk =
         createAndMaybeCleanup(

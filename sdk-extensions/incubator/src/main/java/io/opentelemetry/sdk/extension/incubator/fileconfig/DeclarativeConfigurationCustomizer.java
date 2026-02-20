@@ -29,7 +29,8 @@ public interface DeclarativeConfigurationCustomizer {
    * Multiple customizers compose in registration order.
    *
    * @param exporterType the exporter type to customize
-   * @param customizer function receiving (exporter, properties) and returning customized exporter
+   * @param customizer function receiving (exporter, properties) and returning customized exporter;
+   *     must not return null
    * @param <T> the exporter type
    */
   <T extends SpanExporter> void addSpanExporterCustomizer(
@@ -40,7 +41,8 @@ public interface DeclarativeConfigurationCustomizer {
    * Multiple customizers compose in registration order.
    *
    * @param exporterType the exporter type to customize
-   * @param customizer function receiving (exporter, properties) and returning customized exporter
+   * @param customizer function receiving (exporter, properties) and returning customized exporter;
+   *     must not return null
    * @param <T> the exporter type
    */
   <T extends MetricExporter> void addMetricExporterCustomizer(
@@ -50,11 +52,12 @@ public interface DeclarativeConfigurationCustomizer {
    * Add customizer for {@link LogRecordExporter} instances created from declarative configuration.
    * Multiple customizers compose in registration order.
    *
-   * <p>Important: If the customizer wraps the exporter in a new {@link java.io.Closeable} instance,
-   * the customizer is responsible for resource cleanup.
+   * <p>If the customizer wraps the exporter in a new {@link java.io.Closeable} instance, the
+   * customizer is responsible for resource cleanup.
    *
    * @param exporterType the exporter type to customize
-   * @param customizer function receiving (exporter, properties) and returning customized exporter
+   * @param customizer function receiving (exporter, properties) and returning customized exporter;
+   *     must not return null
    * @param <T> the exporter type
    */
   <T extends LogRecordExporter> void addLogRecordExporterCustomizer(
