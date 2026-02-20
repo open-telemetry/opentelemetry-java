@@ -12,7 +12,6 @@ import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE;
 import static io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE;
 
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
@@ -30,9 +29,7 @@ class ExtendedLoggerBuilderTest {
   void setException_DefaultResolver() {
     Logger logger = loggerProviderBuilder.build().get("logger");
 
-    ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
-        .setException(new Exception("error"))
-        .emit();
+    logger.logRecordBuilder().setException(new Exception("error")).emit();
 
     assertThat(exporter.getFinishedLogRecordItems())
         .satisfiesExactly(
@@ -64,9 +61,7 @@ class ExtendedLoggerBuilderTest {
 
     Logger logger = loggerProviderBuilder.build().get("logger");
 
-    ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
-        .setException(new Exception("error"))
-        .emit();
+    logger.logRecordBuilder().setException(new Exception("error")).emit();
 
     assertThat(exporter.getFinishedLogRecordItems())
         .satisfiesExactly(
@@ -81,7 +76,8 @@ class ExtendedLoggerBuilderTest {
   void setException_UserAttributesTakePrecedence() {
     Logger logger = loggerProviderBuilder.build().get("logger");
 
-    ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
+    logger
+        .logRecordBuilder()
         .setAttribute(EXCEPTION_MESSAGE, "custom message")
         .setException(new Exception("error"))
         .emit();

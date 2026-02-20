@@ -210,6 +210,14 @@ public interface LogRecordBuilder {
     return this;
   }
 
+  /**
+   * Set {@code exception.type}, {@code exception.message}, and {@code exception.stacktrace}
+   * attributes based on the {@code throwable}.
+   */
+  default LogRecordBuilder setException(Throwable throwable) {
+    return this;
+  }
+
   /** Emit the log record. */
   void emit();
 }
