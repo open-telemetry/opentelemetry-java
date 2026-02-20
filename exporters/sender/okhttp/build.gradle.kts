@@ -5,8 +5,12 @@ plugins {
   id("otel.animalsniffer-conventions")
 }
 
-description = "OpenTelemetry OkHttp Senders"
+description = "OpenTelemetry OkHttp5 Senders"
 otelJava.moduleName.set("io.opentelemetry.exporter.sender.okhttp.internal")
+
+tasks.named<Test>("test") {
+  systemProperty("expectedOkHttpMajorVersion", "5")
+}
 
 dependencies {
   implementation(project(":exporters:common"))

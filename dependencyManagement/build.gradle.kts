@@ -8,6 +8,7 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 
+val okhttp5Version = "5.3.2"
 val autoValueVersion = "1.11.1"
 val errorProneVersion = "2.47.0"
 val jmhVersion = "1.37"
@@ -18,7 +19,6 @@ val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.3.10"
 val armeriaVersion = "1.36.0"
 val junitVersion = "5.14.3"
-val okhttpVersion = "5.3.2"
 
 val DEPENDENCY_BOMS = listOf(
   // for some reason boms show up as runtime dependencies in license and vulnerability scans
@@ -29,7 +29,6 @@ val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.21.0",
   "com.google.guava:guava-bom:33.5.0-jre",
   "com.google.protobuf:protobuf-bom:4.33.5",
-  "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.16.4", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.79.0",
   "io.netty:netty-bom:4.2.10.Final",
@@ -47,7 +46,6 @@ val DEPENDENCIES = listOf(
   "com.linecorp.armeria:armeria-grpc:${armeriaVersion}",
   "com.linecorp.armeria:armeria-grpc-protocol:${armeriaVersion}",
   "com.linecorp.armeria:armeria-junit5:${armeriaVersion}",
-
   "com.google.auto.value:auto-value:${autoValueVersion}",
   "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
   "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
@@ -73,7 +71,7 @@ val DEPENDENCIES = listOf(
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
-  "com.squareup.okhttp3:okhttp:$okhttpVersion",
+  "com.squareup.okhttp3:okhttp:${okhttp5Version}",
   "com.tngtech.archunit:archunit-junit5:1.4.1",
   "com.uber.nullaway:nullaway:0.13.1",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
