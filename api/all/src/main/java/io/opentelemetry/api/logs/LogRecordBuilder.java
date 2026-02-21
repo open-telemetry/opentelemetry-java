@@ -5,18 +5,19 @@
 
 package io.opentelemetry.api.logs;
 
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nullable;
+
+import io.opentelemetry.api.common.AttributeKey;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
-import java.time.Instant;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /**
  * Used to construct and emit log records from a {@link Logger}.
@@ -31,16 +32,14 @@ public interface LogRecordBuilder {
   /**
    * Set the epoch {@code timestamp}, using the timestamp and unit.
    *
-   * <p>The {@code timestamp} is the time at which the log record occurred. If unset, it will be set
-   * to the current time when {@link #emit()} is called.
+   * <p>Note: If not set, the emitted log will not have a timestamp.
    */
   LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit);
 
   /**
    * Set the epoch {@code timestamp}, using the instant.
    *
-   * <p>The {@code timestamp} is the time at which the log record occurred. If unset, it will be set
-   * to the current time when {@link #emit()} is called.
+   * <p>Note: If not set, the emitted log will not have a timestamp.
    */
   LogRecordBuilder setTimestamp(Instant instant);
 
