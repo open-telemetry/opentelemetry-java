@@ -130,7 +130,8 @@ class YamlDeclarativeConfigPropertiesTest {
         .isEqualTo(Arrays.asList(1.1d, 2.2d));
     assertThat(otherProps.getScalarList("bool_list_key", Boolean.class))
         .isEqualTo(Arrays.asList(true, false));
-    // If reading a scalar list which is mixed, entries which are not aligned with the requested
+    // If reading a scalar list which is mixed, entries which are not aligned with
+    // the requested
     // type are filtered out
     assertThat(otherProps.getScalarList("mixed_list_key", String.class))
         .isEqualTo(Collections.singletonList("val1"));
@@ -230,8 +231,13 @@ class YamlDeclarativeConfigPropertiesTest {
     assertThat(otherProps.getDouble("str_key")).isNull();
     assertThat(otherProps.getBoolean("str_key")).isNull();
     assertThat(otherProps.getScalarList("str_key", String.class)).isNull();
+    assertThat(otherProps.getScalarList("str_list_key", Long.class)).isNull();
+    assertThat(otherProps.getScalarList("str_list_key", Boolean.class)).isNull();
+    assertThat(otherProps.getScalarList("str_list_key", Double.class)).isNull();
     assertThat(otherProps.getStructured("str_key")).isNull();
     assertThat(otherProps.getStructuredList("str_key")).isNull();
+    assertThat(otherProps.getStructured("str_list_key")).isNull();
+    assertThat(otherProps.getStructuredList("map_key")).isNull();
 
     assertWarning("Ignoring value for key [int_key] because it is Integer instead of String: 1");
     assertWarning(
@@ -240,6 +246,26 @@ class YamlDeclarativeConfigPropertiesTest {
         "Ignoring value for key [str_key] because it is String instead of Double: str_value");
     assertWarning(
         "Ignoring value for key [str_key] because it is String instead of Boolean: str_value");
+    assertWarning(
+        "Ignoring value for key [str_list_key] because it is String instead of Long: val1");
+  }
+
+  @Test
+  void wrongTypeWithDefault() {
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+
+    assertThat(otherProps.getString("int_key", "default")).isEqualTo("default");
+    assertThat(otherProps.getInt("str_key", 100)).isEqualTo(100);
+    assertThat(otherProps.getLong("str_key", 100L)).isEqualTo(100L);
+    assertThat(otherProps.getDouble("str_key", 1.1)).isEqualTo(1.1);
+    assertThat(otherProps.getBoolean("str_key", true)).isTrue();
+    assertThat(
+            otherProps.getScalarList("str_key", String.class, Collections.singletonList("default")))
+        .isEqualTo(Collections.singletonList("default"));
+    assertThat(otherProps.getStructured("str_key", empty())).isEqualTo(empty());
+    assertThat(otherProps.getStructuredList("str_key", Collections.emptyList()))
+        .isEqualTo(Collections.emptyList());
   }
 
   private void assertWarning(String message) {
