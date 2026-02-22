@@ -6,6 +6,7 @@
 package io.opentelemetry.api.incubator.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.logs.Logger;
@@ -20,6 +21,7 @@ class ExtendedDefaultLogger implements ExtendedLogger {
   private static final Logger INSTANCE = new ExtendedDefaultLogger();
   private static final ExtendedLogRecordBuilder NOOP_LOG_RECORD_BUILDER =
       new NoopExtendedLogRecordBuilder();
+  private static final LogEventBuilder NOOP_LOG_EVENT_BUILDER = new NoopLogEventBuilder();
 
   private ExtendedDefaultLogger() {}
 
@@ -31,6 +33,20 @@ class ExtendedDefaultLogger implements ExtendedLogger {
   public boolean isEnabled(Severity severity, Context context) {
     return false;
   }
+
+  @Override
+  public LogEventBuilder logBuilder(Severity severity, String eventName) {
+    return NOOP_LOG_EVENT_BUILDER;
+  }
+
+  @Override
+  public void log(
+      Severity severity,
+      String eventName,
+      Attributes attributes,
+      @Nullable Value<?> body,
+      @Nullable Throwable exception,
+      Context context) {}
 
   @Override
   public ExtendedLogRecordBuilder logRecordBuilder() {
@@ -103,6 +119,37 @@ class ExtendedDefaultLogger implements ExtendedLogger {
 
     @Override
     public ExtendedLogRecordBuilder setBody(Value<?> body) {
+      return this;
+    }
+
+    @Override
+    public void emit() {}
+  }
+
+  private static final class NoopLogEventBuilder implements LogEventBuilder {
+
+    @Override
+    public LogEventBuilder setContext(Context context) {
+      return this;
+    }
+
+    @Override
+    public LogEventBuilder setBody(Value<?> body) {
+      return this;
+    }
+
+    @Override
+    public LogEventBuilder setBody(String body) {
+      return this;
+    }
+
+    @Override
+    public <T> LogEventBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
+      return this;
+    }
+
+    @Override
+    public LogEventBuilder setException(Throwable throwable) {
       return this;
     }
 
