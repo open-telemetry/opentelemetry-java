@@ -40,47 +40,64 @@ dependencies {
 
 val testJavaVersion: String? by project
 
+// Source files for testOkHttp4 are generated from testOkhttp5 by replacing version-specific
+// references. Do not edit files under src/testOkhttp4 directly - edit testOkhttp5 instead.
+val generateTestOkhttp4Sources by tasks.registering(Sync::class) {
+  from("src/testOkhttp5/java")
+  into(layout.buildDirectory.dir("generated/sources/testOkhttp4/java"))
+  filter { line: String ->
+    line.replace("sender.okhttp.internal", "sender.okhttp4.internal")
+  }
+  includeEmptyDirs = false
+}
+
 testing {
   suites {
-    listOf(
-      "LATEST",
-      "4.11.0"
-    ).forEach {
-      register<JvmTestSuite>("testOkHttpVersion$it") {
-        sources {
-          java {
-            setSrcDirs(listOf("src/testDefaultSender/java"))
-          }
-        }
-        dependencies {
-          implementation(project(":exporters:sender:okhttp"))
-          implementation(project(":exporters:otlp:testing-internal"))
+    register<JvmTestSuite>("testOkhttp5") {
+      dependencies {
+        implementation(project(":exporters:sender:okhttp"))
+        implementation(project(":exporters:otlp:testing-internal"))
 
-          implementation(platform("com.squareup.okhttp3:okhttp-bom")) {
-            // Only impose dependency constraint if not testing the LATEST version, which is defined in /dependencyManagement/build.gradle.kts
-            if (!it.equals("LATEST")) {
-              version {
-                strictly(it)
-              }
-            }
-          }
-
-          implementation("com.squareup.okhttp3:okhttp")
-          implementation("io.grpc:grpc-stub")
-        }
-
-        targets {
-          all {
-            testTask {
-              // Only enable test suite for non-LATEST in GitHub CI (CI=true)
-              enabled = it.equals("LATEST") || "true".equals(System.getenv("CI"))
-              systemProperty("expected.okhttp.version", it)
-            }
+        implementation("com.squareup.okhttp3:okhttp")
+        implementation("io.grpc:grpc-stub")
+      }
+      targets {
+        all {
+          testTask {
+            systemProperty("expectedOkHttpMajorVersion", "5")
           }
         }
       }
     }
+    register<JvmTestSuite>("testOkhttp4") {
+      sources.java.srcDir(generateTestOkhttp4Sources)
+      dependencies {
+        implementation(project(":exporters:sender:okhttp4"))
+        implementation(project(":exporters:otlp:testing-internal"))
 
+        // okhttp v4 is pinned explicitly because dependencyManagement manages okhttp v5 as the
+        // project-wide default. strictly() is required to override the v5 BOM constraint.
+        // This version must be kept in sync with the version declared in
+        // exporters/sender/okhttp4/build.gradle.kts.
+        implementation("com.squareup.okhttp3:okhttp") { version { strictly("4.12.0") } }
+        implementation("io.grpc:grpc-stub")
+      }
+      targets {
+        all {
+          testTask {
+            systemProperty("expectedOkHttpMajorVersion", "4")
+            systemProperty(
+              "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.okhttp4.internal.OkHttpGrpcSenderProvider"
+            )
+            systemProperty(
+              "io.opentelemetry.sdk.common.export.HttpSenderProvider",
+              "io.opentelemetry.exporter.sender.okhttp4.internal.OkHttpHttpSenderProvider"
+            )
+          }
+        }
+      }
+    }
     register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":exporters:sender:grpc-managed-channel"))
