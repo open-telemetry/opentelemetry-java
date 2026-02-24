@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Explic
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LastValueAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SumAggregationModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.HistogramOptions;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -70,14 +71,17 @@ class AggregationFactoryTest {
                     new ExplicitBucketHistogramAggregationModel()
                         .withBoundaries(Arrays.asList(1.0, 2.0))
                         .withRecordMinMax(true)),
-            Aggregation.explicitBucketHistogram(Arrays.asList(1.0, 2.0), true)),
+            Aggregation.explicitBucketHistogram(
+                Arrays.asList(1.0, 2.0), HistogramOptions.builder().setRecordMinMax(true).build())),
         Arguments.of(
             new AggregationModel()
                 .withExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
                         .withBoundaries(Arrays.asList(1.0, 2.0))
                         .withRecordMinMax(false)),
-            Aggregation.explicitBucketHistogram(Arrays.asList(1.0, 2.0), false)),
+            Aggregation.explicitBucketHistogram(
+                Arrays.asList(1.0, 2.0),
+                HistogramOptions.builder().setRecordMinMax(false).build())),
         Arguments.of(
             new AggregationModel()
                 .withExplicitBucketHistogram(
@@ -88,7 +92,7 @@ class AggregationFactoryTest {
                 Arrays.asList(
                     0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0, 750.0, 1000.0, 2500.0,
                     5000.0, 7500.0, 10000.0),
-                false)),
+                HistogramOptions.builder().setRecordMinMax(false).build())),
         // Test recordMinMax parameter for exponential bucket histogram
         Arguments.of(
             new AggregationModel()
@@ -97,7 +101,8 @@ class AggregationFactoryTest {
                         .withMaxSize(2)
                         .withMaxScale(2)
                         .withRecordMinMax(true)),
-            Aggregation.base2ExponentialBucketHistogram(2, 2, true)),
+            Aggregation.base2ExponentialBucketHistogram(
+                2, 2, HistogramOptions.builder().setRecordMinMax(true).build())),
         Arguments.of(
             new AggregationModel()
                 .withBase2ExponentialBucketHistogram(
@@ -105,6 +110,7 @@ class AggregationFactoryTest {
                         .withMaxSize(2)
                         .withMaxScale(2)
                         .withRecordMinMax(false)),
-            Aggregation.base2ExponentialBucketHistogram(2, 2, false)));
+            Aggregation.base2ExponentialBucketHistogram(
+                2, 2, HistogramOptions.builder().setRecordMinMax(false).build())));
   }
 }

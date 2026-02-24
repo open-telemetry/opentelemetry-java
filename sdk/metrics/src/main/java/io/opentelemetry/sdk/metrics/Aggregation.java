@@ -74,10 +74,11 @@ public interface Aggregation {
    *
    * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
    *     order from lowest to highest.
-   * @param recordMinMax whether to record min and max values
+   * @param options histogram options
    */
-  static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries, boolean recordMinMax) {
-    return ExplicitBucketHistogramAggregation.create(bucketBoundaries, recordMinMax);
+  static Aggregation explicitBucketHistogram(
+      List<Double> bucketBoundaries, HistogramOptions options) {
+    return ExplicitBucketHistogramAggregation.create(bucketBoundaries, options.isRecordMinMax());
   }
 
   /**
@@ -115,10 +116,11 @@ public interface Aggregation {
    *     given the {@code maxBuckets}, the scale is reduced until the measurements can be
    *     accommodated. Setting maxScale may reduce the number of downscales. Additionally, the
    *     performance of computing bucket index is improved when scale is {@code <= 0}.
-   * @param recordMinMax whether to record min and max values
+   * @param options histogram options
    */
   static Aggregation base2ExponentialBucketHistogram(
-      int maxBuckets, int maxScale, boolean recordMinMax) {
-    return Base2ExponentialHistogramAggregation.create(maxBuckets, maxScale, recordMinMax);
+      int maxBuckets, int maxScale, HistogramOptions options) {
+    return Base2ExponentialHistogramAggregation.create(
+        maxBuckets, maxScale, options.isRecordMinMax());
   }
 }

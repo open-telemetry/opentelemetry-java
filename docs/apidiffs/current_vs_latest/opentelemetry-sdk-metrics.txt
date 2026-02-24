@@ -1,5 +1,16 @@
 Comparing source compatibility of opentelemetry-sdk-metrics-1.60.0-SNAPSHOT.jar against opentelemetry-sdk-metrics-1.59.0.jar
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.Aggregation  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation base2ExponentialBucketHistogram(int, int, boolean)
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation explicitBucketHistogram(java.util.List<java.lang.Double>, boolean)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation base2ExponentialBucketHistogram(int, int, io.opentelemetry.sdk.metrics.HistogramOptions)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation explicitBucketHistogram(java.util.List<java.lang.Double>, io.opentelemetry.sdk.metrics.HistogramOptions)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.HistogramOptions  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.HistogramOptions$Builder builder()
+	+++  NEW METHOD: PUBLIC(+) boolean isRecordMinMax()
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
++++  NEW CLASS: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.HistogramOptions$Builder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.HistogramOptions build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.HistogramOptions$Builder setRecordMinMax(boolean)
