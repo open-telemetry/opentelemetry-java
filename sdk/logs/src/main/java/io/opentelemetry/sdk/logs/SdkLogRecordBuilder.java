@@ -144,17 +144,10 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     if (!logger.isEnabled(severity, context)) {
       return;
     }
-
-    long now = loggerSharedState.getClock().now();
-
     long observedTimestampEpochNanos =
         this.observedTimestampEpochNanos == 0
-            ? now
+            ? this.loggerSharedState.getClock().now()
             : this.observedTimestampEpochNanos;
-
-    long timeStampEpochNanos = this.timestampEpochNanos == 0 ? now : this.timestampEpochNanos;
-
-    this.timestampEpochNanos = timeStampEpochNanos;
 
     loggerSharedState.getLoggerInstrumentation().emitLog();
     loggerSharedState
