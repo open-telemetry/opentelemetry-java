@@ -125,7 +125,7 @@ class SdkLogRecordBuilderTest {
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody((Value<?>) null)
-        .hasTimestamp(0L)
+        .hasTimestamp(10L)
         .hasObservedTimestamp(10L)
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
