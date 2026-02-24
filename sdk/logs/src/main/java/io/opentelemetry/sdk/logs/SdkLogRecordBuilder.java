@@ -106,6 +106,22 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   }
 
   @Override
+  public SdkLogRecordBuilder setException(Throwable throwable) {
+    if (throwable == null) {
+      return this;
+    }
+
+    loggerSharedState
+        .getExceptionAttributeResolver()
+        .setExceptionAttributes(
+            this::setExceptionAttribute,
+            throwable,
+            loggerSharedState.getLogLimits().getMaxAttributeValueLength());
+
+    return this;
+  }
+
+  @Override
   public <T> SdkLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
@@ -137,6 +153,19 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     loggerSharedState
         .getLogRecordProcessor()
         .onEmit(context, createLogRecord(context, observedTimestampEpochNanos));
+  }
+
+  /**
+   * Sets an exception-derived attribute only if it hasn't already been set by the user. This
+   * ensures user-set attributes take precedence over exception-derived attributes.
+   */
+  protected <T> void setExceptionAttribute(AttributeKey<T> key, @Nullable T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return;
+    }
+    if (attributes == null || attributes.get(key) == null) {
+      setAttribute(key, value);
+    }
   }
 
   protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {

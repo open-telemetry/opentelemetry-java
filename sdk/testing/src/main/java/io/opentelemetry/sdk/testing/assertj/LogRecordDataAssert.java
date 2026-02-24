@@ -37,6 +37,13 @@ import org.assertj.core.api.AbstractAssert;
  */
 public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, LogRecordData> {
 
+  private static final AttributeKey<String> EXCEPTION_TYPE =
+      AttributeKey.stringKey("exception.type");
+  private static final AttributeKey<String> EXCEPTION_MESSAGE =
+      AttributeKey.stringKey("exception.message");
+  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
+      AttributeKey.stringKey("exception.stacktrace");
+
   LogRecordDataAssert(@Nullable LogRecordData actual) {
     super(actual, LogRecordDataAssert.class);
   }
@@ -347,6 +354,31 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
       case VALUE:
         return hasBodyField(key.getKey(), (Value<?>) value);
     }
+    return this;
+  }
+
+  /**
+   * Asserts the log has exception attributes for the given {@link Throwable}. The stack trace is
+   * not matched against.
+   */
+  @SuppressWarnings("NullAway")
+  public LogRecordDataAssert hasException(Throwable exception) {
+    isNotNull();
+
+    assertThat(actual.getAttributes())
+        .as("exception.type")
+        .containsEntry(EXCEPTION_TYPE, exception.getClass().getCanonicalName());
+    if (exception.getMessage() != null) {
+      assertThat(actual.getAttributes())
+          .as("exception.message")
+          .containsEntry(EXCEPTION_MESSAGE, exception.getMessage());
+    }
+
+    // Exceptions used in assertions always have a different stack trace, just confirm it was
+    // recorded.
+    String stackTrace = actual.getAttributes().get(EXCEPTION_STACKTRACE);
+    assertThat(stackTrace).as("exception.stacktrace").isNotNull();
+
     return this;
   }
 

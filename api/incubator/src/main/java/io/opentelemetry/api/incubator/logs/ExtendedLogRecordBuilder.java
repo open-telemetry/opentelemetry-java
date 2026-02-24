@@ -133,6 +133,7 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    */
   <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value);
 
-  /** Set standard {@code exception.*} attributes based on the {@code throwable}. */
+  /** {@inheritDoc} */
+  @Override
   ExtendedLogRecordBuilder setException(Throwable throwable);
 }
