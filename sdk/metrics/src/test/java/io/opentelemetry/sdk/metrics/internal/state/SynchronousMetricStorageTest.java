@@ -175,7 +175,11 @@ public class SynchronousMetricStorageTest {
             sum ->
                 sum.isCumulative()
                     .hasPointsSatisfying(
-                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
+                        point ->
+                            point
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(10)
+                                .hasValue(3)));
     cumulativeReader.setLastCollectEpochNanos(10);
 
     // Record measurement and collect at time 30
@@ -186,7 +190,11 @@ public class SynchronousMetricStorageTest {
             sum ->
                 sum.isCumulative()
                     .hasPointsSatisfying(
-                        point -> point.hasStartEpochNanos(0).hasEpochNanos(30).hasValue(6)));
+                        point ->
+                            point
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(30)
+                                .hasValue(6)));
     cumulativeReader.setLastCollectEpochNanos(30);
 
     // Record measurement and collect at time 35
@@ -197,7 +205,11 @@ public class SynchronousMetricStorageTest {
             sum ->
                 sum.isCumulative()
                     .hasPointsSatisfying(
-                        point -> point.hasStartEpochNanos(0).hasEpochNanos(35).hasValue(8)));
+                        point ->
+                            point
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(35)
+                                .hasValue(8)));
   }
 
   @Test
@@ -225,7 +237,11 @@ public class SynchronousMetricStorageTest {
             sum ->
                 sum.isDelta()
                     .hasPointsSatisfying(
-                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
+                        point ->
+                            point
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(10)
+                                .hasValue(3)));
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(1);
@@ -292,7 +308,11 @@ public class SynchronousMetricStorageTest {
             sum ->
                 sum.isDelta()
                     .hasPointsSatisfying(
-                        point -> point.hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3)));
+                        point ->
+                            point
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(10)
+                                .hasValue(3)));
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -413,7 +433,7 @@ public class SynchronousMetricStorageTest {
                             .hasSize(CARDINALITY_LIMIT - 1)
                             .allSatisfy(
                                 point -> {
-                                  assertThat(point.getStartEpochNanos()).isEqualTo(0);
+                                  assertThat(point.getStartEpochNanos()).isEqualTo(testClock.now());
                                   assertThat(point.getEpochNanos()).isEqualTo(10);
                                   assertThat(point.getValue()).isEqualTo(3);
                                 })));
@@ -434,7 +454,7 @@ public class SynchronousMetricStorageTest {
                             .hasSize(CARDINALITY_LIMIT)
                             .allSatisfy(
                                 point -> {
-                                  assertThat(point.getStartEpochNanos()).isEqualTo(0);
+                                  assertThat(point.getStartEpochNanos()).isEqualTo(testClock.now());
                                   assertThat(point.getEpochNanos()).isEqualTo(20);
                                   assertThat(point.getValue()).isEqualTo(3);
                                 })
@@ -485,7 +505,7 @@ public class SynchronousMetricStorageTest {
                             .hasSize(CARDINALITY_LIMIT - 1)
                             .allSatisfy(
                                 point -> {
-                                  assertThat(point.getStartEpochNanos()).isEqualTo(0);
+                                  assertThat(point.getStartEpochNanos()).isEqualTo(testClock.now());
                                   assertThat(point.getEpochNanos()).isEqualTo(10);
                                   assertThat(point.getValue()).isEqualTo(3);
                                 })));
@@ -600,7 +620,8 @@ public class SynchronousMetricStorageTest {
                             .hasSize(CARDINALITY_LIMIT - 1)
                             .allSatisfy(
                                 point -> {
-                                  Assertions.assertThat(point.getStartEpochNanos()).isEqualTo(0);
+                                  Assertions.assertThat(point.getStartEpochNanos())
+                                      .isEqualTo(testClock.now());
                                   Assertions.assertThat(point.getEpochNanos()).isEqualTo(10);
                                   Assertions.assertThat(point.getValue()).isEqualTo(3);
                                 })));

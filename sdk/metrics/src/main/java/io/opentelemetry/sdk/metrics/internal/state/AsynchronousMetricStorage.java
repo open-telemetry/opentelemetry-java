@@ -180,6 +180,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
     handle.recordDouble(value, attributes, Context.current());
   }
 
+  // Is this still needed?
   void setEpochInformation(long epochNanos) {
     this.epochNanos = epochNanos;
   }
