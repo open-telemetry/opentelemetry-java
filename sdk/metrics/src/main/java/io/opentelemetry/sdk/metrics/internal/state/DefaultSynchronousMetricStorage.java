@@ -262,10 +262,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
     @Override
     public MetricData collect(
-        Resource resource,
-        InstrumentationScopeInfo instrumentationScopeInfo,
-        long startEpochNanos,
-        long epochNanos) {
+        Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
       ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles;
       AggregatorHolder<T> holder = this.aggregatorHolder;
       this.aggregatorHolder =
@@ -430,10 +427,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
     @Override
     public MetricData collect(
-        Resource resource,
-        InstrumentationScopeInfo instrumentationScopeInfo,
-        long startEpochNanos,
-        long epochNanos) {
+        Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
       List<T> points;
       if (memoryMode == REUSABLE_DATA) {
         reusableResultList.clear();
@@ -448,9 +442,9 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             if (!handle.hasRecordedValues()) {
               return;
             }
-            T point =
-                handle.aggregateThenMaybeReset(
-                    startEpochNanos, epochNanos, attributes, /* reset= */ false);
+            // TODO: start time should be first measurement for series (i.e. AggregatorHandle
+            // initialization time)
+            T point = handle.aggregateThenMaybeReset(0, epochNanos, attributes, /* reset= */ false);
 
             if (point != null) {
               points.add(point);

@@ -199,10 +199,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
 
   @Override
   public MetricData collect(
-      Resource resource,
-      InstrumentationScopeInfo instrumentationScopeInfo,
-      long startEpochNanos,
-      long epochNanos) {
+      Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
     Collection<T> result =
         aggregationTemporality == AggregationTemporality.DELTA
             ? collectWithDeltaAggregationTemporality()

@@ -117,7 +117,7 @@ public class SynchronousMetricStorageTest {
     logs.assertContains(
         "Instrument name has recorded measurement Not-a-Number (NaN) value with attributes {}. Dropping measurement.");
     verify(aggregator, never()).createHandle();
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .isEqualTo(EmptyMetricData.getInstance());
   }
 
@@ -139,7 +139,7 @@ public class SynchronousMetricStorageTest {
             CARDINALITY_LIMIT,
             /* enabled= */ true);
     storage.recordDouble(1, attributes, Context.root());
-    MetricData md = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
+    MetricData md = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, testClock.now());
     assertThat(md)
         .hasDoubleSumSatisfying(
             sum ->
@@ -166,7 +166,7 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isCumulative()
@@ -177,7 +177,7 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 30
     storage.recordDouble(3, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isCumulative()
@@ -188,7 +188,7 @@ public class SynchronousMetricStorageTest {
     // Record measurement and collect at time 35
     storage.recordDouble(2, Attributes.empty(), Context.current());
     verify(aggregator, times(1)).createHandle();
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 35))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 35))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isCumulative()
@@ -215,7 +215,7 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
@@ -234,7 +234,7 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
@@ -251,7 +251,7 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 35))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 35))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
@@ -281,7 +281,7 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
@@ -301,7 +301,7 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
@@ -325,7 +325,7 @@ public class SynchronousMetricStorageTest {
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
 
-    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 35);
+    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 35);
     assertThat(metricData).hasDoubleSumSatisfying(DoubleSumAssert::isDelta);
     assertThat(metricData)
         .hasDoubleSumSatisfying(
@@ -358,7 +358,7 @@ public class SynchronousMetricStorageTest {
     deltaReader.setLastCollectEpochNanos(40);
     storage.recordDouble(6, Attributes.of(AttributeKey.stringKey("foo"), "bar"), Context.current());
 
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 45))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 45))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.satisfies(
@@ -397,7 +397,7 @@ public class SynchronousMetricStorageTest {
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
     verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.satisfies(
@@ -418,7 +418,7 @@ public class SynchronousMetricStorageTest {
         3, Attributes.builder().put("key", "value" + CARDINALITY_LIMIT).build(), Context.current());
     // Should not create an additional handles for the overflow series
     verify(aggregator, times(CARDINALITY_LIMIT)).createHandle();
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.satisfies(
@@ -468,7 +468,7 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.satisfies(
@@ -496,7 +496,7 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(CARDINALITY_LIMIT - 2);
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.isDelta()
@@ -527,7 +527,7 @@ public class SynchronousMetricStorageTest {
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
         .hasDoubleSumSatisfying(
             sum ->
                 sum.satisfies(
@@ -580,7 +580,7 @@ public class SynchronousMetricStorageTest {
     verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
 
     // First collect
-    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10);
+    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10);
 
     assertThat(metricData)
         .hasDoubleSumSatisfying(
@@ -613,7 +613,7 @@ public class SynchronousMetricStorageTest {
     verify(aggregator, times((CARDINALITY_LIMIT - 1) * 2 + 1)).createHandle();
 
     // Second collect
-    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20);
+    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20);
 
     assertThat(metricData)
         .hasDoubleSumSatisfying(
@@ -668,7 +668,7 @@ public class SynchronousMetricStorageTest {
 
     // This will switch next recordings to the secondary map (which is empty)
     // by making it the active map
-    storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10);
+    storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10);
 
     // 2nd recording
     deltaReader.setLastCollectEpochNanos(10);
@@ -678,7 +678,7 @@ public class SynchronousMetricStorageTest {
     }
 
     // This switches maps again, so next recordings will be to the first map
-    storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10, 20);
+    storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20);
 
     // 3rd recording: We're recording unseen attributes to a map we know is full,
     // since it was filled during 1st recording
@@ -688,7 +688,7 @@ public class SynchronousMetricStorageTest {
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
 
-    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20, 30);
+    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30);
 
     assertOnlyOverflowWasRecorded(metricData, 20, 30, 15 * 3);
 
@@ -700,7 +700,7 @@ public class SynchronousMetricStorageTest {
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
 
-    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30, 40);
+    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 40);
 
     assertOnlyOverflowWasRecorded(metricData, 30, 40, 15 * 3);
 
@@ -712,7 +712,7 @@ public class SynchronousMetricStorageTest {
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
 
-    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 40, 50);
+    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 50);
 
     assertNumberOfPoints(metricData, 10);
     assertAllPointsWithValue(metricData, 40, 50, 3);
@@ -726,7 +726,7 @@ public class SynchronousMetricStorageTest {
           4, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
 
-    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 50, 60);
+    metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 60);
 
     assertNumberOfPoints(metricData, 12);
     assertAllPointsWithValue(metricData, 50, 60, 4);
@@ -848,7 +848,7 @@ public class SynchronousMetricStorageTest {
 
     storage.recordDouble(10d, Attributes.empty(), Context.current());
 
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isTrue();
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10).isEmpty()).isTrue();
   }
 
   @ParameterizedTest
@@ -870,6 +870,6 @@ public class SynchronousMetricStorageTest {
 
     storage.recordDouble(10d, Attributes.empty(), Context.current());
 
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isFalse();
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10).isEmpty()).isFalse();
   }
 }

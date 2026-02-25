@@ -145,10 +145,7 @@ final class SdkMeter implements Meter {
       for (MetricStorage storage : storages) {
         MetricData current =
             storage.collect(
-                meterProviderSharedState.getResource(),
-                getInstrumentationScopeInfo(),
-                meterProviderSharedState.getStartEpochNanos(),
-                epochNanos);
+                meterProviderSharedState.getResource(), getInstrumentationScopeInfo(), epochNanos);
         // Ignore if the metric data doesn't have any data points, for example when aggregation is
         // Aggregation#drop()
         if (!current.isEmpty()) {
