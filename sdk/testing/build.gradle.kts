@@ -32,12 +32,3 @@ testing {
     }
   }
 }
-
-tasks {
-  // TestExtendedLogRecordData generated AutoValue class imports deprecated ExtendedAttributes.
-  // @SuppressWarnings can't suppress import statement warnings.
-  // TODO: remove after removing ExtendedAttributes
-  named<JavaCompile>("compileJava") {
-    options.compilerArgs.add("-Xlint:-deprecation")
-  }
-}
