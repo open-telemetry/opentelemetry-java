@@ -43,14 +43,14 @@ jobs:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       # TODO (jack-berg): Select or build appropriate benchmarks for other key areas:
-      # - Log SDK record & export
+      # - Log SDK export
       # - Trace SDK export
       # - Metric SDK export
       # - Noop implementation
       - name: Run Benchmark
         run: |
           cd sdk/all/build
-          java -jar libs/opentelemetry-sdk-*-jmh.jar -rf json MetricRecordBenchmark SpanRecordBenchmark
+          java -jar libs/opentelemetry-sdk-*-jmh.jar -rf json MetricRecordBenchmark SpanRecordBenchmark LogRecordBenchmark
 
       - name: Use CLA approved github bot
         run: .github/scripts/use-cla-approved-bot.sh
