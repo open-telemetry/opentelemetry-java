@@ -79,16 +79,16 @@ class SdkObservableMeasurementTest {
 
   void setupAndSetActiveReader(MemoryMode memoryMode) {
     setup(memoryMode);
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    sdkObservableMeasurement.setActiveReader(registeredReader1, 10);
   }
 
   @Test
   void setActiveReader_SetsEpochInformation() {
     setup(MemoryMode.IMMUTABLE_DATA);
 
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    sdkObservableMeasurement.setActiveReader(registeredReader1, 10);
 
-    verify(mockAsyncStorage1).setEpochInformation(0, 10);
+    verify(mockAsyncStorage1).setEpochInformation(10);
     verify(mockAsyncStorage2).getRegisteredReader();
     verifyNoMoreInteractions(mockAsyncStorage2);
   }

@@ -83,7 +83,6 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
 
   // Time information relative to recording of data in aggregatorHandles, set while calling
   // callbacks
-  private long startEpochNanos;
   private long epochNanos;
 
   private volatile boolean enabled;
@@ -162,11 +161,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
     handle.recordDouble(value, attributes, Context.current());
   }
 
-  void setEpochInformation(long startEpochNanos, long epochNanos) {
-    this.startEpochNanos =
-        aggregationTemporality == AggregationTemporality.DELTA
-            ? registeredReader.getLastCollectEpochNanos()
-            : startEpochNanos;
+  void setEpochInformation(long epochNanos) {
     this.epochNanos = epochNanos;
   }
 
@@ -230,8 +225,9 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
     aggregatorHandles.forEach(
         (attributes, handle) -> {
           T point =
-              handle.aggregateThenMaybeReset(
-                  this.startEpochNanos, this.epochNanos, attributes, /* reset= */ true);
+              // TODO: start time should be the instrument creation time if first seen before any
+              // collection, or previous collection time
+              handle.aggregateThenMaybeReset(0, this.epochNanos, attributes, /* reset= */ true);
 
           T pointForCurrentPoints;
           if (memoryMode == REUSABLE_DATA) {
@@ -300,14 +296,13 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
       currentPoints = new ArrayList<>();
     }
 
+    // TODO: start time should be the instrument creation time if first seen before any collection,
+    // or previous collection time, but consistent thereafter
     aggregatorHandles.forEach(
         (attributes, handle) -> {
           T value =
               handle.aggregateThenMaybeReset(
-                  AsynchronousMetricStorage.this.startEpochNanos,
-                  AsynchronousMetricStorage.this.epochNanos,
-                  attributes,
-                  /* reset= */ true);
+                  0, AsynchronousMetricStorage.this.epochNanos, attributes, /* reset= */ true);
           currentPoints.add(value);
         });
     return currentPoints;

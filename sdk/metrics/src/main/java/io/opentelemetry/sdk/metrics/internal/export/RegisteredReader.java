@@ -26,7 +26,7 @@ public class RegisteredReader {
   private final int id = ID_COUNTER.incrementAndGet();
   private final MetricReader metricReader;
   private final ViewRegistry viewRegistry;
-  private volatile long lastCollectEpochNanos;
+  private volatile long lastCollectEpochNanos = -1;
 
   /** Construct a new collection info object storing information for collection against a reader. */
   public static RegisteredReader create(MetricReader reader, ViewRegistry viewRegistry) {
@@ -52,7 +52,7 @@ public class RegisteredReader {
   }
 
   /**
-   * Get the time of the last collection for the reader.
+   * Get the time of the last collection for the reader, or -1 if the first collection.
    *
    * <p>Used to compute the {@link PointData#getStartEpochNanos()} for instruments aggregations with
    * {@link AggregationTemporality#DELTA} temporality.

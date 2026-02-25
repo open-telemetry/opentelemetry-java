@@ -132,8 +132,7 @@ final class SdkMeter implements Meter {
       // Only invoke callbacks if meter is enabled
       if (meterEnabled) {
         for (CallbackRegistration callbackRegistration : currentRegisteredCallbacks) {
-          callbackRegistration.invokeCallback(
-              registeredReader, meterProviderSharedState.getStartEpochNanos(), epochNanos);
+          callbackRegistration.invokeCallback(registeredReader, epochNanos);
         }
       }
 

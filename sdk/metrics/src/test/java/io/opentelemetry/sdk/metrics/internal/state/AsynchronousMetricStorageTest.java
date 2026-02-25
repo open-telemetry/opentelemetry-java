@@ -107,7 +107,7 @@ class AsynchronousMetricStorageTest {
   void recordLong(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    longCounterStorage.setEpochInformation(0, 1);
+    longCounterStorage.setEpochInformation(1);
     longCounterStorage.record(Attributes.builder().put("key", "a").build(), 1);
     longCounterStorage.record(Attributes.builder().put("key", "b").build(), 2);
     longCounterStorage.record(Attributes.builder().put("key", "c").build(), 3);
@@ -133,7 +133,7 @@ class AsynchronousMetricStorageTest {
   void recordDouble(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    longCounterStorage.setEpochInformation(0, 1);
+    longCounterStorage.setEpochInformation(1);
     doubleCounterStorage.record(Attributes.builder().put("key", "a").build(), 1.1);
     doubleCounterStorage.record(Attributes.builder().put("key", "b").build(), 2.2);
     doubleCounterStorage.record(Attributes.builder().put("key", "c").build(), 3.3);
@@ -179,7 +179,7 @@ class AsynchronousMetricStorageTest {
                 Advice.empty()),
             /* enabled= */ true);
 
-    storage.setEpochInformation(0, 1);
+    storage.setEpochInformation(1);
     storage.record(Attributes.builder().put("key1", "a").put("key2", "b").build(), 1);
 
     assertThat(storage.collect(resource, scope, testClock.nanoTime()))
@@ -199,7 +199,7 @@ class AsynchronousMetricStorageTest {
   void record_MaxCardinality(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    longCounterStorage.setEpochInformation(0, 1);
+    longCounterStorage.setEpochInformation(1);
     for (int i = 0; i <= CARDINALITY_LIMIT + 1; i++) {
       longCounterStorage.record(Attributes.builder().put("key" + i, "val").build(), 1);
     }
@@ -216,7 +216,7 @@ class AsynchronousMetricStorageTest {
   void record_HandlesSpotsAreReleasedAfterCollection(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    longCounterStorage.setEpochInformation(0, 1);
+    longCounterStorage.setEpochInformation(1);
     for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
       longCounterStorage.record(Attributes.builder().put("key" + i, "val").build(), 1);
     }
@@ -228,7 +228,7 @@ class AsynchronousMetricStorageTest {
     logs.assertDoesNotContain(
         "Instrument long-counter has exceeded the maximum allowed cardinality");
 
-    longCounterStorage.setEpochInformation(1, 2);
+    longCounterStorage.setEpochInformation(2);
     for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
       // Different attribute
       longCounterStorage.record(Attributes.builder().put("key" + i, "val2").build(), 1);
@@ -247,7 +247,7 @@ class AsynchronousMetricStorageTest {
   void record_DuplicateAttributes(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    longCounterStorage.setEpochInformation(0, 1);
+    longCounterStorage.setEpochInformation(1);
     longCounterStorage.record(Attributes.builder().put("key1", "a").build(), 1);
     longCounterStorage.record(Attributes.builder().put("key1", "a").build(), 2);
 
@@ -268,7 +268,7 @@ class AsynchronousMetricStorageTest {
     setup(memoryMode);
 
     // Record measurement and collect at time 10
-    longCounterStorage.setEpochInformation(0, 10);
+    longCounterStorage.setEpochInformation(10);
     longCounterStorage.record(Attributes.empty(), 3);
     assertThat(longCounterStorage.collect(resource, scope, 0))
         .hasLongSumSatisfying(
@@ -284,7 +284,7 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(10);
 
     // Record measurements and collect at time 30
-    longCounterStorage.setEpochInformation(0, 30);
+    longCounterStorage.setEpochInformation(30);
     longCounterStorage.record(Attributes.empty(), 3);
     longCounterStorage.record(Attributes.builder().put("key", "value1").build(), 6);
     assertThat(longCounterStorage.collect(resource, scope, 0))
@@ -307,7 +307,7 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(30);
 
     // Record measurement and collect at time 35
-    longCounterStorage.setEpochInformation(0, 35);
+    longCounterStorage.setEpochInformation(35);
     longCounterStorage.record(Attributes.empty(), 4);
     longCounterStorage.record(Attributes.builder().put("key", "value2").build(), 5);
     assertThat(longCounterStorage.collect(resource, scope, 0))
@@ -349,7 +349,7 @@ class AsynchronousMetricStorageTest {
             /* enabled= */ true);
 
     // Record measurement and collect at time 10
-    longCounterStorage.setEpochInformation(0, 10);
+    longCounterStorage.setEpochInformation(10);
     longCounterStorage.record(Attributes.empty(), 3);
     assertThat(longCounterStorage.collect(resource, scope, 0))
         .hasLongSumSatisfying(
@@ -365,7 +365,7 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(10);
 
     // Record measurement and collect at time 30
-    longCounterStorage.setEpochInformation(0, 30);
+    longCounterStorage.setEpochInformation(30);
     longCounterStorage.record(Attributes.empty(), 3);
     longCounterStorage.record(Attributes.builder().put("key", "value1").build(), 6);
     assertThat(longCounterStorage.collect(resource, scope, 0))
@@ -388,7 +388,7 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(30);
 
     // Record measurement and collect at time 35
-    longCounterStorage.setEpochInformation(0, 35);
+    longCounterStorage.setEpochInformation(35);
     longCounterStorage.record(Attributes.empty(), 4);
     longCounterStorage.record(Attributes.builder().put("key", "value2").build(), 5);
     assertThat(longCounterStorage.collect(resource, scope, 0))
@@ -414,7 +414,7 @@ class AsynchronousMetricStorageTest {
   void collect_reusableData_reusedObjectsAreReturnedOnSecondCall() {
     setup(REUSABLE_DATA);
 
-    longCounterStorage.setEpochInformation(0, 1);
+    longCounterStorage.setEpochInformation(1);
     longCounterStorage.record(Attributes.builder().put("key", "a").build(), 1);
     longCounterStorage.record(Attributes.builder().put("key", "b").build(), 2);
     longCounterStorage.record(Attributes.builder().put("key", "c").build(), 3);
