@@ -84,10 +84,6 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
   // collection
   private Map<Attributes, T> reusablePointsMap = new PooledHashMap<>();
 
-  // Time information relative to recording of data in aggregatorHandles, set while calling
-  // callbacks
-  private long epochNanos;
-
   private volatile boolean enabled;
 
   private AsynchronousMetricStorage(
@@ -127,10 +123,10 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
 
   /**
    * Implements start time requirements for cumulative asynchronous instruments. {@link
-   * #collectWithCumulativeAggregationTemporality()} depends on this. Note that while delta
+   * #collectWithCumulativeAggregationTemporality(long)} depends on this. Note that while delta
    * asynchronous instruments also use this path, they do not depend on {@link
    * AggregatorHandle#getCreationTimeEpochNanos()} and compute start time at in {@link
-   * #collectWithDeltaAggregationTemporality()}.
+   * #collectWithDeltaAggregationTemporality(long)}.
    */
   private AggregatorHandle<T> createAggregatorHandle() {
     return aggregator.createHandle(
@@ -180,11 +176,6 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
     handle.recordDouble(value, attributes, Context.current());
   }
 
-  // Is this still needed?
-  void setEpochInformation(long epochNanos) {
-    this.epochNanos = epochNanos;
-  }
-
   private Attributes validateAndProcessAttributes(Attributes attributes) {
     if (aggregatorHandles.size() >= maxCardinality) {
       throttlingLogger.log(
@@ -217,8 +208,8 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
       Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
     Collection<T> result =
         aggregationTemporality == AggregationTemporality.DELTA
-            ? collectWithDeltaAggregationTemporality()
-            : collectWithCumulativeAggregationTemporality();
+            ? collectWithDeltaAggregationTemporality(epochNanos)
+            : collectWithCumulativeAggregationTemporality(epochNanos);
 
     // collectWith*AggregationTemporality() methods are responsible for resetting the handle
     aggregatorHandles.forEach(handleReleaser);
@@ -230,7 +221,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
         : EmptyMetricData.getInstance();
   }
 
-  private Collection<T> collectWithDeltaAggregationTemporality() {
+  private Collection<T> collectWithDeltaAggregationTemporality(long epochNanos) {
     Map<Attributes, T> currentPoints;
     if (memoryMode == REUSABLE_DATA) {
       // deltaPoints computed in the previous collection can be released
@@ -251,7 +242,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
         (attributes, handle) -> {
           T point =
               handle.aggregateThenMaybeReset(
-                  startEpochNanos, this.epochNanos, attributes, /* reset= */ true);
+                  startEpochNanos, epochNanos, attributes, /* reset= */ true);
 
           T pointForCurrentPoints;
           if (memoryMode == REUSABLE_DATA) {
@@ -309,7 +300,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
     return deltaPoints;
   }
 
-  private Collection<T> collectWithCumulativeAggregationTemporality() {
+  private Collection<T> collectWithCumulativeAggregationTemporality(long epochNanos) {
     List<T> currentPoints;
     if (memoryMode == REUSABLE_DATA) {
       // We should not return the points in this list to the pool, they belong to the
@@ -328,10 +319,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
         (attributes, handle) -> {
           T value =
               handle.aggregateThenMaybeReset(
-                  handle.getCreationTimeEpochNanos(),
-                  AsynchronousMetricStorage.this.epochNanos,
-                  attributes,
-                  /* reset= */ true);
+                  handle.getCreationTimeEpochNanos(), epochNanos, attributes, /* reset= */ true);
           currentPoints.add(value);
         });
     return currentPoints;
