@@ -212,7 +212,7 @@ tasks {
     environment(
       mapOf(
         // Expose the kitchen sink example file to tests
-        "CONFIG_EXAMPLE_DIR" to "$buildDirectory/configuration/examples/"
+        "CONFIG_REPO_ROOT" to "$buildDirectory/configuration"
       )
     )
   }

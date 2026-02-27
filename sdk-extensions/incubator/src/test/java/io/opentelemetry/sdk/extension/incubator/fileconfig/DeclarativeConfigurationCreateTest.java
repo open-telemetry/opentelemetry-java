@@ -33,11 +33,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.event.Level;
 
 class DeclarativeConfigurationCreateTest {
@@ -59,9 +66,10 @@ class DeclarativeConfigurationCreateTest {
    * href="https://github.com/open-telemetry/opentelemetry-configuration/tree/main/examples">open-telemetry/opentelemetry-configuration/examples</a>
    * can pass {@link DeclarativeConfiguration#parseAndCreate(InputStream)}.
    */
-  @Test
+  @ParameterizedTest
+  @MethodSource("exampleFiles")
   @SuppressLogger(ParentBasedSamplerBuilder.class)
-  void parseAndCreate_Examples(@TempDir Path tempDir)
+  void parseAndCreate_Examples(File example, @TempDir Path tempDir)
       throws IOException, CertificateEncodingException {
     // Write certificates to temp files
     String certificatePath =
@@ -73,34 +81,40 @@ class DeclarativeConfigurationCreateTest {
         createTempFileWithContent(
             tempDir, "clientCertificate.cert", clientTls.certificate().getEncoded());
 
-    File examplesDir = new File(System.getenv("CONFIG_EXAMPLE_DIR"));
-    assertThat(examplesDir).isDirectory();
+    // Rewrite references to cert files in examples
+    String exampleContent =
+        new String(Files.readAllBytes(example.toPath()), StandardCharsets.UTF_8);
+    String rewrittenExampleContent =
+        exampleContent
+            .replaceAll(
+                "ca_file: .*\n",
+                "ca_file: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
+            .replaceAll(
+                "key_file: .*\n",
+                "key_file: " + clientKeyPath.replace("\\", "\\\\") + System.lineSeparator())
+            .replaceAll(
+                "cert_file: .*\n",
+                "cert_file: "
+                    + clientCertificatePath.replace("\\", "\\\\")
+                    + System.lineSeparator());
+    InputStream is =
+        new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
-    for (File example : Objects.requireNonNull(examplesDir.listFiles())) {
-      // Rewrite references to cert files in examples
-      String exampleContent =
-          new String(Files.readAllBytes(example.toPath()), StandardCharsets.UTF_8);
-      String rewrittenExampleContent =
-          exampleContent
-              .replaceAll(
-                  "ca_file: .*\n",
-                  "ca_file: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
-              .replaceAll(
-                  "key_file: .*\n",
-                  "key_file: " + clientKeyPath.replace("\\", "\\\\") + System.lineSeparator())
-              .replaceAll(
-                  "cert_file: .*\n",
-                  "cert_file: "
-                      + clientCertificatePath.replace("\\", "\\\\")
-                      + System.lineSeparator());
-      InputStream is =
-          new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
+    // Verify that file can be parsed and interpreted without error
+    assertThatCode(() -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is)))
+        .as("Example file: " + example.getName())
+        .doesNotThrowAnyException();
+  }
 
-      // Verify that file can be parsed and interpreted without error
-      assertThatCode(() -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is)))
-          .as("Example file: " + example.getName())
-          .doesNotThrowAnyException();
-    }
+  private static Stream<Arguments> exampleFiles() {
+    File configRepoRoot = new File(System.getenv("CONFIG_REPO_ROOT"));
+    File examplesDir = new File(configRepoRoot + "/examples/");
+    File snippetsDir = new File(configRepoRoot + "/snippets/");
+    List<File> examples = new ArrayList<>();
+    examples.addAll(Arrays.asList(Objects.requireNonNull(examplesDir.listFiles())));
+    examples.addAll(Arrays.asList(Objects.requireNonNull(snippetsDir.listFiles())));
+
+    return examples.stream().map(file -> Arguments.argumentSet(file.getName(), file));
   }
 
   @Test
