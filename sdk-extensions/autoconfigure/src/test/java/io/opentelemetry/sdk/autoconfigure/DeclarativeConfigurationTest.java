@@ -37,7 +37,7 @@ class DeclarativeConfigurationTest {
     Files.write(path, yaml.getBytes(StandardCharsets.UTF_8));
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.experimental.config.file", path.toString()));
+            Collections.singletonMap("otel.config.file", path.toString()));
 
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)

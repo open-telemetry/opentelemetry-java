@@ -178,7 +178,7 @@ public class FullDeclarativeConfigTest {
     GlobalOpenTelemetry.resetForTest();
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.experimental.config.file", path.toString()));
+            Collections.singletonMap("otel.config.file", path.toString()));
     openTelemetrySdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setConfig(config)

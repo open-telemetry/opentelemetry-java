@@ -579,15 +579,18 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
     }
 
-    String otelConfigFile = config.getString("otel.config.file");
-    if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
-      logger.warning(
-          "otel.config.file was set, but has been replaced with otel.experimental.config.file");
+    String configurationFile = config.getString("otel.config.file");
+    if (configurationFile == null || configurationFile.isEmpty()) {
+      configurationFile = config.getString("otel.experimental.config.file");
+      if (configurationFile == null || configurationFile.isEmpty()) {
+        logger.warning(
+            "otel.experimental.config.file is deprecated and will be removed after 1.62.0 release. Please use otel.config.file instead.");
+      }
     }
-    String configurationFile = config.getString("otel.experimental.config.file");
     if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
+
     if (!INCUBATOR_AVAILABLE) {
       throw new ConfigurationException(
           "Cannot autoconfigure from config file without opentelemetry-sdk-extension-incubator on the classpath");
