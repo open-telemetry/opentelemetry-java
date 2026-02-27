@@ -94,14 +94,14 @@ class LoggerProviderFactoryTest {
                     .withLoggerConfiguratorDevelopment(
                         new ExperimentalLoggerConfiguratorModel()
                             .withDefaultConfig(
-                                new ExperimentalLoggerConfigModel().withDisabled(true))
+                                new ExperimentalLoggerConfigModel().withEnabled(false))
                             .withLoggers(
                                 Collections.singletonList(
                                     new ExperimentalLoggerMatcherAndConfigModel()
                                         .withName("foo")
                                         .withConfig(
                                             new ExperimentalLoggerConfigModel()
-                                                .withDisabled(false)
+                                                .withEnabled(true)
                                                 .withTraceBased(true)
                                                 .withMinimumSeverity(SeverityNumber.INFO)))))),
             setLoggerConfigurator(
