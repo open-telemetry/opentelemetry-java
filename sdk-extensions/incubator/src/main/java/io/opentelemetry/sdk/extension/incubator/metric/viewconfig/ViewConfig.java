@@ -10,6 +10,8 @@ import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions;
+import io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -203,7 +205,8 @@ public final class ViewConfig {
     if (Aggregation.explicitBucketHistogram().equals(aggregation)) {
       List<Double> bucketBoundaries = getBucketBoundaries(aggregationArgs);
       if (bucketBoundaries != null) {
-        return Aggregation.explicitBucketHistogram(bucketBoundaries);
+        return Aggregation.explicitBucketHistogram(
+            ExplicitBucketHistogramOptions.builder().setBucketBoundaries(bucketBoundaries).build());
       }
     }
     if (Aggregation.base2ExponentialBucketHistogram().equals(aggregation)) {
@@ -215,7 +218,8 @@ public final class ViewConfig {
       }
       // TODO: support configuring max_scale
       if (maxBuckets != null) {
-        return Aggregation.base2ExponentialBucketHistogram(maxBuckets, 20);
+        return Aggregation.base2ExponentialBucketHistogram(
+            Base2ExponentialHistogramOptions.builder().setMaxBuckets(maxBuckets).build());
       }
     }
     return aggregation;

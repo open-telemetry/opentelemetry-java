@@ -25,14 +25,20 @@ class AggregationTest {
     assertThat(Aggregation.explicitBucketHistogram())
         .asString()
         .contains("ExplicitBucketHistogramAggregation");
-    assertThat(Aggregation.explicitBucketHistogram(Collections.singletonList(1.0d)))
+    assertThat(
+            Aggregation.explicitBucketHistogram(
+                ExplicitBucketHistogramOptions.builder()
+                    .setBucketBoundaries(Collections.singletonList(1.0d))
+                    .build()))
         .asString()
         .contains("ExplicitBucketHistogramAggregation");
     assertThat(Aggregation.base2ExponentialBucketHistogram())
         .asString()
         .isEqualTo(
             "Base2ExponentialHistogramAggregation{maxBuckets=160,maxScale=20,recordMinMax=true}");
-    assertThat(Aggregation.base2ExponentialBucketHistogram(2, 0))
+    assertThat(
+            Aggregation.base2ExponentialBucketHistogram(
+                Base2ExponentialHistogramOptions.builder().setMaxBuckets(2).setMaxScale(0).build()))
         .asString()
         .isEqualTo(
             "Base2ExponentialHistogramAggregation{maxBuckets=2,maxScale=0,recordMinMax=true}");
