@@ -72,6 +72,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -91,6 +92,11 @@ class OpenTelemetryConfigurationFactoryTest {
   private final DeclarativeConfigContext context =
       new DeclarativeConfigContext(
           SpiHelper.create(OpenTelemetryConfigurationFactoryTest.class.getClassLoader()));
+
+  @BeforeEach
+  void setup() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+  }
 
   @ParameterizedTest
   @MethodSource("fileFormatArgs")

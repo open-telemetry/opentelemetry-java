@@ -18,6 +18,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+@SuppressWarnings("deprecation")
 @Immutable
 final class ArrayBackedExtendedAttributes
     extends ImmutableKeyValuePairs<ExtendedAttributeKey<?>, Object> implements ExtendedAttributes {

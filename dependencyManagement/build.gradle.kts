@@ -15,7 +15,7 @@ val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
-val prometheusServerVersion = "1.3.10"
+val prometheusServerVersion = "1.5.0"
 val armeriaVersion = "1.36.0"
 val junitVersion = "5.14.3"
 val okhttpVersion = "5.3.2"
@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.21.1",
   "com.google.guava:guava-bom:33.5.0-jre",
-  "com.google.protobuf:protobuf-bom:4.33.5",
+  "com.google.protobuf:protobuf-bom:4.34.0",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.16.4", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.79.0",
@@ -90,7 +90,7 @@ val DEPENDENCIES = listOf(
   "org.awaitility:awaitility:4.3.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.27",
-  "org.jctools:jctools-core:4.0.5",
+  "org.jctools:jctools-core:4.0.6",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.mock-server:mockserver-netty:5.15.0:shaded",
   "org.skyscreamer:jsonassert:1.5.3",

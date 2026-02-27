@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation")
 class ExtendedAttributesValueTest {
 
   @Test

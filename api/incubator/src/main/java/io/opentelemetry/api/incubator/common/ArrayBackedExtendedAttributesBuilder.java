@@ -5,15 +5,6 @@
 
 package io.opentelemetry.api.incubator.common;
 
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanArrayKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleArrayKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longArrayKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringArrayKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringKey;
-
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.common.ValueType;
 import java.util.ArrayList;
@@ -21,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
+@SuppressWarnings("deprecation")
 class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder {
   private final List<Object> data;
 
@@ -62,16 +54,16 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
     String keyName = key.getKey();
     switch (valueObj.getType()) {
       case STRING:
-        put(stringKey(keyName), ((Value<String>) valueObj).getValue());
+        put(ExtendedAttributeKey.stringKey(keyName), ((Value<String>) valueObj).getValue());
         return;
       case LONG:
-        put(longKey(keyName), ((Value<Long>) valueObj).getValue());
+        put(ExtendedAttributeKey.longKey(keyName), ((Value<Long>) valueObj).getValue());
         return;
       case DOUBLE:
-        put(doubleKey(keyName), ((Value<Double>) valueObj).getValue());
+        put(ExtendedAttributeKey.doubleKey(keyName), ((Value<Double>) valueObj).getValue());
         return;
       case BOOLEAN:
-        put(booleanKey(keyName), ((Value<Boolean>) valueObj).getValue());
+        put(ExtendedAttributeKey.booleanKey(keyName), ((Value<Boolean>) valueObj).getValue());
         return;
       case ARRAY:
         List<Value<?>> arrayValues = (List<Value<?>>) valueObj.getValue();
@@ -82,28 +74,28 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
             for (Value<?> v : arrayValues) {
               strings.add((String) v.getValue());
             }
-            put(stringArrayKey(keyName), strings);
+            put(ExtendedAttributeKey.stringArrayKey(keyName), strings);
             return;
           case LONG_ARRAY:
             List<Long> longs = new ArrayList<>(arrayValues.size());
             for (Value<?> v : arrayValues) {
               longs.add((Long) v.getValue());
             }
-            put(longArrayKey(keyName), longs);
+            put(ExtendedAttributeKey.longArrayKey(keyName), longs);
             return;
           case DOUBLE_ARRAY:
             List<Double> doubles = new ArrayList<>(arrayValues.size());
             for (Value<?> v : arrayValues) {
               doubles.add((Double) v.getValue());
             }
-            put(doubleArrayKey(keyName), doubles);
+            put(ExtendedAttributeKey.doubleArrayKey(keyName), doubles);
             return;
           case BOOLEAN_ARRAY:
             List<Boolean> booleans = new ArrayList<>(arrayValues.size());
             for (Value<?> v : arrayValues) {
               booleans.add((Boolean) v.getValue());
             }
-            put(booleanArrayKey(keyName), booleans);
+            put(ExtendedAttributeKey.booleanArrayKey(keyName), booleans);
             return;
           case VALUE:
             // Not coercible (empty, non-homogeneous, or unsupported element type)

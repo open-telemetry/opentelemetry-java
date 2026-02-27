@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -37,6 +38,11 @@ class LogRecordProcessorFactoryTest {
   private final DeclarativeConfigContext context =
       new DeclarativeConfigContext(
           SpiHelper.create(LogRecordProcessorFactoryTest.class.getClassLoader()));
+
+  @BeforeEach
+  void setup() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+  }
 
   @Test
   void create_BatchNullExporter() {
