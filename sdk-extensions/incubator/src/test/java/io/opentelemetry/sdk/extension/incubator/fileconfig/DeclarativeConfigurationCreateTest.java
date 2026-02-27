@@ -82,11 +82,6 @@ class DeclarativeConfigurationCreateTest {
           new String(Files.readAllBytes(example.toPath()), StandardCharsets.UTF_8);
       String rewrittenExampleContent =
           exampleContent
-              // TODO: remove jaeger, ottrace workarounds after next release
-              .replaceAll(".*- jaeger:.*\n", "")
-              .replaceAll("jaeger", "")
-              .replaceAll(".*- ottrace:.*\n", "")
-              .replaceAll("ottrace", "")
               .replaceAll(
                   "ca_file: .*\n",
                   "ca_file: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
@@ -114,7 +109,7 @@ class DeclarativeConfigurationCreateTest {
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
     String yaml =
-        "file_format: \"1.0-rc.3\"\n"
+        "file_format: \"1.0\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -141,7 +136,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void parseAndCreate_EmptyComponentProviderConfig() {
     String yaml =
-        "file_format: \"1.0-rc.3\"\n"
+        "file_format: \"1.0\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - test:\n"
@@ -159,7 +154,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void create_ModelCustomizer() {
     OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
-    model.withFileFormat("1.0-rc.3");
+    model.withFileFormat("1.0");
     model.withTracerProvider(
         new TracerProviderModel()
             .withProcessors(

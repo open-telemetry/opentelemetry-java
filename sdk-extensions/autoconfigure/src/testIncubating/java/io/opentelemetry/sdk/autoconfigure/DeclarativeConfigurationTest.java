@@ -61,7 +61,7 @@ class DeclarativeConfigurationTest {
   @BeforeEach
   void setup() throws IOException {
     String yaml =
-        "file_format: \"1.0-rc.1\"\n"
+        "file_format: \"1.0\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
@@ -185,7 +185,7 @@ class DeclarativeConfigurationTest {
   @Test
   void configFile_Error(@TempDir Path tempDir) throws IOException {
     String yaml =
-        "file_format: \"1.0-rc.1\"\n"
+        "file_format: \"1.0\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"

@@ -139,20 +139,20 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_FileFormatVersionMismatch_LogsWarning() {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.2");
+        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
 
     ExtendedOpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance().create(model, context);
     cleanup.addCloseable(sdk);
 
     logCapturer.assertContains(
-        "Configuration file_format '1.0-rc.2' does not exactly match expected version '1.0-rc.3'");
+        "Configuration file_format '1.0-rc.3' does not exactly match expected version '1.0'");
   }
 
   @Test
   void create_FileFormatExactMatch_NoWarning() {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
+        new OpenTelemetryConfigurationModel().withFileFormat("1.0");
 
     ExtendedOpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance().create(model, context);
@@ -165,7 +165,7 @@ class OpenTelemetryConfigurationFactoryTest {
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.1");
+        new OpenTelemetryConfigurationModel().withFileFormat("1.0");
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder(),
@@ -186,7 +186,7 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .withFileFormat("1.0-rc.1")
+            .withFileFormat("1.0")
             .withDisabled(true)
             // Logger provider configuration should be ignored since SDK is disabled
             .withLoggerProvider(
@@ -229,7 +229,7 @@ class OpenTelemetryConfigurationFactoryTest {
 
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .withFileFormat("1.0-rc.1")
+            .withFileFormat("1.0")
             .withPropagator(
                 new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3"))
             .withResource(
