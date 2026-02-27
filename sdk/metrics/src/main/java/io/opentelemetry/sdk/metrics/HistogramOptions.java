@@ -25,7 +25,7 @@ public final class HistogramOptions {
   }
 
   /** Returns whether min and max values should be recorded. Defaults to {@code true}. */
-  public boolean isRecordMinMax() {
+  public boolean recordMinMax() {
     return recordMinMax;
   }
 

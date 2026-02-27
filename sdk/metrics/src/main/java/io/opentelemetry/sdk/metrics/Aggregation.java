@@ -78,7 +78,7 @@ public interface Aggregation {
    */
   static Aggregation explicitBucketHistogram(
       List<Double> bucketBoundaries, HistogramOptions options) {
-    return ExplicitBucketHistogramAggregation.create(bucketBoundaries, options.isRecordMinMax());
+    return ExplicitBucketHistogramAggregation.create(bucketBoundaries, options.recordMinMax());
   }
 
   /**
@@ -121,6 +121,6 @@ public interface Aggregation {
   static Aggregation base2ExponentialBucketHistogram(
       int maxBuckets, int maxScale, HistogramOptions options) {
     return Base2ExponentialHistogramAggregation.create(
-        maxBuckets, maxScale, options.isRecordMinMax());
+        maxBuckets, maxScale, options.recordMinMax());
   }
 }
