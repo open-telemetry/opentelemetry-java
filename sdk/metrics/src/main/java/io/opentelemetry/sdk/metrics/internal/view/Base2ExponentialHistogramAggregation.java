@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.RandomSupplier;
@@ -62,8 +60,6 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
    * @return the aggregation
    */
   public static Aggregation create(int maxBuckets, int maxScale, boolean recordMinMax) {
-    checkArgument(maxBuckets >= 2, "maxBuckets must be >= 2");
-    checkArgument(maxScale <= 20 && maxScale >= -10, "maxScale must be -10 <= x <= 20");
     return new Base2ExponentialHistogramAggregation(maxBuckets, maxScale, recordMinMax);
   }
 

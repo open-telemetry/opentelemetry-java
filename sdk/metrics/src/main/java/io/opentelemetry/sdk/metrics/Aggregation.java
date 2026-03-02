@@ -79,11 +79,11 @@ public interface Aggregation {
    * @param options histogram options
    */
   static Aggregation explicitBucketHistogram(ExplicitBucketHistogramOptions options) {
-    List<Double> boundaries = options.bucketBoundaries();
+    List<Double> boundaries = options.getBucketBoundaries();
     if (boundaries == null) {
       boundaries = ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES;
     }
-    return ExplicitBucketHistogramAggregation.create(boundaries, options.recordMinMax());
+    return ExplicitBucketHistogramAggregation.create(boundaries, options.getRecordMinMax());
   }
 
   /**
@@ -125,6 +125,6 @@ public interface Aggregation {
    */
   static Aggregation base2ExponentialBucketHistogram(Base2ExponentialHistogramOptions options) {
     return Base2ExponentialHistogramAggregation.create(
-        options.maxBuckets(), options.maxScale(), options.recordMinMax());
+        options.getMaxBuckets(), options.getMaxScale(), options.getRecordMinMax());
   }
 }

@@ -7,32 +7,36 @@ Comparing source compatibility of opentelemetry-sdk-metrics-1.60.0-SNAPSHOT.jar 
 	===  UNCHANGED METHOD: PUBLIC STATIC io.opentelemetry.sdk.metrics.Aggregation explicitBucketHistogram(java.util.List<java.lang.Double><java.lang.Double>)
 		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Aggregation explicitBucketHistogram(io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions)
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions  (not serializable)
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) int DEFAULT_MAX_BUCKETS
 	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) int DEFAULT_MAX_SCALE
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder builder()
-	+++  NEW METHOD: PUBLIC(+) int maxBuckets()
-	+++  NEW METHOD: PUBLIC(+) int maxScale()
-	+++  NEW METHOD: PUBLIC(+) boolean recordMinMax()
-+++  NEW CLASS: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder  (not serializable)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions getDefault()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getMaxBuckets()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getMaxScale()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean getRecordMinMax()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder toBuilder()
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) STATIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder setMaxBuckets(int)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder setMaxScale(int)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder setRecordMinMax(boolean)
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions  (not serializable)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder setMaxBuckets(int)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder setMaxScale(int)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder setRecordMinMax(boolean)
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) java.util.List<java.lang.Double> bucketBoundaries()
-		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions$Builder builder()
-	+++  NEW METHOD: PUBLIC(+) boolean recordMinMax()
-+++  NEW CLASS: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions$Builder  (not serializable)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List<java.lang.Double> getBucketBoundaries()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions getDefault()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean getRecordMinMax()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions$Builder toBuilder()
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) STATIC(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions$Builder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions$Builder setBucketBoundaries(java.util.List<java.lang.Double>)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions$Builder setRecordMinMax(boolean)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions build()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions$Builder setBucketBoundaries(java.util.List<java.lang.Double>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions$Builder setRecordMinMax(boolean)
