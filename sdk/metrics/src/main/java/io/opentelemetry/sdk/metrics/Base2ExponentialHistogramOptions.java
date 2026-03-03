@@ -20,10 +20,10 @@ import javax.annotation.concurrent.Immutable;
 public abstract class Base2ExponentialHistogramOptions {
 
   /** The default maximum number of buckets. */
-  public static final int DEFAULT_MAX_BUCKETS = 160;
+  private static final int DEFAULT_MAX_BUCKETS = 160;
 
   /** The default maximum scale. */
-  public static final int DEFAULT_MAX_SCALE = 20;
+  private static final int DEFAULT_MAX_SCALE = 20;
 
   private static final Base2ExponentialHistogramOptions DEFAULT = builder().build();
 
