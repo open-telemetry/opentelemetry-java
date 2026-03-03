@@ -33,6 +33,9 @@ Notes:
 
 ## View File Configuration
 
+> [!WARNING]
+> This mechanism is superseded by declarative config, which is now stable (spec and schema at [opentelemetry-configuration](https://github.com/open-telemetry/opentelemetry-configuration)) and will be removed after the 1.62.0 release. Please use [declarative configuration](#declarative-configuration) instead.
+
 Adds support for file based YAML configuration of Metric SDK Views.
 
 For example, suppose `/Users/user123/view.yaml` has the following content:
