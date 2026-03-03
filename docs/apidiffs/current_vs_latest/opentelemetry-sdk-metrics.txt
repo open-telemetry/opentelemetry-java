@@ -10,8 +10,6 @@ Comparing source compatibility of opentelemetry-sdk-metrics-1.60.0-SNAPSHOT.jar 
 +++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) int DEFAULT_MAX_BUCKETS
-	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) int DEFAULT_MAX_SCALE
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions$Builder builder()
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions getDefault()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getMaxBuckets()
