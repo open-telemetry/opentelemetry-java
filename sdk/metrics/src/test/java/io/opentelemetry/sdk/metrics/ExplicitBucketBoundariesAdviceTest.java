@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -111,7 +110,11 @@ class ExplicitBucketBoundariesAdviceTest {
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
                 View.builder()
-                    .setAggregation(explicitBucketHistogram(Collections.singletonList(50.0)))
+                    .setAggregation(
+                        Aggregation.explicitBucketHistogram(
+                            ExplicitBucketHistogramOptions.builder()
+                                .setBucketBoundaries(Collections.singletonList(50.0))
+                                .build()))
                     .build())
             .build();
 
@@ -145,7 +148,10 @@ class ExplicitBucketBoundariesAdviceTest {
             DefaultAggregationSelector.getDefault()
                 .with(
                     InstrumentType.HISTOGRAM,
-                    explicitBucketHistogram(Collections.singletonList(50.0))));
+                    Aggregation.explicitBucketHistogram(
+                        ExplicitBucketHistogramOptions.builder()
+                            .setBucketBoundaries(Collections.singletonList(50.0))
+                            .build())));
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
 
     Consumer<Long> histogramRecorder = histogramBuilder.apply(meterProvider);

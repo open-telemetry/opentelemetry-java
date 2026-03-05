@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -113,7 +114,8 @@ public class HistogramCollectBenchmark {
     EXPLICIT_BUCKET_HISTOGRAM(Aggregation.explicitBucketHistogram()),
     DEFAULT_BASE2_EXPONENTIAL_BUCKET_HISTOGRAM(Aggregation.base2ExponentialBucketHistogram()),
     ZERO_MAX_SCALE_BASE2_EXPONENTIAL_BUCKET_HISTOGRAM(
-        Aggregation.base2ExponentialBucketHistogram(160, 0));
+        Aggregation.base2ExponentialBucketHistogram(
+            Base2ExponentialHistogramOptions.builder().setMaxBuckets(160).setMaxScale(0).build()));
 
     private final Aggregation aggregation;
 

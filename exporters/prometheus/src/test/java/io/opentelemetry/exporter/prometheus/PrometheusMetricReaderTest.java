@@ -19,6 +19,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
@@ -782,7 +783,12 @@ class PrometheusMetricReaderTest {
               .registerView(
                   InstrumentSelector.builder().setName("my.exponential.histogram").build(),
                   View.builder()
-                      .setAggregation(Aggregation.base2ExponentialBucketHistogram(160, otelScale))
+                      .setAggregation(
+                          Aggregation.base2ExponentialBucketHistogram(
+                              Base2ExponentialHistogramOptions.builder()
+                                  .setMaxBuckets(160)
+                                  .setMaxScale(otelScale)
+                                  .build()))
                       .build())
               .build()
               .meterBuilder("test")

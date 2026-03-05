@@ -70,7 +70,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   private void init(MemoryMode memoryMode) {
     aggregator =
         new DoubleExplicitBucketHistogramAggregator(
-            boundaries, ExemplarReservoirFactory.noSamples(), memoryMode);
+            boundaries, /* recordMinMax= */ true, ExemplarReservoirFactory.noSamples(), memoryMode);
   }
 
   @ParameterizedTest
@@ -123,7 +123,8 @@ class DoubleExplicitBucketHistogramAggregatorTest {
     List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndResetDoubles(Attributes.empty())).thenReturn(exemplars);
     DoubleExplicitBucketHistogramAggregator aggregator =
-        new DoubleExplicitBucketHistogramAggregator(boundaries, reservoirFactory, memoryMode);
+        new DoubleExplicitBucketHistogramAggregator(
+            boundaries, /* recordMinMax= */ true, reservoirFactory, memoryMode);
     AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(
@@ -285,5 +286,28 @@ class DoubleExplicitBucketHistogramAggregatorTest {
 
     // The point data instance should be reused
     assertThat(anotherPointData).isSameAs(pointData);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testRecordMinMaxDisabled(MemoryMode memoryMode) {
+    DoubleExplicitBucketHistogramAggregator aggregator =
+        new DoubleExplicitBucketHistogramAggregator(
+            boundaries,
+            /* recordMinMax= */ false,
+            ExemplarReservoirFactory.noSamples(),
+            memoryMode);
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    aggregatorHandle.recordLong(20, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(5, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(150, Attributes.empty(), Context.current());
+    aggregatorHandle.recordLong(2000, Attributes.empty(), Context.current());
+    HistogramPointData point =
+        aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
+    assertThat(point.getSum()).isEqualTo(2175);
+    assertThat(point.hasMin()).isFalse();
+    assertThat(point.hasMax()).isFalse();
+    assertThat(point.getBoundaries()).isEqualTo(boundariesList);
+    assertThat(point.getCounts()).isEqualTo(Arrays.asList(1L, 1L, 1L, 1L));
   }
 }

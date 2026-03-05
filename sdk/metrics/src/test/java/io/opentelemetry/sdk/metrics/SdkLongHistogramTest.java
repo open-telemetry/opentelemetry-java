@@ -192,7 +192,12 @@ class SdkLongHistogramTest {
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
                 View.builder()
-                    .setAggregation(Aggregation.base2ExponentialBucketHistogram(5, 20))
+                    .setAggregation(
+                        Aggregation.base2ExponentialBucketHistogram(
+                            Base2ExponentialHistogramOptions.builder()
+                                .setMaxBuckets(5)
+                                .setMaxScale(20)
+                                .build()))
                     .build())
             .build();
 
@@ -353,7 +358,12 @@ class SdkLongHistogramTest {
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
                 View.builder()
-                    .setAggregation(Aggregation.base2ExponentialBucketHistogram(5, 20))
+                    .setAggregation(
+                        Aggregation.base2ExponentialBucketHistogram(
+                            Base2ExponentialHistogramOptions.builder()
+                                .setMaxBuckets(5)
+                                .setMaxScale(20)
+                                .build()))
                     .build())
             .build();
     LongHistogram longHistogram =

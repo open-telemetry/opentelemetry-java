@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
@@ -29,25 +30,27 @@ class Base2ExponentialHistogramAggregationTest {
   @Test
   void goodConfig() {
     assertThat(Base2ExponentialHistogramAggregation.getDefault()).isNotNull();
-    assertThat(Base2ExponentialHistogramAggregation.create(10, 20)).isNotNull();
+    assertThat(Base2ExponentialHistogramAggregation.create(10, 20, /* recordMinMax= */ true))
+        .isNotNull();
   }
 
   @Test
   void invalidConfig_Throws() {
-    assertThatThrownBy(() -> Base2ExponentialHistogramAggregation.create(0, 20))
+    assertThatThrownBy(() -> Base2ExponentialHistogramOptions.builder().setMaxBuckets(0).build())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxBuckets must be >= 2");
-    assertThatThrownBy(() -> Base2ExponentialHistogramAggregation.create(2, 21))
+    assertThatThrownBy(() -> Base2ExponentialHistogramOptions.builder().setMaxScale(21).build())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxScale must be -10 <= x <= 20");
-    assertThatThrownBy(() -> Base2ExponentialHistogramAggregation.create(2, -11))
+    assertThatThrownBy(() -> Base2ExponentialHistogramOptions.builder().setMaxScale(-11).build())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxScale must be -10 <= x <= 20");
   }
 
   @Test
   void minimumBucketsCanAccommodateMaxRange() {
-    Aggregation aggregation = Base2ExponentialHistogramAggregation.create(2, 20);
+    Aggregation aggregation =
+        Base2ExponentialHistogramAggregation.create(2, 20, /* recordMinMax= */ true);
     Aggregator<ExponentialHistogramPointData> aggregator =
         ((AggregatorFactory) aggregation)
             .createAggregator(
