@@ -73,7 +73,15 @@ import org.snakeyaml.engine.v2.api.LoadSettings;
  *             .setAttributesFilter(key -> new HashSet<>(Arrays.asList("foo", "bar")).contains(key))
  *             .build());
  * }</pre>
+ *
+ * @deprecated this mechanism is superseded by declarative config, which is now stable (spec and
+ *     schema at <a
+ *     href="https://github.com/open-telemetry/opentelemetry-configuration">opentelemetry-configuration</a>.
+ *     Please uses {@link
+ *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration#parseAndCreate(InputStream)}
+ *     instead.
  */
+@Deprecated
 public final class ViewConfig {
 
   private ViewConfig() {}
