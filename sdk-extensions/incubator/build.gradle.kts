@@ -57,7 +57,7 @@ dependencies {
 // 6. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-val configurationTag = "1.0.0-rc.3"
+val configurationTag = "1.0.0"
 val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
@@ -212,7 +212,7 @@ tasks {
     environment(
       mapOf(
         // Expose the kitchen sink example file to tests
-        "CONFIG_EXAMPLE_DIR" to "$buildDirectory/configuration/examples/"
+        "CONFIG_REPO_ROOT" to "$buildDirectory/configuration"
       )
     )
   }

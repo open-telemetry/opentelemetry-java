@@ -112,7 +112,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
     @Override
     public MeterConfig create(
         ExperimentalMeterConfigModel model, DeclarativeConfigContext context) {
-      if (model.getDisabled() != null && model.getDisabled()) {
+      if (model.getEnabled() != null && !model.getEnabled()) {
         return MeterConfig.disabled();
       }
       return MeterConfig.defaultConfig();

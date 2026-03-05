@@ -129,7 +129,7 @@ public class FullDeclarativeConfigTest {
 
     String endpoint = "http://localhost:" + server.httpPort();
     String yaml =
-        "file_format: \"1.0-rc.1\"\n"
+        "file_format: \"1.0\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
@@ -178,7 +178,7 @@ public class FullDeclarativeConfigTest {
     GlobalOpenTelemetry.resetForTest();
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.experimental.config.file", path.toString()));
+            Collections.singletonMap("otel.config.file", path.toString()));
     openTelemetrySdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setConfig(config)

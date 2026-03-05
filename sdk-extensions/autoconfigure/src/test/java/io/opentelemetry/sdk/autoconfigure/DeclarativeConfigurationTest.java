@@ -23,7 +23,7 @@ class DeclarativeConfigurationTest {
   @Test
   void configFile(@TempDir Path tempDir) throws IOException {
     String yaml =
-        "file_format: \"1.0-rc.1\"\n"
+        "file_format: \"1.0\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
@@ -37,7 +37,7 @@ class DeclarativeConfigurationTest {
     Files.write(path, yaml.getBytes(StandardCharsets.UTF_8));
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.experimental.config.file", path.toString()));
+            Collections.singletonMap("otel.config.file", path.toString()));
 
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)

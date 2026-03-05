@@ -101,14 +101,14 @@ class TracerProviderFactoryTest {
                     .withTracerConfiguratorDevelopment(
                         new ExperimentalTracerConfiguratorModel()
                             .withDefaultConfig(
-                                new ExperimentalTracerConfigModel().withDisabled(true))
+                                new ExperimentalTracerConfigModel().withEnabled(false))
                             .withTracers(
                                 Collections.singletonList(
                                     new ExperimentalTracerMatcherAndConfigModel()
                                         .withName("foo")
                                         .withConfig(
                                             new ExperimentalTracerConfigModel()
-                                                .withDisabled(false)))))),
+                                                .withEnabled(true)))))),
             addTracerConfigurator(
                     SdkTracerProvider.builder(),
                     ScopeConfigurator.<TracerConfig>builder()

@@ -15,7 +15,7 @@ public class TestDeclarativeConfigurationProvider implements DeclarativeConfigur
   @Override
   public OpenTelemetryConfigurationModel getConfigurationModel() {
     String yaml =
-        "file_format: \"1.0-rc.1\"\n"
+        "file_format: \"1.0\"\n"
             + "resource:\n"
             + "  detection/development:\n"
             + "    detectors:\n"

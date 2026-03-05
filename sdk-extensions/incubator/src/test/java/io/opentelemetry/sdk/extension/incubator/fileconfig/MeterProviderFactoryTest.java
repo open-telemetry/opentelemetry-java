@@ -91,13 +91,13 @@ class MeterProviderFactoryTest {
                                     .withAttributeKeys(null))))
                 .withMeterConfiguratorDevelopment(
                     new ExperimentalMeterConfiguratorModel()
-                        .withDefaultConfig(new ExperimentalMeterConfigModel().withDisabled(true))
+                        .withDefaultConfig(new ExperimentalMeterConfigModel().withEnabled(false))
                         .withMeters(
                             Collections.singletonList(
                                 new ExperimentalMeterMatcherAndConfigModel()
                                     .withName("foo")
                                     .withConfig(
-                                        new ExperimentalMeterConfigModel().withDisabled(false)))))
+                                        new ExperimentalMeterConfigModel().withEnabled(true)))))
                 .withExemplarFilter(MeterProviderModel.ExemplarFilter.ALWAYS_ON),
             setMeterConfigurator(
                     SdkMeterProvider.builder(),
