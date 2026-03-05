@@ -211,6 +211,8 @@ public interface LogRecordBuilder {
   /**
    * Set {@code exception.type}, {@code exception.message}, and {@code exception.stacktrace}
    * attributes based on the {@code throwable}.
+   *
+   * @since 1.60.0
    */
   default LogRecordBuilder setException(Throwable throwable) {
     return this;

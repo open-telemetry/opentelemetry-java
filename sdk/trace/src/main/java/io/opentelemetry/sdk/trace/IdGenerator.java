@@ -46,6 +46,7 @@ public interface IdGenerator {
    * "https://www.w3.org/TR/trace-context-2/#random-trace-id-flag">Random TraceId flag</a>.
    *
    * @return true if the generated TraceIds are random
+   * @since 1.60.0
    */
   default boolean generatesRandomTraceIds() {
     return false;

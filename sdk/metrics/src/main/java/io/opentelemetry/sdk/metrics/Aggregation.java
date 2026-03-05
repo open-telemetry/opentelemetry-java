@@ -77,6 +77,7 @@ public interface Aggregation {
    * Aggregates measurements into an explicit bucket {@link MetricDataType#HISTOGRAM}.
    *
    * @param options histogram options
+   * @since 1.60.0
    */
   static Aggregation explicitBucketHistogram(ExplicitBucketHistogramOptions options) {
     List<Double> boundaries = options.getBucketBoundaries();
@@ -122,6 +123,7 @@ public interface Aggregation {
    * Aggregates measurements into a base-2 {@link MetricDataType#EXPONENTIAL_HISTOGRAM}.
    *
    * @param options histogram options
+   * @since 1.60.0
    */
   static Aggregation base2ExponentialBucketHistogram(Base2ExponentialHistogramOptions options) {
     return Base2ExponentialHistogramAggregation.create(

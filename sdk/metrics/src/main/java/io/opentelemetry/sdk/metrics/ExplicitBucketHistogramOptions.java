@@ -14,6 +14,7 @@ import javax.annotation.concurrent.Immutable;
  * Options for configuring explicit bucket histogram aggregations.
  *
  * @see Aggregation#explicitBucketHistogram(ExplicitBucketHistogramOptions)
+ * @since 1.60.0
  */
 @AutoValue
 @Immutable
@@ -46,7 +47,11 @@ public abstract class ExplicitBucketHistogramOptions {
   /** Returns whether min and max values should be recorded. Defaults to {@code true}. */
   public abstract boolean getRecordMinMax();
 
-  /** Builder for {@link ExplicitBucketHistogramOptions}. */
+  /**
+   * Builder for {@link ExplicitBucketHistogramOptions}.
+   *
+   * @since 1.60.0
+   */
   @AutoValue.Builder
   public abstract static class Builder {
 

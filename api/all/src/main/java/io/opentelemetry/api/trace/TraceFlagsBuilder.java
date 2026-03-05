@@ -17,6 +17,8 @@ package io.opentelemetry.api.trace;
  *
  * <p>Implementation note: no new objects are created by the methods defined by this interface when
  * the default implementation, {@link ImmutableTraceFlags}, is used.
+ *
+ * @since 1.60.0
  */
 public interface TraceFlagsBuilder {
 
