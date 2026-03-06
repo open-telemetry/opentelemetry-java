@@ -360,6 +360,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has exception attributes for the given {@link Throwable}. The stack trace is
    * not matched against.
+   *
+   * @since 1.60.0
    */
   @SuppressWarnings("NullAway")
   public LogRecordDataAssert hasException(Throwable exception) {

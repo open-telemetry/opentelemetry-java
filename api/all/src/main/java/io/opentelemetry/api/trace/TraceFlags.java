@@ -83,6 +83,7 @@ public interface TraceFlags {
    *
    * @return {@code true} if the randomTraceId bit is on for this {@link TraceFlags}, otherwise
    *     {@code false}.
+   * @since 1.60.0
    */
   default boolean isTraceIdRandom() {
     return false;
@@ -102,7 +103,11 @@ public interface TraceFlags {
    */
   byte asByte();
 
-  /** Returns an instance of {@link TraceFlagsBuilder} for {@link TraceFlags}. */
+  /**
+   * Returns an instance of {@link TraceFlagsBuilder} for {@link TraceFlags}.
+   *
+   * @since 1.60.0
+   */
   static TraceFlagsBuilder builder() {
     return ImmutableTraceFlags.DEFAULT;
   }

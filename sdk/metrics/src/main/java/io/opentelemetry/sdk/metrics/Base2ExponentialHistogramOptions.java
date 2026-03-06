@@ -14,6 +14,7 @@ import javax.annotation.concurrent.Immutable;
  * Options for configuring base-2 exponential histogram aggregations.
  *
  * @see Aggregation#base2ExponentialBucketHistogram(Base2ExponentialHistogramOptions)
+ * @since 1.60.0
  */
 @AutoValue
 @Immutable
@@ -57,7 +58,11 @@ public abstract class Base2ExponentialHistogramOptions {
   /** Returns whether min and max values should be recorded. Defaults to {@code true}. */
   public abstract boolean getRecordMinMax();
 
-  /** Builder for {@link Base2ExponentialHistogramOptions}. */
+  /**
+   * Builder for {@link Base2ExponentialHistogramOptions}.
+   *
+   * @since 1.60.0
+   */
   @AutoValue.Builder
   public abstract static class Builder {
 
