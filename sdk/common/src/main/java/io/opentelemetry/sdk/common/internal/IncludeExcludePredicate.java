@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
  *
  * <p>Supports optional glob pattern matching. See {@link GlobUtil}.
  *
- * <p>String equality is evaluated using {@link String#equalsIgnoreCase(String)}.
+ * <p>String equality is evaluated using {@link String#equals(Object)}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

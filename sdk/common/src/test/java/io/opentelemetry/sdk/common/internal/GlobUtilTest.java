@@ -24,7 +24,7 @@ class GlobUtilTest {
   private static Stream<Arguments> globPatternPredicateArgs() {
     return Stream.of(
         Arguments.of("foo", "foo", true),
-        Arguments.of("foo", "Foo", true),
+        Arguments.of("foo", "Foo", false),
         Arguments.of("foo", "bar", false),
         Arguments.of("fo?", "foo", true),
         Arguments.of("fo??", "fooo", true),
