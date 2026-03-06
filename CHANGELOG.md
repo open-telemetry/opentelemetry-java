@@ -42,6 +42,11 @@
   ([#8095](https://github.com/open-telemetry/opentelemetry-java/pull/8095))
 * Remove deprecated `otel.experimental.metrics.cardinality.limit` property
   ([#8124](https://github.com/open-telemetry/opentelemetry-java/pull/8124))
+* **BREAKING** bug fix: `GlobUtil` and `IncludePatternMatching`, used in views and declarative
+  config matching, previously were inconsistent in case sensitivity. If a glob char (* or ?) was
+  present, it was evaluated with case sensitivity. If no glob chars were present, it was evaluated
+  with case insensitivity. Now, all are consistently evaluated with case sensitivity.
+  ([#8152](https://github.com/open-telemetry/opentelemetry-java/pull/8152))
 
 #### Logs
 
