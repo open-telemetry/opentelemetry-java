@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.60.0 (2026-03-06)
+
 ### API
 
 * Support W3C trace context random flag
