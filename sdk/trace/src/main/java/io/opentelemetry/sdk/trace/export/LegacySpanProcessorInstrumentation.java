@@ -58,7 +58,7 @@ final class LegacySpanProcessorInstrumentation implements SpanProcessorInstrumen
   @Override
   public void finishSpans(int count, @Nullable String error) {
     // Legacy metrics only record when no error.
-    if (error != null) {
+    if (error == null) {
       processedSpans().add(count, standardAttrs);
     }
   }
