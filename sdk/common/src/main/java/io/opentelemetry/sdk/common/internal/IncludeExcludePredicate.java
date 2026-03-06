@@ -55,7 +55,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
   }
 
   /**
-   * Create a (case-insensitive) exact matching include exclude predicate.
+   * Create a (case-sensitive) exact matching include exclude predicate.
    *
    * @throws IllegalArgumentException if {@code included} AND {@code excluded} are null.
    */
