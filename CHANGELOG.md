@@ -29,6 +29,8 @@
   ([#7993](https://github.com/open-telemetry/opentelemetry-java/pull/7993))
 * Exclude META-INF/maven from traces SDK shaded dependencies
   ([#8096](https://github.com/open-telemetry/opentelemetry-java/pull/8096))
+* Fix inverted condition in LegacySpanProcessorInstrumentation#finishSpans
+  ([#8145](https://github.com/open-telemetry/opentelemetry-java/pull/8145))
 
 #### Metrics
 
@@ -58,6 +60,8 @@
   ([#8107](https://github.com/open-telemetry/opentelemetry-java/pull/8107))
 * OTLP: Use `KeyManagerFactory.getDefaultAlgorithm()` in `TlsUtil.keyManager()`
   ([#8122](https://github.com/open-telemetry/opentelemetry-java/pull/8122))
+* OTLP: Ensure proto serializer idCache is cleared when exception is thrown
+  ([#8147](https://github.com/open-telemetry/opentelemetry-java/pull/8147))
 
 #### Extensions
 
