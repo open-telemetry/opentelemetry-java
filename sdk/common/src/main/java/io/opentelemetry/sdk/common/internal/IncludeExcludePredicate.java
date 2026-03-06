@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
  *
  * <p>Supports optional glob pattern matching. See {@link GlobUtil}.
  *
- * <p>String equality is evaluated using {@link String#equalsIgnoreCase(String)}.
+ * <p>String equality is evaluated using {@link String#equals(Object)}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -55,7 +55,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
   }
 
   /**
-   * Create a (case-insensitive) exact matching include exclude predicate.
+   * Create a (case-sensitive) exact matching include exclude predicate.
    *
    * @throws IllegalArgumentException if {@code included} AND {@code excluded} are null.
    */
@@ -101,7 +101,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       if (globMatchingEnabled) {
         result = result.or(createGlobPatternPredicate(include));
       } else {
-        result = result.or(include::equalsIgnoreCase);
+        result = result.or(include::equals);
       }
     }
     return result;
@@ -114,7 +114,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       if (globMatchingEnabled) {
         result = result.and(createGlobPatternPredicate(exclude).negate());
       } else {
-        result = result.and(s -> !exclude.equalsIgnoreCase(s));
+        result = result.and(s -> !exclude.equals(s));
       }
     }
     return result;

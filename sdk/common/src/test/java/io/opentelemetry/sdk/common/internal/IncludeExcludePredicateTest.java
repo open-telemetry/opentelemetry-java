@@ -48,38 +48,57 @@ class IncludeExcludePredicateTest {
         Arguments.of(EXACT_INCLUDE, "foo", true),
         Arguments.of(EXACT_INCLUDE, "bar", false),
         Arguments.of(EXACT_INCLUDE, "baz", false),
+        Arguments.of(EXACT_INCLUDE, "Foo", false),
+        Arguments.of(EXACT_INCLUDE, "FOO", false),
         // exclude only
         Arguments.of(EXACT_EXCLUDE, "foo", true),
         Arguments.of(EXACT_EXCLUDE, "bar", false),
         Arguments.of(EXACT_EXCLUDE, "baz", true),
+        Arguments.of(EXACT_EXCLUDE, "Bar", true),
+        Arguments.of(EXACT_EXCLUDE, "BAR", true),
         // include and exclude
         Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "foo", true),
+        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "Foo", false),
+        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "FOO", false),
         Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "bar", false),
         Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "baz", false),
         // multi
         Arguments.of(EXACT_MULTI, "foo", true),
         Arguments.of(EXACT_MULTI, "fooo", true),
+        Arguments.of(EXACT_MULTI, "Foo", false),
+        Arguments.of(EXACT_MULTI, "FOO", false),
         Arguments.of(EXACT_MULTI, "bar", false),
         Arguments.of(EXACT_MULTI, "barr", false),
         Arguments.of(EXACT_MULTI, "baz", false),
         // pattern matching
         // include only
         Arguments.of(PATTERN_INCLUDE, "foo", true),
+        Arguments.of(PATTERN_INCLUDE, "fOo", true),
+        Arguments.of(PATTERN_INCLUDE, "Foo", false),
         Arguments.of(PATTERN_INCLUDE, "bar", false),
         Arguments.of(PATTERN_INCLUDE, "baz", false),
         // exclude only
         Arguments.of(PATTERN_EXCLUDE, "foo", true),
         Arguments.of(PATTERN_EXCLUDE, "bar", false),
+        Arguments.of(PATTERN_EXCLUDE, "bAr", false),
+        Arguments.of(PATTERN_EXCLUDE, "Bar", true),
+        Arguments.of(PATTERN_EXCLUDE, "BAR", true),
         Arguments.of(PATTERN_EXCLUDE, "baz", true),
         // include and exclude
         Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "foo", true),
+        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "fOo", true),
+        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "FOO", false),
         Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "bar", false),
         Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "baz", false),
         // multi
         Arguments.of(PATTERN_MULTI, "foo", true),
         Arguments.of(PATTERN_MULTI, "fooo", true),
+        Arguments.of(PATTERN_MULTI, "fOo", true),
+        Arguments.of(PATTERN_MULTI, "FOO", false),
         Arguments.of(PATTERN_MULTI, "bar", false),
+        Arguments.of(PATTERN_MULTI, "bAr", false),
         Arguments.of(PATTERN_MULTI, "barr", false),
+        Arguments.of(PATTERN_MULTI, "bArr", false),
         Arguments.of(PATTERN_MULTI, "baz", false));
   }
 
