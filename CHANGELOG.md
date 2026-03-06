@@ -93,6 +93,8 @@
   ([#8075](https://github.com/open-telemetry/opentelemetry-java/pull/8075))
 * Declarative config: Remove unchecked warning
   ([#8090](https://github.com/open-telemetry/opentelemetry-java/pull/8090))
+* **BREAKING** Declarative config: update matching to be consistently case sensitive
+  ([#8152](https://github.com/open-telemetry/opentelemetry-java/pull/8152))
 
 ### Project tooling
 
