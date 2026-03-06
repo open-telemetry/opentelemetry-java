@@ -245,7 +245,9 @@ public final class HttpExporterBuilder {
                 retryPolicy,
                 isPlainHttp ? null : tlsConfigHelper.getSslContext(),
                 isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
-                executorService));
+                executorService,
+                // 1kb since don't do anything with responses today
+                1024L));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter(

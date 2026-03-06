@@ -39,6 +39,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.Buffer;
 import okio.BufferedSink;
 import okio.Okio;
 
@@ -58,6 +59,7 @@ public final class OkHttpHttpSender implements HttpSender {
   private final Supplier<Map<String, List<String>>> headerSupplier;
   private final MediaType mediaType;
   @Nullable private final Compressor compressor;
+  private final long maxResponseBodySize;
 
   /** Create a sender. */
   @SuppressWarnings("TooManyParameters")
@@ -72,7 +74,8 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -111,6 +114,7 @@ public final class OkHttpHttpSender implements HttpSender {
     this.mediaType = MediaType.parse(contentType);
     this.compressor = compressor;
     this.headerSupplier = headerSupplier;
+    this.maxResponseBodySize = maxResponseBodySize;
   }
 
   @Override
@@ -160,7 +164,16 @@ public final class OkHttpHttpSender implements HttpSender {
                                 public byte[] getResponseBody() {
                                   if (bodyBytes == null) {
                                     try {
-                                      bodyBytes = body.bytes();
+                                      Buffer buffer = new Buffer();
+                                      while (buffer.size() < maxResponseBodySize) {
+                                        long n =
+                                            body.source()
+                                                .read(buffer, maxResponseBodySize - buffer.size());
+                                        if (n == -1L) {
+                                          break;
+                                        }
+                                      }
+                                      bodyBytes = buffer.readByteArray();
                                     } catch (IOException e) {
                                       bodyBytes = new byte[0];
                                       logger.log(Level.WARNING, "Failed to read response body", e);

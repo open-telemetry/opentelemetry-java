@@ -72,6 +72,7 @@ public final class JdkHttpSender implements HttpSender {
   private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
   private final Predicate<IOException> retryExceptionPredicate;
+  private final long maxResponseBodySize;
 
   // Visible for testing
   JdkHttpSender(
@@ -82,7 +83,8 @@ public final class JdkHttpSender implements HttpSender {
       Duration timeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     this.client = client;
     this.endpoint = endpoint;
     this.contentType = contentType;
@@ -101,6 +103,7 @@ public final class JdkHttpSender implements HttpSender {
       this.executorService = executorService;
       this.managedExecutor = false;
     }
+    this.maxResponseBodySize = maxResponseBodySize;
   }
 
   JdkHttpSender(
@@ -113,7 +116,8 @@ public final class JdkHttpSender implements HttpSender {
       @Nullable RetryPolicy retryPolicy,
       @Nullable ProxyOptions proxyOptions,
       @Nullable SSLContext sslContext,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     this(
         configureClient(sslContext, connectTimeout, proxyOptions),
         endpoint,
@@ -122,7 +126,8 @@ public final class JdkHttpSender implements HttpSender {
         timeout,
         headerSupplier,
         retryPolicy,
-        executorService);
+        executorService,
+        maxResponseBodySize);
   }
 
   private static ExecutorService newExecutor() {
@@ -287,7 +292,19 @@ public final class JdkHttpSender implements HttpSender {
   private HttpResponse<byte[]> sendRequest(
       HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
-      return client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
+      return client.send(
+          requestBuilder.build(),
+          responseInfo ->
+              HttpResponse.BodySubscribers.mapping(
+                  HttpResponse.BodySubscribers.ofInputStream(),
+                  inputStream -> {
+                    try (inputStream) {
+                      return inputStream.readNBytes(
+                          (int) Math.min(maxResponseBodySize, Integer.MAX_VALUE));
+                    } catch (IOException e) {
+                      throw new UncheckedIOException(e);
+                    }
+                  }));
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new IllegalStateException(e);

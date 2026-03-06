@@ -83,6 +83,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
   private final HttpUrl url;
   @Nullable private final Compressor compressor;
   private final Supplier<Map<String, List<String>>> headersSupplier;
+  private final long maxResponseBodySize;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   @SuppressWarnings("TooManyParameters")
@@ -95,7 +96,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -133,6 +135,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
     this.compressor = compressor;
     this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
+    this.maxResponseBodySize = maxResponseBodySize;
   }
 
   @Override
@@ -169,7 +172,15 @@ public final class OkHttpGrpcSender implements GrpcSender {
                           // Must consume body before accessing trailers
                           byte[] bodyBytes = null;
                           try {
-                            bodyBytes = getResponseMessageBytes(body.bytes());
+                            Buffer buffer = new Buffer();
+                            while (buffer.size() < maxResponseBodySize) {
+                              long n =
+                                  body.source().read(buffer, maxResponseBodySize - buffer.size());
+                              if (n == -1L) {
+                                break;
+                              }
+                            }
+                            bodyBytes = getResponseMessageBytes(buffer.readByteArray());
                           } catch (IOException e) {
                             bodyBytes = new byte[0];
                             logger.log(Level.FINE, "Failed to read response body", e);
