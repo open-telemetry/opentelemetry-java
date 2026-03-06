@@ -101,7 +101,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       if (globMatchingEnabled) {
         result = result.or(createGlobPatternPredicate(include));
       } else {
-        result = result.or(include::equalsIgnoreCase);
+        result = result.or(include::equals);
       }
     }
     return result;
@@ -114,7 +114,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       if (globMatchingEnabled) {
         result = result.and(createGlobPatternPredicate(exclude).negate());
       } else {
-        result = result.and(s -> !exclude.equalsIgnoreCase(s));
+        result = result.and(s -> !exclude.equals(s));
       }
     }
     return result;
