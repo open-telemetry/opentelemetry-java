@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### SDK
+
+#### Extensions
+
+* Autoconfigure: fix warning always emitted
+  ([#8157](https://github.com/open-telemetry/opentelemetry-java/pull/8157))
+
 ## Version 1.60.0 (2026-03-06)
 
 ### API
