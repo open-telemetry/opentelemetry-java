@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.60.1 (2026-03-07)
 
 ### SDK
 
