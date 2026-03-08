@@ -29,7 +29,10 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
   /** Returns a new {@link OtlpJsonLoggingLogRecordExporter}. */
   public static LogRecordExporter create() {
     OtlpStdoutLogRecordExporter delegate =
-        new OtlpStdoutLogRecordExporterBuilder(logger).setWrapperJsonObject(false).build();
+        new OtlpStdoutLogRecordExporterBuilder(logger)
+            .setWrapperJsonObject(false)
+            .setPrettyPrint(true)
+            .build();
     return new OtlpJsonLoggingLogRecordExporter(delegate);
   }
 

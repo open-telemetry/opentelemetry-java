@@ -23,16 +23,25 @@ public class LoggerJsonWriter implements JsonWriter {
 
   private final Logger logger;
   private final String type;
+  private final boolean prettyPrint;
 
   public LoggerJsonWriter(Logger logger, String type) {
+    this(logger, type, /* prettyPrint= */ false);
+  }
+
+  public LoggerJsonWriter(Logger logger, String type, boolean prettyPrint) {
     this.logger = logger;
     this.type = type;
+    this.prettyPrint = prettyPrint;
   }
 
   @Override
   public CompletableResultCode write(Marshaler exportRequest) {
     SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
     try (JsonGenerator gen = JsonUtil.create(sw)) {
+      if (prettyPrint) {
+        gen.useDefaultPrettyPrinter();
+      }
       exportRequest.writeJsonToGenerator(gen);
     } catch (IOException e) {
       logger.log(Level.WARNING, "Unable to write OTLP JSON " + type, e);

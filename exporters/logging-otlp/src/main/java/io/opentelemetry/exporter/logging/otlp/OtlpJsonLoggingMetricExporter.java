@@ -42,7 +42,10 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
    */
   public static MetricExporter create(AggregationTemporality aggregationTemporality) {
     OtlpStdoutMetricExporter delegate =
-        new OtlpStdoutMetricExporterBuilder(logger).setWrapperJsonObject(false).build();
+        new OtlpStdoutMetricExporterBuilder(logger)
+            .setWrapperJsonObject(false)
+            .setPrettyPrint(true)
+            .build();
     return new OtlpJsonLoggingMetricExporter(delegate, aggregationTemporality);
   }
 

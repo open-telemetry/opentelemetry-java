@@ -29,19 +29,29 @@ public class StreamJsonWriter implements JsonWriter {
 
   private final String type;
   private final OutputStream outputStream;
+  private final boolean prettyPrint;
 
   public StreamJsonWriter(OutputStream originalStream, String type) {
+    this(originalStream, type, /* prettyPrint= */ false);
+  }
+
+  public StreamJsonWriter(OutputStream originalStream, String type, boolean prettyPrint) {
     this.outputStream = originalStream;
     this.type = type;
+    this.prettyPrint = prettyPrint;
   }
 
   @Override
   public CompletableResultCode write(Marshaler exportRequest) {
     try {
-      exportRequest.writeJsonWithNewline(
+      JsonGenerator generator =
           JSON_FACTORY
               .createGenerator(outputStream)
-              .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET));
+              .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+      if (prettyPrint) {
+        generator.useDefaultPrettyPrinter();
+      }
+      exportRequest.writeJsonWithNewline(generator);
       return CompletableResultCode.ofSuccess();
     } catch (IOException e) {
       logger.log(Level.WARNING, "Unable to write OTLP JSON " + type, e);

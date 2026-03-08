@@ -42,7 +42,7 @@ class OtlpJsonLoggingLogRecordExporterTest {
     String message = logs.getEvents().get(0).getMessage();
     String expectedJson = testDataExporter.getExpectedJson(false);
     JSONAssert.assertEquals("Got \n" + message, expectedJson, message, /* strict= */ false);
-    assertThat(message).doesNotContain("\n");
+    assertThat(message).contains("\n");
   }
 
   @Test
