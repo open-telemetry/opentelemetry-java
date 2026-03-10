@@ -14,7 +14,7 @@ import javax.annotation.concurrent.Immutable;
  * @see "profiles.proto::ProfilesDictionary"
  */
 @Immutable
-public interface ProfileDictionaryData {
+public interface ProfilesDictionaryData {
 
   /**
    * Mapping from address ranges to the image/binary/library mapped into that address range.
