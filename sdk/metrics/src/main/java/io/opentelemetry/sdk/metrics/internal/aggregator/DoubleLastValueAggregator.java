@@ -50,8 +50,8 @@ public final class DoubleLastValueAggregator implements Aggregator<DoublePointDa
   }
 
   @Override
-  public AggregatorHandle<DoublePointData> createHandle() {
-    return new Handle(reservoirFactory, memoryMode);
+  public AggregatorHandle<DoublePointData> createHandle(long creationEpochNanos) {
+    return new Handle(creationEpochNanos, reservoirFactory, memoryMode);
   }
 
   @Override
@@ -99,8 +99,9 @@ public final class DoubleLastValueAggregator implements Aggregator<DoublePointDa
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
 
-    private Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
-      super(reservoirFactory, /* isDoubleType= */ true);
+    private Handle(
+        long creationEpochNanos, ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(creationEpochNanos, reservoirFactory, /* isDoubleType= */ true);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableDoublePointData();
       } else {

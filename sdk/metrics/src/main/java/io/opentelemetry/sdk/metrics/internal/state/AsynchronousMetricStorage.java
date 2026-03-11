@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
@@ -55,6 +56,8 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T> aggregator;
   private final AttributesProcessor attributesProcessor;
+  private final long instrumentCreationEpochNanos;
+
   private final MemoryMode memoryMode;
 
   /**
@@ -93,6 +96,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
       Aggregator<T> aggregator,
       AttributesProcessor attributesProcessor,
       int maxCardinality,
+      Clock clock,
       boolean enabled) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
@@ -103,10 +107,11 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
     this.memoryMode = registeredReader.getReader().getMemoryMode();
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
+    this.instrumentCreationEpochNanos = clock.now();
     this.maxCardinality = maxCardinality - 1;
     this.enabled = enabled;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
-    this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
+    this.reusableHandlesPool = new ObjectPool<>(this::createAggregatorHandle);
     this.handleBuilder = ignored -> reusableHandlesPool.borrowObject();
     this.handleReleaser = (ignored, handle) -> reusableHandlesPool.returnObject(handle);
     this.pointReleaser = (ignored, point) -> reusablePointsPool.returnObject(point);
@@ -121,12 +126,25 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
   }
 
   /**
+   * Implements start time requirements for cumulative asynchronous instruments. {@link
+   * #collectWithCumulativeAggregationTemporality()} depends on this. Note that while delta
+   * asynchronous instruments also use this path, they do not depend on {@link
+   * AggregatorHandle#getCreationTimeEpochNanos()} and compute start time at in {@link
+   * #collectWithDeltaAggregationTemporality()}.
+   */
+  private AggregatorHandle<T> createAggregatorHandle() {
+    return aggregator.createHandle(
+        getRegisteredReader().getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos));
+  }
+
+  /**
    * Create an asynchronous storage instance for the {@link View} and {@link InstrumentDescriptor}.
    */
   // TODO(anuraaga): The cast to generic type here looks suspicious.
   public static <T extends PointData> AsynchronousMetricStorage<T> create(
       RegisteredReader registeredReader,
       RegisteredView registeredView,
+      Clock clock,
       InstrumentDescriptor instrumentDescriptor,
       boolean enabled) {
     View view = registeredView.getView();
@@ -144,6 +162,7 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
         aggregator,
         registeredView.getViewAttributesProcessor(),
         registeredView.getCardinalityLimit(),
+        clock,
         enabled);
   }
 
@@ -222,12 +241,16 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
       currentPoints = new HashMap<>();
     }
 
+    // Start time for synchronous delta instruments is the time of the last collection, or if no
+    // collection has yet taken place, the time the instrument was created.
+    long startEpochNanos =
+        registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos);
+
     aggregatorHandles.forEach(
         (attributes, handle) -> {
           T point =
-              // TODO: start time should be the instrument creation time if first seen before any
-              // collection, or previous collection time
-              handle.aggregateThenMaybeReset(0, this.epochNanos, attributes, /* reset= */ true);
+              handle.aggregateThenMaybeReset(
+                  startEpochNanos, this.epochNanos, attributes, /* reset= */ true);
 
           T pointForCurrentPoints;
           if (memoryMode == REUSABLE_DATA) {
@@ -296,13 +319,18 @@ public final class AsynchronousMetricStorage<T extends PointData> implements Met
       currentPoints = new ArrayList<>();
     }
 
-    // TODO: start time should be the instrument creation time if first seen before any collection,
-    // or previous collection time, but consistent thereafter
+    // Start time for cumulative asynchronous instruments is:
+    // - The instrument creation time if no collection has yet taken place
+    // - Otherwise, the time of the last collection
+    // This logic is handled in AggregatorHandle creation via #createAggregatorHandle()
     aggregatorHandles.forEach(
         (attributes, handle) -> {
           T value =
               handle.aggregateThenMaybeReset(
-                  0, AsynchronousMetricStorage.this.epochNanos, attributes, /* reset= */ true);
+                  handle.getCreationTimeEpochNanos(),
+                  AsynchronousMetricStorage.this.epochNanos,
+                  attributes,
+                  /* reset= */ true);
           currentPoints.add(value);
         });
     return currentPoints;

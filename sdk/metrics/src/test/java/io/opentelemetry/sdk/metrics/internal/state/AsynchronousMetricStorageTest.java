@@ -80,6 +80,7 @@ class AsynchronousMetricStorageTest {
         AsynchronousMetricStorage.create(
             registeredReader,
             registeredView,
+            testClock,
             InstrumentDescriptor.create(
                 "long-counter",
                 "description",
@@ -92,6 +93,7 @@ class AsynchronousMetricStorageTest {
         AsynchronousMetricStorage.create(
             registeredReader,
             registeredView,
+            testClock,
             InstrumentDescriptor.create(
                 "double-counter",
                 "description",
@@ -170,6 +172,7 @@ class AsynchronousMetricStorageTest {
                 AttributesProcessor.filterByKeyName(key -> key.equals("key1")),
                 CARDINALITY_LIMIT,
                 SourceInfo.noSourceInfo()),
+            testClock,
             InstrumentDescriptor.create(
                 "name",
                 "description",
@@ -339,6 +342,7 @@ class AsynchronousMetricStorageTest {
         AsynchronousMetricStorage.create(
             registeredReader,
             registeredView,
+            testClock,
             InstrumentDescriptor.create(
                 "long-counter",
                 "description",

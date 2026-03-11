@@ -123,6 +123,7 @@ class AggregatorHandleTest {
         @Nullable LongExemplarReservoir longReservoir,
         boolean isDoubleType) {
       super(
+          0,
           new ExemplarReservoirFactory() {
             @Override
             public DoubleExemplarReservoir createDoubleExemplarReservoir() {

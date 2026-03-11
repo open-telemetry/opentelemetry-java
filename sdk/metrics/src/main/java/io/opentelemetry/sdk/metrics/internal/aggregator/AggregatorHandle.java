@@ -35,13 +35,16 @@ public abstract class AggregatorHandle<T extends PointData> {
   private static final String UNSUPPORTED_DOUBLE_MESSAGE =
       "This aggregator does not support double values.";
 
+  private final long creationTimeEpochNanos;
   // A reservoir of sampled exemplars for this time period.
   @Nullable private final DoubleExemplarReservoir doubleReservoirFactory;
   @Nullable private final LongExemplarReservoir longReservoirFactory;
   private final boolean isDoubleType;
   private volatile boolean valuesRecorded = false;
 
-  protected AggregatorHandle(ExemplarReservoirFactory reservoirFactory, boolean isDoubleType) {
+  protected AggregatorHandle(
+      long creationEpochNanos, ExemplarReservoirFactory reservoirFactory, boolean isDoubleType) {
+    this.creationTimeEpochNanos = creationEpochNanos;
     this.isDoubleType = isDoubleType;
     if (isDoubleType) {
       this.doubleReservoirFactory = reservoirFactory.createDoubleExemplarReservoir();
@@ -144,5 +147,9 @@ public abstract class AggregatorHandle<T extends PointData> {
       throw new UnsupportedOperationException(message);
     }
     return value;
+  }
+
+  public long getCreationTimeEpochNanos() {
+    return creationTimeEpochNanos;
   }
 }

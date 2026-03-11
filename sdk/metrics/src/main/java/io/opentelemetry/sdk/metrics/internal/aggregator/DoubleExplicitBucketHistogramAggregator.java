@@ -72,8 +72,9 @@ public final class DoubleExplicitBucketHistogramAggregator
   }
 
   @Override
-  public AggregatorHandle<HistogramPointData> createHandle() {
-    return new Handle(boundaryList, boundaries, recordMinMax, reservoirFactory, memoryMode);
+  public AggregatorHandle<HistogramPointData> createHandle(long creationEpochNanos) {
+    return new Handle(
+        creationEpochNanos, boundaryList, boundaries, recordMinMax, reservoirFactory, memoryMode);
   }
 
   @Override
@@ -120,12 +121,13 @@ public final class DoubleExplicitBucketHistogramAggregator
     @Nullable private final MutableHistogramPointData reusablePoint;
 
     Handle(
+        long creationEpochNanos,
         List<Double> boundaryList,
         double[] boundaries,
         boolean recordMinMax,
         ExemplarReservoirFactory reservoirFactory,
         MemoryMode memoryMode) {
-      super(reservoirFactory, /* isDoubleType= */ true);
+      super(creationEpochNanos, reservoirFactory, /* isDoubleType= */ true);
       this.boundaryList = boundaryList;
       this.boundaries = boundaries;
       this.recordMinMax = recordMinMax;

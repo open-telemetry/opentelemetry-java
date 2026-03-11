@@ -57,8 +57,9 @@ public class RegisteredReader {
    * <p>Used to compute the {@link PointData#getStartEpochNanos()} for instruments aggregations with
    * {@link AggregationTemporality#DELTA} temporality.
    */
-  public long getLastCollectEpochNanos() {
-    return lastCollectEpochNanos;
+  public long getLastCollectEpochNanosOrDefault(long defaultEpochNanos) {
+    long lastCollectEpochNanos = this.lastCollectEpochNanos;
+    return lastCollectEpochNanos == -1 ? defaultEpochNanos : lastCollectEpochNanos;
   }
 
   /** Get the {@link ViewRegistry} for the reader. */

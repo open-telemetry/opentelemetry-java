@@ -11,6 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.BDDAssertions.as;
 import static org.assertj.core.api.InstanceOfAssertFactories.collection;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -110,13 +111,14 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     storage.recordDouble(Double.NaN, Attributes.empty(), Context.current());
 
     logs.assertContains(
         "Instrument name has recorded measurement Not-a-Number (NaN) value with attributes {}. Dropping measurement.");
-    verify(aggregator, never()).createHandle();
+    verify(aggregator, never()).createHandle(anyLong());
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .isEqualTo(EmptyMetricData.getInstance());
   }
@@ -137,6 +139,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             spyAttributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
     storage.recordDouble(1, attributes, Context.root());
     MetricData md = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, testClock.now());
@@ -161,11 +164,12 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
-    verify(aggregator, times(1)).createHandle();
+    verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .hasDoubleSumSatisfying(
             sum ->
@@ -176,7 +180,7 @@ public class SynchronousMetricStorageTest {
 
     // Record measurement and collect at time 30
     storage.recordDouble(3, Attributes.empty(), Context.current());
-    verify(aggregator, times(1)).createHandle();
+    verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
         .hasDoubleSumSatisfying(
             sum ->
@@ -187,7 +191,7 @@ public class SynchronousMetricStorageTest {
 
     // Record measurement and collect at time 35
     storage.recordDouble(2, Attributes.empty(), Context.current());
-    verify(aggregator, times(1)).createHandle();
+    verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 35))
         .hasDoubleSumSatisfying(
             sum ->
@@ -207,11 +211,12 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
-    verify(aggregator, times(1)).createHandle();
+    verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -230,7 +235,7 @@ public class SynchronousMetricStorageTest {
     storage.recordDouble(3, Attributes.empty(), Context.current());
     // AggregatorHandle should be returned to the pool on reset so shouldn't create additional
     // handles
-    verify(aggregator, times(1)).createHandle();
+    verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -247,7 +252,7 @@ public class SynchronousMetricStorageTest {
 
     // Record measurement and collect at time 35
     storage.recordDouble(2, Attributes.empty(), Context.current());
-    verify(aggregator, times(1)).createHandle();
+    verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -273,11 +278,12 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
-    verify(aggregator, times(1)).createHandle();
+    verify(aggregator, times(1)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -297,7 +303,7 @@ public class SynchronousMetricStorageTest {
     storage.recordDouble(3, Attributes.empty(), Context.current());
 
     // We're switched to secondary map so a handle will be created
-    verify(aggregator, times(2)).createHandle();
+    verify(aggregator, times(2)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -320,7 +326,7 @@ public class SynchronousMetricStorageTest {
     // We don't delete aggregator handles unless max cardinality reached, hence
     // aggregator handle is still there, thus no handle was created for empty(), but it will for
     // the "foo"
-    verify(aggregator, times(3)).createHandle();
+    verify(aggregator, times(3)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -388,6 +394,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
@@ -396,7 +403,7 @@ public class SynchronousMetricStorageTest {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
-    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle(testClock.now());
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
         .hasDoubleSumSatisfying(
             sum ->
@@ -417,7 +424,7 @@ public class SynchronousMetricStorageTest {
     storage.recordDouble(
         3, Attributes.builder().put("key", "value" + CARDINALITY_LIMIT).build(), Context.current());
     // Should not create an additional handles for the overflow series
-    verify(aggregator, times(CARDINALITY_LIMIT)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT)).createHandle(testClock.now());
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20))
         .hasDoubleSumSatisfying(
             sum ->
@@ -456,6 +463,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
@@ -464,7 +472,7 @@ public class SynchronousMetricStorageTest {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
-    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -492,7 +500,7 @@ public class SynchronousMetricStorageTest {
     storage.recordDouble(
         3, Attributes.builder().put("key", "value" + CARDINALITY_LIMIT).build(), Context.current());
     // Should use handle returned to pool instead of creating new ones
-    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(CARDINALITY_LIMIT - 2);
@@ -523,7 +531,7 @@ public class SynchronousMetricStorageTest {
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
     // Should use handles returned to pool instead of creating new ones
-    verify(aggregator, times(CARDINALITY_LIMIT)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT)).createHandle(testClock.now());
     assertThat(storage)
         .extracting("aggregatorHandlePool", as(collection(AggregatorHandle.class)))
         .hasSize(0);
@@ -569,6 +577,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
@@ -577,7 +586,7 @@ public class SynchronousMetricStorageTest {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
-    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle(testClock.now());
 
     // First collect
     MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10);
@@ -610,7 +619,7 @@ public class SynchronousMetricStorageTest {
     // After first collection, we expect the secondary map which is empty to be used,
     // hence handle creation will still take place
     // The +1 is for the overflow handle
-    verify(aggregator, times((CARDINALITY_LIMIT - 1) * 2 + 1)).createHandle();
+    verify(aggregator, times((CARDINALITY_LIMIT - 1) * 2 + 1)).createHandle(testClock.now());
 
     // Second collect
     metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 20);
@@ -658,6 +667,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     // 1st recording: Recording goes to active map
@@ -803,6 +813,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     storage.setEnabled(false);
@@ -822,6 +833,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     storage.setEnabled(false);
@@ -842,6 +854,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     storage.setEnabled(false);
@@ -863,6 +876,7 @@ public class SynchronousMetricStorageTest {
             aggregator,
             attributesProcessor,
             CARDINALITY_LIMIT,
+            testClock,
             /* enabled= */ true);
 
     storage.setEnabled(false);

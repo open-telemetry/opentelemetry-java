@@ -35,7 +35,7 @@ public interface Aggregator<T extends PointData> {
    *
    * @return a new {@link AggregatorHandle}.
    */
-  AggregatorHandle<T> createHandle();
+  AggregatorHandle<T> createHandle(long creationEpochNanos);
 
   /**
    * Returns a new DELTA point by computing the difference between two cumulative points.

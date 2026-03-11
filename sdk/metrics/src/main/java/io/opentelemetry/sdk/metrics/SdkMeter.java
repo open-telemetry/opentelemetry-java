@@ -284,6 +284,7 @@ final class SdkMeter implements Meter {
                 SynchronousMetricStorage.create(
                     reader,
                     registeredView,
+                    meterProviderSharedState.getClock(),
                     instrument,
                     meterProviderSharedState.getExemplarFilter(),
                     meterEnabled)));
@@ -313,7 +314,11 @@ final class SdkMeter implements Meter {
         registeredStorages.add(
             registry.register(
                 AsynchronousMetricStorage.create(
-                    reader, registeredView, instrumentDescriptor, meterEnabled)));
+                    reader,
+                    registeredView,
+                    meterProviderSharedState.getClock(),
+                    instrumentDescriptor,
+                    meterEnabled)));
       }
     }
 
