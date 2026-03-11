@@ -25,10 +25,6 @@ public class LoggerJsonWriter implements JsonWriter {
   private final String type;
   private final boolean prettyPrint;
 
-  public LoggerJsonWriter(Logger logger, String type) {
-    this(logger, type, /* prettyPrint= */ false);
-  }
-
   public LoggerJsonWriter(Logger logger, String type, boolean prettyPrint) {
     this.logger = logger;
     this.type = type;

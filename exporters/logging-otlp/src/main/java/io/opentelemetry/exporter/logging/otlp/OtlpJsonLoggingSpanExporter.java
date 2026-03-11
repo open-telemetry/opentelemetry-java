@@ -27,10 +27,7 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
   /** Returns a new {@link OtlpJsonLoggingSpanExporter}. */
   public static SpanExporter create() {
     OtlpStdoutSpanExporter delegate =
-        new OtlpStdoutSpanExporterBuilder(logger)
-            .setWrapperJsonObject(false)
-            .setPrettyPrint(true)
-            .build();
+        new OtlpStdoutSpanExporterBuilder(logger).setWrapperJsonObject(false).build();
     return new OtlpJsonLoggingSpanExporter(delegate);
   }
 

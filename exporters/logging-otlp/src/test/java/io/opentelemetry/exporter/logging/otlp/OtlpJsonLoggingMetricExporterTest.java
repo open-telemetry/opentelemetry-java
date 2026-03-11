@@ -8,12 +8,15 @@ package io.opentelemetry.exporter.logging.otlp;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporterBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -50,6 +53,28 @@ class OtlpJsonLoggingMetricExporterTest {
   @Test
   void log() throws Exception {
     testDataExporter.export(exporter);
+
+    assertThat(logs.getEvents())
+        .hasSize(1)
+        .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
+    String message = logs.getEvents().get(0).getMessage();
+    String expectedJson = testDataExporter.getExpectedJson(false);
+    JSONAssert.assertEquals("Got \n" + message, expectedJson, message, /* strict= */ false);
+    assertThat(message).doesNotContain("\n");
+  }
+
+  @Test
+  void logPrettyPrint() throws Exception {
+    OtlpStdoutMetricExporter delegate =
+        new OtlpStdoutMetricExporterBuilder(
+                Logger.getLogger(OtlpJsonLoggingMetricExporter.class.getName()))
+            .setWrapperJsonObject(false)
+            .setPrettyPrint(true)
+            .build();
+    MetricExporter prettyExporter =
+        new OtlpJsonLoggingMetricExporter(delegate, AggregationTemporality.CUMULATIVE);
+
+    testDataExporter.export(prettyExporter);
 
     assertThat(logs.getEvents())
         .hasSize(1)

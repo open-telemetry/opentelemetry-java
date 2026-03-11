@@ -31,10 +31,6 @@ public class StreamJsonWriter implements JsonWriter {
   private final OutputStream outputStream;
   private final boolean prettyPrint;
 
-  public StreamJsonWriter(OutputStream originalStream, String type) {
-    this(originalStream, type, /* prettyPrint= */ false);
-  }
-
   public StreamJsonWriter(OutputStream originalStream, String type, boolean prettyPrint) {
     this.outputStream = originalStream;
     this.type = type;

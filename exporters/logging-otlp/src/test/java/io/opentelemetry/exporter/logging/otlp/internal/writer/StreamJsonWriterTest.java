@@ -36,12 +36,13 @@ class StreamJsonWriterTest {
   @SuppressWarnings("SystemOut")
   void testToString() throws IOException {
     assertThat(
-            new StreamJsonWriter(Files.newOutputStream(tempDir.resolve("foo")), "type").toString())
+            new StreamJsonWriter(Files.newOutputStream(tempDir.resolve("foo")), "type", false)
+                .toString())
         .startsWith("StreamJsonWriter{outputStream=")
         .contains("Channel");
-    assertThat(new StreamJsonWriter(System.out, "type").toString())
+    assertThat(new StreamJsonWriter(System.out, "type", false).toString())
         .isEqualTo("StreamJsonWriter{outputStream=stdout}");
-    assertThat(new StreamJsonWriter(System.err, "type").toString())
+    assertThat(new StreamJsonWriter(System.err, "type", false).toString())
         .isEqualTo("StreamJsonWriter{outputStream=stderr}");
   }
 
@@ -52,7 +53,7 @@ class StreamJsonWriterTest {
         .when(marshaler)
         .writeJsonWithNewline(any(JsonGenerator.class));
 
-    StreamJsonWriter writer = new StreamJsonWriter(System.out, "type");
+    StreamJsonWriter writer = new StreamJsonWriter(System.out, "type", false);
     writer.write(marshaler);
 
     logs.assertContains("Unable to write OTLP JSON type");
@@ -68,7 +69,7 @@ class StreamJsonWriterTest {
           }
         };
 
-    StreamJsonWriter writer = new StreamJsonWriter(outputStream, "type");
+    StreamJsonWriter writer = new StreamJsonWriter(outputStream, "type", false);
     writer.flush();
 
     logs.assertContains("Failed to flush items");

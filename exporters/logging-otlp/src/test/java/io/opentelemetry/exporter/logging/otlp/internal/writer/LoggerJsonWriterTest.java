@@ -27,7 +27,7 @@ class LoggerJsonWriterTest {
 
   @Test
   void testToString() {
-    LoggerJsonWriter writer = new LoggerJsonWriter(null, "type");
+    LoggerJsonWriter writer = new LoggerJsonWriter(null, "type", false);
     assertThat(writer.toString()).isEqualTo("LoggerJsonWriter");
   }
 
@@ -40,7 +40,7 @@ class LoggerJsonWriterTest {
 
     Logger logger = Logger.getLogger(LoggerJsonWriter.class.getName());
 
-    LoggerJsonWriter writer = new LoggerJsonWriter(logger, "type");
+    LoggerJsonWriter writer = new LoggerJsonWriter(logger, "type", false);
     writer.write(marshaler);
 
     logs.assertContains("Unable to write OTLP JSON type");
