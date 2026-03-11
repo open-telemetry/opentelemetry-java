@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.common.internal.GlobUtil.createGlobPatternPre
 import static java.util.stream.Collectors.joining;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -30,8 +29,8 @@ import javax.annotation.Nullable;
 public final class IncludeExcludePredicate implements Predicate<String> {
 
   private final boolean globMatchingEnabled;
-  private final Set<String> included;
-  private final Set<String> excluded;
+  @Nullable private final Set<String> included;
+  @Nullable private final Set<String> excluded;
   private final Predicate<String> predicate;
 
   private IncludeExcludePredicate(
@@ -39,20 +38,19 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       @Nullable Collection<String> excluded,
       boolean globMatchingEnabled) {
     this.globMatchingEnabled = globMatchingEnabled;
-    this.included = included == null ? Collections.emptySet() : new LinkedHashSet<>(included);
-    this.excluded = excluded == null ? Collections.emptySet() : new LinkedHashSet<>(excluded);
-    if (this.included.isEmpty() && this.excluded.isEmpty()) {
-      throw new IllegalArgumentException(
-          "At least one of include or exclude patterns must not be null or empty");
-    }
-    if (this.included.isEmpty()) {
-      this.predicate = excludedPredicate(this.excluded, globMatchingEnabled);
-    } else if (this.excluded.isEmpty()) {
-      this.predicate = includedPredicate(this.included, globMatchingEnabled);
-    } else {
+    this.included = included == null ? null : new LinkedHashSet<>(included);
+    this.excluded = excluded == null ? null : new LinkedHashSet<>(excluded);
+    if (this.included != null && this.excluded != null) {
       this.predicate =
           includedPredicate(this.included, globMatchingEnabled)
               .and(excludedPredicate(this.excluded, globMatchingEnabled));
+    } else if (this.included == null && this.excluded != null) {
+      this.predicate = excludedPredicate(this.excluded, globMatchingEnabled);
+    } else if (this.excluded == null && this.included != null) {
+      this.predicate = includedPredicate(this.included, globMatchingEnabled);
+    } else {
+      throw new IllegalArgumentException(
+          "At least one of includedPatterns or excludedPatterns must not be null");
     }
   }
 
@@ -87,10 +85,10 @@ public final class IncludeExcludePredicate implements Predicate<String> {
   public String toString() {
     StringJoiner joiner = new StringJoiner(", ", "IncludeExcludePredicate{", "}");
     joiner.add("globMatchingEnabled=" + globMatchingEnabled);
-    if (!included.isEmpty()) {
+    if (included != null) {
       joiner.add("included=" + included.stream().collect(joining(", ", "[", "]")));
     }
-    if (!excluded.isEmpty()) {
+    if (excluded != null) {
       joiner.add("excluded=" + excluded.stream().collect(joining(", ", "[", "]")));
     }
     return joiner.toString();

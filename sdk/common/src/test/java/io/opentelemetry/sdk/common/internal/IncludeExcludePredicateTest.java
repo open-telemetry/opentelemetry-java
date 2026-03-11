@@ -21,11 +21,13 @@ class IncludeExcludePredicateTest {
   private static final Predicate<String> EXACT_INCLUDE =
       IncludeExcludePredicate.createExactMatching(singletonList("foo"), null);
   private static final Predicate<String> EXACT_EXCLUDE =
-      IncludeExcludePredicate.createExactMatching(Collections.emptyList(), singletonList("bar"));
+      IncludeExcludePredicate.createExactMatching(null, singletonList("bar"));
   private static final Predicate<String> EXACT_INCLUDE_AND_EXCLUDE =
       IncludeExcludePredicate.createExactMatching(singletonList("foo"), singletonList("bar"));
   private static final Predicate<String> EXACT_MULTI =
       IncludeExcludePredicate.createExactMatching(asList("foo", "fooo"), asList("bar", "barr"));
+  public static final Predicate<String> EXACT_INCLUDE_NONE =
+      IncludeExcludePredicate.createExactMatching(Collections.emptyList(), null);
 
   private static final Predicate<String> PATTERN_INCLUDE =
       IncludeExcludePredicate.createPatternMatching(singletonList("f?o"), null);
@@ -35,6 +37,8 @@ class IncludeExcludePredicateTest {
       IncludeExcludePredicate.createPatternMatching(singletonList("f?o"), singletonList("b?r"));
   private static final Predicate<String> PATTERN_MULTI =
       IncludeExcludePredicate.createPatternMatching(asList("f?o", "f?oo"), asList("b?r", "b?rr"));
+  public static final Predicate<String> PATTERN_INCLUDE_NONE =
+      IncludeExcludePredicate.createPatternMatching(Collections.emptyList(), null);
 
   @ParameterizedTest
   @MethodSource("testArgs")
@@ -71,6 +75,8 @@ class IncludeExcludePredicateTest {
         Arguments.of(EXACT_MULTI, "bar", false),
         Arguments.of(EXACT_MULTI, "barr", false),
         Arguments.of(EXACT_MULTI, "baz", false),
+        // include none
+        Arguments.of(EXACT_INCLUDE_NONE, "foo", false),
         // pattern matching
         // include only
         Arguments.of(PATTERN_INCLUDE, "foo", true),
@@ -100,7 +106,9 @@ class IncludeExcludePredicateTest {
         Arguments.of(PATTERN_MULTI, "bAr", false),
         Arguments.of(PATTERN_MULTI, "barr", false),
         Arguments.of(PATTERN_MULTI, "bArr", false),
-        Arguments.of(PATTERN_MULTI, "baz", false));
+        Arguments.of(PATTERN_MULTI, "baz", false),
+        // include none
+        Arguments.of(PATTERN_INCLUDE_NONE, "foo", false));
   }
 
   @ParameterizedTest

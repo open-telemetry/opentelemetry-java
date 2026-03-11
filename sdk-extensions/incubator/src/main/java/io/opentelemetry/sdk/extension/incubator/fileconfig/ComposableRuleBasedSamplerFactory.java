@@ -98,10 +98,15 @@ final class ComposableRuleBasedSamplerFactory
     if (attributePatternsModel == null) {
       return null;
     }
+    List<String> included = attributePatternsModel.getIncluded();
+    if (included != null && included.isEmpty()) {
+      // empty included should be treated as include everything by default.
+      included = null;
+    }
     return new AttributeMatcher(
         requireNonNull(attributePatternsModel.getKey(), "attribute_patterns key"),
         IncludeExcludePredicate.createPatternMatching(
-            attributePatternsModel.getIncluded(), attributePatternsModel.getExcluded()));
+            included, attributePatternsModel.getExcluded()));
   }
 
   // Visible for testing
