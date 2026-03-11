@@ -9,6 +9,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,7 +21,7 @@ class IncludeExcludePredicateTest {
   private static final Predicate<String> EXACT_INCLUDE =
       IncludeExcludePredicate.createExactMatching(singletonList("foo"), null);
   private static final Predicate<String> EXACT_EXCLUDE =
-      IncludeExcludePredicate.createExactMatching(null, singletonList("bar"));
+      IncludeExcludePredicate.createExactMatching(Collections.emptyList(), singletonList("bar"));
   private static final Predicate<String> EXACT_INCLUDE_AND_EXCLUDE =
       IncludeExcludePredicate.createExactMatching(singletonList("foo"), singletonList("bar"));
   private static final Predicate<String> EXACT_MULTI =
