@@ -52,7 +52,7 @@ public class RegisteredReader {
   }
 
   /**
-   * Get the time of the last collection for the reader, or -1 if the first collection.
+   * Get the time of the last collection for the reader, or {@code defaultEpochNanos} if not set.
    *
    * <p>Used to compute the {@link PointData#getStartEpochNanos()} for instruments aggregations with
    * {@link AggregationTemporality#DELTA} temporality.

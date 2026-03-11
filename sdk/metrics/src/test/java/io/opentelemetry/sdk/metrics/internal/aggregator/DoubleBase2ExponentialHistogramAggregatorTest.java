@@ -581,7 +581,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     DoubleBase2ExponentialHistogramAggregator aggregator =
         new DoubleBase2ExponentialHistogramAggregator(
             ExemplarReservoirFactory.noSamples(), 160, 20, /* recordMinMax= */ false, memoryMode);
-    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(0.5, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(1.0, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(12.0, Attributes.empty(), Context.current());

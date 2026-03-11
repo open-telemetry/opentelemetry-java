@@ -297,7 +297,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
             /* recordMinMax= */ false,
             ExemplarReservoirFactory.noSamples(),
             memoryMode);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(20, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(5, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(150, Attributes.empty(), Context.current());

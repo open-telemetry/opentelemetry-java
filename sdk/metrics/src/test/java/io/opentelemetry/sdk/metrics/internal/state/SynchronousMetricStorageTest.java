@@ -45,6 +45,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.DoubleSumAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -210,6 +211,63 @@ public class SynchronousMetricStorageTest {
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(35)
                                 .hasValue(8)));
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void recordAndCollect_CumulativeNewSeriesAfterFirstCollection(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?> storage =
+        DefaultSynchronousMetricStorage.create(
+            cumulativeReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT,
+            testClock,
+            /* enabled= */ true);
+
+    // Record for series A and collect at time 10
+    storage.recordDouble(3, Attributes.builder().put("series", "A").build(), Context.current());
+    long seriesACreationTime = testClock.now();
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(seriesACreationTime)
+                                .hasEpochNanos(10)
+                                .hasValue(3)
+                                .hasAttributes(Attributes.builder().put("series", "A").build())));
+    cumulativeReader.setLastCollectEpochNanos(10);
+
+    // Advance clock and record for both series A and a new series B
+    testClock.advance(Duration.ofSeconds(20));
+    storage.recordDouble(5, Attributes.builder().put("series", "A").build(), Context.current());
+    storage.recordDouble(7, Attributes.builder().put("series", "B").build(), Context.current());
+    long seriesBCreationTime = testClock.now();
+    // Series B's start time must be clock.now() at its first measurement, NOT instrument
+    // creation time or last collection time.
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 30))
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(seriesACreationTime)
+                                .hasEpochNanos(30)
+                                .hasValue(8)
+                                .hasAttributes(Attributes.builder().put("series", "A").build()),
+                        point ->
+                            point
+                                .hasStartEpochNanos(seriesBCreationTime)
+                                .hasEpochNanos(30)
+                                .hasValue(7)
+                                .hasAttributes(Attributes.builder().put("series", "B").build())));
   }
 
   @Test

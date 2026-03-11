@@ -176,6 +176,10 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
       }
     }
     // Get handle from pool if available, else create a new one.
+    // Note: pooled handles (used only for delta temporality) retain their original
+    // creationEpochNanos, but delta storage does not use the handle's creation epoch for the
+    // start epoch — it uses the reader's last collect time directly in doCollect(). So the stale
+    // creation epoch on a recycled handle does not affect correctness.
     AggregatorHandle<T> newHandle = maybeGetPooledAggregatorHandle();
     if (newHandle == null) {
       newHandle = createAggregatorHandle();
@@ -273,7 +277,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
         currentPoints = new HashMap<>();
       }
 
-      // Start time for synchronous delta instruments is the time of the last collection, or if no
+      // Start time for asynchronous delta instruments is the time of the last collection, or if no
       // collection has yet taken place, the time the instrument was created.
       long startEpochNanos =
           registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos);
@@ -387,10 +391,11 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
       // Asynchronous instruments manage their own state. If they stop reporting a measurement for a
       // collection, the series ends. We retain aggregator handles across collections to allow
       // series to report a consistent start time for their lifetime. While collecting, remove any
-      // series without measurements this collections.
+      // series without measurements this collection.
       // Start time for cumulative asynchronous instruments is:
-      // - The instrument creation time if no collection has yet taken place
-      // - Otherwise, the time of the last collection
+      // - The instrument creation time if the series first appeared during the first collection
+      //   cycle
+      // - Otherwise, the preceding collection interval's timestamp
       // This logic is handled in AggregatorHandle creation via #createAggregatorHandle()
       aggregatorHandles.forEach(
           (attributes, handle) -> {
@@ -400,7 +405,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
             }
             T value =
                 handle.aggregateThenMaybeReset(
-                    handle.getCreationTimeEpochNanos(), epochNanos, attributes, /* reset= */ true);
+                    handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ true);
             currentPoints.add(value);
           });
 

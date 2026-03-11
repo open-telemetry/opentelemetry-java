@@ -166,6 +166,10 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       }
     }
     // Get handle from pool if available, else create a new one.
+    // Note: pooled handles (used only for delta temporality) retain their original
+    // creationEpochNanos, but delta storage does not use the handle's creation time for the
+    // start epoch — it uses the reader's last collect time directly in collect(). So the stale
+    // creation time on a recycled handle does not affect correctness.
     AggregatorHandle<T> newHandle = maybeGetPooledAggregatorHandle();
     if (newHandle == null) {
       newHandle = aggregator.createHandle(clock.now());
@@ -458,7 +462,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             // measurement was recorded. I.e. the time the AggregatorHandle was created.
             T point =
                 handle.aggregateThenMaybeReset(
-                    handle.getCreationTimeEpochNanos(), epochNanos, attributes, /* reset= */ false);
+                    handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ false);
 
             if (point != null) {
               points.add(point);
