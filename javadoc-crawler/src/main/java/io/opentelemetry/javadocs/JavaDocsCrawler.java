@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -161,7 +162,7 @@ public final class JavaDocsCrawler {
     List<Artifact> updatedArtifacts = new ArrayList<>();
 
     for (Artifact artifact : artifacts) {
-      if (artifact.getVersion().compareTo(minVersion) < 0) {
+      if (compareVersions(artifact.getVersion(), minVersion) < 0) {
         logger.info(
             String.format(
                 "Skipping crawling %s due to version %s being less than minVersion %s",
@@ -207,6 +208,64 @@ public final class JavaDocsCrawler {
       Thread.sleep(THROTTLE_MS); // some light throttling
     }
     return updatedArtifacts;
+  }
+
+  static int compareVersions(String version, String otherVersion) {
+    SemanticVersion semanticVersion = SemanticVersion.parse(version);
+    SemanticVersion otherSemanticVersion = SemanticVersion.parse(otherVersion);
+    return semanticVersion.compareTo(otherSemanticVersion);
+  }
+
+  private static final class SemanticVersion implements Comparable<SemanticVersion> {
+    private static final Comparator<List<Integer>> CORE_VERSION_COMPARATOR =
+        (left, right) -> {
+          for (int i = 0; i < Math.max(left.size(), right.size()); i++) {
+            int leftPart = i < left.size() ? left.get(i) : 0;
+            int rightPart = i < right.size() ? right.get(i) : 0;
+            int result = Integer.compare(leftPart, rightPart);
+            if (result != 0) {
+              return result;
+            }
+          }
+          return 0;
+        };
+
+    private final List<Integer> coreVersionParts;
+    private final String qualifier;
+
+    private SemanticVersion(List<Integer> coreVersionParts, String qualifier) {
+      this.coreVersionParts = coreVersionParts;
+      this.qualifier = qualifier;
+    }
+
+    private static SemanticVersion parse(String version) {
+      String[] versionParts = version.split("-", 2);
+      List<Integer> coreVersionParts = new ArrayList<>();
+      for (String part : versionParts[0].split("\\.")) {
+        coreVersionParts.add(Integer.parseInt(part));
+      }
+      String qualifier = versionParts.length == 2 ? versionParts[1] : "";
+      return new SemanticVersion(coreVersionParts, qualifier);
+    }
+
+    @Override
+    public int compareTo(SemanticVersion other) {
+      int coreVersionResult =
+          CORE_VERSION_COMPARATOR.compare(coreVersionParts, other.coreVersionParts);
+      if (coreVersionResult != 0) {
+        return coreVersionResult;
+      }
+      if (qualifier.isEmpty() && other.qualifier.isEmpty()) {
+        return 0;
+      }
+      if (qualifier.isEmpty()) {
+        return 1;
+      }
+      if (other.qualifier.isEmpty()) {
+        return -1;
+      }
+      return qualifier.compareTo(other.qualifier);
+    }
   }
 
   private JavaDocsCrawler() {}
