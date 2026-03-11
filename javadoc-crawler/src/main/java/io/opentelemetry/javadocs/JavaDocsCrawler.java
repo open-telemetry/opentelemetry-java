@@ -33,11 +33,11 @@ public final class JavaDocsCrawler {
   // latest periodically to avoid crawling artifacts that stopped being published.
   private static final Map<String, String> GROUPS_AND_MIN_VERSION =
       Map.of(
-          "io.opentelemetry", "1.49.0",
-          "io.opentelemetry.instrumentation", "2.15.0",
-          "io.opentelemetry.contrib", "1.46.0",
-          "io.opentelemetry.semconv", "1.32.0",
-          "io.opentelemetry.proto", "1.3.2");
+          "io.opentelemetry", "1.60.1",
+          "io.opentelemetry.instrumentation", "2.25.0",
+          "io.opentelemetry.contrib", "1.54.0",
+          "io.opentelemetry.semconv", "1.40.0",
+          "io.opentelemetry.proto", "1.10.0");
 
   private static final String MAVEN_CENTRAL_BASE_URL =
       "https://search.maven.org/solrsearch/select?q=g:";
@@ -160,9 +160,10 @@ public final class JavaDocsCrawler {
       HttpClient client, String minVersion, List<Artifact> artifacts)
       throws IOException, InterruptedException {
     List<Artifact> updatedArtifacts = new ArrayList<>();
+    SemanticVersion minSemanticVersion = SemanticVersion.parse(minVersion);
 
     for (Artifact artifact : artifacts) {
-      if (compareVersions(artifact.getVersion(), minVersion) < 0) {
+      if (SemanticVersion.parse(artifact.getVersion()).compareTo(minSemanticVersion) < 0) {
         logger.info(
             String.format(
                 "Skipping crawling %s due to version %s being less than minVersion %s",
@@ -210,13 +211,7 @@ public final class JavaDocsCrawler {
     return updatedArtifacts;
   }
 
-  static int compareVersions(String version, String otherVersion) {
-    SemanticVersion semanticVersion = SemanticVersion.parse(version);
-    SemanticVersion otherSemanticVersion = SemanticVersion.parse(otherVersion);
-    return semanticVersion.compareTo(otherSemanticVersion);
-  }
-
-  private static final class SemanticVersion implements Comparable<SemanticVersion> {
+  static final class SemanticVersion implements Comparable<SemanticVersion> {
     private static final Comparator<List<Integer>> CORE_VERSION_COMPARATOR =
         (left, right) -> {
           for (int i = 0; i < Math.max(left.size(), right.size()); i++) {
@@ -238,7 +233,7 @@ public final class JavaDocsCrawler {
       this.qualifier = qualifier;
     }
 
-    private static SemanticVersion parse(String version) {
+    static SemanticVersion parse(String version) {
       String[] versionParts = version.split("-", 2);
       List<Integer> coreVersionParts = new ArrayList<>();
       for (String part : versionParts[0].split("\\.")) {
@@ -264,7 +259,53 @@ public final class JavaDocsCrawler {
       if (other.qualifier.isEmpty()) {
         return -1;
       }
-      return qualifier.compareTo(other.qualifier);
+      return compareQualifier(qualifier, other.qualifier);
+    }
+
+    private static int compareQualifier(String leftQualifier, String rightQualifier) {
+      String[] leftParts = leftQualifier.split("\\.");
+      String[] rightParts = rightQualifier.split("\\.");
+
+      for (int i = 0; i < Math.max(leftParts.length, rightParts.length); i++) {
+        if (i >= leftParts.length) {
+          return -1;
+        }
+        if (i >= rightParts.length) {
+          return 1;
+        }
+
+        String leftIdentifier = leftParts[i];
+        String rightIdentifier = rightParts[i];
+        if (leftIdentifier.equals(rightIdentifier)) {
+          continue;
+        }
+
+        boolean leftNumeric = isNumericIdentifier(leftIdentifier);
+        boolean rightNumeric = isNumericIdentifier(rightIdentifier);
+        if (leftNumeric && rightNumeric) {
+          if (leftIdentifier.length() != rightIdentifier.length()) {
+            return Integer.compare(leftIdentifier.length(), rightIdentifier.length());
+          }
+          return leftIdentifier.compareTo(rightIdentifier);
+        }
+        if (leftNumeric != rightNumeric) {
+          return leftNumeric ? -1 : 1;
+        }
+        return leftIdentifier.compareTo(rightIdentifier);
+      }
+      return 0;
+    }
+
+    private static boolean isNumericIdentifier(String identifier) {
+      if (identifier.isEmpty()) {
+        return false;
+      }
+      for (int i = 0; i < identifier.length(); i++) {
+        if (!Character.isDigit(identifier.charAt(i))) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 

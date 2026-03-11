@@ -8,7 +8,6 @@ package io.opentelemetry.javadocs;
 import static io.opentelemetry.javadocs.JavaDocsCrawler.JAVA_DOC_DOWNLOADED_TEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -96,9 +95,12 @@ class JavaDocsCrawlerTest {
 
   @Test
   void compareVersionsUsesSemanticOrdering() {
-    assertThat(JavaDocsCrawler.compareVersions("1.9.0", "1.49.0")).isLessThan(0);
-    assertThat(JavaDocsCrawler.compareVersions("1.60.0", "1.49.0")).isGreaterThan(0);
-    assertThat(JavaDocsCrawler.compareVersions("1.60.0-alpha", "1.60.0")).isLessThan(0);
+    assertThat(compareVersions("1.9.0", "1.49.0")).isLessThan(0);
+    assertThat(compareVersions("1.49.0", "1.49.0")).isZero();
+    assertThat(compareVersions("1.60.0", "1.49.0")).isGreaterThan(0);
+    assertThat(compareVersions("1.60.0-alpha", "1.60.0")).isLessThan(0);
+    assertThat(compareVersions("1.0.0-rc.2", "1.0.0-rc.10")).isLessThan(0);
+    assertThat(compareVersions("1.0.0-rc.10", "1.0.0")).isLessThan(0);
   }
 
   @Test
@@ -109,7 +111,12 @@ class JavaDocsCrawlerTest {
     List<Artifact> updated =
         JavaDocsCrawler.crawlJavaDocs(mockClient, "1.49.0", List.of(oldArtifact));
 
-    verify(mockClient, never()).send(argThat(request -> request != null), any());
+    verify(mockClient, never()).send(any(HttpRequest.class), any());
     assertThat(updated).isEmpty();
+  }
+
+  private static int compareVersions(String left, String right) {
+    return JavaDocsCrawler.SemanticVersion.parse(left)
+        .compareTo(JavaDocsCrawler.SemanticVersion.parse(right));
   }
 }
