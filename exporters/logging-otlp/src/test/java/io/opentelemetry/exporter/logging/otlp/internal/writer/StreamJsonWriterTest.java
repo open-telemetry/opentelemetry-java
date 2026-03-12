@@ -42,7 +42,9 @@ class StreamJsonWriterTest {
 
     writer.write(simpleObjectMarshaler());
 
-    assertThat(new String(baos.toByteArray(), StandardCharsets.UTF_8))
+    assertThat(
+            new String(baos.toByteArray(), StandardCharsets.UTF_8)
+                .replace("\n", System.lineSeparator()))
         .isEqualTo("{\n  \"key\" : \"value\"\n}\n");
   }
 

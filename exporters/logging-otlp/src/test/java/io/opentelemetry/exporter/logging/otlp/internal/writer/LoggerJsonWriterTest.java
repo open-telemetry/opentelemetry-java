@@ -35,7 +35,8 @@ class LoggerJsonWriterTest {
 
     writer.write(simpleObjectMarshaler());
 
-    verify(logger).log(Level.INFO, "{\n  \"key\" : \"value\"\n}");
+    verify(logger)
+        .log(Level.INFO, "{\n  \"key\" : \"value\"\n}".replaceAll("\n", System.lineSeparator()));
   }
 
   @Test
