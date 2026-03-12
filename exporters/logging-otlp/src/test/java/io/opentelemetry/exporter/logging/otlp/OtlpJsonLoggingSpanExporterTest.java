@@ -8,13 +8,10 @@ package io.opentelemetry.exporter.logging.otlp;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
-import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporterBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -47,27 +44,6 @@ class OtlpJsonLoggingSpanExporterTest {
     String expectedJson = testDataExporter.getExpectedJson(false);
     JSONAssert.assertEquals("Got \n" + message, expectedJson, message, /* strict= */ false);
     assertThat(message).doesNotContain("\n");
-  }
-
-  @Test
-  void logPrettyPrint() throws Exception {
-    OtlpStdoutSpanExporter delegate =
-        new OtlpStdoutSpanExporterBuilder(
-                Logger.getLogger(OtlpJsonLoggingSpanExporter.class.getName()))
-            .setWrapperJsonObject(false)
-            .setPrettyPrint(true)
-            .build();
-    SpanExporter prettyExporter = new OtlpJsonLoggingSpanExporter(delegate);
-
-    testDataExporter.export(prettyExporter);
-
-    assertThat(logs.getEvents())
-        .hasSize(1)
-        .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
-    String message = logs.getEvents().get(0).getMessage();
-    String expectedJson = testDataExporter.getExpectedJson(false);
-    JSONAssert.assertEquals("Got \n" + message, expectedJson, message, /* strict= */ false);
-    assertThat(message).contains("\n");
   }
 
   @Test

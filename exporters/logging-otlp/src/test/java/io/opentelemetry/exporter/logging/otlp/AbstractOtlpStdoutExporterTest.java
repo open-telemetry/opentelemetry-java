@@ -79,7 +79,10 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   }
 
   protected abstract T createExporter(
-      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject);
+      @Nullable OutputStream outputStream,
+      MemoryMode memoryMode,
+      boolean wrapperJsonObject,
+      boolean prettyPrint);
 
   protected abstract T createDefaultExporter();
 
@@ -137,11 +140,17 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     private final MemoryMode memoryMode;
     private final boolean wrapperJsonObject;
     private final OutputType outputType;
+    private final boolean prettyPrint;
 
-    public TestCase(OutputType outputType, MemoryMode memoryMode, boolean wrapperJsonObject) {
+    public TestCase(
+        OutputType outputType,
+        MemoryMode memoryMode,
+        boolean wrapperJsonObject,
+        boolean prettyPrint) {
       this.outputType = outputType;
       this.memoryMode = memoryMode;
       this.wrapperJsonObject = wrapperJsonObject;
+      this.prettyPrint = prettyPrint;
     }
 
     public OutputType getOutputType() {
@@ -154,6 +163,10 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
     public MemoryMode getMemoryMode() {
       return memoryMode;
+    }
+
+    public boolean isPrettyPrint() {
+      return prettyPrint;
     }
   }
 
@@ -186,20 +199,42 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
             MemoryMode.REUSABLE_DATA,
             /* wrapperJsonObject= */ false),
         testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ true),
-        testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ false))
+        testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ false),
+        testCase(
+            OutputType.SYSTEM_OUT,
+            MemoryMode.IMMUTABLE_DATA,
+            /* wrapperJsonObject= */ false,
+            /* prettyPrint= */ true),
+        testCase(
+            OutputType.FILE,
+            MemoryMode.IMMUTABLE_DATA,
+            /* wrapperJsonObject= */ false,
+            /* prettyPrint= */ true),
+        testCase(
+            OutputType.LOGGER,
+            MemoryMode.IMMUTABLE_DATA,
+            /* wrapperJsonObject= */ false,
+            /* prettyPrint= */ true))
         .stream();
   }
 
   private static Arguments testCase(
       OutputType type, MemoryMode memoryMode, boolean wrapperJsonObject) {
+    return testCase(type, memoryMode, wrapperJsonObject, /* prettyPrint= */ false);
+  }
+
+  private static Arguments testCase(
+      OutputType type, MemoryMode memoryMode, boolean wrapperJsonObject, boolean prettyPrint) {
     return Arguments.of(
         "output="
             + type
             + ", wrapperJsonObject="
             + wrapperJsonObject
             + ", memoryMode="
-            + memoryMode,
-        new TestCase(type, memoryMode, wrapperJsonObject));
+            + memoryMode
+            + ", prettyPrint="
+            + prettyPrint,
+        new TestCase(type, memoryMode, wrapperJsonObject, prettyPrint));
   }
 
   @SuppressWarnings("SystemOut")
@@ -229,7 +264,11 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
     Supplier<T> exporter =
         () ->
-            createExporter(outputStream, testCase.getMemoryMode(), testCase.isWrapperJsonObject());
+            createExporter(
+                outputStream,
+                testCase.getMemoryMode(),
+                testCase.isWrapperJsonObject(),
+                testCase.isPrettyPrint());
 
     if (testCase.getMemoryMode() == MemoryMode.REUSABLE_DATA && !testCase.isWrapperJsonObject()) {
       assertThatExceptionOfType(IllegalArgumentException.class)
@@ -244,12 +283,15 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     String expectedJson = testDataExporter.getExpectedJson(testCase.isWrapperJsonObject());
     JSONAssert.assertEquals("Got \n" + output, expectedJson, output, false);
 
-    if (testCase.isWrapperJsonObject()) {
+    if (testCase.isPrettyPrint()) {
+      assertThat(output).contains("\n  ");
+    } else if (testCase.isWrapperJsonObject()) {
       assertThat(output).doesNotContain("\n");
     }
 
-    if (file == null) {
+    if (file == null && !testCase.isPrettyPrint()) {
       // no need to test again for file - and it's not working with files
+      // skip double output for pretty print since multi-line output can't be split by \n
       assertDoubleOutput(exporter, expectedJson, outputStream);
     }
   }
