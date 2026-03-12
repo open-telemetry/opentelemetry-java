@@ -18,6 +18,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
+import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
@@ -54,6 +55,8 @@ class JaegerRemoteSamplerGrpcNettyTest {
   private static void addGrpcError(GrpcStatusCode code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code.getValue(), message));
   }
+
+  @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(JaegerRemoteSampler.class, Level.TRACE);
@@ -106,8 +109,11 @@ class JaegerRemoteSamplerGrpcNettyTest {
     responses.clear();
   }
 
-  private static ManagedChannel managedChannel() {
-    return ManagedChannelBuilder.forTarget(server.httpUri().getAuthority()).usePlaintext().build();
+  private ManagedChannel managedChannel() {
+    ManagedChannel channel =
+        ManagedChannelBuilder.forTarget(server.httpUri().getAuthority()).usePlaintext().build();
+    cleanup.addCloseable(channel::shutdownNow);
+    return channel;
   }
 
   @Test
@@ -148,9 +154,11 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
   @Test
   void initialSampler() {
+    ManagedChannel channel = ManagedChannelBuilder.forTarget("example.com").build();
+    cleanup.addCloseable(channel::shutdownNow);
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setChannel(ManagedChannelBuilder.forTarget("example.com").build())
+            .setChannel(channel)
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build()) {
