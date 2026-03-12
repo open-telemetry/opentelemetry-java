@@ -64,11 +64,20 @@ val buildDirectory = layout.buildDirectory.asFile.get()
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {
   src(configurationRepoZip)
-  dest("$buildDirectory/configuration/opentelemetry-configuration.zip")
+  // The version is encoded in the filename so that a configurationTag change results in a new
+  // path that doesn't yet exist, triggering a fresh download. On subsequent builds with the same
+  // tag the file already exists and overwrite(false) skips the network request. Note: the
+  // de.undercouch Download task always reports itself as not up-to-date, so overwrite(false) is
+  // the intended mechanism for avoiding redundant downloads.
+  //
+  // The zip is stored in tmp/ so it is outside the Sync task's output directory (configuration/).
+  dest("$buildDirectory/tmp/opentelemetry-configuration-v$configurationTag.zip")
   overwrite(false)
 }
 
-val unzipConfigurationSchema by tasks.registering(Copy::class) {
+val unzipConfigurationSchema by tasks.registering(Sync::class) {
+  // Sync (not Copy) removes stale files from the destination when the source changes, ensuring
+  // files deleted or renamed between schema versions don't linger in the build dir.
   dependsOn(downloadConfigurationSchema)
 
   from(zipTree(downloadConfigurationSchema.get().dest))
@@ -78,6 +87,7 @@ val unzipConfigurationSchema by tasks.registering(Copy::class) {
     path = pathParts.subList(1, pathParts.size).joinToString("/")
   })
   into("$buildDirectory/configuration/")
+  includeEmptyDirs = false
 }
 
 jsonSchema2Pojo {

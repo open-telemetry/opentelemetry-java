@@ -16,7 +16,7 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.5.0"
-val armeriaVersion = "1.36.0"
+val armeriaVersion = "1.37.0"
 val junitVersion = "5.14.3"
 val okhttpVersion = "5.3.2"
 
@@ -30,7 +30,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:33.5.0-jre",
   "com.google.protobuf:protobuf-bom:4.34.0",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
-  "com.squareup.okio:okio-bom:3.16.4", // applies to transitive dependencies of okhttp
+  "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.79.0",
   "io.netty:netty-bom:4.2.10.Final",
   "io.zipkin.brave:brave-bom:6.3.0",
@@ -82,7 +82,7 @@ val DEPENDENCIES = listOf(
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.54.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.40.0-alpha",
-  "io.opentelemetry.proto:opentelemetry-proto:1.9.0-alpha",
+  "io.opentelemetry.proto:opentelemetry-proto:1.10.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
