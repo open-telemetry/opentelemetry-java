@@ -32,6 +32,10 @@ public final class OtlpStdoutLogRecordExporterComponentProvider implements Compo
   public LogRecordExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
+    Boolean prettyPrint = config.getBoolean("pretty_print");
+    if (prettyPrint != null) {
+      builder.setPrettyPrint(prettyPrint);
+    }
     return builder.build();
   }
 }

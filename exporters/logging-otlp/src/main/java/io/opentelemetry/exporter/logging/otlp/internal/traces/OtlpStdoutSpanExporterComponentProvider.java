@@ -32,6 +32,10 @@ public final class OtlpStdoutSpanExporterComponentProvider implements ComponentP
   public SpanExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutSpanExporterBuilder builder = OtlpStdoutSpanExporter.builder();
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
+    Boolean prettyPrint = config.getBoolean("pretty_print");
+    if (prettyPrint != null) {
+      builder.setPrettyPrint(prettyPrint);
+    }
     return builder.build();
   }
 }

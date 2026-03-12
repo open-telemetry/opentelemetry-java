@@ -367,6 +367,13 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     assertThat(exporterFromComponentProvider(properties))
         .extracting("memoryMode")
         .isEqualTo(MemoryMode.REUSABLE_DATA);
+
+    DeclarativeConfigProperties prettyPrintProperties = spy(DeclarativeConfigProperties.empty());
+    when(prettyPrintProperties.getBoolean("pretty_print")).thenReturn(true);
+    assertThat(exporterFromComponentProvider(prettyPrintProperties))
+        .extracting("jsonWriter")
+        .extracting("prettyPrint")
+        .isEqualTo(true);
   }
 
   @SuppressWarnings("unchecked")
