@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.crac.Context;
 import org.crac.Resource;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -84,7 +85,7 @@ class CracLifecycleIntegrationTest {
    * exporters and processors. Replace the TODO below with the real SDK API.
    */
   @Test
-  // @Disabled("Expected to fail until #6756 adds checkpoint/restore-safe SDK lifecycle")
+  @Disabled("Expected to fail until #6756 adds checkpoint/restore-safe SDK lifecycle")
   void spansExportedAfterRestore_properCracIntegration() throws Exception {
     MockCracContext cracContext = new MockCracContext();
     InMemorySpanExporter exporter = new InMemorySpanExporter();
