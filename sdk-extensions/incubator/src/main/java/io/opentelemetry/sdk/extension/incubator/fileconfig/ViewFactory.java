@@ -34,6 +34,11 @@ final class ViewFactory implements Factory<ViewStreamModel, View> {
     IncludeExcludeModel attributeKeys = model.getAttributeKeys();
     if (attributeKeys != null) {
       List<String> included = attributeKeys.getIncluded();
+      // an empty list is provided when field is omitted in yaml, so we need to treat it as null to
+      // avoid creating a filter that will include nothing
+      if (included != null && included.isEmpty()) {
+        included = null;
+      }
       List<String> excluded = attributeKeys.getExcluded();
       if (included != null || excluded != null) {
         builder.setAttributeFilter(IncludeExcludePredicate.createExactMatching(included, excluded));
