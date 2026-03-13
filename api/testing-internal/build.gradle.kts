@@ -15,7 +15,4 @@ dependencies {
   implementation("org.mockito:mockito-core")
 }
 
-// Skip OWASP dependencyCheck task on test module
-dependencyCheck {
-  skip = true
-}
+
