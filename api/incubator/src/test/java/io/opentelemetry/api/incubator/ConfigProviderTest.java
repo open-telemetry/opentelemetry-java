@@ -6,7 +6,9 @@
 package io.opentelemetry.api.incubator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
+import io.opentelemetry.api.incubator.config.ConfigChangeRegistration;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 
@@ -24,5 +26,9 @@ class ConfigProviderTest {
     assertThat(configProvider.getInstrumentationConfig()).isNotNull();
     assertThat(configProvider.getInstrumentationConfig("servlet")).isNotNull();
     assertThat(configProvider.getGeneralInstrumentationConfig()).isNotNull();
+    ConfigChangeRegistration listenerRegistration =
+        configProvider.addConfigChangeListener(
+            ".instrumentation/development.java.servlet", (path, newConfig) -> {});
+    assertThatCode(listenerRegistration::close).doesNotThrowAnyException();
   }
 }
