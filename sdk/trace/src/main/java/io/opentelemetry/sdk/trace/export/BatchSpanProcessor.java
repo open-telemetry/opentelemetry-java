@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -46,6 +47,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       ComponentId.generateLazy("batching_span_processor");
 
   private static final Logger logger = Logger.getLogger(BatchSpanProcessor.class.getName());
+  private static final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
 
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
@@ -212,6 +214,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       spanProcessorInstrumentation.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(span)) {
         spanProcessorInstrumentation.dropSpans(1);
+        throttlingLogger.log(
+            Level.WARNING,
+            "BatchSpanProcessor dropped a span because the queue is full (maxQueueSize="
+                + maxQueueSize
+                + ")");
       } else {
         if (queueSize.incrementAndGet() >= spansNeeded.get()) {
           signal.offer(true);
