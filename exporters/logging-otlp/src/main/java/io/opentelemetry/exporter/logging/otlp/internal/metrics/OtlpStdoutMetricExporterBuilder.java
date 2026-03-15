@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.OutputStream;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Builder for {@link OtlpJsonLoggingMetricExporter}.
@@ -39,13 +40,14 @@ public final class OtlpStdoutMetricExporterBuilder {
       DefaultAggregationSelector.getDefault();
 
   private final Logger logger;
-  private JsonWriter jsonWriter;
+  @Nullable private OutputStream outputStream;
+  @Nullable private Logger outputLogger;
   private boolean wrapperJsonObject = true;
   private MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;
+  private boolean prettyPrint;
 
   public OtlpStdoutMetricExporterBuilder(Logger logger) {
     this.logger = logger;
-    this.jsonWriter = new LoggerJsonWriter(logger, TYPE);
   }
 
   /**
@@ -70,6 +72,12 @@ public final class OtlpStdoutMetricExporterBuilder {
     return this;
   }
 
+  /** Sets the exporter to use pretty-printed JSON output. */
+  public OtlpStdoutMetricExporterBuilder setPrettyPrint(boolean prettyPrint) {
+    this.prettyPrint = prettyPrint;
+    return this;
+  }
+
   /**
    * Sets the exporter to use the specified output stream.
    *
@@ -80,14 +88,16 @@ public final class OtlpStdoutMetricExporterBuilder {
    */
   public OtlpStdoutMetricExporterBuilder setOutput(OutputStream outputStream) {
     requireNonNull(outputStream, "outputStream");
-    this.jsonWriter = new StreamJsonWriter(outputStream, TYPE);
+    this.outputStream = outputStream;
+    this.outputLogger = null;
     return this;
   }
 
   /** Sets the exporter to use the specified logger. */
   public OtlpStdoutMetricExporterBuilder setOutput(Logger logger) {
     requireNonNull(logger, "logger");
-    this.jsonWriter = new LoggerJsonWriter(logger, TYPE);
+    this.outputLogger = logger;
+    this.outputStream = null;
     return this;
   }
 
@@ -130,6 +140,13 @@ public final class OtlpStdoutMetricExporterBuilder {
     if (memoryMode == MemoryMode.REUSABLE_DATA && !wrapperJsonObject) {
       throw new IllegalArgumentException(
           "Reusable data mode is not supported without wrapperJsonObject");
+    }
+    JsonWriter jsonWriter;
+    if (outputStream != null) {
+      jsonWriter = new StreamJsonWriter(outputStream, TYPE, prettyPrint);
+    } else {
+      Logger writerLogger = outputLogger != null ? outputLogger : this.logger;
+      jsonWriter = new LoggerJsonWriter(writerLogger, TYPE, prettyPrint);
     }
     return new OtlpStdoutMetricExporter(
         logger,

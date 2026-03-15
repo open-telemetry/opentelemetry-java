@@ -33,11 +33,15 @@ class OtlpStdoutLogRecordExporterTest
 
   @Override
   protected OtlpStdoutLogRecordExporter createExporter(
-      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject) {
+      @Nullable OutputStream outputStream,
+      MemoryMode memoryMode,
+      boolean wrapperJsonObject,
+      boolean prettyPrint) {
     OtlpStdoutLogRecordExporterBuilder builder =
         OtlpStdoutLogRecordExporter.builder()
             .setMemoryMode(memoryMode)
-            .setWrapperJsonObject(wrapperJsonObject);
+            .setWrapperJsonObject(wrapperJsonObject)
+            .setPrettyPrint(prettyPrint);
     if (outputStream != null) {
       builder.setOutput(outputStream);
     } else {
