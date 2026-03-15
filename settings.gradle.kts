@@ -1,6 +1,6 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "9.3.2"
+    id("com.gradleup.shadow") version "9.4.0"
     id("com.gradle.develocity") version "4.3.2"
     id("de.undercouch.download") version "5.7.0"
     id("org.jsonschema2pojo") version "1.3.3"
