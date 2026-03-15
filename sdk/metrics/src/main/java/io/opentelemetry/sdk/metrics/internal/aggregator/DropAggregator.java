@@ -54,7 +54,7 @@ public final class DropAggregator implements Aggregator<PointData> {
 
   private static final AggregatorHandle<PointData> HANDLE =
       new AggregatorHandle<PointData>(
-          ExemplarReservoirFactory.noSamples(), /* isDoubleType= */ true) {
+          0, ExemplarReservoirFactory.noSamples(), /* isDoubleType= */ true) {
         @Override
         protected PointData doAggregateThenMaybeResetDoubles(
             long startEpochNanos,
@@ -75,7 +75,7 @@ public final class DropAggregator implements Aggregator<PointData> {
   private DropAggregator() {}
 
   @Override
-  public AggregatorHandle<PointData> createHandle() {
+  public AggregatorHandle<PointData> createHandle(long creationEpochNanos) {
     return HANDLE;
   }
 
