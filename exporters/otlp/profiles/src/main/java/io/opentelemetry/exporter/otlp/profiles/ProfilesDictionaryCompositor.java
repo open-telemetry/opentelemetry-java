@@ -11,12 +11,12 @@ import io.opentelemetry.exporter.otlp.internal.data.ImmutableKeyValueAndUnitData
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLinkData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLocationData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableMappingData;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileDictionaryData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfilesDictionaryData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableStackData;
 import java.util.Collections;
 
 /**
- * This class allows for the assembly of the reference tables which form a ProfileDictionaryData.
+ * This class allows for the assembly of the reference tables which form a ProfilesDictionaryData.
  *
  * <p>It's effectively a builder, though without the fluent API. Instead, mutation methods return
  * the index of the offered element, this information being required to construct any element that
@@ -27,7 +27,7 @@ import java.util.Collections;
  *
  * <p>This class is not threadsafe and must be externally synchronized.
  */
-public class ProfileDictionaryCompositor {
+public class ProfilesDictionaryCompositor {
 
   // This implementation relies on the *Data interface impls having equals/hashCode that works.
   // The provided AutoValue_* ones do, but it's potentially fragile if used externally.
@@ -40,7 +40,7 @@ public class ProfileDictionaryCompositor {
   private final DictionaryTable<KeyValueAndUnitData> attributeTable = new DictionaryTable<>();
   private final DictionaryTable<StackData> stackTable = new DictionaryTable<>();
 
-  public ProfileDictionaryCompositor() {
+  public ProfilesDictionaryCompositor() {
 
     // The [0] element of each table should be a 'null' element, such that a 0 value pointer can be
     // used to indicate null / not set, in preference to requiring an 'optional' modifier on the
@@ -68,8 +68,8 @@ public class ProfileDictionaryCompositor {
    *
    * @return a ProfileDictionaryData with the contents of the tables.
    */
-  public ProfileDictionaryData getProfileDictionaryData() {
-    return ImmutableProfileDictionaryData.create(
+  public ProfilesDictionaryData getProfileDictionaryData() {
+    return ImmutableProfilesDictionaryData.create(
         mappingTable.getTable(),
         locationTable.getTable(),
         functionTable.getTable(),

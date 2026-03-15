@@ -35,7 +35,7 @@ public class SampleCompositionValue {
    *
    * <p>Note that, whilst not enforced by the API, it is required that all observations in a
    * collection share the same 'shape'. That is, they have either a value without timestamp, a
-   * timestamp without value, or both timestamp and value. Thus each array (values, timestamps) in
+   * timestamp without value, or both timestamp and value. Thus, each array (values, timestamps) in
    * the collection is either zero length, or the same length as the other.
    *
    * @param value the observed data point.

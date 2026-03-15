@@ -12,7 +12,7 @@ import io.opentelemetry.proto.profiles.v1development.internal.ProfilesDictionary
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-final class ProfileDictionaryMarshaler extends MarshalerWithSize {
+final class ProfilesDictionaryMarshaler extends MarshalerWithSize {
 
   private final MappingMarshaler[] mappingTableMarshalers;
   private final LocationMarshaler[] locationTableMarshalers;
@@ -22,29 +22,29 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
   private final KeyValueAndUnitMarshaler[] attributeTableMarshalers;
   private final StackMarshaler[] stackTableMarshalers;
 
-  static ProfileDictionaryMarshaler create(ProfileDictionaryData profileDictionaryData) {
+  static ProfilesDictionaryMarshaler create(ProfilesDictionaryData profilesDictionaryData) {
 
     MappingMarshaler[] mappingMarshalers =
-        MappingMarshaler.createRepeated(profileDictionaryData.getMappingTable());
+        MappingMarshaler.createRepeated(profilesDictionaryData.getMappingTable());
     LocationMarshaler[] locationMarshalers =
-        LocationMarshaler.createRepeated(profileDictionaryData.getLocationTable());
+        LocationMarshaler.createRepeated(profilesDictionaryData.getLocationTable());
     FunctionMarshaler[] functionMarshalers =
-        FunctionMarshaler.createRepeated(profileDictionaryData.getFunctionTable());
+        FunctionMarshaler.createRepeated(profilesDictionaryData.getFunctionTable());
     LinkMarshaler[] linkMarshalers =
-        LinkMarshaler.createRepeated(profileDictionaryData.getLinkTable());
+        LinkMarshaler.createRepeated(profilesDictionaryData.getLinkTable());
 
-    byte[][] convertedStrings = new byte[profileDictionaryData.getStringTable().size()][];
-    for (int i = 0; i < profileDictionaryData.getStringTable().size(); i++) {
+    byte[][] convertedStrings = new byte[profilesDictionaryData.getStringTable().size()][];
+    for (int i = 0; i < profilesDictionaryData.getStringTable().size(); i++) {
       convertedStrings[i] =
-          profileDictionaryData.getStringTable().get(i).getBytes(StandardCharsets.UTF_8);
+          profilesDictionaryData.getStringTable().get(i).getBytes(StandardCharsets.UTF_8);
     }
 
     KeyValueAndUnitMarshaler[] attributeTableMarshalers =
-        KeyValueAndUnitMarshaler.createRepeated(profileDictionaryData.getAttributeTable());
+        KeyValueAndUnitMarshaler.createRepeated(profilesDictionaryData.getAttributeTable());
     StackMarshaler[] stackTableMarshalers =
-        StackMarshaler.createRepeated(profileDictionaryData.getStackTable());
+        StackMarshaler.createRepeated(profilesDictionaryData.getStackTable());
 
-    return new ProfileDictionaryMarshaler(
+    return new ProfilesDictionaryMarshaler(
         mappingMarshalers,
         locationMarshalers,
         functionMarshalers,
@@ -54,7 +54,7 @@ final class ProfileDictionaryMarshaler extends MarshalerWithSize {
         stackTableMarshalers);
   }
 
-  private ProfileDictionaryMarshaler(
+  private ProfilesDictionaryMarshaler(
       MappingMarshaler[] mappingTableMarshalers,
       LocationMarshaler[] locationTableMarshalers,
       FunctionMarshaler[] functionTableMarshalers,
