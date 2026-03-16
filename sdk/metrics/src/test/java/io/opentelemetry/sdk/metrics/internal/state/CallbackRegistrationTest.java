@@ -227,7 +227,7 @@ class CallbackRegistrationTest {
 
     // Simulate invocation on a thread with null context class loader (like DaemonThreadFactory)
     Thread.currentThread().setContextClassLoader(null);
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     // Callback should have seen the registration-time classloader
     assertThat(observedClassLoader.get()).isSameAs(registrationClassLoader);
@@ -255,7 +255,7 @@ class CallbackRegistrationTest {
 
     // Simulate invocation on a thread with null context class loader
     Thread.currentThread().setContextClassLoader(null);
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     // Context classloader should still be restored even after exception
     assertThat(Thread.currentThread().getContextClassLoader()).isNull();
