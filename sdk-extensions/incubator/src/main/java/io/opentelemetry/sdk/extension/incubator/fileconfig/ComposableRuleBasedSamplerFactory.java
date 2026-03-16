@@ -53,14 +53,12 @@ final class ComposableRuleBasedSamplerFactory
           rule -> {
             AttributeMatcher valueMatcher = attributeValuesMatcher(rule.getAttributeValues());
             AttributeMatcher patternMatcher = attributePatternsMatcher(rule.getAttributePatterns());
-            // empty list is provided when field is omitted, but should be treated as null
-            // as empty include list will exclude all
+            // TODO: should be null when omitted but is empty
             Set<ExperimentalSpanParent> matchingParents =
                 rule.getParent() != null && !rule.getParent().isEmpty()
                     ? new HashSet<>(rule.getParent())
                     : null;
-            // empty list is provided when field is omitted, but should be treated as null
-            // as empty include list will exclude all
+            // TODO: should be null when omitted but is empty
             Set<SpanKind> matchingSpanKinds =
                 rule.getSpanKinds() != null && !rule.getSpanKinds().isEmpty()
                     ? rule.getSpanKinds().stream()
