@@ -131,19 +131,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
   abstract void doRecordDouble(double value, Attributes attributes, Context context);
 
   @Override
-  public void remove(Attributes attributes, Context context) {
-    if (!enabled) {
-      return;
-    }
-    AggregatorHolder<T> aggregatorHolder = getHolderForRecord();
-    try {
-      aggregatorHolder.aggregatorHandles.remove(attributes);
-    } finally {
-      releaseHolderForRecord(aggregatorHolder);
-    }
-  }
-
-  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
@@ -245,6 +232,19 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       try {
         getAggregatorHandle(holderForRecord.aggregatorHandles, attributes, context)
             .recordDouble(value, attributes, context);
+      } finally {
+        releaseHolderForRecord(holderForRecord);
+      }
+    }
+
+    @Override
+    public void remove(Attributes attributes, Context context) {
+      if (!enabled) {
+        return;
+      }
+      AggregatorHolder<T> holderForRecord = getHolderForRecord();
+      try {
+        holderForRecord.aggregatorHandles.remove(attributes);
       } finally {
         releaseHolderForRecord(holderForRecord);
       }
@@ -445,6 +445,14 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     void doRecordDouble(double value, Attributes attributes, Context context) {
       getAggregatorHandle(aggregatorHandles, attributes, context)
           .recordDouble(value, attributes, context);
+    }
+
+    @Override
+    public void remove(Attributes attributes, Context context) {
+      if (!enabled) {
+        return;
+      }
+      aggregatorHandles.remove(attributes);
     }
 
     @Nullable

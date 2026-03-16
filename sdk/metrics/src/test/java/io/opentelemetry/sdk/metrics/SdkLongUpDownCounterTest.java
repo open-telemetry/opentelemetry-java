@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
-import java.util.stream.IntStream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -53,11 +52,11 @@ class SdkLongUpDownCounterTest {
   }
 
   @Test
-  void collectMetrics_Remove() {
+  void collectMetrics_finish() {
     LongUpDownCounter counter = sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     counter.add(1, attrs);
-    counter.remove(attrs);
+    counter.finish(attrs);
     Assertions.assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 

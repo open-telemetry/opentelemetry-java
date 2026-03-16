@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.stream.IntStream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +65,7 @@ class SdkDoubleGaugeTest {
   }
 
   @Test
-  void observable_RemoveCallback() {
+  void observable_finishCallback() {
     ObservableDoubleGauge gauge =
         sdkMeter.gaugeBuilder("testGauge").buildWithCallback(measurement -> measurement.record(10));
 
@@ -99,12 +98,12 @@ class SdkDoubleGaugeTest {
   }
 
   @Test
-  void collectMetrics_Remove() {
+  void collectMetrics_finish() {
     DoubleGauge gauge = sdkMeter.gaugeBuilder("testGauge").build();
     assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     gauge.set(1, attrs);
-    gauge.remove(attrs);
+    gauge.finish(attrs);
     Assertions.assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
   }
 

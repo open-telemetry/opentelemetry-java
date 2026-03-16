@@ -56,11 +56,11 @@ class SdkLongCounterTest {
   }
 
   @Test
-  void collectMetrics_Remove() {
+  void collectMetrics_finish() {
     LongCounter counter = sdkMeter.counterBuilder("Counter").build();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     counter.add(1, attrs);
-    counter.remove(attrs);
+    counter.finish(attrs);
     assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 

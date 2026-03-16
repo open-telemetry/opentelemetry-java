@@ -56,21 +56,21 @@ public interface DoubleGauge {
   void set(double value, Attributes attributes, Context context);
 
   /**
-   * Remove the instrument.
+   * Finish the instrument record.
    *
    * @param attributes A set of attributes to identify the instrument.
    * @since 1.56.0
    */
-  default void remove(Attributes attributes) {
-    remove(attributes, Context.current());
+  default void finish(Attributes attributes) {
+    finish(attributes, Context.current());
   }
 
   /**
-   * Remove the instrument.
+   * Finish the instrument record.
    *
    * @param attributes A set of attributes to identify the instrument.
    * @param context The explicit context to associate with this measurement.
    * @since 1.56.0
    */
-  default void remove(Attributes attributes, Context context) {}
+  default void finish(Attributes attributes, Context context) {}
 }

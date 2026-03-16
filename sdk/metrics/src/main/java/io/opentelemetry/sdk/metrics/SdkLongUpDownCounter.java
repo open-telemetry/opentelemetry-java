@@ -49,7 +49,7 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
   }
 
   @Override
-  public void remove(Attributes attributes, Context context) {
+  public void finish(Attributes attributes, Context context) {
     storage.remove(attributes, context);
   }
 

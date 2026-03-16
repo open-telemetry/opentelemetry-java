@@ -58,11 +58,11 @@ class SdkDoubleCounterTest {
   }
 
   @Test
-  void collectMetrics_Remove() {
+  void collectMetrics_finish() {
     DoubleCounter counter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     counter.add(1, attrs);
-    counter.remove(attrs);
+    counter.finish(attrs);
     assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
