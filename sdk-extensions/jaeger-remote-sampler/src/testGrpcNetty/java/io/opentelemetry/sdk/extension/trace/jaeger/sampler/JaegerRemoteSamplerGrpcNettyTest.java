@@ -199,6 +199,26 @@ class JaegerRemoteSamplerGrpcNettyTest {
   }
 
   @Test
+  void emptyResponse() {
+    Sampling.SamplingStrategyResponse response =
+        Sampling.SamplingStrategyResponse.newBuilder().build();
+    responses.add(response);
+
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setChannel(managedChannel())
+            .setServiceName(SERVICE_NAME)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
+            .build()) {
+      assertThat(sampler).extracting("grpcSender").isInstanceOf(UpstreamGrpcSender.class);
+
+      // Empty response results in an unmarshaling exception which is handled by logging a warning
+      await().untilAsserted(() -> logs.assertContains("Failed to unmarshal strategy response"));
+    }
+  }
+
+  @Test
   void perOperationSampling() {
     Sampling.SamplingStrategyResponse response =
         Sampling.SamplingStrategyResponse.newBuilder()

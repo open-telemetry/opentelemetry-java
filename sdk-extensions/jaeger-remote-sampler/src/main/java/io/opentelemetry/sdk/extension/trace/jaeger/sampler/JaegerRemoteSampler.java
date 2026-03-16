@@ -139,7 +139,7 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     }
   }
 
-  private static Sampler updateSampler(SamplingStrategyResponse response) {
+  private static Sampler updateSampler(SamplingStrategyResponse response) throws IOException {
     SamplingStrategyResponse.PerOperationSamplingStrategies operationSampling =
         response.perOperationSamplingStrategies;
     if (operationSampling.strategies.size() > 0) {
@@ -156,9 +156,9 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
         return Sampler.parentBased(
             new RateLimitingSampler(response.rateLimitingSamplingStrategy.maxTracesPerSecond));
       case UNRECOGNIZED:
-        throw new AssertionError("unrecognized sampler type");
+        throw new IOException("unrecognized sampler type");
     }
-    throw new AssertionError("unrecognized sampler type");
+    throw new IOException("unrecognized sampler type");
   }
 
   @Override
