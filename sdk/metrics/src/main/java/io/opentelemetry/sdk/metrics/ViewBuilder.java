@@ -75,6 +75,8 @@ public final class ViewBuilder {
   public ViewBuilder setAttributeFilter(Set<String> keysToRetain) {
     Objects.requireNonNull(keysToRetain, "keysToRetain");
     if (keysToRetain.isEmpty()) {
+      // include/exclude predicate requires to include or exclude at least one, we have to skip it
+      // when we don't want to include any key.
       return setAttributeFilter(s -> false);
     }
     return setAttributeFilter(IncludeExcludePredicate.createExactMatching(keysToRetain, null));
