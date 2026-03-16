@@ -74,6 +74,9 @@ public final class ViewBuilder {
    */
   public ViewBuilder setAttributeFilter(Set<String> keysToRetain) {
     Objects.requireNonNull(keysToRetain, "keysToRetain");
+    if (keysToRetain.isEmpty()) {
+      return setAttributeFilter(s -> false);
+    }
     return setAttributeFilter(IncludeExcludePredicate.createExactMatching(keysToRetain, null));
   }
 

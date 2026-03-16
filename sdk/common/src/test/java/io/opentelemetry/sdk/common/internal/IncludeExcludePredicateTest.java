@@ -8,10 +8,14 @@ package io.opentelemetry.sdk.common.internal;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -26,8 +30,6 @@ class IncludeExcludePredicateTest {
       IncludeExcludePredicate.createExactMatching(singletonList("foo"), singletonList("bar"));
   private static final Predicate<String> EXACT_MULTI =
       IncludeExcludePredicate.createExactMatching(asList("foo", "fooo"), asList("bar", "barr"));
-  public static final Predicate<String> EXACT_INCLUDE_NONE =
-      IncludeExcludePredicate.createExactMatching(Collections.emptyList(), null);
 
   private static final Predicate<String> PATTERN_INCLUDE =
       IncludeExcludePredicate.createPatternMatching(singletonList("f?o"), null);
@@ -37,8 +39,6 @@ class IncludeExcludePredicateTest {
       IncludeExcludePredicate.createPatternMatching(singletonList("f?o"), singletonList("b?r"));
   private static final Predicate<String> PATTERN_MULTI =
       IncludeExcludePredicate.createPatternMatching(asList("f?o", "f?oo"), asList("b?r", "b?rr"));
-  public static final Predicate<String> PATTERN_INCLUDE_NONE =
-      IncludeExcludePredicate.createPatternMatching(Collections.emptyList(), null);
 
   @ParameterizedTest
   @MethodSource("testArgs")
@@ -75,8 +75,6 @@ class IncludeExcludePredicateTest {
         Arguments.of(EXACT_MULTI, "bar", false),
         Arguments.of(EXACT_MULTI, "barr", false),
         Arguments.of(EXACT_MULTI, "baz", false),
-        // include none
-        Arguments.of(EXACT_INCLUDE_NONE, "foo", false),
         // pattern matching
         // include only
         Arguments.of(PATTERN_INCLUDE, "foo", true),
@@ -106,9 +104,7 @@ class IncludeExcludePredicateTest {
         Arguments.of(PATTERN_MULTI, "bAr", false),
         Arguments.of(PATTERN_MULTI, "barr", false),
         Arguments.of(PATTERN_MULTI, "bArr", false),
-        Arguments.of(PATTERN_MULTI, "baz", false),
-        // include none
-        Arguments.of(PATTERN_INCLUDE_NONE, "foo", false));
+        Arguments.of(PATTERN_MULTI, "baz", false));
   }
 
   @ParameterizedTest
@@ -139,5 +135,19 @@ class IncludeExcludePredicateTest {
         Arguments.of(
             PATTERN_MULTI,
             "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o, f?oo], excluded=[b?r, b?rr]}"));
+  }
+
+  @Test
+  void try_includeExcludeNone() {
+    expectIllegalArgument(null, null);
+    expectIllegalArgument(Collections.emptyList(), null);
+    expectIllegalArgument(null, Collections.emptyList());
+    expectIllegalArgument(Collections.emptyList(), Collections.emptyList());
+  }
+
+  private static void expectIllegalArgument(
+      @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
+    assertThatThrownBy(() -> IncludeExcludePredicate.createExactMatching(included, excluded))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

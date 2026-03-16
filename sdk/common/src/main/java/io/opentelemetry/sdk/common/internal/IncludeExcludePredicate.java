@@ -38,8 +38,8 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       @Nullable Collection<String> excluded,
       boolean globMatchingEnabled) {
     this.globMatchingEnabled = globMatchingEnabled;
-    this.included = included == null ? null : new LinkedHashSet<>(included);
-    this.excluded = excluded == null ? null : new LinkedHashSet<>(excluded);
+    this.included = copyIfNotEmpty(included);
+    this.excluded = copyIfNotEmpty(excluded);
     if (this.included != null && this.excluded != null) {
       this.predicate =
           includedPredicate(this.included, globMatchingEnabled)
@@ -57,10 +57,12 @@ public final class IncludeExcludePredicate implements Predicate<String> {
   /**
    * Create a (case-sensitive) exact matching include exclude predicate.
    *
-   * <p>When {@code included} is an empty collection, the predicate will exclude all values, use
-   * {@literal null} to include all values by default.>
+   * <p>When {@code included} is empty or {@literal null}, all values are included by default.
    *
-   * @throws IllegalArgumentException if {@code included} AND {@code excluded} are null.
+   * <p>When {@code excluded} is empty or {@literal null}, no value is excluded by default.
+   *
+   * @throws IllegalArgumentException if both {@code included} AND {@code excluded} are null or
+   *     empty.
    */
   public static Predicate<String> createExactMatching(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
@@ -70,12 +72,14 @@ public final class IncludeExcludePredicate implements Predicate<String> {
   /**
    * Create a pattern matching include exclude predicate.
    *
-   * <p>When {@code included} is an empty collection, the predicate will exclude all values, use
-   * {@literal null} to include all values by default.>
+   * <p>When {@code included} is empty or {@literal null}, all values are included by default.
+   *
+   * <p>When {@code excluded} is empty or {@literal null}, no value is excluded by default.
    *
    * <p>See {@link GlobUtil} for pattern matching details.
    *
-   * @throws IllegalArgumentException if {@code included} AND {@code excluded} are null.
+   * @throws IllegalArgumentException if both {@code included} AND {@code excluded} are null or
+   *     empty.
    */
   public static Predicate<String> createPatternMatching(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
@@ -124,5 +128,10 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       }
     }
     return result;
+  }
+
+  @Nullable
+  private static Set<String> copyIfNotEmpty(@Nullable Collection<String> collection) {
+    return collection == null || collection.isEmpty() ? null : new LinkedHashSet<>(collection);
   }
 }

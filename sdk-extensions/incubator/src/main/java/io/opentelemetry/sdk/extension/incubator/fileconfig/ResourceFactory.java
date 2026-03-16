@@ -93,11 +93,6 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
     if (included == null && excluded == null) {
       return ResourceFactory::matchAll;
     }
-    // when "included" is omitted in configuration, we get an empty list
-    // in this context it should be interpreted as "include everything"
-    if (included != null && included.isEmpty()) {
-      included = null;
-    }
     return IncludeExcludePredicate.createPatternMatching(included, excluded);
   }
 }
