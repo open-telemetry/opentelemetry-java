@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -217,6 +218,59 @@ class CallbackRegistrationTest {
     callbackRegistration.invokeCallback(registeredReader, 0, 1);
 
     assertThat(counter.get()).isEqualTo(0);
+  }
+
+  @Test
+  void invokeCallback_RestoresContextClassLoader() {
+    // Simulate the context class loader at registration time
+    ClassLoader registrationClassLoader = new ClassLoader() {};
+    ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+
+    Thread.currentThread().setContextClassLoader(registrationClassLoader);
+    AtomicReference<ClassLoader> observedClassLoader = new AtomicReference<>();
+    Runnable callback =
+        () -> observedClassLoader.set(Thread.currentThread().getContextClassLoader());
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Collections.singletonList(measurement2), callback);
+    Thread.currentThread().setContextClassLoader(originalClassLoader);
+
+    // Simulate invocation on a thread with null context class loader (like DaemonThreadFactory)
+    Thread.currentThread().setContextClassLoader(null);
+    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+
+    // Callback should have seen the registration-time classloader
+    assertThat(observedClassLoader.get()).isSameAs(registrationClassLoader);
+
+    // After invocation, the thread's context classloader should be restored to null
+    assertThat(Thread.currentThread().getContextClassLoader()).isNull();
+
+    // Clean up
+    Thread.currentThread().setContextClassLoader(originalClassLoader);
+  }
+
+  @Test
+  void invokeCallback_RestoresContextClassLoaderOnException() {
+    ClassLoader registrationClassLoader = new ClassLoader() {};
+    ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+
+    Thread.currentThread().setContextClassLoader(registrationClassLoader);
+    Runnable callback =
+        () -> {
+          throw new RuntimeException("Error!");
+        };
+    CallbackRegistration callbackRegistration =
+        CallbackRegistration.create(Collections.singletonList(measurement2), callback);
+    Thread.currentThread().setContextClassLoader(originalClassLoader);
+
+    // Simulate invocation on a thread with null context class loader
+    Thread.currentThread().setContextClassLoader(null);
+    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+
+    // Context classloader should still be restored even after exception
+    assertThat(Thread.currentThread().getContextClassLoader()).isNull();
+
+    // Clean up
+    Thread.currentThread().setContextClassLoader(originalClassLoader);
   }
 
   @Test
