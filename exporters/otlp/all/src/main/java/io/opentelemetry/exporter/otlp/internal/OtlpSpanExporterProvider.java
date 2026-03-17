@@ -53,7 +53,8 @@ public class OtlpSpanExporterProvider
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode,
-          builder::setInternalTelemetryVersion);
+          builder::setInternalTelemetryVersion,
+          builder::setFallbackEndpoint);
       builder.setMeterProvider(meterProviderRef::get);
 
       return builder.build();
@@ -72,7 +73,8 @@ public class OtlpSpanExporterProvider
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode,
-          builder::setInternalTelemetryVersion);
+          builder::setInternalTelemetryVersion,
+          builder::setFallbackEndpoint);
       builder.setMeterProvider(meterProviderRef::get);
 
       return builder.build();

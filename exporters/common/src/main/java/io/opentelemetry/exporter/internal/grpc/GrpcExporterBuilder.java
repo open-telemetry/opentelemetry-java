@@ -57,6 +57,7 @@ public class GrpcExporterBuilder {
   private Duration timeout;
   private Duration connectTimeout = Duration.ofSeconds(DEFAULT_CONNECT_TIMEOUT_SECS);
   private URI endpoint;
+  @Nullable private URI fallbackEndpoint;
   @Nullable private Compressor compressor;
   private final Map<String, String> constantHeaders = new HashMap<>();
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
@@ -101,6 +102,11 @@ public class GrpcExporterBuilder {
 
   public GrpcExporterBuilder setEndpoint(String endpoint) {
     this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
+    return this;
+  }
+
+  public GrpcExporterBuilder setFallbackEndpoint(String fallbackEndpoint) {
+    this.fallbackEndpoint = ExporterBuilderUtil.validateEndpoint(fallbackEndpoint);
     return this;
   }
 
@@ -190,6 +196,7 @@ public class GrpcExporterBuilder {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.grpcChannel = grpcChannel;
     copy.componentLoader = componentLoader;
+    copy.fallbackEndpoint = fallbackEndpoint;
     return copy;
   }
 
@@ -233,12 +240,33 @@ public class GrpcExporterBuilder {
                 grpcChannel));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
+    GrpcSender fallbackSender = null;
+    if (fallbackEndpoint != null) {
+      boolean isFallbackPlainHttp = "http".equals(fallbackEndpoint.getScheme());
+      fallbackSender =
+          grpcSenderProvider.createSender(
+              ImmutableGrpcSenderConfig.create(
+                  fallbackEndpoint,
+                  fullMethodName,
+                  compressor,
+                  timeout,
+                  connectTimeout,
+                  headerSupplier,
+                  retryPolicy,
+                  isFallbackPlainHttp ? null : tlsConfigHelper.getSslContext(),
+                  isFallbackPlainHttp ? null : tlsConfigHelper.getTrustManager(),
+                  executorService,
+                  grpcChannel));
+      LOGGER.log(Level.FINE, "Using fallback GrpcSender: " + fallbackSender.getClass().getName());
+    }
+
     return new GrpcExporter(
         grpcSender,
         internalTelemetryVersion,
         ComponentId.generateLazy(exporterType),
         meterProviderSupplier,
-        endpoint);
+        endpoint,
+        fallbackSender);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -247,6 +275,9 @@ public class GrpcExporterBuilder {
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("endpoint=" + endpoint.toString());
+    if (fallbackEndpoint != null) {
+      joiner.add("fallbackEndpoint=" + fallbackEndpoint);
+    }
     joiner.add("fullMethodName=" + fullMethodName);
     joiner.add("timeoutNanos=" + timeout.toNanos());
     joiner.add("connectTimeoutNanos=" + connectTimeout.toNanos());

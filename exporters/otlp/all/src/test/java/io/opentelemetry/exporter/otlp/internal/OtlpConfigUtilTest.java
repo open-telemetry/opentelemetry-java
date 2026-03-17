@@ -386,6 +386,93 @@ class OtlpConfigUtilTest {
   }
 
   @Test
+  void configureOtlpExporterBuilder_FallbackEndpoint() {
+    // No fallback endpoint configured
+    assertThat(
+            configureFallbackEndpoint(
+                DATA_TYPE_TRACES, ImmutableMap.of("otel.exporter.otlp.protocol", "http/protobuf")))
+        .isEmpty();
+
+    // Generic fallback endpoint
+    assertThat(
+            configureFallbackEndpoint(
+                DATA_TYPE_TRACES,
+                ImmutableMap.of(
+                    "otel.exporter.otlp.protocol",
+                    "http/protobuf",
+                    "otel.exporter.otlp.fallback.endpoint",
+                    "http://fallback:4318")))
+        .isEqualTo("http://fallback:4318/v1/traces");
+
+    // Signal-specific fallback endpoint takes precedence
+    assertThat(
+            configureFallbackEndpoint(
+                DATA_TYPE_TRACES,
+                ImmutableMap.of(
+                    "otel.exporter.otlp.protocol",
+                    "http/protobuf",
+                    "otel.exporter.otlp.fallback.endpoint",
+                    "http://generic-fallback:4318",
+                    "otel.exporter.otlp.traces.fallback.endpoint",
+                    "http://traces-fallback:4318/v1/traces")))
+        .isEqualTo("http://traces-fallback:4318/v1/traces");
+
+    // Fallback for metrics
+    assertThat(
+            configureFallbackEndpoint(
+                DATA_TYPE_METRICS,
+                ImmutableMap.of(
+                    "otel.exporter.otlp.protocol",
+                    "http/protobuf",
+                    "otel.exporter.otlp.fallback.endpoint",
+                    "http://fallback:4318")))
+        .isEqualTo("http://fallback:4318/v1/metrics");
+
+    // Fallback for logs
+    assertThat(
+            configureFallbackEndpoint(
+                DATA_TYPE_LOGS,
+                ImmutableMap.of(
+                    "otel.exporter.otlp.protocol",
+                    "http/protobuf",
+                    "otel.exporter.otlp.fallback.endpoint",
+                    "http://fallback:4318")))
+        .isEqualTo("http://fallback:4318/v1/logs");
+
+    // gRPC fallback endpoint
+    assertThat(
+            configureFallbackEndpoint(
+                DATA_TYPE_TRACES,
+                ImmutableMap.of(
+                    "otel.exporter.otlp.protocol",
+                    "grpc",
+                    "otel.exporter.otlp.fallback.endpoint",
+                    "http://fallback:4317")))
+        .isEqualTo("http://fallback:4317");
+  }
+
+  private static String configureFallbackEndpoint(String dataType, Map<String, String> properties) {
+    AtomicReference<String> fallbackEndpoint = new AtomicReference<>("");
+
+    OtlpConfigUtil.configureOtlpExporterBuilder(
+        dataType,
+        DefaultConfigProperties.createFromMap(properties),
+        value -> {},
+        value -> {},
+        (value1, value2) -> {},
+        value -> {},
+        value -> {},
+        value -> {},
+        (value1, value2) -> {},
+        value -> {},
+        value -> {},
+        value -> {},
+        fallbackEndpoint::set);
+
+    return fallbackEndpoint.get();
+  }
+
+  @Test
   void configureOtlpAggregationTemporality() {
     assertThatThrownBy(
             () ->

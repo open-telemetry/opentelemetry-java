@@ -53,6 +53,7 @@ public final class HttpExporterBuilder {
   private StandardComponentId.ExporterType exporterType;
 
   private URI endpoint;
+  @Nullable private URI fallbackEndpoint;
 
   private Duration timeout = Duration.ofSeconds(DEFAULT_TIMEOUT_SECS);
   @Nullable private Compressor compressor;
@@ -93,6 +94,11 @@ public final class HttpExporterBuilder {
 
   public HttpExporterBuilder setEndpoint(String endpoint) {
     this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
+    return this;
+  }
+
+  public HttpExporterBuilder setFallbackEndpoint(String fallbackEndpoint) {
+    this.fallbackEndpoint = ExporterBuilderUtil.validateEndpoint(fallbackEndpoint);
     return this;
   }
 
@@ -205,6 +211,7 @@ public final class HttpExporterBuilder {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
     copy.componentLoader = componentLoader;
+    copy.fallbackEndpoint = fallbackEndpoint;
     return copy;
   }
 
@@ -231,12 +238,13 @@ public final class HttpExporterBuilder {
         };
 
     boolean isPlainHttp = endpoint.getScheme().equals("http");
+    String contentType = exportAsJson ? "application/json" : "application/x-protobuf";
     HttpSenderProvider httpSenderProvider = SenderUtil.resolveHttpSenderProvider(componentLoader);
     HttpSender httpSender =
         httpSenderProvider.createSender(
             ImmutableHttpSenderConfig.create(
                 endpoint,
-                exportAsJson ? "application/json" : "application/x-protobuf",
+                contentType,
                 compressor,
                 timeout,
                 connectTimeout,
@@ -248,13 +256,34 @@ public final class HttpExporterBuilder {
                 executorService));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
+    HttpSender fallbackSender = null;
+    if (fallbackEndpoint != null) {
+      boolean isFallbackPlainHttp = fallbackEndpoint.getScheme().equals("http");
+      fallbackSender =
+          httpSenderProvider.createSender(
+              ImmutableHttpSenderConfig.create(
+                  fallbackEndpoint,
+                  contentType,
+                  compressor,
+                  timeout,
+                  connectTimeout,
+                  headerSupplier,
+                  proxyOptions,
+                  retryPolicy,
+                  isFallbackPlainHttp ? null : tlsConfigHelper.getSslContext(),
+                  isFallbackPlainHttp ? null : tlsConfigHelper.getTrustManager(),
+                  executorService));
+      LOGGER.log(Level.FINE, "Using fallback HttpSender: " + fallbackSender.getClass().getName());
+    }
+
     return new HttpExporter(
         ComponentId.generateLazy(exporterType),
         httpSender,
         meterProviderSupplier,
         internalTelemetryVersion,
         endpoint,
-        exportAsJson);
+        exportAsJson,
+        fallbackSender);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -263,6 +292,9 @@ public final class HttpExporterBuilder {
             ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("endpoint=" + endpoint);
+    if (fallbackEndpoint != null) {
+      joiner.add("fallbackEndpoint=" + fallbackEndpoint);
+    }
     joiner.add("timeoutNanos=" + timeout.toNanos());
     joiner.add("proxyOptions=" + proxyOptions);
     joiner.add(

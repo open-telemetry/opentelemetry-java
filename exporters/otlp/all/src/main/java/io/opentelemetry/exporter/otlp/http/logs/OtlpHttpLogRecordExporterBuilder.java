@@ -109,6 +109,18 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
+   * Sets the fallback OTLP endpoint to connect to when the primary endpoint is unavailable. The
+   * endpoint must start with either http:// or https://, and include the full HTTP path. If the
+   * primary endpoint fails with a transport error (after retries), the exporter will attempt to
+   * send to this fallback endpoint.
+   */
+  public OtlpHttpLogRecordExporterBuilder setFallbackEndpoint(String fallbackEndpoint) {
+    requireNonNull(fallbackEndpoint, "fallbackEndpoint");
+    delegate.setFallbackEndpoint(fallbackEndpoint);
+    return this;
+  }
+
+  /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
    * method "gzip" and "none" are supported out of the box. Additional compression methods can be
    * supported by providing custom {@link Compressor} implementations via the service loader.
