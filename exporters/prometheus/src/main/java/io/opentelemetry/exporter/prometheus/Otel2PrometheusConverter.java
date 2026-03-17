@@ -81,10 +81,6 @@ final class Otel2PrometheusConverter {
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
-  private static final String[] RESERVED_METRIC_SUFFIXES = {
-    "_total", "_created", "_bucket", "_info"
-  };
-
   private final boolean otelScopeLabelsEnabled;
   private final boolean targetInfoMetricEnabled;
   private final TranslationStrategy translationStrategy;
@@ -652,7 +648,7 @@ final class Otel2PrometheusConverter {
     boolean modified = true;
     while (modified) {
       modified = false;
-      for (String suffix : RESERVED_METRIC_SUFFIXES) {
+      for (String suffix : PrometheusUnitsHelper.RESERVED_SUFFIXES) {
         if (name.equals(suffix)) {
           // Corner case: name is exactly "_total" → return "total"
           return name.substring(1);

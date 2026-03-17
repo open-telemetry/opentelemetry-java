@@ -95,7 +95,7 @@ class PrometheusUnitsHelper {
     return unitOrNull(otelUnit);
   }
 
-  private static final String[] RESERVED_SUFFIXES = {"_total", "_created", "_bucket", "_info"};
+  static final String[] RESERVED_SUFFIXES = {"_total", "_created", "_bucket", "_info"};
 
   @Nullable
   private static Unit unitOrNull(String name) {
