@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.prometheus;
 
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLabelName;
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -82,8 +81,13 @@ final class Otel2PrometheusConverter {
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
+  private static final String[] RESERVED_METRIC_SUFFIXES = {
+    "_total", "_created", "_bucket", "_info"
+  };
+
   private final boolean otelScopeLabelsEnabled;
   private final boolean targetInfoMetricEnabled;
+  private final TranslationStrategy translationStrategy;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -92,21 +96,14 @@ final class Otel2PrometheusConverter {
    */
   private final Map<Attributes, List<AttributeKey<?>>> resourceAttributesToAllowedKeysCache;
 
-  /**
-   * Constructor with feature flag parameters.
-   *
-   * @param otelScopeLabelsEnabled whether to add OpenTelemetry scope labels to exported metrics
-   * @param targetInfoMetricEnabled whether to export the target_info metric with resource
-   *     attributes
-   * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
-   *     matching this predicate will be added as labels on each exported metric
-   */
   Otel2PrometheusConverter(
       boolean otelScopeLabelsEnabled,
       boolean targetInfoMetricEnabled,
+      TranslationStrategy translationStrategy,
       @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
     this.targetInfoMetricEnabled = targetInfoMetricEnabled;
+    this.translationStrategy = translationStrategy;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
@@ -120,6 +117,10 @@ final class Otel2PrometheusConverter {
 
   boolean isTargetInfoMetricEnabled() {
     return targetInfoMetricEnabled;
+  }
+
+  TranslationStrategy getTranslationStrategy() {
+    return translationStrategy;
   }
 
   @Nullable
@@ -155,7 +156,8 @@ final class Otel2PrometheusConverter {
     // Note that AggregationTemporality.DELTA should never happen
     // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
 
-    MetricMetadata metadata = convertMetadata(metricData);
+    boolean isCounter = isMonotonicSum(metricData);
+    MetricMetadata metadata = convertMetadata(metricData, isCounter);
     InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
     switch (metricData.getType()) {
       case LONG_GAUGE:
@@ -208,6 +210,17 @@ final class Otel2PrometheusConverter {
             metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
     }
     return null;
+  }
+
+  private static boolean isMonotonicSum(MetricData metricData) {
+    switch (metricData.getType()) {
+      case LONG_SUM:
+        return metricData.getLongSumData().isMonotonic();
+      case DOUBLE_SUM:
+        return metricData.getDoubleSumData().isMonotonic();
+      default:
+        return false;
+    }
   }
 
   private GaugeSnapshot convertLongGauge(
@@ -545,24 +558,47 @@ final class Otel2PrometheusConverter {
     return allowedAttributeKeys;
   }
 
-  /**
-   * Convert an attribute key to a legacy Prometheus label name. {@code prometheusName} converts
-   * non-standard characters (dots, dashes, etc.) to underscores, and {@code sanitizeLabelName}
-   * strips invalid leading prefixes.
-   */
-  private static String convertLabelName(String key) {
-    return sanitizeLabelName(prometheusName(key));
+  private String convertLabelName(String key) {
+    if (translationStrategy.shouldEscape()) {
+      return sanitizeLabelName(prometheusName(key));
+    }
+    return key;
   }
 
-  private static MetricMetadata convertMetadata(MetricData metricData) {
-    String name = sanitizeMetricName(prometheusName(metricData.getName()));
+  private MetricMetadata convertMetadata(MetricData metricData, boolean isCounter) {
+    switch (translationStrategy) {
+      case UNDERSCORE_ESCAPING_WITH_SUFFIXES:
+        return convertMetadataEscapedWithSuffixes(metricData);
+      case UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES:
+        return convertMetadataEscapedWithoutSuffixes(metricData);
+      case NO_UTF8_ESCAPING_WITH_SUFFIXES:
+        return convertMetadataUtf8WithSuffixes(metricData, isCounter);
+      case NO_TRANSLATION:
+        return convertMetadataNoTranslation(metricData);
+    }
+    throw new IllegalStateException("Unknown strategy: " + translationStrategy);
+  }
+
+  /**
+   * Default strategy: escape names, append unit and type suffixes, collapse repeated __. Uses 3-arg
+   * MetricMetadata constructor so the format writer handles type suffixes (_total for counters)
+   * automatically — preserving backward-compatible output format.
+   */
+  private static MetricMetadata convertMetadataEscapedWithSuffixes(MetricData metricData) {
+    String name = prometheusName(metricData.getName());
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
+
+    // Strip reserved suffixes (_total, _info, etc.) BEFORE appending unit.
+    // This replicates the old sanitizeMetricName behavior which ran before unit append.
+    name = stripReservedMetricSuffixes(name);
+
+    // Append unit suffix
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    // Repeated __ are discouraged according to spec, although this is allowed in prometheus, see
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1
+
+    // Collapse repeated __ introduced by escaping
     while (name.contains("__")) {
       name = name.replace("__", "_");
     }
@@ -570,9 +606,68 @@ final class Otel2PrometheusConverter {
     return new MetricMetadata(name, help, unit);
   }
 
-  private static void putOrMerge(
-      Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
-    String name = snapshot.getMetadata().getPrometheusName();
+  /** Escape names but don't add any suffixes. */
+  private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
+    String name = prometheusName(metricData.getName());
+
+    // Collapse repeated __ introduced by escaping
+    while (name.contains("__")) {
+      name = name.replace("__", "_");
+    }
+
+    return new MetricMetadata(name, name, metricData.getDescription(), null);
+  }
+
+  /** Passthrough names (UTF-8 preserved), but add unit and type suffixes. */
+  private static MetricMetadata convertMetadataUtf8WithSuffixes(
+      MetricData metricData, boolean isCounter) {
+    String name = metricData.getName();
+    String help = metricData.getDescription();
+    Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
+
+    if (unit != null && !name.endsWith(unit.toString())) {
+      name = name + "_" + unit;
+    }
+
+    String expositionBaseName = name;
+    if (isCounter && !name.endsWith("_total")) {
+      expositionBaseName = name + "_total";
+    }
+
+    return new MetricMetadata(name, expositionBaseName, help, unit);
+  }
+
+  /** Full passthrough: no escaping, no suffixes, no unit. */
+  private static MetricMetadata convertMetadataNoTranslation(MetricData metricData) {
+    String name = metricData.getName();
+    return new MetricMetadata(name, name, name, metricData.getDescription(), null);
+  }
+
+  /**
+   * Strip reserved Prometheus metric name suffixes (_total, _info, _created, _bucket). This
+   * replicates the behavior of the old {@code PrometheusNaming.sanitizeMetricName} which was
+   * changed to a no-op in prometheus client_java 1.6.0.
+   */
+  private static String stripReservedMetricSuffixes(String name) {
+    boolean modified = true;
+    while (modified) {
+      modified = false;
+      for (String suffix : RESERVED_METRIC_SUFFIXES) {
+        if (name.equals(suffix)) {
+          // Corner case: name is exactly "_total" → return "total"
+          return name.substring(1);
+        }
+        if (name.endsWith(suffix)) {
+          name = name.substring(0, name.length() - suffix.length());
+          modified = true;
+        }
+      }
+    }
+    return name;
+  }
+
+  private void putOrMerge(Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
+    String name = getMergeKey(snapshot.getMetadata());
     if (snapshotsByName.containsKey(name)) {
       MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {
@@ -581,6 +676,13 @@ final class Otel2PrometheusConverter {
     } else {
       snapshotsByName.put(name, snapshot);
     }
+  }
+
+  private String getMergeKey(MetricMetadata metadata) {
+    if (translationStrategy.shouldEscape()) {
+      return metadata.getPrometheusName();
+    }
+    return metadata.getName();
   }
 
   /**

@@ -16,6 +16,7 @@ dependencies {
     exclude(group = "io.prometheus", module = "prometheus-metrics-exposition-formats")
   }
   implementation("io.prometheus:prometheus-metrics-exposition-formats-no-protobuf")
+  implementation("io.prometheus:prometheus-metrics-config")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   compileOnly("com.google.errorprone:error_prone_annotations")

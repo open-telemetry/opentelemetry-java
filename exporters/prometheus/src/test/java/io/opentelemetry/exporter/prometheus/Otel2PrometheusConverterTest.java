@@ -73,6 +73,7 @@ class Otel2PrometheusConverterTest {
       new Otel2PrometheusConverter(
           /* otelScopeLabelsEnabled= */ true,
           /* targetInfoMetricEnabled= */ true,
+          TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
           /* allowedResourceAttributesFilter= */ null);
 
   @ParameterizedTest
@@ -206,6 +207,7 @@ class Otel2PrometheusConverterTest {
         new Otel2PrometheusConverter(
             /* otelScopeLabelsEnabled= */ true,
             /* targetInfoMetricEnabled= */ true,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             allowedResourceAttributesFilter);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -509,6 +511,7 @@ class Otel2PrometheusConverterTest {
         new Otel2PrometheusConverter(
             /* otelScopeLabelsEnabled= */ true,
             /* targetInfoMetricEnabled= */ true,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             /* allowedResourceAttributesFilter= */ countPredicate);
 
     // Create 20 different metric data objects with 2 different resource attributes;

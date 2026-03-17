@@ -95,14 +95,45 @@ class PrometheusUnitsHelper {
     return unitOrNull(otelUnit);
   }
 
+  private static final String[] RESERVED_SUFFIXES = {"_total", "_created", "_bucket", "_info"};
+
   @Nullable
   private static Unit unitOrNull(String name) {
     try {
-      return new Unit(PrometheusNaming.sanitizeUnitName(name));
+      String sanitized = PrometheusNaming.sanitizeUnitName(name);
+      sanitized = stripReservedUnitSuffixes(sanitized);
+      if (sanitized.isEmpty()) {
+        return null;
+      }
+      return new Unit(sanitized);
     } catch (IllegalArgumentException e) {
-      // This happens if the name cannot be converted to a valid Prometheus unit name,
-      // for example if name is "total".
       return null;
     }
+  }
+
+  /**
+   * Strip reserved Prometheus suffixes (total, info, created, bucket) from unit names. These have
+   * special meaning in Prometheus and should not appear as units.
+   */
+  private static String stripReservedUnitSuffixes(String name) {
+    boolean modified = true;
+    while (modified) {
+      modified = false;
+      for (String suffix : RESERVED_SUFFIXES) {
+        String suffixWithoutUnderscore = suffix.substring(1);
+        if (name.equals(suffixWithoutUnderscore)) {
+          return "";
+        }
+        if (name.endsWith(suffix)) {
+          name = name.substring(0, name.length() - suffix.length());
+          modified = true;
+        }
+      }
+      while (name.endsWith("_") || name.endsWith(".")) {
+        name = name.substring(0, name.length() - 1);
+        modified = true;
+      }
+    }
+    return name;
   }
 }

@@ -21,6 +21,8 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.prometheus.metrics.config.OpenMetrics2Properties;
+import io.prometheus.metrics.config.PrometheusProperties;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.IOException;
@@ -73,6 +75,7 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable HttpHandler defaultHandler,
       DefaultAggregationSelector defaultAggregationSelector,
       @Nullable Authenticator authenticator,
+      TranslationStrategy translationStrategy,
       PrometheusMetricReader prometheusMetricReader) {
     this.host = host;
     this.port = port;
@@ -95,9 +98,21 @@ public final class PrometheusHttpServer implements MetricReader {
               new LinkedBlockingQueue<>(),
               new DaemonThreadFactory("prometheus-http-server"));
     }
+    // Enable OM2 format writer for non-default strategies where the converter controls
+    // expositionBaseName directly. For the default strategy, OM1 handles suffixes automatically.
+    HTTPServer.Builder httpServerBuilder;
+    if (translationStrategy != TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES) {
+      PrometheusProperties prometheusProperties =
+          PrometheusProperties.builder()
+              .openMetrics2Properties(OpenMetrics2Properties.builder().enabled(true).build())
+              .build();
+      httpServerBuilder = HTTPServer.builder(prometheusProperties);
+    } else {
+      httpServerBuilder = HTTPServer.builder();
+    }
     try {
       this.httpServer =
-          HTTPServer.builder()
+          httpServerBuilder
               .hostname(host)
               .port(port)
               .executorService(executor)

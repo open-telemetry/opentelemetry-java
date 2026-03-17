@@ -93,6 +93,20 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
+   * Sets the translation strategy for metric and label name conversion.
+   *
+   * @param translationStrategy the strategy to use
+   * @return this builder
+   * @see TranslationStrategy
+   */
+  public PrometheusHttpServerBuilder setTranslationStrategy(
+      TranslationStrategy translationStrategy) {
+    requireNonNull(translationStrategy, "translationStrategy");
+    metricReaderBuilder.setTranslationStrategy(translationStrategy);
+    return this;
+  }
+
+  /**
    * Set if the resource attributes should be added as labels on each exported metric.
    *
    * <p>If set, resource attributes will be added as labels on each exported metric if their key
@@ -183,6 +197,7 @@ public final class PrometheusHttpServerBuilder {
         defaultHandler,
         defaultAggregationSelector,
         authenticator,
+        metricReaderBuilder.getTranslationStrategy(),
         metricReaderBuilder.build());
   }
 }

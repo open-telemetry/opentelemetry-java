@@ -432,7 +432,7 @@ class PrometheusHttpServerTest {
             "PrometheusHttpServer{"
                 + "host=localhost,"
                 + "port=0,"
-                + "metricReader=PrometheusMetricReader{otelScopeLabelsEnabled=true,targetInfoMetricEnabled=true,allowedResourceAttributesFilter=null},"
+                + "metricReader=PrometheusMetricReader{otelScopeLabelsEnabled=true,targetInfoMetricEnabled=true,translationStrategy=UNDERSCORE_ESCAPING_WITH_SUFFIXES,allowedResourceAttributesFilter=null},"
                 + "memoryMode=REUSABLE_DATA,"
                 + "defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}"
                 + "}");

@@ -8,10 +8,12 @@ package io.opentelemetry.exporter.prometheus.internal;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
+import io.opentelemetry.exporter.prometheus.TranslationStrategy;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Declarative configuration SPI implementation for {@link PrometheusHttpServer}.
@@ -63,6 +65,13 @@ public class PrometheusComponentProvider implements ComponentProvider {
         prometheusBuilder.setAllowedResourceAttributesFilter(
             IncludeExcludePredicate.createPatternMatching(included, excluded));
       }
+    }
+
+    String translationStrategy = config.getString("translation_strategy");
+    if (translationStrategy != null) {
+      prometheusBuilder.setTranslationStrategy(
+          TranslationStrategy.valueOf(
+              translationStrategy.toUpperCase(Locale.ROOT).replace(' ', '_')));
     }
 
     return prometheusBuilder.build();
