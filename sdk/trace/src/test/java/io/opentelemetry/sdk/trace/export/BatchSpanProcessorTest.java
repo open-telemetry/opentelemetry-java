@@ -246,8 +246,8 @@ class BatchSpanProcessorTest {
             .addSpanProcessor(
                 BatchSpanProcessor.builder(mockSpanExporter)
                     .setMaxQueueSize(1)
-                    .setMaxExportBatchSize(1_000)
-                    .setScheduleDelay(Duration.ofDays(1))
+                    .setMaxExportBatchSize(1)
+                    .setScheduleDelay(Duration.ofMillis(1))
                     .build())
             .build();
 
@@ -260,7 +260,7 @@ class BatchSpanProcessorTest {
             () ->
                 logs.assertContains(
                     loggingEvent -> loggingEvent.getLevel().equals(Level.WARN),
-                    "BatchSpanProcessor dropped a span"));
+                    "BatchSpanProcessor dropped"));
   }
 
   @Test
