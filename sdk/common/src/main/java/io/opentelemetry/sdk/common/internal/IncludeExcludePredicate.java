@@ -44,13 +44,13 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       this.predicate =
           includedPredicate(this.included, globMatchingEnabled)
               .and(excludedPredicate(this.excluded, globMatchingEnabled));
-    } else if (this.included == null && this.excluded != null) {
+    } else if (this.excluded != null) {
       this.predicate = excludedPredicate(this.excluded, globMatchingEnabled);
-    } else if (this.excluded == null && this.included != null) {
+    } else if (this.included != null) {
       this.predicate = includedPredicate(this.included, globMatchingEnabled);
     } else {
-      throw new IllegalArgumentException(
-          "At least one of includedPatterns or excludedPatterns must not be null");
+      // include everything by default if both included and excluded are null or empt
+      this.predicate = s -> true;
     }
   }
 
@@ -60,9 +60,6 @@ public final class IncludeExcludePredicate implements Predicate<String> {
    * <p>When {@code included} is empty or {@literal null}, all values are included by default.
    *
    * <p>When {@code excluded} is empty or {@literal null}, no value is excluded by default.
-   *
-   * @throws IllegalArgumentException if both {@code included} AND {@code excluded} are null or
-   *     empty.
    */
   public static Predicate<String> createExactMatching(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
@@ -77,9 +74,6 @@ public final class IncludeExcludePredicate implements Predicate<String> {
    * <p>When {@code excluded} is empty or {@literal null}, no value is excluded by default.
    *
    * <p>See {@link GlobUtil} for pattern matching details.
-   *
-   * @throws IllegalArgumentException if both {@code included} AND {@code excluded} are null or
-   *     empty.
    */
   public static Predicate<String> createPatternMatching(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {

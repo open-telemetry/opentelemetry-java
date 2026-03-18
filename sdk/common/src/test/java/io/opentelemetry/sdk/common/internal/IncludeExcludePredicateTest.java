@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.common.internal;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Predicate;
@@ -138,16 +138,28 @@ class IncludeExcludePredicateTest {
   }
 
   @Test
-  void try_includeExcludeNone() {
-    expectIllegalArgument(null, null);
-    expectIllegalArgument(Collections.emptyList(), null);
-    expectIllegalArgument(null, Collections.emptyList());
-    expectIllegalArgument(Collections.emptyList(), Collections.emptyList());
+  void emptyOrNullShouldIncludeAll() {
+    shouldIncludeAll(null, null);
+    shouldIncludeAll(Collections.emptyList(), null);
+    shouldIncludeAll(null, Collections.emptyList());
+    shouldIncludeAll(Collections.emptyList(), Collections.emptyList());
   }
 
-  private static void expectIllegalArgument(
+  private static void shouldIncludeAll(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
-    assertThatThrownBy(() -> IncludeExcludePredicate.createExactMatching(included, excluded))
-        .isInstanceOf(IllegalArgumentException.class);
+    Arrays.asList("foo", "fooo", "fOo", "FOO", "bar", "bAr", "barr", "bArr", "baz")
+        .forEach(
+            s -> {
+              Predicate<String> exactMatching =
+                  IncludeExcludePredicate.createExactMatching(included, excluded);
+              assertThat(exactMatching.test(s)).isTrue();
+              assertThat(exactMatching.toString())
+                  .isEqualTo("IncludeExcludePredicate{globMatchingEnabled=false}");
+              Predicate<String> patternMatching =
+                  IncludeExcludePredicate.createPatternMatching(included, excluded);
+              assertThat(patternMatching.test(s)).isTrue();
+              assertThat(patternMatching.toString())
+                  .isEqualTo("IncludeExcludePredicate{globMatchingEnabled=true}");
+            });
   }
 }
