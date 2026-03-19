@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.logs;
 
+import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -21,6 +22,23 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface Logger {
+
+  /**
+   * Returns {@code true} if the logger is enabled for the given {@code context} and {@code
+   * severity}.
+   *
+   * <p>This allows callers to avoid unnecessary compute when nothing is consuming the data. Because
+   * the response is subject to change over the application, callers should call this before each
+   * call to {@link #logRecordBuilder()}.
+   */
+  default boolean isEnabled(Severity severity, Context context) {
+    return true;
+  }
+
+  /** Overload of {@link #isEnabled(Severity, Context)} assuming {@link Context#current()}. */
+  default boolean isEnabled(Severity severity) {
+    return isEnabled(severity, Context.current());
+  }
 
   /**
    * Return a {@link LogRecordBuilder} to emit a log record.
