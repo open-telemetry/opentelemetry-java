@@ -18,6 +18,18 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface LongHistogram {
 
   /**
+   * Returns {@code true} if the histogram is enabled.
+   *
+   * <p>This allows callers to avoid unnecessary compute when nothing is consuming the data. Because
+   * the response is subject to change over the application, callers should call this before each
+   * call to {@link #record(long)}, {@link #record(long, Attributes)}, or {@link #record(long,
+   * Attributes, Context)}.
+   */
+  default boolean isEnabled() {
+    return true;
+  }
+
+  /**
    * Records a value.
    *
    * <p>Note: This may use {@code Context.current()} to pull the context associated with this

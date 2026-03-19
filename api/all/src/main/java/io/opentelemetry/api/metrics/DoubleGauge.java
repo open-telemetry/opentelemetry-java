@@ -16,6 +16,19 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface DoubleGauge {
+
+  /**
+   * Returns {@code true} if the gauge is enabled.
+   *
+   * <p>This allows callers to avoid unnecessary compute when nothing is consuming the data. Because
+   * the response is subject to change over the application, callers should call this before each
+   * call to {@link #set(double)}, {@link #set(double, Attributes)}, or {@link #set(double,
+   * Attributes, Context)}.
+   */
+  default boolean isEnabled() {
+    return true;
+  }
+
   /**
    * Set the gauge value.
    *

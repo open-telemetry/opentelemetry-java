@@ -20,11 +20,6 @@ final class ExtendedSdkDoubleGauge extends SdkDoubleGauge implements ExtendedDou
     super(descriptor, sdkMeter, storage);
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
-
   static final class ExtendedSdkDoubleGaugeBuilder extends SdkDoubleGaugeBuilder
       implements ExtendedDoubleGaugeBuilder {
     ExtendedSdkDoubleGaugeBuilder(SdkMeter sdkMeter, String name) {

@@ -68,6 +68,11 @@ class DefaultMeter implements Meter {
 
   private static class NoopLongCounter implements LongCounter {
     @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
+    @Override
     public void add(long value, Attributes attributes, Context context) {}
 
     @Override
@@ -78,6 +83,11 @@ class DefaultMeter implements Meter {
   }
 
   private static class NoopDoubleCounter implements DoubleCounter {
+    @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
     @Override
     public void add(double value, Attributes attributes, Context context) {}
 
@@ -160,6 +170,11 @@ class DefaultMeter implements Meter {
 
   private static class NoopLongUpDownCounter implements LongUpDownCounter {
     @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
+    @Override
     public void add(long value, Attributes attributes, Context context) {}
 
     @Override
@@ -170,6 +185,11 @@ class DefaultMeter implements Meter {
   }
 
   private static class NoopDoubleUpDownCounter implements DoubleUpDownCounter {
+    @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
     @Override
     public void add(double value, Attributes attributes, Context context) {}
 
@@ -254,6 +274,11 @@ class DefaultMeter implements Meter {
 
   private static class NoopDoubleHistogram implements DoubleHistogram {
     @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
+    @Override
     public void record(double value, Attributes attributes, Context context) {}
 
     @Override
@@ -264,6 +289,11 @@ class DefaultMeter implements Meter {
   }
 
   private static class NoopLongHistogram implements LongHistogram {
+    @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
     @Override
     public void record(long value, Attributes attributes, Context context) {}
 
@@ -358,6 +388,11 @@ class DefaultMeter implements Meter {
 
   private static class NoopDoubleGauge implements DoubleGauge {
     @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
+    @Override
     public void set(double value) {}
 
     @Override
@@ -398,6 +433,11 @@ class DefaultMeter implements Meter {
   }
 
   private static class NoopLongGauge implements LongGauge {
+    @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
     @Override
     public void set(long value) {}
 
