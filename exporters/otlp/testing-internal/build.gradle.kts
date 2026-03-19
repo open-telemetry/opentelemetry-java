@@ -37,8 +37,3 @@ dependencies {
   implementation("org.assertj:assertj-core")
   implementation("org.mock-server:mockserver-netty")
 }
-
-// Skip OWASP dependencyCheck task on test module
-dependencyCheck {
-  skip = true
-}

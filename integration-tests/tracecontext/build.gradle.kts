@@ -33,8 +33,3 @@ tasks {
     jvmArgs("-Dio.opentelemetry.testArchive=${shadowJar.get().archiveFile.get().asFile.absolutePath}")
   }
 }
-
-// Skip OWASP dependencyCheck task on test module
-dependencyCheck {
-  skip = true
-}
