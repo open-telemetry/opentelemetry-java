@@ -19,7 +19,9 @@ import javax.annotation.concurrent.Immutable;
 public class SampleCompositionKey {
 
   // on the wire, a Sample's identity (i.e. 'primary key') is the tuple of
-  // {stack_index, sorted(attribute_indices), link_index}
+  // {stack_index, set_of(attribute_indices), link_index}
+  // we sort attribute_indices and apply list equality over the result,
+  // though other techniques for set equality exist.
   private final int stackIndex;
   private final List<Integer> attributeIndices;
   private final int linkIndex;
