@@ -10,8 +10,22 @@
   ignorePaths: [], // overwrite default ignore which includes **/test/**
                    // used to update docker image versions used in Java test files
   packageRules: [
+
+    // ── Scheduling & grouping ──────────────────────────────────────────
+
     {
-      // this is to reduce the number of renovate PRs
+      // group all patch updates into a single weekly PR
+      groupName: 'all patch versions',
+      matchUpdateTypes: [
+        'patch',
+      ],
+      schedule: [
+        'before 8am on Tuesday',
+      ],
+    },
+    {
+      // group GitHub Actions and dockerfile updates into a single weekly PR
+      // (must be after patch rule so that it wins for GH Action patches)
       matchManagers: [
         'github-actions',
         'dockerfile',
@@ -21,6 +35,9 @@
       ],
       groupName: 'weekly update',
     },
+
+    // ── Version constraints ────────────────────────────────────────────
+
     {
       matchPackageNames: [
         'io.opentelemetry.contrib:opentelemetry-aws-xray-propagator',
@@ -34,6 +51,19 @@
       ignoreUnstable: false,
       allowedVersions: '!/\\-SNAPSHOT$/',
     },
+
+    // ── Package family groups ──────────────────────────────────────────
+
+    {
+      groupName: 'spotless packages',
+      matchPackageNames: [
+        'com.diffplug.spotless',
+        'com.diffplug.spotless:**',
+      ],
+    },
+
+    // ── Disabled updates (Java version compatibility) ──────────────────
+
     {
       // junit 6+ requires Java 17+
       matchPackageNames: [
@@ -95,19 +125,12 @@
       enabled: false,
     },
     {
-      groupName: 'spotless packages',
-      matchPackageNames: [
-        'com.diffplug.spotless',
-        'com.diffplug.spotless:**',
-      ],
-    },
-    {
       // equals verifier v4+ requires java 17+
       groupName: 'nl.jqno.equalsverifier',
       matchPackageNames: [ 'equalsverifier'],
       matchUpdateTypes: [ 'major' ],
       enabled: false
-    }
+    },
   ],
   customManagers: [
     {
