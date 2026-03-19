@@ -24,6 +24,11 @@ final class DefaultTracer implements Tracer {
   }
 
   @Override
+  public boolean isEnabled() {
+    return false;
+  }
+
+  @Override
   public SpanBuilder spanBuilder(String spanName) {
     return NoopSpanBuilder.create();
   }

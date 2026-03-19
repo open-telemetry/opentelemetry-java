@@ -61,6 +61,17 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Tracer {
 
   /**
+   * Returns {@code true} if the tracer is enabled.
+   *
+   * <p>This allows callers to avoid unnecessary compute when nothing is consuming the data. Because
+   * the response is subject to change over the application, callers should call this before each
+   * call to {@link #spanBuilder(String)}.
+   */
+  default boolean isEnabled() {
+    return true;
+  }
+
+  /**
    * Returns a {@link SpanBuilder} to create and start a new {@link Span}.
    *
    * <p>See {@link SpanBuilder} for usage examples.
