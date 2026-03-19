@@ -15,4 +15,7 @@ dependencies {
   implementation("org.mockito:mockito-core")
 }
 
-
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
+}

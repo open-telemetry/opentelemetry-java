@@ -5,6 +5,11 @@ plugins {
 description = "OpenTelemetry All"
 otelJava.moduleName.set("io.opentelemetry.all")
 
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
+}
+
 val testTasks = mutableListOf<Task>()
 val jarTasks = mutableListOf<Jar>()
 

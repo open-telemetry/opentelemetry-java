@@ -42,3 +42,8 @@ tasks {
     dependsOn(testing.suites)
   }
 }
+
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
+}

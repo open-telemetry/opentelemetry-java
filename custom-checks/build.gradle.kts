@@ -80,3 +80,8 @@ configurations {
     }
   }
 }
+
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
+}

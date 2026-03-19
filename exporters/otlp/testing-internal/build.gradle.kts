@@ -37,3 +37,8 @@ dependencies {
   implementation("org.assertj:assertj-core")
   implementation("org.mock-server:mockserver-netty")
 }
+
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
+}

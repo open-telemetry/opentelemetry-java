@@ -33,3 +33,8 @@ tasks {
     jvmArgs("-Dio.opentelemetry.testArchive=${shadowJar.get().archiveFile.get().asFile.absolutePath}")
   }
 }
+
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
+}
