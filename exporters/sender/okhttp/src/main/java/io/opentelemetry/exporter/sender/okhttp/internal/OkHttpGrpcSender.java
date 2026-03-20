@@ -200,7 +200,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
   }
 
   private static byte[] getResponseMessageBytes(byte[] bodyBytes) throws IOException {
-    if (bodyBytes.length > 5) {
+    if (bodyBytes.length >= 5) {
       ByteArrayInputStream bodyStream = new ByteArrayInputStream(bodyBytes);
       bodyStream.skip(5);
       if (bodyBytes[0] == 1) {
