@@ -246,21 +246,23 @@ class BatchSpanProcessorTest {
             .addSpanProcessor(
                 BatchSpanProcessor.builder(mockSpanExporter)
                     .setMaxQueueSize(1)
-                    .setMaxExportBatchSize(1)
-                    .setScheduleDelay(Duration.ofMillis(1))
+                    .setMaxExportBatchSize(1_000)
+                    .setScheduleDelay(Duration.ofDays(1))
                     .build())
             .build();
 
-    // Add two spans quickly to trigger a drop when the queue is full.
+    // Fill the queue with the first span, then drop 2 more.
     createEndedSpan(SPAN_NAME_1);
     createEndedSpan(SPAN_NAME_2);
+    createEndedSpan(SPAN_NAME_2);
 
-    await()
-        .untilAsserted(
-            () ->
-                logs.assertContains(
-                    loggingEvent -> loggingEvent.getLevel().equals(Level.WARN),
-                    "BatchSpanProcessor dropped"));
+    // Force export to trigger the drop count log.
+    sdkTracerProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
+    logs.assertContains(
+        loggingEvent -> loggingEvent.getLevel().equals(Level.WARN),
+        "BatchSpanProcessor dropped 2 span(s) since the last export"
+            + " because the queue is full (maxQueueSize=1)");
   }
 
   @Test
