@@ -15,7 +15,7 @@ val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
-val prometheusServerVersion = "1.5.0"
+val prometheusServerVersion = "1.5.1"
 val armeriaVersion = "1.37.0"
 val junitVersion = "5.14.3"
 val okhttpVersion = "5.3.2"
@@ -26,9 +26,9 @@ val DEPENDENCY_BOMS = listOf(
   // (which is EPL licensed) or armeria bom (which is Apache licensed but is getting flagged
   // by FOSSA for containing EPL-licensed)
 
-  "com.fasterxml.jackson:jackson-bom:2.21.1",
+  "com.fasterxml.jackson:jackson-bom:2.21.2",
   "com.google.guava:guava-bom:33.5.0-jre",
-  "com.google.protobuf:protobuf-bom:4.34.0",
+  "com.google.protobuf:protobuf-bom:4.34.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.80.0",
@@ -36,7 +36,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.zipkin.brave:brave-bom:6.3.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.1",
   "org.assertj:assertj-bom:3.27.7",
-  "org.testcontainers:testcontainers-bom:2.0.3",
+  "org.testcontainers:testcontainers-bom:2.0.4",
   "org.snakeyaml:snakeyaml-engine:2.10"
 )
 
