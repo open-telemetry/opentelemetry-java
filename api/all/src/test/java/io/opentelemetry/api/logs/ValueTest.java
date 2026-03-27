@@ -211,5 +211,17 @@ class ValueTest {
     String base64Encoded = Value.of(str.getBytes(StandardCharsets.UTF_8)).asString();
     byte[] decodedBytes = Base64.getDecoder().decode(base64Encoded);
     assertThat(new String(decodedBytes, StandardCharsets.UTF_8)).isEqualTo(str);
+
+    // Test empty string
+    String emptyStr = "";
+    String emptyBase64 = Value.of(emptyStr.getBytes(StandardCharsets.UTF_8)).asString();
+    byte[] decodedEmpty = Base64.getDecoder().decode(emptyBase64);
+    assertThat(new String(decodedEmpty, StandardCharsets.UTF_8)).isEqualTo(emptyStr);
+
+    // Test string with special characters
+    String specialStr = "hello \n \t 🌍 world!";
+    String specialBase64 = Value.of(specialStr.getBytes(StandardCharsets.UTF_8)).asString();
+    byte[] decodedSpecial = Base64.getDecoder().decode(specialBase64);
+    assertThat(new String(decodedSpecial, StandardCharsets.UTF_8)).isEqualTo(specialStr);
   }
 }
