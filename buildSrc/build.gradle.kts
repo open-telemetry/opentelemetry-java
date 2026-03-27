@@ -48,6 +48,6 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:5.1.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:3.0.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21")
-  implementation("org.sonatype.gradle.plugins:scan-gradle-plugin:3.1.4")
+  implementation("org.sonatype.gradle.plugins:scan-gradle-plugin:3.1.5")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
 }
