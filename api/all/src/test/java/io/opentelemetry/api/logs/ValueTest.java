@@ -25,6 +25,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import edu.berkeley.cs.jqf.fuzz.Fuzz;
+import edu.berkeley.cs.jqf.fuzz.JQF;
+import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
+import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
+import org.junit.runner.Result;
+import org.junit.runner.RunWith;
 
 class ValueTest {
 
@@ -224,4 +230,23 @@ class ValueTest {
     byte[] decodedSpecial = Base64.getDecoder().decode(specialBase64);
     assertThat(new String(decodedSpecial, StandardCharsets.UTF_8)).isEqualTo(specialStr);
   }
+
+  @RunWith(JQF.class)
+  public static class FuzzTestCases {
+    @Fuzz
+    public void valueByteAsStringFuzz(String randomString) {
+      String base64Encoded = Value.of(randomString.getBytes(StandardCharsets.UTF_8)).asString();
+      byte[] decodedBytes = Base64.getDecoder().decode(base64Encoded);
+      assertThat(new String(decodedBytes, StandardCharsets.UTF_8)).isEqualTo(randomString);
+    }
+  }
+
+  @SuppressWarnings("SystemOut")
+  @Test
+  void valueByteAsStringFuzzing() {
+    Result result = GuidedFuzzing.run(
+        FuzzTestCases.class, "valueByteAsStringFuzz", new NoGuidance(10000, System.out), System.out);
+    assertThat(result.wasSuccessful()).isTrue();
+  }
 }
+
