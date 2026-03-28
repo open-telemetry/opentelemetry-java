@@ -9,6 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import edu.berkeley.cs.jqf.fuzz.Fuzz;
+import edu.berkeley.cs.jqf.fuzz.JQF;
+import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
+import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.common.ValueType;
@@ -25,10 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import edu.berkeley.cs.jqf.fuzz.Fuzz;
-import edu.berkeley.cs.jqf.fuzz.JQF;
-import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
-import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 
@@ -244,9 +244,12 @@ class ValueTest {
   @SuppressWarnings("SystemOut")
   @Test
   void valueByteAsStringFuzzing() {
-    Result result = GuidedFuzzing.run(
-        FuzzTestCases.class, "valueByteAsStringFuzz", new NoGuidance(10000, System.out), System.out);
+    Result result =
+        GuidedFuzzing.run(
+            FuzzTestCases.class,
+            "valueByteAsStringFuzz",
+            new NoGuidance(10000, System.out),
+            System.out);
     assertThat(result.wasSuccessful()).isTrue();
   }
 }
-
