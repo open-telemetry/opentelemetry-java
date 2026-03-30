@@ -14,3 +14,9 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-params")
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }
+
+// Skip ossIndexAudit: the scan plugin traverses Gradle subprojects at execution time, which
+// Gradle 9 forbids without an exclusive lock. Each subproject runs its own audit independently.
+tasks.named("ossIndexAudit") {
+  enabled = false
+}
