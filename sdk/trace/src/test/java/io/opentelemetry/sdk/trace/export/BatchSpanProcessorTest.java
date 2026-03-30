@@ -18,6 +18,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -42,11 +43,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.slf4j.event.Level;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 @ExtendWith(MockitoExtension.class)
@@ -62,9 +65,13 @@ class BatchSpanProcessorTest {
   @Mock private Sampler mockSampler;
   @Mock private SpanExporter mockSpanExporter;
 
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(BatchSpanProcessor.class);
+
   @BeforeEach
   void setUp() {
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockSpanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @AfterEach
@@ -230,6 +237,32 @@ class BatchSpanProcessorTest {
                         span4.toSpanData(),
                         span5.toSpanData(),
                         span6.toSpanData()));
+  }
+
+  @Test
+  void droppedSpanIsLogged() {
+    sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(mockSpanExporter)
+                    .setMaxQueueSize(1)
+                    .setMaxExportBatchSize(1_000)
+                    .setScheduleDelay(Duration.ofDays(1))
+                    .build())
+            .build();
+
+    // Fill the queue with the first span, then drop 2 more.
+    createEndedSpan(SPAN_NAME_1);
+    createEndedSpan(SPAN_NAME_2);
+    createEndedSpan(SPAN_NAME_2);
+
+    // Force export to trigger the drop count log.
+    sdkTracerProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
+    logs.assertContains(
+        loggingEvent -> loggingEvent.getLevel().equals(Level.WARN),
+        "BatchSpanProcessor dropped 2 span(s) since the last export"
+            + " because the queue is full (maxQueueSize=1)");
   }
 
   @Test
