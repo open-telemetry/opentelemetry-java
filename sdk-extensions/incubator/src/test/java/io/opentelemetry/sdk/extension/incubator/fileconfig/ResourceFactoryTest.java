@@ -141,7 +141,16 @@ class ResourceFactoryTest {
         Arguments.of(
             Collections.singletonList("*o*"),
             Collections.singletonList("order"),
-            Resource.getDefault().toBuilder().put("color", "red").build()));
+            Resource.getDefault().toBuilder().put("color", "red").build()),
+        // empty or missing include should be treated as include all
+        Arguments.of(
+            Collections.emptyList(),
+            Collections.singletonList("order"),
+            Resource.getDefault().toBuilder().put("color", "red").put("shape", "square").build()),
+        Arguments.of(
+            null,
+            Collections.singletonList("order"),
+            Resource.getDefault().toBuilder().put("color", "red").put("shape", "square").build()));
   }
 
   @ParameterizedTest

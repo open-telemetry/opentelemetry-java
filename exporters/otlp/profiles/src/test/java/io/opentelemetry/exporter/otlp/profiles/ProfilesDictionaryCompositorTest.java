@@ -19,18 +19,18 @@ import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class ProfileDictionaryCompositorTest {
+class ProfilesDictionaryCompositorTest {
 
-  ProfileDictionaryCompositor compositor;
+  ProfilesDictionaryCompositor compositor;
 
   @BeforeEach
   void setUp() {
-    compositor = new ProfileDictionaryCompositor();
+    compositor = new ProfilesDictionaryCompositor();
   }
 
   @Test
   void hasInitialZeroElements() {
-    ProfileDictionaryData data = compositor.getProfileDictionaryData();
+    ProfilesDictionaryData data = compositor.getProfileDictionaryData();
     assertThat(data.getMappingTable()).size().isEqualTo(1);
     assertThat(data.getLocationTable()).size().isEqualTo(1);
     assertThat(data.getFunctionTable()).size().isEqualTo(1);
@@ -49,7 +49,7 @@ class ProfileDictionaryCompositorTest {
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(b)).isEqualTo(2);
 
-    ProfileDictionaryData data = compositor.getProfileDictionaryData();
+    ProfilesDictionaryData data = compositor.getProfileDictionaryData();
     assertThat(data.getMappingTable()).size().isEqualTo(3);
     assertThat(data.getMappingTable().get(1)).isEqualTo(a);
     assertThat(data.getMappingTable().get(2)).isEqualTo(b);
@@ -66,7 +66,7 @@ class ProfileDictionaryCompositorTest {
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(b)).isEqualTo(2);
 
-    ProfileDictionaryData data = compositor.getProfileDictionaryData();
+    ProfilesDictionaryData data = compositor.getProfileDictionaryData();
     assertThat(data.getLocationTable()).size().isEqualTo(3);
     assertThat(data.getLocationTable().get(1)).isEqualTo(a);
     assertThat(data.getLocationTable().get(2)).isEqualTo(b);
@@ -81,7 +81,7 @@ class ProfileDictionaryCompositorTest {
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(b)).isEqualTo(2);
 
-    ProfileDictionaryData data = compositor.getProfileDictionaryData();
+    ProfilesDictionaryData data = compositor.getProfileDictionaryData();
     assertThat(data.getFunctionTable()).size().isEqualTo(3);
     assertThat(data.getFunctionTable().get(1)).isEqualTo(a);
     assertThat(data.getFunctionTable().get(2)).isEqualTo(b);
@@ -96,7 +96,7 @@ class ProfileDictionaryCompositorTest {
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(b)).isEqualTo(2);
 
-    ProfileDictionaryData data = compositor.getProfileDictionaryData();
+    ProfilesDictionaryData data = compositor.getProfileDictionaryData();
     assertThat(data.getLinkTable()).size().isEqualTo(3);
     assertThat(data.getLinkTable().get(1)).isEqualTo(a);
     assertThat(data.getLinkTable().get(2)).isEqualTo(b);
@@ -111,7 +111,7 @@ class ProfileDictionaryCompositorTest {
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(b)).isEqualTo(2);
 
-    ProfileDictionaryData data = compositor.getProfileDictionaryData();
+    ProfilesDictionaryData data = compositor.getProfileDictionaryData();
     assertThat(data.getStringTable()).size().isEqualTo(3);
     assertThat(data.getStringTable().get(1)).isEqualTo(a);
     assertThat(data.getStringTable().get(2)).isEqualTo(b);
@@ -126,7 +126,7 @@ class ProfileDictionaryCompositorTest {
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(b)).isEqualTo(2);
 
-    ProfileDictionaryData data = compositor.getProfileDictionaryData();
+    ProfilesDictionaryData data = compositor.getProfileDictionaryData();
     assertThat(data.getAttributeTable()).size().isEqualTo(3);
     assertThat(data.getAttributeTable().get(1)).isEqualTo(a);
     assertThat(data.getAttributeTable().get(2)).isEqualTo(b);
@@ -141,7 +141,7 @@ class ProfileDictionaryCompositorTest {
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(b)).isEqualTo(2);
 
-    ProfileDictionaryData data = compositor.getProfileDictionaryData();
+    ProfilesDictionaryData data = compositor.getProfileDictionaryData();
     assertThat(data.getStackTable()).size().isEqualTo(3);
     assertThat(data.getStackTable().get(1)).isEqualTo(a);
     assertThat(data.getStackTable().get(2)).isEqualTo(b);

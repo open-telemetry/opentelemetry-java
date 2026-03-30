@@ -12,7 +12,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileDictionaryData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfilesDictionaryData;
 import io.opentelemetry.proto.collector.profiles.v1development.internal.ExportProfilesServiceRequest;
 import java.io.IOException;
 import java.util.Collection;
@@ -26,8 +26,8 @@ import java.util.Collections;
  */
 public final class ProfilesRequestMarshaler extends MarshalerWithSize {
 
-  private static final ProfileDictionaryData EMPTY_DICTIONARY_DATA =
-      ImmutableProfileDictionaryData.create(
+  private static final ProfilesDictionaryData EMPTY_DICTIONARY_DATA =
+      ImmutableProfilesDictionaryData.create(
           Collections.emptyList(),
           Collections.emptyList(),
           Collections.emptyList(),
@@ -40,7 +40,7 @@ public final class ProfilesRequestMarshaler extends MarshalerWithSize {
       ExportProfilesServiceRequest.RESOURCE_PROFILES;
 
   private final ResourceProfilesMarshaler[] resourceProfilesMarshalers;
-  private final ProfileDictionaryMarshaler profileDictionaryMarshaler;
+  private final ProfilesDictionaryMarshaler profilesDictionaryMarshaler;
 
   /**
    * Returns a {@link ProfilesRequestMarshaler} that can be used to convert the provided {@link
@@ -48,44 +48,44 @@ public final class ProfilesRequestMarshaler extends MarshalerWithSize {
    */
   public static ProfilesRequestMarshaler create(Collection<ProfileData> profileList) {
     // Verify all profiles in batch have identical dictionary
-    ProfileDictionaryData profileDictionaryData = null;
+    ProfilesDictionaryData profilesDictionaryData = null;
     for (ProfileData profileData : profileList) {
-      if (profileDictionaryData == null) {
-        profileDictionaryData = profileData.getProfileDictionaryData();
-      } else if (profileDictionaryData != profileData.getProfileDictionaryData()) {
+      if (profilesDictionaryData == null) {
+        profilesDictionaryData = profileData.getProfileDictionaryData();
+      } else if (profilesDictionaryData != profileData.getProfileDictionaryData()) {
         throw new IllegalArgumentException(
             "All profiles in batch must have identical ProfileDictionaryData");
       }
     }
 
-    ProfileDictionaryMarshaler profileDictionaryMarshaler =
-        ProfileDictionaryMarshaler.create(
-            profileDictionaryData == null ? EMPTY_DICTIONARY_DATA : profileDictionaryData);
+    ProfilesDictionaryMarshaler profilesDictionaryMarshaler =
+        ProfilesDictionaryMarshaler.create(
+            profilesDictionaryData == null ? EMPTY_DICTIONARY_DATA : profilesDictionaryData);
 
     return new ProfilesRequestMarshaler(
-        ResourceProfilesMarshaler.create(profileList), profileDictionaryMarshaler);
+        ResourceProfilesMarshaler.create(profileList), profilesDictionaryMarshaler);
   }
 
   private ProfilesRequestMarshaler(
       ResourceProfilesMarshaler[] resourceProfilesMarshalers,
-      ProfileDictionaryMarshaler profileDictionaryMarshaler) {
-    super(calculateSize(resourceProfilesMarshalers, profileDictionaryMarshaler));
+      ProfilesDictionaryMarshaler profilesDictionaryMarshaler) {
+    super(calculateSize(resourceProfilesMarshalers, profilesDictionaryMarshaler));
     this.resourceProfilesMarshalers = resourceProfilesMarshalers;
-    this.profileDictionaryMarshaler = profileDictionaryMarshaler;
+    this.profilesDictionaryMarshaler = profilesDictionaryMarshaler;
   }
 
   @Override
   public void writeTo(Serializer output) throws IOException {
     output.serializeRepeatedMessage(RESOURCE_PROFILES, resourceProfilesMarshalers);
-    output.serializeMessage(DICTIONARY, profileDictionaryMarshaler);
+    output.serializeMessage(DICTIONARY, profilesDictionaryMarshaler);
   }
 
   private static int calculateSize(
       ResourceProfilesMarshaler[] resourceProfilesMarshalers,
-      ProfileDictionaryMarshaler profileDictionaryMarshaler) {
+      ProfilesDictionaryMarshaler profilesDictionaryMarshaler) {
     int size = 0;
     size += MarshalerUtil.sizeRepeatedMessage(RESOURCE_PROFILES, resourceProfilesMarshalers);
-    size += MarshalerUtil.sizeMessage(DICTIONARY, profileDictionaryMarshaler);
+    size += MarshalerUtil.sizeMessage(DICTIONARY, profilesDictionaryMarshaler);
     return size;
   }
 }
