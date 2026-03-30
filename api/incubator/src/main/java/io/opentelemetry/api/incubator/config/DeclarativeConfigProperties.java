@@ -60,7 +60,6 @@ public interface DeclarativeConfigProperties {
    *     {@code name} has not been configured or is not a valid scalar string
    */
   default String getString(String name, String defaultValue) {
-    Objects.requireNonNull(defaultValue, "Null default value");
     return defaultIfNull(getString(name), defaultValue);
   }
 
