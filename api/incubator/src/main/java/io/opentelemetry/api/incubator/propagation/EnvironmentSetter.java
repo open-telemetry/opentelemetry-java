@@ -67,7 +67,7 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
   }
 
   /**
-   * Normalizes a key to be a valid environment variable name:
+   * Normalizes a key to be a valid environment variable name.
    *
    * <ul>
    *   <li>ASCII letters are converted to uppercase
