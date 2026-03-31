@@ -6,10 +6,7 @@
 package io.opentelemetry.api.incubator.propagation;
 
 import io.opentelemetry.context.propagation.TextMapSetter;
-import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -30,8 +27,10 @@ import javax.annotation.Nullable;
  * conventions:
  *
  * <ul>
- *   <li>Converts keys to uppercase (e.g., {@code traceparent} becomes {@code TRACEPARENT})
- *   <li>Replaces {@code .} and {@code -} with underscores
+ *   <li>ASCII letters are converted to uppercase
+ *   <li>Any character that is not an ASCII letter, digit, or underscore is replaced with an
+ *       underscore
+ *   <li>If the result would start with a digit, an underscore is prepended
  * </ul>
  *
  * <p>Values are validated to contain only characters valid in HTTP header fields per <a
@@ -49,7 +48,6 @@ import javax.annotation.Nullable;
  */
 public final class EnvironmentSetter implements TextMapSetter<Map<String, String>> {
 
-  private static final Logger logger = Logger.getLogger(EnvironmentSetter.class.getName());
   private static final EnvironmentSetter INSTANCE = new EnvironmentSetter();
 
   private EnvironmentSetter() {}
@@ -64,35 +62,36 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
     if (carrier == null || key == null || value == null) {
       return;
     }
-    if (!isValidHttpHeaderValue(value)) {
-      logger.log(
-          Level.FINE,
-          "Skipping environment variable injection for key ''{0}'': "
-              + "value contains characters not valid in HTTP header fields per RFC 9110.",
-          key);
-      return;
-    }
-    // Spec recommends using uppercase and underscores for environment variable
-    // names for maximum
-    // cross-platform compatibility.
-    String sanitizedKey = key.replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
-    carrier.put(sanitizedKey, value);
+    String normalizedKey = normalizeKey(key);
+    carrier.put(normalizedKey, value);
   }
 
   /**
-   * Checks whether a string contains only characters valid in HTTP header field values per <a
-   * href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.5">RFC 9110 Section 5.5</a>.
-   * Valid characters are: visible ASCII (0x21-0x7E), space (0x20), and horizontal tab (0x09).
+   * Normalizes a key to be a valid environment variable name:
+   *
+   * <ul>
+   *   <li>ASCII letters are converted to uppercase
+   *   <li>Any character that is not an ASCII letter, digit, or underscore is replaced with an
+   *       underscore (including {@code .}, {@code -}, whitespace, and control characters)
+   *   <li>If the result would start with a digit, an underscore is prepended
+   * </ul>
    */
-  static boolean isValidHttpHeaderValue(String value) {
-    for (int i = 0; i < value.length(); i++) {
-      char ch = value.charAt(i);
-      // VCHAR (0x21-0x7E), SP (0x20), HTAB (0x09)
-      if (ch != '\t' && (ch < ' ' || ch > '~')) {
-        return false;
+  static String normalizeKey(String key) {
+    StringBuilder sb = new StringBuilder(key.length() + 1);
+    for (int i = 0; i < key.length(); i++) {
+      char ch = key.charAt(i);
+      if (ch >= 'a' && ch <= 'z') {
+        sb.append((char) (ch - 32));
+      } else if ((ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_') {
+        sb.append(ch);
+      } else {
+        sb.append('_');
       }
     }
-    return true;
+    if (sb.length() > 0 && sb.charAt(0) >= '0' && sb.charAt(0) <= '9') {
+      sb.insert(0, '_');
+    }
+    return sb.toString();
   }
 
   @Override

@@ -50,32 +50,29 @@ class EnvironmentGetterTest {
     carrier.put("K1", "V1");
     carrier.put("K2", "V2");
 
-    assertThat(EnvironmentGetter.getInstance().keys(carrier)).containsExactlyInAnyOrder("k1", "k2");
+    assertThat(EnvironmentGetter.getInstance().keys(carrier)).containsExactlyInAnyOrder("K1", "K2");
     assertThat(EnvironmentGetter.getInstance().keys(null)).isEmpty();
   }
 
   @Test
-  void get_validHeaderValues() {
+  void get_valuesAreUnmodified() {
     Map<String, String> carrier = new HashMap<>();
     carrier.put("KEY1", "simple-value");
     carrier.put("KEY2", "value with spaces");
     carrier.put("KEY3", "value\twith\ttabs");
+    carrier.put("KEY4", "value\u0000with\u0001control");
+    carrier.put("KEY5", "value\nwith\nnewlines");
+    carrier.put("KEY6", "value\u0080non-ascii");
 
     assertThat(EnvironmentGetter.getInstance().get(carrier, "key1")).isEqualTo("simple-value");
     assertThat(EnvironmentGetter.getInstance().get(carrier, "key2")).isEqualTo("value with spaces");
     assertThat(EnvironmentGetter.getInstance().get(carrier, "key3")).isEqualTo("value\twith\ttabs");
-  }
-
-  @Test
-  void get_invalidHeaderValues() {
-    Map<String, String> carrier = new HashMap<>();
-    carrier.put("KEY1", "value\u0000with\u0001control");
-    carrier.put("KEY2", "value\nwith\nnewlines");
-    carrier.put("KEY3", "value\u0080non-ascii");
-
-    assertThat(EnvironmentGetter.getInstance().get(carrier, "key1")).isNull();
-    assertThat(EnvironmentGetter.getInstance().get(carrier, "key2")).isNull();
-    assertThat(EnvironmentGetter.getInstance().get(carrier, "key3")).isNull();
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key4"))
+        .isEqualTo("value\u0000with\u0001control");
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key5"))
+        .isEqualTo("value\nwith\nnewlines");
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key6"))
+        .isEqualTo("value\u0080non-ascii");
   }
 
   @Test

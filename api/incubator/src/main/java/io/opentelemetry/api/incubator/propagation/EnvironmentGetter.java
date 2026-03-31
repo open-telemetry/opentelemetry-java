@@ -8,11 +8,7 @@ package io.opentelemetry.api.incubator.propagation;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -46,7 +42,6 @@ import javax.annotation.Nullable;
  */
 public final class EnvironmentGetter implements TextMapGetter<Map<String, String>> {
 
-  private static final Logger logger = Logger.getLogger(EnvironmentGetter.class.getName());
   private static final EnvironmentGetter INSTANCE = new EnvironmentGetter();
 
   private EnvironmentGetter() {}
@@ -61,11 +56,7 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
     if (carrier == null) {
       return Collections.emptyList();
     }
-    List<String> result = new ArrayList<>(carrier.size());
-    for (String key : carrier.keySet()) {
-      result.add(key.toLowerCase(Locale.ROOT));
-    }
-    return result;
+    return new ArrayList<>(carrier.keySet());
   }
 
   @Nullable
@@ -74,20 +65,8 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
     if (carrier == null || key == null) {
       return null;
     }
-    // Spec recommends using uppercase and underscores for environment variable
-    // names for maximum
-    // cross-platform compatibility.
-    String sanitizedKey = key.replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
-    String value = carrier.get(sanitizedKey);
-    if (value != null && !EnvironmentSetter.isValidHttpHeaderValue(value)) {
-      logger.log(
-          Level.FINE,
-          "Ignoring environment variable '{0}': "
-              + "value contains characters not valid in HTTP header fields per RFC 9110.",
-          sanitizedKey);
-      return null;
-    }
-    return value;
+    String normalizedKey = EnvironmentSetter.normalizeKey(key);
+    return carrier.get(normalizedKey);
   }
 
   @Override
