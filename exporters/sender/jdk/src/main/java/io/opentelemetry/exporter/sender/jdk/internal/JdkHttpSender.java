@@ -5,10 +5,9 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
-import static java.util.stream.Collectors.joining;
-
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -16,19 +15,19 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -156,10 +155,8 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public void send(
-      MessageWriter messageWriter,
-      Consumer<io.opentelemetry.sdk.common.export.HttpResponse> onResponse,
-      Consumer<Throwable> onError) {
-    CompletableFuture<HttpResponse<byte[]>> unused =
+      MessageWriter messageWriter, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
+    CompletableFuture<HttpResponse> unused =
         CompletableFuture.supplyAsync(
                 () -> {
                   try {
@@ -175,12 +172,12 @@ public final class JdkHttpSender implements HttpSender {
                     onError.accept(throwable);
                     return;
                   }
-                  onResponse.accept(toHttpResponse(httpResponse));
+                  onResponse.accept(httpResponse);
                 });
   }
 
   // Visible for testing
-  HttpResponse<byte[]> sendInternal(MessageWriter requestBodyWriter) throws IOException {
+  HttpResponse sendInternal(MessageWriter requestBodyWriter) throws IOException {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(endpoint).timeout(timeout);
     Map<String, List<String>> headers = headerSupplier.get();
@@ -212,7 +209,7 @@ public final class JdkHttpSender implements HttpSender {
 
     long attempt = 0;
     long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
-    HttpResponse<byte[]> httpResponse = null;
+    HttpResponse httpResponse = null;
     IOException exception = null;
     do {
       if (attempt > 0) {
@@ -239,7 +236,7 @@ public final class JdkHttpSender implements HttpSender {
       requestBuilder.timeout(timeout.minusNanos(System.nanoTime() - startTimeNanos));
       try {
         httpResponse = sendRequest(requestBuilder, byteBufferPool);
-        boolean retryable = retryableStatusCodes.contains(httpResponse.statusCode());
+        boolean retryable = retryableStatusCodes.contains(httpResponse.getStatusCode());
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -278,33 +275,16 @@ public final class JdkHttpSender implements HttpSender {
     throw exception;
   }
 
-  private static String responseStringRepresentation(HttpResponse<?> response) {
-    StringJoiner joiner = new StringJoiner(",", "HttpResponse{", "}");
-    joiner.add("code=" + response.statusCode());
-    joiner.add(
-        "headers="
-            + response.headers().map().entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + String.join(",", entry.getValue()))
-                .collect(joining(",", "[", "]")));
-    return joiner.toString();
+  private static String responseStringRepresentation(HttpResponse response) {
+    return "HttpResponse{code=" + response.getStatusCode() + "}";
   }
 
-  private HttpResponse<byte[]> sendRequest(
+  private HttpResponse sendRequest(
       HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
-      return client.send(
-          requestBuilder.build(),
-          responseInfo ->
-              HttpResponse.BodySubscribers.mapping(
-                  HttpResponse.BodySubscribers.ofInputStream(),
-                  inputStream -> {
-                    try (inputStream) {
-                      return inputStream.readNBytes(
-                          (int) Math.min(maxResponseBodySize, Integer.MAX_VALUE));
-                    } catch (IOException e) {
-                      throw new UncheckedIOException(e);
-                    }
-                  }));
+      java.net.http.HttpResponse<InputStream> response =
+          client.send(requestBuilder.build(), BodyHandlers.ofInputStream());
+      return toHttpResponse(response);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new IllegalStateException(e);
@@ -336,22 +316,30 @@ public final class JdkHttpSender implements HttpSender {
     }
   }
 
-  private static io.opentelemetry.sdk.common.export.HttpResponse toHttpResponse(
-      HttpResponse<byte[]> response) {
-    return new io.opentelemetry.sdk.common.export.HttpResponse() {
+  private HttpResponse toHttpResponse(java.net.http.HttpResponse<InputStream> response) {
+    int statusCode = response.statusCode();
+    byte[] bodyBytes;
+    try (InputStream is = response.body()) {
+      bodyBytes = is.readNBytes((int) Math.min(maxResponseBodySize, Integer.MAX_VALUE));
+    } catch (IOException e) {
+      bodyBytes = new byte[0];
+      logger.log(Level.WARNING, "Failed to read response body", e);
+    }
+    byte[] body = bodyBytes;
+    return new HttpResponse() {
       @Override
       public int getStatusCode() {
-        return response.statusCode();
+        return statusCode;
       }
 
       @Override
       public String getStatusMessage() {
-        return String.valueOf(response.statusCode());
+        return String.valueOf(statusCode);
       }
 
       @Override
       public byte[] getResponseBody() {
-        return response.body();
+        return body;
       }
     };
   }
