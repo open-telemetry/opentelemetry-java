@@ -42,7 +42,7 @@ public final class JaegerRemoteSamplerBuilder {
   private static final Sampler INITIAL_SAMPLER =
       Sampler.parentBased(Sampler.traceIdRatioBased(0.001));
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
-  private static final long DEFAULT_MAX_RESPONSE_BODY_SIZE = 1024L * 1024L;
+  private static final long DEFAULT_MAX_RESPONSE_BODY_SIZE = 4 * 1024L * 1024L;
 
   private URI endpoint = DEFAULT_ENDPOINT;
   private Sampler initialSampler = INITIAL_SAMPLER;
@@ -151,7 +151,7 @@ public final class JaegerRemoteSamplerBuilder {
 
   /**
    * Sets the maximum number of bytes to read from a sampling strategy response body. If unset,
-   * defaults to 1 MiB. Must be positive.
+   * defaults to 4 MiB. Must be positive.
    */
   public JaegerRemoteSamplerBuilder setMaxSamplingStrategyResponseBodySize(long bytes) {
     Utils.checkArgument(bytes > 0, "maxSamplingStrategyResponseBodySize must be positive");

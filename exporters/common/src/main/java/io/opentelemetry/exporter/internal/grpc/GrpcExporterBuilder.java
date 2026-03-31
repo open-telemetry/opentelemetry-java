@@ -231,8 +231,9 @@ public class GrpcExporterBuilder {
                 isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
                 executorService,
                 grpcChannel,
-                // 1kb since don't do anything with responses today
-                1024L));
+                // 4mb to align with spec guidance - even though we don't do anything with the
+                // response today, we will so better to have future-looking memory profile
+                4 * 1024L * 1024L));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter(

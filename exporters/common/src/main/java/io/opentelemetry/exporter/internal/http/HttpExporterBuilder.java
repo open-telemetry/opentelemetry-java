@@ -246,8 +246,9 @@ public final class HttpExporterBuilder {
                 isPlainHttp ? null : tlsConfigHelper.getSslContext(),
                 isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
                 executorService,
-                // 1kb since don't do anything with responses today
-                1024L));
+                // 4mb to align with spec guidance - even though we don't do anything with the
+                // response today, we will so better to have future-looking memory profile
+                4 * 1024L * 1024L));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter(
