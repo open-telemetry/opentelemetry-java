@@ -10,7 +10,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -29,7 +28,6 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK then pushes
@@ -85,9 +83,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
             exporterTimeoutNanos,
             JcTools.newFixedSizeQueue(maxQueueSize),
             maxQueueSize);
-    Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
-    this.worker.setWorkerThread(workerThread);
-    workerThread.start();
+
+    worker.start();
   }
 
   @Override
@@ -160,7 +157,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
-  private static final class Worker implements Runnable {
+  private static final class Worker extends Thread {
 
     private final SpanProcessorInstrumentation spanProcessorInstrumentation;
 
@@ -170,7 +167,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long exporterTimeoutNanos;
 
     private long nextExportTime;
-    @Nullable private Thread workerThread;
 
     private final Queue<ReadableSpan> queue;
     private final AtomicInteger queueSize = new AtomicInteger();
@@ -196,6 +192,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
         long exporterTimeoutNanos,
         Queue<ReadableSpan> queue,
         long maxQueueSize) {
+      super(WORKER_THREAD_NAME);
+      super.setDaemon(true);
+
       this.spanExporter = spanExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
@@ -209,18 +208,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
-    private void setWorkerThread(Thread workerThread) {
-      this.workerThread = workerThread;
-    }
-
     private void addSpan(ReadableSpan span) {
       spanProcessorInstrumentation.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(span)) {
         spanProcessorInstrumentation.dropSpans(1);
         droppedSpanCount.incrementAndGet();
       } else {
-        if (workerThread != null && queueSize.incrementAndGet() >= spansNeeded) {
-          LockSupport.unpark(workerThread);
+        if (queueSize.incrementAndGet() >= spansNeeded) {
+          LockSupport.unpark(this);
         }
       }
     }
@@ -301,8 +296,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
       // we set the atomic here to trigger the worker loop to do a flush of the entire queue.
-      if (workerThread != null && flushRequested.compareAndSet(null, flushResult)) {
-        LockSupport.unpark(workerThread);
+      if (flushRequested.compareAndSet(null, flushResult)) {
+        LockSupport.unpark(this);
       }
       CompletableResultCode possibleResult = flushRequested.get();
       // there's a race here where the flush happening in the worker loop could complete before we
