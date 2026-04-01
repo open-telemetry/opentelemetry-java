@@ -26,6 +26,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -708,6 +709,7 @@ class SdkTracerProviderMetricsTest {
   }
 
   @Test
+  @SuppressLogger(BatchSpanProcessor.class)
   void batch() throws Exception {
     InMemoryMetricReader metricReader = InMemoryMetricReader.create();
     MeterProvider meterProvider =
