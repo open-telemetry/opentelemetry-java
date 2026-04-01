@@ -24,8 +24,9 @@ jobs:
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6.0.1
 
-      - run: ./gradlew ossIndexAudit
-        id: audit
+      - id: audit
+        # --no-parallel is needed to avoid OverlappingFileLockException on the shared OSS Index cache
+        run: ./gradlew ossIndexAudit --no-configuration-cache --no-parallel
         continue-on-error: true
         env:
           SONATYPE_OSS_INDEX_USER: ${{ secrets.SONATYPE_OSS_INDEX_USER }}
