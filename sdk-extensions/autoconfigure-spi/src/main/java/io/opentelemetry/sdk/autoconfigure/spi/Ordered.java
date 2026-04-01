@@ -5,6 +5,12 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi;
 
+import io.opentelemetry.common.ComponentLoader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 /**
  * Interface to be extended by SPIs that need to guarantee ordering during loading.
  *
@@ -19,5 +25,12 @@ public interface Ordered {
    */
   default int order() {
     return 0;
+  }
+
+  static <T extends Ordered> List<T> loadOrdered(
+      ComponentLoader componentLoader, Class<T> spiClass) {
+    List<T> result = new ArrayList<>(ComponentLoader.loadList(componentLoader, spiClass));
+    result.sort(Comparator.comparing(Ordered::order));
+    return Collections.unmodifiableList(result);
   }
 }

@@ -9,15 +9,18 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -32,30 +35,14 @@ final class IncubatingUtil {
 
   private IncubatingUtil() {}
 
-  // Visible for testing
-  interface Factory {
-    @Nullable
-    AutoConfiguredOpenTelemetrySdk create()
-        throws ClassNotFoundException,
-            NoSuchMethodException,
-            IllegalAccessException,
-            InvocationTargetException;
-  }
-
   static AutoConfiguredOpenTelemetrySdk configureFromFile(
       Logger logger, String configurationFile, ComponentLoader componentLoader) {
     logger.fine("Autoconfiguring from configuration file: " + configurationFile);
     try (FileInputStream fis = new FileInputStream(configurationFile)) {
-      return requireNonNull(
-          createWithFactory(
-              "file",
-              () ->
-                  getOpenTelemetrySdk(
-                      Class.forName(
-                              "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration")
-                          .getMethod("parse", InputStream.class)
-                          .invoke(null, fis),
-                      componentLoader)));
+      OpenTelemetryConfigurationModel model = DeclarativeConfiguration.parse(fis);
+      return create(model, componentLoader);
+    } catch (DeclarativeConfigException e) {
+      throw toConfigurationException(e);
     } catch (FileNotFoundException e) {
       throw new ConfigurationException("Configuration file not found", e);
     } catch (IOException e) {
@@ -67,75 +54,34 @@ final class IncubatingUtil {
 
   @Nullable
   public static AutoConfiguredOpenTelemetrySdk configureFromSpi(ComponentLoader componentLoader) {
-    return createWithFactory(
-        "SPI",
-        () -> {
-          Class<?> providerClass =
-              Class.forName(
-                  "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationProvider");
-          Method getConfigurationModel = providerClass.getMethod("getConfigurationModel");
-
-          for (Object configProvider : componentLoader.load(providerClass)) {
-            Object model = getConfigurationModel.invoke(configProvider);
-            if (model != null) {
-              return getOpenTelemetrySdk(model, componentLoader);
-            }
-          }
-          return null;
-        });
-  }
-
-  private static AutoConfiguredOpenTelemetrySdk getOpenTelemetrySdk(
-      Object model, ComponentLoader componentLoader)
-      throws IllegalAccessException,
-          InvocationTargetException,
-          ClassNotFoundException,
-          NoSuchMethodException {
-
-    Class<?> openTelemetryConfiguration =
-        Class.forName(
-            "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel");
-    Class<?> declarativeConfiguration =
-        Class.forName(
-            "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
-
-    Class<?> contextClass =
-        Class.forName(
-            "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigContext");
-    Method createContext = contextClass.getDeclaredMethod("create", ComponentLoader.class);
-    createContext.setAccessible(true);
-    Object context = createContext.invoke(null, componentLoader);
-
-    Method create =
-        declarativeConfiguration.getDeclaredMethod(
-            "create", openTelemetryConfiguration, contextClass);
-    create.setAccessible(true);
-    OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, context);
-
-    Method getResource = contextClass.getDeclaredMethod("getResource");
-    getResource.setAccessible(true);
-    Resource resource = (Resource) getResource.invoke(context);
-
-    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, null);
-  }
-
-  // Visible for testing
-  @Nullable
-  static AutoConfiguredOpenTelemetrySdk createWithFactory(String name, Factory factory) {
-    try {
-      return factory.create();
-    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
-      throw new ConfigurationException(
-          String.format(
-              "Error configuring from %s. Is opentelemetry-sdk-extension-incubator on the classpath?",
-              name),
-          e);
-    } catch (InvocationTargetException e) {
-      Throwable cause = e.getCause();
-      if (cause instanceof DeclarativeConfigException) {
-        throw toConfigurationException((DeclarativeConfigException) cause);
+    for (DeclarativeConfigurationProvider provider :
+        componentLoader.load(DeclarativeConfigurationProvider.class)) {
+      OpenTelemetryConfigurationModel model = provider.getConfigurationModel();
+      if (model != null) {
+        return create(model, componentLoader);
       }
-      throw new ConfigurationException("Unexpected error configuring from " + name, e);
+    }
+    return null;
+  }
+
+  private static AutoConfiguredOpenTelemetrySdk create(
+      OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
+    ExtendedOpenTelemetrySdk sdk;
+    try {
+      sdk = DeclarativeConfiguration.create(model, componentLoader);
+    } catch (DeclarativeConfigException e) {
+      throw toConfigurationException(e);
+    }
+
+    try {
+      Field sharedState = SdkMeterProvider.class.getDeclaredField("sharedState");
+      sharedState.setAccessible(true);
+      Resource resource =
+          ((MeterProviderSharedState) sharedState.get(sdk.getSdkMeterProvider())).getResource();
+
+      return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, null);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new ConfigurationException("Error resolving resource from ExtendedOpenTelemetrySdk", e);
     }
   }
 

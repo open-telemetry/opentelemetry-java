@@ -16,6 +16,8 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -28,15 +30,15 @@ class DeclarativeConfigurationSpiTest {
 
   @Test
   void configFromSpi() {
+    Resource resource = Resource.getDefault().toBuilder().put("service.name", "test").build();
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder()
+                    .setMeterProvider(SdkMeterProvider.builder().setResource(resource).build())
+                    .setLoggerProvider(SdkLoggerProvider.builder().setResource(resource).build())
                     .setTracerProvider(
                         SdkTracerProvider.builder()
-                            .setResource(
-                                Resource.getDefault().toBuilder()
-                                    .put("service.name", "test")
-                                    .build())
+                            .setResource(resource)
                             .addSpanProcessor(
                                 SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                             .build()),

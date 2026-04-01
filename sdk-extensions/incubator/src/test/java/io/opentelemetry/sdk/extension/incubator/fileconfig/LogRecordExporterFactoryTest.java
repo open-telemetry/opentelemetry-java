@@ -17,7 +17,6 @@ import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordE
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
@@ -54,14 +53,12 @@ class LogRecordExporterFactoryTest {
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   private CapturingComponentLoader capturingComponentLoader;
-  private SpiHelper spiHelper;
   private DeclarativeConfigContext context;
 
   @BeforeEach
   void setup() {
     capturingComponentLoader = new CapturingComponentLoader();
-    spiHelper = SpiHelper.create(capturingComponentLoader);
-    context = new DeclarativeConfigContext(spiHelper);
+    context = new DeclarativeConfigContext(capturingComponentLoader);
     context.setBuilder(new DeclarativeConfigurationBuilder());
   }
 
@@ -70,7 +67,7 @@ class LogRecordExporterFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OtlpHttpLogRecordExporter expectedExporter =
         OtlpHttpLogRecordExporter.getDefault().toBuilder()
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -108,7 +105,7 @@ class LogRecordExporterFactoryTest {
             .addHeader("key2", "value2")
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -181,7 +178,7 @@ class LogRecordExporterFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OtlpGrpcLogRecordExporter expectedExporter =
         OtlpGrpcLogRecordExporter.getDefault().toBuilder()
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -218,7 +215,7 @@ class LogRecordExporterFactoryTest {
             .addHeader("key2", "value2")
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 

@@ -97,8 +97,7 @@ class ResourceConfigurationTest {
         ResourceConfiguration.createEnvironmentResource(
                 DefaultConfigProperties.createFromMap(
                     singletonMap(
-                        ResourceConfiguration.ATTRIBUTE_PROPERTY,
-                        "service.name=myService,appName=MyApp")))
+                        "otel.resource.attributes", "service.name=myService,appName=MyApp")))
             .getAttributes();
 
     assertThat(attributes)
@@ -112,7 +111,7 @@ class ResourceConfigurationTest {
     Attributes attributes =
         ResourceConfiguration.createEnvironmentResource(
                 DefaultConfigProperties.createFromMap(
-                    singletonMap(ResourceConfiguration.SERVICE_NAME_PROPERTY, "myService")))
+                    singletonMap("otel.service.name", "myService")))
             .getAttributes();
 
     assertThat(attributes).hasSize(1).containsEntry(stringKey("service.name"), "myService");
@@ -124,9 +123,9 @@ class ResourceConfigurationTest {
         ResourceConfiguration.createEnvironmentResource(
                 DefaultConfigProperties.createFromMap(
                     ImmutableMap.of(
-                        ResourceConfiguration.ATTRIBUTE_PROPERTY,
+                        "otel.resource.attributes",
                         "service.name=myService,appName=MyApp",
-                        ResourceConfiguration.SERVICE_NAME_PROPERTY,
+                        "otel.service.name",
                         "ReallyMyService")))
             .getAttributes();
 
@@ -140,8 +139,7 @@ class ResourceConfigurationTest {
   void createEnvironmentResource_EmptyResourceAttributes() {
     Attributes attributes =
         ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createFromMap(
-                    singletonMap(ResourceConfiguration.ATTRIBUTE_PROPERTY, "")))
+                DefaultConfigProperties.createFromMap(singletonMap("otel.resource.attributes", "")))
             .getAttributes();
 
     assertThat(attributes).isEmpty();
