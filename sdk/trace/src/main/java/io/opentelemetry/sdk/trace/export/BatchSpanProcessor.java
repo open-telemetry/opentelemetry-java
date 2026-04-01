@@ -17,16 +17,16 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.internal.JcTools;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,6 +86,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
             JcTools.newFixedSizeQueue(maxQueueSize),
             maxQueueSize);
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
+    this.worker.setWorkerThread(workerThread);
     workerThread.start();
   }
 
@@ -169,6 +170,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long exporterTimeoutNanos;
 
     private long nextExportTime;
+    @Nullable private Thread workerThread;
 
     private final Queue<ReadableSpan> queue;
     private final AtomicInteger queueSize = new AtomicInteger();
@@ -178,8 +180,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     // Integer.MAX_VALUE is used to imply that exporter thread is not expecting any signal. Since
     // exporter thread doesn't expect any signal initially, this value is initialized to
     // Integer.MAX_VALUE.
-    private final AtomicInteger spansNeeded = new AtomicInteger(Integer.MAX_VALUE);
-    private final BlockingQueue<Boolean> signal;
+    private volatile int spansNeeded = Integer.MAX_VALUE;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
@@ -200,7 +201,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
-      this.signal = new ArrayBlockingQueue<>(1);
 
       spanProcessorInstrumentation =
           SpanProcessorInstrumentation.get(telemetryVersion, COMPONENT_ID, meterProvider);
@@ -209,14 +209,18 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
+    private void setWorkerThread(Thread workerThread) {
+      this.workerThread = workerThread;
+    }
+
     private void addSpan(ReadableSpan span) {
       spanProcessorInstrumentation.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(span)) {
         spanProcessorInstrumentation.dropSpans(1);
         droppedSpanCount.incrementAndGet();
       } else {
-        if (queueSize.incrementAndGet() >= spansNeeded.get()) {
-          signal.offer(true);
+        if (workerThread != null && queueSize.incrementAndGet() >= spansNeeded) {
+          LockSupport.unpark(workerThread);
         }
       }
     }
@@ -236,16 +240,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
           updateNextExportTime();
         }
         if (queue.isEmpty()) {
-          try {
-            long pollWaitTime = nextExportTime - System.nanoTime();
-            if (pollWaitTime > 0) {
-              spansNeeded.set(maxExportBatchSize - batch.size());
-              signal.poll(pollWaitTime, TimeUnit.NANOSECONDS);
-              spansNeeded.set(Integer.MAX_VALUE);
-            }
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return;
+          long pollWaitTime = nextExportTime - System.nanoTime();
+          if (pollWaitTime > 0) {
+            spansNeeded = maxExportBatchSize - batch.size();
+            LockSupport.parkNanos(pollWaitTime);
+            spansNeeded = Integer.MAX_VALUE;
           }
         }
       }
@@ -302,8 +301,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
       // we set the atomic here to trigger the worker loop to do a flush of the entire queue.
-      if (flushRequested.compareAndSet(null, flushResult)) {
-        signal.offer(true);
+      if (workerThread != null && flushRequested.compareAndSet(null, flushResult)) {
+        LockSupport.unpark(workerThread);
       }
       CompletableResultCode possibleResult = flushRequested.get();
       // there's a race here where the flush happening in the worker loop could complete before we
