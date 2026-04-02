@@ -330,15 +330,22 @@ public final class JdkHttpSender implements HttpSender {
     // lets us detect overflow: if we read more than maxResponseBodySize bytes, the body exceeded
     // the limit. A body exactly at the limit will read no further (EOF is reached first).
     // If maxResponseBodySize is >= Integer.MAX_VALUE, adding 1 would overflow (long) or exceed
-    // what readNBytes accepts (int). In that case read Integer.MAX_VALUE bytes — the overflow
-    // check can never trigger for such a large limit.
+    // what an int can hold. In that case use Integer.MAX_VALUE — the overflow check can never
+    // trigger for such a large limit.
     int readUpTo =
         maxResponseBodySize >= Integer.MAX_VALUE
             ? Integer.MAX_VALUE
             : (int) (maxResponseBodySize + 1);
     byte[] bodyBytes;
     try (InputStream is = response.body()) {
-      bodyBytes = is.readNBytes(readUpTo);
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      byte[] buf = new byte[4 * 0x400]; // 4KB
+      int n;
+      while (baos.size() < readUpTo
+          && (n = is.read(buf, 0, Math.min(buf.length, readUpTo - baos.size()))) != -1) {
+        baos.write(buf, 0, n);
+      }
+      bodyBytes = baos.toByteArray();
     } catch (IOException e) {
       bodyBytes = new byte[0];
       logger.log(Level.WARNING, "Failed to read response body", e);
