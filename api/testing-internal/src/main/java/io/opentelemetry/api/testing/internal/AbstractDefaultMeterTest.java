@@ -6,6 +6,7 @@
 package io.opentelemetry.api.testing.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -50,6 +51,18 @@ public abstract class AbstractDefaultMeterTest {
         .setInstrumentationVersion("1.0")
         .setSchemaUrl("myschema://url")
         .build();
+  }
+
+  @Test
+  void defaultIsEnabled() {
+    assertThat(meter.counterBuilder("test").build().isEnabled()).isFalse();
+    assertThat(meter.counterBuilder("test").ofDoubles().build().isEnabled()).isFalse();
+    assertThat(meter.histogramBuilder("test").ofLongs().build().isEnabled()).isFalse();
+    assertThat(meter.histogramBuilder("test").build().isEnabled()).isFalse();
+    assertThat(meter.upDownCounterBuilder("test").build().isEnabled()).isFalse();
+    assertThat(meter.upDownCounterBuilder("test").ofDoubles().build().isEnabled()).isFalse();
+    assertThat(meter.gaugeBuilder("test").ofLongs().build().isEnabled()).isFalse();
+    assertThat(meter.gaugeBuilder("test").build().isEnabled()).isFalse();
   }
 
   @Test

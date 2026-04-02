@@ -28,6 +28,11 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
   }
 
   @Override
+  public boolean isEnabled() {
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
+  }
+
+  @Override
   public void set(long value, Attributes attributes) {
     storage.recordLong(value, attributes, Context.current());
   }

@@ -16,6 +16,19 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface LongUpDownCounter {
+
+  /**
+   * Returns {@code true} if the up down counter is enabled.
+   *
+   * <p>This allows callers to avoid unnecessary compute when nothing is consuming the data. Because
+   * the response is subject to change over the application, callers should call this before each
+   * call to {@link #add(long)}, {@link #add(long, Attributes)}, or {@link #add(long, Attributes,
+   * Context)}.
+   */
+  default boolean isEnabled() {
+    return true;
+  }
+
   /**
    * Records a value.
    *
