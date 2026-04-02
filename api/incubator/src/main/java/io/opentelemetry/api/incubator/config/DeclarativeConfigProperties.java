@@ -46,8 +46,8 @@ public interface DeclarativeConfigProperties {
   /**
    * Returns a {@link String} configuration property.
    *
-   * @return null if the property has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar string
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     string
    */
   @Nullable
   String getString(String name);
@@ -56,8 +56,7 @@ public interface DeclarativeConfigProperties {
    * Returns a {@link String} configuration property.
    *
    * @return a {@link String} configuration property or {@code defaultValue} if a property with
-   *     {@code name} has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar string
+   *     {@code name} has not been configured or is not a valid scalar string
    */
   default String getString(String name, String defaultValue) {
     return defaultIfNull(getString(name), defaultValue);
@@ -67,8 +66,8 @@ public interface DeclarativeConfigProperties {
    * Returns a {@link Boolean} configuration property. Implementations should use the same rules as
    * {@link Boolean#parseBoolean(String)} for handling the values.
    *
-   * @return null if the property has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar boolean
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     boolean
    */
   @Nullable
   Boolean getBoolean(String name);
@@ -77,8 +76,7 @@ public interface DeclarativeConfigProperties {
    * Returns a {@link Boolean} configuration property.
    *
    * @return a {@link Boolean} configuration property or {@code defaultValue} if a property with
-   *     {@code name} has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar boolean
+   *     {@code name} has not been configured or is not a valid scalar boolean
    */
   default boolean getBoolean(String name, boolean defaultValue) {
     return defaultIfNull(getBoolean(name), defaultValue);
@@ -90,8 +88,8 @@ public interface DeclarativeConfigProperties {
    * <p>If the underlying config property is {@link Long}, it is converted to {@link Integer} with
    * {@link Long#intValue()} which may result in loss of precision.
    *
-   * @return null if the property has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar integer
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     integer
    */
   @Nullable
   Integer getInt(String name);
@@ -103,8 +101,7 @@ public interface DeclarativeConfigProperties {
    * {@link Long#intValue()} which may result in loss of precision.
    *
    * @return a {@link Integer} configuration property or {@code defaultValue} if a property with
-   *     {@code name} has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar integer
+   *     {@code name} has not been configured or is not a valid scalar integer
    */
   default int getInt(String name, int defaultValue) {
     return defaultIfNull(getInt(name), defaultValue);
@@ -113,8 +110,8 @@ public interface DeclarativeConfigProperties {
   /**
    * Returns a {@link Long} configuration property.
    *
-   * @return null if the property has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar long
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     long
    */
   @Nullable
   Long getLong(String name);
@@ -123,8 +120,7 @@ public interface DeclarativeConfigProperties {
    * Returns a {@link Long} configuration property.
    *
    * @return a {@link Long} configuration property or {@code defaultValue} if a property with {@code
-   *     name} has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar long
+   *     name} has not been configured or is not a valid scalar long
    */
   default long getLong(String name, long defaultValue) {
     return defaultIfNull(getLong(name), defaultValue);
@@ -133,8 +129,8 @@ public interface DeclarativeConfigProperties {
   /**
    * Returns a {@link Double} configuration property.
    *
-   * @return null if the property has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar double
+   * @return null if the property has not been configured or if the property is not a valid scalar
+   *     double
    */
   @Nullable
   Double getDouble(String name);
@@ -143,8 +139,7 @@ public interface DeclarativeConfigProperties {
    * Returns a {@link Double} configuration property.
    *
    * @return a {@link Double} configuration property or {@code defaultValue} if a property with
-   *     {@code name} has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid scalar double
+   *     {@code name} has not been configured or is not a valid scalar double
    */
   default double getDouble(String name, double defaultValue) {
     return defaultIfNull(getDouble(name), defaultValue);
@@ -158,8 +153,8 @@ public interface DeclarativeConfigProperties {
    * @param scalarType the scalar type, one of {@link String}, {@link Boolean}, {@link Long} or
    *     {@link Double}
    * @return a {@link List} configuration property, or null if the property has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid sequence of scalars, or if
-   *     {@code scalarType} is not supported
+   *     or if the property is not a valid sequence of scalars
+   * @throws DeclarativeConfigException if {@code scalarType} is not supported
    */
   @Nullable
   <T> List<T> getScalarList(String name, Class<T> scalarType);
@@ -172,8 +167,7 @@ public interface DeclarativeConfigProperties {
    * @param scalarType the scalar type, one of {@link String}, {@link Boolean}, {@link Long} or
    *     {@link Double}
    * @return a {@link List} configuration property or {@code defaultValue} if a property with {@code
-   *     name} has not been configured
-   * @throws DeclarativeConfigException if the property is not a valid sequence of scalars
+   *     name} has not been configured or is not a valid sequence of scalars
    */
   default <T> List<T> getScalarList(String name, Class<T> scalarType, List<T> defaultValue) {
     return defaultIfNull(getScalarList(name, scalarType), defaultValue);
@@ -183,8 +177,7 @@ public interface DeclarativeConfigProperties {
    * Returns a {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a map-valued configuration property, or {@code null} if {@code name} has not been
-   *     configured
-   * @throws DeclarativeConfigException if the property is not a mapping
+   *     configured or is not a mapping
    */
   @Nullable
   DeclarativeConfigProperties getStructured(String name);
@@ -193,8 +186,7 @@ public interface DeclarativeConfigProperties {
    * Returns a list of {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a map-valued configuration property, or {@code defaultValue} if {@code name} has not
-   *     been configured
-   * @throws DeclarativeConfigException if the property is not a mapping
+   *     been configured or is not a mapping
    */
   default DeclarativeConfigProperties getStructured(
       String name, DeclarativeConfigProperties defaultValue) {
@@ -210,8 +202,7 @@ public interface DeclarativeConfigProperties {
    * but empty vs. not set, use {@link #getStructured(String)}.
    *
    * @return a map-valued configuration property, or an empty {@link DeclarativeConfigProperties}
-   *     instance if {@code name} has not been configured
-   * @throws DeclarativeConfigException if the property is not a mapping
+   *     instance if {@code name} has not been configured or is not a mapping
    */
   default DeclarativeConfigProperties get(String name) {
     return getStructured(name, empty());
@@ -221,8 +212,7 @@ public interface DeclarativeConfigProperties {
    * Returns a list of {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a list of map-valued configuration property, or {@code null} if {@code name} has not
-   *     been configured
-   * @throws DeclarativeConfigException if the property is not a sequence of mappings
+   *     been configured or is not a sequence of mappings
    */
   @Nullable
   List<DeclarativeConfigProperties> getStructuredList(String name);
@@ -231,8 +221,7 @@ public interface DeclarativeConfigProperties {
    * Returns a list of {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a list of map-valued configuration property, or {@code defaultValue} if {@code name}
-   *     has not been configured
-   * @throws DeclarativeConfigException if the property is not a sequence of mappings
+   *     has not been configured or is not a sequence of mappings
    */
   default List<DeclarativeConfigProperties> getStructuredList(
       String name, List<DeclarativeConfigProperties> defaultValue) {

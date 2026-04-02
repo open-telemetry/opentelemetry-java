@@ -20,7 +20,7 @@
         'patch',
       ],
       schedule: [
-        'before 8am on Tuesday',
+        '* 0-7 * * 2', // weekly, before 8am on Tuesday
       ],
     },
     {
@@ -30,8 +30,8 @@
         'github-actions',
         'dockerfile',
       ],
-      extends: [
-        'schedule:weekly',
+      schedule: [
+        '* 0-7 * * 2', // weekly, before 8am on Tuesday
       ],
       groupName: 'weekly update',
     },

@@ -50,7 +50,7 @@ final class LegacyLogRecordProcessorInstrumentation implements LogRecordProcesso
   @Override
   public void finishLogs(int count, @Nullable String error) {
     // Legacy metrics only record when no error.
-    if (error != null) {
+    if (error == null) {
       processedLogs().add(count, standardAttrs);
     }
   }

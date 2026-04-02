@@ -21,11 +21,6 @@ final class ExtendedSdkDoubleHistogram extends SdkDoubleHistogram
     super(descriptor, sdkMeter, storage);
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
-
   static final class ExtendedSdkDoubleHistogramBuilder extends SdkDoubleHistogramBuilder
       implements ExtendedDoubleHistogramBuilder {
 

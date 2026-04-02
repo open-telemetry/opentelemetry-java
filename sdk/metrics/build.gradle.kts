@@ -29,10 +29,6 @@ dependencies {
   jmh(project(":sdk:testing"))
 }
 
-dependencyCheck {
-  skipConfigurations.add("debugEnabledTestAnnotationProcessor")
-}
-
 testing {
   suites {
     register<JvmTestSuite>("testIncubating") {

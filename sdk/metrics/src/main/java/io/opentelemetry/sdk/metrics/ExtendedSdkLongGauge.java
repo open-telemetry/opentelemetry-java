@@ -20,11 +20,6 @@ final class ExtendedSdkLongGauge extends SdkLongGauge implements ExtendedLongGau
     super(descriptor, sdkMeter, storage);
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
-
   static final class ExtendedSdkLongGaugeBuilder extends SdkLongGaugeBuilder
       implements ExtendedLongGaugeBuilder {
 

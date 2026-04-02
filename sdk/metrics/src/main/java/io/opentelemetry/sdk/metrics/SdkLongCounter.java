@@ -35,6 +35,11 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
   }
 
   @Override
+  public boolean isEnabled() {
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
+  }
+
+  @Override
   public void add(long increment, Attributes attributes, Context context) {
     if (increment < 0) {
       throttlingLogger.log(

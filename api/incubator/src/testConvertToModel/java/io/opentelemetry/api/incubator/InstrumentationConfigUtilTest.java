@@ -164,8 +164,6 @@ class InstrumentationConfigUtilTest {
     @JsonProperty("double_list_property")
     private List<Double> doubleListProperty;
 
-    ;
-
     @JsonProperty("map_property")
     private Map<String, Object> mapProperty;
 

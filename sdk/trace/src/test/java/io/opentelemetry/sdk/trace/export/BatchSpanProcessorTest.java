@@ -240,6 +240,7 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  @SuppressLogger(BatchSpanProcessor.class)
   void droppedSpanIsLogged() {
     sdkTracerProvider =
         SdkTracerProvider.builder()
@@ -393,6 +394,7 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  @SuppressLogger(BatchSpanProcessor.class)
   void exportMoreSpansThanTheMaximumLimit() {
     int maxQueuedSpans = 8;
     WaitingSpanExporter waitingSpanExporter =

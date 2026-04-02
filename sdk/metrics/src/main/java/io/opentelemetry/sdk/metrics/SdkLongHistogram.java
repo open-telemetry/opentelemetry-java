@@ -35,6 +35,11 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   }
 
   @Override
+  public boolean isEnabled() {
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
+  }
+
+  @Override
   public void record(long value, Attributes attributes, Context context) {
     if (value < 0) {
       throttlingLogger.log(
