@@ -104,13 +104,6 @@ testing {
   }
 }
 
-// Exclude the compile-stub subproject from this module's audit: the scan plugin traverses
-// Gradle subprojects at execution time, which Gradle 9 forbids without an exclusive lock.
-// compile-stub runs its own ossIndexAudit task independently.
-ossIndexAudit {
-  modulesExcluded = mutableSetOf("compile-stub")
-}
-
 tasks {
   check {
     dependsOn(testing.suites)

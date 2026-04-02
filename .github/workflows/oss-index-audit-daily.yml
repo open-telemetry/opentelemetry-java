@@ -24,11 +24,8 @@ jobs:
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
 
-        # --max-workers=1: scan-gradle-plugin is not thread-safe when tasks run in parallel.
-        # Each ossIndexAudit task calls project.getAllprojects() and resolves configurations
-        # at execution time; concurrent tasks racing on the same configurations cause
-        # intermittent NullPointerExceptions. Running serially avoids this.
-      - run: ./gradlew ossIndexAudit --max-workers=1
+      # --no-parallel is needed to avoid OverlappingFileLockException on the shared OSS Index cache
+      - run: ./gradlew ossIndexAudit --no-configuration-cache --no-parallel --info
         id: audit
         continue-on-error: true
         env:

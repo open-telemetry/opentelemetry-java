@@ -52,14 +52,7 @@ ossIndexAudit {
   username = System.getenv("SONATYPE_OSS_INDEX_USER") ?: ""
   password = System.getenv("SONATYPE_OSS_INDEX_PASSWORD") ?: ""
   outputFormat = org.sonatype.gradle.plugins.scan.ossindex.OutputFormat.JSON_CYCLONE_DX_1_4
-}
-
-// scan-gradle-plugin accesses Task.project at execution time, which is incompatible with
-// Gradle 9's configuration cache. Mark the task so Gradle discards the cache entry rather
-// than failing the build with 44 configuration cache problems.
-// https://github.com/sonatype-nexus-community/scan-gradle-plugin/issues (no Gradle 9 support yet)
-tasks.named("ossIndexAudit") {
-  notCompatibleWithConfigurationCache("scan-gradle-plugin is not compatible with Gradle 9 configuration cache")
+  isPrintBanner = false
 }
 
 val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
