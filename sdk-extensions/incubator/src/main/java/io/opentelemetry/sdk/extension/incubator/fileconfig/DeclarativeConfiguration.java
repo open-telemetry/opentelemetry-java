@@ -163,7 +163,7 @@ public final class DeclarativeConfiguration {
     context.setBuilder(builder);
 
     for (DeclarativeConfigurationCustomizerProvider provider :
-        Ordered.loadOrdered(context, DeclarativeConfigurationCustomizerProvider.class)) {
+        Ordered.loadOrderedList(context, DeclarativeConfigurationCustomizerProvider.class)) {
       provider.customize(builder);
     }
 

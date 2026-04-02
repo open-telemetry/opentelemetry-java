@@ -87,7 +87,7 @@ public final class SpiHelper {
    * @return list of SPI implementations, in order
    */
   public <T extends Ordered> List<T> loadOrdered(Class<T> spiClass) {
-    List<T> result = Ordered.loadOrdered(componentLoader, spiClass);
+    List<T> result = Ordered.loadOrderedList(componentLoader, spiClass);
     maybeAddListener(result);
     return result;
   }

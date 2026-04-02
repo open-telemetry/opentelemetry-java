@@ -27,7 +27,7 @@ public interface Ordered {
     return 0;
   }
 
-  static <T extends Ordered> List<T> loadOrdered(
+  static <T extends Ordered> List<T> loadOrderedList(
       ComponentLoader componentLoader, Class<T> spiClass) {
     List<T> result = new ArrayList<>(ComponentLoader.loadList(componentLoader, spiClass));
     result.sort(Comparator.comparing(Ordered::order));
