@@ -168,46 +168,86 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
                       @Override
                       public void onResponse(Call call, Response response) {
-                        try (ResponseBody body = response.body()) {
-                          // Must consume body before accessing trailers
-                          byte[] bodyBytes = null;
-                          try {
-                            Buffer buffer = new Buffer();
-                            while (buffer.size() < maxResponseBodySize) {
-                              long n =
-                                  body.source().read(buffer, maxResponseBodySize - buffer.size());
-                              if (n == -1L) {
-                                break;
-                              }
-                            }
-                            bodyBytes = getResponseMessageBytes(buffer.readByteArray());
-                          } catch (IOException e) {
-                            bodyBytes = new byte[0];
-                            logger.log(Level.FINE, "Failed to read response body", e);
-                          }
-                          byte[] resolvedBodyBytes = bodyBytes;
-                          GrpcStatusCode status = grpcStatus(response);
-                          String description = grpcMessage(response);
-                          onResponse.accept(
-                              new GrpcResponse() {
-                                @Override
-                                public GrpcStatusCode getStatusCode() {
-                                  return status;
-                                }
-
-                                @Override
-                                public String getStatusDescription() {
-                                  return description;
-                                }
-
-                                @Override
-                                public byte[] getResponseMessage() {
-                                  return resolvedBodyBytes;
-                                }
-                              });
-                        }
+                        handleResponse(response, onResponse);
                       }
                     }));
+  }
+
+  private void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
+    try (ResponseBody body = response.body()) {
+      // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
+      // lets us detect overflow: if the buffer ends up larger than maxResponseBodySize, the body
+      // exceeded the limit. A body exactly at the limit will only fill the buffer to
+      // maxResponseBodySize (EOF is reached before the extra byte is read).
+      // If maxResponseBodySize is Long.MAX_VALUE, adding 1 would overflow. In that case use
+      // Long.MAX_VALUE directly — the overflow check can never trigger for such a large limit.
+      long readUpTo =
+          maxResponseBodySize == Long.MAX_VALUE ? Long.MAX_VALUE : maxResponseBodySize + 1;
+      Buffer buffer = new Buffer();
+      try {
+        while (buffer.size() <= maxResponseBodySize) {
+          long n = body.source().read(buffer, readUpTo - buffer.size());
+          if (n == -1L) {
+            break;
+          }
+        }
+      } catch (IOException e) {
+        logger.log(Level.FINE, "Failed to read response body", e);
+      }
+
+      if (buffer.size() > maxResponseBodySize) {
+        onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+        return;
+      }
+
+      // Must consume body before accessing trailers
+      byte[] bodyBytes;
+      try {
+        bodyBytes = getResponseMessageBytes(buffer.readByteArray());
+      } catch (IOException e) {
+        bodyBytes = new byte[0];
+        logger.log(Level.FINE, "Failed to read response body", e);
+      }
+      byte[] resolvedBodyBytes = bodyBytes;
+      GrpcStatusCode status = grpcStatus(response);
+      String description = grpcMessage(response);
+      onResponse.accept(
+          new GrpcResponse() {
+            @Override
+            public GrpcStatusCode getStatusCode() {
+              return status;
+            }
+
+            @Override
+            public String getStatusDescription() {
+              return description;
+            }
+
+            @Override
+            public byte[] getResponseMessage() {
+              return resolvedBodyBytes;
+            }
+          });
+    }
+  }
+
+  private static GrpcResponse responseMessageTooLarge(long maxResponseBodySize) {
+    return new GrpcResponse() {
+      @Override
+      public GrpcStatusCode getStatusCode() {
+        return GrpcStatusCode.RESOURCE_EXHAUSTED;
+      }
+
+      @Override
+      public String getStatusDescription() {
+        return "gRPC response body exceeded limit of " + maxResponseBodySize + " bytes";
+      }
+
+      @Override
+      public byte[] getResponseMessage() {
+        return new byte[0];
+      }
+    };
   }
 
   private static byte[] getResponseMessageBytes(byte[] bodyBytes) throws IOException {

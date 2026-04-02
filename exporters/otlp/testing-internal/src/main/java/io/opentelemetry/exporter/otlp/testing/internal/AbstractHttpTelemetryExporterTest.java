@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.linecorp.armeria.common.HttpRequest;
@@ -34,11 +35,8 @@ import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
-import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -116,6 +114,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   private static final ConcurrentLinkedQueue<HttpRequest> httpRequests =
       new ConcurrentLinkedQueue<>();
 
+  private static volatile byte[] successResponseBytes = new byte[0];
+
   @RegisterExtension
   @Order(1)
   static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
@@ -135,20 +135,17 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
               "/v1/traces",
               new CollectorService<>(
                   ExportTraceServiceRequest::parseFrom,
-                  ExportTraceServiceRequest::getResourceSpansList,
-                  ExportTraceServiceResponse.getDefaultInstance().toByteArray()));
+                  ExportTraceServiceRequest::getResourceSpansList));
           sb.service(
               "/v1/metrics",
               new CollectorService<>(
                   ExportMetricsServiceRequest::parseFrom,
-                  ExportMetricsServiceRequest::getResourceMetricsList,
-                  ExportMetricsServiceResponse.getDefaultInstance().toByteArray()));
+                  ExportMetricsServiceRequest::getResourceMetricsList));
           sb.service(
               "/v1/logs",
               new CollectorService<>(
                   ExportLogsServiceRequest::parseFrom,
-                  ExportLogsServiceRequest::getResourceLogsList,
-                  ExportLogsServiceResponse.getDefaultInstance().toByteArray()));
+                  ExportLogsServiceRequest::getResourceLogsList));
 
           sb.http(0);
           sb.https(0);
@@ -162,15 +159,12 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   private static class CollectorService<T> implements HttpService {
     private final ThrowingExtractor<byte[], T, InvalidProtocolBufferException> parse;
     private final Function<T, List<? extends Object>> getResourceTelemetry;
-    private final byte[] successResponse;
 
     private CollectorService(
         ThrowingExtractor<byte[], T, InvalidProtocolBufferException> parse,
-        Function<T, List<? extends Object>> getResourceTelemetry,
-        byte[] successResponse) {
+        Function<T, List<? extends Object>> getResourceTelemetry) {
       this.parse = parse;
       this.getResourceTelemetry = getResourceTelemetry;
-      this.successResponse = successResponse;
     }
 
     @Override
@@ -195,7 +189,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                         : HttpResponse.of(
                             HttpStatus.OK,
                             MediaType.parse("application/x-protobuf"),
-                            successResponse);
+                            successResponseBytes);
                   });
       return HttpResponse.of(responseFuture);
     }
@@ -236,7 +230,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @BeforeAll
   void setUp() {
-    //
     exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri() + path)
@@ -248,6 +241,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(1))
                     .build())
             .build();
+    successResponseBytes = exporter.exportResponse(0).toByteArray();
 
     // Sanity check that TLS files are in PEM format.
     assertThat(certificate.certificateFile())
@@ -553,7 +547,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @SuppressLogger(HttpExporter.class)
   void error() {
     int statusCode = 500;
-    addHttpError(statusCode);
+    addHttpResponse(statusCode);
     CompletableResultCode result =
         exporter
             .export(Collections.singletonList(generateFakeTelemetry()))
@@ -590,10 +584,41 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void responseBodyBounds() {
+    // We have a 4mb hardcoded response body limit. Responses <= 4mb succeed. Responses >= 4mb
+    // succeed. We can't test payloads exactly at 4mb because protobuf message lengths are finicky -
+    // its hard to create a message with an exact size.
+
+    // Body below the limit, succeeds
+    addHttpResponse(200, exporter.exportResponse(100));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isTrue();
+
+    // Body over the limit, fails with RESOURCE_EXHAUSTED
+    addHttpResponse(200, exporter.exportResponse(4 * 1024 * 1024 + 1));
+    result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.HttpExportException.class,
+            ex ->
+                assertThat(ex.getCause())
+                    .isNotNull()
+                    .hasMessageContaining("HTTP response body exceeded limit of"));
+  }
+
   @ParameterizedTest
   @ValueSource(ints = {429, 502, 503, 504})
   void retryableError(int code) {
-    addHttpError(code);
+    addHttpResponse(code);
 
     assertThat(
             exporter
@@ -608,8 +633,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(HttpExporter.class)
   void retryableError_tooManyAttempts() {
-    addHttpError(502);
-    addHttpError(502);
+    addHttpResponse(502);
+    addHttpResponse(502);
 
     assertThat(
             exporter
@@ -625,7 +650,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @SuppressLogger(HttpExporter.class)
   @ValueSource(ints = {400, 401, 403, 500, 501})
   void nonRetryableError(int code) {
-    addHttpError(code);
+    addHttpResponse(code);
 
     assertThat(
             exporter
@@ -1096,7 +1121,13 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .collect(Collectors.toList());
   }
 
-  private static void addHttpError(int code) {
+  private static void addHttpResponse(int code) {
     httpErrors.add(HttpResponse.of(code));
+  }
+
+  private static void addHttpResponse(int code, AbstractMessageLite<?, ?> bodyMessage) {
+    httpErrors.add(
+        HttpResponse.of(
+            HttpStatus.valueOf(code), MediaType.PLAIN_TEXT_UTF_8, bodyMessage.toByteArray()));
   }
 }

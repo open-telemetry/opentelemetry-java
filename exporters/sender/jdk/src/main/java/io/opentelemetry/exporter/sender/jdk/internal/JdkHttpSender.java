@@ -303,7 +303,14 @@ public final class JdkHttpSender implements HttpSender {
     // Known retryable HttpTimeoutException messages: "request timed out"
     // Known retryable HttpConnectTimeoutException messages: "HTTP connect timed
     // out"
-    return !(throwable instanceof SSLException);
+    return !(throwable instanceof SSLException)
+        && !(throwable instanceof ResponseBodyTooLargeException);
+  }
+
+  private static final class ResponseBodyTooLargeException extends IOException {
+    ResponseBodyTooLargeException(String message) {
+      super(message);
+    }
   }
 
   private static class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {
@@ -316,14 +323,29 @@ public final class JdkHttpSender implements HttpSender {
     }
   }
 
-  private HttpResponse toHttpResponse(java.net.http.HttpResponse<InputStream> response) {
+  private HttpResponse toHttpResponse(java.net.http.HttpResponse<InputStream> response)
+      throws IOException {
     int statusCode = response.statusCode();
+    // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
+    // lets us detect overflow: if we read more than maxResponseBodySize bytes, the body exceeded
+    // the limit. A body exactly at the limit will read no further (EOF is reached first).
+    // If maxResponseBodySize is >= Integer.MAX_VALUE, adding 1 would overflow (long) or exceed
+    // what readNBytes accepts (int). In that case read Integer.MAX_VALUE bytes — the overflow
+    // check can never trigger for such a large limit.
+    int readUpTo =
+        maxResponseBodySize >= Integer.MAX_VALUE
+            ? Integer.MAX_VALUE
+            : (int) (maxResponseBodySize + 1);
     byte[] bodyBytes;
     try (InputStream is = response.body()) {
-      bodyBytes = is.readNBytes((int) Math.min(maxResponseBodySize, Integer.MAX_VALUE));
+      bodyBytes = is.readNBytes(readUpTo);
     } catch (IOException e) {
       bodyBytes = new byte[0];
       logger.log(Level.WARNING, "Failed to read response body", e);
+    }
+    if (bodyBytes.length > maxResponseBodySize) {
+      throw new ResponseBodyTooLargeException(
+          "HTTP response body exceeded limit of " + maxResponseBodySize + " bytes");
     }
     byte[] body = bodyBytes;
     return new HttpResponse() {

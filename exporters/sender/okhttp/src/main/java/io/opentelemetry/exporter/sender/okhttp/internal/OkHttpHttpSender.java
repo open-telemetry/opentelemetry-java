@@ -145,46 +145,60 @@ public final class OkHttpHttpSender implements HttpSender {
 
                       @Override
                       public void onResponse(Call call, Response response) {
-                        try (ResponseBody body = response.body()) {
-                          onResponse.accept(
-                              new HttpResponse() {
-                                @Nullable private byte[] bodyBytes;
-
-                                @Override
-                                public int getStatusCode() {
-                                  return response.code();
-                                }
-
-                                @Override
-                                public String getStatusMessage() {
-                                  return response.message();
-                                }
-
-                                @Override
-                                public byte[] getResponseBody() {
-                                  if (bodyBytes == null) {
-                                    try {
-                                      Buffer buffer = new Buffer();
-                                      while (buffer.size() < maxResponseBodySize) {
-                                        long n =
-                                            body.source()
-                                                .read(buffer, maxResponseBodySize - buffer.size());
-                                        if (n == -1L) {
-                                          break;
-                                        }
-                                      }
-                                      bodyBytes = buffer.readByteArray();
-                                    } catch (IOException e) {
-                                      bodyBytes = new byte[0];
-                                      logger.log(Level.WARNING, "Failed to read response body", e);
-                                    }
-                                  }
-                                  return bodyBytes;
-                                }
-                              });
-                        }
+                        handleResponse(response, onResponse, onError);
                       }
                     }));
+  }
+
+  private void handleResponse(
+      Response response, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
+    try (ResponseBody body = response.body()) {
+      // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
+      // lets us detect overflow: if the buffer ends up larger than maxResponseBodySize, the body
+      // exceeded the limit. A body exactly at the limit will only fill the buffer to
+      // maxResponseBodySize (EOF is reached before the extra byte is read).
+      // If maxResponseBodySize is Long.MAX_VALUE, adding 1 would overflow. In that case use
+      // Long.MAX_VALUE directly — the overflow check can never trigger for such a large limit.
+      long readUpTo =
+          maxResponseBodySize == Long.MAX_VALUE ? Long.MAX_VALUE : maxResponseBodySize + 1;
+      Buffer buffer = new Buffer();
+      try {
+        while (buffer.size() <= maxResponseBodySize) {
+          long n = body.source().read(buffer, readUpTo - buffer.size());
+          if (n == -1L) {
+            break;
+          }
+        }
+      } catch (IOException e) {
+        logger.log(Level.WARNING, "Failed to read response body", e);
+      }
+
+      if (buffer.size() > maxResponseBodySize) {
+        onError.accept(
+            new IOException(
+                "HTTP response body exceeded limit of " + maxResponseBodySize + " bytes"));
+        return;
+      }
+
+      byte[] bodyBytes = buffer.readByteArray();
+      onResponse.accept(
+          new HttpResponse() {
+            @Override
+            public int getStatusCode() {
+              return response.code();
+            }
+
+            @Override
+            public String getStatusMessage() {
+              return response.message();
+            }
+
+            @Override
+            public byte[] getResponseBody() {
+              return bodyBytes;
+            }
+          });
+    }
   }
 
   @Override
