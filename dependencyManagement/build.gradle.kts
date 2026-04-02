@@ -78,6 +78,7 @@ val DEPENDENCIES = listOf(
   "com.uber.nullaway:nullaway:0.13.1",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.11",
+  "io.github.crac:org-crac:0.1.3",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.54.0-alpha",
