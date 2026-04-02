@@ -34,3 +34,6 @@ bin
 
 # Vim
 .swp
+
+# scan-gradle-plugin
+oss-index-cyclonedx-bom.json

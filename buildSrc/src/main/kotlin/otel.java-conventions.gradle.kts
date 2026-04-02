@@ -52,6 +52,7 @@ ossIndexAudit {
   username = System.getenv("SONATYPE_OSS_INDEX_USER") ?: ""
   password = System.getenv("SONATYPE_OSS_INDEX_PASSWORD") ?: ""
   outputFormat = org.sonatype.gradle.plugins.scan.ossindex.OutputFormat.JSON_CYCLONE_DX_1_4
+  isPrintBanner = false
 }
 
 val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
