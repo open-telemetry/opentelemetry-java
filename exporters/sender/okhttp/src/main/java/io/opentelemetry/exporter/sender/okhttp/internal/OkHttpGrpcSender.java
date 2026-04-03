@@ -237,65 +237,21 @@ public final class OkHttpGrpcSender implements GrpcSender {
       } else {
         logger.log(Level.FINE, "Invalid gRPC response frame");
       }
-      byte[] resolvedBodyBytes = bodyBytes;
-      GrpcStatusCode status = grpcStatus(response);
-      String description = grpcMessage(response);
       onResponse.accept(
-          new GrpcResponse() {
-            @Override
-            public GrpcStatusCode getStatusCode() {
-              return status;
-            }
-
-            @Override
-            public String getStatusDescription() {
-              return description;
-            }
-
-            @Override
-            public byte[] getResponseMessage() {
-              return resolvedBodyBytes;
-            }
-          });
+          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes));
     }
   }
 
   private static GrpcResponse responseMessageTooLarge(long maxResponseBodySize) {
-    return new GrpcResponse() {
-      @Override
-      public GrpcStatusCode getStatusCode() {
-        return GrpcStatusCode.RESOURCE_EXHAUSTED;
-      }
-
-      @Override
-      public String getStatusDescription() {
-        return "gRPC response body exceeded limit of " + maxResponseBodySize + " bytes";
-      }
-
-      @Override
-      public byte[] getResponseMessage() {
-        return new byte[0];
-      }
-    };
+    return ImmutableGrpcResponse.create(
+        GrpcStatusCode.RESOURCE_EXHAUSTED,
+        "gRPC response body exceeded limit of " + maxResponseBodySize + " bytes",
+        new byte[0]);
   }
 
   private static GrpcResponse responseUnsupportedGrpcEncoding(@Nullable String encoding) {
-    return new GrpcResponse() {
-      @Override
-      public GrpcStatusCode getStatusCode() {
-        return GrpcStatusCode.INTERNAL;
-      }
-
-      @Override
-      public String getStatusDescription() {
-        return "Unsupported gRPC message encoding: " + encoding;
-      }
-
-      @Override
-      public byte[] getResponseMessage() {
-        return new byte[0];
-      }
-    };
+    return ImmutableGrpcResponse.create(
+        GrpcStatusCode.INTERNAL, "Unsupported gRPC message encoding: " + encoding, new byte[0]);
   }
 
   private static GrpcStatusCode grpcStatus(Response response) {

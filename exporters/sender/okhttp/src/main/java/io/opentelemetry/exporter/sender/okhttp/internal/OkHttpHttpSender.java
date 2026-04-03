@@ -195,22 +195,7 @@ public final class OkHttpHttpSender implements HttpSender {
 
       byte[] bodyBytes = buffer.readByteArray();
       onResponse.accept(
-          new HttpResponse() {
-            @Override
-            public int getStatusCode() {
-              return response.code();
-            }
-
-            @Override
-            public String getStatusMessage() {
-              return response.message();
-            }
-
-            @Override
-            public byte[] getResponseBody() {
-              return bodyBytes;
-            }
-          });
+          ImmutableHttpResponse.create(response.code(), response.message(), bodyBytes));
     }
   }
 

@@ -376,23 +376,7 @@ public final class JdkHttpSender implements HttpSender {
       throw new ResponseBodyTooLargeException(
           "HTTP response body exceeded limit of " + maxResponseBodySize + " bytes");
     }
-    byte[] body = bodyBytes;
-    return new HttpResponse() {
-      @Override
-      public int getStatusCode() {
-        return statusCode;
-      }
-
-      @Override
-      public String getStatusMessage() {
-        return String.valueOf(statusCode);
-      }
-
-      @Override
-      public byte[] getResponseBody() {
-        return body;
-      }
-    };
+    return ImmutableHttpResponse.create(statusCode, String.valueOf(statusCode), bodyBytes);
   }
 
   private static class ByteBufferPool {
