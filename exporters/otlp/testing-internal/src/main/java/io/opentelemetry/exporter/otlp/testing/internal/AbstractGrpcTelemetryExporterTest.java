@@ -19,8 +19,12 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.Message;
 import com.google.protobuf.Parser;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.common.ResponseHeaders;
 import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
@@ -83,6 +87,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -123,6 +128,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   private static final ConcurrentLinkedQueue<HttpRequest> httpRequests =
       new ConcurrentLinkedQueue<>();
+
+  private static final AtomicInteger grpcEncodingServerAttempts = new AtomicInteger();
 
   @RegisterExtension
   @Order(1)
@@ -236,6 +243,33 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
   }
 
+  // A minimal server that returns grpc-encoding: brotli to test unsupported encoding handling.
+  // Both OkHttpGrpcSender (our code) and UpstreamGrpcSender (grpc-java framework) reject unknown
+  // encodings and fail the export with INTERNAL status.
+  @RegisterExtension
+  @Order(4)
+  static final ServerExtension grpcEncodingServer =
+      new ServerExtension() {
+        @Override
+        protected void configure(ServerBuilder sb) {
+          sb.service(
+              "prefix:/",
+              (ctx, req) -> {
+                grpcEncodingServerAttempts.incrementAndGet();
+                // gRPC frame: compressed flag=1, declared length=0 (no payload bytes follow)
+                byte[] frame = {1, 0, 0, 0, 0};
+                return HttpResponse.of(
+                    ResponseHeaders.builder(HttpStatus.OK)
+                        .contentType(MediaType.parse("application/grpc+proto"))
+                        .add("grpc-encoding", "brotli")
+                        .add("grpc-status", "0")
+                        .build(),
+                    HttpData.wrap(frame));
+              });
+          sb.http(0);
+        }
+      };
+
   @RegisterExtension
   protected LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
 
@@ -294,6 +328,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     grpcResponses.clear();
     attempts.set(0);
     httpRequests.clear();
+    grpcEncodingServerAttempts.set(0);
   }
 
   @Test
@@ -362,6 +397,68 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                         grpcResponse ->
                             assertThat(grpcResponse.getStatusCode())
                                 .isEqualTo(GrpcStatusCode.RESOURCE_EXHAUSTED)));
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void responseBodyBoundsGzipCompressed() throws IOException {
+    // Verify the body size limit is applied to the decompressed bytes, not the compressed wire
+    // bytes. The server compresses the response with gzip (because the sender advertises
+    // grpc-accept-encoding: gzip), so the wire bytes are well under 4MB while the decompressed
+    // bytes exceed it.
+    AbstractMessageLite<?, ?> responseMsg = exporter.exportResponse(4 * 1024 * 1024 + 1);
+    byte[] responseBytes = responseMsg.toByteArray();
+    // Sanity: confirm payload is over the limit uncompressed but compresses well under the limit
+    assertThat(responseBytes).hasSizeGreaterThan(4 * 1024 * 1024);
+    ByteArrayOutputStream compressedBaos = new ByteArrayOutputStream();
+    try (GZIPOutputStream gzip = new GZIPOutputStream(compressedBaos)) {
+      gzip.write(responseBytes);
+    }
+    assertThat(compressedBaos.toByteArray()).hasSizeLessThan(4 * 1024 * 1024);
+
+    addGrpcResponse(GrpcStatusCode.OK, null, responseMsg);
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.GrpcExportException.class,
+            ex ->
+                assertThat(requireNonNull(ex.getResponse()))
+                    .satisfies(
+                        grpcResponse ->
+                            assertThat(grpcResponse.getStatusCode())
+                                .isEqualTo(GrpcStatusCode.RESOURCE_EXHAUSTED)));
+  }
+
+  // Verifies that a response with an unrecognized grpc-encoding fails with INTERNAL rather than
+  // attempting to decompress with an unsupported algorithm.
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void unsupportedGrpcMessageEncoding() {
+    try (TelemetryExporter<T> testExporter =
+        exporterBuilder()
+            .setEndpoint(grpcEncodingServer.httpUri().toString())
+            .setRetryPolicy(null)
+            .build()) {
+      CompletableResultCode result =
+          testExporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+      assertThat(result.isSuccess()).isFalse();
+      assertThat(grpcEncodingServerAttempts).hasValue(1);
+      assertThat(result.getFailureThrowable())
+          .isInstanceOfSatisfying(
+              FailedExportException.GrpcExportException.class,
+              ex ->
+                  assertThat(requireNonNull(ex.getResponse()))
+                      .satisfies(
+                          grpcResponse ->
+                              assertThat(grpcResponse.getStatusCode())
+                                  .isEqualTo(GrpcStatusCode.INTERNAL)));
+    }
   }
 
   @Test

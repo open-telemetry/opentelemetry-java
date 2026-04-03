@@ -16,11 +16,13 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
+import com.linecorp.armeria.common.ResponseHeaders;
 import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServerBuilder;
@@ -70,6 +72,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -613,6 +616,66 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                 assertThat(ex.getCause())
                     .isNotNull()
                     .hasMessageContaining("HTTP response body exceeded limit of"));
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void responseBodyBoundsGzipCompressed() throws IOException {
+    // Verify the body size limit is applied to the decompressed bytes, not the compressed wire
+    // bytes. The compressed body is well below the 4MB limit but decompresses to just over it.
+    byte[] payload = new byte[4 * 1024 * 1024 + 1];
+    ByteArrayOutputStream compressedBaos = new ByteArrayOutputStream();
+    try (GZIPOutputStream gzip = new GZIPOutputStream(compressedBaos)) {
+      gzip.write(payload);
+    }
+    byte[] compressedBody = compressedBaos.toByteArray();
+
+    httpErrors.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.OK)
+                .contentType(MediaType.PLAIN_TEXT_UTF_8)
+                .add("Content-Encoding", "gzip")
+                .build(),
+            HttpData.wrap(compressedBody)));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.HttpExportException.class,
+            ex ->
+                assertThat(ex.getCause())
+                    .isNotNull()
+                    .hasMessageContaining("HTTP response body exceeded limit of"));
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void unsupportedResponseContentEncoding() {
+    // Server responds with a Content-Encoding that we don't support. The export should fail
+    // without retry.
+    httpErrors.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.OK)
+                .contentType(MediaType.PLAIN_TEXT_UTF_8)
+                .add("Content-Encoding", "brotli")
+                .build(),
+            HttpData.wrap(new byte[10])));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(attempts).hasValue(1);
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.HttpExportException.class,
+            ex ->
+                assertThat(ex.getCause())
+                    .isNotNull()
+                    .hasMessageContaining("Unsupported Content-Encoding"));
   }
 
   @ParameterizedTest

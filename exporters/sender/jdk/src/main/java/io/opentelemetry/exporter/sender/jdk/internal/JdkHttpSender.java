@@ -40,6 +40,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -185,6 +186,8 @@ public final class JdkHttpSender implements HttpSender {
       headers.forEach((key, values) -> values.forEach(value -> requestBuilder.header(key, value)));
     }
     requestBuilder.header("Content-Type", contentType);
+    // Advertise gzip and identity response encoding support.
+    requestBuilder.header("Accept-Encoding", "gzip, identity");
 
     NoCopyByteArrayOutputStream os = threadLocalBaos.get();
     os.reset();
@@ -303,12 +306,21 @@ public final class JdkHttpSender implements HttpSender {
     // Known retryable HttpTimeoutException messages: "request timed out"
     // Known retryable HttpConnectTimeoutException messages: "HTTP connect timed
     // out"
+    // ResponseBodyTooLargeException and UnsupportedContentEncodingException are permanent errors:
+    // a larger body or unsupported encoding will not resolve on retry.
     return !(throwable instanceof SSLException)
-        && !(throwable instanceof ResponseBodyTooLargeException);
+        && !(throwable instanceof ResponseBodyTooLargeException)
+        && !(throwable instanceof UnsupportedContentEncodingException);
   }
 
   private static final class ResponseBodyTooLargeException extends IOException {
     ResponseBodyTooLargeException(String message) {
+      super(message);
+    }
+  }
+
+  private static final class UnsupportedContentEncodingException extends IOException {
+    UnsupportedContentEncodingException(String message) {
       super(message);
     }
   }
@@ -336,8 +348,18 @@ public final class JdkHttpSender implements HttpSender {
         maxResponseBodySize >= Integer.MAX_VALUE
             ? Integer.MAX_VALUE
             : (int) (maxResponseBodySize + 1);
+
+    String contentEncoding = response.headers().firstValue("Content-Encoding").orElse(null);
+    if (contentEncoding != null && !"gzip".equalsIgnoreCase(contentEncoding)) {
+      throw new UnsupportedContentEncodingException(
+          "Unsupported Content-Encoding: " + contentEncoding);
+    }
+    boolean decompress = "gzip".equalsIgnoreCase(contentEncoding);
+
     byte[] bodyBytes;
-    try (InputStream is = response.body()) {
+    try (InputStream rawIs = response.body()) {
+      // The limit is applied to the decompressed bytes.
+      InputStream is = decompress ? new GZIPInputStream(rawIs) : rawIs;
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       byte[] buf = new byte[4 * 0x400]; // 4KB
       int n;

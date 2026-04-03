@@ -41,7 +41,9 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import okio.BufferedSink;
+import okio.GzipSource;
 import okio.Okio;
+import okio.Source;
 
 /**
  * {@link HttpSender} which is backed by OkHttp.
@@ -130,6 +132,10 @@ public final class OkHttpHttpSender implements HttpSender {
     if (compressor != null) {
       requestBuilder.addHeader("Content-Encoding", compressor.getEncoding());
     }
+    // Explicitly advertise gzip and identity encoding support. Because we set Accept-Encoding
+    // ourselves, OkHttp's BridgeInterceptor will not transparently decompress gzip responses
+    // (it only does so when it added the header), so we handle decompression ourselves below.
+    requestBuilder.addHeader("Accept-Encoding", "gzip, identity");
     requestBuilder.post(new RequestBodyImpl(messageWriter, compressor, mediaType));
 
     InstrumentationUtil.suppressInstrumentation(
@@ -153,6 +159,12 @@ public final class OkHttpHttpSender implements HttpSender {
   private void handleResponse(
       Response response, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
     try (ResponseBody body = response.body()) {
+      String contentEncoding = response.header("Content-Encoding");
+      if (contentEncoding != null && !"gzip".equalsIgnoreCase(contentEncoding)) {
+        onError.accept(new IOException("Unsupported Content-Encoding: " + contentEncoding));
+        return;
+      }
+      boolean decompress = "gzip".equalsIgnoreCase(contentEncoding);
       // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
       // lets us detect overflow: if the buffer ends up larger than maxResponseBodySize, the body
       // exceeded the limit. A body exactly at the limit will only fill the buffer to
@@ -163,8 +175,9 @@ public final class OkHttpHttpSender implements HttpSender {
           maxResponseBodySize == Long.MAX_VALUE ? Long.MAX_VALUE : maxResponseBodySize + 1;
       Buffer buffer = new Buffer();
       try {
+        Source source = decompress ? new GzipSource(body.source()) : body.source();
         while (buffer.size() <= maxResponseBodySize) {
-          long n = body.source().read(buffer, readUpTo - buffer.size());
+          long n = source.read(buffer, readUpTo - buffer.size());
           if (n == -1L) {
             break;
           }
