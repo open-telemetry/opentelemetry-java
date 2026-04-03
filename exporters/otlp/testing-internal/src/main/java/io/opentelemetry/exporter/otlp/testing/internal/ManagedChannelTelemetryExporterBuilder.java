@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -26,7 +28,6 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,11 +173,10 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     retryConfig.put("backoffMultiplier", retryPolicy.getBackoffMultiplier());
 
     Map<String, Object> methodConfig = new HashMap<>();
-    methodConfig.put(
-        "name", Collections.singletonList(Collections.singletonMap("service", serviceName)));
+    methodConfig.put("name", singletonList(singletonMap("service", serviceName)));
     methodConfig.put("retryPolicy", retryConfig);
 
-    return Collections.singletonMap("methodConfig", Collections.singletonList(methodConfig));
+    return singletonMap("methodConfig", singletonList(methodConfig));
   }
 
   @Override
