@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -43,6 +46,8 @@ import javax.annotation.Nullable;
  */
 public final class EnvironmentGetter implements TextMapGetter<Map<String, String>> {
 
+  private static final AtomicBoolean LOG_KEYS_CALLED = new AtomicBoolean(false);
+  private static final Logger LOGGER = Logger.getLogger(EnvironmentGetter.class.getName());
   private static final EnvironmentGetter INSTANCE = new EnvironmentGetter();
 
   private EnvironmentGetter() {}
@@ -54,6 +59,13 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
 
   @Override
   public Iterable<String> keys(Map<String, String> carrier) {
+    if (LOG_KEYS_CALLED.compareAndSet(false, true)) {
+      LOGGER.log(
+          Level.WARNING,
+          "keys() called on EnvironmentGetter. "
+              + "This may produce unexpected results with propagators which depend on case sensitivity or special characters in keys.",
+          new Throwable());
+    }
     if (carrier == null) {
       return Collections.emptyList();
     }

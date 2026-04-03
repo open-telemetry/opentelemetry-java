@@ -7,12 +7,18 @@ package io.opentelemetry.api.incubator.propagation;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class EnvironmentGetterTest {
+
+  @RegisterExtension
+  LogCapturer logCapturer = LogCapturer.create().captureForType(EnvironmentGetter.class);
 
   @Test
   void get() {
@@ -45,6 +51,7 @@ class EnvironmentGetterTest {
   }
 
   @Test
+  @SuppressLogger(EnvironmentGetter.class)
   void keys_valuesAreNormalized() {
     Map<String, String> carrier = new HashMap<>();
     carrier.put("otel.trace.id", "V1");
@@ -53,6 +60,9 @@ class EnvironmentGetterTest {
     assertThat(EnvironmentGetter.getInstance().keys(carrier))
         .containsExactlyInAnyOrder("OTEL_TRACE_ID", "OTEL_BAGGAGE_KEY");
     assertThat(EnvironmentGetter.getInstance().keys(null)).isEmpty();
+
+    assertThat(logCapturer.size()).isEqualTo(1);
+    logCapturer.assertContains("keys() called on EnvironmentGetter");
   }
 
   @Test
