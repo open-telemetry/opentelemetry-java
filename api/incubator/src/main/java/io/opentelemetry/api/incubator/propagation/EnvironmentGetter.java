@@ -83,7 +83,14 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
       return null;
     }
     String normalizedKey = EnvironmentSetter.normalizeKey(key);
-    return carrier.get(normalizedKey);
+    String[] result = new String[] {null};
+    carrier.forEach(
+        (entryKey, entryValue) -> {
+          if (EnvironmentSetter.normalizeKey(entryKey).equals(normalizedKey)) {
+            result[0] = entryValue;
+          }
+        });
+    return result[0];
   }
 
   @Override

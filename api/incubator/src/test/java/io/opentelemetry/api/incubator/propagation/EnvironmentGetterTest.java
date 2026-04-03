@@ -38,7 +38,7 @@ class EnvironmentGetterTest {
   void get_normalization() {
     Map<String, String> carrier = new HashMap<>();
     carrier.put("OTEL_TRACE_ID", "val1");
-    carrier.put("OTEL_BAGGAGE_KEY", "val2");
+    carrier.put("otel-baggage-key", "val2");
 
     assertThat(EnvironmentGetter.getInstance().get(carrier, "otel.trace.id")).isEqualTo("val1");
     assertThat(EnvironmentGetter.getInstance().get(carrier, "otel-baggage-key")).isEqualTo("val2");
@@ -56,9 +56,15 @@ class EnvironmentGetterTest {
     Map<String, String> carrier = new HashMap<>();
     carrier.put("otel.trace.id", "V1");
     carrier.put("otel-baggage-key", "V2");
+    carrier.put("OTEL_FOO", "V2");
 
+    // For a carrier containing keys that are both normalized and not normalized, verify all results
+    // from keys() return values for get.
     assertThat(EnvironmentGetter.getInstance().keys(carrier))
-        .containsExactlyInAnyOrder("OTEL_TRACE_ID", "OTEL_BAGGAGE_KEY");
+        .containsExactlyInAnyOrder("OTEL_TRACE_ID", "OTEL_BAGGAGE_KEY", "OTEL_FOO");
+    for (String key : EnvironmentGetter.getInstance().keys(carrier)) {
+      assertThat(EnvironmentGetter.getInstance().get(carrier, key)).isNotNull();
+    }
     assertThat(EnvironmentGetter.getInstance().keys(null)).isEmpty();
 
     assertThat(logCapturer.size()).isEqualTo(1);
