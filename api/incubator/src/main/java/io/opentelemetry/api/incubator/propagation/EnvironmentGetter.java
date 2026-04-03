@@ -8,6 +8,7 @@ package io.opentelemetry.api.incubator.propagation;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -56,7 +57,11 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
     if (carrier == null) {
       return Collections.emptyList();
     }
-    return new ArrayList<>(carrier.keySet());
+    List<String> result = new ArrayList<>(carrier.size());
+    for (String key : carrier.keySet()) {
+      result.add(EnvironmentSetter.normalizeKey(key));
+    }
+    return Collections.unmodifiableList(result);
   }
 
   @Nullable

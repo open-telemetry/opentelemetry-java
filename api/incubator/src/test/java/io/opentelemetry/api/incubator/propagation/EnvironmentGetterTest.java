@@ -29,7 +29,7 @@ class EnvironmentGetterTest {
   }
 
   @Test
-  void get_sanitization() {
+  void get_normalization() {
     Map<String, String> carrier = new HashMap<>();
     carrier.put("OTEL_TRACE_ID", "val1");
     carrier.put("OTEL_BAGGAGE_KEY", "val2");
@@ -45,12 +45,13 @@ class EnvironmentGetterTest {
   }
 
   @Test
-  void keys() {
+  void keys_valuesAreNormalized() {
     Map<String, String> carrier = new HashMap<>();
-    carrier.put("K1", "V1");
-    carrier.put("K2", "V2");
+    carrier.put("otel.trace.id", "V1");
+    carrier.put("otel-baggage-key", "V2");
 
-    assertThat(EnvironmentGetter.getInstance().keys(carrier)).containsExactlyInAnyOrder("K1", "K2");
+    assertThat(EnvironmentGetter.getInstance().keys(carrier))
+        .containsExactlyInAnyOrder("OTEL_TRACE_ID", "OTEL_BAGGAGE_KEY");
     assertThat(EnvironmentGetter.getInstance().keys(null)).isEmpty();
   }
 
