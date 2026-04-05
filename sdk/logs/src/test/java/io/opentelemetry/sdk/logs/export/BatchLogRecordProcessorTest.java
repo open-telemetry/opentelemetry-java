@@ -78,6 +78,8 @@ class BatchLogRecordProcessorTest {
         .isEqualTo(BatchLogRecordProcessorBuilder.DEFAULT_MAX_QUEUE_SIZE);
     assertThat(builder.getMaxExportBatchSize())
         .isEqualTo(BatchLogRecordProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+    assertThat(builder.getMaxConcurrentExports())
+        .isEqualTo(BatchLogRecordProcessorBuilder.DEFAULT_MAX_CONCURRENT_EXPORTS);
     assertThat(builder.getExporterTimeoutNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(
@@ -119,6 +121,10 @@ class BatchLogRecordProcessorTest {
             () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setMaxQueueSize(0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxQueueSize must be positive.");
+    assertThatThrownBy(
+            () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setMaxConcurrentExports(0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxConcurrentExports must be positive.");
   }
 
   @Test
