@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -40,16 +41,17 @@ class PropagatedSpanTest {
     span.setAttribute(booleanKey("MyBooleanAttributeKey"), true);
     span.setAttribute(longKey("MyLongAttributeKey"), 123L);
     span.setAttribute(longKey("MyLongAttributeKey"), 123);
-    span.setAttribute("NullString", null);
+    span.setAttribute("NullString", (String) null);
     span.setAttribute("EmptyString", "");
     span.setAttribute("long", 1);
     span.setAttribute("double", 1.0);
     span.setAttribute("boolean", true);
+    span.setAttribute("value", Value.of("val"));
     span.setAttribute(stringArrayKey("NullArrayString"), null);
     span.setAttribute(booleanArrayKey("NullArrayBoolean"), null);
     span.setAttribute(longArrayKey("NullArrayLong"), null);
     span.setAttribute(doubleArrayKey("NullArrayDouble"), null);
-    span.setAttribute((String) null, null);
+    span.setAttribute((String) null, (String) null);
     span.setAllAttributes(null);
     span.setAllAttributes(Attributes.empty());
     span.setAllAttributes(
