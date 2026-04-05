@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,6 +69,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
+      int maxConcurrentExports,
       long exporterTimeoutNanos) {
     this.worker =
         new Worker(
@@ -76,6 +78,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
             telemetryVersion,
             scheduleDelayNanos,
             maxExportBatchSize,
+            maxConcurrentExports,
             exporterTimeoutNanos,
             new ArrayBlockingQueue<>(maxQueueSize),
             maxQueueSize); // TODO: use JcTools.newFixedSizeQueue(..)
@@ -161,6 +164,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private volatile boolean continueWork = true;
     private final ArrayList<LogRecordData> batch;
     private final long maxQueueSize;
+    private final Semaphore concurrencyLimiter;
 
     private Worker(
         LogRecordExporter logRecordExporter,
@@ -168,6 +172,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
         InternalTelemetryVersion telemetryVersion,
         long scheduleDelayNanos,
         int maxExportBatchSize,
+        int maxConcurrentExports,
         long exporterTimeoutNanos,
         Queue<ReadWriteLogRecord> queue,
         long maxQueueSize) {
@@ -180,6 +185,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       logProcessorInstrumentation =
           LogRecordProcessorInstrumentation.get(telemetryVersion, COMPONENT_ID, meterProvider);
       this.maxQueueSize = maxQueueSize;
+      this.concurrencyLimiter = new Semaphore(maxConcurrentExports - 1, true);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
@@ -234,10 +240,10 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
         batch.add(logRecord.toLogRecordData());
         logsToFlush--;
         if (batch.size() >= maxExportBatchSize) {
-          exportCurrentBatch();
+          exportCurrentBatchSync();
         }
       }
-      exportCurrentBatch();
+      exportCurrentBatchSync();
       CompletableResultCode flushResult = flushRequested.get();
       if (flushResult != null) {
         flushResult.succeed();
@@ -284,6 +290,15 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     }
 
     private void exportCurrentBatch() {
+      if (!concurrencyLimiter.tryAcquire()) {
+        exportCurrentBatchSync();
+        return;
+      }
+
+      exportCurrentBatchAsync();
+    }
+
+    private void exportCurrentBatchSync() {
       if (batch.isEmpty()) {
         return;
       }
@@ -308,6 +323,32 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
         logProcessorInstrumentation.finishLogs(batch.size(), error);
         batch.clear();
       }
+    }
+
+    private void exportCurrentBatchAsync() {
+      if (batch.isEmpty()) {
+        return;
+      }
+
+      List<LogRecordData> batchCopy = new ArrayList<>(batch);
+      batch.clear();
+
+      CompletableResultCode result =
+          logRecordExporter.export(Collections.unmodifiableList(batchCopy));
+      result.whenComplete(
+          () -> {
+            String error = null;
+            if (!result.isSuccess()) {
+              logger.log(Level.FINE, "Exporter failed");
+              if (result.getFailureThrowable() != null) {
+                error = result.getFailureThrowable().getClass().getName();
+              } else {
+                error = "export_failed";
+              }
+            }
+            logProcessorInstrumentation.finishLogs(batchCopy.size(), error);
+            concurrencyLimiter.release();
+          });
     }
   }
 }
