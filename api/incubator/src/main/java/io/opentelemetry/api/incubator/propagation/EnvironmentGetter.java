@@ -83,14 +83,20 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
       return null;
     }
     String normalizedKey = EnvironmentSetter.normalizeKey(key);
-    String[] result = new String[] {null};
-    carrier.forEach(
-        (entryKey, entryValue) -> {
-          if (EnvironmentSetter.normalizeKey(entryKey).equals(normalizedKey)) {
-            result[0] = entryValue;
-          }
-        });
-    return result[0];
+    // first, perform an optimistic lookup for an exact match on the normalized key
+    String value = carrier.get(normalizedKey);
+    if (value != null) {
+      return value;
+    }
+    // next, iterate over the carrier normalizing each entry and evaluating for a match
+    // if memory allocation becomes an issue, can implement using iterative normalization, comparing
+    // an entry character by character to the normalized key, normalizing along the way.
+    for (Map.Entry<String, String> entry : carrier.entrySet()) {
+      if (EnvironmentSetter.normalizeKey(entry.getKey()).equals(normalizedKey)) {
+        return entry.getValue();
+      }
+    }
+    return null;
   }
 
   @Override
