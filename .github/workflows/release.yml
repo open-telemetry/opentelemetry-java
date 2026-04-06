@@ -37,7 +37,8 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # disable gradle build cache, ensuring we're building from source to mitigate supply chain risk
+          DISABLE_REMOTE_BUILD_CACHE: true
 
       - name: Set environment variables
         run: |
