@@ -28,7 +28,11 @@ jobs:
           java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6.0.1
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+        with:
+          # use basic cache provider which has a more permissive MIT license
+          # see https://github.com/gradle/actions/releases/tag/v6.1.0
+          cache-provider: basic
 
       - name: Build and publish artifacts
         run: ./gradlew assemble publishToSonatype closeAndReleaseSonatypeStagingRepository
@@ -186,7 +190,11 @@ jobs:
           java-version: 21
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6.0.1
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+        with:
+          # use basic cache provider which has a more permissive MIT license
+          # see https://github.com/gradle/actions/releases/tag/v6.1.0
+          cache-provider: basic
 
       - name: Update apidiff baseline
         env:
