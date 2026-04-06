@@ -26,9 +26,6 @@ jobs:
 
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6.0.1
-        with:
-          # disable gradle build cache, ensuring we're building from source to mitigate supply chain risk
-          cache-disabled: true
 
       - name: Publish to Sonatype
         run: ./gradlew assemble publishToSonatype
@@ -37,7 +34,8 @@ jobs:
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # disable gradle build cache, ensuring we're building from source to mitigate supply chain risk
+          DISABLE_REMOTE_BUILD_CACHE: true
 
   workflow-notification:
     permissions:
