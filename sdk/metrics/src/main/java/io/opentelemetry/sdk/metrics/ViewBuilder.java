@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -75,9 +76,10 @@ public final class ViewBuilder {
   public ViewBuilder setAttributeFilter(Set<String> keysToRetain) {
     Objects.requireNonNull(keysToRetain, "keysToRetain");
     if (keysToRetain.isEmpty()) {
-      // include/exclude predicate requires to include or exclude at least one, we have to skip it
-      // when we don't want to include any key.
-      return setAttributeFilter(s -> false);
+      // include/exclude predicate requires to include or exclude at least one
+      // thus an empty list of keys is effectively equivalent to ignore all of them
+      return setAttributeFilter(
+          IncludeExcludePredicate.createPatternMatching(null, Collections.singletonList("*")));
     }
     return setAttributeFilter(IncludeExcludePredicate.createExactMatching(keysToRetain, null));
   }
