@@ -5,9 +5,9 @@ plugins {
 description = "OpenTelemetry All"
 otelJava.moduleName.set("io.opentelemetry.all")
 
-// Skip OWASP dependencyCheck task on test module
-dependencyCheck {
-  skip = true
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
 }
 
 val testTasks = mutableListOf<Task>()

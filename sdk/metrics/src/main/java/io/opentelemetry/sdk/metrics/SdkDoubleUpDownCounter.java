@@ -29,6 +29,11 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
   }
 
   @Override
+  public boolean isEnabled() {
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
+  }
+
+  @Override
   public void add(double increment, Attributes attributes, Context context) {
     storage.recordDouble(increment, attributes, context);
   }

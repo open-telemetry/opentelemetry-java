@@ -20,11 +20,6 @@ final class ExtendedSdkLongHistogram extends SdkLongHistogram implements Extende
     super(descriptor, sdkMeter, storage);
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
-
   static final class ExtendedSdkLongHistogramBuilder extends SdkLongHistogramBuilder
       implements ExtendedLongHistogramBuilder {
 

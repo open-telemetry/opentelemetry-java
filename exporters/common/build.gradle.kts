@@ -73,7 +73,6 @@ dependencies {
 
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.linecorp.armeria:armeria-junit5")
-  testImplementation("org.skyscreamer:jsonassert")
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")

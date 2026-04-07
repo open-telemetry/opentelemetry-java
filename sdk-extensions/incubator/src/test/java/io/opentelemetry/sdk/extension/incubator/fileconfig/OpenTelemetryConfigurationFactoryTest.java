@@ -21,6 +21,7 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
@@ -100,6 +101,7 @@ class OpenTelemetryConfigurationFactoryTest {
 
   @ParameterizedTest
   @MethodSource("fileFormatArgs")
+  @SuppressLogger(OpenTelemetryConfigurationFactory.class)
   void create_FileFormat(String fileFormat, boolean isValid) {
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel().withFileFormat(fileFormat);

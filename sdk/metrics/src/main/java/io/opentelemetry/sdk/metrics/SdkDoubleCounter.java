@@ -34,6 +34,11 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
   }
 
   @Override
+  public boolean isEnabled() {
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
+  }
+
+  @Override
   public void add(double increment, Attributes attributes, Context context) {
     if (increment < 0) {
       throttlingLogger.log(

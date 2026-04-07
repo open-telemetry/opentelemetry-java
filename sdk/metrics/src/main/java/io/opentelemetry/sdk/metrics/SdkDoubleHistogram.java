@@ -34,6 +34,11 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
   }
 
   @Override
+  public boolean isEnabled() {
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
+  }
+
+  @Override
   public void record(double value, Attributes attributes, Context context) {
     if (value < 0) {
       throttlingLogger.log(

@@ -47,6 +47,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @SuppressLogger(
     loggerName = "io.opentelemetry.sdk.extension.trace.jaeger.sampler.OkHttpGrpcService")
 @SuppressLogger(ParentBasedSamplerBuilder.class)
+@SuppressLogger(JaegerRemoteSampler.class)
 class SamplerFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
