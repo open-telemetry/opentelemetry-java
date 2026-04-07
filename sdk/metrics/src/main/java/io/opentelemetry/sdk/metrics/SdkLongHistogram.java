@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
+import io.opentelemetry.api.metrics.LongHistogramOp;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
@@ -60,6 +61,11 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   @Override
   public void record(long value) {
     record(value, Attributes.empty());
+  }
+
+  @Override
+  public LongHistogramOp bind(Attributes attributes) {
+    return storage.bind(attributes)::recordLong;
   }
 
   static class SdkLongHistogramBuilder implements LongHistogramBuilder {

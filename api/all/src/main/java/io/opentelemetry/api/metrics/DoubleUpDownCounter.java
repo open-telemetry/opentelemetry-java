@@ -58,4 +58,6 @@ public interface DoubleUpDownCounter {
    * @param context The explicit context to associate with this measurement.
    */
   void add(double value, Attributes attributes, Context context);
+
+  DoubleUpDownCounterOp bind(Attributes attributes);
 }

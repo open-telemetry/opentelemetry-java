@@ -18,6 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleCounterOp;
+import io.opentelemetry.api.metrics.DoubleGaugeOp;
+import io.opentelemetry.api.metrics.DoubleHistogramOp;
+import io.opentelemetry.api.metrics.DoubleUpDownCounterOp;
+import io.opentelemetry.api.metrics.LongCounterOp;
+import io.opentelemetry.api.metrics.LongGaugeOp;
+import io.opentelemetry.api.metrics.LongHistogramOp;
+import io.opentelemetry.api.metrics.LongUpDownCounterOp;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -57,10 +65,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * {@link #stressTest(AggregationTemporality, InstrumentType, Aggregation, MemoryMode,
- * InstrumentValueType)} performs a stress test to confirm simultaneous record and collections do
- * not have concurrency issues like lost writes, partial writes, duplicate writes, etc. All
- * combinations of the following dimensions are tested: aggregation temporality, instrument type
- * (synchronous), memory mode, instrument value type.
+ * InstrumentValueType, boolean)} performs a stress test to confirm simultaneous record and
+ * collections do not have concurrency issues like lost writes, partial writes, duplicate writes,
+ * etc. All combinations of the following dimensions are tested: aggregation temporality, instrument
+ * type (synchronous), memory mode, instrument value type, bound instrument.
  */
 class SynchronousInstrumentStressTest {
 
@@ -86,7 +94,8 @@ class SynchronousInstrumentStressTest {
       InstrumentType instrumentType,
       Aggregation aggregation,
       MemoryMode memoryMode,
-      InstrumentValueType instrumentValueType) {
+      InstrumentValueType instrumentValueType,
+      boolean isBound) {
     // Initialize metric SDK
     DefaultAggregationSelector aggregationSelector =
         DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);
@@ -100,7 +109,15 @@ class SynchronousInstrumentStressTest {
         SdkMeterProvider.builder().registerMetricReader(reader).build();
     cleanup.addCloseable(meterProvider);
     Meter meter = meterProvider.get("test");
+    List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
+    Collections.shuffle(attributes);
+    List<BoundInstrument> boundInstruments = new ArrayList<>();
     Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
+    if (isBound) {
+      for (Attributes attr : attributes) {
+        boundInstruments.add(getBoundInstrument(meter, instrumentType, instrumentValueType, attr));
+      }
+    }
 
     // Define list of measurements to record
     // Later, we'll assert that the data collected matches these measurements, with no lost writes,
@@ -120,13 +137,20 @@ class SynchronousInstrumentStressTest {
       recordThreads.add(
           new Thread(
               () -> {
-                List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
-                Collections.shuffle(attributes);
-                for (Long measurement : measurements) {
-                  for (Attributes attr : attributes) {
-                    instrument.record(measurement, attr);
+                if (isBound) {
+                  for (Long measurement : measurements) {
+                    for (BoundInstrument boundInstrument : boundInstruments) {
+                      boundInstrument.record(measurement);
+                    }
+                    Uninterruptibles.sleepUninterruptibly(ONE_MICROSECOND);
                   }
-                  Uninterruptibles.sleepUninterruptibly(ONE_MICROSECOND);
+                } else {
+                  for (Long measurement : measurements) {
+                    for (Attributes attr : attributes) {
+                      instrument.record(measurement, attr);
+                    }
+                    Uninterruptibles.sleepUninterruptibly(ONE_MICROSECOND);
+                  }
                 }
                 latch.countDown();
               }));
@@ -279,13 +303,16 @@ class SynchronousInstrumentStressTest {
           InstrumentTypeAndAggregation.values()) {
         for (MemoryMode memoryMode : MemoryMode.values()) {
           for (InstrumentValueType instrumentValueType : InstrumentValueType.values()) {
-            argumentsList.add(
-                Arguments.of(
-                    aggregationTemporality,
-                    instrumentTypeAndAggregation.instrumentType,
-                    instrumentTypeAndAggregation.aggregation,
-                    memoryMode,
-                    instrumentValueType));
+            for (boolean isBound : Arrays.asList(true, false)) {
+              argumentsList.add(
+                  Arguments.of(
+                      aggregationTemporality,
+                      instrumentTypeAndAggregation.instrumentType,
+                      instrumentTypeAndAggregation.aggregation,
+                      memoryMode,
+                      instrumentValueType,
+                      isBound));
+            }
           }
         }
       }
@@ -330,6 +357,69 @@ class SynchronousInstrumentStressTest {
 
   private interface Instrument {
     void record(long value, Attributes attributes);
+  }
+
+  private interface BoundInstrument {
+    void record(long value);
+  }
+
+  private static BoundInstrument getBoundInstrument(
+      Meter meter,
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      Attributes attributes) {
+    switch (instrumentType) {
+      case COUNTER:
+        if (instrumentValueType == InstrumentValueType.DOUBLE) {
+          DoubleCounterOp bound =
+              meter.counterBuilder(INSTRUMENT_NAME).ofDoubles().build().bind(attributes);
+          return value -> bound.add(value);
+        } else {
+          LongCounterOp bound = meter.counterBuilder(INSTRUMENT_NAME).build().bind(attributes);
+          return bound::add;
+        }
+      case UP_DOWN_COUNTER:
+        if (instrumentValueType == InstrumentValueType.DOUBLE) {
+          DoubleUpDownCounterOp bound =
+              meter.upDownCounterBuilder(INSTRUMENT_NAME).ofDoubles().build().bind(attributes);
+          return value -> bound.add(value);
+        } else {
+          LongUpDownCounterOp bound =
+              meter.upDownCounterBuilder(INSTRUMENT_NAME).build().bind(attributes);
+          return bound::add;
+        }
+      case HISTOGRAM:
+        if (instrumentValueType == InstrumentValueType.DOUBLE) {
+          DoubleHistogramOp bound =
+              meter
+                  .histogramBuilder(INSTRUMENT_NAME)
+                  .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                  .build()
+                  .bind(attributes);
+          return value -> bound.record(value);
+        } else {
+          LongHistogramOp bound =
+              meter
+                  .histogramBuilder(INSTRUMENT_NAME)
+                  .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                  .ofLongs()
+                  .build()
+                  .bind(attributes);
+          return bound::record;
+        }
+      case GAUGE:
+        if (instrumentValueType == InstrumentValueType.DOUBLE) {
+          DoubleGaugeOp bound = meter.gaugeBuilder(INSTRUMENT_NAME).build().bind(attributes);
+          return value -> bound.set(value);
+        } else {
+          LongGaugeOp bound =
+              meter.gaugeBuilder(INSTRUMENT_NAME).ofLongs().build().bind(attributes);
+          return bound::set;
+        }
+      default:
+        throw new IllegalArgumentException(
+            "bound instruments not yet supported for " + instrumentType);
+    }
   }
 
   private static MetricData copy(MetricData m) {

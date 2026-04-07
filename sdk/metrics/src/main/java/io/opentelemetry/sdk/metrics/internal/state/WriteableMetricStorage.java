@@ -17,6 +17,21 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
  */
 public interface WriteableMetricStorage {
 
+  default RecordOp bind(Attributes attributes) {
+    Context context = Context.current();
+    return new RecordOp() {
+      @Override
+      public void recordLong(long value) {
+        WriteableMetricStorage.this.recordLong(value, attributes, context);
+      }
+
+      @Override
+      public void recordDouble(double value) {
+        WriteableMetricStorage.this.recordDouble(value, attributes, context);
+      }
+    };
+  }
+
   /** Records a measurement. */
   void recordLong(long value, Attributes attributes, Context context);
 

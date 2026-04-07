@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -203,6 +204,40 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     }
 
     @Override
+    public RecordOp bind(Attributes attributes) {
+      AggregatorHolder<T> holderForBind = getHolderForRecord();
+      AggregatorHandle<T> handle;
+      try {
+        handle =
+            getAggregatorHandle(holderForBind.aggregatorHandles, attributes, Context.current());
+        holderForBind.boundAggregatorHandles.add(handle);
+      } finally {
+        releaseHolderForRecord(holderForBind);
+      }
+      return new RecordOp() {
+        @Override
+        public void recordLong(long value) {
+          AggregatorHolder<T> holder = getHolderForRecord();
+          try {
+            handle.recordLong(value, attributes, Context.current());
+          } finally {
+            releaseHolderForRecord(holder);
+          }
+        }
+
+        @Override
+        public void recordDouble(double value) {
+          AggregatorHolder<T> holder = getHolderForRecord();
+          try {
+            handle.recordDouble(value, attributes, Context.current());
+          } finally {
+            releaseHolderForRecord(holder);
+          }
+        }
+      };
+    }
+
+    @Override
     void doRecordLong(long value, Attributes attributes, Context context) {
       AggregatorHolder<T> holderForRecord = getHolderForRecord();
       try {
@@ -268,10 +303,12 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         long epochNanos) {
       ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles;
       AggregatorHolder<T> holder = this.aggregatorHolder;
-      this.aggregatorHolder =
+      AggregatorHolder<T> newHolder =
           (memoryMode == REUSABLE_DATA)
-              ? new AggregatorHolder<>(previousCollectionAggregatorHandles)
+              ? new AggregatorHolder<>(
+                  previousCollectionAggregatorHandles, holder.boundAggregatorHandles)
               : new AggregatorHolder<>();
+      this.aggregatorHolder = newHolder;
 
       // Increment recordsInProgress by 1, which produces an odd number acting as a signal that
       // record operations should re-read the volatile this.aggregatorHolder.
@@ -309,7 +346,8 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         if (aggregatorHandles.size() >= maxCardinality) {
           aggregatorHandles.forEach(
               (attribute, handle) -> {
-                if (!handle.hasRecordedValues()) {
+                if (!handle.hasRecordedValues()
+                    && !holder.boundAggregatorHandles.contains(handle)) {
                   aggregatorHandles.remove(attribute);
                 }
               });
@@ -319,27 +357,38 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       // Grab aggregated points.
       aggregatorHandles.forEach(
           (attributes, handle) -> {
-            if (!handle.hasRecordedValues()) {
+            boolean isBound = holder.boundAggregatorHandles.contains(handle);
+            if (!isBound && !handle.hasRecordedValues()) {
               return;
             }
-            T point =
-                handle.aggregateThenMaybeReset(
-                    registeredReader.getLastCollectEpochNanos(),
-                    epochNanos,
-                    attributes,
-                    /* reset= */ true);
 
-            if (memoryMode == IMMUTABLE_DATA) {
-              // Return the aggregator to the pool.
-              // The pool is only used in DELTA temporality (since in CUMULATIVE the handler is
-              // always used as it is the place accumulating the values and never resets)
-              // AND only in IMMUTABLE_DATA memory mode since in REUSABLE_DATA we avoid
-              // using the pool since it allocates memory internally on each put() or remove()
-              aggregatorHandlePool.offer(handle);
+            if (handle.hasRecordedValues()) {
+              T point =
+                  handle.aggregateThenMaybeReset(
+                      registeredReader.getLastCollectEpochNanos(),
+                      epochNanos,
+                      attributes,
+                      /* reset= */ true);
+              if (point != null) {
+                points.add(point);
+              }
             }
 
-            if (point != null) {
-              points.add(point);
+            if (memoryMode == IMMUTABLE_DATA) {
+              if (isBound) {
+                // Migrate the bound handle into the new holder so the RecordOp's direct
+                // reference remains valid across collection intervals. putIfAbsent defers to a
+                // concurrent bind() that may have already inserted a fresh handle.
+                newHolder.aggregatorHandles.putIfAbsent(attributes, handle);
+                newHolder.boundAggregatorHandles.add(handle);
+              } else {
+                // Return the aggregator to the pool.
+                // The pool is only used in DELTA temporality (since in CUMULATIVE the handler is
+                // always used as it is the place accumulating the values and never resets)
+                // AND only in IMMUTABLE_DATA memory mode since in REUSABLE_DATA we avoid
+                // using the pool since it allocates memory internally on each put() or remove()
+                aggregatorHandlePool.offer(handle);
+              }
             }
           });
 
@@ -365,6 +414,10 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   private static class AggregatorHolder<T extends PointData> {
     private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles;
+    // Tracks handles for which bind() has been called. collect() treats these specially:
+    // they are never pooled or evicted, and are always migrated into the next holder so
+    // that the RecordOp's direct handle reference remains valid across collection intervals.
+    private final Set<AggregatorHandle<T>> boundAggregatorHandles;
     // Recording threads grab the current interval (AggregatorHolder) and atomically increment
     // this by 2 before recording against it (and then decrement by two when done).
     //
@@ -383,10 +436,14 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
     private AggregatorHolder() {
       aggregatorHandles = new ConcurrentHashMap<>();
+      boundAggregatorHandles = ConcurrentHashMap.newKeySet();
     }
 
-    private AggregatorHolder(ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles) {
+    private AggregatorHolder(
+        ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles,
+        Set<AggregatorHandle<T>> boundAggregatorHandles) {
       this.aggregatorHandles = aggregatorHandles;
+      this.boundAggregatorHandles = boundAggregatorHandles;
     }
   }
 
@@ -407,6 +464,23 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         MemoryMode memoryMode) {
       super(metricDescriptor, aggregator, attributesProcessor, maxCardinality, enabled);
       this.memoryMode = memoryMode;
+    }
+
+    @Override
+    public RecordOp bind(Attributes attributes) {
+      AggregatorHandle<T> aggregatorHandle =
+          getAggregatorHandle(aggregatorHandles, attributes, Context.current());
+      return new RecordOp() {
+        @Override
+        public void recordLong(long value) {
+          aggregatorHandle.recordLong(value, attributes, Context.current());
+        }
+
+        @Override
+        public void recordDouble(double value) {
+          aggregatorHandle.recordDouble(value, attributes, Context.current());
+        }
+      };
     }
 
     @Override

@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
+import io.opentelemetry.api.metrics.LongCounterOp;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
@@ -60,6 +61,11 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
   @Override
   public void add(long increment) {
     add(increment, Attributes.empty());
+  }
+
+  @Override
+  public LongCounterOp bind(Attributes attributes) {
+    return storage.bind(attributes)::recordLong;
   }
 
   static class SdkLongCounterBuilder implements LongCounterBuilder {

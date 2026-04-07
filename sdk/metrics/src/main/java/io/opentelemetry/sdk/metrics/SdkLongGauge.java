@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
+import io.opentelemetry.api.metrics.LongGaugeOp;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
@@ -45,6 +46,11 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
   @Override
   public void set(long value) {
     set(value, Attributes.empty());
+  }
+
+  @Override
+  public LongGaugeOp bind(Attributes attributes) {
+    return storage.bind(attributes)::recordLong;
   }
 
   static class SdkLongGaugeBuilder implements LongGaugeBuilder {

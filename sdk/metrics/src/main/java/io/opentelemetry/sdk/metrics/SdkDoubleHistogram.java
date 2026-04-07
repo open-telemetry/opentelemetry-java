@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
+import io.opentelemetry.api.metrics.DoubleHistogramOp;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
@@ -59,6 +60,11 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
   @Override
   public void record(double value) {
     record(value, Attributes.empty());
+  }
+
+  @Override
+  public DoubleHistogramOp bind(Attributes attributes) {
+    return storage.bind(attributes)::recordDouble;
   }
 
   static class SdkDoubleHistogramBuilder implements DoubleHistogramBuilder {

@@ -3,30 +3,74 @@ Comparing source compatibility of opentelemetry-api-1.61.0-SNAPSHOT.jar against 
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled(io.opentelemetry.api.logs.Severity, io.opentelemetry.context.Context)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled(io.opentelemetry.api.logs.Severity)
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleCounter  (not serializable)
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleCounter  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.DoubleCounterOp
+	---  REMOVED METHOD: PUBLIC(-) ABSTRACT(-) void add(double)
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleCounterOp bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleGauge  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleCounterOp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double)
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleGauge  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleGaugeOp bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleHistogram  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleGaugeOp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void set(double)
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleHistogram  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleHistogramOp bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleUpDownCounter  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleHistogramOp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(double)
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleUpDownCounter  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleUpDownCounterOp bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongCounter  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleUpDownCounterOp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(double)
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongCounter  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.api.metrics.LongCounterOp
+	---  REMOVED METHOD: PUBLIC(-) ABSTRACT(-) void add(long)
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongCounterOp bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongGauge  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongCounterOp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long)
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongGauge  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongGaugeOp bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongHistogram  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongGaugeOp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void set(long)
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongHistogram  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongHistogramOp bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongUpDownCounter  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongHistogramOp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void record(long)
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongUpDownCounter  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongUpDownCounterOp bind(io.opentelemetry.api.common.Attributes)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongUpDownCounterOp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void add(long)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.Tracer  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
