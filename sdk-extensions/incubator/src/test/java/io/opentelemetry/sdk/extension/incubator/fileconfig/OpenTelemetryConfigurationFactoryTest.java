@@ -143,7 +143,7 @@ class OpenTelemetryConfigurationFactoryTest {
         new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
 
     logCapturer.assertContains(
@@ -156,7 +156,7 @@ class OpenTelemetryConfigurationFactoryTest {
         new OpenTelemetryConfigurationModel().withFileFormat("1.0");
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
 
     assertThat(logCapturer.size()).isEqualTo(0);
@@ -175,7 +175,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -208,7 +208,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -369,7 +369,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 

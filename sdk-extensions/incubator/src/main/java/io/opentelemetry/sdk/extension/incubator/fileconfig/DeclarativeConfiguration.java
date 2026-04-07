@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -166,13 +165,13 @@ public final class DeclarativeConfiguration {
       provider.customize(builder);
     }
 
-    ExtendedOpenTelemetrySdk sdk =
+    DeclarativeConfigResult result =
         createAndMaybeCleanup(
             OpenTelemetryConfigurationFactory.getInstance(),
             context,
             builder.customizeModel(configurationModel));
-    callAutoConfigureListeners(context, sdk);
-    return new DeclarativeConfigResult(sdk, context.getResource());
+    callAutoConfigureListeners(context, result.getSdk());
+    return result;
   }
 
   /**

@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 final class OpenTelemetryConfigurationFactory
-    implements Factory<OpenTelemetryConfigurationModel, ExtendedOpenTelemetrySdk> {
+    implements Factory<OpenTelemetryConfigurationModel, DeclarativeConfigResult> {
 
   private static final Logger logger =
       Logger.getLogger(OpenTelemetryConfigurationFactory.class.getName());
@@ -40,7 +40,7 @@ final class OpenTelemetryConfigurationFactory
   }
 
   @Override
-  public ExtendedOpenTelemetrySdk create(
+  public DeclarativeConfigResult create(
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
     DeclarativeConfigProperties modelProperties =
         DeclarativeConfiguration.toConfigProperties(model, context.getDelegateComponentLoader());
@@ -64,8 +64,8 @@ final class OpenTelemetryConfigurationFactory
     }
 
     if (Objects.equals(true, model.getDisabled())) {
-      context.setResource(Resource.getDefault());
-      return (ExtendedOpenTelemetrySdk) builder.build();
+      return new DeclarativeConfigResult(
+          (ExtendedOpenTelemetrySdk) builder.build(), Resource.getDefault());
     }
 
     if (model.getPropagator() != null) {
@@ -77,7 +77,6 @@ final class OpenTelemetryConfigurationFactory
     if (model.getResource() != null) {
       resource = ResourceFactory.getInstance().create(model.getResource(), context);
     }
-    context.setResource(resource);
 
     MeterProviderModel meterProviderModel = model.getMeterProvider();
     if (meterProviderModel == null) {
@@ -119,6 +118,7 @@ final class OpenTelemetryConfigurationFactory
                 .setResource(resource)
                 .build()));
 
-    return (ExtendedOpenTelemetrySdk) context.addCloseable(builder.build());
+    return new DeclarativeConfigResult(
+        (ExtendedOpenTelemetrySdk) context.addCloseable(builder.build()), resource);
   }
 }

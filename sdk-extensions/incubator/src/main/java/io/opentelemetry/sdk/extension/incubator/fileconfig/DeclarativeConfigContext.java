@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +41,6 @@ class DeclarativeConfigContext implements ComponentLoader {
       Collections.newSetFromMap(new IdentityHashMap<>());
   private final List<Closeable> closeables = new ArrayList<>();
   @Nullable private volatile MeterProvider meterProvider;
-  @Nullable private Resource resource;
   @Nullable private ConfigProvider configProvider;
   @Nullable private List<ComponentProvider> componentProviders = null;
   @Nullable private DeclarativeConfigurationBuilder builder;
@@ -67,14 +65,6 @@ class DeclarativeConfigContext implements ComponentLoader {
 
   List<Closeable> getCloseables() {
     return Collections.unmodifiableList(closeables);
-  }
-
-  void setResource(Resource resource) {
-    this.resource = resource;
-  }
-
-  Resource getResource() {
-    return Objects.requireNonNull(resource, "resource has not been set");
   }
 
   public void setMeterProvider(MeterProvider meterProvider) {
