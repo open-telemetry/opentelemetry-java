@@ -591,7 +591,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @SuppressLogger(HttpExporter.class)
   void responseBodyBounds() {
     // We have a 4mb hardcoded response body limit. Responses <= 4mb succeed. Responses >= 4mb
-    // succeed. We can't test payloads exactly at 4mb because protobuf message lengths are finicky -
+    // fail. We can't test payloads exactly at 4mb because protobuf message lengths are finicky -
     // its hard to create a message with an exact size.
 
     // Body below the limit, succeeds

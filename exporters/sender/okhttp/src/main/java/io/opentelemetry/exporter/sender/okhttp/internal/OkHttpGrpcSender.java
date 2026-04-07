@@ -175,6 +175,20 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
   private void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
     try (ResponseBody body = response.body()) {
+      // A gRPC message frame has a 5-byte header: 1 compression-flag byte + 4 message-length
+      // bytes. Read the header first so that the size limit applies to the message payload only,
+      // not the framing overhead.
+      boolean compressed;
+      try {
+        compressed = body.source().readByte() != 0;
+        body.source().skip(4); // message length — we bound reads by EOF instead
+      } catch (IOException e) {
+        logger.log(Level.FINE, "Invalid gRPC response frame");
+        onResponse.accept(
+            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
+        return;
+      }
+
       // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
       // lets us detect overflow: if the buffer ends up larger than maxResponseBodySize, the body
       // exceeded the limit. A body exactly at the limit will only fill the buffer to
@@ -202,40 +216,32 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
       // Must consume body before accessing trailers
       byte[] bodyBytes = new byte[0];
-      byte[] wireBytes = wireBuffer.readByteArray();
-      if (wireBytes.length >= 5) {
-        if (wireBytes[0] == 0) {
-          // Not compressed: slice the message payload from the gRPC frame
-          bodyBytes = Arrays.copyOfRange(wireBytes, 5, wireBytes.length);
-        } else {
-          // Compressed: validate the encoding and decompress with a post-decompression size limit
-          String encoding = response.header("grpc-encoding");
-          if (!"gzip".equalsIgnoreCase(encoding)) {
-            onResponse.accept(responseUnsupportedGrpcEncoding(encoding));
+      if (!compressed) {
+        bodyBytes = wireBuffer.readByteArray();
+      } else {
+        // Compressed: validate the encoding and decompress with a post-decompression size limit
+        String encoding = response.header("grpc-encoding");
+        if (!"gzip".equalsIgnoreCase(encoding)) {
+          onResponse.accept(responseUnsupportedGrpcEncoding(encoding));
+          return;
+        }
+        try {
+          GzipSource gzipSource = new GzipSource(wireBuffer);
+          Buffer decompressedBuffer = new Buffer();
+          while (decompressedBuffer.size() <= maxResponseBodySize) {
+            long n = gzipSource.read(decompressedBuffer, readUpTo - decompressedBuffer.size());
+            if (n == -1L) {
+              break;
+            }
+          }
+          if (decompressedBuffer.size() > maxResponseBodySize) {
+            onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
             return;
           }
-          try {
-            Buffer compressedBuffer = new Buffer();
-            compressedBuffer.write(wireBytes, 5, wireBytes.length - 5);
-            GzipSource gzipSource = new GzipSource(compressedBuffer);
-            Buffer decompressedBuffer = new Buffer();
-            while (decompressedBuffer.size() <= maxResponseBodySize) {
-              long n = gzipSource.read(decompressedBuffer, readUpTo - decompressedBuffer.size());
-              if (n == -1L) {
-                break;
-              }
-            }
-            if (decompressedBuffer.size() > maxResponseBodySize) {
-              onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
-              return;
-            }
-            bodyBytes = decompressedBuffer.readByteArray();
-          } catch (IOException e) {
-            logger.log(Level.FINE, "Failed to decompress response body", e);
-          }
+          bodyBytes = decompressedBuffer.readByteArray();
+        } catch (IOException e) {
+          logger.log(Level.FINE, "Failed to decompress response body", e);
         }
-      } else {
-        logger.log(Level.FINE, "Invalid gRPC response frame");
       }
       onResponse.accept(
           ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes));
