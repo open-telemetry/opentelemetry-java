@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.DeclarativeConfigResult;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
@@ -138,8 +137,7 @@ public final class DeclarativeConfiguration {
    * @return the {@link DeclarativeConfigResult}
    * @throws DeclarativeConfigException if unable to interpret
    */
-  public static DeclarativeConfigResult create(
-      OpenTelemetryConfigurationModel configurationModel) {
+  public static DeclarativeConfigResult create(OpenTelemetryConfigurationModel configurationModel) {
     return create(configurationModel, DEFAULT_COMPONENT_LOADER);
   }
 

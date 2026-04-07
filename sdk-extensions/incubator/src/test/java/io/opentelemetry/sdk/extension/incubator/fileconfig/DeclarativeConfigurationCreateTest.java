@@ -100,8 +100,7 @@ class DeclarativeConfigurationCreateTest {
         new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
     // Verify that file can be parsed and interpreted without error
-    assertThatCode(
-            () -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is).getSdk()))
+    assertThatCode(() -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is).getSdk()))
         .as("Example file: " + example.getName())
         .doesNotThrowAnyException();
   }
