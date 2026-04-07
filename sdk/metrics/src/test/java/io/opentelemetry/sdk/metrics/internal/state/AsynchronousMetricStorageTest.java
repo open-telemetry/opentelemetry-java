@@ -337,6 +337,73 @@ class AsynchronousMetricStorageTest {
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
+  void collect_CumulativeSeriesDisappearsAndReappears(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    Attributes attrA = Attributes.empty();
+    Attributes attrB = Attributes.builder().put("key", "b").build();
+
+    // Collection 1: both series reported. start time = instrument creation time (START_SECOND_NANOS)
+    testClock.advance(Duration.ofSeconds(10));
+    longCounterStorage.record(attrA, 1);
+    longCounterStorage.record(attrB, 2);
+    assertThat(longCounterStorage.collect(resource, scope, testClock.now()))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(START_SECOND_NANOS)
+                                .hasAttributes(attrA)
+                                .hasValue(1),
+                        point ->
+                            point
+                                .hasStartEpochNanos(START_SECOND_NANOS)
+                                .hasAttributes(attrB)
+                                .hasValue(2)));
+    registeredReader.setLastCollectEpochNanos(testClock.now());
+
+    // Collection 2: only attrA reported; attrB disappears and its handle is removed.
+    testClock.advance(Duration.ofSeconds(10));
+    longCounterStorage.record(attrA, 3);
+    assertThat(longCounterStorage.collect(resource, scope, testClock.now()))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(START_SECOND_NANOS)
+                                .hasAttributes(attrA)
+                                .hasValue(3)));
+    registeredReader.setLastCollectEpochNanos(testClock.now());
+    long collectTime2 = testClock.now();
+
+    // Collection 3: attrB reappears. Its start time should be the time of the collection
+    // immediately preceding its reappearance (collectTime2), not the original creation time.
+    testClock.advance(Duration.ofSeconds(10));
+    longCounterStorage.record(attrA, 5);
+    longCounterStorage.record(attrB, 7);
+    assertThat(longCounterStorage.collect(resource, scope, testClock.now()))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.isCumulative()
+                    .hasPointsSatisfying(
+                        point ->
+                            point
+                                .hasStartEpochNanos(START_SECOND_NANOS)
+                                .hasAttributes(attrA)
+                                .hasValue(5),
+                        point ->
+                            point
+                                .hasStartEpochNanos(collectTime2)
+                                .hasAttributes(attrB)
+                                .hasValue(7)));
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
   void collect_DeltaComputesDiff(MemoryMode memoryMode) {
     setup(memoryMode);
 
