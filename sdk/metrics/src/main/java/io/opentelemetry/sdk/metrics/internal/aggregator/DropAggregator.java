@@ -56,7 +56,9 @@ public final class DropAggregator implements Aggregator<PointData> {
   // the start timestamp is irrelevant. A single shared HANDLE is safe to use.
   private static final AggregatorHandle<PointData> HANDLE =
       new AggregatorHandle<PointData>(
-          /* creationEpochNanos= */ 0, ExemplarReservoirFactory.noSamples(), /* isDoubleType= */ true) {
+          /* creationEpochNanos= */ 0,
+          ExemplarReservoirFactory.noSamples(),
+          /* isDoubleType= */ true) {
         @Override
         protected PointData doAggregateThenMaybeResetDoubles(
             long startEpochNanos,

@@ -343,7 +343,8 @@ class AsynchronousMetricStorageTest {
     Attributes attrA = Attributes.empty();
     Attributes attrB = Attributes.builder().put("key", "b").build();
 
-    // Collection 1: both series reported. start time = instrument creation time (START_SECOND_NANOS)
+    // Collection 1: both series reported. start time = instrument creation time
+    // (START_SECOND_NANOS)
     testClock.advance(Duration.ofSeconds(10));
     longCounterStorage.record(attrA, 1);
     longCounterStorage.record(attrB, 2);
