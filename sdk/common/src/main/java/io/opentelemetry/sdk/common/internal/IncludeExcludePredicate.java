@@ -57,9 +57,9 @@ public final class IncludeExcludePredicate implements Predicate<String> {
   /**
    * Create a (case-sensitive) exact matching include exclude predicate.
    *
-   * <p>When {@code included} is empty or {@literal null}, all values are included by default.
+   * <p>When {@code included} is empty or {@literal null}, all values are included.
    *
-   * <p>When {@code excluded} is empty or {@literal null}, no value is excluded by default.
+   * <p>When {@code excluded} is empty or {@literal null}, no value are excluded.
    */
   public static Predicate<String> createExactMatching(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
