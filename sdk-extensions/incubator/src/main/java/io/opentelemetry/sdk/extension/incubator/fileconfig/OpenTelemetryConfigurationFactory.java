@@ -64,6 +64,7 @@ final class OpenTelemetryConfigurationFactory
     }
 
     if (Objects.equals(true, model.getDisabled())) {
+      context.setResource(Resource.getDefault());
       return (ExtendedOpenTelemetrySdk) builder.build();
     }
 
@@ -76,6 +77,7 @@ final class OpenTelemetryConfigurationFactory
     if (model.getResource() != null) {
       resource = ResourceFactory.getInstance().create(model.getResource(), context);
     }
+    context.setResource(resource);
 
     MeterProviderModel meterProviderModel = model.getMeterProvider();
     if (meterProviderModel == null) {

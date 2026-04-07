@@ -10,17 +10,13 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.DeclarativeConfigResult;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.resources.Resource;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -66,22 +62,11 @@ final class IncubatingUtil {
 
   private static AutoConfiguredOpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
-    ExtendedOpenTelemetrySdk sdk;
     try {
-      sdk = DeclarativeConfiguration.create(model, componentLoader);
+      DeclarativeConfigResult result = DeclarativeConfiguration.create(model, componentLoader);
+      return AutoConfiguredOpenTelemetrySdk.create(result.getSdk(), result.getResource(), null);
     } catch (DeclarativeConfigException e) {
       throw toConfigurationException(e);
-    }
-
-    try {
-      Field sharedState = SdkMeterProvider.class.getDeclaredField("sharedState");
-      sharedState.setAccessible(true);
-      Resource resource =
-          ((MeterProviderSharedState) sharedState.get(sdk.getSdkMeterProvider())).getResource();
-
-      return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, null);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new ConfigurationException("Error resolving resource from ExtendedOpenTelemetrySdk", e);
     }
   }
 

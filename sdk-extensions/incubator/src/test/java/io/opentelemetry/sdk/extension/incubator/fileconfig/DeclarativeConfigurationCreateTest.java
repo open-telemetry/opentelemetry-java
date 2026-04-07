@@ -100,7 +100,8 @@ class DeclarativeConfigurationCreateTest {
         new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
     // Verify that file can be parsed and interpreted without error
-    assertThatCode(() -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is)))
+    assertThatCode(
+            () -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is).getSdk()))
         .as("Example file: " + example.getName())
         .doesNotThrowAnyException();
   }
@@ -175,10 +176,11 @@ class DeclarativeConfigurationCreateTest {
                     new SpanProcessorModel().withAdditionalProperty("test", null))));
     ExtendedOpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
-            model,
-            // customizer is TestDeclarativeConfigurationCustomizerProvider
-            ComponentLoader.forClassLoader(
-                DeclarativeConfigurationCreateTest.class.getClassLoader()));
+                model,
+                // customizer is TestDeclarativeConfigurationCustomizerProvider
+                ComponentLoader.forClassLoader(
+                    DeclarativeConfigurationCreateTest.class.getClassLoader()))
+            .getSdk();
     assertThat(sdk.toString())
         .contains(
             "resource=Resource{schemaUrl=null, attributes={"

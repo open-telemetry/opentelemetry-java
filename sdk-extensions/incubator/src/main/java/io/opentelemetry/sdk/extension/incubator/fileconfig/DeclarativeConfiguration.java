@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.DeclarativeConfigResult;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
@@ -124,7 +125,7 @@ public final class DeclarativeConfiguration {
    *
    * @throws DeclarativeConfigException if unable to parse or interpret
    */
-  public static ExtendedOpenTelemetrySdk parseAndCreate(InputStream inputStream) {
+  public static DeclarativeConfigResult parseAndCreate(InputStream inputStream) {
     OpenTelemetryConfigurationModel configurationModel = parse(inputStream);
     return create(configurationModel);
   }
@@ -134,10 +135,10 @@ public final class DeclarativeConfiguration {
    * corresponding to the configuration.
    *
    * @param configurationModel the configuration model
-   * @return the {@link OpenTelemetrySdk}
+   * @return the {@link DeclarativeConfigResult}
    * @throws DeclarativeConfigException if unable to interpret
    */
-  public static ExtendedOpenTelemetrySdk create(
+  public static DeclarativeConfigResult create(
       OpenTelemetryConfigurationModel configurationModel) {
     return create(configurationModel, DEFAULT_COMPONENT_LOADER);
   }
@@ -149,15 +150,15 @@ public final class DeclarativeConfiguration {
    * @param configurationModel the configuration model
    * @param componentLoader the component loader used to load {@link ComponentProvider}
    *     implementations
-   * @return the {@link OpenTelemetrySdk}
+   * @return the {@link DeclarativeConfigResult}
    * @throws DeclarativeConfigException if unable to interpret
    */
-  public static ExtendedOpenTelemetrySdk create(
+  public static DeclarativeConfigResult create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
     return create(configurationModel, new DeclarativeConfigContext(componentLoader));
   }
 
-  private static ExtendedOpenTelemetrySdk create(
+  private static DeclarativeConfigResult create(
       OpenTelemetryConfigurationModel configurationModel, DeclarativeConfigContext context) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
     context.setBuilder(builder);
@@ -173,7 +174,7 @@ public final class DeclarativeConfiguration {
             context,
             builder.customizeModel(configurationModel));
     callAutoConfigureListeners(context, sdk);
-    return sdk;
+    return new DeclarativeConfigResult(sdk, context.getResource());
   }
 
   /**
