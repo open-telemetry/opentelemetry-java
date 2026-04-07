@@ -38,9 +38,7 @@ dependencies {
   // - with file configuration
   testImplementation(project(":sdk:all"))
 
-  // For some reason, changing this to testImplementation causes the tests to pass even when failures are present.
-  // Probably some dependency resolution interplay with otel.java-conventions but I couldn't figure it out.
-  implementation("org.junit.jupiter:junit-jupiter")
+  testImplementation("org.junit.jupiter:junit-jupiter")
 
   testCompileOnly("org.osgi:osgi.core")
   testImplementation("org.osgi:org.osgi.test.junit5")
@@ -52,6 +50,10 @@ dependencies {
 val testingBundleTask = tasks.register<Bundle>("testingBundle") {
   archiveClassifier.set("testing")
   from(sourceSets.test.get().output)
+  // The Bundle task uses compileClasspath by default for BND analysis (e.g. resolving the
+  // @Testable annotation to populate Test-Cases). Without this, testImplementation dependencies
+  // like junit-jupiter are invisible to BND, causing Test-Cases to be empty and 0 tests to run.
+  classpath(sourceSets.test.get().runtimeClasspath)
   bundle {
     bnd(
       "Test-Cases: \${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}",
