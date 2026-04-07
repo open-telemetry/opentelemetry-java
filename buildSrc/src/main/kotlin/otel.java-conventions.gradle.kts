@@ -152,7 +152,7 @@ tasks {
       // Append wildcard "*" last to import any other referenced packages
       val optionalPackages = mutableListOf("javax.annotation")
       optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
-      val importPackages = optionalPackages.joinToString(",") { it + ".*;resolution:=optional;version\"\${@}\"" } + ",*"
+      val importPackages = optionalPackages.joinToString(",") { it + ".*;resolution:=optional;version=\"\${@}\"" } + ",*"
 
       bnd(mapOf(
         // Once https://github.com/open-telemetry/opentelemetry-java/issues/6970 is resolved, exclude .internal packages
