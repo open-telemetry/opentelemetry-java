@@ -27,6 +27,7 @@ public interface Ordered {
     return 0;
   }
 
+  /** Convenience method to load an ordered list of SPIs implementing {@link Ordered}. */
   static <T extends Ordered> List<T> loadOrderedList(
       ComponentLoader componentLoader, Class<T> spiClass) {
     List<T> result = new ArrayList<>(ComponentLoader.loadList(componentLoader, spiClass));
