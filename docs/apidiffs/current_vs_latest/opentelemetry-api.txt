@@ -3,6 +3,9 @@ Comparing source compatibility of opentelemetry-api-1.61.0-SNAPSHOT.jar against 
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled(io.opentelemetry.api.logs.Severity, io.opentelemetry.context.Context)
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled(io.opentelemetry.api.logs.Severity)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.logs.LogRecordBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(java.lang.String, io.opentelemetry.api.common.Value<?>)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleCounter  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
@@ -27,6 +30,9 @@ Comparing source compatibility of opentelemetry-api-1.61.0-SNAPSHOT.jar against 
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongUpDownCounter  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.Span  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.Span setAttribute(java.lang.String, io.opentelemetry.api.common.Value<?>)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.Tracer  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
