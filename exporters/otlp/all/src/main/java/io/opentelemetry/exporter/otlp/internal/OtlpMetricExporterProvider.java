@@ -55,7 +55,8 @@ public class OtlpMetricExporterProvider
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode,
-          builder::setInternalTelemetryVersion);
+          builder::setInternalTelemetryVersion,
+          builder::setFallbackEndpoint);
       ExporterBuilderUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
       ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
@@ -78,7 +79,8 @@ public class OtlpMetricExporterProvider
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode,
-          builder::setInternalTelemetryVersion);
+          builder::setInternalTelemetryVersion,
+          builder::setFallbackEndpoint);
       ExporterBuilderUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
       ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(

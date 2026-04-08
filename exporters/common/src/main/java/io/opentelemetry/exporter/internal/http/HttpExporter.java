@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -41,6 +42,7 @@ public final class HttpExporter {
 
   private final String type;
   private final HttpSender httpSender;
+  @Nullable private final HttpSender fallbackHttpSender;
   private final ExporterInstrumentation exporterMetrics;
   private final boolean exportAsJson;
 
@@ -51,8 +53,27 @@ public final class HttpExporter {
       InternalTelemetryVersion internalTelemetryVersion,
       URI endpoint,
       boolean exportAsJson) {
+    this(
+        componentId,
+        httpSender,
+        meterProviderSupplier,
+        internalTelemetryVersion,
+        endpoint,
+        exportAsJson,
+        null);
+  }
+
+  public HttpExporter(
+      StandardComponentId componentId,
+      HttpSender httpSender,
+      Supplier<MeterProvider> meterProviderSupplier,
+      InternalTelemetryVersion internalTelemetryVersion,
+      URI endpoint,
+      boolean exportAsJson,
+      @Nullable HttpSender fallbackHttpSender) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
     this.httpSender = httpSender;
+    this.fallbackHttpSender = fallbackHttpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
@@ -74,7 +95,26 @@ public final class HttpExporter {
     httpSender.send(
         messageWriter,
         httpResponse -> onResponse(result, metricRecording, httpResponse),
-        throwable -> onError(result, metricRecording, throwable));
+        throwable -> {
+          if (fallbackHttpSender != null) {
+            logger.log(
+                Level.INFO,
+                "Primary endpoint failed for "
+                    + type
+                    + "s, attempting fallback endpoint. Error: "
+                    + throwable.getMessage());
+            MessageWriter fallbackMessageWriter =
+                exportAsJson
+                    ? exportRequest.toJsonMessageWriter()
+                    : exportRequest.toBinaryMessageWriter();
+            fallbackHttpSender.send(
+                fallbackMessageWriter,
+                httpResponse -> onResponse(result, metricRecording, httpResponse),
+                fallbackThrowable -> onError(result, metricRecording, fallbackThrowable));
+          } else {
+            onError(result, metricRecording, throwable);
+          }
+        });
 
     return result;
   }
@@ -131,7 +171,12 @@ public final class HttpExporter {
       logger.log(Level.INFO, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
-    return httpSender.shutdown();
+    CompletableResultCode primaryResult = httpSender.shutdown();
+    if (fallbackHttpSender != null) {
+      CompletableResultCode fallbackResult = fallbackHttpSender.shutdown();
+      return CompletableResultCode.ofAll(Arrays.asList(primaryResult, fallbackResult));
+    }
+    return primaryResult;
   }
 
   private static String extractErrorStatus(String statusMessage, @Nullable byte[] responseBody) {

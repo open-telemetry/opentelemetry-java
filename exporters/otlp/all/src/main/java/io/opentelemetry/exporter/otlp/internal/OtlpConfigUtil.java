@@ -65,6 +65,38 @@ public final class OtlpConfigUtil {
       Consumer<RetryPolicy> setRetryPolicy,
       Consumer<MemoryMode> setMemoryMode,
       Consumer<InternalTelemetryVersion> setInternalTelemetryVersion) {
+    configureOtlpExporterBuilder(
+        dataType,
+        config,
+        setComponentLoader,
+        setEndpoint,
+        addHeader,
+        setCompression,
+        setTimeout,
+        setTrustedCertificates,
+        setClientTls,
+        setRetryPolicy,
+        setMemoryMode,
+        setInternalTelemetryVersion,
+        null);
+  }
+
+  /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
+  @SuppressWarnings("TooManyParameters")
+  public static void configureOtlpExporterBuilder(
+      String dataType,
+      ConfigProperties config,
+      Consumer<ComponentLoader> setComponentLoader,
+      Consumer<String> setEndpoint,
+      BiConsumer<String, String> addHeader,
+      Consumer<String> setCompression,
+      Consumer<Duration> setTimeout,
+      Consumer<byte[]> setTrustedCertificates,
+      BiConsumer<byte[], byte[]> setClientTls,
+      Consumer<RetryPolicy> setRetryPolicy,
+      Consumer<MemoryMode> setMemoryMode,
+      Consumer<InternalTelemetryVersion> setInternalTelemetryVersion,
+      @Nullable Consumer<String> setFallbackEndpoint) {
     setComponentLoader.accept(config.getComponentLoader());
 
     String protocol = getOtlpProtocol(dataType, config);
@@ -140,6 +172,34 @@ public final class OtlpConfigUtil {
 
     if (clientKeyBytes != null && clientKeyChainBytes != null) {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
+    }
+
+    if (setFallbackEndpoint != null) {
+      boolean isFallbackHttpProtobuf = isHttpProtobuf;
+      URL fallbackEndpoint =
+          validateEndpoint(
+              config.getString("otel.exporter.otlp." + dataType + ".fallback.endpoint"),
+              isFallbackHttpProtobuf);
+      if (fallbackEndpoint != null) {
+        if (fallbackEndpoint.getPath().isEmpty()) {
+          fallbackEndpoint = createUrl(fallbackEndpoint, "/");
+        }
+      } else {
+        fallbackEndpoint =
+            validateEndpoint(
+                config.getString("otel.exporter.otlp.fallback.endpoint"), isFallbackHttpProtobuf);
+        if (fallbackEndpoint != null && isFallbackHttpProtobuf) {
+          String fallbackPath = fallbackEndpoint.getPath();
+          if (!fallbackPath.endsWith("/")) {
+            fallbackPath += "/";
+          }
+          fallbackPath += signalPath(dataType);
+          fallbackEndpoint = createUrl(fallbackEndpoint, fallbackPath);
+        }
+      }
+      if (fallbackEndpoint != null) {
+        setFallbackEndpoint.accept(fallbackEndpoint.toString());
+      }
     }
 
     Boolean retryDisabled = config.getBoolean("otel.java.exporter.otlp.retry.disabled");

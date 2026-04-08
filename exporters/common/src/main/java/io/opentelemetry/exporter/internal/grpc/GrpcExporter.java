@@ -17,10 +17,12 @@ import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Generic gRPC exporter.
@@ -41,6 +43,7 @@ public final class GrpcExporter {
 
   private final String type;
   private final GrpcSender grpcSender;
+  @Nullable private final GrpcSender fallbackGrpcSender;
   private final ExporterInstrumentation exporterMetrics;
 
   public GrpcExporter(
@@ -49,8 +52,19 @@ public final class GrpcExporter {
       StandardComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
       URI endpoint) {
+    this(grpcSender, internalTelemetryVersion, componentId, meterProviderSupplier, endpoint, null);
+  }
+
+  public GrpcExporter(
+      GrpcSender grpcSender,
+      InternalTelemetryVersion internalTelemetryVersion,
+      StandardComponentId componentId,
+      Supplier<MeterProvider> meterProviderSupplier,
+      URI endpoint,
+      @Nullable GrpcSender fallbackGrpcSender) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
     this.grpcSender = grpcSender;
+    this.fallbackGrpcSender = fallbackGrpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
@@ -69,7 +83,22 @@ public final class GrpcExporter {
     grpcSender.send(
         exportRequest.toBinaryMessageWriter(),
         grpcResponse -> onResponse(result, metricRecording, grpcResponse),
-        throwable -> onError(result, metricRecording, throwable));
+        throwable -> {
+          if (fallbackGrpcSender != null) {
+            logger.log(
+                Level.INFO,
+                "Primary endpoint failed for "
+                    + type
+                    + "s, attempting fallback endpoint. Error: "
+                    + throwable.getMessage());
+            fallbackGrpcSender.send(
+                exportRequest.toBinaryMessageWriter(),
+                grpcResponse -> onResponse(result, metricRecording, grpcResponse),
+                fallbackThrowable -> onError(result, metricRecording, fallbackThrowable));
+          } else {
+            onError(result, metricRecording, throwable);
+          }
+        });
 
     return result;
   }
@@ -143,6 +172,11 @@ public final class GrpcExporter {
       logger.log(Level.INFO, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
-    return grpcSender.shutdown();
+    CompletableResultCode primaryResult = grpcSender.shutdown();
+    if (fallbackGrpcSender != null) {
+      CompletableResultCode fallbackResult = fallbackGrpcSender.shutdown();
+      return CompletableResultCode.ofAll(Arrays.asList(primaryResult, fallbackResult));
+    }
+    return primaryResult;
   }
 }

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.doAnswer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
@@ -223,5 +224,115 @@ class GrpcExporterTest {
                                                   .build())
                                           .hasBucketCounts(1))));
     }
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void export_FallbackOnPrimaryTransportError() {
+    GrpcSender mockPrimarySender = Mockito.mock(GrpcSender.class);
+    GrpcSender mockFallbackSender = Mockito.mock(GrpcSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+
+    GrpcExporter exporter =
+        new GrpcExporter(
+            mockPrimarySender,
+            InternalTelemetryVersion.LATEST,
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
+            () -> SdkMeterProvider.builder().build(),
+            URI.create("http://primary:4317"),
+            mockFallbackSender);
+
+    // Primary sender fails with transport error, fallback succeeds
+    doAnswer(
+            invoc -> {
+              Consumer<Throwable> onError = invoc.getArgument(2);
+              onError.accept(new IOException("Connection refused"));
+              return null;
+            })
+        .when(mockPrimarySender)
+        .send(any(), any(), any());
+
+    doAnswer(
+            invoc -> {
+              Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(ImmutableGrpcResponse.create(GrpcStatusCode.OK, null, new byte[0]));
+              return null;
+            })
+        .when(mockFallbackSender)
+        .send(any(), any(), any());
+
+    exporter.export(mockMarshaller, 10);
+
+    // Verify fallback was called
+    Mockito.verify(mockFallbackSender).send(any(), any(), any());
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void export_NoFallbackOnSuccess() {
+    GrpcSender mockPrimarySender = Mockito.mock(GrpcSender.class);
+    GrpcSender mockFallbackSender = Mockito.mock(GrpcSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+
+    GrpcExporter exporter =
+        new GrpcExporter(
+            mockPrimarySender,
+            InternalTelemetryVersion.LATEST,
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
+            () -> SdkMeterProvider.builder().build(),
+            URI.create("http://primary:4317"),
+            mockFallbackSender);
+
+    doAnswer(
+            invoc -> {
+              Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(ImmutableGrpcResponse.create(GrpcStatusCode.OK, null, new byte[0]));
+              return null;
+            })
+        .when(mockPrimarySender)
+        .send(any(), any(), any());
+
+    exporter.export(mockMarshaller, 10);
+
+    Mockito.verify(mockFallbackSender, Mockito.never()).send(any(), any(), any());
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void export_BothEndpointsFail() {
+    GrpcSender mockPrimarySender = Mockito.mock(GrpcSender.class);
+    GrpcSender mockFallbackSender = Mockito.mock(GrpcSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+
+    GrpcExporter exporter =
+        new GrpcExporter(
+            mockPrimarySender,
+            InternalTelemetryVersion.LATEST,
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
+            () -> SdkMeterProvider.builder().build(),
+            URI.create("http://primary:4317"),
+            mockFallbackSender);
+
+    doAnswer(
+            invoc -> {
+              Consumer<Throwable> onError = invoc.getArgument(2);
+              onError.accept(new IOException("Primary connection refused"));
+              return null;
+            })
+        .when(mockPrimarySender)
+        .send(any(), any(), any());
+
+    doAnswer(
+            invoc -> {
+              Consumer<Throwable> onError = invoc.getArgument(2);
+              onError.accept(new IOException("Fallback connection refused"));
+              return null;
+            })
+        .when(mockFallbackSender)
+        .send(any(), any(), any());
+
+    CompletableResultCode result = exporter.export(mockMarshaller, 10);
+
+    assertThat(result.isSuccess()).isFalse();
   }
 }

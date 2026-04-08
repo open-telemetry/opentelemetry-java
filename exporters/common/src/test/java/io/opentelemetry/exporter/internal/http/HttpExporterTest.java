@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doAnswer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.HttpSender;
@@ -211,6 +212,122 @@ class HttpExporterTest {
                                                   .build())
                                           .hasBucketCounts(1))));
     }
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_FallbackOnPrimaryTransportError() {
+    HttpSender mockPrimarySender = Mockito.mock(HttpSender.class);
+    HttpSender mockFallbackSender = Mockito.mock(HttpSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockPrimarySender,
+            () -> SdkMeterProvider.builder().build(),
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://primary:4318"),
+            false,
+            mockFallbackSender);
+
+    // Primary sender fails with transport error, fallback succeeds
+    doAnswer(
+            invoc -> {
+              Consumer<Throwable> onError = invoc.getArgument(2);
+              onError.accept(new IOException("Connection refused"));
+              return null;
+            })
+        .when(mockPrimarySender)
+        .send(any(), any(), any());
+
+    doAnswer(
+            invoc -> {
+              Consumer<HttpResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(new FakeHttpResponse(200, "Ok"));
+              return null;
+            })
+        .when(mockFallbackSender)
+        .send(any(), any(), any());
+
+    exporter.export(mockMarshaller, 10);
+
+    // Verify fallback was called
+    Mockito.verify(mockFallbackSender).send(any(), any(), any());
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_NoFallbackOnSuccess() {
+    HttpSender mockPrimarySender = Mockito.mock(HttpSender.class);
+    HttpSender mockFallbackSender = Mockito.mock(HttpSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockPrimarySender,
+            () -> SdkMeterProvider.builder().build(),
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://primary:4318"),
+            false,
+            mockFallbackSender);
+
+    // Primary sender succeeds
+    doAnswer(
+            invoc -> {
+              Consumer<HttpResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(new FakeHttpResponse(200, "Ok"));
+              return null;
+            })
+        .when(mockPrimarySender)
+        .send(any(), any(), any());
+
+    exporter.export(mockMarshaller, 10);
+
+    // Verify fallback was NOT called
+    Mockito.verify(mockFallbackSender, Mockito.never()).send(any(), any(), any());
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_BothEndpointsFail() {
+    HttpSender mockPrimarySender = Mockito.mock(HttpSender.class);
+    HttpSender mockFallbackSender = Mockito.mock(HttpSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockPrimarySender,
+            () -> SdkMeterProvider.builder().build(),
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://primary:4318"),
+            false,
+            mockFallbackSender);
+
+    // Both senders fail
+    doAnswer(
+            invoc -> {
+              Consumer<Throwable> onError = invoc.getArgument(2);
+              onError.accept(new IOException("Primary connection refused"));
+              return null;
+            })
+        .when(mockPrimarySender)
+        .send(any(), any(), any());
+
+    doAnswer(
+            invoc -> {
+              Consumer<Throwable> onError = invoc.getArgument(2);
+              onError.accept(new IOException("Fallback connection refused"));
+              return null;
+            })
+        .when(mockFallbackSender)
+        .send(any(), any(), any());
+
+    CompletableResultCode result = exporter.export(mockMarshaller, 10);
+
+    assertThat(result.isSuccess()).isFalse();
   }
 
   private static class FakeHttpResponse implements HttpResponse {
