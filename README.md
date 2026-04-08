@@ -284,9 +284,9 @@ For more information about the triager role, see the [community repository](http
 
 ### Emeritus
 
-- Maintainer [Bogdan Drutu](https://github.com/BogdanDrutu)
-- Maintainer [Carlos Alberto](https://github.com/carlosalberto)
-- Approver [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek)
+- [Bogdan Drutu](https://github.com/BogdanDrutu), Maintainer
+- [Carlos Alberto](https://github.com/carlosalberto), Maintainer
+- [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek), Approver
 
 For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
