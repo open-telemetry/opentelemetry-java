@@ -105,11 +105,11 @@ final class ComposableRuleBasedSamplerFactory
     }
     List<String> included = attributePatternsModel.getIncluded();
     if (included != null && included.isEmpty()) {
-      throw new DeclarativeConfigException(".included must not be empty");
+      throw new DeclarativeConfigException("included must not be empty");
     }
     List<String> excluded = attributePatternsModel.getExcluded();
     if (excluded != null && excluded.isEmpty()) {
-      throw new DeclarativeConfigException(".excluded must not be empty");
+      throw new DeclarativeConfigException("excluded must not be empty");
     }
     return new AttributeMatcher(
         requireNonNull(attributePatternsModel.getKey(), "attribute_patterns key"),

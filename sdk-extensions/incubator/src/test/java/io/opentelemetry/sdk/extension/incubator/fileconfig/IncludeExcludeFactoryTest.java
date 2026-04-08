@@ -69,9 +69,9 @@ class IncludeExcludeFactoryTest {
     return Stream.of(
         Arguments.of(
             new IncludeExcludeModel().withIncluded(Collections.emptyList()).withExcluded(null),
-            ".included must not be empty"),
+            "included must not be empty"),
         Arguments.of(
             new IncludeExcludeModel().withIncluded(null).withExcluded(Collections.emptyList()),
-            ".excluded must not be empty"));
+            "excluded must not be empty"));
   }
 }

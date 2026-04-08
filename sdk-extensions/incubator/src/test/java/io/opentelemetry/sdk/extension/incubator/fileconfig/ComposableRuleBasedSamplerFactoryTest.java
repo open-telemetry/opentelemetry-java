@@ -84,7 +84,7 @@ class ComposableRuleBasedSamplerFactoryTest {
                                 new ExperimentalComposableSamplerModel()
                                     .withAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
-            ".included must not be empty"),
+            "included must not be empty"),
         Arguments.of(
             new ExperimentalComposableRuleBasedSamplerModel()
                 .withRules(
@@ -99,7 +99,7 @@ class ComposableRuleBasedSamplerFactoryTest {
                                 new ExperimentalComposableSamplerModel()
                                     .withAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
-            ".excluded must not be empty"),
+            "excluded must not be empty"),
         Arguments.of(
             new ExperimentalComposableRuleBasedSamplerModel()
                 .withRules(

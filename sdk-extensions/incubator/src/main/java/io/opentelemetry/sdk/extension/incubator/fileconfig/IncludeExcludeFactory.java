@@ -25,11 +25,11 @@ final class IncludeExcludeFactory implements Factory<IncludeExcludeModel, Predic
   public Predicate<String> create(IncludeExcludeModel model, DeclarativeConfigContext context) {
     List<String> included = model.getIncluded();
     if (included != null && included.isEmpty()) {
-      throw new DeclarativeConfigException(".included must not be empty");
+      throw new DeclarativeConfigException("included must not be empty");
     }
     List<String> excluded = model.getExcluded();
     if (excluded != null && excluded.isEmpty()) {
-      throw new DeclarativeConfigException(".excluded must not be empty");
+      throw new DeclarativeConfigException("excluded must not be empty");
     }
 
     return IncludeExcludePredicate.createPatternMatching(included, excluded);
