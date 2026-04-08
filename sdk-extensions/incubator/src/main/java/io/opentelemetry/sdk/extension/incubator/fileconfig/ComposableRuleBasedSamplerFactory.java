@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil
 import static java.util.stream.Collectors.toSet;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -86,9 +87,13 @@ final class ComposableRuleBasedSamplerFactory
     if (attributeValuesModel == null) {
       return null;
     }
+    List<String> values = attributeValuesModel.getValues();
+    if (values == null || values.isEmpty()) {
+      throw new DeclarativeConfigException(".values is required and must be non-empty");
+    }
     return new AttributeMatcher(
         requireNonNull(attributeValuesModel.getKey(), "attribute_values key"),
-        IncludeExcludePredicate.createExactMatching(attributeValuesModel.getValues(), null));
+        IncludeExcludePredicate.createExactMatching(values, null));
   }
 
   @Nullable
@@ -98,10 +103,17 @@ final class ComposableRuleBasedSamplerFactory
     if (attributePatternsModel == null) {
       return null;
     }
+    List<String> included = attributePatternsModel.getIncluded();
+    if (included != null && included.isEmpty()) {
+      throw new DeclarativeConfigException(".included must not be empty");
+    }
+    List<String> excluded = attributePatternsModel.getExcluded();
+    if (excluded != null && excluded.isEmpty()) {
+      throw new DeclarativeConfigException(".excluded must not be empty");
+    }
     return new AttributeMatcher(
         requireNonNull(attributePatternsModel.getKey(), "attribute_patterns key"),
-        IncludeExcludePredicate.createPatternMatching(
-            attributePatternsModel.getIncluded(), attributePatternsModel.getExcluded()));
+        IncludeExcludePredicate.createPatternMatching(included, excluded));
   }
 
   // Visible for testing
