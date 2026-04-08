@@ -14,6 +14,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
@@ -23,7 +24,6 @@ import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
@@ -91,8 +91,7 @@ class OpenTelemetryConfigurationFactoryTest {
           .captureForLogger(OpenTelemetryConfigurationFactory.class.getName(), Level.WARN);
 
   private final DeclarativeConfigContext context =
-      new DeclarativeConfigContext(
-          SpiHelper.create(OpenTelemetryConfigurationFactoryTest.class.getClassLoader()));
+      new DeclarativeConfigContext(ComponentLoader.forClassLoader(getClass().getClassLoader()));
 
   @BeforeEach
   void setup() {
@@ -144,7 +143,7 @@ class OpenTelemetryConfigurationFactoryTest {
         new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
 
     logCapturer.assertContains(
@@ -157,7 +156,7 @@ class OpenTelemetryConfigurationFactoryTest {
         new OpenTelemetryConfigurationModel().withFileFormat("1.0");
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
 
     assertThat(logCapturer.size()).isEqualTo(0);
@@ -176,7 +175,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -209,7 +208,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -326,7 +325,9 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .build())
                             .addLogRecordProcessor(
                                 BatchLogRecordProcessor.builder(
-                                        OtlpHttpLogRecordExporter.getDefault())
+                                        OtlpHttpLogRecordExporter.builder()
+                                            .setComponentLoader(context)
+                                            .build())
                                     .build())
                             .build())
                     .setTracerProvider(
@@ -343,14 +344,20 @@ class OpenTelemetryConfigurationFactoryTest {
                                     .build())
                             .setSampler(alwaysOn())
                             .addSpanProcessor(
-                                BatchSpanProcessor.builder(OtlpHttpSpanExporter.getDefault())
+                                BatchSpanProcessor.builder(
+                                        OtlpHttpSpanExporter.builder()
+                                            .setComponentLoader(context)
+                                            .build())
                                     .build())
                             .build())
                     .setMeterProvider(
                         SdkMeterProvider.builder()
                             .setResource(expectedResource)
                             .registerMetricReader(
-                                PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault())
+                                PeriodicMetricReader.builder(
+                                        OtlpHttpMetricExporter.builder()
+                                            .setComponentLoader(context)
+                                            .build())
                                     .build())
                             .registerView(
                                 InstrumentSelector.builder().setName("instrument-name").build(),
@@ -362,7 +369,7 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(expectedSdk);
 
     ExtendedOpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(model, context);
+        OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 

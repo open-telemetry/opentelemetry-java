@@ -9,9 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SamplerComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOffSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
@@ -53,7 +53,7 @@ class SamplerFactoryTest {
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   private final DeclarativeConfigContext context =
-      new DeclarativeConfigContext(SpiHelper.create(SamplerFactoryTest.class.getClassLoader()));
+      new DeclarativeConfigContext(ComponentLoader.forClassLoader(getClass().getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArguments")

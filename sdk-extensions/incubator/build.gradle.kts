@@ -30,7 +30,6 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-databind")
   api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
-  implementation(project(":sdk-extensions:autoconfigure"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
@@ -149,6 +148,35 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
   delete("$buildDirectory/generated/sources/js2p-tmp/")
 }
 
+// Copies EnvironmentResource.java from the autoconfigure module into a generated source set so
+// that the incubator can use the exact same source without taking a runtime dependency on
+// autoconfigure and without the risk of divergence from manual syncing.
+val generatedResourceConfigDir =
+  layout.buildDirectory.dir("generated/sources/resource-configuration/java/main")
+val copyResourceConfiguration by tasks.registering(Copy::class) {
+  from(
+    project(":sdk-extensions:autoconfigure").file(
+      "src/main/java/io/opentelemetry/sdk/autoconfigure/EnvironmentResource.java"
+    )
+  )
+  into(generatedResourceConfigDir.map { it.dir("io/opentelemetry/extension/incubator/fileconfig") })
+  // Only the package declaration needs rewriting; everything else is copied verbatim.
+  filter { line: String ->
+    line.replace(
+      "package io.opentelemetry.sdk.autoconfigure;",
+      "package io.opentelemetry.sdk.extension.incubator.fileconfig;"
+    )
+  }
+}
+
+sourceSets {
+  main {
+    java {
+      srcDir(generatedResourceConfigDir)
+    }
+  }
+}
+
 val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
   val buildDir = buildDirectory
   val targetFile = File(
@@ -205,8 +233,8 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
   }
 }
 
-tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
-tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("compileJava").dependsOn(deleteJs2pTmp, copyResourceConfiguration)
+tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson, copyResourceConfiguration)
 tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 tasks.getByName("javadoc").dependsOn(buildGraalVmReflectionJson)
 tasks.getByName("compileTestJava").dependsOn(buildGraalVmReflectionJson)

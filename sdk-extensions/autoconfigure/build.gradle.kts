@@ -11,6 +11,7 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":api:incubator"))
+  compileOnly(project(":sdk-extensions:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

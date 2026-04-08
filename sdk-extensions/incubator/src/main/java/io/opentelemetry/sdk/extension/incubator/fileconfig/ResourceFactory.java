@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.EnvironmentResource.ATTRIBUTE_PROPERTY;
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.EnvironmentResource.createEnvironmentResource;
+
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
@@ -60,9 +62,9 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
     String attributeList = model.getAttributesList();
     if (attributeList != null) {
       builder.putAll(
-          ResourceConfiguration.createEnvironmentResource(
+          createEnvironmentResource(
               DefaultConfigProperties.createFromMap(
-                  Collections.singletonMap("otel.resource.attributes", attributeList))));
+                  Collections.singletonMap(ATTRIBUTE_PROPERTY, attributeList))));
     }
 
     List<AttributeNameValueModel> attributeNameValueModel = model.getAttributes();

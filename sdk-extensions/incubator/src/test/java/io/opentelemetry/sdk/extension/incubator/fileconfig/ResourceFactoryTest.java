@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
@@ -28,7 +28,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ResourceFactoryTest {
 
   private final DeclarativeConfigContext context =
-      new DeclarativeConfigContext(SpiHelper.create(ResourceFactoryTest.class.getClassLoader()));
+      new DeclarativeConfigContext(ComponentLoader.forClassLoader(getClass().getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArgs")
@@ -54,7 +54,10 @@ class ResourceFactoryTest {
                 .build()),
         Arguments.of(
             new ResourceModel().withSchemaUrl("http://foo"),
-            Resource.getDefault().toBuilder().setSchemaUrl("http://foo").build()));
+            Resource.getDefault().toBuilder().setSchemaUrl("http://foo").build()),
+        Arguments.of(
+            new ResourceModel().withAttributesList("key1=val1,key2=val2"),
+            Resource.getDefault().toBuilder().put("key1", "val1").put("key2", "val2").build()));
   }
 
   @ParameterizedTest

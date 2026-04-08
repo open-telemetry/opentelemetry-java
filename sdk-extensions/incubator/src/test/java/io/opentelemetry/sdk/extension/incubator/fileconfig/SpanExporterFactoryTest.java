@@ -17,7 +17,6 @@ import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExpo
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
@@ -54,14 +53,12 @@ class SpanExporterFactoryTest {
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   private CapturingComponentLoader capturingComponentLoader;
-  private SpiHelper spiHelper;
   private DeclarativeConfigContext context;
 
   @BeforeEach
   void setup() {
     capturingComponentLoader = new CapturingComponentLoader();
-    spiHelper = SpiHelper.create(capturingComponentLoader);
-    context = new DeclarativeConfigContext(spiHelper);
+    context = new DeclarativeConfigContext(capturingComponentLoader);
     context.setBuilder(new DeclarativeConfigurationBuilder());
   }
 
@@ -70,7 +67,7 @@ class SpanExporterFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OtlpHttpSpanExporter expectedExporter =
         OtlpHttpSpanExporter.getDefault().toBuilder()
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -107,7 +104,7 @@ class SpanExporterFactoryTest {
             .addHeader("key2", "value2")
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -180,7 +177,7 @@ class SpanExporterFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OtlpGrpcSpanExporter expectedExporter =
         OtlpGrpcSpanExporter.getDefault().toBuilder()
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -216,7 +213,7 @@ class SpanExporterFactoryTest {
             .addHeader("key2", "value2")
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 

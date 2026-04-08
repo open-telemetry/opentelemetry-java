@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
@@ -46,9 +46,9 @@ class TracerProviderFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final DeclarativeConfigContext context =
+  private static final DeclarativeConfigContext context =
       new DeclarativeConfigContext(
-          SpiHelper.create(TracerProviderFactoryTest.class.getClassLoader()));
+          ComponentLoader.forClassLoader(TracerProviderFactoryTest.class.getClassLoader()));
 
   @BeforeEach
   void setup() {
@@ -127,7 +127,9 @@ class TracerProviderFactoryTest {
                         .build())
                 .setSampler(alwaysOn())
                 .addSpanProcessor(
-                    BatchSpanProcessor.builder(OtlpHttpSpanExporter.getDefault()).build())
+                    BatchSpanProcessor.builder(
+                            OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
+                        .build())
                 .build()));
   }
 
