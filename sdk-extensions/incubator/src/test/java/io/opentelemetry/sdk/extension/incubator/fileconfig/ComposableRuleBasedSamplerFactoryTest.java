@@ -162,7 +162,7 @@ class ComposableRuleBasedSamplerFactoryTest {
   private static final AttributeKey<String> HTTP_PATH = AttributeKey.stringKey("http.path");
 
   @ParameterizedTest
-  @MethodSource("declarativeCOnfigSamplingPredicateArgs")
+  @MethodSource("declarativeConfigSamplingPredicateArgs")
   void declarativeConfigSamplingPredicate(
       DeclarativeConfigSamplingPredicate predicate,
       Context context,
@@ -174,7 +174,7 @@ class ComposableRuleBasedSamplerFactoryTest {
   }
 
   @SuppressWarnings("unused")
-  private static Stream<Arguments> declarativeCOnfigSamplingPredicateArgs() {
+  private static Stream<Arguments> declarativeConfigSamplingPredicateArgs() {
     DeclarativeConfigSamplingPredicate matchAll =
         new DeclarativeConfigSamplingPredicate(null, null, null, null);
     DeclarativeConfigSamplingPredicate valuesMatcher =

@@ -35,9 +35,7 @@ final class ViewFactory implements Factory<ViewStreamModel, View> {
     if (attributeKeys != null) {
       List<String> included = attributeKeys.getIncluded();
       List<String> excluded = attributeKeys.getExcluded();
-      if (included != null || excluded != null) {
-        builder.setAttributeFilter(IncludeExcludePredicate.createExactMatching(included, excluded));
-      }
+      builder.setAttributeFilter(IncludeExcludePredicate.createExactMatching(included, excluded));
     }
     if (model.getAggregation() != null) {
       builder.setAggregation(
