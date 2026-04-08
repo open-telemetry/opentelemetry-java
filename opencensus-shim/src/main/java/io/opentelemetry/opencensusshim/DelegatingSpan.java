@@ -8,6 +8,7 @@ package io.opentelemetry.opencensusshim;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
@@ -74,6 +75,11 @@ interface DelegatingSpan extends Span {
 
   @Override
   default Span setAttribute(String key, boolean value) {
+    return getDelegate().setAttribute(key, value);
+  }
+
+  @Override
+  default Span setAttribute(String key, Value<?> value) {
     return getDelegate().setAttribute(key, value);
   }
 
