@@ -25,7 +25,7 @@ import io.opentelemetry.api.testing.internal.AbstractOpenTelemetryTest;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.declarativeconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
