@@ -19,7 +19,7 @@ import java.util.Map;
  * <p>This class is intentionally self-contained (no dependencies on other autoconfigure-internal
  * classes). Do not add dependencies on non-API, non-SPI classes.
  */
-public final class EnvironmentResource {
+final class EnvironmentResource {
 
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
