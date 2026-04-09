@@ -66,8 +66,9 @@ public final class DoubleBase2ExponentialHistogramAggregator
   }
 
   @Override
-  public AggregatorHandle<ExponentialHistogramPointData> createHandle() {
-    return new Handle(reservoirFactory, maxBuckets, maxScale, recordMinMax, memoryMode);
+  public AggregatorHandle<ExponentialHistogramPointData> createHandle(long creationEpochNanos) {
+    return new Handle(
+        creationEpochNanos, reservoirFactory, maxBuckets, maxScale, recordMinMax, memoryMode);
   }
 
   @Override
@@ -104,12 +105,13 @@ public final class DoubleBase2ExponentialHistogramAggregator
     @Nullable private final MutableExponentialHistogramPointData reusablePoint;
 
     Handle(
+        long creationEpochNanos,
         ExemplarReservoirFactory reservoirFactory,
         int maxBuckets,
         int maxScale,
         boolean recordMinMax,
         MemoryMode memoryMode) {
-      super(reservoirFactory, /* isDoubleType= */ true);
+      super(creationEpochNanos, reservoirFactory, /* isDoubleType= */ true);
       this.maxBuckets = maxBuckets;
       this.maxScale = maxScale;
       this.recordMinMax = recordMinMax;

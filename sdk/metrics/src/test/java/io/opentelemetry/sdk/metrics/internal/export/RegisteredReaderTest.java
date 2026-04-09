@@ -38,13 +38,13 @@ class RegisteredReaderTest {
   }
 
   @Test
-  void setAndGetLastCollectEpochNanos() {
+  void getLastCollectEpochNanosOrDefault() {
     RegisteredReader registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
 
-    assertThat(registeredReader.getLastCollectEpochNanos()).isEqualTo(0);
+    assertThat(registeredReader.getLastCollectEpochNanosOrDefault(4)).isEqualTo(4);
     registeredReader.setLastCollectEpochNanos(1);
-    assertThat(registeredReader.getLastCollectEpochNanos()).isEqualTo(1);
+    assertThat(registeredReader.getLastCollectEpochNanosOrDefault(4)).isEqualTo(1);
     registeredReader.setLastCollectEpochNanos(5);
-    assertThat(registeredReader.getLastCollectEpochNanos()).isEqualTo(5);
+    assertThat(registeredReader.getLastCollectEpochNanosOrDefault(5)).isEqualTo(5);
   }
 }

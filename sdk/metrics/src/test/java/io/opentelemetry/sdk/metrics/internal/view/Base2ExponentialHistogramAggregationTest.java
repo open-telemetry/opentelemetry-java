@@ -63,7 +63,7 @@ class Base2ExponentialHistogramAggregationTest {
                     Advice.empty()),
                 asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
                 MemoryMode.IMMUTABLE_DATA);
-    AggregatorHandle<ExponentialHistogramPointData> handle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> handle = aggregator.createHandle(0);
     // Record max range
     handle.recordDouble(Double.MIN_VALUE, Attributes.empty(), Context.current());
     handle.recordDouble(Double.MAX_VALUE, Attributes.empty(), Context.current());
