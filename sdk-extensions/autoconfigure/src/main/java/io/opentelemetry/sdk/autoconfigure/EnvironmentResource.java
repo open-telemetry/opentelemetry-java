@@ -23,20 +23,11 @@ public final class EnvironmentResource {
 
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
-  // Visible for testing
-  public static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
+  static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
 
-  /**
-   * Create a {@link Resource} from the environment. The resource contains attributes parsed from
-   * environment variables and system property keys {@code otel.resource.attributes} and {@code
-   * otel.service.name}.
-   *
-   * @param config the {@link ConfigProperties} used to obtain resource properties
-   * @return the resource.
-   */
   @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
-  public static Resource createEnvironmentResource(ConfigProperties config) {
+  static Resource createEnvironmentResource(ConfigProperties config) {
     AttributesBuilder resourceAttributes = Attributes.builder();
     for (Map.Entry<String, String> entry : config.getMap(ATTRIBUTE_PROPERTY).entrySet()) {
       resourceAttributes.put(
