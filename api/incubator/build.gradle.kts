@@ -36,6 +36,7 @@ testing {
     register<JvmTestSuite>("testConvertToModel") {
       dependencies {
         implementation("com.fasterxml.jackson.core:jackson-databind")
+        implementation("org.snakeyaml:snakeyaml-engine")
         implementation(project(":sdk-extensions:incubator"))
         implementation(project(":sdk-extensions:autoconfigure"))
         implementation("com.google.guava:guava")
