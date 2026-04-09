@@ -77,9 +77,8 @@ import org.snakeyaml.engine.v2.api.LoadSettings;
  * @deprecated this mechanism is superseded by declarative config, which is now stable (spec and
  *     schema at <a
  *     href="https://github.com/open-telemetry/opentelemetry-configuration">opentelemetry-configuration</a>.
- *     Please uses {@link
- *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser#parseAndCreate(InputStream)}
- *     instead.
+ *     Please use {@code DeclarativeConfigurationParser#parseAndCreate(InputStream)} from {@code
+ *     opentelemetry-sdk-extension-autoconfigure} instead.
  */
 @Deprecated
 public final class ViewConfig {

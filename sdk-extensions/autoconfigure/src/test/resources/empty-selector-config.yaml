@@ -1,5 +1,0 @@
-- selector:
-  view:
-    name: name1
-    description: description1
-    aggregation: sum

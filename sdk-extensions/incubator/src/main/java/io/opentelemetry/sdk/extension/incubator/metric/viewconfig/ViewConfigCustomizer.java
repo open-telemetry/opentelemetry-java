@@ -23,9 +23,9 @@ import java.util.logging.Logger;
  * @deprecated this mechanism is superseded by declarative config, which is now stable (spec and
  *     schema at <a
  *     href="https://github.com/open-telemetry/opentelemetry-configuration">opentelemetry-configuration</a>)
- *     and will be removed after the 1.62.0 release. Please uses {@link
- *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser#parseAndCreate(InputStream)}
- *     instead.
+ *     and will be removed after the 1.62.0 release. Please use {@code
+ *     DeclarativeConfigurationParser#parseAndCreate(InputStream)} from {@code
+ *     opentelemetry-sdk-extension-autoconfigure} instead.
  */
 @Deprecated
 public final class ViewConfigCustomizer implements AutoConfigurationCustomizerProvider {

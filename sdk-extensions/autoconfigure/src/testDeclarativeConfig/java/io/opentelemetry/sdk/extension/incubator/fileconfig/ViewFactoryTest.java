@@ -42,7 +42,7 @@ class ViewFactoryTest {
             .setName("name")
             .setDescription("description")
             .setAttributeFilter(
-                IncludeExcludePredicate.createExactMatching(
+                IncludeExcludePredicate.createPatternMatching(
                     Arrays.asList("foo", "bar"), Collections.singletonList("baz")))
             .setAggregation(
                 Aggregation.explicitBucketHistogram(
