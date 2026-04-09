@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationPropertyModel;
@@ -54,7 +54,7 @@ class InstrumentationConfigUtilTest {
 
     String mapJson = MAPPER.writeValueAsString(map);
     DeclarativeConfigProperties properties =
-        DeclarativeConfiguration.toConfigProperties(
+        DeclarativeConfigurationParser.toConfigProperties(
             new ByteArrayInputStream(mapJson.getBytes(StandardCharsets.UTF_8)));
 
     assertThat(DeclarativeConfigProperties.toMap(properties)).isEqualTo(map);
@@ -131,7 +131,7 @@ class InstrumentationConfigUtilTest {
         new ExperimentalLanguageSpecificInstrumentationModel();
     javaConfig.setAdditionalProperty(instrumentationName, instrumentationConfig);
     DeclarativeConfigProperties modelProperties =
-        DeclarativeConfiguration.toConfigProperties(
+        DeclarativeConfigurationParser.toConfigProperties(
             new OpenTelemetryConfigurationModel()
                 .withInstrumentationDevelopment(
                     new ExperimentalInstrumentationModel().withJava(javaConfig)));

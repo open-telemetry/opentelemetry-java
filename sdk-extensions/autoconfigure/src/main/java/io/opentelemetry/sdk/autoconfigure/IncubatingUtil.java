@@ -12,6 +12,7 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigResult;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.io.FileInputStream;
@@ -35,7 +36,7 @@ final class IncubatingUtil {
       Logger logger, String configurationFile, ComponentLoader componentLoader) {
     logger.fine("Autoconfiguring from configuration file: " + configurationFile);
     try (FileInputStream fis = new FileInputStream(configurationFile)) {
-      OpenTelemetryConfigurationModel model = DeclarativeConfiguration.parse(fis);
+      OpenTelemetryConfigurationModel model = DeclarativeConfigurationParser.parse(fis);
       return create(model, componentLoader);
     } catch (DeclarativeConfigException e) {
       throw toConfigurationException(e);

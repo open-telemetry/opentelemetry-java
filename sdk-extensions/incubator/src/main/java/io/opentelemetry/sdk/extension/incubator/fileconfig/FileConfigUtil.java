@@ -26,7 +26,7 @@ final class FileConfigUtil {
   static ConfigKeyValue validateSingleKeyValue(
       DeclarativeConfigContext context, Object model, String resourceName) {
     DeclarativeConfigProperties modelConfigProperties =
-        DeclarativeConfiguration.toConfigProperties(model, context);
+        DeclarativeConfigurationParser.toConfigProperties(model, context);
     Set<String> propertyKeys = modelConfigProperties.getPropertyKeys();
     if (propertyKeys.size() != 1) {
       String suffix =

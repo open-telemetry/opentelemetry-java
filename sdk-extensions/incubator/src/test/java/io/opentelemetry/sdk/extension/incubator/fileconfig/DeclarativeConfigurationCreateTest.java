@@ -100,7 +100,7 @@ class DeclarativeConfigurationCreateTest {
         new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
     // Verify that file can be parsed and interpreted without error
-    assertThatCode(() -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is).getSdk()))
+    assertThatCode(() -> cleanup.addCloseable(DeclarativeConfigurationParser.parseAndCreate(is).getSdk()))
         .as("Example file: " + example.getName())
         .doesNotThrowAnyException();
   }
@@ -134,7 +134,7 @@ class DeclarativeConfigurationCreateTest {
 
     assertThatThrownBy(
             () ->
-                DeclarativeConfiguration.parseAndCreate(
+                DeclarativeConfigurationParser.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
@@ -159,7 +159,7 @@ class DeclarativeConfigurationCreateTest {
 
     assertThatCode(
             () ->
-                DeclarativeConfiguration.parseAndCreate(
+                DeclarativeConfigurationParser.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .doesNotThrowAnyException();
   }

@@ -23,7 +23,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -124,7 +124,7 @@ class IncubatingApiTests {
                 drop: {}
       """;
     // should not throw
-    DeclarativeConfiguration.parse(
+    DeclarativeConfigurationParser.parse(
         new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)));
   }
 }

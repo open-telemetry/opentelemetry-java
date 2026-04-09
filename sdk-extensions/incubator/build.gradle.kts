@@ -23,13 +23,15 @@ dependencies {
 
   // io.opentelemetry.sdk.extension.incubator.metric.viewconfig
   implementation(project(":sdk-extensions:autoconfigure-spi"))
-  implementation("org.snakeyaml:snakeyaml-engine")
+  compileOnly("org.snakeyaml:snakeyaml-engine")
 
   // io.opentelemetry.sdk.extension.incubator.fileconfig
   api(project(":api:incubator"))
-  implementation("com.fasterxml.jackson.core:jackson-databind")
+  compileOnly("com.fasterxml.jackson.core:jackson-databind")
   api("com.fasterxml.jackson.core:jackson-annotations")
-  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+
+  testImplementation("org.snakeyaml:snakeyaml-engine")
+  testImplementation("com.fasterxml.jackson.core:jackson-databind")
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
