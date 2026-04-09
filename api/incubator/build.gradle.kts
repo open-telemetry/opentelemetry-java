@@ -19,6 +19,9 @@ dependencies {
 
   // To use parsed config file as input for InstrumentationConfigUtilTest
   testImplementation(project(":sdk-extensions:incubator"))
+  testImplementation(project(":sdk-extensions:autoconfigure"))
+  testImplementation("org.snakeyaml:snakeyaml-engine")
+  testImplementation("com.fasterxml.jackson.core:jackson-databind")
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":api:testing-internal"))

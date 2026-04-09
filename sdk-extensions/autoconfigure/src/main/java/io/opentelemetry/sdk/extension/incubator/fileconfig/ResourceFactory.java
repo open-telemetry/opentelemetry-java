@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static io.opentelemetry.sdk.extension.incubator.fileconfig.EnvironmentResource.ATTRIBUTE_PROPERTY;
-import static io.opentelemetry.sdk.extension.incubator.fileconfig.EnvironmentResource.createEnvironmentResource;
+import static io.opentelemetry.sdk.autoconfigure.EnvironmentResource.ATTRIBUTE_PROPERTY;
+import static io.opentelemetry.sdk.autoconfigure.EnvironmentResource.createEnvironmentResource;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;

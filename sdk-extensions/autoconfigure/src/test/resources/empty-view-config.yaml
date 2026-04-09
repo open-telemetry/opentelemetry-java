@@ -1,0 +1,8 @@
+- selector:
+    instrument_name: name1
+    instrument_type: COUNTER
+    instrument_unit: ms
+    meter_name: meterName1
+    meter_version: 1.0.0
+    meter_schema_url: http://example1.com
+  view:

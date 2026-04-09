@@ -43,7 +43,8 @@ final class OpenTelemetryConfigurationFactory
   public DeclarativeConfigResult create(
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
     DeclarativeConfigProperties modelProperties =
-        DeclarativeConfigurationParser.toConfigProperties(model, context.getDelegateComponentLoader());
+        DeclarativeConfigurationParser.toConfigProperties(
+            model, context.getDelegateComponentLoader());
     SdkConfigProvider sdkConfigProvider = SdkConfigProvider.create(modelProperties);
     context.setConfigProvider(sdkConfigProvider);
     OpenTelemetrySdkBuilder builder =

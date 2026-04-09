@@ -198,8 +198,8 @@ public final class DeclarativeConfigurationParser {
    *
    * <p>This is used when samplers are composed, with one sampler accepting one or more additional
    * samplers as config properties. The {@link
-   * io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider} implementation can call
-   * this to configure a delegate {@link SamplerModel} from the {@link DeclarativeConfigProperties}
+   * io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider} implementation can call this
+   * to configure a delegate {@link SamplerModel} from the {@link DeclarativeConfigProperties}
    * corresponding to a particular config property.
    */
   // TODO(jack-berg): add create methods for all SDK extension components supported by

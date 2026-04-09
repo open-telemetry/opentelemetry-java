@@ -1,2 +1,84 @@
 Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-1.62.0-SNAPSHOT.jar against opentelemetry-sdk-extension-autoconfigure-1.61.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigResult  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource getResource()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk getSdk()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigResult create(io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigResult create(io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel, io.opentelemetry.common.ComponentLoader)
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationCustomizer
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) DeclarativeConfigurationBuilder()
+	+++  NEW METHOD: PUBLIC(+) void addLogRecordExporterCustomizer(java.lang.Class<T>, java.util.function.BiFunction<T,io.opentelemetry.api.incubator.config.DeclarativeConfigProperties,T>)
+		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.logs.export.LogRecordExporter
+	+++  NEW METHOD: PUBLIC(+) void addMetricExporterCustomizer(java.lang.Class<T>, java.util.function.BiFunction<T,io.opentelemetry.api.incubator.config.DeclarativeConfigProperties,T>)
+		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.metrics.export.MetricExporter
+	+++  NEW METHOD: PUBLIC(+) void addModelCustomizer(java.util.function.Function<io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel,io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel>)
+	+++  NEW METHOD: PUBLIC(+) void addSpanExporterCustomizer(java.lang.Class<T>, java.util.function.BiFunction<T,io.opentelemetry.api.incubator.config.DeclarativeConfigProperties,T>)
+		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.trace.export.SpanExporter
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel customizeModel(io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationCustomizer  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void addLogRecordExporterCustomizer(java.lang.Class<T>, java.util.function.BiFunction<T,io.opentelemetry.api.incubator.config.DeclarativeConfigProperties,T>)
+		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.logs.export.LogRecordExporter
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void addMetricExporterCustomizer(java.lang.Class<T>, java.util.function.BiFunction<T,io.opentelemetry.api.incubator.config.DeclarativeConfigProperties,T>)
+		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.metrics.export.MetricExporter
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void addModelCustomizer(java.util.function.Function<io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel,io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void addSpanExporterCustomizer(java.lang.Class<T>, java.util.function.BiFunction<T,io.opentelemetry.api.incubator.config.DeclarativeConfigProperties,T>)
+		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.trace.export.SpanExporter
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationCustomizerProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.Ordered
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void customize(io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationCustomizer)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.samplers.Sampler createSampler(io.opentelemetry.api.incubator.config.DeclarativeConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel parse(java.io.InputStream)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigResult parseAndCreate(java.io.InputStream)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.incubator.config.DeclarativeConfigProperties toConfigProperties(java.io.InputStream)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.incubator.config.DeclarativeConfigProperties toConfigProperties(java.lang.Object)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel getConfigurationModel()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.extension.incubator.fileconfig.ServiceResourceDetector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) ServiceResourceDetector()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource create(io.opentelemetry.api.incubator.config.DeclarativeConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) java.lang.String getName()
+	+++  NEW METHOD: PUBLIC(+) java.lang.Class<io.opentelemetry.sdk.resources.Resource> getType()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.extension.incubator.fileconfig.YamlDeclarativeConfigProperties  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.extension.incubator.fileconfig.YamlDeclarativeConfigProperties create(java.util.Map<java.lang.String,java.lang.Object>, io.opentelemetry.common.ComponentLoader)
+	+++  NEW METHOD: PUBLIC(+) java.lang.Boolean getBoolean(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.common.ComponentLoader getComponentLoader()
+	+++  NEW METHOD: PUBLIC(+) java.lang.Double getDouble(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.lang.Integer getInt(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.lang.Long getLong(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.util.Set<java.lang.String> getPropertyKeys()
+	+++  NEW METHOD: PUBLIC(+) java.util.List<T> getScalarList(java.lang.String, java.lang.Class<T>)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) java.lang.String getString(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.incubator.config.DeclarativeConfigProperties getStructured(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.api.incubator.config.DeclarativeConfigProperties> getStructuredList(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
