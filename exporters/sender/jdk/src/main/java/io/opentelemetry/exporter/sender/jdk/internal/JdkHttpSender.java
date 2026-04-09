@@ -5,10 +5,9 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
-import static java.util.stream.Collectors.joining;
-
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -16,19 +15,19 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +40,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -72,6 +72,7 @@ public final class JdkHttpSender implements HttpSender {
   private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
   private final Predicate<IOException> retryExceptionPredicate;
+  private final long maxResponseBodySize;
 
   // Visible for testing
   JdkHttpSender(
@@ -82,7 +83,8 @@ public final class JdkHttpSender implements HttpSender {
       Duration timeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     this.client = client;
     this.endpoint = endpoint;
     this.contentType = contentType;
@@ -101,6 +103,7 @@ public final class JdkHttpSender implements HttpSender {
       this.executorService = executorService;
       this.managedExecutor = false;
     }
+    this.maxResponseBodySize = maxResponseBodySize;
   }
 
   JdkHttpSender(
@@ -113,7 +116,8 @@ public final class JdkHttpSender implements HttpSender {
       @Nullable RetryPolicy retryPolicy,
       @Nullable ProxyOptions proxyOptions,
       @Nullable SSLContext sslContext,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     this(
         configureClient(sslContext, connectTimeout, proxyOptions),
         endpoint,
@@ -122,7 +126,8 @@ public final class JdkHttpSender implements HttpSender {
         timeout,
         headerSupplier,
         retryPolicy,
-        executorService);
+        executorService,
+        maxResponseBodySize);
   }
 
   private static ExecutorService newExecutor() {
@@ -151,10 +156,8 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public void send(
-      MessageWriter messageWriter,
-      Consumer<io.opentelemetry.sdk.common.export.HttpResponse> onResponse,
-      Consumer<Throwable> onError) {
-    CompletableFuture<HttpResponse<byte[]>> unused =
+      MessageWriter messageWriter, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
+    CompletableFuture<HttpResponse> unused =
         CompletableFuture.supplyAsync(
                 () -> {
                   try {
@@ -170,12 +173,12 @@ public final class JdkHttpSender implements HttpSender {
                     onError.accept(throwable);
                     return;
                   }
-                  onResponse.accept(toHttpResponse(httpResponse));
+                  onResponse.accept(httpResponse);
                 });
   }
 
   // Visible for testing
-  HttpResponse<byte[]> sendInternal(MessageWriter requestBodyWriter) throws IOException {
+  HttpResponse sendInternal(MessageWriter requestBodyWriter) throws IOException {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(endpoint).timeout(timeout);
     Map<String, List<String>> headers = headerSupplier.get();
@@ -183,6 +186,8 @@ public final class JdkHttpSender implements HttpSender {
       headers.forEach((key, values) -> values.forEach(value -> requestBuilder.header(key, value)));
     }
     requestBuilder.header("Content-Type", contentType);
+    // Advertise gzip and identity response encoding support.
+    requestBuilder.header("Accept-Encoding", "gzip, identity");
 
     NoCopyByteArrayOutputStream os = threadLocalBaos.get();
     os.reset();
@@ -207,7 +212,7 @@ public final class JdkHttpSender implements HttpSender {
 
     long attempt = 0;
     long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
-    HttpResponse<byte[]> httpResponse = null;
+    HttpResponse httpResponse = null;
     IOException exception = null;
     do {
       if (attempt > 0) {
@@ -234,7 +239,7 @@ public final class JdkHttpSender implements HttpSender {
       requestBuilder.timeout(timeout.minusNanos(System.nanoTime() - startTimeNanos));
       try {
         httpResponse = sendRequest(requestBuilder, byteBufferPool);
-        boolean retryable = retryableStatusCodes.contains(httpResponse.statusCode());
+        boolean retryable = retryableStatusCodes.contains(httpResponse.getStatusCode());
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -273,21 +278,16 @@ public final class JdkHttpSender implements HttpSender {
     throw exception;
   }
 
-  private static String responseStringRepresentation(HttpResponse<?> response) {
-    StringJoiner joiner = new StringJoiner(",", "HttpResponse{", "}");
-    joiner.add("code=" + response.statusCode());
-    joiner.add(
-        "headers="
-            + response.headers().map().entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + String.join(",", entry.getValue()))
-                .collect(joining(",", "[", "]")));
-    return joiner.toString();
+  private static String responseStringRepresentation(HttpResponse response) {
+    return "HttpResponse{code=" + response.getStatusCode() + "}";
   }
 
-  private HttpResponse<byte[]> sendRequest(
+  private HttpResponse sendRequest(
       HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
-      return client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
+      java.net.http.HttpResponse<InputStream> response =
+          client.send(requestBuilder.build(), BodyHandlers.ofInputStream());
+      return toHttpResponse(response);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new IllegalStateException(e);
@@ -306,7 +306,23 @@ public final class JdkHttpSender implements HttpSender {
     // Known retryable HttpTimeoutException messages: "request timed out"
     // Known retryable HttpConnectTimeoutException messages: "HTTP connect timed
     // out"
-    return !(throwable instanceof SSLException);
+    // ResponseBodyTooLargeException and UnsupportedContentEncodingException are permanent errors:
+    // a larger body or unsupported encoding will not resolve on retry.
+    return !(throwable instanceof SSLException)
+        && !(throwable instanceof ResponseBodyTooLargeException)
+        && !(throwable instanceof UnsupportedContentEncodingException);
+  }
+
+  private static final class ResponseBodyTooLargeException extends IOException {
+    ResponseBodyTooLargeException(String message) {
+      super(message);
+    }
+  }
+
+  private static final class UnsupportedContentEncodingException extends IOException {
+    UnsupportedContentEncodingException(String message) {
+      super(message);
+    }
   }
 
   private static class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {
@@ -319,24 +335,48 @@ public final class JdkHttpSender implements HttpSender {
     }
   }
 
-  private static io.opentelemetry.sdk.common.export.HttpResponse toHttpResponse(
-      HttpResponse<byte[]> response) {
-    return new io.opentelemetry.sdk.common.export.HttpResponse() {
-      @Override
-      public int getStatusCode() {
-        return response.statusCode();
-      }
+  private HttpResponse toHttpResponse(java.net.http.HttpResponse<InputStream> response)
+      throws IOException {
+    int statusCode = response.statusCode();
+    // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
+    // lets us detect overflow: if we read more than maxResponseBodySize bytes, the body exceeded
+    // the limit. A body exactly at the limit will read no further (EOF is reached first).
+    // If maxResponseBodySize is >= Integer.MAX_VALUE, adding 1 would overflow (long) or exceed
+    // what an int can hold. In that case use Integer.MAX_VALUE — the overflow check can never
+    // trigger for such a large limit.
+    int readUpTo =
+        maxResponseBodySize >= Integer.MAX_VALUE
+            ? Integer.MAX_VALUE
+            : (int) (maxResponseBodySize + 1);
 
-      @Override
-      public String getStatusMessage() {
-        return String.valueOf(response.statusCode());
-      }
+    String contentEncoding = response.headers().firstValue("Content-Encoding").orElse(null);
+    if (contentEncoding != null && !"gzip".equalsIgnoreCase(contentEncoding)) {
+      throw new UnsupportedContentEncodingException(
+          "Unsupported Content-Encoding: " + contentEncoding);
+    }
+    boolean decompress = "gzip".equalsIgnoreCase(contentEncoding);
 
-      @Override
-      public byte[] getResponseBody() {
-        return response.body();
+    byte[] bodyBytes;
+    try (InputStream rawIs = response.body()) {
+      // The limit is applied to the decompressed bytes.
+      InputStream is = decompress ? new GZIPInputStream(rawIs) : rawIs;
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      byte[] buf = new byte[4 * 0x400]; // 4KB
+      int n;
+      while (baos.size() < readUpTo
+          && (n = is.read(buf, 0, Math.min(buf.length, readUpTo - baos.size()))) != -1) {
+        baos.write(buf, 0, n);
       }
-    };
+      bodyBytes = baos.toByteArray();
+    } catch (IOException e) {
+      bodyBytes = new byte[0];
+      logger.log(Level.WARNING, "Failed to read response body", e);
+    }
+    if (bodyBytes.length > maxResponseBodySize) {
+      throw new ResponseBodyTooLargeException(
+          "HTTP response body exceeded limit of " + maxResponseBodySize + " bytes");
+    }
+    return ImmutableHttpResponse.create(statusCode, String.valueOf(statusCode), bodyBytes);
   }
 
   private static class ByteBufferPool {

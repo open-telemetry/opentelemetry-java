@@ -10,6 +10,7 @@ import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
+import com.google.protobuf.AbstractMessageLite;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.GrpcSslContexts;
@@ -73,6 +74,8 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     // the User-Agent to be spec compliant they must manually set the user agent when building
     // their channel.
     channelBuilder.userAgent(OtlpUserAgent.getUserAgent());
+    // Its user's responsibility to set the max inbound message size when building their channel.
+    channelBuilder.maxInboundMessageSize(4 * 1024 * 1024);
     return this;
   }
 
@@ -255,6 +258,11 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
       public CompletableResultCode shutdown() {
         shutdownCallback.run();
         return delegateExporter.shutdown();
+      }
+
+      @Override
+      public AbstractMessageLite<?, ?> exportResponse(int minimumSize) {
+        return delegateExporter.exportResponse(minimumSize);
       }
     };
   }

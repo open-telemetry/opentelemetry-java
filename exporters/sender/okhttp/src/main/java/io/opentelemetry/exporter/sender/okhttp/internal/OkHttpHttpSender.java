@@ -39,8 +39,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.Buffer;
 import okio.BufferedSink;
+import okio.GzipSource;
 import okio.Okio;
+import okio.Source;
 
 /**
  * {@link HttpSender} which is backed by OkHttp.
@@ -58,6 +61,7 @@ public final class OkHttpHttpSender implements HttpSender {
   private final Supplier<Map<String, List<String>>> headerSupplier;
   private final MediaType mediaType;
   @Nullable private final Compressor compressor;
+  private final long maxResponseBodySize;
 
   /** Create a sender. */
   @SuppressWarnings("TooManyParameters")
@@ -72,7 +76,8 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -111,6 +116,7 @@ public final class OkHttpHttpSender implements HttpSender {
     this.mediaType = MediaType.parse(contentType);
     this.compressor = compressor;
     this.headerSupplier = headerSupplier;
+    this.maxResponseBodySize = maxResponseBodySize;
   }
 
   @Override
@@ -126,6 +132,10 @@ public final class OkHttpHttpSender implements HttpSender {
     if (compressor != null) {
       requestBuilder.addHeader("Content-Encoding", compressor.getEncoding());
     }
+    // Explicitly advertise gzip and identity encoding support. Because we set Accept-Encoding
+    // ourselves, OkHttp's BridgeInterceptor will not transparently decompress gzip responses
+    // (it only does so when it added the header), so we handle decompression ourselves below.
+    requestBuilder.addHeader("Accept-Encoding", "gzip, identity");
     requestBuilder.post(new RequestBodyImpl(messageWriter, compressor, mediaType));
 
     InstrumentationUtil.suppressInstrumentation(
@@ -141,37 +151,52 @@ public final class OkHttpHttpSender implements HttpSender {
 
                       @Override
                       public void onResponse(Call call, Response response) {
-                        try (ResponseBody body = response.body()) {
-                          onResponse.accept(
-                              new HttpResponse() {
-                                @Nullable private byte[] bodyBytes;
-
-                                @Override
-                                public int getStatusCode() {
-                                  return response.code();
-                                }
-
-                                @Override
-                                public String getStatusMessage() {
-                                  return response.message();
-                                }
-
-                                @Override
-                                public byte[] getResponseBody() {
-                                  if (bodyBytes == null) {
-                                    try {
-                                      bodyBytes = body.bytes();
-                                    } catch (IOException e) {
-                                      bodyBytes = new byte[0];
-                                      logger.log(Level.WARNING, "Failed to read response body", e);
-                                    }
-                                  }
-                                  return bodyBytes;
-                                }
-                              });
-                        }
+                        handleResponse(response, onResponse, onError);
                       }
                     }));
+  }
+
+  private void handleResponse(
+      Response response, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
+    try (ResponseBody body = response.body()) {
+      String contentEncoding = response.header("Content-Encoding");
+      if (contentEncoding != null && !"gzip".equalsIgnoreCase(contentEncoding)) {
+        onError.accept(new IOException("Unsupported Content-Encoding: " + contentEncoding));
+        return;
+      }
+      boolean decompress = "gzip".equalsIgnoreCase(contentEncoding);
+      // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
+      // lets us detect overflow: if the buffer ends up larger than maxResponseBodySize, the body
+      // exceeded the limit. A body exactly at the limit will only fill the buffer to
+      // maxResponseBodySize (EOF is reached before the extra byte is read).
+      // If maxResponseBodySize is Long.MAX_VALUE, adding 1 would overflow. In that case use
+      // Long.MAX_VALUE directly — the overflow check can never trigger for such a large limit.
+      long readUpTo =
+          maxResponseBodySize == Long.MAX_VALUE ? Long.MAX_VALUE : maxResponseBodySize + 1;
+      Buffer buffer = new Buffer();
+      try {
+        Source source = decompress ? new GzipSource(body.source()) : body.source();
+        while (buffer.size() <= maxResponseBodySize) {
+          long n = source.read(buffer, readUpTo - buffer.size());
+          if (n == -1L) {
+            break;
+          }
+        }
+      } catch (IOException e) {
+        logger.log(Level.WARNING, "Failed to read response body", e);
+      }
+
+      if (buffer.size() > maxResponseBodySize) {
+        onError.accept(
+            new IOException(
+                "HTTP response body exceeded limit of " + maxResponseBodySize + " bytes"));
+        return;
+      }
+
+      byte[] bodyBytes = buffer.readByteArray();
+      onResponse.accept(
+          ImmutableHttpResponse.create(response.code(), response.message(), bodyBytes));
+    }
   }
 
   @Override
