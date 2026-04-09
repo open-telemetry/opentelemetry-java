@@ -94,6 +94,8 @@ public interface GrpcSenderConfig {
    *
    * <p>Warning: setting a high or unbounded limit allows a malicious or misconfigured server to
    * cause unbounded heap allocation, potentially leading to out-of-memory errors.
+   *
+   * @since 1.61.0
    */
   default long getMaxResponseBodySize() {
     return 4 * 1024L * 1024L;
