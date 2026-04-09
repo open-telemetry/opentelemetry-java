@@ -205,6 +205,25 @@ All changes to the SDK configuration options or autoconfigure module should be d
 
 * Unit tests target Java 8, so language features such as lambda and streams can be used in tests.
 
+### Benchmarks
+
+Performance-sensitive modules include [JMH](https://openjdk.org/projects/code-tools/jmh/) benchmarks
+under `src/jmh/java`. To run all benchmarks in a module:
+
+```bash
+./gradlew :sdk:trace:jmh
+```
+
+To run a single benchmark class:
+
+```bash
+./gradlew -PjmhIncludeSingleClass=BatchSpanProcessorBenchmark :sdk:trace:jmh
+```
+
+Results are written as JSON to `build/results/jmh/results.json` and an HTML report is generated
+alongside it. When submitting a PR that claims a performance improvement, please include JMH output
+(number of threads, iterations, scores with error margins) so reviewers can evaluate the change.
+
 ## Specific tasks
 
 ### Updating the Snapshot build number
