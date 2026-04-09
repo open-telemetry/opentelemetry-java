@@ -78,7 +78,7 @@ import org.snakeyaml.engine.v2.api.LoadSettings;
  *     schema at <a
  *     href="https://github.com/open-telemetry/opentelemetry-configuration">opentelemetry-configuration</a>.
  *     Please uses {@link
- *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration#parseAndCreate(InputStream)}
+ *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser#parseAndCreate(InputStream)}
  *     instead.
  */
 @Deprecated

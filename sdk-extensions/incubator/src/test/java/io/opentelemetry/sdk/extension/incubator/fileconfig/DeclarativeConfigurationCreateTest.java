@@ -63,7 +63,7 @@ class DeclarativeConfigurationCreateTest {
   /**
    * Verify each example in <a
    * href="https://github.com/open-telemetry/opentelemetry-configuration/tree/main/examples">open-telemetry/opentelemetry-configuration/examples</a>
-   * can pass {@link DeclarativeConfiguration#parseAndCreate(InputStream)}.
+   * can pass {@link DeclarativeConfigurationParser#parseAndCreate(InputStream)}.
    */
   @ParameterizedTest
   @MethodSource("exampleFiles")

@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  *     schema at <a
  *     href="https://github.com/open-telemetry/opentelemetry-configuration">opentelemetry-configuration</a>)
  *     and will be removed after the 1.62.0 release. Please uses {@link
- *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration#parseAndCreate(InputStream)}
+ *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser#parseAndCreate(InputStream)}
  *     instead.
  */
 @Deprecated
