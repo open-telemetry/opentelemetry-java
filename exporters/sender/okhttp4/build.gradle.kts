@@ -32,6 +32,7 @@ val generateMainResources by tasks.registering(Sync::class) {
   from(okhttpDir.resolve("src/main/resources"))
   into(layout.buildDirectory.dir("generated/sources/okhttp4/main/resources"))
   filter { line: String -> line.replace("sender.okhttp.internal", "sender.okhttp4.internal") }
+  eachFile { path = path.replace("sender/okhttp/internal", "sender/okhttp4/internal") }
   includeEmptyDirs = false
 }
 
