@@ -1,11 +1,14 @@
 name: Survey on Merged PR by Non-Member
 
 on:
+  # pull_request_target is used instead of pull_request so that the workflow has write access
+  # (to post comments) even when triggered by fork PRs.
+  #
+  # SECURITY: this workflow must never checkout or execute any code from the PR branch.
+  # Doing so would allow malicious PRs to exfiltrate secrets. All we use from the PR
+  # is github.event.pull_request.number (an integer) and author metadata, which are safe.
   pull_request_target:
     types: [closed]
-
-permissions:
-  contents: read
 
 env:
   PR_NUM: ${{ github.event.pull_request.number }}
