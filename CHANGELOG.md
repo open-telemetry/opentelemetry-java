@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.61.0 (2026-04-10)
+
 ### API
 
 * Stabilize `isEnabled()` on `Tracer`, `Logger`, and metric instruments
