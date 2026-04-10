@@ -652,6 +652,25 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void identityResponseContentEncoding() {
+    // Server responds with Content-Encoding: identity, which means no encoding. The export should
+    // succeed just like a response with no Content-Encoding header.
+    AbstractMessageLite<?, ?> responseBody = exporter.exportResponse(0);
+    httpErrors.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.OK)
+                .contentType(MediaType.PLAIN_TEXT_UTF_8)
+                .add("Content-Encoding", "identity")
+                .build(),
+            HttpData.wrap(responseBody.toByteArray())));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isTrue();
+  }
+
+  @Test
   @SuppressLogger(HttpExporter.class)
   void unsupportedResponseContentEncoding() {
     // Server responds with a Content-Encoding that we don't support. The export should fail
