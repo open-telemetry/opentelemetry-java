@@ -133,11 +133,12 @@ public final class JdkHttpSender implements HttpSender {
   private static ExecutorService newExecutor() {
     return new ThreadPoolExecutor(
         0,
-        Integer.MAX_VALUE,
+        Math.max(Runtime.getRuntime().availableProcessors(), 5),
         60,
         TimeUnit.SECONDS,
         new SynchronousQueue<>(),
-        new DaemonThreadFactory("jdkhttp-executor"));
+        new DaemonThreadFactory("jdkhttp-executor"),
+        new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
   private static HttpClient configureClient(
@@ -409,6 +410,11 @@ public final class JdkHttpSender implements HttpSender {
   public CompletableResultCode shutdown() {
     if (managedExecutor) {
       executorService.shutdown();
+      try {
+        executorService.awaitTermination(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
     }
     if (AutoCloseable.class.isInstance(client)) {
       try {

@@ -27,6 +27,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -164,6 +165,38 @@ class JdkHttpSenderTest {
         .hasMessage("unknown error");
 
     verify(mockHttpClient, times(1)).send(any(), any());
+  }
+
+  @Test
+  void defaultExecutor_isBounded() {
+    JdkHttpSender defaultSender =
+        new JdkHttpSender(
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofNanos(1),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null,
+            Long.MAX_VALUE);
+
+    try {
+      int expectedMax = Math.max(Runtime.getRuntime().availableProcessors(), 5);
+      assertThat(defaultSender)
+          .extracting(
+              "executorService", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
+          .satisfies(
+              executor -> {
+                assertThat(executor.getMaximumPoolSize()).isEqualTo(expectedMax);
+                assertThat(executor.getRejectedExecutionHandler())
+                    .isInstanceOf(ThreadPoolExecutor.CallerRunsPolicy.class);
+              });
+    } finally {
+      defaultSender.shutdown();
+    }
   }
 
   @Test
