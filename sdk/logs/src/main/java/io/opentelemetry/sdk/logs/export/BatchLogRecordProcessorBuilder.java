@@ -32,12 +32,15 @@ public final class BatchLogRecordProcessorBuilder {
   // Visible for testing
   static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   // Visible for testing
+  static final int DEFAULT_MAX_CONCURRENT_EXPORTS = 1;
+  // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
 
   private final LogRecordExporter logRecordExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
+  private int maxConcurrentExports = DEFAULT_MAX_CONCURRENT_EXPORTS;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
   private Supplier<MeterProvider> meterProvider = MeterProvider::noop;
   private InternalTelemetryVersion telemetryVersion = InternalTelemetryVersion.LEGACY;
@@ -136,6 +139,21 @@ public final class BatchLogRecordProcessorBuilder {
   }
 
   /**
+   * Sets the maximum number of concurrent exports.
+   *
+   * <p>Default value is {@code 1}.
+   *
+   * @param maxConcurrentExports the maximum number of concurrent exports.
+   * @return this.
+   * @see BatchLogRecordProcessorBuilder#DEFAULT_MAX_CONCURRENT_EXPORTS
+   */
+  public BatchLogRecordProcessorBuilder setMaxConcurrentExports(int maxConcurrentExports) {
+    checkArgument(maxConcurrentExports > 0, "maxConcurrentExports must be positive.");
+    this.maxConcurrentExports = maxConcurrentExports;
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
    * metrics will not be collected.
    */
@@ -174,6 +192,11 @@ public final class BatchLogRecordProcessorBuilder {
     return maxExportBatchSize;
   }
 
+  // Visible for testing
+  int getMaxConcurrentExports() {
+    return maxConcurrentExports;
+  }
+
   /**
    * Returns a new {@link BatchLogRecordProcessor} that batches, then forwards them to the given
    * {@code logRecordExporter}.
@@ -195,6 +218,7 @@ public final class BatchLogRecordProcessorBuilder {
         scheduleDelayNanos,
         maxQueueSize,
         maxExportBatchSize,
+        maxConcurrentExports,
         exporterTimeoutNanos);
   }
 }
