@@ -131,6 +131,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   private static final AtomicInteger grpcEncodingServerAttempts = new AtomicInteger();
 
+  private static volatile String grpcEncodingServerEncoding = "brotli";
+
   @RegisterExtension
   @Order(1)
   static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
@@ -243,7 +245,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
   }
 
-  // A minimal server that returns grpc-encoding: brotli to test unsupported encoding handling.
+  // A minimal server that returns a configurable grpc-encoding to test encoding handling.
+  // The encoding is controlled via grpcEncodingServerEncoding (defaults to "brotli").
   // Both OkHttpGrpcSender (our code) and UpstreamGrpcSender (grpc-java framework) reject unknown
   // encodings and fail the export with INTERNAL status.
   @RegisterExtension
@@ -261,7 +264,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                 return HttpResponse.of(
                     ResponseHeaders.builder(HttpStatus.OK)
                         .contentType(MediaType.parse("application/grpc+proto"))
-                        .add("grpc-encoding", "brotli")
+                        .add("grpc-encoding", grpcEncodingServerEncoding)
                         .add("grpc-status", "0")
                         .build(),
                     HttpData.wrap(frame));
@@ -329,6 +332,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     attempts.set(0);
     httpRequests.clear();
     grpcEncodingServerAttempts.set(0);
+    grpcEncodingServerEncoding = "brotli";
   }
 
   @Test
@@ -438,6 +442,36 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void unsupportedGrpcMessageEncoding() {
+    try (TelemetryExporter<T> testExporter =
+        exporterBuilder()
+            .setEndpoint(grpcEncodingServer.httpUri().toString())
+            .setRetryPolicy(null)
+            .build()) {
+      CompletableResultCode result =
+          testExporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+      assertThat(result.isSuccess()).isFalse();
+      assertThat(grpcEncodingServerAttempts).hasValue(1);
+      assertThat(result.getFailureThrowable())
+          .isInstanceOfSatisfying(
+              FailedExportException.GrpcExportException.class,
+              ex ->
+                  assertThat(requireNonNull(ex.getResponse()))
+                      .satisfies(
+                          grpcResponse ->
+                              assertThat(grpcResponse.getStatusCode())
+                                  .isEqualTo(GrpcStatusCode.INTERNAL)));
+    }
+  }
+
+  // Verifies that a response with flag=1 and grpc-encoding: identity is rejected with INTERNAL.
+  // Although identity is advertised in grpc-accept-encoding (meaning "no encoding applied"),
+  // a server setting the compressed flag to 1 is contradictory and should not be accepted.
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void identityGrpcMessageEncodingWithCompressedFlagRejected() {
+    grpcEncodingServerEncoding = "identity";
     try (TelemetryExporter<T> testExporter =
         exporterBuilder()
             .setEndpoint(grpcEncodingServer.httpUri().toString())

@@ -350,7 +350,9 @@ public final class JdkHttpSender implements HttpSender {
             : (int) (maxResponseBodySize + 1);
 
     String contentEncoding = response.headers().firstValue("Content-Encoding").orElse(null);
-    if (contentEncoding != null && !"gzip".equalsIgnoreCase(contentEncoding)) {
+    if (contentEncoding != null
+        && !"gzip".equalsIgnoreCase(contentEncoding)
+        && !"identity".equalsIgnoreCase(contentEncoding)) {
       throw new UnsupportedContentEncodingException(
           "Unsupported Content-Encoding: " + contentEncoding);
     }

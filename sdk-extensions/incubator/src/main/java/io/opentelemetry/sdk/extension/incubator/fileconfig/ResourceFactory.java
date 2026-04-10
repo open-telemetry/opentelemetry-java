@@ -10,7 +10,6 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.EnvironmentRes
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
@@ -21,7 +20,6 @@ import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 
 final class ResourceFactory implements Factory<ResourceModel, Resource> {
 
@@ -49,8 +47,11 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
         }
       }
 
+      IncludeExcludeModel attributesIncludeExcludeModel = detectionModel.getAttributes();
       Predicate<String> detectorAttributeFilter =
-          detectorAttributeFilter(detectionModel.getAttributes());
+          attributesIncludeExcludeModel == null
+              ? ResourceFactory::matchAll
+              : IncludeExcludeFactory.getInstance().create(attributesIncludeExcludeModel, context);
       Attributes filteredDetectedAttributes =
           detectedResourceBuilder.build().getAttributes().toBuilder()
               .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
@@ -83,14 +84,5 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
 
   private static boolean matchAll(String attributeKey) {
     return true;
-  }
-
-  private static Predicate<String> detectorAttributeFilter(
-      @Nullable IncludeExcludeModel includedExcludeModel) {
-    if (includedExcludeModel == null) {
-      return ResourceFactory::matchAll;
-    }
-    return IncludeExcludePredicate.createPatternMatching(
-        includedExcludeModel.getIncluded(), includedExcludeModel.getExcluded());
   }
 }
