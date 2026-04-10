@@ -39,7 +39,7 @@
 #### Exporters
 
 * OTLP: add configurable bounds to response body reading
-  ([#8224](https://github.com/open-telemetry/opentelemetry-java/pull/8224))
+  ([#8224](https://github.com/open-telemetry/opentelemetry-java/pull/8224), [#8277](https://github.com/open-telemetry/opentelemetry-java/pull/8277))
 * OTLP: only throw invalid response exception when gRPC response size < 5 bytes
   ([#8194](https://github.com/open-telemetry/opentelemetry-java/pull/8194))
 * OTLP: remove duplicate FINEST-level error logging in gRPC exporter
@@ -56,6 +56,8 @@
   ([#8079](https://github.com/open-telemetry/opentelemetry-java/pull/8079))
 * Declarative config: resource attribute filtering should include attributes by default
   ([#8177](https://github.com/open-telemetry/opentelemetry-java/pull/8177))
+* Declarative config: enforce IncludedExcludeModel .included and .excluded are not empty
+  ([#8266](https://github.com/open-telemetry/opentelemetry-java/pull/8266))
 * Autoconfigure: restructure SDK incubator to not depend on autoconfigure internals
   ([#8242](https://github.com/open-telemetry/opentelemetry-java/pull/8242))
 
