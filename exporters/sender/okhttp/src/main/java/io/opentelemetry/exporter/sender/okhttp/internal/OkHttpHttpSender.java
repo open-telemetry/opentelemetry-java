@@ -160,7 +160,9 @@ public final class OkHttpHttpSender implements HttpSender {
       Response response, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
     try (ResponseBody body = response.body()) {
       String contentEncoding = response.header("Content-Encoding");
-      if (contentEncoding != null && !"gzip".equalsIgnoreCase(contentEncoding)) {
+      if (contentEncoding != null
+          && !"gzip".equalsIgnoreCase(contentEncoding)
+          && !"identity".equalsIgnoreCase(contentEncoding)) {
         onError.accept(new IOException("Unsupported Content-Encoding: " + contentEncoding));
         return;
       }
