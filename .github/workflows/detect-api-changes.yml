@@ -10,6 +10,8 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
 
+permissions: {}
+
 jobs:
   detect-api-changes:
     name: Detect API surface area changes
