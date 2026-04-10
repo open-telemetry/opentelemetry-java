@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -133,7 +134,7 @@ public final class JdkHttpSender implements HttpSender {
   private static ExecutorService newExecutor() {
     return new ThreadPoolExecutor(
         0,
-        Integer.MAX_VALUE,
+        Math.max(Runtime.getRuntime().availableProcessors(), 5),
         60,
         TimeUnit.SECONDS,
         new SynchronousQueue<>(),
@@ -157,24 +158,28 @@ public final class JdkHttpSender implements HttpSender {
   @Override
   public void send(
       MessageWriter messageWriter, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
-    CompletableFuture<HttpResponse> unused =
-        CompletableFuture.supplyAsync(
-                () -> {
-                  try {
-                    return sendInternal(messageWriter);
-                  } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                  }
-                },
-                executorService)
-            .whenComplete(
-                (httpResponse, throwable) -> {
-                  if (throwable != null) {
-                    onError.accept(throwable);
-                    return;
-                  }
-                  onResponse.accept(httpResponse);
-                });
+    try {
+      CompletableFuture<HttpResponse> unused =
+          CompletableFuture.supplyAsync(
+                  () -> {
+                    try {
+                      return sendInternal(messageWriter);
+                    } catch (IOException e) {
+                      throw new UncheckedIOException(e);
+                    }
+                  },
+                  executorService)
+              .whenComplete(
+                  (httpResponse, throwable) -> {
+                    if (throwable != null) {
+                      onError.accept(throwable);
+                      return;
+                    }
+                    onResponse.accept(httpResponse);
+                  });
+    } catch (RejectedExecutionException e) {
+      onError.accept(e);
+    }
   }
 
   // Visible for testing
