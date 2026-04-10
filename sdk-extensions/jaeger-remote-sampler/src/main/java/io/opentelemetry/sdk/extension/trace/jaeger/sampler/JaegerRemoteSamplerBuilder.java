@@ -152,6 +152,8 @@ public final class JaegerRemoteSamplerBuilder {
   /**
    * Sets the maximum number of bytes to read from a sampling strategy response body. If unset,
    * defaults to 4 MiB. Must be positive.
+   *
+   * @since 1.61.0
    */
   public JaegerRemoteSamplerBuilder setMaxSamplingStrategyResponseBodySize(long bytes) {
     Utils.checkArgument(bytes > 0, "maxSamplingStrategyResponseBodySize must be positive");

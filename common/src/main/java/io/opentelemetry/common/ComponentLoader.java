@@ -32,6 +32,8 @@ public interface ComponentLoader {
   /**
    * Convenience method to load a list of SPI implementations rather than the iterable returned by
    * {@link #load(Class)}.
+   *
+   * @since 1.61.0
    */
   static <T> List<T> loadList(ComponentLoader componentLoader, Class<T> spiClass) {
     List<T> result = new ArrayList<>();
