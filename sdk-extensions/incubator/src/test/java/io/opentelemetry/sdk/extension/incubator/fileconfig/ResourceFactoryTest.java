@@ -145,11 +145,6 @@ class ResourceFactoryTest {
             Collections.singletonList("*o*"),
             Collections.singletonList("order"),
             Resource.getDefault().toBuilder().put("color", "red").build()),
-        // empty or missing include should be treated as include all
-        Arguments.of(
-            Collections.emptyList(),
-            Collections.singletonList("order"),
-            Resource.getDefault().toBuilder().put("color", "red").put("shape", "square").build()),
         Arguments.of(
             null,
             Collections.singletonList("order"),
@@ -191,6 +186,24 @@ class ResourceFactoryTest {
                     new ExperimentalResourceDetectionModel()
                         .withDetectors(
                             Collections.singletonList(new ExperimentalResourceDetectorModel()))),
-            "resource detector must have exactly one entry but has 0"));
+            "resource detector must have exactly one entry but has 0"),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withAttributes(
+                            new IncludeExcludeModel()
+                                .withIncluded(Collections.emptyList())
+                                .withExcluded(null))),
+            "included must not be empty"),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withAttributes(
+                            new IncludeExcludeModel()
+                                .withIncluded(null)
+                                .withExcluded(Collections.emptyList()))),
+            "excluded must not be empty"));
   }
 }
