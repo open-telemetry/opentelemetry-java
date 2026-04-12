@@ -393,7 +393,7 @@ class SdkSpanBuilderTest {
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
     span.end();
-    span.setAttribute("emptyString", null);
+    span.setAttribute("emptyString", (String) null);
     span.setAttribute(stringKey("emptyStringAttributeValue"), null);
     span.setAttribute(longKey("longAttribute"), null);
     span.setAttribute(booleanKey("boolAttribute"), null);
