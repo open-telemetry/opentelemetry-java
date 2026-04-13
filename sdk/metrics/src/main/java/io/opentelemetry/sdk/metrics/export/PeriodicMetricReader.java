@@ -51,6 +51,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
+  @Nullable private final MetricExportBatcher metricsBatcher;
 
   /**
    * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
@@ -66,10 +67,14 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   PeriodicMetricReader(
-      MetricExporter exporter, long intervalNanos, ScheduledExecutorService scheduler) {
+      MetricExporter exporter,
+      long intervalNanos,
+      ScheduledExecutorService scheduler,
+      @Nullable MetricExportBatcher metricsBatcher) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
+    this.metricsBatcher = metricsBatcher;
     this.scheduled = new Scheduled();
   }
 
@@ -163,6 +168,8 @@ public final class PeriodicMetricReader implements MetricReader {
         + exporter
         + ", intervalNanos="
         + intervalNanos
+        + ", metricsBatcher="
+        + metricsBatcher
         + '}';
   }
 
