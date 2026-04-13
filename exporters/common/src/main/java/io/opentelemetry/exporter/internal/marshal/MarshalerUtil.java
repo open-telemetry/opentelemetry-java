@@ -115,7 +115,8 @@ public final class MarshalerUtil {
   public static int sizeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) {
     int size = 0;
     for (byte[] i : utf8Bytes) {
-      size += MarshalerUtil.sizeBytes(field, i);
+      int s = field.getTagSize() + CodedOutputStream.computeByteArraySizeNoTag(i);
+      size += s;
     }
     return size;
   }
