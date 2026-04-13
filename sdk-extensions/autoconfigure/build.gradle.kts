@@ -25,6 +25,7 @@ dependencies {
   compileOnly("com.fasterxml.jackson.core:jackson-databind")
   api("com.fasterxml.jackson.core:jackson-annotations")
 
+  testImplementation(project(":api:incubator"))
   testImplementation(project(":sdk:trace-shaded-deps"))
   testImplementation(project(":sdk:testing"))
 
