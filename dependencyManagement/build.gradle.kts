@@ -89,7 +89,6 @@ val DEPENDENCIES = listOf(
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.19.4",
   "org.awaitility:awaitility:4.3.0",
-  "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.27",
   "org.jctools:jctools-core:4.0.6",
   "org.junit-pioneer:junit-pioneer:1.9.1",
