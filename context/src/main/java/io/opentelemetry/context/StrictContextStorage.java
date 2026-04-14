@@ -180,7 +180,8 @@ final class StrictContextStorage implements ContextStorage, AutoCloseable {
               maybeResumeWithFrameIndex = i + 3;
             }
           }
-          if (stackTrace[maybeResumeWithFrameIndex].getMethodName().equals("invokeSuspend")) {
+          if (maybeResumeWithFrameIndex < stackTrace.length
+              && stackTrace[maybeResumeWithFrameIndex].getMethodName().equals("invokeSuspend")) {
             // Skip synthetic invokeSuspend function.
             // NB: The stacktrace showed in an IntelliJ debug pane does not show this.
             maybeResumeWithFrameIndex++;
