@@ -16,7 +16,9 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -224,7 +226,18 @@ public final class PeriodicMetricReader implements MetricReader {
             flushResult.succeed();
             exportAvailable.set(true);
           } else {
-            CompletableResultCode result = exporter.export(metricData);
+            Collection<Collection<MetricData>> batches = null;
+            CompletableResultCode result;
+            if (metricsBatcher != null) {
+              batches = metricsBatcher.batchMetrics(metricData);
+              List<CompletableResultCode> results = new ArrayList<>(batches.size());
+              for (Collection<MetricData> batch : batches) {
+                results.add(exporter.export(batch));
+              }
+              result = CompletableResultCode.ofAll(results);
+            } else {
+              result = exporter.export(metricData);
+            }
             result.whenComplete(
                 () -> {
                   if (!result.isSuccess()) {
