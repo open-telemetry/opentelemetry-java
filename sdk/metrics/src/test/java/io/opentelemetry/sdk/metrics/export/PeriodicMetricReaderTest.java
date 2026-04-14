@@ -98,6 +98,19 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  void build_withIllegalMaxExportSize() {
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setMaxExportBatchSize(0).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxExportBatchSize must be positive");
+
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setMaxExportBatchSize(-1).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxExportBatchSize must be positive");
+  }
+
+  @Test
   void periodicExport() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     PeriodicMetricReader reader =
