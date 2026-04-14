@@ -6,10 +6,12 @@
 package io.opentelemetry.exporter.otlp.profiles;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileData;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfilesDictionaryData;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableValueTypeData;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.profiles.ProfileData;
+import io.opentelemetry.sdk.profiles.ProfilesDictionaryData;
+import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfileData;
+import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfilesDictionaryData;
+import io.opentelemetry.sdk.profiles.internal.data.ImmutableValueTypeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.ByteBuffer;
 import java.util.Collections;

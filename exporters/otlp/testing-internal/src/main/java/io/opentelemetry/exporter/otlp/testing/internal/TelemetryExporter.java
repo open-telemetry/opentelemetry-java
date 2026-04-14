@@ -7,8 +7,6 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import com.google.common.base.Strings;
 import com.google.protobuf.AbstractMessageLite;
-import io.opentelemetry.exporter.otlp.profiles.ProfileData;
-import io.opentelemetry.exporter.otlp.profiles.ProfileExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsPartialSuccess;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess;
@@ -22,6 +20,8 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.profiles.ProfileData;
+import io.opentelemetry.sdk.profiles.ProfileExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;

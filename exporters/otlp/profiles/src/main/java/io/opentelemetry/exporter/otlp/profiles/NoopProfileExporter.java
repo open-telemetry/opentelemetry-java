@@ -6,6 +6,8 @@
 package io.opentelemetry.exporter.otlp.profiles;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.profiles.ProfileData;
+import io.opentelemetry.sdk.profiles.ProfileExporter;
 import java.util.Collection;
 
 final class NoopProfileExporter implements ProfileExporter {

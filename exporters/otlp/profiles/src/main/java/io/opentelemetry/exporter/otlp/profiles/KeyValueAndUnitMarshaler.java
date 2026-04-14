@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
 import io.opentelemetry.proto.profiles.v1development.internal.KeyValueAndUnit;
+import io.opentelemetry.sdk.profiles.KeyValueAndUnitData;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
