@@ -63,7 +63,7 @@ final class KeyValueAndUnitMarshaler extends MarshalerWithSize {
   protected void writeTo(Serializer output) throws IOException {
     output.serializeInt32(KeyValueAndUnit.KEY_STRINDEX, keyStringIndex);
     output.serializeMessage(KeyValueAndUnit.VALUE, valueMarshaler);
-    output.serializeInt64(KeyValueAndUnit.UNIT_STRINDEX, unitStringIndex);
+    output.serializeInt32(KeyValueAndUnit.UNIT_STRINDEX, unitStringIndex);
   }
 
   private static int calculateSize(
