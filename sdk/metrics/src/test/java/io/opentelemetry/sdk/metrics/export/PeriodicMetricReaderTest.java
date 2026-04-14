@@ -341,12 +341,14 @@ class PeriodicMetricReaderTest {
     assertThat(
             PeriodicMetricReader.builder(metricExporter)
                 .setInterval(Duration.ofSeconds(1))
+                .setMaxExportBatchSize(200)
                 .build()
                 .toString())
         .isEqualTo(
             "PeriodicMetricReader{"
                 + "exporter=MockMetricExporter{}, "
-                + "intervalNanos=1000000000"
+                + "intervalNanos=1000000000, "
+                + "metricsBatcher=MetricExportBatcher{maxExportBatchSize=200}"
                 + "}");
   }
 

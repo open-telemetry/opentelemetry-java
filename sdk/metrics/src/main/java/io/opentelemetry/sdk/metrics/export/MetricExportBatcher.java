@@ -28,6 +28,11 @@ class MetricExportBatcher {
     this.maxExportBatchSize = maxExportBatchSize;
   }
 
+  @Override
+  public String toString() {
+    return "MetricExportBatcher{maxExportBatchSize=" + maxExportBatchSize + "}";
+  }
+
   /**
    * Batches the given metric data into multiple batches based on the maximum export batch size.
    *
