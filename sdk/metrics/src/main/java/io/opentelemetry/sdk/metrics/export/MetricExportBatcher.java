@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
@@ -21,10 +22,25 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Batches metric data into multiple batches based on the maximum export batch size. This is used by
+ * the {@link PeriodicMetricReader} to batch metric data before exporting it.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 class MetricExportBatcher {
   private final int maxExportBatchSize;
 
+  /**
+   * Creates a new {@link MetricExportBatcher} with the given maximum export batch size.
+   *
+   * @param maxExportBatchSize The maximum number of {@link Data#getPoints()} in each export.
+   */
   MetricExportBatcher(int maxExportBatchSize) {
+    if (maxExportBatchSize <= 0) {
+      throw new IllegalArgumentException("maxExportBatchSize must be positive");
+    }
     this.maxExportBatchSize = maxExportBatchSize;
   }
 
