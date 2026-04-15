@@ -93,7 +93,11 @@ class MetricExportBatcher {
    */
   private MetricDataSplitOperationResult prepareExportBatches(
       MetricData metricData, Collection<MetricData> currentBatch) {
-    int remainingCapacityInCurrentBatch = maxExportBatchSize - currentBatch.size();
+    int currentBatchPoints = 0;
+    for (MetricData m : currentBatch) {
+      currentBatchPoints += m.getData().getPoints().size();
+    }
+    int remainingCapacityInCurrentBatch = maxExportBatchSize - currentBatchPoints;
     int totalPointsInMetricData = metricData.getData().getPoints().size();
 
     if (remainingCapacityInCurrentBatch >= totalPointsInMetricData) {
