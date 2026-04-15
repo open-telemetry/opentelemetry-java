@@ -117,6 +117,9 @@ public final class PeriodicMetricReader implements MetricReader {
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
+      // Wait for any in-flight export to complete before performing the final collection.
+      // Without this, doRun() sees exportAvailable=false and drops the final metrics.
+      scheduled.flushInProgress.join(5, TimeUnit.SECONDS);
       CompletableResultCode flushResult = scheduled.doRun();
       flushResult.join(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
@@ -177,6 +180,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private final class Scheduled implements Runnable {
 
     private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
+    private volatile CompletableResultCode flushInProgress = CompletableResultCode.ofSuccess();
 
     private MetricReaderInstrumentation instrumentation =
         new MetricReaderInstrumentation(COMPONENT_ID, MeterProvider.noop());
@@ -197,6 +201,7 @@ public final class PeriodicMetricReader implements MetricReader {
     CompletableResultCode doRun() {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
+        flushInProgress = flushResult;
         try {
           long startNanoTime = CLOCK.nanoTime();
           String error = null;
