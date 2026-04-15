@@ -10,6 +10,8 @@ otelJava.moduleName.set("io.opentelemetry.exporter.sender.jdk.internal")
 otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_11)
 
 dependencies {
+  annotationProcessor("com.google.auto.value:auto-value")
+
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
 

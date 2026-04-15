@@ -70,4 +70,21 @@ public interface AttributeKey<T> {
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
+
+  /**
+   * Returns a new ExtendedAttributeKey for {@link Value} valued attributes.
+   *
+   * <p>Simple attributes ({@link AttributeType#STRING}, {@link AttributeType#LONG}, {@link
+   * AttributeType#DOUBLE}, {@link AttributeType#BOOLEAN}, {@link AttributeType#STRING_ARRAY},
+   * {@link AttributeType#LONG_ARRAY}, {@link AttributeType#DOUBLE_ARRAY}, {@link
+   * AttributeType#BOOLEAN_ARRAY}) should be used whenever possible. Instrumentations should assume
+   * that backends do not index individual properties of complex attributes, that querying or
+   * aggregating on such properties is inefficient and complicated, and that reporting complex
+   * attributes carries higher performance overhead.
+   *
+   * @since 1.59.0
+   */
+  static AttributeKey<Value<?>> valueKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.VALUE);
+  }
 }

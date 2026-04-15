@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -30,6 +32,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -45,6 +48,7 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -367,8 +371,10 @@ class SdkSpanBuilderTest {
     spanBuilder.setAttribute(booleanArrayKey("boolArrayAttribute"), Arrays.asList(true, null));
     spanBuilder.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
     spanBuilder.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
+    spanBuilder.setAttribute(valueKey("emptyValue"), Value.empty());
+    spanBuilder.setAttribute(valueKey("nullValue"), null);
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
   }
 
   @Test
@@ -383,8 +389,9 @@ class SdkSpanBuilderTest {
     spanBuilder.setAttribute(booleanArrayKey("boolArrayAttribute"), Arrays.asList(true, null));
     spanBuilder.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
     spanBuilder.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
+    spanBuilder.setAttribute(valueKey("emptyValue"), Value.empty());
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
     span.end();
     span.setAttribute("emptyString", null);
     span.setAttribute(stringKey("emptyStringAttributeValue"), null);
@@ -395,7 +402,8 @@ class SdkSpanBuilderTest {
     span.setAttribute(booleanArrayKey("boolArrayAttribute"), null);
     span.setAttribute(longArrayKey("longArrayAttribute"), null);
     span.setAttribute(doubleArrayKey("doubleArrayAttribute"), null);
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+    span.setAttribute(valueKey("emptyValue"), null);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
   }
 
   @Test
@@ -903,6 +911,75 @@ class SdkSpanBuilderTest {
   }
 
   @Test
+  void propagateRandomTraceIdFlag() {
+    Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
+    assertThat(parent.getSpanContext().getTraceFlags().isTraceIdRandom()).isTrue();
+    try (Scope ignored = parent.makeCurrent()) {
+      Span span = (SdkSpan) sdkTracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getSpanContext().getTraceId())
+          .isEqualTo(parent.getSpanContext().getTraceId());
+      assertThat(span.getSpanContext().getTraceFlags().isTraceIdRandom()).isTrue();
+      try (Scope spanScope = span.makeCurrent()) {
+        // Nested span
+        Span nestedSpan = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
+        // check that still the same trace
+        assertThat(nestedSpan.getSpanContext().getTraceId())
+            .isEqualTo(parent.getSpanContext().getTraceId());
+        // check if RandomTraceIdFlag is still there
+        assertThat(nestedSpan.getSpanContext().getTraceFlags().isTraceIdRandom()).isTrue();
+        try (Scope nestedScope = span.makeCurrent()) {
+          Context nestedContext = Context.current();
+          Span currentSpan = Span.fromContext(nestedContext);
+          assertThat(currentSpan.getSpanContext().getTraceFlags().isTraceIdRandom()).isTrue();
+        } finally {
+          nestedSpan.end();
+        }
+      } finally {
+        span.end();
+      }
+    } finally {
+      parent.end();
+    }
+  }
+
+  @Test
+  void samplerReceivesPropagatorContextWithRandomTraceId() {
+    Sampler mockSampler = Mockito.mock(Sampler.class);
+    Mockito.when(
+            mockSampler.shouldSample(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.anyList()))
+        .thenReturn(SamplingResult.recordAndSample());
+
+    SdkTracerProvider provider = SdkTracerProvider.builder().setSampler(mockSampler).build();
+    ContextKey<String> propagatorKey = ContextKey.named("propagator-test-key");
+    Context parentWithPropagatorData = Context.root().with(propagatorKey, "test-value");
+
+    Span span =
+        provider.get("test").spanBuilder(SPAN_NAME).setParent(parentWithPropagatorData).startSpan();
+    span.end();
+
+    ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+    Mockito.verify(mockSampler)
+        .shouldSample(
+            contextCaptor.capture(),
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.anyList());
+
+    Context samplerContext = contextCaptor.getValue();
+    assertThat(samplerContext.get(propagatorKey)).isEqualTo("test-value");
+    assertThat(Span.fromContext(samplerContext).getSpanContext().getTraceFlags().isTraceIdRandom())
+        .isTrue();
+  }
+
+  @Test
   void startTimestamp_numeric() {
     SdkSpan span =
         (SdkSpan)
@@ -983,7 +1060,7 @@ class SdkSpanBuilderTest {
             "SpanData\\{spanContext=ImmutableSpanContext\\{"
                 + "traceId=[0-9a-f]{32}, "
                 + "spanId=[0-9a-f]{16}, "
-                + "traceFlags=01, "
+                + "traceFlags=03, "
                 + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=true}, "
                 + "parentSpanContext=ImmutableSpanContext\\{"
                 + "traceId=00000000000000000000000000000000, "

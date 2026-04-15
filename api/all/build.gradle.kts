@@ -9,7 +9,10 @@ plugins {
 description = "OpenTelemetry API"
 otelJava.moduleName.set("io.opentelemetry.api")
 base.archivesName.set("opentelemetry-api")
-otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure", "io.opentelemetry.api.incubator"))
+// These packages are accessed via Class.forName and cannot be added as compileOnly dependencies
+// (api:incubator depends on api:all, creating a circular dependency). Use DynamicImport-Package
+// so OSGi does not require them at resolution time but can wire them at runtime when available.
+otelJava.osgiDynamicImportPackages.set(listOf("io.opentelemetry.sdk.autoconfigure", "io.opentelemetry.api.incubator", "io.opentelemetry.api.incubator.internal"))
 
 dependencies {
   api(project(":context"))

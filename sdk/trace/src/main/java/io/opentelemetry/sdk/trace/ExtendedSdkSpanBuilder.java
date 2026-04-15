@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 
 /** {@link ExtendedSdkSpanBuilder} is SDK implementation of {@link ExtendedSpanBuilder}. */
 final class ExtendedSdkSpanBuilder extends SdkSpanBuilder implements ExtendedSpanBuilder {
@@ -65,7 +66,7 @@ final class ExtendedSdkSpanBuilder extends SdkSpanBuilder implements ExtendedSpa
   }
 
   @Override
-  public ExtendedSpanBuilder setAttribute(String key, String value) {
+  public ExtendedSpanBuilder setAttribute(String key, @Nullable String value) {
     super.setAttribute(key, value);
     return this;
   }
@@ -89,7 +90,7 @@ final class ExtendedSdkSpanBuilder extends SdkSpanBuilder implements ExtendedSpa
   }
 
   @Override
-  public <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value) {
+  public <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
     super.setAttribute(key, value);
     return this;
   }

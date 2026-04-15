@@ -64,6 +64,11 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
+  void defaultIsEnabled() {
+    assertThat(defaultTracer.isEnabled()).isFalse();
+  }
+
+  @Test
   @SuppressWarnings("NullAway")
   void spanContextPropagationExplicitParent() {
     assertThat(

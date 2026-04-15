@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,6 +22,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.Value;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -165,6 +167,24 @@ class ResourceTest {
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(8);
+  }
+
+  @Test
+  void create_NullEmptyValue() {
+    AttributesBuilder attributes = Attributes.builder();
+
+    // Empty values should be maintained
+    attributes.put(valueKey("value"), Value.empty());
+
+    Resource resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(1);
+
+    // Null values should be dropped
+    attributes.put(valueKey("dropNullValue"), null);
+    resource = Resource.create(attributes.build());
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(1);
   }
 
   @Test

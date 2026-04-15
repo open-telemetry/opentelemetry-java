@@ -11,7 +11,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -65,7 +65,11 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
     return builder(exporter).build();
   }
 
-  /** Returns a new Builder for {@link SimpleLogRecordProcessor}. */
+  /**
+   * Returns a new Builder for {@link SimpleLogRecordProcessor}.
+   *
+   * @since 1.58.0
+   */
   public static SimpleLogRecordProcessorBuilder builder(LogRecordExporter exporter) {
     requireNonNull(exporter, "exporter");
     return new SimpleLogRecordProcessorBuilder(exporter);

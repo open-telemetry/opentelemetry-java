@@ -11,9 +11,9 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
-import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
@@ -238,6 +238,8 @@ public final class SdkTracerProviderBuilder {
    * Sets the {@link MeterProvider} to use to generate <a
    * href="https://opentelemetry.io/docs/specs/semconv/otel/sdk-metrics/#span-metrics">SDK Span
    * Metrics</a>.
+   *
+   * @since 1.58.0
    */
   public SdkTracerProviderBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
     requireNonNull(meterProvider, "meterProvider");

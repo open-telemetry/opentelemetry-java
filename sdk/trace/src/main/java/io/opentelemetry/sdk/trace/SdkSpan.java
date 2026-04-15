@@ -14,11 +14,12 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.AttributeUtil;
-import io.opentelemetry.sdk.internal.AttributesMap;
-import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
-import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
+import io.opentelemetry.sdk.common.internal.AttributeUtil;
+import io.opentelemetry.sdk.common.internal.AttributesMap;
+import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
+import io.opentelemetry.sdk.common.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.ExceptionEventData;
@@ -301,7 +302,7 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   @Deprecated
-  public io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
     return InstrumentationScopeUtil.toInstrumentationLibraryInfo(getInstrumentationScopeInfo());
   }
 
@@ -574,6 +575,7 @@ final class SdkSpan implements ReadWriteSpan {
     }
     synchronized (lock) {
       hasEnded = EndState.ENDED;
+      spanEndingThread = null;
     }
     if (spanProcessor.isEndRequired()) {
       spanProcessor.onEnd(this);

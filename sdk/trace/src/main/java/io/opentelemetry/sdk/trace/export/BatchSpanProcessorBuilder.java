@@ -155,6 +155,8 @@ public final class BatchSpanProcessorBuilder {
   /**
    * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
    * metrics will not be collected.
+   *
+   * @since 1.58.0
    */
   public BatchSpanProcessorBuilder setMeterProvider(Supplier<MeterProvider> meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
@@ -162,7 +164,11 @@ public final class BatchSpanProcessorBuilder {
     return this;
   }
 
-  /** Sets the {@link InternalTelemetryVersion} defining which metrics this processor records. */
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which metrics this processor records.
+   *
+   * @since 1.58.0
+   */
   public BatchSpanProcessorBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion telemetryVersion) {
     requireNonNull(telemetryVersion, "telemetryVersion");

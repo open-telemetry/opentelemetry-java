@@ -13,7 +13,7 @@ plugins {
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
   id("otel.spotless-conventions")
-  id("org.owasp.dependencycheck")
+  id("org.sonatype.gradle.plugins.scan")
 }
 
 val otelJava = extensions.create<OtelJavaExtension>("otelJava")
@@ -44,31 +44,16 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "13.0.0"
+  toolVersion = "13.4.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
 
-dependencyCheck {
-  skipConfigurations = mutableListOf(
-    "errorprone",
-    "checkstyle",
-    "annotationProcessor",
-    "java9AnnotationProcessor",
-    "moduleAnnotationProcessor",
-    "testAnnotationProcessor",
-    "testJpmsAnnotationProcessor",
-    "animalsniffer",
-    "spotless996155815", // spotless996155815 is a weird configuration that's only added in jaeger-proto, jaeger-remote-sampler
-    "js2p",
-    "jmhAnnotationProcessor",
-    "jmhBasedTestAnnotationProcessor",
-    "jmhCompileClasspath",
-    "jmhRuntimeClasspath",
-    "jmhRuntimeOnly")
-  failBuildOnCVSS = 7.0f // fail on high or critical CVE
-  analyzers.assemblyEnabled = false // not sure why its trying to analyze .NET assemblies
-  nvd.apiKey = System.getenv("NVD_API_KEY")
+ossIndexAudit {
+  username = System.getenv("SONATYPE_OSS_INDEX_USER") ?: ""
+  password = System.getenv("SONATYPE_OSS_INDEX_PASSWORD") ?: ""
+  outputFormat = org.sonatype.gradle.plugins.scan.ossindex.OutputFormat.JSON_CYCLONE_DX_1_4
+  isPrintBanner = false
 }
 
 val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
@@ -92,6 +77,10 @@ tasks {
             "-Xlint:-options",
             "-Xlint:-serial",
             "-Xlint:-this-escape",
+            // We suppress the "deprecation" warning because --release 8 causes javac to warn on
+            // importing deprecated classes (fixed in JDK 9+, see https://bugs.openjdk.org/browse/JDK-8032211).
+            // We use a custom Error Prone check instead (OtelDeprecatedApiUsage).
+            "-Xlint:-deprecation",
             // Fail build on any warning
             "-Werror",
           ),
@@ -143,22 +132,36 @@ tasks {
     }
   }
 
-  named<Jar>("jar") {
-    // Configure OSGi metadata
-    bundle {
-      // Compute import packages.
-      // Certain packages like javax.annotation.* are always optional.
-      // Modules may have additional optional packages, typically corresponding to compileOnly dependencies.
-      // Append wildcard "*" last to import any other referenced packages
-      val optionalPackages = mutableListOf("javax.annotation")
-      optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
-      val importPackages = optionalPackages.joinToString(",") { it + ".*;resolution:=optional;version=\"\${@}\"" } + ",*"
+  afterEvaluate {
+    named<Jar>("jar") {
+      // Configure OSGi metadata
+      bundle {
+        // Compute import packages.
+        // Certain packages like javax.annotation.* are always optional.
+        // Modules may have additional optional packages, typically corresponding to compileOnly dependencies.
+        // Append wildcard "*" last to import any other referenced packages
+        val optionalPackages = mutableListOf("javax.annotation")
+        optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
+        val importPackages = optionalPackages.joinToString(",") { "$it.*;resolution:=optional;version=\"\${@}\"" } + ",*"
 
-      bnd(mapOf(
-        // Once https://github.com/open-telemetry/opentelemetry-java/issues/6970 is resolved, exclude .internal packages
-        "-exportcontents" to "io.opentelemetry.*",
-        "Import-Package" to importPackages
-      ))
+        // Packages accessed via Class.forName that are not on the compile classpath cannot be made
+        // optional via Import-Package (BND cannot resolve version="${@}" for them). Instead, exclude
+        // them from Import-Package and declare them as DynamicImport-Package so OSGi does not
+        // require them at resolution time but can still wire them at runtime when available.
+        val dynamicImportPackages = otelJava.osgiDynamicImportPackages.get()
+        val negations = dynamicImportPackages.joinToString(",") { "!$it" }
+        val fullImportPackages = if (negations.isNotEmpty()) "$negations,$importPackages" else importPackages
+
+        val bndInstructions = mutableMapOf(
+          // Once https://github.com/open-telemetry/opentelemetry-java/issues/6970 is resolved, exclude .internal packages
+          "-exportcontents" to "io.opentelemetry.*",
+          "Import-Package" to fullImportPackages
+        )
+        if (dynamicImportPackages.isNotEmpty()) {
+          bndInstructions["DynamicImport-Package"] = dynamicImportPackages.joinToString(",") { "$it,$it.*" }
+        }
+        bnd(bndInstructions)
+      }
     }
   }
 

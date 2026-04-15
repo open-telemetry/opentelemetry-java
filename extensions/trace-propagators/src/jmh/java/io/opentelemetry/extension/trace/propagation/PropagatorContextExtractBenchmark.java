@@ -72,6 +72,7 @@ public class PropagatorContextExtractBenchmark {
   }
 
   /** Benchmark for extracting context from Jaeger headers. */
+  @SuppressWarnings("deprecation")
   public static class JaegerContextExtractBenchmark extends AbstractContextExtractBenchmark {
 
     private static final List<Map<String, String>> traceHeaders =
@@ -119,6 +120,7 @@ public class PropagatorContextExtractBenchmark {
   }
 
   /** Benchmark for extracting context from Jaeger headers which are url encoded. */
+  @SuppressWarnings("deprecation")
   public static class JaegerUrlEncodedContextExtractBenchmark
       extends AbstractContextExtractBenchmark {
 

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.common.internal.ComponentId;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 

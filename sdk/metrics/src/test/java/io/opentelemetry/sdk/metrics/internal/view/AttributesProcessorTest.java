@@ -12,7 +12,7 @@ import static java.util.Collections.singleton;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
+import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import org.junit.jupiter.api.Test;
 
 /** Tests for the {@link AttributesProcessor} DSL-ish library. */

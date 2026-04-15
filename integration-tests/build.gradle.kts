@@ -11,6 +11,7 @@ dependencies {
   testImplementation(project(":extensions:trace-propagators"))
 
   testImplementation("com.linecorp.armeria:armeria-junit5")
+  testImplementation("io.github.crac:org-crac")
   testImplementation("org.junit.jupiter:junit-jupiter-params")
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }

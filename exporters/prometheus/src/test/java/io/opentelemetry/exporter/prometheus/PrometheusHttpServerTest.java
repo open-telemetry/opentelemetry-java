@@ -46,7 +46,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
-import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_4_31_1.Metrics;
+import io.prometheus.metrics.expositionformats.generated.Metrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -432,7 +432,7 @@ class PrometheusHttpServerTest {
             "PrometheusHttpServer{"
                 + "host=localhost,"
                 + "port=0,"
-                + "allowedResourceAttributesFilter=null,"
+                + "metricReader=PrometheusMetricReader{otelScopeLabelsEnabled=true,targetInfoMetricEnabled=true,allowedResourceAttributesFilter=null},"
                 + "memoryMode=REUSABLE_DATA,"
                 + "defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}"
                 + "}");
@@ -572,10 +572,14 @@ class PrometheusHttpServerTest {
         .isInstanceOf(PrometheusHttpServerBuilder.class)
         .hasFieldOrPropertyWithValue("host", "localhost")
         .hasFieldOrPropertyWithValue("port", 1234)
-        .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
         .hasFieldOrPropertyWithValue("executor", executor)
         .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry)
-        .hasFieldOrPropertyWithValue("authenticator", authenticator);
+        .hasFieldOrPropertyWithValue("authenticator", authenticator)
+        .extracting("metricReaderBuilder")
+        .usingRecursiveComparison()
+        .isEqualTo(
+            PrometheusMetricReader.builder()
+                .setAllowedResourceAttributesFilter(resourceAttributesFilter));
   }
 
   /**
@@ -586,6 +590,7 @@ class PrometheusHttpServerTest {
    * the protobuf java bindings, and assert against the string representation.
    */
   @Test
+  @SuppressWarnings("NonCanonicalType") // stable Metrics class extends versioned protobuf class
   void histogramDefaultBase2ExponentialHistogram() throws IOException {
     PrometheusHttpServer prometheusServer =
         PrometheusHttpServer.builder()

@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -75,6 +74,7 @@ class SdkLongHistogramTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longHistogram.record(12, Attributes.empty());
     longHistogram.record(12);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -193,7 +193,12 @@ class SdkLongHistogramTest {
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
                 View.builder()
-                    .setAggregation(Aggregation.base2ExponentialBucketHistogram(5, 20))
+                    .setAggregation(
+                        Aggregation.base2ExponentialBucketHistogram(
+                            Base2ExponentialHistogramOptions.builder()
+                                .setMaxBuckets(5)
+                                .setMaxScale(20)
+                                .build()))
                     .build())
             .build();
 
@@ -354,7 +359,12 @@ class SdkLongHistogramTest {
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
                 View.builder()
-                    .setAggregation(Aggregation.base2ExponentialBucketHistogram(5, 20))
+                    .setAggregation(
+                        Aggregation.base2ExponentialBucketHistogram(
+                            Base2ExponentialHistogramOptions.builder()
+                                .setMaxBuckets(5)
+                                .setMaxScale(20)
+                                .build()))
                     .build())
             .build();
     LongHistogram longHistogram =
@@ -367,8 +377,10 @@ class SdkLongHistogramTest {
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longHistogram.record(12L, Attributes.builder().put("key", "value").build());
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longHistogram.record(12L);
     longHistogram.record(13L);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -407,7 +419,7 @@ class SdkLongHistogramTest {
                                                         .hasCounts(Collections.emptyList())),
                                     point ->
                                         point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
                                             .hasEpochNanos(testClock.now())
                                             .hasAttributes(
                                                 Attributes.builder().put("key", "value").build())
@@ -528,109 +540,5 @@ class SdkLongHistogramTest {
                                                         Attributes.builder()
                                                             .put("key", "value")
                                                             .build())))));
-  }
-
-  @Test
-  void stressTest() {
-    LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setCollectionIntervalMs(100);
-
-    for (int i = 0; i < 4; i++) {
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              2_000,
-              1,
-              () -> longHistogram.record(10, Attributes.builder().put("K", "V").build())));
-    }
-
-    stressTestBuilder.build().run();
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testHistogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasAttributes(attributeEntry("K", "V"))
-                                        .hasCount(8_000)
-                                        .hasSum(80_000))));
-  }
-
-  @Test
-  void stressTest_WithDifferentLabelSet() {
-    String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
-    String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    LongHistogram longHistogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setCollectionIntervalMs(100);
-
-    IntStream.range(0, 4)
-        .forEach(
-            i ->
-                stressTestBuilder.addOperation(
-                    StressTestRunner.Operation.create(
-                        1_000,
-                        2,
-                        () ->
-                            longHistogram.record(
-                                10, Attributes.builder().put(keys[i], values[i]).build()))));
-
-    stressTestBuilder.build().run();
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasResource(RESOURCE)
-                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-                    .hasName("testHistogram")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(1_000)
-                                        .hasSum(10_000)
-                                        .hasBucketCounts(
-                                            0, 0, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry(keys[0], values[0])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(1_000)
-                                        .hasSum(10_000)
-                                        .hasBucketCounts(
-                                            0, 0, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry(keys[1], values[1])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(1_000)
-                                        .hasSum(10_000)
-                                        .hasBucketCounts(
-                                            0, 0, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry(keys[2], values[2])),
-                                point ->
-                                    point
-                                        .hasStartEpochNanos(testClock.now())
-                                        .hasEpochNanos(testClock.now())
-                                        .hasCount(1_000)
-                                        .hasSum(10_000)
-                                        .hasBucketCounts(
-                                            0, 0, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                                        .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
 }

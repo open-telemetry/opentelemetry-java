@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.internal;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_LOGS;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
@@ -47,7 +48,9 @@ public class OtlpHttpLogRecordExporterComponentProvider implements ComponentProv
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
-        /* isHttpProtobuf= */ true);
+        /* isHttpProtobuf= */ true,
+        builder::setInternalTelemetryVersion,
+        () -> builder.setMeterProvider(MeterProvider::noop));
 
     return builder.build();
   }

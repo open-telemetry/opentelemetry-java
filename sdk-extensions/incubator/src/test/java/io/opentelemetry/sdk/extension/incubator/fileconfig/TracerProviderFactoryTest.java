@@ -8,9 +8,11 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
@@ -23,11 +25,10 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanEx
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
-import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.io.Closeable;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -44,9 +46,14 @@ class TracerProviderFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final DeclarativeConfigContext context =
+  private static final DeclarativeConfigContext context =
       new DeclarativeConfigContext(
-          SpiHelper.create(TracerProviderFactoryTest.class.getClassLoader()));
+          ComponentLoader.forClassLoader(TracerProviderFactoryTest.class.getClassLoader()));
+
+  @BeforeEach
+  void setup() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+  }
 
   @ParameterizedTest
   @MethodSource("createArguments")
@@ -94,14 +101,14 @@ class TracerProviderFactoryTest {
                     .withTracerConfiguratorDevelopment(
                         new ExperimentalTracerConfiguratorModel()
                             .withDefaultConfig(
-                                new ExperimentalTracerConfigModel().withDisabled(true))
+                                new ExperimentalTracerConfigModel().withEnabled(false))
                             .withTracers(
                                 Collections.singletonList(
                                     new ExperimentalTracerMatcherAndConfigModel()
                                         .withName("foo")
                                         .withConfig(
                                             new ExperimentalTracerConfigModel()
-                                                .withDisabled(false)))))),
+                                                .withEnabled(true)))))),
             addTracerConfigurator(
                     SdkTracerProvider.builder(),
                     ScopeConfigurator.<TracerConfig>builder()
@@ -120,8 +127,8 @@ class TracerProviderFactoryTest {
                         .build())
                 .setSampler(alwaysOn())
                 .addSpanProcessor(
-                    io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                            OtlpHttpSpanExporter.getDefault())
+                    BatchSpanProcessor.builder(
+                            OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
                         .build())
                 .build()));
   }

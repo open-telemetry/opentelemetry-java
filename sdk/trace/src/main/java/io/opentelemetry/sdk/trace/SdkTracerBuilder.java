@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
-import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.common.internal.ComponentRegistry;
 import javax.annotation.Nullable;
 
 class SdkTracerBuilder implements TracerBuilder {

@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpan;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
@@ -20,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -363,11 +366,15 @@ class OtelToZipkinSpanTransformerTest {
             .put(stringArrayKey("stringArray"), Collections.singletonList("Hello"))
             .put(doubleArrayKey("doubleArray"), Arrays.asList(32.33d, -98.3d))
             .put(longArrayKey("longArray"), Arrays.asList(33L, 999L))
+            .put(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+            .put(valueKey("map"), Value.of(KeyValue.of("nested", Value.of("value"))))
+            .put(valueKey("heterogeneousArray"), Value.of(Value.of("string"), Value.of(123L)))
+            .put(valueKey("empty"), Value.empty())
             .build();
     SpanData data =
         spanBuilder()
             .setAttributes(attributes)
-            .setTotalAttributeCount(28)
+            .setTotalAttributeCount(32)
             .setTotalRecordedEvents(3)
             .setKind(SpanKind.CLIENT)
             .build();
@@ -383,6 +390,10 @@ class OtelToZipkinSpanTransformerTest {
                 .putTag("stringArray", "Hello")
                 .putTag("doubleArray", "32.33,-98.3")
                 .putTag("longArray", "33,999")
+                .putTag("bytes", "AQID")
+                .putTag("map", "{\"nested\":\"value\"}")
+                .putTag("heterogeneousArray", "[\"string\",123]")
+                .putTag("empty", "")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_DROPPED_ATTRIBUTES_COUNT, "20")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_DROPPED_EVENTS_COUNT, "1")

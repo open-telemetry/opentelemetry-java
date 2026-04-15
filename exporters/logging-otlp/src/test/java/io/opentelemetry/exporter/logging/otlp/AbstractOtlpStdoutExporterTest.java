@@ -83,6 +83,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   protected abstract T createDefaultExporter();
 
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   private String output(@Nullable OutputStream outputStream, @Nullable Path file) {
     if (outputStream == null) {
       return logs.getEvents().stream()

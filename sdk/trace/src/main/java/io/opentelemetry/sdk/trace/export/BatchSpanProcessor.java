@@ -9,9 +9,9 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.internal.ComponentId;
-import io.opentelemetry.sdk.internal.DaemonThreadFactory;
-import io.opentelemetry.sdk.internal.ThrowableUtil;
+import io.opentelemetry.sdk.common.internal.ComponentId;
+import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -184,6 +184,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
     private final long maxQueueSize;
+    private final AtomicInteger droppedSpanCount = new AtomicInteger(0);
 
     private Worker(
         SpanExporter spanExporter,
@@ -212,6 +213,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       spanProcessorInstrumentation.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(span)) {
         spanProcessorInstrumentation.dropSpans(1);
+        droppedSpanCount.incrementAndGet();
       } else {
         if (queueSize.incrementAndGet() >= spansNeeded.get()) {
           signal.offer(true);
@@ -313,6 +315,18 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private void exportCurrentBatch() {
       if (batch.isEmpty()) {
         return;
+      }
+
+      int dropped = droppedSpanCount.getAndSet(0);
+      if (dropped > 0) {
+        logger.log(
+            Level.WARNING,
+            "BatchSpanProcessor dropped "
+                + dropped
+                + " span(s) since the last export because the queue is full"
+                + " (maxQueueSize="
+                + maxQueueSize
+                + ")");
       }
 
       String error = null;

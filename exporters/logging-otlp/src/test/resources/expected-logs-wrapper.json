@@ -42,9 +42,50 @@
                   }
                 },
                 {
+                  "key": "bytes",
+                  "value": {
+                    "bytesValue": "AQID"
+                  }
+                },
+                {
+                  "key": "empty",
+                  "value": {
+                  }
+                },
+                {
+                  "key": "heterogeneousArray",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "string"
+                        },
+                        {
+                          "intValue": "123"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
                   "key": "lives",
                   "value": {
                     "intValue": "9"
+                  }
+                },
+                {
+                  "key": "map",
+                  "value": {
+                    "kvlistValue": {
+                      "values": [
+                        {
+                          "key": "nested",
+                          "value": {
+                            "stringValue": "value"
+                          }
+                        }
+                      ]
+                    }
                   }
                 }
               ],

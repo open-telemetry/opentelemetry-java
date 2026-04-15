@@ -13,15 +13,18 @@ import static io.opentelemetry.api.trace.SpanKind.SERVER;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate.toSpanParent;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.ComposableRuleBasedSamplerFactory.AttributeMatcher;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalComposableAlwaysOffSamplerModel;
@@ -35,7 +38,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Experi
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalSpanParent;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanKind;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
-import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,13 +49,85 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ComposableRuleBasedSamplerFactoryTest {
 
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(ComponentLoader.forClassLoader(getClass().getClassLoader()));
+
   @ParameterizedTest
   @MethodSource("createTestCases")
   void create(ExperimentalComposableRuleBasedSamplerModel model, ComposableSampler expectedResult) {
     ComposableSampler composableSampler =
-        ComposableRuleBasedSamplerFactory.getInstance()
-            .create(model, mock(DeclarativeConfigContext.class));
+        ComposableRuleBasedSamplerFactory.getInstance().create(model, context);
     assertThat(composableSampler.toString()).isEqualTo(expectedResult.toString());
+  }
+
+  @ParameterizedTest
+  @MethodSource("createInvalidTestCases")
+  void createInvalid(ExperimentalComposableRuleBasedSamplerModel model, String expectedMessage) {
+    assertThatThrownBy(() -> ComposableRuleBasedSamplerFactory.getInstance().create(model, context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage(expectedMessage);
+  }
+
+  private static Stream<Arguments> createInvalidTestCases() {
+    return Stream.of(
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributePatterns(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                    .withKey("http.path")
+                                    .withIncluded(Collections.emptyList())
+                                    .withExcluded(null))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            "included must not be empty"),
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributePatterns(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                    .withKey("http.path")
+                                    .withIncluded(null)
+                                    .withExcluded(Collections.emptyList()))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            "excluded must not be empty"),
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributeValues(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
+                                    .withKey("http.route")
+                                    .withValues(null))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            ".values is required and must be non-empty"),
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributeValues(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
+                                    .withKey("http.route")
+                                    .withValues(Collections.emptyList()))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            ".values is required and must be non-empty"));
   }
 
   private static Stream<Arguments> createTestCases() {
@@ -160,7 +234,7 @@ class ComposableRuleBasedSamplerFactoryTest {
   private static final AttributeKey<String> HTTP_PATH = AttributeKey.stringKey("http.path");
 
   @ParameterizedTest
-  @MethodSource("declarativeCOnfigSamplingPredicateArgs")
+  @MethodSource("declarativeConfigSamplingPredicateArgs")
   void declarativeConfigSamplingPredicate(
       DeclarativeConfigSamplingPredicate predicate,
       Context context,
@@ -172,7 +246,7 @@ class ComposableRuleBasedSamplerFactoryTest {
   }
 
   @SuppressWarnings("unused")
-  private static Stream<Arguments> declarativeCOnfigSamplingPredicateArgs() {
+  private static Stream<Arguments> declarativeConfigSamplingPredicateArgs() {
     DeclarativeConfigSamplingPredicate matchAll =
         new DeclarativeConfigSamplingPredicate(null, null, null, null);
     DeclarativeConfigSamplingPredicate valuesMatcher =

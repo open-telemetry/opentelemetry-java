@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -38,6 +39,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
   static <T extends PointData> SynchronousMetricStorage create(
       RegisteredReader registeredReader,
       RegisteredView registeredView,
+      Clock clock,
       InstrumentDescriptor instrumentDescriptor,
       ExemplarFilterInternal exemplarFilter,
       boolean enabled) {
@@ -52,12 +54,13 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
     if (Aggregator.drop() == aggregator) {
       return empty();
     }
-    return new DefaultSynchronousMetricStorage<>(
+    return DefaultSynchronousMetricStorage.create(
         registeredReader,
         metricDescriptor,
         aggregator,
         registeredView.getViewAttributesProcessor(),
         registeredView.getCardinalityLimit(),
+        clock,
         enabled);
   }
 }

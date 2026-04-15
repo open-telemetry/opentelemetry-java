@@ -5,8 +5,18 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import com.google.common.base.Strings;
+import com.google.protobuf.AbstractMessageLite;
 import io.opentelemetry.exporter.otlp.profiles.ProfileData;
 import io.opentelemetry.exporter.otlp.profiles.ProfileExporter;
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsPartialSuccess;
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
+import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesPartialSuccess;
+import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceResponse;
+import io.opentelemetry.proto.collector.trace.v1.ExportTracePartialSuccess;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -36,6 +46,19 @@ public interface TelemetryExporter<T> extends AutoCloseable {
       public CompletableResultCode shutdown() {
         return exporter.shutdown();
       }
+
+      @Override
+      public AbstractMessageLite<?, ?> exportResponse(int minimumSize) {
+        if (minimumSize == 0) {
+          return ExportTraceServiceResponse.getDefaultInstance();
+        }
+        return ExportTraceServiceResponse.newBuilder()
+            .setPartialSuccess(
+                ExportTracePartialSuccess.newBuilder()
+                    .setErrorMessage(Strings.repeat("x", minimumSize))
+                    .build())
+            .build();
+      }
     };
   }
 
@@ -55,6 +78,19 @@ public interface TelemetryExporter<T> extends AutoCloseable {
       @Override
       public CompletableResultCode shutdown() {
         return exporter.shutdown();
+      }
+
+      @Override
+      public AbstractMessageLite<?, ?> exportResponse(int minimumSize) {
+        if (minimumSize == 0) {
+          return ExportMetricsServiceResponse.getDefaultInstance();
+        }
+        return ExportMetricsServiceResponse.newBuilder()
+            .setPartialSuccess(
+                ExportMetricsPartialSuccess.newBuilder()
+                    .setErrorMessage(Strings.repeat("x", minimumSize))
+                    .build())
+            .build();
       }
     };
   }
@@ -76,6 +112,19 @@ public interface TelemetryExporter<T> extends AutoCloseable {
       public CompletableResultCode shutdown() {
         return exporter.shutdown();
       }
+
+      @Override
+      public AbstractMessageLite<?, ?> exportResponse(int minimumSize) {
+        if (minimumSize == 0) {
+          return ExportLogsServiceResponse.getDefaultInstance();
+        }
+        return ExportLogsServiceResponse.newBuilder()
+            .setPartialSuccess(
+                ExportLogsPartialSuccess.newBuilder()
+                    .setErrorMessage(Strings.repeat("x", minimumSize))
+                    .build())
+            .build();
+      }
     };
   }
 
@@ -96,6 +145,19 @@ public interface TelemetryExporter<T> extends AutoCloseable {
       public CompletableResultCode shutdown() {
         return exporter.shutdown();
       }
+
+      @Override
+      public AbstractMessageLite<?, ?> exportResponse(int minimumSize) {
+        if (minimumSize == 0) {
+          return ExportProfilesServiceResponse.getDefaultInstance();
+        }
+        return ExportProfilesServiceResponse.newBuilder()
+            .setPartialSuccess(
+                ExportProfilesPartialSuccess.newBuilder()
+                    .setErrorMessage(Strings.repeat("x", minimumSize))
+                    .build())
+            .build();
+      }
     };
   }
 
@@ -104,6 +166,8 @@ public interface TelemetryExporter<T> extends AutoCloseable {
   CompletableResultCode export(Collection<T> items);
 
   CompletableResultCode shutdown();
+
+  AbstractMessageLite<?, ?> exportResponse(int minimumSize);
 
   @Override
   default void close() {

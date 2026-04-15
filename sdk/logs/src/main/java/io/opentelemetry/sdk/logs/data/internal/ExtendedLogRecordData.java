@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
  * APIs (or a version of them) may be promoted to the public stable API in the future, but no
  * guarantees are made.
  */
+@SuppressWarnings("deprecation")
 public interface ExtendedLogRecordData extends LogRecordData {
 
   /** Returns the attributes for this log, or {@link ExtendedAttributes#empty()} if unset. */

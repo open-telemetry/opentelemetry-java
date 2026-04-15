@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,11 +33,11 @@ public final class JavaDocsCrawler {
   // latest periodically to avoid crawling artifacts that stopped being published.
   private static final Map<String, String> GROUPS_AND_MIN_VERSION =
       Map.of(
-          "io.opentelemetry", "1.49.0",
-          "io.opentelemetry.instrumentation", "2.15.0",
-          "io.opentelemetry.contrib", "1.46.0",
-          "io.opentelemetry.semconv", "1.32.0",
-          "io.opentelemetry.proto", "1.3.2");
+          "io.opentelemetry", "1.60.1",
+          "io.opentelemetry.instrumentation", "2.25.0",
+          "io.opentelemetry.contrib", "1.54.0",
+          "io.opentelemetry.semconv", "1.40.0",
+          "io.opentelemetry.proto", "1.10.0");
 
   private static final String MAVEN_CENTRAL_BASE_URL =
       "https://search.maven.org/solrsearch/select?q=g:";
@@ -159,9 +160,10 @@ public final class JavaDocsCrawler {
       HttpClient client, String minVersion, List<Artifact> artifacts)
       throws IOException, InterruptedException {
     List<Artifact> updatedArtifacts = new ArrayList<>();
+    SemanticVersion minSemanticVersion = SemanticVersion.parse(minVersion);
 
     for (Artifact artifact : artifacts) {
-      if (artifact.getVersion().compareTo(minVersion) < 0) {
+      if (SemanticVersion.parse(artifact.getVersion()).compareTo(minSemanticVersion) < 0) {
         logger.info(
             String.format(
                 "Skipping crawling %s due to version %s being less than minVersion %s",
@@ -207,6 +209,104 @@ public final class JavaDocsCrawler {
       Thread.sleep(THROTTLE_MS); // some light throttling
     }
     return updatedArtifacts;
+  }
+
+  static final class SemanticVersion implements Comparable<SemanticVersion> {
+    private static final Comparator<List<Integer>> CORE_VERSION_COMPARATOR =
+        (left, right) -> {
+          for (int i = 0; i < Math.max(left.size(), right.size()); i++) {
+            int leftPart = i < left.size() ? left.get(i) : 0;
+            int rightPart = i < right.size() ? right.get(i) : 0;
+            int result = Integer.compare(leftPart, rightPart);
+            if (result != 0) {
+              return result;
+            }
+          }
+          return 0;
+        };
+
+    private final List<Integer> coreVersionParts;
+    private final String qualifier;
+
+    private SemanticVersion(List<Integer> coreVersionParts, String qualifier) {
+      this.coreVersionParts = coreVersionParts;
+      this.qualifier = qualifier;
+    }
+
+    static SemanticVersion parse(String version) {
+      String[] versionParts = version.split("-", 2);
+      List<Integer> coreVersionParts = new ArrayList<>();
+      for (String part : versionParts[0].split("\\.")) {
+        coreVersionParts.add(Integer.parseInt(part));
+      }
+      String qualifier = versionParts.length == 2 ? versionParts[1] : "";
+      return new SemanticVersion(coreVersionParts, qualifier);
+    }
+
+    @Override
+    public int compareTo(SemanticVersion other) {
+      int coreVersionResult =
+          CORE_VERSION_COMPARATOR.compare(coreVersionParts, other.coreVersionParts);
+      if (coreVersionResult != 0) {
+        return coreVersionResult;
+      }
+      if (qualifier.isEmpty() && other.qualifier.isEmpty()) {
+        return 0;
+      }
+      if (qualifier.isEmpty()) {
+        return 1;
+      }
+      if (other.qualifier.isEmpty()) {
+        return -1;
+      }
+      return compareQualifier(qualifier, other.qualifier);
+    }
+
+    private static int compareQualifier(String leftQualifier, String rightQualifier) {
+      String[] leftParts = leftQualifier.split("\\.");
+      String[] rightParts = rightQualifier.split("\\.");
+
+      for (int i = 0; i < Math.max(leftParts.length, rightParts.length); i++) {
+        if (i >= leftParts.length) {
+          return -1;
+        }
+        if (i >= rightParts.length) {
+          return 1;
+        }
+
+        String leftIdentifier = leftParts[i];
+        String rightIdentifier = rightParts[i];
+        if (leftIdentifier.equals(rightIdentifier)) {
+          continue;
+        }
+
+        boolean leftNumeric = isNumericIdentifier(leftIdentifier);
+        boolean rightNumeric = isNumericIdentifier(rightIdentifier);
+        if (leftNumeric && rightNumeric) {
+          if (leftIdentifier.length() != rightIdentifier.length()) {
+            return Integer.compare(leftIdentifier.length(), rightIdentifier.length());
+          }
+          return leftIdentifier.compareTo(rightIdentifier);
+        }
+        if (leftNumeric != rightNumeric) {
+          return leftNumeric ? -1 : 1;
+        }
+        return leftIdentifier.compareTo(rightIdentifier);
+      }
+      return 0;
+    }
+
+    private static boolean isNumericIdentifier(String identifier) {
+      if (identifier.isEmpty()) {
+        return false;
+      }
+      for (int i = 0; i < identifier.length(); i++) {
+        if (!Character.isDigit(identifier.charAt(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   private JavaDocsCrawler() {}

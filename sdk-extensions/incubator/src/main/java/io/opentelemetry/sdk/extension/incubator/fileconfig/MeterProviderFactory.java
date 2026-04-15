@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterMatcherAndConfigModel;
@@ -15,8 +17,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Metric
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
-import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
@@ -112,7 +112,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
     @Override
     public MeterConfig create(
         ExperimentalMeterConfigModel model, DeclarativeConfigContext context) {
-      if (model.getDisabled() != null && model.getDisabled()) {
+      if (model.getEnabled() != null && !model.getEnabled()) {
         return MeterConfig.disabled();
       }
       return MeterConfig.defaultConfig();

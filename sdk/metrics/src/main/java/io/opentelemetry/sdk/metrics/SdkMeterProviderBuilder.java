@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
-import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;

@@ -5,21 +5,21 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.EnvironmentResource.ATTRIBUTE_PROPERTY;
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.EnvironmentResource.createEnvironmentResource;
+
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
-import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 
 final class ResourceFactory implements Factory<ResourceModel, Resource> {
 
@@ -47,8 +47,11 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
         }
       }
 
+      IncludeExcludeModel attributesIncludeExcludeModel = detectionModel.getAttributes();
       Predicate<String> detectorAttributeFilter =
-          detectorAttributeFilter(detectionModel.getAttributes());
+          attributesIncludeExcludeModel == null
+              ? ResourceFactory::matchAll
+              : IncludeExcludeFactory.getInstance().create(attributesIncludeExcludeModel, context);
       Attributes filteredDetectedAttributes =
           detectedResourceBuilder.build().getAttributes().toBuilder()
               .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
@@ -60,9 +63,9 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
     String attributeList = model.getAttributesList();
     if (attributeList != null) {
       builder.putAll(
-          ResourceConfiguration.createEnvironmentResource(
+          createEnvironmentResource(
               DefaultConfigProperties.createFromMap(
-                  Collections.singletonMap("otel.resource.attributes", attributeList))));
+                  Collections.singletonMap(ATTRIBUTE_PROPERTY, attributeList))));
     }
 
     List<AttributeNameValueModel> attributeNameValueModel = model.getAttributes();
@@ -72,23 +75,14 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
           .build();
     }
 
+    if (model.getSchemaUrl() != null) {
+      builder.setSchemaUrl(model.getSchemaUrl());
+    }
+
     return builder.build();
   }
 
   private static boolean matchAll(String attributeKey) {
     return true;
-  }
-
-  private static Predicate<String> detectorAttributeFilter(
-      @Nullable IncludeExcludeModel includedExcludeModel) {
-    if (includedExcludeModel == null) {
-      return ResourceFactory::matchAll;
-    }
-    List<String> included = includedExcludeModel.getIncluded();
-    List<String> excluded = includedExcludeModel.getExcluded();
-    if (included == null && excluded == null) {
-      return ResourceFactory::matchAll;
-    }
-    return IncludeExcludePredicate.createPatternMatching(included, excluded);
   }
 }

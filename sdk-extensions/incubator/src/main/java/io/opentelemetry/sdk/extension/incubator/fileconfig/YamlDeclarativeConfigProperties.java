@@ -156,18 +156,21 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   @Nullable
   @Override
   public String getString(String name) {
+    Objects.requireNonNull(name, "Null configuration property name");
     return stringOrNull(simpleEntries.get(name), name);
   }
 
   @Nullable
   @Override
   public Boolean getBoolean(String name) {
+    Objects.requireNonNull(name, "Null configuration property name");
     return booleanOrNull(simpleEntries.get(name), name);
   }
 
   @Nullable
   @Override
   public Integer getInt(String name) {
+    Objects.requireNonNull(name, "Null configuration property name");
     Object value = simpleEntries.get(name);
     if (value instanceof Integer) {
       return (Integer) value;
@@ -184,19 +187,21 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   @Nullable
   @Override
   public Long getLong(String name) {
+    Objects.requireNonNull(name, "Null configuration property name");
     return longOrNull(simpleEntries.get(name), name);
   }
 
   @Nullable
   @Override
   public Double getDouble(String name) {
+    Objects.requireNonNull(name, "Null configuration property name");
     return doubleOrNull(simpleEntries.get(name), name);
   }
 
   @Nullable
   @Override
-  @SuppressWarnings("unchecked")
   public <T> List<T> getScalarList(String name, Class<T> scalarType) {
+    Objects.requireNonNull(name, "Null configuration property name");
     if (!SUPPORTED_SCALAR_TYPES.contains(scalarType)) {
       throw new DeclarativeConfigException(
           "Unsupported scalar type "
@@ -208,28 +213,28 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     }
     Object value = simpleEntries.get(name);
     if (value instanceof List) {
-      List<Object> objectList = ((List<Object>) value);
+      List<?> objectList = (List<?>) value;
       if (objectList.isEmpty()) {
         return Collections.emptyList();
       }
       List<T> result =
-          (List<T>)
-              objectList.stream()
-                  .map(
-                      entry -> {
-                        if (scalarType == String.class) {
-                          return stringOrNull(entry, name);
-                        } else if (scalarType == Boolean.class) {
-                          return booleanOrNull(entry, name);
-                        } else if (scalarType == Long.class) {
-                          return longOrNull(entry, name);
-                        } else if (scalarType == Double.class) {
-                          return doubleOrNull(entry, name);
-                        }
-                        return null;
-                      })
-                  .filter(Objects::nonNull)
-                  .collect(toList());
+          objectList.stream()
+              .map(
+                  entry -> {
+                    if (scalarType == String.class) {
+                      return stringOrNull(entry, name);
+                    } else if (scalarType == Boolean.class) {
+                      return booleanOrNull(entry, name);
+                    } else if (scalarType == Long.class) {
+                      return longOrNull(entry, name);
+                    } else if (scalarType == Double.class) {
+                      return doubleOrNull(entry, name);
+                    }
+                    return null;
+                  })
+              .filter(Objects::nonNull)
+              .map(scalarType::cast)
+              .collect(toList());
       if (result.isEmpty()) {
         return null;
       }
@@ -291,12 +296,14 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   @Nullable
   @Override
   public DeclarativeConfigProperties getStructured(String name) {
+    Objects.requireNonNull(name, "Null configuration property name");
     return mapEntries.get(name);
   }
 
   @Nullable
   @Override
   public List<DeclarativeConfigProperties> getStructuredList(String name) {
+    Objects.requireNonNull(name, "Null configuration property name");
     List<YamlDeclarativeConfigProperties> value = listEntries.get(name);
     if (value != null) {
       return Collections.unmodifiableList(value);
@@ -315,7 +322,8 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
 
   @Override
   public String toString() {
-    StringJoiner joiner = new StringJoiner(", ", "YamlDeclarativeConfigProperties{", "}");
+    StringJoiner joiner =
+        new StringJoiner(", ", YamlDeclarativeConfigProperties.class.getSimpleName() + "{", "}");
     simpleEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     listEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     mapEntries.forEach((key, value) -> joiner.add(key + "=" + value));

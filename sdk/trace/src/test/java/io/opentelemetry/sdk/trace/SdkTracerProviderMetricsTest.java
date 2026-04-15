@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.internal.SemConvAttributes.ERROR_TYPE;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_COMPONENT_NAME;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_COMPONENT_TYPE;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.ERROR_TYPE;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_COMPONENT_NAME;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_COMPONENT_TYPE;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -26,6 +26,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -708,6 +709,7 @@ class SdkTracerProviderMetricsTest {
   }
 
   @Test
+  @SuppressLogger(BatchSpanProcessor.class)
   void batch() throws Exception {
     InMemoryMetricReader metricReader = InMemoryMetricReader.create();
     MeterProvider meterProvider =

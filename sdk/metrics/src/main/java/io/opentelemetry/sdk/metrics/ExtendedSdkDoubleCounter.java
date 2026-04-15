@@ -20,11 +20,6 @@ final class ExtendedSdkDoubleCounter extends SdkDoubleCounter implements Extende
     super(descriptor, sdkMeter, storage);
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
-
   static final class ExtendedSdkDoubleCounterBuilder extends SdkDoubleCounterBuilder
       implements ExtendedDoubleCounterBuilder {
 

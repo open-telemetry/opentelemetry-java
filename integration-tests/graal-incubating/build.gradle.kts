@@ -49,7 +49,7 @@ graalvmNative {
 // GraalVM Native Build Tools plugin is not yet compatible with configuration cache
 // https://github.com/graalvm/native-build-tools/issues/477
 tasks.configureEach {
-  if (name.startsWith("native")) {
+  if (name.startsWith("native") || name == "test" || name == "collectReachabilityMetadata") {
     notCompatibleWithConfigurationCache("GraalVM Native Build Tools plugin is not compatible with configuration cache")
   }
 }

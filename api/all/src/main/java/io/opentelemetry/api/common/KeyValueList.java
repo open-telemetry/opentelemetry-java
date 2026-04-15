@@ -5,8 +5,6 @@
 
 package io.opentelemetry.api.common;
 
-import static java.util.stream.Collectors.joining;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,9 +48,9 @@ final class KeyValueList implements Value<List<KeyValue>> {
 
   @Override
   public String asString() {
-    return value.stream()
-        .map(item -> item.getKey() + "=" + item.getValue().asString())
-        .collect(joining(", ", "[", "]"));
+    StringBuilder sb = new StringBuilder();
+    JsonEncoding.append(sb, this);
+    return sb.toString();
   }
 
   @Override

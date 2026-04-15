@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
@@ -45,7 +45,7 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
       case HISTOGRAM:
         if (withAdvice && instrument.getAdvice().getExplicitBucketBoundaries() != null) {
           return ExplicitBucketHistogramAggregation.create(
-              instrument.getAdvice().getExplicitBucketBoundaries());
+              instrument.getAdvice().getExplicitBucketBoundaries(), /* recordMinMax= */ true);
         }
         return ExplicitBucketHistogramAggregation.getDefault();
       case OBSERVABLE_GAUGE:

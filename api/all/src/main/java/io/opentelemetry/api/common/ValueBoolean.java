@@ -31,7 +31,9 @@ final class ValueBoolean implements Value<Boolean> {
 
   @Override
   public String asString() {
-    return String.valueOf(value);
+    StringBuilder sb = new StringBuilder();
+    JsonEncoding.append(sb, this);
+    return sb.toString();
   }
 
   @Override

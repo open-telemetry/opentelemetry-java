@@ -82,10 +82,14 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     for (MemoryMode memoryMode : MemoryMode.values()) {
       parameters.add(
           new DoubleBase2ExponentialHistogramAggregator(
-              ExemplarReservoirFactory.noSamples(), 160, 20, memoryMode));
+              ExemplarReservoirFactory.noSamples(), 160, 20, /* recordMinMax= */ true, memoryMode));
       parameters.add(
           new DoubleBase2ExponentialHistogramAggregator(
-              ExemplarReservoirFactory.noSamples(), 160, MAX_SCALE, memoryMode));
+              ExemplarReservoirFactory.noSamples(),
+              160,
+              MAX_SCALE,
+              /* recordMinMax= */ true,
+              memoryMode));
     }
     return parameters.stream();
   }
@@ -98,7 +102,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   private void initialize(MemoryMode memoryMode) {
     aggregator =
         new DoubleBase2ExponentialHistogramAggregator(
-            ExemplarReservoirFactory.noSamples(), 160, 20, memoryMode);
+            ExemplarReservoirFactory.noSamples(), 160, 20, /* recordMinMax= */ true, memoryMode);
   }
 
   @ParameterizedTest
@@ -106,7 +110,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   void createHandle(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    AggregatorHandle<?> handle = aggregator.createHandle();
+    AggregatorHandle<?> handle = aggregator.createHandle(0);
     assertThat(handle).isInstanceOf(DoubleBase2ExponentialHistogramAggregator.Handle.class);
     ExponentialHistogramPointData point =
         ((DoubleBase2ExponentialHistogramAggregator.Handle) handle)
@@ -123,7 +127,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   void testRecordings(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(0.5, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(1.0, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(12.0, Attributes.empty(), Context.current());
@@ -168,7 +172,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   void testInvalidRecording(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     // Non-finite recordings should be ignored
     aggregatorHandle.recordDouble(Double.POSITIVE_INFINITY, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(Double.NEGATIVE_INFINITY, Attributes.empty(), Context.current());
@@ -185,7 +189,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   @ParameterizedTest
   @MethodSource("provideAggregator")
   void testRecordingsAtLimits(DoubleBase2ExponentialHistogramAggregator aggregator) {
-    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle(0);
 
     aggregatorHandle.recordDouble(Double.MIN_VALUE, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(Double.MAX_VALUE, Attributes.empty(), Context.current());
@@ -230,7 +234,8 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset_WithExemplars(MemoryMode memoryMode) {
     DoubleBase2ExponentialHistogramAggregator agg =
-        new DoubleBase2ExponentialHistogramAggregator(reservoirFactory, 160, MAX_SCALE, memoryMode);
+        new DoubleBase2ExponentialHistogramAggregator(
+            reservoirFactory, 160, MAX_SCALE, /* recordMinMax= */ true, memoryMode);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -246,7 +251,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndResetDoubles(Attributes.empty())).thenReturn(exemplars);
 
-    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = agg.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = agg.createHandle(0);
     aggregatorHandle.recordDouble(0, attributes, Context.root());
 
     assertThat(
@@ -262,7 +267,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle(0);
 
     aggregatorHandle.recordDouble(5.0, Attributes.empty(), Context.current());
     assertThat(
@@ -279,7 +284,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   void testInsert1M(MemoryMode memoryMode) {
     initialize(memoryMode);
 
-    AggregatorHandle<ExponentialHistogramPointData> handle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> handle = aggregator.createHandle(0);
 
     int n = 1024 * 1024 - 1;
     double min = 16.0 / n;
@@ -305,7 +310,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     initialize(memoryMode);
 
     DoubleBase2ExponentialHistogramAggregator.Handle handle =
-        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle();
+        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle(0);
     // record a measurement to initialize positive buckets
     handle.recordDouble(0.5, Attributes.empty(), Context.current());
 
@@ -348,10 +353,11 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
         .thenReturn(Collections.singletonList(exemplar));
 
     DoubleBase2ExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleBase2ExponentialHistogramAggregator(reservoirFactory, 160, MAX_SCALE, memoryMode);
+        new DoubleBase2ExponentialHistogramAggregator(
+            reservoirFactory, 160, MAX_SCALE, /* recordMinMax= */ true, memoryMode);
 
     AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle =
-        cumulativeAggregator.createHandle();
+        cumulativeAggregator.createHandle(0);
     aggregatorHandle.recordDouble(0, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(0, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(123.456, Attributes.empty(), Context.current());
@@ -416,7 +422,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
   void testMultithreadedUpdates(MemoryMode memoryMode) throws InterruptedException {
     initialize(memoryMode);
 
-    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     ImmutableList<Double> updates = ImmutableList.of(0D, 0.1D, -0.1D, 1D, -1D, 100D);
     int numberOfThreads = updates.size();
     int numberOfUpdates = 10000;
@@ -486,7 +492,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     initialize(MemoryMode.REUSABLE_DATA);
 
     DoubleBase2ExponentialHistogramAggregator.Handle handle =
-        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle();
+        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle(0);
 
     // record a measurement to initialize positive buckets
     handle.recordDouble(0.5, Attributes.empty(), Context.current());
@@ -519,7 +525,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     initialize(MemoryMode.IMMUTABLE_DATA);
 
     DoubleBase2ExponentialHistogramAggregator.Handle handle =
-        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle();
+        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle(0);
 
     // record a measurement to initialize positive buckets
     handle.recordDouble(0.5, Attributes.empty(), Context.current());
@@ -542,7 +548,7 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     initialize(MemoryMode.REUSABLE_DATA);
 
     DoubleBase2ExponentialHistogramAggregator.Handle handle =
-        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle();
+        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle(0);
 
     // Let's create a point without buckets
     ExponentialHistogramPointData point =
@@ -567,5 +573,28 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     assertThat(point.getNegativeBuckets()).isInstanceOf(MutableExponentialHistogramBuckets.class);
     assertThat(point.getPositiveBuckets().getBucketCounts()).isNotEmpty();
     assertThat(point.getNegativeBuckets().getBucketCounts()).isNotEmpty();
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testRecordMinMaxDisabled(MemoryMode memoryMode) {
+    DoubleBase2ExponentialHistogramAggregator aggregator =
+        new DoubleBase2ExponentialHistogramAggregator(
+            ExemplarReservoirFactory.noSamples(), 160, 20, /* recordMinMax= */ false, memoryMode);
+    AggregatorHandle<ExponentialHistogramPointData> aggregatorHandle = aggregator.createHandle(0);
+    aggregatorHandle.recordDouble(0.5, Attributes.empty(), Context.current());
+    aggregatorHandle.recordDouble(1.0, Attributes.empty(), Context.current());
+    aggregatorHandle.recordDouble(12.0, Attributes.empty(), Context.current());
+    aggregatorHandle.recordDouble(15.213, Attributes.empty(), Context.current());
+    aggregatorHandle.recordDouble(-13.2, Attributes.empty(), Context.current());
+    aggregatorHandle.recordDouble(-2.01, Attributes.empty(), Context.current());
+
+    ExponentialHistogramPointData point =
+        aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
+    assertThat(point).isNotNull();
+    assertThat(point.hasMin()).isFalse();
+    assertThat(point.hasMax()).isFalse();
+    assertThat(point.getSum()).isCloseTo(13.503, Offset.offset(0.0001));
+    assertThat(point.getCount()).isEqualTo(6);
   }
 }

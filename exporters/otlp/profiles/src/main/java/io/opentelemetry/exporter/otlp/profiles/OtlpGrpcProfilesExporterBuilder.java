@@ -11,12 +11,11 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
@@ -30,22 +29,19 @@ import javax.net.ssl.X509TrustManager;
 /** Builder utility for this exporter. */
 public final class OtlpGrpcProfilesExporterBuilder {
 
-  // Visible for testing
-  static final String GRPC_SERVICE_NAME =
-      "opentelemetry.proto.collector.profiles.v1development.ProfilesService";
-  // Visible for testing
-  static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/Export";
+  private static final String GRPC_FULL_METHOD_NAME =
+      "opentelemetry.proto.collector.profiles.v1development.ProfilesService/Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
-  private static final long DEFAULT_TIMEOUT_SECS = 10;
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
 
   // TODO maybe make more efficient by adding support for MEMORY_MODE
 
   // Visible for testing
-  final GrpcExporterBuilder<Marshaler> delegate;
+  final GrpcExporterBuilder delegate;
 
-  OtlpGrpcProfilesExporterBuilder(GrpcExporterBuilder<Marshaler> delegate) {
+  OtlpGrpcProfilesExporterBuilder(GrpcExporterBuilder delegate) {
     this.delegate = delegate;
     delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
@@ -53,12 +49,11 @@ public final class OtlpGrpcProfilesExporterBuilder {
 
   OtlpGrpcProfilesExporterBuilder() {
     this(
-        new GrpcExporterBuilder<>(
+        new GrpcExporterBuilder(
             StandardComponentId.ExporterType.OTLP_GRPC_PROFILES_EXPORTER,
-            DEFAULT_TIMEOUT_SECS,
+            DEFAULT_TIMEOUT,
             DEFAULT_ENDPOINT,
-            () -> MarshalerProfilesServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH));
+            GRPC_FULL_METHOD_NAME));
   }
 
   /**
@@ -82,18 +77,17 @@ public final class OtlpGrpcProfilesExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of profiles. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@link #DEFAULT_TIMEOUT}.
    */
   public OtlpGrpcProfilesExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setTimeout(timeout, unit);
-    return this;
+    return setTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of profiles. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@link #DEFAULT_TIMEOUT}.
    */
   public OtlpGrpcProfilesExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -108,8 +102,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   public OtlpGrpcProfilesExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setConnectTimeout(timeout, unit);
-    return this;
+    return setConnectTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
@@ -118,7 +111,8 @@ public final class OtlpGrpcProfilesExporterBuilder {
    */
   public OtlpGrpcProfilesExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
-    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+    delegate.setConnectTimeout(timeout);
+    return this;
   }
 
   /**

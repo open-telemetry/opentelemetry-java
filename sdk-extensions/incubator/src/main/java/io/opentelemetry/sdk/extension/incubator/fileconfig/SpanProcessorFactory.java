@@ -5,12 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorPropertyModel;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
@@ -18,7 +16,6 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
-import java.util.Map;
 
 final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProcessor> {
 
@@ -32,50 +29,51 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
 
   @Override
   public SpanProcessor create(SpanProcessorModel model, DeclarativeConfigContext context) {
-    BatchSpanProcessorModel batchModel = model.getBatch();
-    if (batchModel != null) {
-      SpanExporterModel exporterModel =
-          FileConfigUtil.requireNonNull(batchModel.getExporter(), "batch span processor exporter");
-      SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
-      BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(spanExporter);
-      if (batchModel.getExportTimeout() != null) {
-        builder.setExporterTimeout(Duration.ofMillis(batchModel.getExportTimeout()));
-      }
-      if (batchModel.getMaxExportBatchSize() != null) {
-        builder.setMaxExportBatchSize(batchModel.getMaxExportBatchSize());
-      }
-      if (batchModel.getMaxQueueSize() != null) {
-        builder.setMaxQueueSize(batchModel.getMaxQueueSize());
-      }
-      if (batchModel.getScheduleDelay() != null) {
-        builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
-      }
-      MeterProvider meterProvider = context.getMeterProvider();
-      if (meterProvider != null) {
-        builder.setMeterProvider(() -> meterProvider);
-      }
+    // We don't use the variable till later but call validate first to confirm there are not
+    // multiple samplers.
+    ConfigKeyValue processorKeyValue =
+        FileConfigUtil.validateSingleKeyValue(context, model, "span processor");
 
-      return context.addCloseable(builder.build());
+    if (model.getBatch() != null) {
+      return createBatchLogRecordProcessor(model.getBatch(), context);
+    }
+    if (model.getSimple() != null) {
+      return createSimpleLogRecordProcessor(model.getSimple(), context);
     }
 
-    SimpleSpanProcessorModel simpleModel = model.getSimple();
-    if (simpleModel != null) {
-      SpanExporterModel exporterModel =
-          FileConfigUtil.requireNonNull(
-              simpleModel.getExporter(), "simple span processor exporter");
-      SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
-      SimpleSpanProcessorBuilder builder = SimpleSpanProcessor.builder(spanExporter);
-      MeterProvider meterProvider = context.getMeterProvider();
-      if (meterProvider != null) {
-        builder.setMeterProvider(() -> meterProvider);
-      }
-      return context.addCloseable(builder.build());
-    }
+    return context.loadComponent(SpanProcessor.class, processorKeyValue);
+  }
 
-    Map.Entry<String, SpanProcessorPropertyModel> keyValue =
-        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span processor");
-    SpanProcessor spanProcessor =
-        context.loadComponent(SpanProcessor.class, keyValue.getKey(), keyValue.getValue());
-    return context.addCloseable(spanProcessor);
+  private static SpanProcessor createBatchLogRecordProcessor(
+      BatchSpanProcessorModel batchModel, DeclarativeConfigContext context) {
+    SpanExporterModel exporterModel =
+        FileConfigUtil.requireNonNull(batchModel.getExporter(), "batch span processor exporter");
+    SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
+    BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(spanExporter);
+    if (batchModel.getExportTimeout() != null) {
+      builder.setExporterTimeout(Duration.ofMillis(batchModel.getExportTimeout()));
+    }
+    if (batchModel.getMaxExportBatchSize() != null) {
+      builder.setMaxExportBatchSize(batchModel.getMaxExportBatchSize());
+    }
+    if (batchModel.getMaxQueueSize() != null) {
+      builder.setMaxQueueSize(batchModel.getMaxQueueSize());
+    }
+    if (batchModel.getScheduleDelay() != null) {
+      builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
+    }
+    context.setInternalTelemetry(builder::setMeterProvider, builder::setInternalTelemetryVersion);
+
+    return context.addCloseable(builder.build());
+  }
+
+  private static SpanProcessor createSimpleLogRecordProcessor(
+      SimpleSpanProcessorModel simpleModel, DeclarativeConfigContext context) {
+    SpanExporterModel exporterModel =
+        FileConfigUtil.requireNonNull(simpleModel.getExporter(), "simple span processor exporter");
+    SpanExporter spanExporter = SpanExporterFactory.getInstance().create(exporterModel, context);
+    SimpleSpanProcessorBuilder builder = SimpleSpanProcessor.builder(spanExporter);
+    context.setInternalTelemetry(builder::setMeterProvider);
+    return context.addCloseable(builder.build());
   }
 }

@@ -12,14 +12,13 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
@@ -34,20 +33,19 @@ import javax.net.ssl.X509TrustManager;
 public final class OtlpGrpcSpanExporterBuilder {
 
   // Visible for testing
-  static final String GRPC_SERVICE_NAME = "opentelemetry.proto.collector.trace.v1.TraceService";
-  // Visible for testing
-  static final String GRPC_ENDPOINT_PATH = "/" + GRPC_SERVICE_NAME + "/Export";
+  static final String GRPC_FULL_METHOD_NAME =
+      "opentelemetry.proto.collector.trace.v1.TraceService/Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
-  private static final long DEFAULT_TIMEOUT_SECS = 10;
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   // Visible for testing
-  final GrpcExporterBuilder<Marshaler> delegate;
+  final GrpcExporterBuilder delegate;
   private MemoryMode memoryMode;
 
-  OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
@@ -55,12 +53,11 @@ public final class OtlpGrpcSpanExporterBuilder {
 
   OtlpGrpcSpanExporterBuilder() {
     this(
-        new GrpcExporterBuilder<>(
+        new GrpcExporterBuilder(
             StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-            DEFAULT_TIMEOUT_SECS,
+            DEFAULT_TIMEOUT,
             DEFAULT_ENDPOINT,
-            () -> MarshalerTraceServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH),
+            GRPC_FULL_METHOD_NAME),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -85,18 +82,17 @@ public final class OtlpGrpcSpanExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of spans. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@link #DEFAULT_TIMEOUT}.
    */
   public OtlpGrpcSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setTimeout(timeout, unit);
-    return this;
+    return setTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of spans. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@link #DEFAULT_TIMEOUT}.
    */
   public OtlpGrpcSpanExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -113,8 +109,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   public OtlpGrpcSpanExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    delegate.setConnectTimeout(timeout, unit);
-    return this;
+    return setConnectTimeout(Duration.ofNanos(unit.toNanos(timeout)));
   }
 
   /**
@@ -125,7 +120,8 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   public OtlpGrpcSpanExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
-    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+    delegate.setConnectTimeout(timeout);
+    return this;
   }
 
   /**

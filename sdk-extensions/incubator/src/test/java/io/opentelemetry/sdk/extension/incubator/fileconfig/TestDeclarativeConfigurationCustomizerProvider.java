@@ -12,6 +12,7 @@ import java.util.List;
 
 public class TestDeclarativeConfigurationCustomizerProvider
     implements DeclarativeConfigurationCustomizerProvider {
+
   @Override
   public void customize(DeclarativeConfigurationCustomizer customizer) {
     customizer.addModelCustomizer(

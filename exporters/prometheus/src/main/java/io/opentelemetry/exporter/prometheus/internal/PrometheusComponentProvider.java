@@ -5,11 +5,12 @@
 
 package io.opentelemetry.exporter.prometheus.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
+import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.List;
 
@@ -45,15 +46,28 @@ public class PrometheusComponentProvider implements ComponentProvider {
       prometheusBuilder.setHost(host);
     }
 
+    Boolean withoutTargetInfo = config.getBoolean("without_target_info");
+    if (withoutTargetInfo != null) {
+      prometheusBuilder.setTargetInfoMetricEnabled(!withoutTargetInfo);
+    }
+    Boolean withoutScopeInfo = config.getBoolean("without_scope_info");
+    if (withoutScopeInfo != null) {
+      prometheusBuilder.setOtelScopeLabelsEnabled(!withoutScopeInfo);
+    }
+
     DeclarativeConfigProperties withResourceConstantLabels =
         config.getStructured("with_resource_constant_labels");
     if (withResourceConstantLabels != null) {
       List<String> included = withResourceConstantLabels.getScalarList("included", String.class);
       List<String> excluded = withResourceConstantLabels.getScalarList("excluded", String.class);
-      if (included != null || excluded != null) {
-        prometheusBuilder.setAllowedResourceAttributesFilter(
-            IncludeExcludePredicate.createPatternMatching(included, excluded));
+      if (included != null && included.isEmpty()) {
+        throw new DeclarativeConfigException("included must not be empty");
       }
+      if (excluded != null && excluded.isEmpty()) {
+        throw new DeclarativeConfigException("excluded must not be empty");
+      }
+      prometheusBuilder.setAllowedResourceAttributesFilter(
+          IncludeExcludePredicate.createPatternMatching(included, excluded));
     }
 
     return prometheusBuilder.build();

@@ -20,10 +20,18 @@ import javax.annotation.Nullable;
 import zipkin2.Span;
 import zipkin2.reporter.BytesEncoder;
 import zipkin2.reporter.BytesMessageSender;
+import zipkin2.reporter.Sender;
 import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
-/** Builder class for {@link ZipkinSpanExporter}. */
+/**
+ * Builder class for {@link ZipkinSpanExporter}.
+ *
+ * @deprecated Zipkin exporter is deprecated in OpenTelemetry spec (see the <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/4715">PR</a>).
+ *     Expect this artifact to no longer be published in approximately 6 months (mid 2026).
+ */
+@Deprecated
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
   private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.getInstance();
@@ -48,7 +56,7 @@ public final class ZipkinSpanExporterBuilder {
    * @deprecated Use {@link #setSender(BytesMessageSender)} insteead.
    */
   @Deprecated
-  public ZipkinSpanExporterBuilder setSender(zipkin2.reporter.Sender sender) {
+  public ZipkinSpanExporterBuilder setSender(Sender sender) {
     return setSender((BytesMessageSender) sender);
   }
 

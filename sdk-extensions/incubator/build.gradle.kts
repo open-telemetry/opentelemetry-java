@@ -30,7 +30,6 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-databind")
   api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
-  implementation(project(":sdk-extensions:autoconfigure"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
@@ -57,18 +56,27 @@ dependencies {
 // 6. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-val configurationTag = "1.0.0-rc.3"
+val configurationTag = "1.0.0"
 val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {
   src(configurationRepoZip)
-  dest("$buildDirectory/configuration/opentelemetry-configuration.zip")
+  // The version is encoded in the filename so that a configurationTag change results in a new
+  // path that doesn't yet exist, triggering a fresh download. On subsequent builds with the same
+  // tag the file already exists and overwrite(false) skips the network request. Note: the
+  // de.undercouch Download task always reports itself as not up-to-date, so overwrite(false) is
+  // the intended mechanism for avoiding redundant downloads.
+  //
+  // The zip is stored in tmp/ so it is outside the Sync task's output directory (configuration/).
+  dest("$buildDirectory/tmp/opentelemetry-configuration-v$configurationTag.zip")
   overwrite(false)
 }
 
-val unzipConfigurationSchema by tasks.registering(Copy::class) {
+val unzipConfigurationSchema by tasks.registering(Sync::class) {
+  // Sync (not Copy) removes stale files from the destination when the source changes, ensuring
+  // files deleted or renamed between schema versions don't linger in the build dir.
   dependsOn(downloadConfigurationSchema)
 
   from(zipTree(downloadConfigurationSchema.get().dest))
@@ -78,6 +86,7 @@ val unzipConfigurationSchema by tasks.registering(Copy::class) {
     path = pathParts.subList(1, pathParts.size).joinToString("/")
   })
   into("$buildDirectory/configuration/")
+  includeEmptyDirs = false
 }
 
 jsonSchema2Pojo {
@@ -139,6 +148,35 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
   delete("$buildDirectory/generated/sources/js2p-tmp/")
 }
 
+// Copies EnvironmentResource.java from the autoconfigure module into a generated source set so
+// that the incubator can use the exact same source without taking a runtime dependency on
+// autoconfigure and without the risk of divergence from manual syncing.
+val generatedResourceConfigDir =
+  layout.buildDirectory.dir("generated/sources/resource-configuration/java/main")
+val copyResourceConfiguration by tasks.registering(Copy::class) {
+  from(
+    project(":sdk-extensions:autoconfigure").file(
+      "src/main/java/io/opentelemetry/sdk/autoconfigure/EnvironmentResource.java"
+    )
+  )
+  into(generatedResourceConfigDir.map { it.dir("io/opentelemetry/extension/incubator/fileconfig") })
+  // Only the package declaration needs rewriting; everything else is copied verbatim.
+  filter { line: String ->
+    line.replace(
+      "package io.opentelemetry.sdk.autoconfigure;",
+      "package io.opentelemetry.sdk.extension.incubator.fileconfig;"
+    )
+  }
+}
+
+sourceSets {
+  main {
+    java {
+      srcDir(generatedResourceConfigDir)
+    }
+  }
+}
+
 val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
   val buildDir = buildDirectory
   val targetFile = File(
@@ -195,8 +233,8 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
   }
 }
 
-tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
-tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
+tasks.getByName("compileJava").dependsOn(deleteJs2pTmp, copyResourceConfiguration)
+tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson, copyResourceConfiguration)
 tasks.getByName("jar").dependsOn(deleteJs2pTmp, buildGraalVmReflectionJson)
 tasks.getByName("javadoc").dependsOn(buildGraalVmReflectionJson)
 tasks.getByName("compileTestJava").dependsOn(buildGraalVmReflectionJson)
@@ -212,7 +250,7 @@ tasks {
     environment(
       mapOf(
         // Expose the kitchen sink example file to tests
-        "CONFIG_EXAMPLE_DIR" to "$buildDirectory/configuration/examples/"
+        "CONFIG_REPO_ROOT" to "$buildDirectory/configuration"
       )
     )
   }

@@ -13,13 +13,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.common.RequestHeaders;
+import com.linecorp.armeria.common.ResponseHeaders;
 import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServerBuilder;
@@ -30,23 +33,17 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
-import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
-import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
-import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.AttributeAssertion;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -75,6 +72,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -119,6 +117,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   private static final ConcurrentLinkedQueue<HttpRequest> httpRequests =
       new ConcurrentLinkedQueue<>();
 
+  private static volatile byte[] successResponseBytes = new byte[0];
+
   @RegisterExtension
   @Order(1)
   static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
@@ -138,20 +138,17 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
               "/v1/traces",
               new CollectorService<>(
                   ExportTraceServiceRequest::parseFrom,
-                  ExportTraceServiceRequest::getResourceSpansList,
-                  ExportTraceServiceResponse.getDefaultInstance().toByteArray()));
+                  ExportTraceServiceRequest::getResourceSpansList));
           sb.service(
               "/v1/metrics",
               new CollectorService<>(
                   ExportMetricsServiceRequest::parseFrom,
-                  ExportMetricsServiceRequest::getResourceMetricsList,
-                  ExportMetricsServiceResponse.getDefaultInstance().toByteArray()));
+                  ExportMetricsServiceRequest::getResourceMetricsList));
           sb.service(
               "/v1/logs",
               new CollectorService<>(
                   ExportLogsServiceRequest::parseFrom,
-                  ExportLogsServiceRequest::getResourceLogsList,
-                  ExportLogsServiceResponse.getDefaultInstance().toByteArray()));
+                  ExportLogsServiceRequest::getResourceLogsList));
 
           sb.http(0);
           sb.https(0);
@@ -165,15 +162,12 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   private static class CollectorService<T> implements HttpService {
     private final ThrowingExtractor<byte[], T, InvalidProtocolBufferException> parse;
     private final Function<T, List<? extends Object>> getResourceTelemetry;
-    private final byte[] successResponse;
 
     private CollectorService(
         ThrowingExtractor<byte[], T, InvalidProtocolBufferException> parse,
-        Function<T, List<? extends Object>> getResourceTelemetry,
-        byte[] successResponse) {
+        Function<T, List<? extends Object>> getResourceTelemetry) {
       this.parse = parse;
       this.getResourceTelemetry = getResourceTelemetry;
-      this.successResponse = successResponse;
     }
 
     @Override
@@ -198,7 +192,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                         : HttpResponse.of(
                             HttpStatus.OK,
                             MediaType.parse("application/x-protobuf"),
-                            successResponse);
+                            successResponseBytes);
                   });
       return HttpResponse.of(responseFuture);
     }
@@ -239,7 +233,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @BeforeAll
   void setUp() {
-    //
     exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri() + path)
@@ -251,6 +244,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(1))
                     .build())
             .build();
+    successResponseBytes = exporter.exportResponse(0).toByteArray();
 
     // Sanity check that TLS files are in PEM format.
     assertThat(certificate.certificateFile())
@@ -315,7 +309,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithNone() {
     try (TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build()) {
-      assertThat(exporter.unwrap()).extracting("delegate.httpSender.compressor").isNull();
 
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -330,9 +323,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithGzip() {
     try (TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build()) {
-      assertThat(exporter.unwrap())
-          .extracting("delegate.httpSender.compressor")
-          .isEqualTo(GzipCompressor.getInstance());
 
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -347,9 +337,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithSpiCompressor() {
     try (TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("base64").build()) {
-      assertThat(exporter.unwrap())
-          .extracting("delegate.httpSender.compressor")
-          .isEqualTo(Base64Compressor.getInstance());
 
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -563,7 +550,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @SuppressLogger(HttpExporter.class)
   void error() {
     int statusCode = 500;
-    addHttpError(statusCode);
+    addHttpResponse(statusCode);
     CompletableResultCode result =
         exporter
             .export(Collections.singletonList(generateFakeTelemetry()))
@@ -582,10 +569,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   .satisfies(
                       response -> {
                         assertThat(response)
-                            .extracting(HttpSender.Response::statusCode)
+                            .extracting(
+                                io.opentelemetry.sdk.common.export.HttpResponse::getStatusCode)
                             .isEqualTo(statusCode);
 
-                        assertThatCode(response::responseBody).doesNotThrowAnyException();
+                        assertThatCode(response::getResponseBody).doesNotThrowAnyException();
                       });
 
               assertThat(ex.getCause()).isNull();
@@ -599,10 +587,120 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void responseBodyBounds() {
+    // We have a 4mb hardcoded response body limit. Responses <= 4mb succeed. Responses >= 4mb
+    // fail. We can't test payloads exactly at 4mb because protobuf message lengths are finicky -
+    // its hard to create a message with an exact size.
+
+    // Body below the limit, succeeds
+    addHttpResponse(200, exporter.exportResponse(100));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isTrue();
+
+    // Body over the limit, fails with RESOURCE_EXHAUSTED
+    addHttpResponse(200, exporter.exportResponse(4 * 1024 * 1024 + 1));
+    result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.HttpExportException.class,
+            ex ->
+                assertThat(ex.getCause())
+                    .isNotNull()
+                    .hasMessageContaining("HTTP response body exceeded limit of"));
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void responseBodyBoundsGzipCompressed() throws IOException {
+    // Verify the body size limit is applied to the decompressed bytes, not the compressed wire
+    // bytes. The compressed body is well below the 4MB limit but decompresses to just over it.
+    byte[] payload = new byte[4 * 1024 * 1024 + 1];
+    ByteArrayOutputStream compressedBaos = new ByteArrayOutputStream();
+    try (GZIPOutputStream gzip = new GZIPOutputStream(compressedBaos)) {
+      gzip.write(payload);
+    }
+    byte[] compressedBody = compressedBaos.toByteArray();
+
+    httpErrors.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.OK)
+                .contentType(MediaType.PLAIN_TEXT_UTF_8)
+                .add("Content-Encoding", "gzip")
+                .build(),
+            HttpData.wrap(compressedBody)));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.HttpExportException.class,
+            ex ->
+                assertThat(ex.getCause())
+                    .isNotNull()
+                    .hasMessageContaining("HTTP response body exceeded limit of"));
+  }
+
+  @Test
+  void identityResponseContentEncoding() {
+    // Server responds with Content-Encoding: identity, which means no encoding. The export should
+    // succeed just like a response with no Content-Encoding header.
+    AbstractMessageLite<?, ?> responseBody = exporter.exportResponse(0);
+    httpErrors.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.OK)
+                .contentType(MediaType.PLAIN_TEXT_UTF_8)
+                .add("Content-Encoding", "identity")
+                .build(),
+            HttpData.wrap(responseBody.toByteArray())));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isTrue();
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void unsupportedResponseContentEncoding() {
+    // Server responds with a Content-Encoding that we don't support. The export should fail
+    // without retry.
+    httpErrors.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.OK)
+                .contentType(MediaType.PLAIN_TEXT_UTF_8)
+                .add("Content-Encoding", "brotli")
+                .build(),
+            HttpData.wrap(new byte[10])));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(attempts).hasValue(1);
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.HttpExportException.class,
+            ex ->
+                assertThat(ex.getCause())
+                    .isNotNull()
+                    .hasMessageContaining("Unsupported Content-Encoding"));
+  }
+
   @ParameterizedTest
   @ValueSource(ints = {429, 502, 503, 504})
   void retryableError(int code) {
-    addHttpError(code);
+    addHttpResponse(code);
 
     assertThat(
             exporter
@@ -617,8 +715,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(HttpExporter.class)
   void retryableError_tooManyAttempts() {
-    addHttpError(502);
-    addHttpError(502);
+    addHttpResponse(502);
+    addHttpResponse(502);
 
     assertThat(
             exporter
@@ -634,7 +732,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @SuppressLogger(HttpExporter.class)
   @ValueSource(ints = {400, 401, 403, 500, 501})
   void nonRetryableError(int code) {
-    addHttpError(code);
+    addHttpResponse(code);
 
     assertThat(
             exporter
@@ -887,7 +985,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       assertThat(classLoaderSpy.getResourcesNames)
           .isEqualTo(
               Collections.singletonList(
-                  "META-INF/services/io.opentelemetry.exporter.internal.http.HttpSenderProvider"));
+                  "META-INF/services/io.opentelemetry.sdk.common.export.HttpSenderProvider"));
     }
   }
 
@@ -1105,7 +1203,13 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .collect(Collectors.toList());
   }
 
-  private static void addHttpError(int code) {
+  private static void addHttpResponse(int code) {
     httpErrors.add(HttpResponse.of(code));
+  }
+
+  private static void addHttpResponse(int code, AbstractMessageLite<?, ?> bodyMessage) {
+    httpErrors.add(
+        HttpResponse.of(
+            HttpStatus.valueOf(code), MediaType.PLAIN_TEXT_UTF_8, bodyMessage.toByteArray()));
   }
 }

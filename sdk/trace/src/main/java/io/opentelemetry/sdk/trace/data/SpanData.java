@@ -8,8 +8,9 @@ package io.opentelemetry.sdk.trace.data;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
+import io.opentelemetry.sdk.common.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import java.util.List;
@@ -158,7 +159,7 @@ public interface SpanData {
    * @deprecated Use {@link #getInstrumentationScopeInfo()}.
    */
   @Deprecated
-  io.opentelemetry.sdk.common.InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
   /**
    * Returns the instrumentation scope specified when creating the tracer which produced this {@code

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.gradle.customchecks;
 
+import static com.google.errorprone.BugPattern.LinkType.NONE;
 import static com.google.errorprone.BugPattern.SeverityLevel.WARNING;
 
 import com.google.errorprone.BugPattern;
@@ -26,7 +27,8 @@ import javax.lang.model.element.Modifier;
             + "\", or \""
             + OtelInternalJavadoc.EXPECTED_INTERNAL_COMMENT_V2
             + "\"",
-    severity = WARNING)
+    severity = WARNING,
+    linkType = NONE)
 public class OtelInternalJavadoc extends BugChecker implements BugChecker.ClassTreeMatcher {
 
   private static final long serialVersionUID = 1L;

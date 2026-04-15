@@ -43,7 +43,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
+import io.opentelemetry.sdk.common.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
@@ -528,6 +528,42 @@ class MetricsRequestMarshalerTest {
                                 new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
                         .setAsDouble(1.5)
                         .build())
+                .build());
+  }
+
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void exponentialHistogramZeroSum(MarshalerSource marshalerSource) {
+    assertThat(
+            toExponentialHistogramDataPoints(
+                marshalerSource,
+                ImmutableList.of(
+                    ImmutableExponentialHistogramPointData.create(
+                        0,
+                        0,
+                        0,
+                        /* hasMin= */ false,
+                        0,
+                        /* hasMax= */ false,
+                        0,
+                        ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
+                        ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
+                        123,
+                        456,
+                        Attributes.empty(),
+                        Collections.emptyList()))))
+        .containsExactly(
+            ExponentialHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .setCount(0)
+                .setScale(0)
+                .setSum(0)
+                .setZeroCount(0)
+                .setPositive(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .setNegative(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
                 .build());
   }
 

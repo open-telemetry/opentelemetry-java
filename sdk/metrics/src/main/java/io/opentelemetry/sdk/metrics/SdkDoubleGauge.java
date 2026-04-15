@@ -29,6 +29,11 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
   }
 
   @Override
+  public boolean isEnabled() {
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
+  }
+
+  @Override
   public void set(double value, Attributes attributes) {
     storage.recordDouble(value, attributes, Context.current());
   }

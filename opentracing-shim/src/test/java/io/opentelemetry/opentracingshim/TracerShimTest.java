@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
@@ -43,8 +44,7 @@ class TracerShimTest {
 
   static final io.opentelemetry.api.trace.Span INVALID_SPAN =
       io.opentelemetry.api.trace.Span.getInvalid();
-  static final io.opentelemetry.api.baggage.Baggage EMPTY_BAGGAGE =
-      io.opentelemetry.api.baggage.Baggage.empty();
+  static final Baggage EMPTY_BAGGAGE = Baggage.empty();
 
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
@@ -84,7 +84,7 @@ class TracerShimTest {
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
 
     try (Scope scope = tracerShim.activateSpan(otSpan)) {
       assertThat(tracerShim.activeSpan()).isNotNull();
@@ -94,13 +94,13 @@ class TracerShimTest {
           .isSameAs(actualSpan);
 
       assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(actualSpan);
-      assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+      assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
     }
 
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
   }
 
   @Test
@@ -108,7 +108,7 @@ class TracerShimTest {
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
 
     Span otSpan = tracerShim.buildSpan("one").start();
     io.opentelemetry.api.trace.Span actualSpan = ((SpanShim) otSpan).getSpan();
@@ -125,7 +125,7 @@ class TracerShimTest {
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
   }
 
   @Test
@@ -135,19 +135,14 @@ class TracerShimTest {
     otSpan.setBaggageItem("hello", "world");
 
     io.opentelemetry.api.trace.Span actualSpan = ((SpanShim) otSpan).getSpan();
-    io.opentelemetry.api.baggage.Baggage actualBaggage =
-        ((SpanContextShim) otSpan.context()).getBaggage();
-    assertThat(
-            io.opentelemetry.api.baggage.Baggage.builder()
-                .put("foo", "bar")
-                .put("hello", "world")
-                .build())
+    Baggage actualBaggage = ((SpanContextShim) otSpan.context()).getBaggage();
+    assertThat(Baggage.builder().put("foo", "bar").put("hello", "world").build())
         .isEqualTo(actualBaggage);
 
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
 
     try (Scope scope = tracerShim.activateSpan(otSpan)) {
       assertThat(tracerShim.activeSpan()).isNotNull();
@@ -157,7 +152,7 @@ class TracerShimTest {
           .isSameAs(actualSpan);
 
       assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(actualSpan);
-      assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(actualBaggage);
+      assertThat(Baggage.current()).isSameAs(actualBaggage);
 
       Span child = tracerShim.buildSpan("child").start();
       assertThat(child.getBaggageItem("foo")).isEqualTo("bar");
@@ -166,7 +161,7 @@ class TracerShimTest {
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
   }
 
   /* A Span should activate its related Baggage, which may mean implicitly
@@ -177,16 +172,12 @@ class TracerShimTest {
     Span otSpan = tracerShim.buildSpan("one").start();
     io.opentelemetry.api.trace.Span actualSpan = ((SpanShim) otSpan).getSpan();
 
-    io.opentelemetry.api.baggage.Baggage otherBaggage =
-        io.opentelemetry.api.baggage.Baggage.builder()
-            .put("foo", "bar")
-            .put("hello", "world")
-            .build();
+    Baggage otherBaggage = Baggage.builder().put("foo", "bar").put("hello", "world").build();
 
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
 
     try (io.opentelemetry.context.Scope scope1 = otherBaggage.makeCurrent()) {
       try (Scope scope2 = tracerShim.activateSpan(otSpan)) {
@@ -197,14 +188,14 @@ class TracerShimTest {
             .isSameAs(actualSpan);
 
         assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(actualSpan);
-        assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+        assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
       }
     }
 
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
   }
 
   /*
@@ -220,7 +211,7 @@ class TracerShimTest {
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
 
     try (Scope scope = tracerShim.activateSpan(otSpan)) {
       assertThat(tracerShim.activeSpan()).isSameAs(tracerShim.activeSpan());
@@ -232,7 +223,7 @@ class TracerShimTest {
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
     assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
-    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+    assertThat(Baggage.current()).isSameAs(EMPTY_BAGGAGE);
   }
 
   /*
@@ -256,8 +247,7 @@ class TracerShimTest {
 
   @Test
   void activeSpan_onlyBaggage() {
-    io.opentelemetry.api.baggage.Baggage baggage =
-        io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
+    Baggage baggage = Baggage.builder().put("foo", "bar").build();
 
     try (io.opentelemetry.context.Scope scope = Context.root().with(baggage).makeCurrent()) {
       Span span = tracerShim.activeSpan();
@@ -349,8 +339,7 @@ class TracerShimTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     tracerShim = new TracerShim(provider, propagator, TextMapPropagator.noop());
 
-    io.opentelemetry.api.baggage.Baggage baggage =
-        io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
+    Baggage baggage = Baggage.builder().put("foo", "bar").build();
     Map<String, String> map = new HashMap<>();
     propagator.inject(Context.root().with(baggage), map, Map::put);
 

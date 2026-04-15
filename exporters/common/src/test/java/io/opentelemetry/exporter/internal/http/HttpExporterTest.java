@@ -8,19 +8,21 @@ package io.opentelemetry.exporter.internal.http;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.internal.ComponentId;
-import io.opentelemetry.sdk.internal.SemConvAttributes;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.export.HttpResponse;
+import io.opentelemetry.sdk.common.export.HttpSender;
+import io.opentelemetry.sdk.common.internal.ComponentId;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.IOException;
+import java.net.URI;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,7 +35,7 @@ class HttpExporterTest {
   void build_NoHttpSenderProvider() {
     assertThatThrownBy(
             () ->
-                new HttpExporterBuilder<>(
+                new HttpExporterBuilder(
                         StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
                         "http://localhost")
                     .build())
@@ -85,17 +87,18 @@ class HttpExporterTest {
       HttpSender mockSender = Mockito.mock(HttpSender.class);
       Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
 
-      HttpExporter<Marshaler> exporter =
-          new HttpExporter<Marshaler>(
+      HttpExporter exporter =
+          new HttpExporter(
               id,
               mockSender,
               () -> meterProvider,
               InternalTelemetryVersion.LATEST,
-              "http://testing:1234");
+              URI.create("http://testing:1234"),
+              false);
 
       doAnswer(
               invoc -> {
-                Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
+                Consumer<HttpResponse> onResponse = invoc.getArgument(1);
 
                 assertThat(inMemoryMetrics.collectAllMetrics())
                     .hasSize(1)
@@ -116,28 +119,28 @@ class HttpExporterTest {
                 return null;
               })
           .when(mockSender)
-          .send(any(), anyInt(), any(), any());
+          .send(any(), any(), any());
 
       exporter.export(mockMarshaller, 42);
 
       doAnswer(
               invoc -> {
-                Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
+                Consumer<HttpResponse> onResponse = invoc.getArgument(1);
                 onResponse.accept(new FakeHttpResponse(404, "Not Found"));
                 return null;
               })
           .when(mockSender)
-          .send(any(), anyInt(), any(), any());
+          .send(any(), any(), any());
       exporter.export(mockMarshaller, 15);
 
       doAnswer(
               invoc -> {
-                Consumer<Throwable> onError = invoc.getArgument(3);
+                Consumer<Throwable> onError = invoc.getArgument(2);
                 onError.accept(new IOException("Computer says no"));
                 return null;
               })
           .when(mockSender)
-          .send(any(), anyInt(), any(), any());
+          .send(any(), any(), any());
       exporter.export(mockMarshaller, 7);
 
       assertThat(inMemoryMetrics.collectAllMetrics())
@@ -210,7 +213,7 @@ class HttpExporterTest {
     }
   }
 
-  private static class FakeHttpResponse implements HttpSender.Response {
+  private static class FakeHttpResponse implements HttpResponse {
 
     final int statusCode;
     final String statusMessage;
@@ -221,17 +224,17 @@ class HttpExporterTest {
     }
 
     @Override
-    public int statusCode() {
+    public int getStatusCode() {
       return statusCode;
     }
 
     @Override
-    public String statusMessage() {
+    public String getStatusMessage() {
       return statusMessage;
     }
 
     @Override
-    public byte[] responseBody() throws IOException {
+    public byte[] getResponseBody() {
       return new byte[0];
     }
   }

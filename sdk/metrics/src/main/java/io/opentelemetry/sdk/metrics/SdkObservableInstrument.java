@@ -12,7 +12,7 @@ import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;

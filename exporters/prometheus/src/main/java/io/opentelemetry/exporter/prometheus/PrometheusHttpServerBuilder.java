@@ -30,7 +30,7 @@ public final class PrometheusHttpServerBuilder {
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
-  @Nullable private Predicate<String> allowedResourceAttributesFilter;
+  private PrometheusMetricReaderBuilder metricReaderBuilder = PrometheusMetricReader.builder();
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
   @Nullable private HttpHandler defaultHandler;
@@ -44,7 +44,7 @@ public final class PrometheusHttpServerBuilder {
     this.host = builder.host;
     this.port = builder.port;
     this.prometheusRegistry = builder.prometheusRegistry;
-    this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
+    this.metricReaderBuilder = new PrometheusMetricReaderBuilder(builder.metricReaderBuilder);
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
     this.defaultAggregationSelector = builder.defaultAggregationSelector;
@@ -74,21 +74,21 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Sets the {@link PrometheusRegistry} to be used for {@link PrometheusHttpServer}. */
-  @SuppressWarnings("UnusedReturnValue")
   public PrometheusHttpServerBuilder setPrometheusRegistry(PrometheusRegistry prometheusRegistry) {
     requireNonNull(prometheusRegistry, "prometheusRegistry");
     this.prometheusRegistry = prometheusRegistry;
     return this;
   }
 
-  /**
-   * Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}.
-   *
-   * @deprecated {@code otel_scope_*} attributes are always generated.
-   */
-  @SuppressWarnings("UnusedReturnValue")
-  @Deprecated
-  public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
+  /** Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}. */
+  public PrometheusHttpServerBuilder setOtelScopeLabelsEnabled(boolean otelScopeLabelsEnabled) {
+    metricReaderBuilder.setOtelScopeLabelsEnabled(otelScopeLabelsEnabled);
+    return this;
+  }
+
+  /** Set if the {@code otel_target_info} metric is generated. Default is {@code true}. */
+  public PrometheusHttpServerBuilder setTargetInfoMetricEnabled(boolean targetInfoMetricEnabled) {
+    metricReaderBuilder.setTargetInfoMetricEnabled(targetInfoMetricEnabled);
     return this;
   }
 
@@ -104,7 +104,8 @@ public final class PrometheusHttpServerBuilder {
    */
   public PrometheusHttpServerBuilder setAllowedResourceAttributesFilter(
       Predicate<String> resourceAttributesFilter) {
-    this.allowedResourceAttributesFilter = requireNonNull(resourceAttributesFilter);
+    requireNonNull(resourceAttributesFilter, "resourceAttributesFilter");
+    metricReaderBuilder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
     return this;
   }
 
@@ -178,10 +179,10 @@ public final class PrometheusHttpServerBuilder {
         port,
         executor,
         prometheusRegistry,
-        allowedResourceAttributesFilter,
         memoryMode,
         defaultHandler,
         defaultAggregationSelector,
-        authenticator);
+        authenticator,
+        metricReaderBuilder.build());
   }
 }

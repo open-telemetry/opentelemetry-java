@@ -9,9 +9,9 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanProcessorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
@@ -19,11 +19,15 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Simple
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorPropertyModel;
+import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -31,9 +35,14 @@ class SpanProcessorFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final DeclarativeConfigContext context =
+  private static final DeclarativeConfigContext context =
       new DeclarativeConfigContext(
-          SpiHelper.create(SpanProcessorFactoryTest.class.getClassLoader()));
+          ComponentLoader.forClassLoader(SpanProcessorFactoryTest.class.getClassLoader()));
+
+  @BeforeEach
+  void setup() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+  }
 
   @Test
   void create_BatchNullExporter() {
@@ -49,13 +58,13 @@ class SpanProcessorFactoryTest {
   @Test
   void create_BatchDefaults() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.trace.export.BatchSpanProcessor expectedProcessor =
-        io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                OtlpHttpSpanExporter.getDefault())
+    BatchSpanProcessor expectedProcessor =
+        BatchSpanProcessor.builder(
+                OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
             .build();
     cleanup.addCloseable(expectedProcessor);
 
-    io.opentelemetry.sdk.trace.SpanProcessor processor =
+    SpanProcessor processor =
         SpanProcessorFactory.getInstance()
             .create(
                 new SpanProcessorModel()
@@ -73,16 +82,16 @@ class SpanProcessorFactoryTest {
   @Test
   void create_BatchConfigured() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.trace.export.BatchSpanProcessor expectedProcessor =
-        io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                OtlpHttpSpanExporter.getDefault())
+    BatchSpanProcessor expectedProcessor =
+        BatchSpanProcessor.builder(
+                OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
             .setScheduleDelay(Duration.ofMillis(1))
             .setMaxExportBatchSize(2)
             .setExporterTimeout(Duration.ofMillis(3))
             .build();
     cleanup.addCloseable(expectedProcessor);
 
-    io.opentelemetry.sdk.trace.SpanProcessor processor =
+    SpanProcessor processor =
         SpanProcessorFactory.getInstance()
             .create(
                 new SpanProcessorModel()
@@ -115,12 +124,12 @@ class SpanProcessorFactoryTest {
   @Test
   void create_SimpleConfigured() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.trace.SpanProcessor expectedProcessor =
-        io.opentelemetry.sdk.trace.export.SimpleSpanProcessor.create(
-            OtlpHttpSpanExporter.getDefault());
+    SpanProcessor expectedProcessor =
+        SimpleSpanProcessor.create(
+            OtlpHttpSpanExporter.builder().setComponentLoader(context).build());
     cleanup.addCloseable(expectedProcessor);
 
-    io.opentelemetry.sdk.trace.SpanProcessor processor =
+    SpanProcessor processor =
         SpanProcessorFactory.getInstance()
             .create(
                 new SpanProcessorModel()
@@ -154,7 +163,7 @@ class SpanProcessorFactoryTest {
 
   @Test
   void create_SpiExporter_Valid() {
-    io.opentelemetry.sdk.trace.SpanProcessor spanProcessor =
+    SpanProcessor spanProcessor =
         SpanProcessorFactory.getInstance()
             .create(
                 new SpanProcessorModel()

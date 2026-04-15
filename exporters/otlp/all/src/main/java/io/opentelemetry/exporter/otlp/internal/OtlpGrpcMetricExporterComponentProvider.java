@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.internal;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_METRICS;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
@@ -48,7 +49,9 @@ public class OtlpGrpcMetricExporterComponentProvider implements ComponentProvide
         builder::setClientTls,
         builder::setRetryPolicy,
         builder::setMemoryMode,
-        /* isHttpProtobuf= */ false);
+        /* isHttpProtobuf= */ false,
+        builder::setInternalTelemetryVersion,
+        () -> builder.setMeterProvider(MeterProvider::noop));
     IncubatingExporterBuilderUtil.configureOtlpAggregationTemporality(
         config, builder::setAggregationTemporalitySelector);
     IncubatingExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(

@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableSpanExporterP
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -37,6 +38,7 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressWarnings("deprecation") // testing deprecated code
 class ConfigurableSpanExporterTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
@@ -149,6 +151,7 @@ class ConfigurableSpanExporterTest {
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", "console,logging")),
             exportersByName,
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
@@ -169,6 +172,7 @@ class ConfigurableSpanExporterTest {
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, ZipkinSpanExporter.builder().build()),
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
@@ -190,6 +194,7 @@ class ConfigurableSpanExporterTest {
                 OtlpGrpcSpanExporter.builder().build(),
                 "zipkin",
                 ZipkinSpanExporter.builder().build()),
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
@@ -232,6 +237,7 @@ class ConfigurableSpanExporterTest {
                 LoggingSpanExporter.create(),
                 "zipkin",
                 ZipkinSpanExporter.builder().build()),
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);

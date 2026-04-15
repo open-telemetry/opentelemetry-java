@@ -81,7 +81,9 @@ public class PropagatorContextInjectBenchmark {
   /** Benchmark for injecting trace context into Jaeger headers. */
   public static class JaegerContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
+    @SuppressWarnings("deprecation")
     private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
+
     private final TextMapSetter<Map<String, String>> setter = Map::put;
 
     @Override

@@ -12,14 +12,14 @@ Usage:
 File yamlConfigFile = new File("/path/to/config.yaml");
 OpenTelemetrySdk openTelemetrySdk;
 try (FileInputStream yamlConfigFileInputStream = new FileInputStream("/path/to/config.yaml")) {
-  openTelemetrySdk = FileConfiguration.parseAndCreate(yamlConfigFileInputStream);
+  openTelemetrySdk = DeclarativeConfiguration.parseAndCreate(yamlConfigFileInputStream);
 }
 // ...proceed with application after successful initialization of OpenTelemetrySdk
 ```
 
 Notes:
 * Environment variable substitution is supported as [defined in the spec](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#environment-variable-substitution)
-* Currently, there is no support for the customization (i.e. `AutoConfigurationCustomizerProvider`) SPIs defined in [opentelemetry-sdk-extension-autoconfigure-spi](../autoconfigure-spi).
+* Customization is limited to customizing the in-memory config model, or exporters. See `DeclarativeConfigurationCustomizer` SPI for details.
 * Custom SDK extension components which reference the [ComponentProvider](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure-spi/src/main/java/io/opentelemetry/sdk/autoconfigure/spi/internal/ComponentProvider.java) SPI can be referenced in declarative configuration. Supported types include:
   * `Resource`
   * `SpanExporter`
@@ -29,9 +29,12 @@ Notes:
   * `LogRecordProcessor`
   * `TextMapPropagator`
   * `Sampler`
-* You can use declarative configuration with [autoconfigure](https://opentelemetry.io/docs/languages/java/configuration/#declarative-configuration) to specify a configuration file via environment variable, e.g. `OTEL_EXPERIMENTAL_CONFIG_FILE=/path/to/config.yaml`.
+* You can use declarative configuration with [autoconfigure](https://opentelemetry.io/docs/languages/java/configuration/#declarative-configuration) to specify a configuration file via environment variable, e.g. `OTEL_CONFIG_FILE=/path/to/config.yaml`.
 
 ## View File Configuration
+
+> [!WARNING]
+> This mechanism is superseded by declarative config, which is now stable (spec and schema at [opentelemetry-configuration](https://github.com/open-telemetry/opentelemetry-configuration)) and will be removed after the 1.62.0 release. Please use [declarative configuration](#declarative-configuration) instead.
 
 Adds support for file based YAML configuration of Metric SDK Views.
 
