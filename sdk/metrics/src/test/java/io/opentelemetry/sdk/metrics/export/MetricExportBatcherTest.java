@@ -116,15 +116,24 @@ class MetricExportBatcherTest {
 
     MetricData firsBatch_m1 = firstBatch.iterator().next();
     assertThat(firsBatch_m1.getType()).isEqualByComparingTo(MetricDataType.DOUBLE_GAUGE);
+    assertThat(firsBatch_m1.getName()).isEqualTo("name");
+    assertThat(firsBatch_m1.getDescription()).isEqualTo("desc");
+    assertThat(firsBatch_m1.getUnit()).isEqualTo("1");
     assertThat(firsBatch_m1.getDoubleGaugeData().getPoints()).containsExactly(p1, p2);
 
     MetricData secondBatch_m1 = secondBatch.iterator().next();
     assertThat(secondBatch_m1.getType()).isEqualByComparingTo(MetricDataType.DOUBLE_GAUGE);
+    assertThat(secondBatch_m1.getName()).isEqualTo("name");
+    assertThat(secondBatch_m1.getDescription()).isEqualTo("desc");
+    assertThat(secondBatch_m1.getUnit()).isEqualTo("1");
     assertThat(secondBatch_m1.getDoubleGaugeData().getPoints()).containsExactly(p3, p4);
 
     // Last batch is partially filled.
     MetricData thirdBatch_m1 = thirdBatch.iterator().next();
     assertThat(thirdBatch_m1.getType()).isEqualByComparingTo(MetricDataType.DOUBLE_GAUGE);
+    assertThat(thirdBatch_m1.getName()).isEqualTo("name");
+    assertThat(thirdBatch_m1.getDescription()).isEqualTo("desc");
+    assertThat(thirdBatch_m1.getUnit()).isEqualTo("1");
     assertThat(thirdBatch_m1.getDoubleGaugeData().getPoints()).containsExactly(p5);
   }
 
@@ -153,6 +162,9 @@ class MetricExportBatcherTest {
 
     MetricData m1 = firstBatch.iterator().next();
     assertThat(m1.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
+    assertThat(m1.getName()).isEqualTo("name");
+    assertThat(m1.getDescription()).isEqualTo("desc");
+    assertThat(m1.getUnit()).isEqualTo("1");
     assertThat(m1.getLongGaugeData().getPoints()).containsExactly(p1, p2, p3);
   }
 
@@ -180,6 +192,9 @@ class MetricExportBatcherTest {
 
     MetricData m1 = firstBatch.iterator().next();
     assertThat(m1.getType()).isEqualTo(MetricDataType.DOUBLE_SUM);
+    assertThat(m1.getName()).isEqualTo("name");
+    assertThat(m1.getDescription()).isEqualTo("desc");
+    assertThat(m1.getUnit()).isEqualTo("1");
     assertThat(m1.getDoubleSumData().getPoints()).containsExactly(p1, p2);
     assertThat(m1.getDoubleSumData().isMonotonic()).isTrue();
     assertThat(m1.getDoubleSumData().getAggregationTemporality())
@@ -189,8 +204,10 @@ class MetricExportBatcherTest {
   @Test
   void batchMetrics_SplitsLongSum_MultipleBatchesCompletelyFilled_MultipleMetrics() {
     MetricExportBatcher batcher = new MetricExportBatcher(1);
-    LongPointData p1 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 1L);
-    LongPointData p2 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 2L);
+    Attributes attrs1 = Attributes.builder().put("key1", "val1").build();
+    Attributes attrs2 = Attributes.builder().put("key2", "val2").build();
+    LongPointData p1 = ImmutableLongPointData.create(1, 2, attrs1, 1L);
+    LongPointData p2 = ImmutableLongPointData.create(1, 2, attrs2, 2L);
 
     MetricData metric1 =
         ImmutableMetricData.createLongSum(
@@ -232,6 +249,7 @@ class MetricExportBatcherTest {
     assertThat(m1.getDescription()).isEqualTo("desc_1");
     assertThat(m1.getUnit()).isEqualTo("1");
     assertThat(m1.getLongSumData().getPoints()).containsExactly(p1);
+    assertThat(m1.getLongSumData().getPoints().iterator().next().getAttributes()).isEqualTo(attrs1);
     assertThat(m1.getLongSumData().isMonotonic()).isFalse();
     assertThat(m1.getLongSumData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.DELTA);
@@ -242,6 +260,7 @@ class MetricExportBatcherTest {
     assertThat(m2.getDescription()).isEqualTo("desc_1");
     assertThat(m2.getUnit()).isEqualTo("1");
     assertThat(m2.getLongSumData().getPoints()).containsExactly(p2);
+    assertThat(m2.getLongSumData().getPoints().iterator().next().getAttributes()).isEqualTo(attrs2);
     assertThat(m2.getLongSumData().isMonotonic()).isFalse();
     assertThat(m2.getLongSumData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.DELTA);
@@ -252,6 +271,7 @@ class MetricExportBatcherTest {
     assertThat(m3.getDescription()).isEqualTo("desc_2");
     assertThat(m3.getUnit()).isEqualTo("1");
     assertThat(m3.getLongSumData().getPoints()).containsExactly(p1);
+    assertThat(m3.getLongSumData().getPoints().iterator().next().getAttributes()).isEqualTo(attrs1);
     assertThat(m3.getLongSumData().isMonotonic()).isFalse();
     assertThat(m3.getLongSumData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.DELTA);
@@ -262,6 +282,7 @@ class MetricExportBatcherTest {
     assertThat(m4.getDescription()).isEqualTo("desc_2");
     assertThat(m4.getUnit()).isEqualTo("1");
     assertThat(m4.getLongSumData().getPoints()).containsExactly(p2);
+    assertThat(m4.getLongSumData().getPoints().iterator().next().getAttributes()).isEqualTo(attrs2);
     assertThat(m4.getLongSumData().isMonotonic()).isFalse();
     assertThat(m4.getLongSumData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.DELTA);
@@ -316,11 +337,17 @@ class MetricExportBatcherTest {
 
     MetricData m1 = firstBatch.iterator().next();
     assertThat(m1.getType()).isEqualTo(MetricDataType.HISTOGRAM);
+    assertThat(m1.getName()).isEqualTo("name");
+    assertThat(m1.getDescription()).isEqualTo("desc");
+    assertThat(m1.getUnit()).isEqualTo("1");
     assertThat(m1.getHistogramData().getPoints()).containsExactly(p1);
     assertThat(m1.getHistogramData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     MetricData m2 = secondBatch.iterator().next();
     assertThat(m2.getType()).isEqualTo(MetricDataType.HISTOGRAM);
+    assertThat(m2.getName()).isEqualTo("name");
+    assertThat(m2.getDescription()).isEqualTo("desc");
+    assertThat(m2.getUnit()).isEqualTo("1");
     assertThat(m2.getHistogramData().getPoints()).containsExactly(p2);
     assertThat(m2.getHistogramData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.CUMULATIVE);
@@ -329,10 +356,14 @@ class MetricExportBatcherTest {
   @Test
   void batchMetrics_MultipleMetricsExactCapacityMatch() {
     MetricExportBatcher batcher = new MetricExportBatcher(4);
-    LongPointData p1 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 1L);
-    LongPointData p2 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 2L);
-    LongPointData p3 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 3L);
-    LongPointData p4 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 4L);
+    Attributes attrs1 = Attributes.builder().put("k", "v1").build();
+    Attributes attrs2 = Attributes.builder().put("k", "v2").build();
+    Attributes attrs3 = Attributes.builder().put("k", "v3").build();
+    Attributes attrs4 = Attributes.builder().put("k", "v4").build();
+    LongPointData p1 = ImmutableLongPointData.create(1, 2, attrs1, 1L);
+    LongPointData p2 = ImmutableLongPointData.create(1, 2, attrs2, 2L);
+    LongPointData p3 = ImmutableLongPointData.create(1, 2, attrs3, 3L);
+    LongPointData p4 = ImmutableLongPointData.create(1, 2, attrs4, 4L);
 
     MetricData m1 =
         ImmutableMetricData.createLongGauge(
@@ -353,7 +384,16 @@ class MetricExportBatcherTest {
 
     Collection<Collection<MetricData>> batches = batcher.batchMetrics(Arrays.asList(m1, m2));
     assertThat(batches).hasSize(1);
-    assertThat(batches.iterator().next()).containsExactly(m1, m2);
+    Collection<MetricData> firstBatch = batches.iterator().next();
+    assertThat(firstBatch).containsExactly(m1, m2);
+
+    MetricData res1 = firstBatch.iterator().next();
+    MetricData res2 = firstBatch.stream().skip(1).findFirst().get();
+
+    assertThat(res1.getName()).isEqualTo("name_1");
+    assertThat(res1.getLongGaugeData().getPoints()).containsExactly(p1, p2);
+    assertThat(res2.getName()).isEqualTo("name_2");
+    assertThat(res2.getLongGaugeData().getPoints()).containsExactly(p3, p4);
   }
 
   @Test
@@ -414,12 +454,18 @@ class MetricExportBatcherTest {
 
     MetricData m1 = firstBatch.iterator().next();
     assertThat(m1.getType()).isEqualTo(MetricDataType.EXPONENTIAL_HISTOGRAM);
+    assertThat(m1.getName()).isEqualTo("name");
+    assertThat(m1.getDescription()).isEqualTo("desc");
+    assertThat(m1.getUnit()).isEqualTo("1");
     assertThat(m1.getExponentialHistogramData().getPoints()).containsExactly(p1);
     assertThat(m1.getExponentialHistogramData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.CUMULATIVE);
 
     MetricData m2 = secondBatch.iterator().next();
     assertThat(m2.getType()).isEqualTo(MetricDataType.EXPONENTIAL_HISTOGRAM);
+    assertThat(m2.getName()).isEqualTo("name");
+    assertThat(m2.getDescription()).isEqualTo("desc");
+    assertThat(m2.getUnit()).isEqualTo("1");
     assertThat(m2.getExponentialHistogramData().getPoints()).containsExactly(p2);
     assertThat(m2.getExponentialHistogramData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.CUMULATIVE);
@@ -467,11 +513,133 @@ class MetricExportBatcherTest {
 
     MetricData m1 = firstBatch.iterator().next();
     assertThat(m1.getType()).isEqualTo(MetricDataType.SUMMARY);
+    assertThat(m1.getName()).isEqualTo("name");
+    assertThat(m1.getDescription()).isEqualTo("desc");
+    assertThat(m1.getUnit()).isEqualTo("1");
     assertThat(m1.getSummaryData().getPoints()).containsExactly(p1);
 
     MetricData m2 = secondBatch.iterator().next();
     assertThat(m2.getType()).isEqualTo(MetricDataType.SUMMARY);
+    assertThat(m2.getName()).isEqualTo("name");
+    assertThat(m2.getDescription()).isEqualTo("desc");
+    assertThat(m2.getUnit()).isEqualTo("1");
     assertThat(m2.getSummaryData().getPoints()).containsExactly(p2);
+  }
+
+  @Test
+  void batchMetrics_SplitsLongGauge_MultipleBatches() {
+    MetricExportBatcher batcher = new MetricExportBatcher(2);
+    LongPointData p1 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 1L);
+    LongPointData p2 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 2L);
+    LongPointData p3 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 3L);
+    LongPointData p4 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 4L);
+    LongPointData p5 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 5L);
+
+    MetricData metric =
+        ImmutableMetricData.createLongGauge(
+            Resource.empty(),
+            InstrumentationScopeInfo.empty(),
+            "name",
+            "desc",
+            "1",
+            ImmutableGaugeData.create(Arrays.asList(p1, p2, p3, p4, p5)));
+
+    Collection<Collection<MetricData>> batches =
+        batcher.batchMetrics(Collections.singletonList(metric));
+    List<Collection<MetricData>> batchesList = new ArrayList<>(batches);
+
+    assertThat(batchesList).hasSize(3);
+    Collection<MetricData> firstBatch = batchesList.get(0);
+    Collection<MetricData> secondBatch = batchesList.get(1);
+    Collection<MetricData> thirdBatch = batchesList.get(2);
+
+    assertThat(firstBatch).hasSize(1);
+    assertThat(secondBatch).hasSize(1);
+    assertThat(thirdBatch).hasSize(1);
+
+    MetricData firstBatch_m1 = firstBatch.iterator().next();
+    assertThat(firstBatch_m1.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
+    assertThat(firstBatch_m1.getName()).isEqualTo("name");
+    assertThat(firstBatch_m1.getDescription()).isEqualTo("desc");
+    assertThat(firstBatch_m1.getUnit()).isEqualTo("1");
+    assertThat(firstBatch_m1.getLongGaugeData().getPoints()).containsExactly(p1, p2);
+
+    MetricData secondBatch_m1 = secondBatch.iterator().next();
+    assertThat(secondBatch_m1.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
+    assertThat(secondBatch_m1.getName()).isEqualTo("name");
+    assertThat(secondBatch_m1.getDescription()).isEqualTo("desc");
+    assertThat(secondBatch_m1.getUnit()).isEqualTo("1");
+    assertThat(secondBatch_m1.getLongGaugeData().getPoints()).containsExactly(p3, p4);
+
+    MetricData thirdBatch_m1 = thirdBatch.iterator().next();
+    assertThat(thirdBatch_m1.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
+    assertThat(thirdBatch_m1.getName()).isEqualTo("name");
+    assertThat(thirdBatch_m1.getDescription()).isEqualTo("desc");
+    assertThat(thirdBatch_m1.getUnit()).isEqualTo("1");
+    assertThat(thirdBatch_m1.getLongGaugeData().getPoints()).containsExactly(p5);
+  }
+
+  @Test
+  void batchMetrics_SplitsDoubleSum_MultipleBatches() {
+    MetricExportBatcher batcher = new MetricExportBatcher(1);
+    DoublePointData p1 = ImmutableDoublePointData.create(1, 2, Attributes.empty(), 1.0);
+    DoublePointData p2 = ImmutableDoublePointData.create(1, 2, Attributes.empty(), 2.0);
+    DoublePointData p3 = ImmutableDoublePointData.create(1, 2, Attributes.empty(), 3.0);
+
+    MetricData metric =
+        ImmutableMetricData.createDoubleSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.empty(),
+            "name",
+            "desc",
+            "1",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Arrays.asList(p1, p2, p3)));
+
+    Collection<Collection<MetricData>> batches =
+        batcher.batchMetrics(Collections.singletonList(metric));
+    List<Collection<MetricData>> batchesList = new ArrayList<>(batches);
+
+    assertThat(batchesList).hasSize(3);
+    Collection<MetricData> firstBatch = batchesList.get(0);
+    Collection<MetricData> secondBatch = batchesList.get(1);
+    Collection<MetricData> thirdBatch = batchesList.get(2);
+
+    assertThat(firstBatch).hasSize(1);
+    assertThat(secondBatch).hasSize(1);
+    assertThat(thirdBatch).hasSize(1);
+
+    MetricData m1 = firstBatch.iterator().next();
+    assertThat(m1.getType()).isEqualTo(MetricDataType.DOUBLE_SUM);
+    assertThat(m1.getName()).isEqualTo("name");
+    assertThat(m1.getDescription()).isEqualTo("desc");
+    assertThat(m1.getUnit()).isEqualTo("1");
+    assertThat(m1.getDoubleSumData().getPoints()).containsExactly(p1);
+    assertThat(m1.getDoubleSumData().isMonotonic()).isTrue();
+    assertThat(m1.getDoubleSumData().getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+
+    MetricData m2 = secondBatch.iterator().next();
+    assertThat(m2.getType()).isEqualTo(MetricDataType.DOUBLE_SUM);
+    assertThat(m2.getName()).isEqualTo("name");
+    assertThat(m2.getDescription()).isEqualTo("desc");
+    assertThat(m2.getUnit()).isEqualTo("1");
+    assertThat(m2.getDoubleSumData().getPoints()).containsExactly(p2);
+    assertThat(m2.getDoubleSumData().isMonotonic()).isTrue();
+    assertThat(m2.getDoubleSumData().getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+
+    MetricData m3 = thirdBatch.iterator().next();
+    assertThat(m3.getType()).isEqualTo(MetricDataType.DOUBLE_SUM);
+    assertThat(m3.getName()).isEqualTo("name");
+    assertThat(m3.getDescription()).isEqualTo("desc");
+    assertThat(m3.getUnit()).isEqualTo("1");
+    assertThat(m3.getDoubleSumData().getPoints()).containsExactly(p3);
+    assertThat(m3.getDoubleSumData().isMonotonic()).isTrue();
+    assertThat(m3.getDoubleSumData().getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
 
   @Test
