@@ -145,24 +145,20 @@ tasks {
           optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
           val importPackages = optionalPackages.joinToString(",") { "$it.*;resolution:=optional;version=\"\${@}\"" } + ",*"
 
-          // Packages accessed via Class.forName that are not on the compile classpath cannot be made
-          // optional via Import-Package (BND cannot resolve version="${@}" for them). Instead, exclude
-          // them from Import-Package and declare them as DynamicImport-Package so OSGi does not
-          // require them at resolution time but can still wire them at runtime when available.
-          val dynamicImportPackages = otelJava.osgiDynamicImportPackages.get()
-          val negations = dynamicImportPackages.joinToString(",") { "!$it" }
-          val fullImportPackages = if (negations.isNotEmpty()) "$negations,$importPackages" else importPackages
+          // Packages not on the compile classpath (e.g. due to circular dependencies) cannot use
+          // version="${@}" since BND cannot resolve the version. Add them as optional imports without
+          // a version constraint; they are listed before the wildcard so BND uses our explicit
+          // instruction rather than auto-detecting them with a version.
+          val unversionedOptionalPackages = otelJava.osgiUnversionedOptionalPackages.get()
+          val unversionedImports = unversionedOptionalPackages.joinToString(",") { "$it.*;resolution:=optional" }
+          val fullImportPackages = if (unversionedImports.isNotEmpty()) "$unversionedImports,$importPackages" else importPackages
 
-          val bndInstructions = mutableMapOf(
+          bnd(mapOf(
             // Exclude shaded internal packages from exports; they are implementation details and
             // should not be part of the OSGi bundle's public API surface.
             "-exportcontents" to "!io.opentelemetry.internal.shaded.*,io.opentelemetry.*",
             "Import-Package" to fullImportPackages
-          )
-          if (dynamicImportPackages.isNotEmpty()) {
-            bndInstructions["DynamicImport-Package"] = dynamicImportPackages.joinToString(",") { "$it.*" }
-          }
-          bnd(bndInstructions)
+          ))
         }
       }
     }

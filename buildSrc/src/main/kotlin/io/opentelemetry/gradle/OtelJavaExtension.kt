@@ -18,11 +18,10 @@ abstract class OtelJavaExtension {
 
     abstract val osgiOptionalPackages: ListProperty<String>
 
-    // Packages accessed via Class.forName that are not on the compile classpath (e.g. due to
-    // circular dependencies). These are excluded from Import-Package and added to
-    // DynamicImport-Package so OSGi does not require them at resolution time, but can still wire
-    // them at runtime when available.
-    abstract val osgiDynamicImportPackages: ListProperty<String>
+    // Packages that should be optional imports but are not on the compile classpath (e.g. due to
+    // circular dependencies), so BND cannot resolve version="${@}" for them. Added to Import-Package
+    // with resolution:=optional but no version constraint.
+    abstract val osgiUnversionedOptionalPackages: ListProperty<String>
 
     abstract val minJavaVersionSupported: Property<JavaVersion>
 
@@ -30,6 +29,6 @@ abstract class OtelJavaExtension {
         minJavaVersionSupported.convention(JavaVersion.VERSION_1_8)
         osgiEnabled.convention(true)
         osgiOptionalPackages.convention(emptyList<String>())
-        osgiDynamicImportPackages.convention(emptyList<String>())
+        osgiUnversionedOptionalPackages.convention(emptyList<String>())
     }
 }
