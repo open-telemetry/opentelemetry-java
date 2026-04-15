@@ -107,31 +107,16 @@ class MetricExportBatcher {
       // Remaining capacity can't hold all points, partition existing metric data object
       List<PointData> originalPointsList = new ArrayList<>(metricData.getData().getPoints());
       Collection<Collection<MetricData>> preparedBatches = new ArrayList<>();
-
-      // Fill current batch buffer completely
-      int pointsToTake = remainingCapacityInCurrentBatch;
       int currentIndex = 0;
 
-      if (pointsToTake > 0) {
-        currentBatch.add(
-            copyMetricData(metricData, originalPointsList, currentIndex, pointsToTake));
-        currentIndex = pointsToTake;
-        preparedBatches.add(currentBatch);
-      }
-
-      // Buffer spillover onto fresh partitions
-      int remainingPoints = totalPointsInMetricData - currentIndex;
-      currentBatch = new ArrayList<>(maxExportBatchSize);
-      remainingCapacityInCurrentBatch = maxExportBatchSize;
-
-      // Iterate extra chunks sized to exact transport constraints
-      while (currentIndex < totalPointsInMetricData && remainingPoints > 0) {
-        pointsToTake = Math.min(remainingPoints, remainingCapacityInCurrentBatch);
+      while (currentIndex < totalPointsInMetricData) {
+        int pointsToTake =
+            Math.min(totalPointsInMetricData - currentIndex, remainingCapacityInCurrentBatch);
         currentBatch.add(
             copyMetricData(metricData, originalPointsList, currentIndex, pointsToTake));
         currentIndex += pointsToTake;
-        remainingPoints -= pointsToTake;
         remainingCapacityInCurrentBatch -= pointsToTake;
+
         if (remainingCapacityInCurrentBatch == 0) {
           preparedBatches.add(currentBatch);
           currentBatch = new ArrayList<>(maxExportBatchSize);
