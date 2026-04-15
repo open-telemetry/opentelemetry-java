@@ -51,8 +51,8 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt64(ValueType.TYPE_STRINDEX, typeStringIndex);
-    output.serializeInt64(ValueType.UNIT_STRINDEX, unitStringIndex);
+    output.serializeInt32(ValueType.TYPE_STRINDEX, typeStringIndex);
+    output.serializeInt32(ValueType.UNIT_STRINDEX, unitStringIndex);
   }
 
   private static int calculateSize(int typeStringIndex, int unitStringIndex) {
