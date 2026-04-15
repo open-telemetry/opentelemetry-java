@@ -12,16 +12,25 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -318,24 +327,6 @@ class MetricExportBatcherTest {
   }
 
   @Test
-  void batchMetrics_EmptyPointsInMetricData() {
-    MetricExportBatcher batcher = new MetricExportBatcher(2);
-    MetricData metric =
-        ImmutableMetricData.createLongGauge(
-            Resource.empty(),
-            InstrumentationScopeInfo.empty(),
-            "name",
-            "desc",
-            "1",
-            ImmutableGaugeData.create(Collections.emptyList()));
-
-    Collection<Collection<MetricData>> batches =
-        batcher.batchMetrics(Collections.singletonList(metric));
-    assertThat(batches).hasSize(1);
-    assertThat(batches.iterator().next()).containsExactly(metric);
-  }
-
-  @Test
   void batchMetrics_MultipleMetricsExactCapacityMatch() {
     MetricExportBatcher batcher = new MetricExportBatcher(4);
     LongPointData p1 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 1L);
@@ -363,5 +354,141 @@ class MetricExportBatcherTest {
     Collection<Collection<MetricData>> batches = batcher.batchMetrics(Arrays.asList(m1, m2));
     assertThat(batches).hasSize(1);
     assertThat(batches.iterator().next()).containsExactly(m1, m2);
+  }
+
+  @Test
+  void batchMetrics_SplitsExponentialHistogram_MultipleBatchesCompletelyFilled_SingleMetric() {
+    MetricExportBatcher batcher = new MetricExportBatcher(1);
+    ExponentialHistogramBuckets buckets =
+        ImmutableExponentialHistogramBuckets.create(
+            /* scale= */ 20, /* offset= */ 0, /* bucketCounts= */ Collections.singletonList(1L));
+    ExponentialHistogramPointData p1 =
+        ImmutableExponentialHistogramPointData.create(
+            /* scale= */ 20,
+            /* sum= */ 1.0,
+            /* zeroCount= */ 0,
+            /* hasMin= */ false,
+            /* min= */ 0.0,
+            /* hasMax= */ false,
+            /* max= */ 0.0,
+            /* positiveBuckets= */ buckets,
+            /* negativeBuckets= */ buckets,
+            /* startEpochNanos= */ 1,
+            /* epochNanos= */ 2,
+            /* attributes= */ Attributes.empty(),
+            /* exemplars= */ Collections.emptyList());
+    ExponentialHistogramPointData p2 =
+        ImmutableExponentialHistogramPointData.create(
+            /* scale= */ 20,
+            /* sum= */ 2.0,
+            /* zeroCount= */ 0,
+            /* hasMin= */ false,
+            /* min= */ 0.0,
+            /* hasMax= */ false,
+            /* max= */ 0.0,
+            /* positiveBuckets= */ buckets,
+            /* negativeBuckets= */ buckets,
+            /* startEpochNanos= */ 1,
+            /* epochNanos= */ 2,
+            /* attributes= */ Attributes.empty(),
+            /* exemplars= */ Collections.emptyList());
+
+    MetricData metric =
+        ImmutableMetricData.createExponentialHistogram(
+            Resource.empty(),
+            InstrumentationScopeInfo.empty(),
+            "name",
+            "desc",
+            "1",
+            ImmutableExponentialHistogramData.create(
+                AggregationTemporality.CUMULATIVE, Arrays.asList(p1, p2)));
+
+    Collection<Collection<MetricData>> batches =
+        batcher.batchMetrics(Collections.singletonList(metric));
+
+    assertThat(batches).hasSize(2);
+    Collection<MetricData> firstBatch = batches.iterator().next();
+    Collection<MetricData> secondBatch = batches.stream().skip(1).findFirst().get();
+    assertThat(firstBatch).hasSize(1);
+    assertThat(secondBatch).hasSize(1);
+
+    MetricData m1 = firstBatch.iterator().next();
+    assertThat(m1.getType()).isEqualTo(MetricDataType.EXPONENTIAL_HISTOGRAM);
+    assertThat(m1.getExponentialHistogramData().getPoints()).containsExactly(p1);
+    assertThat(m1.getExponentialHistogramData().getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+
+    MetricData m2 = secondBatch.iterator().next();
+    assertThat(m2.getType()).isEqualTo(MetricDataType.EXPONENTIAL_HISTOGRAM);
+    assertThat(m2.getExponentialHistogramData().getPoints()).containsExactly(p2);
+    assertThat(m2.getExponentialHistogramData().getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+  }
+
+  @Test
+  void batchMetrics_SplitsSummary_MultipleBatchesCompletelyFilled_SingleMetric() {
+    MetricExportBatcher batcher = new MetricExportBatcher(1);
+    SummaryPointData p1 =
+        ImmutableSummaryPointData.create(
+            /* startEpochNanos= */ 1,
+            /* epochNanos= */ 2,
+            /* attributes= */ Attributes.empty(),
+            /* count= */ 1,
+            /* sum= */ 1.0,
+            /* percentileValues= */ Collections.singletonList(
+                ImmutableValueAtQuantile.create(0.5, 1.0)));
+    SummaryPointData p2 =
+        ImmutableSummaryPointData.create(
+            /* startEpochNanos= */ 1,
+            /* epochNanos= */ 2,
+            /* attributes= */ Attributes.empty(),
+            /* count= */ 1,
+            /* sum= */ 2.0,
+            /* percentileValues= */ Collections.singletonList(
+                ImmutableValueAtQuantile.create(0.5, 2.0)));
+
+    MetricData metric =
+        ImmutableMetricData.createDoubleSummary(
+            Resource.empty(),
+            InstrumentationScopeInfo.empty(),
+            "name",
+            "desc",
+            "1",
+            ImmutableSummaryData.create(Arrays.asList(p1, p2)));
+
+    Collection<Collection<MetricData>> batches =
+        batcher.batchMetrics(Collections.singletonList(metric));
+
+    assertThat(batches).hasSize(2);
+    Collection<MetricData> firstBatch = batches.iterator().next();
+    Collection<MetricData> secondBatch = batches.stream().skip(1).findFirst().get();
+    assertThat(firstBatch).hasSize(1);
+    assertThat(secondBatch).hasSize(1);
+
+    MetricData m1 = firstBatch.iterator().next();
+    assertThat(m1.getType()).isEqualTo(MetricDataType.SUMMARY);
+    assertThat(m1.getSummaryData().getPoints()).containsExactly(p1);
+
+    MetricData m2 = secondBatch.iterator().next();
+    assertThat(m2.getType()).isEqualTo(MetricDataType.SUMMARY);
+    assertThat(m2.getSummaryData().getPoints()).containsExactly(p2);
+  }
+
+  @Test
+  void batchMetrics_EmptyPointsInMetricData() {
+    MetricExportBatcher batcher = new MetricExportBatcher(2);
+    MetricData metric =
+        ImmutableMetricData.createLongGauge(
+            Resource.empty(),
+            InstrumentationScopeInfo.empty(),
+            "name",
+            "desc",
+            "1",
+            ImmutableGaugeData.create(Collections.emptyList()));
+
+    Collection<Collection<MetricData>> batches =
+        batcher.batchMetrics(Collections.singletonList(metric));
+    assertThat(batches).hasSize(1);
+    assertThat(batches.iterator().next()).containsExactly(metric);
   }
 }

@@ -7,16 +7,21 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.data.SummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -81,17 +86,13 @@ class MetricExportBatcher {
   }
 
   /**
-   * Prepares export batches from a single metric data object. This function only
-   * operates on a
-   * single metric data object, fills up the current batch with as many points as
-   * possible from the
-   * metric data object, and then creates new metric data objects for the
-   * remaining points.
+   * Prepares export batches from a single metric data object. This function only operates on a
+   * single metric data object, fills up the current batch with as many points as possible from the
+   * metric data object, and then creates new metric data objects for the remaining points.
    *
-   * @param metricData   The metric data object to split.
+   * @param metricData The metric data object to split.
    * @param currentBatch The current batch of metric data objects.
-   * @return A result containing the prepared batches and the last in-progress
-   *         batch.
+   * @return A result containing the prepared batches and the last in-progress batch.
    */
   private MetricDataSplitOperationResult prepareExportBatches(
       MetricData metricData, Collection<MetricData> currentBatch) {
@@ -221,14 +222,31 @@ class MetricExportBatcher {
             ImmutableHistogramData.create(
                 histogramData.getAggregationTemporality(),
                 (Collection<HistogramPointData>) (Collection<?>) points));
-      default:
-        throw new UnsupportedOperationException("Unsupported metric type: " + original.getType());
+      case EXPONENTIAL_HISTOGRAM:
+        ExponentialHistogramData expHistogramData = original.getExponentialHistogramData();
+        return ImmutableMetricData.createExponentialHistogram(
+            original.getResource(),
+            original.getInstrumentationScopeInfo(),
+            original.getName(),
+            original.getDescription(),
+            original.getUnit(),
+            ImmutableExponentialHistogramData.create(
+                expHistogramData.getAggregationTemporality(),
+                (Collection<ExponentialHistogramPointData>) (Collection<?>) points));
+      case SUMMARY:
+        return ImmutableMetricData.createDoubleSummary(
+            original.getResource(),
+            original.getInstrumentationScopeInfo(),
+            original.getName(),
+            original.getDescription(),
+            original.getUnit(),
+            ImmutableSummaryData.create((Collection<SummaryPointData>) (Collection<?>) points));
     }
+    throw new UnsupportedOperationException("Unsupported metric type: " + original.getType());
   }
 
   /**
-   * A data class to store the result of a split operation performed on a single
-   * {@link MetricData}
+   * A data class to store the result of a split operation performed on a single {@link MetricData}
    * object.
    */
   private static class MetricDataSplitOperationResult {
@@ -238,14 +256,11 @@ class MetricExportBatcher {
     /**
      * Creates a new MetricDataSplitOperationResult.
      *
-     * @param preparedBatches     The collection of prepared batches of metric data
-     *                            for export. Each
-     *                            batch of {@link MetricData} objects is guaranteed
-     *                            to have at most {@link
-     *                            #maxExportBatchSize} points.
-     * @param lastInProgressBatch The last batch that is still in progress. This
-     *                            batch may have less
-     *                            than {@link #maxExportBatchSize} points.
+     * @param preparedBatches The collection of prepared batches of metric data for export. Each
+     *     batch of {@link MetricData} objects is guaranteed to have at most {@link
+     *     #maxExportBatchSize} points.
+     * @param lastInProgressBatch The last batch that is still in progress. This batch may have less
+     *     than {@link #maxExportBatchSize} points.
      */
     MetricDataSplitOperationResult(
         Collection<Collection<MetricData>> preparedBatches,
