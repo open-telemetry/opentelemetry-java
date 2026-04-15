@@ -70,6 +70,9 @@ val resolveTask = tasks.register<Resolve>("resolve") {
   bndrun = file("test.bndrun")
   outputBndrun = layout.buildDirectory.file("test.bndrun")
   bundles = files(sourceSets.test.get().runtimeClasspath, testingBundleTask.get().archiveFile)
+  // The generated output embeds an absolute path to the source bndrun, making it unsafe to share
+  // across machines or worktrees via the build cache.
+  outputs.cacheIf { false }
 }
 
 val testOSGiTask = tasks.register<TestOSGi>("testOSGi") {
