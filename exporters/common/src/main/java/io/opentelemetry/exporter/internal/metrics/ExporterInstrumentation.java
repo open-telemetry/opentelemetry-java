@@ -9,11 +9,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.internal.SemConvAttributes;
-import io.opentelemetry.sdk.internal.Signal;
-import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
+import io.opentelemetry.sdk.common.internal.Signal;
+import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -29,7 +29,7 @@ public class ExporterInstrumentation {
       InternalTelemetryVersion schema,
       Supplier<MeterProvider> meterProviderSupplier,
       StandardComponentId componentId,
-      String endpoint) {
+      URI endpoint) {
 
     Signal signal = componentId.getStandardType().signal();
     switch (schema) {
@@ -52,30 +52,25 @@ public class ExporterInstrumentation {
   }
 
   // visible for testing
-  static Attributes extractServerAttributes(String httpEndpoint) {
-    try {
-      URI parsed = new URI(httpEndpoint);
-      AttributesBuilder builder = Attributes.builder();
-      String host = parsed.getHost();
-      if (host != null) {
-        builder.put(SemConvAttributes.SERVER_ADDRESS, host);
-      }
-      int port = parsed.getPort();
-      if (port == -1) {
-        String scheme = parsed.getScheme();
-        if ("https".equals(scheme)) {
-          port = 443;
-        } else if ("http".equals(scheme)) {
-          port = 80;
-        }
-      }
-      if (port != -1) {
-        builder.put(SemConvAttributes.SERVER_PORT, port);
-      }
-      return builder.build();
-    } catch (URISyntaxException e) {
-      return Attributes.empty();
+  static Attributes extractServerAttributes(URI httpEndpoint) {
+    AttributesBuilder builder = Attributes.builder();
+    String host = httpEndpoint.getHost();
+    if (host != null) {
+      builder.put(SemConvAttributes.SERVER_ADDRESS, host);
     }
+    int port = httpEndpoint.getPort();
+    if (port == -1) {
+      String scheme = httpEndpoint.getScheme();
+      if ("https".equals(scheme)) {
+        port = 443;
+      } else if ("http".equals(scheme)) {
+        port = 80;
+      }
+    }
+    if (port != -1) {
+      builder.put(SemConvAttributes.SERVER_PORT, port);
+    }
+    return builder.build();
   }
 
   public Recording startRecordingExport(int itemCount) {
@@ -90,7 +85,7 @@ public class ExporterInstrumentation {
 
     private final ExporterMetrics.Recording delegate;
     @Nullable private Long httpStatusCode;
-    @Nullable private Long grpcStatusCode;
+    @Nullable private GrpcStatusCode grpcStatusCode;
 
     private Recording(ExporterMetrics.Recording delegate) {
       this.delegate = delegate;
@@ -104,7 +99,7 @@ public class ExporterInstrumentation {
       this.httpStatusCode = httpStatusCode;
     }
 
-    public void setGrpcStatusCode(long grpcStatusCode) {
+    public void setGrpcStatusCode(GrpcStatusCode grpcStatusCode) {
       if (httpStatusCode != null) {
         throw new IllegalStateException(
             "HTTP status code already set, can only set either gRPC or HTTP");
@@ -141,7 +136,7 @@ public class ExporterInstrumentation {
         return Attributes.of(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, httpStatusCode);
       }
       if (grpcStatusCode != null) {
-        return Attributes.of(SemConvAttributes.RPC_GRPC_STATUS_CODE, grpcStatusCode);
+        return Attributes.of(SemConvAttributes.RPC_RESPONSE_STATUS_CODE, grpcStatusCode.name());
       }
       return Attributes.empty();
     }

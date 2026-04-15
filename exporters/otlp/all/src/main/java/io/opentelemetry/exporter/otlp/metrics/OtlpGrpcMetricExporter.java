@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.metrics;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricReusableDataMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -30,8 +29,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
 
-  private final GrpcExporterBuilder<Marshaler> builder;
-  private final GrpcExporter<Marshaler> delegate;
+  private final GrpcExporterBuilder builder;
+  private final GrpcExporter delegate;
   // Visible for testing
   final AggregationTemporalitySelector aggregationTemporalitySelector;
   // Visible for testing
@@ -60,8 +59,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   }
 
   OtlpGrpcMetricExporter(
-      GrpcExporterBuilder<Marshaler> builder,
-      GrpcExporter<Marshaler> delegate,
+      GrpcExporterBuilder builder,
+      GrpcExporter delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector,
       MemoryMode memoryMode) {

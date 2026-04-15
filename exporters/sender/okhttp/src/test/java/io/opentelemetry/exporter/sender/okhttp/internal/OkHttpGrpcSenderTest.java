@@ -9,10 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.Collections;
@@ -50,7 +51,7 @@ class OkHttpGrpcSenderTest {
   @Test
   void isRetryable_NonRetryableGrpcStatus() {
     String nonRetryableGrpcStatus =
-        Integer.valueOf(GrpcExporterUtil.GRPC_STATUS_UNKNOWN).toString(); // INVALID_ARGUMENT
+        Integer.valueOf(GrpcStatusCode.UNKNOWN.getValue()).toString(); // INVALID_ARGUMENT
     Response response = createResponse(503, nonRetryableGrpcStatus, "Non-retryable");
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertFalse(isRetryable);
@@ -78,20 +79,22 @@ class OkHttpGrpcSenderTest {
       port = socket.getLocalPort();
     }
 
-    OkHttpGrpcSender<TestMarshaler> sender =
-        new OkHttpGrpcSender<>(
+    OkHttpGrpcSender sender =
+        new OkHttpGrpcSender(
             "http://localhost:" + port, // Non-existent endpoint to trigger thread creation
             null,
-            Duration.ofSeconds(10).toNanos(),
-            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             null,
             null,
             null,
-            null);
+            null,
+            Long.MAX_VALUE);
 
     CompletableResultCode sendResult = new CompletableResultCode();
-    sender.send(new TestMarshaler(), response -> sendResult.succeed(), error -> sendResult.fail());
+    sender.send(
+        new TestMessageWriter(), response -> sendResult.succeed(), error -> sendResult.fail());
 
     // Give threads time to start
     Thread.sleep(500);
@@ -106,7 +109,7 @@ class OkHttpGrpcSenderTest {
         "CompletableResultCode should not be done immediately - it should wait for thread termination");
 
     // Now wait for it to complete
-    shutdownResult.join(10, java.util.concurrent.TimeUnit.SECONDS);
+    shutdownResult.join(10, TimeUnit.SECONDS);
     assertTrue(shutdownResult.isDone(), "CompletableResultCode should be done after waiting");
     assertTrue(shutdownResult.isSuccess(), "Shutdown should complete successfully");
   }
@@ -120,17 +123,18 @@ class OkHttpGrpcSenderTest {
     ExecutorService customExecutor = Executors.newSingleThreadExecutor();
 
     try {
-      OkHttpGrpcSender<TestMarshaler> sender =
-          new OkHttpGrpcSender<>(
+      OkHttpGrpcSender sender =
+          new OkHttpGrpcSender(
               "http://localhost:8080",
               null,
-              Duration.ofSeconds(10).toNanos(),
-              Duration.ofSeconds(10).toNanos(),
+              Duration.ofSeconds(10),
+              Duration.ofSeconds(10),
               Collections::emptyMap,
               null,
               null,
               null,
-              customExecutor); // Pass custom executor -> managedExecutor = false
+              customExecutor, // Pass custom executor -> managedExecutor = false
+              Long.MAX_VALUE);
 
       CompletableResultCode shutdownResult = sender.shutdown();
 
@@ -157,23 +161,24 @@ class OkHttpGrpcSenderTest {
     }
 
     // Create sender with managed executor (default)
-    OkHttpGrpcSender<TestMarshaler> sender =
-        new OkHttpGrpcSender<>(
+    OkHttpGrpcSender sender =
+        new OkHttpGrpcSender(
             "http://localhost:" + port,
             null,
-            Duration.ofSeconds(10).toNanos(),
-            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             null,
             null,
             null,
-            null); // null executor = managed
+            null, // null executor = managed
+            Long.MAX_VALUE);
 
     // Start multiple requests to ensure threads are busy
     CountDownLatch blockCallbacks = new CountDownLatch(1);
     for (int i = 0; i < 3; i++) {
       sender.send(
-          new TestMarshaler(),
+          new TestMessageWriter(),
           response -> {
             try {
               // Block in callback for longer than the 5-second timeout
@@ -219,20 +224,21 @@ class OkHttpGrpcSenderTest {
       port = socket.getLocalPort();
     }
 
-    OkHttpGrpcSender<TestMarshaler> sender =
-        new OkHttpGrpcSender<>(
+    OkHttpGrpcSender sender =
+        new OkHttpGrpcSender(
             "http://localhost:" + port,
             null,
-            Duration.ofSeconds(10).toNanos(),
-            Duration.ofSeconds(10).toNanos(),
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
             Collections::emptyMap,
             null,
             null,
             null,
-            null);
+            null,
+            Long.MAX_VALUE);
 
     // Trigger some activity
-    sender.send(new TestMarshaler(), response -> {}, error -> {});
+    sender.send(new TestMessageWriter(), response -> {}, error -> {});
 
     // Give threads time to start (same pattern as existing test)
     Thread.sleep(500);
@@ -262,16 +268,15 @@ class OkHttpGrpcSenderTest {
   }
 
   /** Simple test marshaler for testing purposes. */
-  private static class TestMarshaler extends Marshaler {
+  private static class TestMessageWriter implements MessageWriter {
     @Override
-    public int getBinarySerializedSize() {
-      return 0;
+    public void writeMessage(OutputStream output) throws IOException {
+      // Empty writer
     }
 
     @Override
-    protected void writeTo(io.opentelemetry.exporter.internal.marshal.Serializer output)
-        throws IOException {
-      // Empty marshaler
+    public int getContentLength() {
+      return 0;
     }
   }
 }

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // testing deprecated code
 class ZipkinSpanExporterProviderTest {
 
   private static final ZipkinSpanExporterProvider provider = new ZipkinSpanExporterProvider();

@@ -15,12 +15,14 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -32,8 +34,13 @@ import javax.annotation.concurrent.Immutable;
  * Implementation of the Jaeger propagation protocol. See <a
  * href="https://www.jaegertracing.io/docs/client-libraries/#propagation-format">Jaeger Propagation
  * Format</a>.
+ *
+ * @deprecated the jaeger propagation format is deprecated in the OpenTelemetry specification (see
+ *     <a href="https://github.com/open-telemetry/opentelemetry-specification/pull/4827">#4827</a>).
+ *     Please use {@link W3CTraceContextPropagator} instead.
  */
 @Immutable
+@Deprecated
 public final class JaegerPropagator implements TextMapPropagator {
 
   private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());
@@ -150,6 +157,7 @@ public final class JaegerPropagator implements TextMapPropagator {
     return "JaegerPropagator";
   }
 
+  @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   private static <C> SpanContext getSpanContextFromHeader(
       @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
@@ -162,7 +170,7 @@ public final class JaegerPropagator implements TextMapPropagator {
     if (value.lastIndexOf(PROPAGATION_HEADER_DELIMITER) == -1) {
       try {
         // the propagation value
-        value = URLDecoder.decode(value, "UTF-8");
+        value = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException e) {
         logger.fine(
             "Error decoding '"

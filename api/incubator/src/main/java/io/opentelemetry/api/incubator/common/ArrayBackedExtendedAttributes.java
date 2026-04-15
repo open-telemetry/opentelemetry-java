@@ -18,6 +18,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+@SuppressWarnings("deprecation")
 @Immutable
 final class ArrayBackedExtendedAttributes
     extends ImmutableKeyValuePairs<ExtendedAttributeKey<?>, Object> implements ExtendedAttributes {
@@ -119,7 +120,7 @@ final class ArrayBackedExtendedAttributes
     return null;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "deprecation"}) // deprecation: EXTENDED_ATTRIBUTES
   @Nullable
   private static Value<?> asValue(ExtendedAttributeType type, Object value) {
     switch (type) {

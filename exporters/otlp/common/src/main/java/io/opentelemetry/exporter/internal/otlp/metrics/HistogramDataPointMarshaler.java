@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.HistogramDataPoint;
-import io.opentelemetry.sdk.internal.PrimitiveLongList;
+import io.opentelemetry.sdk.common.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.io.IOException;
 import java.util.Collection;

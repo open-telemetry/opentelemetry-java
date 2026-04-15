@@ -15,10 +15,11 @@ import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
@@ -28,15 +29,16 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Period
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
-import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -51,7 +53,12 @@ class MetricReaderFactoryTest {
   private final DeclarativeConfigContext context =
       spy(
           new DeclarativeConfigContext(
-              SpiHelper.create(MetricReaderFactoryTest.class.getClassLoader())));
+              ComponentLoader.forClassLoader(getClass().getClassLoader())));
+
+  @BeforeEach
+  void setup() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+  }
 
   @Test
   void create_PeriodicNullExporter() {
@@ -68,9 +75,9 @@ class MetricReaderFactoryTest {
   @Test
   void create_PeriodicDefaults() {
     List<Closeable> closeables = new ArrayList<>();
-    io.opentelemetry.sdk.metrics.export.PeriodicMetricReader expectedReader =
-        io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                OtlpHttpMetricExporter.getDefault())
+    PeriodicMetricReader expectedReader =
+        PeriodicMetricReader.builder(
+                OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
             .build();
     cleanup.addCloseable(expectedReader);
 
@@ -96,8 +103,8 @@ class MetricReaderFactoryTest {
   void create_PeriodicConfigured() {
     List<Closeable> closeables = new ArrayList<>();
     MetricReader expectedReader =
-        io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                OtlpHttpMetricExporter.getDefault())
+        PeriodicMetricReader.builder(
+                OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
             .setInterval(Duration.ofMillis(1))
             .build();
     cleanup.addCloseable(expectedReader);
@@ -153,7 +160,7 @@ class MetricReaderFactoryTest {
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
     assertThat(readerAndCardinalityLimits.getCardinalityLimitsSelector()).isNull();
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
-    verify(context).loadComponent(eq(MetricReader.class), eq("prometheus/development"), any());
+    verify(context).loadComponent(eq(MetricReader.class), any(ConfigKeyValue.class));
   }
 
   @Test
@@ -189,11 +196,12 @@ class MetricReaderFactoryTest {
                                                 new IncludeExcludeModel()
                                                     .withIncluded(singletonList("foo"))
                                                     .withExcluded(singletonList("bar")))
-                                            .withWithoutScopeInfo(true)
+                                            .withWithoutScopeInfo(false)
+                                            .withWithoutTargetInfoDevelopment(false)
                                             .withTranslationStrategy(
                                                 ExperimentalPrometheusMetricExporterModel
                                                     .ExperimentalPrometheusTranslationStrategy
-                                                    .UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES)))),
+                                                    .UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES_DEVELOPMENT)))),
                 context);
     MetricReader reader = readerAndCardinalityLimits.getMetricReader();
     cleanup.addCloseable(reader);
@@ -206,7 +214,7 @@ class MetricReaderFactoryTest {
                 .getCardinalityLimit(InstrumentType.COUNTER))
         .isEqualTo(100);
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
-    verify(context).loadComponent(eq(MetricReader.class), eq("prometheus/development"), any());
+    verify(context).loadComponent(eq(MetricReader.class), any(ConfigKeyValue.class));
   }
 
   @Test
@@ -228,7 +236,7 @@ class MetricReaderFactoryTest {
                                     .withExporter(new PullMetricExporterModel())),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage("prometheus is the only currently supported pull reader");
+        .hasMessage("metric reader must have exactly one entry but has 0");
   }
 
   /**

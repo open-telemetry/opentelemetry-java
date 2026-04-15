@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.otlp.internal.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.exporter.otlp.profiles.ProfileData;
-import io.opentelemetry.exporter.otlp.profiles.ProfileDictionaryData;
+import io.opentelemetry.exporter.otlp.profiles.ProfilesDictionaryData;
 import io.opentelemetry.exporter.otlp.profiles.SampleData;
 import io.opentelemetry.exporter.otlp.profiles.ValueTypeData;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -36,35 +36,33 @@ public abstract class ImmutableProfileData implements ProfileData {
   public static ProfileData create(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      ProfileDictionaryData profileDictionaryData,
+      ProfilesDictionaryData profilesDictionaryData,
       ValueTypeData sampleType,
       List<SampleData> samples,
       long timeNanos,
       long durationNanos,
       ValueTypeData periodType,
       long period,
-      List<Integer> commentStrIndices,
       String profileId,
-      List<Integer> attributeIndices,
       int droppedAttributesCount,
       String originalPayloadFormat,
-      ByteBuffer originalPayload) {
+      ByteBuffer originalPayload,
+      List<Integer> attributeIndices) {
     return new AutoValue_ImmutableProfileData(
         resource,
         instrumentationScopeInfo,
-        profileDictionaryData,
+        profilesDictionaryData,
         sampleType,
         samples,
         timeNanos,
         durationNanos,
         periodType,
         period,
-        commentStrIndices,
         profileId,
-        attributeIndices,
         droppedAttributesCount,
         originalPayloadFormat,
-        originalPayload);
+        originalPayload,
+        attributeIndices);
   }
 
   ImmutableProfileData() {}

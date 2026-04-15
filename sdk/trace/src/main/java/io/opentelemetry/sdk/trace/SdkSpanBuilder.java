@@ -16,13 +16,15 @@ import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.AttributeUtil;
-import io.opentelemetry.sdk.internal.AttributesMap;
+import io.opentelemetry.sdk.common.internal.AttributeUtil;
+import io.opentelemetry.sdk.common.internal.AttributesMap;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -34,6 +36,14 @@ import javax.annotation.Nullable;
 
 /** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
 class SdkSpanBuilder implements SpanBuilder {
+
+  private static final Span RANDOM_TRACE_ID_PRIMORDIAL_SPAN =
+      Span.wrap(
+          SpanContext.create(
+              TraceId.getInvalid(),
+              SpanId.getInvalid(),
+              TraceFlags.builder().setRandomTraceId(true).build(),
+              TraceState.getDefault()));
 
   private final String spanName;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -126,7 +136,7 @@ class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, String value) {
+  public SpanBuilder setAttribute(String key, @Nullable String value) {
     return setAttribute(stringKey(key), value);
   }
 
@@ -146,7 +156,7 @@ class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public <T> SpanBuilder setAttribute(AttributeKey<T> key, T value) {
+  public <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -170,14 +180,25 @@ class SdkSpanBuilder implements SpanBuilder {
     Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
+    boolean isTraceIdRandom;
     IdGenerator idGenerator = tracerSharedState.getIdGenerator();
     String spanId = idGenerator.generateSpanId();
+
+    Context parentContextForSampler = parentContext;
     if (!parentSpanContext.isValid()) {
       // New root span.
       traceId = idGenerator.generateTraceId();
+      if (idGenerator.generatesRandomTraceIds()) {
+        isTraceIdRandom = true;
+        // Replace parentContext for sampling with one with RANDOM_TRACE_ID bit set
+        parentContextForSampler = parentContext.with(RANDOM_TRACE_ID_PRIMORDIAL_SPAN);
+      } else {
+        isTraceIdRandom = false;
+      }
     } else {
       // New child span.
       traceId = parentSpanContext.getTraceId();
+      isTraceIdRandom = parentSpanContext.getTraceFlags().isTraceIdRandom();
     }
     List<LinkData> currentLinks = links;
     List<LinkData> immutableLinks =
@@ -190,7 +211,12 @@ class SdkSpanBuilder implements SpanBuilder {
         tracerSharedState
             .getSampler()
             .shouldSample(
-                parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
+                parentContextForSampler,
+                traceId,
+                spanName,
+                spanKind,
+                immutableAttributes,
+                immutableLinks);
     SamplingDecision samplingDecision = samplingResult.getDecision();
 
     TraceState samplingResultTraceState =
@@ -199,7 +225,10 @@ class SdkSpanBuilder implements SpanBuilder {
         ImmutableSpanContext.create(
             traceId,
             spanId,
-            isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
+            TraceFlags.builder()
+                .setSampled(isSampled(samplingDecision))
+                .setRandomTraceId(isTraceIdRandom)
+                .build(),
             samplingResultTraceState,
             /* remote= */ false,
             tracerSharedState.isIdGeneratorSafeToSkipIdValidation());

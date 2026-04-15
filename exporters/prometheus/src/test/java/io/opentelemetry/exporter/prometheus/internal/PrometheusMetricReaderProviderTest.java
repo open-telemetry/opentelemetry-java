@@ -59,7 +59,7 @@ class PrometheusMetricReaderProviderTest {
           .extracting("server", as(InstanceOfAssertFactories.type(HttpServer.class)))
           .satisfies(
               server -> {
-                assertThat(server.getAddress().getHostName()).isEqualTo("0:0:0:0:0:0:0:0");
+                assertThat(server.getAddress().getAddress().isAnyLocalAddress()).isTrue();
                 assertThat(server.getAddress().getPort()).isEqualTo(9464);
               });
       assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.REUSABLE_DATA);

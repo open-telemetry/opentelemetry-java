@@ -12,13 +12,14 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ComponentRegistry;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ComponentRegistry;
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
@@ -28,6 +29,8 @@ import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,7 +72,6 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       Resource resource,
       ExemplarFilterInternal exemplarFilter,
       ScopeConfigurator<MeterConfig> meterConfigurator) {
-    long startEpochNanos = clock.now();
     this.registeredViews = registeredViews;
     this.registeredReaders =
         metricReaders.entrySet().stream()
@@ -80,8 +82,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
                         ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
             .collect(toList());
     this.metricProducers = metricProducers;
-    this.sharedState =
-        MeterProviderSharedState.create(clock, resource, exemplarFilter, startEpochNanos);
+    this.sharedState = MeterProviderSharedState.create(clock, resource, exemplarFilter);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->
@@ -94,10 +95,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     for (RegisteredReader registeredReader : registeredReaders) {
       List<MetricProducer> readerMetricProducers = new ArrayList<>(metricProducers);
       readerMetricProducers.add(new LeasedMetricProducer(registry, sharedState, registeredReader));
-      registeredReader
-          .getReader()
-          .register(new SdkCollectionRegistration(readerMetricProducers, sharedState));
-      registeredReader.setLastCollectEpochNanos(startEpochNanos);
+      MetricReader reader = registeredReader.getReader();
+      reader.register(new SdkCollectionRegistration(readerMetricProducers, sharedState));
+      if (reader instanceof PeriodicMetricReader) {
+        setReaderMeterProvider((PeriodicMetricReader) reader, this);
+      }
     }
   }
 
@@ -193,6 +195,18 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
         + ", meterConfigurator="
         + meterConfigurator
         + "}";
+  }
+
+  private static void setReaderMeterProvider(
+      PeriodicMetricReader metricReader, SdkMeterProvider meterProvider) {
+    try {
+      Method method =
+          PeriodicMetricReader.class.getDeclaredMethod("setMeterProvider", MeterProvider.class);
+      method.setAccessible(true);
+      method.invoke(metricReader, meterProvider);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException("Error calling setMeterProvider on PeriodicMetricReader", e);
+    }
   }
 
   /** Helper class to expose registered metric exports. */

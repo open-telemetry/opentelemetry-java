@@ -13,11 +13,13 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 
 /**
- * {@link SpanExporter} SPI implementation for {@link ZipkinSpanExporter}.
+ * {@link SpanExporter} SPI implementation for {@link
+ * io.opentelemetry.exporter.zipkin.ZipkinSpanExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@SuppressWarnings("deprecation")
 public class ZipkinSpanExporterProvider implements ConfigurableSpanExporterProvider {
   @Override
   public String getName() {

@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
 import static io.opentelemetry.sdk.metrics.internal.MeterConfig.defaultConfig;
 import static io.opentelemetry.sdk.metrics.internal.MeterConfig.disabled;
 import static io.opentelemetry.sdk.metrics.internal.MeterConfig.enabled;
@@ -23,7 +23,7 @@ import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;

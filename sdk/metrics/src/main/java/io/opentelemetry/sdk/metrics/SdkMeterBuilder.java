@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
-import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.common.internal.ComponentRegistry;
 import javax.annotation.Nullable;
 
 class SdkMeterBuilder implements MeterBuilder {

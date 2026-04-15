@@ -39,9 +39,49 @@
                     "exemplars": [],
                     "attributes": [
                       {
+                        "key": "bytes",
+                        "value": {
+                          "bytesValue": "AQID"
+                        }
+                      },
+                      {
                         "key": "cat",
                         "value": {
                           "stringValue": "meow"
+                        }
+                      },
+                      {
+                        "key": "empty",
+                        "value": {}
+                      },
+                      {
+                        "key": "heterogeneousArray",
+                        "value": {
+                          "arrayValue": {
+                            "values": [
+                              {
+                                "stringValue": "string"
+                              },
+                              {
+                                "intValue": "123"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "key": "map",
+                        "value": {
+                          "kvlistValue": {
+                            "values": [
+                              {
+                                "key": "nested",
+                                "value": {
+                                  "stringValue": "value"
+                                }
+                              }
+                            ]
+                          }
                         }
                       }
                     ]

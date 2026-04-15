@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 
 /** Extended {@link SpanBuilder} with experimental APIs. */
 public interface ExtendedSpanBuilder extends SpanBuilder {
@@ -109,7 +110,7 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
 
   /** {@inheritDoc} */
   @Override
-  ExtendedSpanBuilder setAttribute(String key, String value);
+  ExtendedSpanBuilder setAttribute(String key, @Nullable String value);
 
   /** {@inheritDoc} */
   @Override
@@ -125,7 +126,7 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
 
   /** {@inheritDoc} */
   @Override
-  <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value);
+  <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value);
 
   /** {@inheritDoc} */
   @Override

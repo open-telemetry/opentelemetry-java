@@ -35,13 +35,16 @@ public abstract class AggregatorHandle<T extends PointData> {
   private static final String UNSUPPORTED_DOUBLE_MESSAGE =
       "This aggregator does not support double values.";
 
+  private final long creationEpochNanos;
   // A reservoir of sampled exemplars for this time period.
   @Nullable private final DoubleExemplarReservoir doubleReservoirFactory;
   @Nullable private final LongExemplarReservoir longReservoirFactory;
   private final boolean isDoubleType;
   private volatile boolean valuesRecorded = false;
 
-  protected AggregatorHandle(ExemplarReservoirFactory reservoirFactory, boolean isDoubleType) {
+  protected AggregatorHandle(
+      long creationEpochNanos, ExemplarReservoirFactory reservoirFactory, boolean isDoubleType) {
+    this.creationEpochNanos = creationEpochNanos;
     this.isDoubleType = isDoubleType;
     if (isDoubleType) {
       this.doubleReservoirFactory = reservoirFactory.createDoubleExemplarReservoir();
@@ -144,5 +147,23 @@ public abstract class AggregatorHandle<T extends PointData> {
       throw new UnsupportedOperationException(message);
     }
     return value;
+  }
+
+  /**
+   * Returns the epoch timestamp (nanos) at which this handle was created.
+   *
+   * <p>For cumulative synchronous instruments, this is the time of the first measurement for the
+   * series and is used as {@link PointData#getStartEpochNanos()}.
+   *
+   * <p>For cumulative asynchronous instruments, this is either the instrument creation time (if the
+   * series first appeared during the first collection cycle) or the preceding collection interval's
+   * timestamp (if the series appeared in a later cycle), and is used as {@link
+   * PointData#getStartEpochNanos()}.
+   *
+   * <p>Not used for delta instruments; their start epoch is computed directly from the reader's
+   * last collection time or instrument creation time.
+   */
+  public long getCreationEpochNanos() {
+    return creationEpochNanos;
   }
 }

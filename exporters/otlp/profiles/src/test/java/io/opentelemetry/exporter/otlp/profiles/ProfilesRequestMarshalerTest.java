@@ -21,7 +21,7 @@ import io.opentelemetry.exporter.otlp.internal.data.ImmutableLinkData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLocationData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableMappingData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileData;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileDictionaryData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfilesDictionaryData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableSampleData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableStackData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableValueTypeData;
@@ -337,7 +337,7 @@ public class ProfilesRequestMarshalerTest {
         ImmutableProfileData.create(
             Resource.create(Attributes.empty()),
             InstrumentationScopeInfo.create("testscope"),
-            ImmutableProfileDictionaryData.create(
+            ImmutableProfilesDictionaryData.create(
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
@@ -351,12 +351,11 @@ public class ProfilesRequestMarshalerTest {
             6L,
             ImmutableValueTypeData.create(1, 2),
             7L,
-            listOf(8, 9),
             profileId,
-            Collections.emptyList(),
-            3,
+            8,
             "format",
-            ByteBuffer.wrap(new byte[] {4, 5}));
+            ByteBuffer.wrap(new byte[] {4, 5}),
+            Collections.emptyList());
 
     Collection<ProfileData> input = new ArrayList<>();
     input.add(profileContainerData);
@@ -364,14 +363,14 @@ public class ProfilesRequestMarshalerTest {
     Profile profileContainer =
         Profile.newBuilder()
             .setSampleType(ValueType.newBuilder().setTypeStrindex(1).setUnitStrindex(2).build())
-            .setProfileId(ByteString.fromHex(profileId))
-            .setDroppedAttributesCount(3)
-            .setOriginalPayloadFormat("format")
-            .setOriginalPayload(ByteString.copyFrom(new byte[] {4, 5}))
             .setTimeUnixNano(5)
             .setDurationNano(6)
-            .setPeriod(7)
             .setPeriodType(ValueType.newBuilder().setTypeStrindex(1).setUnitStrindex(2).build())
+            .setPeriod(7)
+            .setProfileId(ByteString.fromHex(profileId))
+            .setDroppedAttributesCount(8)
+            .setOriginalPayloadFormat("format")
+            .setOriginalPayload(ByteString.copyFrom(new byte[] {4, 5}))
             .build();
 
     ResourceProfiles builderResult =
@@ -393,14 +392,14 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareSampleMarshaling() {
     SampleData input =
-        ImmutableSampleData.create(1, listOf(3L, 4L), listOf(5, 6), 7, listOf(8L, 9L));
+        ImmutableSampleData.create(1, listOf(2, 3), 4, listOf(5L, 6L), listOf(7L, 8L));
     Sample builderResult =
         Sample.newBuilder()
             .setStackIndex(1)
-            .addAllValues(listOf(3L, 4L))
-            .addAllAttributeIndices(listOf(5, 6))
-            .setLinkIndex(7)
-            .addAllTimestampsUnixNano(listOf(8L, 9L))
+            .addAllAttributeIndices(listOf(2, 3))
+            .setLinkIndex(4)
+            .addAllValues(listOf(5L, 6L))
+            .addAllTimestampsUnixNano(listOf(7L, 8L))
             .build();
 
     Sample roundTripResult = parse(Sample.getDefaultInstance(), SampleMarshaler.create(input));
@@ -410,25 +409,25 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedSampleMarshaling() {
     List<SampleData> inputs = new ArrayList<>();
-    inputs.add(ImmutableSampleData.create(1, listOf(3L, 4L), listOf(5, 6), 7, listOf(8L, 9L)));
+    inputs.add(ImmutableSampleData.create(1, listOf(2, 3), 4, listOf(5L, 6L), listOf(7L, 8L)));
     inputs.add(
-        ImmutableSampleData.create(10, listOf(12L, 13L), listOf(14, 15), 16, listOf(17L, 18L)));
+        ImmutableSampleData.create(11, listOf(12, 13), 14, listOf(15L, 16L), listOf(17L, 18L)));
 
     List<Sample> builderResults = new ArrayList<>();
     builderResults.add(
         Sample.newBuilder()
             .setStackIndex(1)
-            .addAllValues(listOf(3L, 4L))
-            .addAllAttributeIndices(listOf(5, 6))
-            .setLinkIndex(7)
-            .addAllTimestampsUnixNano(listOf(8L, 9L))
+            .addAllAttributeIndices(listOf(2, 3))
+            .setLinkIndex(4)
+            .addAllValues(listOf(5L, 6L))
+            .addAllTimestampsUnixNano(listOf(7L, 8L))
             .build());
     builderResults.add(
         Sample.newBuilder()
-            .setStackIndex(10)
-            .addAllValues(listOf(12L, 13L))
-            .addAllAttributeIndices(listOf(14, 15))
-            .setLinkIndex(16)
+            .setStackIndex(11)
+            .addAllAttributeIndices(listOf(12, 13))
+            .setLinkIndex(14)
+            .addAllValues(listOf(15L, 16L))
             .addAllTimestampsUnixNano(listOf(17L, 18L))
             .build());
 

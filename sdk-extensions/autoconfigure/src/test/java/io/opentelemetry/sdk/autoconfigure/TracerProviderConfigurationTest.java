@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -100,7 +101,7 @@ class TracerProviderConfigurationTest {
   void configureBatchSpanProcessor_empty() {
     try (BatchSpanProcessor processor =
         TracerProviderConfiguration.configureBatchSpanProcessor(
-            EMPTY, mockSpanExporter, MeterProvider.noop())) {
+            EMPTY, mockSpanExporter, InternalTelemetryVersion.LEGACY, MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")
           .satisfies(
@@ -133,6 +134,7 @@ class TracerProviderConfigurationTest {
         TracerProviderConfiguration.configureBatchSpanProcessor(
             DefaultConfigProperties.createFromMap(properties),
             mockSpanExporter,
+            InternalTelemetryVersion.LEGACY,
             MeterProvider.noop())) {
       assertThat(processor)
           .extracting("worker")

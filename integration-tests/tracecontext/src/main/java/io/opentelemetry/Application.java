@@ -87,7 +87,7 @@ public final class Application {
               .getTextMapPropagator()
               .extract(Context.current(), headers, ArmeriaGetter.INSTANCE);
 
-      for (io.opentelemetry.Request req : requests) {
+      for (Request req : requests) {
         Span span =
             openTelemetry
                 .getTracer("validation-server")

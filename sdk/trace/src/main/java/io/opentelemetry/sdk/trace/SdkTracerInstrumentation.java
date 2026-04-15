@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
-import static io.opentelemetry.sdk.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN;
+import static io.opentelemetry.sdk.common.internal.SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;

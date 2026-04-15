@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.compression;
 
+import io.opentelemetry.sdk.common.export.Compressor;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.GZIPOutputStream;
@@ -17,13 +18,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public final class GzipCompressor implements Compressor {
 
-  private static final GzipCompressor INSTANCE = new GzipCompressor();
-
-  private GzipCompressor() {}
-
-  public static GzipCompressor getInstance() {
-    return INSTANCE;
-  }
+  public GzipCompressor() {}
 
   @Override
   public String getEncoding() {

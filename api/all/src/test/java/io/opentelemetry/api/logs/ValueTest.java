@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ValueTest {
 
@@ -179,11 +180,11 @@ class ValueTest {
         // heterogeneous array
         arguments(
             Value.of(Value.of("str"), Value.of(true), Value.of(1), Value.of(1.1)),
-            "[str, true, 1, 1.1]"),
+            "[\"str\",true,1,1.1]"),
         // key value list from KeyValue array
         arguments(
             Value.of(KeyValue.of("key1", Value.of("val1")), KeyValue.of("key2", Value.of(2))),
-            "[key1=val1, key2=2]"),
+            "{\"key1\":\"val1\",\"key2\":2}"),
         // key value list from map
         arguments(
             Value.of(
@@ -193,23 +194,29 @@ class ValueTest {
                     put("key2", Value.of(2));
                   }
                 }),
-            "[key1=val1, key2=2]"),
+            "{\"key1\":\"val1\",\"key2\":2}"),
         // map of map
         arguments(
             Value.of(
                 Collections.singletonMap(
                     "child", Value.of(Collections.singletonMap("grandchild", Value.of("str"))))),
-            "[child=[grandchild=str]]"),
+            "{\"child\":{\"grandchild\":\"str\"}}"),
         // bytes
         arguments(Value.of("hello world".getBytes(StandardCharsets.UTF_8)), "aGVsbG8gd29ybGQ="));
   }
 
-  @Test
-  void valueByteAsString() {
-    // TODO: add more test cases
-    String str = "hello world";
-    String base64Encoded = Value.of(str.getBytes(StandardCharsets.UTF_8)).asString();
-    byte[] decodedBytes = Base64.getDecoder().decode(base64Encoded);
-    assertThat(new String(decodedBytes, StandardCharsets.UTF_8)).isEqualTo(str);
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "standard string",
+        "special characters !@#$%^&*()",
+        "multi\nline\tstring",
+        "",
+        "emoji boundary test 🚀👩‍💻"
+      })
+  void valueByteAsString(String inputStr) {
+    String base64 = Value.of(inputStr.getBytes(StandardCharsets.UTF_8)).asString();
+    byte[] decoded = Base64.getDecoder().decode(base64);
+    assertThat(new String(decoded, StandardCharsets.UTF_8)).isEqualTo(inputStr);
   }
 }

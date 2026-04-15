@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
@@ -55,7 +56,9 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
         // Only add entries which weren't already previously added
         if (propagatorNames.add(propagatorName)) {
           textMapPropagators.add(
-              TextMapPropagatorFactory.getPropagator(context, propagatorName)
+              TextMapPropagatorFactory.getPropagator(
+                      context,
+                      ConfigKeyValue.of(propagatorName, DeclarativeConfigProperties.empty()))
                   .getTextMapPropagator());
         }
       }

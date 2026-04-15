@@ -93,7 +93,7 @@ tasks {
   }
 }
 
-// Skip OWASP check
-dependencyCheck {
-  skip = true
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
 }

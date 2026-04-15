@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // testing deprecated code
 class SpanExporterConfigurationTest {
 
   private final SpiHelper spiHelper =

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.LoggerBuilder;
-import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.common.internal.ComponentRegistry;
 import javax.annotation.Nullable;
 
 final class SdkLoggerBuilder implements LoggerBuilder {

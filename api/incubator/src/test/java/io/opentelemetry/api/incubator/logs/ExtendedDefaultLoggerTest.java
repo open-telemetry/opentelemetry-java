@@ -28,18 +28,13 @@ class ExtendedDefaultLoggerTest extends AbstractDefaultLoggerTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // testing deprecated code
   void incubatingApiIsLoaded() {
     Logger logger = LoggerProvider.noop().get("test");
+    assertThat(logger.isEnabled(Severity.ERROR, Context.current())).isFalse();
+    assertThat(logger.isEnabled(Severity.ERROR)).isFalse();
 
-    assertThat(logger)
-        .isInstanceOfSatisfying(
-            ExtendedLogger.class,
-            extendedLogger -> {
-              assertThat(extendedLogger.isEnabled(Severity.ERROR, Context.current())).isFalse();
-              assertThat(extendedLogger.isEnabled(Severity.ERROR)).isFalse();
-              assertThat(extendedLogger.isEnabled()).isFalse();
-            });
+    assertThat(logger).isInstanceOf(ExtendedLogger.class);
+    assertThat(logger.isEnabled(Severity.ERROR, Context.current())).isFalse();
     ExtendedLogRecordBuilder builder = (ExtendedLogRecordBuilder) logger.logRecordBuilder();
     assertThat(builder).isInstanceOf(ExtendedLogRecordBuilder.class);
     assertThat(builder.setBody(Value.of(0))).isSameAs(builder);

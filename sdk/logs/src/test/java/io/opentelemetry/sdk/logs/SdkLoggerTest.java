@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -19,6 +20,8 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
@@ -87,6 +90,10 @@ class SdkLoggerTest {
                 .put(booleanArrayKey("booleanArray"), Arrays.asList(true, false))
                 .put(longArrayKey("longArray"), Arrays.asList(1L, 2L))
                 .put(doubleArrayKey("doubleArray"), Arrays.asList(1.0, 2.0))
+                .put(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+                .put(valueKey("map"), Value.of(KeyValue.of("nested", Value.of("value"))))
+                .put(valueKey("heterogeneousArray"), Value.of(Value.of("string"), Value.of(123L)))
+                .put(valueKey("empty"), Value.empty())
                 .build())
         .emit();
 
@@ -100,7 +107,11 @@ class SdkLoggerTest {
         .containsEntry("stringArray", strVal, strVal)
         .containsEntry("booleanArray", true, false)
         .containsEntry("longArray", 1L, 2L)
-        .containsEntry("doubleArray", 1.0, 2.0);
+        .containsEntry("doubleArray", 1.0, 2.0)
+        .containsEntry(valueKey("bytes"), Value.of(new byte[] {1, 2, 3}))
+        .containsEntry(valueKey("map"), Value.of(KeyValue.of("nested", Value.of("value"))))
+        .containsEntry(valueKey("heterogeneousArray"), Value.of(Value.of("string"), Value.of(123L)))
+        .containsEntry(valueKey("empty"), Value.empty());
   }
 
   @Test

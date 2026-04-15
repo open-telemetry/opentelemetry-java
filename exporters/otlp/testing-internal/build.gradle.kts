@@ -30,6 +30,7 @@ dependencies {
   implementation("com.squareup.okhttp3:okhttp")
   implementation("org.junit.jupiter:junit-jupiter-params")
 
+  implementation("com.linecorp.armeria:armeria-grpc")
   implementation("com.linecorp.armeria:armeria-grpc-protocol")
   implementation("com.linecorp.armeria:armeria-junit5")
   implementation("io.github.netmikey.logunit:logunit-jul")
@@ -37,7 +38,7 @@ dependencies {
   implementation("org.mock-server:mockserver-netty")
 }
 
-// Skip OWASP dependencyCheck task on test module
-dependencyCheck {
-  skip = true
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
 }

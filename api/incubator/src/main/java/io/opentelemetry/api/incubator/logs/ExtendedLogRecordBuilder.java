@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** Extended {@link LogRecordBuilder} with experimental APIs. */
+@SuppressWarnings("deprecation")
 public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
 
   // keep this class even if it is empty, since experimental methods may be added in the future.
@@ -133,6 +134,7 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    */
   <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value);
 
-  /** Set standard {@code exception.*} attributes based on the {@code throwable}. */
+  /** {@inheritDoc} */
+  @Override
   ExtendedLogRecordBuilder setException(Throwable throwable);
 }

@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -29,30 +28,36 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ResourceFactoryTest {
 
   private final DeclarativeConfigContext context =
-      new DeclarativeConfigContext(SpiHelper.create(ResourceFactoryTest.class.getClassLoader()));
+      new DeclarativeConfigContext(ComponentLoader.forClassLoader(getClass().getClassLoader()));
 
-  @Test
-  void create() {
-    assertThat(
-            ResourceFactory.getInstance()
-                .create(
-                    new ResourceModel()
-                        .withAttributes(
-                            Arrays.asList(
-                                new AttributeNameValueModel()
-                                    .withName("service.name")
-                                    .withValue("my-service"),
-                                new AttributeNameValueModel().withName("key").withValue("val"),
-                                new AttributeNameValueModel()
-                                    .withName("shape")
-                                    .withValue("circle"))),
-                    context))
-        .isEqualTo(
+  @ParameterizedTest
+  @MethodSource("createArgs")
+  void create(ResourceModel model, Resource expectedResource) {
+    assertThat(ResourceFactory.getInstance().create(model, context)).isEqualTo(expectedResource);
+  }
+
+  private static Stream<Arguments> createArgs() {
+    return Stream.of(
+        Arguments.of(
+            new ResourceModel()
+                .withAttributes(
+                    Arrays.asList(
+                        new AttributeNameValueModel()
+                            .withName("service.name")
+                            .withValue("my-service"),
+                        new AttributeNameValueModel().withName("key").withValue("val"),
+                        new AttributeNameValueModel().withName("shape").withValue("circle"))),
             Resource.getDefault().toBuilder()
                 .put("shape", "circle")
                 .put("service.name", "my-service")
                 .put("key", "val")
-                .build());
+                .build()),
+        Arguments.of(
+            new ResourceModel().withSchemaUrl("http://foo"),
+            Resource.getDefault().toBuilder().setSchemaUrl("http://foo").build()),
+        Arguments.of(
+            new ResourceModel().withAttributesList("key1=val1,key2=val2"),
+            Resource.getDefault().toBuilder().put("key1", "val1").put("key2", "val2").build()));
   }
 
   @ParameterizedTest
@@ -139,7 +144,11 @@ class ResourceFactoryTest {
         Arguments.of(
             Collections.singletonList("*o*"),
             Collections.singletonList("order"),
-            Resource.getDefault().toBuilder().put("color", "red").build()));
+            Resource.getDefault().toBuilder().put("color", "red").build()),
+        Arguments.of(
+            null,
+            Collections.singletonList("order"),
+            Resource.getDefault().toBuilder().put("color", "red").put("shape", "square").build()));
   }
 
   @ParameterizedTest
@@ -170,13 +179,31 @@ class ResourceFactoryTest {
                                 new ExperimentalResourceDetectorModel()
                                     .withAdditionalProperty("foo", null)
                                     .withAdditionalProperty("bar", null)))),
-            "Invalid configuration - multiple resource detectors set: [foo,bar]"),
+            "resource detector must have exactly one entry but has 2: [foo,bar]"),
         Arguments.of(
             new ResourceModel()
                 .withDetectionDevelopment(
                     new ExperimentalResourceDetectionModel()
                         .withDetectors(
                             Collections.singletonList(new ExperimentalResourceDetectorModel()))),
-            "resource detector must be set"));
+            "resource detector must have exactly one entry but has 0"),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withAttributes(
+                            new IncludeExcludeModel()
+                                .withIncluded(Collections.emptyList())
+                                .withExcluded(null))),
+            "included must not be empty"),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withAttributes(
+                            new IncludeExcludeModel()
+                                .withIncluded(null)
+                                .withExcluded(Collections.emptyList()))),
+            "excluded must not be empty"));
   }
 }

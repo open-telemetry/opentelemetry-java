@@ -31,6 +31,11 @@ final class ValueDouble implements Value<Double> {
 
   @Override
   public String asString() {
+    if (Double.isNaN(value)) {
+      return "NaN";
+    } else if (Double.isInfinite(value)) {
+      return value > 0 ? "Infinity" : "-Infinity";
+    }
     return String.valueOf(value);
   }
 

@@ -40,9 +40,9 @@ public class SampleCompositionBuilder {
       SampleData sampleData =
           ImmutableSampleData.create(
               key.getStackIndex(),
-              value.getValues(),
               key.getAttributeIndices(),
               key.getLinkIndex(),
+              value.getValues(),
               value.getTimestamps());
       result.add(sampleData);
     }

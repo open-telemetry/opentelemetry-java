@@ -10,17 +10,45 @@
   ignorePaths: [], // overwrite default ignore which includes **/test/**
                    // used to update docker image versions used in Java test files
   packageRules: [
+
+    // ── Scheduling & grouping ──────────────────────────────────────────
+
     {
-      // this is to reduce the number of renovate PRs
+      // group all patch updates into a single weekly PR
+      groupName: 'all patch versions',
+      matchUpdateTypes: [
+        'patch',
+      ],
+      schedule: [
+        '* 0-7 * * 2', // weekly, before 8am on Tuesday
+      ],
+    },
+    {
+      // group GitHub Actions and dockerfile updates into a single weekly PR
+      // (must be after patch rule so that it wins for GH Action patches)
       matchManagers: [
         'github-actions',
         'dockerfile',
       ],
-      extends: [
-        'schedule:weekly',
+      schedule: [
+        '* 0-7 * * 2', // weekly, before 8am on Tuesday
       ],
       groupName: 'weekly update',
     },
+    {
+      // keep Kotlin Gradle plugin updates out of the catch-all patch PR because CodeQL often
+      // fails on them, which blocks unrelated patch updates
+      matchDepNames: [
+        'org.jetbrains.kotlin.jvm',
+      ],
+      schedule: [
+        '* 0-7 * * 2', // weekly, before 8am on Tuesday
+      ],
+      groupName: 'kotlin plugin updates',
+    },
+
+    // ── Version constraints ────────────────────────────────────────────
+
     {
       matchPackageNames: [
         'io.opentelemetry.contrib:opentelemetry-aws-xray-propagator',
@@ -34,6 +62,19 @@
       ignoreUnstable: false,
       allowedVersions: '!/\\-SNAPSHOT$/',
     },
+
+    // ── Package family groups ──────────────────────────────────────────
+
+    {
+      groupName: 'spotless packages',
+      matchPackageNames: [
+        'com.diffplug.spotless',
+        'com.diffplug.spotless:**',
+      ],
+    },
+
+    // ── Disabled updates (Java version compatibility) ──────────────────
+
     {
       // junit 6+ requires Java 17+
       matchPackageNames: [
@@ -95,21 +136,25 @@
       enabled: false,
     },
     {
-      groupName: 'spotless packages',
-      matchPackageNames: [
-        'com.diffplug.spotless',
-        'com.diffplug.spotless:**',
-      ],
+      // equalsverifier v4+ requires Java 17+
+      // https://github.com/jqno/equalsverifier/blob/HEAD/CHANGELOG.md#changed-13
+      matchPackageNames: ['nl.jqno.equalsverifier:equalsverifier'],
+      matchUpdateTypes: ['major'],
+      enabled: false,
     },
-    {
-      // equals verifier v4+ requires java 17+
-      groupName: 'nl.jqno.equalsverifier',
-      matchPackageNames: [ 'equalsverifier'],
-      matchUpdateTypes: [ 'major' ],
-      enabled: false
-    }
   ],
   customManagers: [
+    {
+      // keep SHA-pinned raw.githubusercontent.com URLs in mise.toml up to date
+      customType: 'regex',
+      datasourceTemplate: 'github-tags',
+      managerFilePatterns: [
+        '/^mise\\.toml$/',
+      ],
+      matchStrings: [
+        'https://raw\\.githubusercontent\\.com/(?<depName>[^/]+/[^/]+)/(?<currentDigest>[a-f0-9]{40})/.*#\\s*(?<currentValue>v\\S+)',
+      ],
+    },
     {
       customType: 'regex',
       datasourceTemplate: 'java-version',

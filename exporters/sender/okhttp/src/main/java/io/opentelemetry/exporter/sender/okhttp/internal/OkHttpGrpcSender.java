@@ -25,12 +25,12 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
-import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
-import io.opentelemetry.exporter.internal.grpc.GrpcSender;
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.Compressor;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
+import io.opentelemetry.sdk.common.export.GrpcSender;
+import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -59,6 +59,9 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.GzipSource;
 
 /**
  * A {@link GrpcSender} which uses OkHttp instead of grpc-java.
@@ -66,7 +69,7 @@ import okhttp3.Response;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T> {
+public final class OkHttpGrpcSender implements GrpcSender {
 
   private static final Logger logger = Logger.getLogger(OkHttpGrpcSender.class.getName());
 
@@ -76,25 +79,25 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
-  private final Supplier<Map<String, List<String>>> headersSupplier;
   @Nullable private final Compressor compressor;
+  private final Supplier<Map<String, List<String>>> headersSupplier;
+  private final long maxResponseBodySize;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   @SuppressWarnings("TooManyParameters")
   public OkHttpGrpcSender(
       String endpoint,
       @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectTimeoutNanos,
+      Duration timeout,
+      Duration connectTimeout,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
-      @Nullable ExecutorService executorService) {
-    int callTimeoutMillis =
-        (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
-    int connectTimeoutMillis =
-        (int) Math.min(Duration.ofNanos(connectTimeoutNanos).toMillis(), Integer.MAX_VALUE);
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
+    int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
+    int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
     Dispatcher dispatcher;
     if (executorService == null) {
@@ -127,13 +130,15 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
     }
 
     this.client = clientBuilder.build();
+    this.compressor = compressor;
     this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
-    this.compressor = compressor;
+    this.maxResponseBodySize = maxResponseBodySize;
   }
 
   @Override
-  public void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
+  public void send(
+      MessageWriter messageWriter, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
     Map<String, List<String>> headers = headersSupplier.get();
@@ -142,10 +147,12 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
           (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
     }
     requestBuilder.addHeader("te", "trailers");
+    // Mirror grpc-java's default DecompressorRegistry which advertises identity and gzip.
+    requestBuilder.addHeader("grpc-accept-encoding", "identity,gzip");
     if (compressor != null) {
       requestBuilder.addHeader("grpc-encoding", compressor.getEncoding());
     }
-    RequestBody requestBody = new GrpcRequestBody(request, compressor);
+    RequestBody requestBody = new GrpcRequestBody(messageWriter, compressor);
     requestBuilder.post(requestBody);
 
     InstrumentationUtil.suppressInstrumentation(
@@ -161,31 +168,99 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
 
                       @Override
                       public void onResponse(Call call, Response response) {
-                        // Response body is empty but must be consumed to access trailers.
-                        try {
-                          response.body().bytes();
-                        } catch (IOException e) {
-                          onError.accept(
-                              new RuntimeException("Could not consume server response", e));
-                          return;
-                        }
-
-                        String status = grpcStatus(response);
-
-                        String description = grpcMessage(response);
-                        int statusCode;
-                        try {
-                          statusCode = Integer.parseInt(status);
-                        } catch (NumberFormatException ex) {
-                          statusCode = GrpcExporterUtil.GRPC_STATUS_UNKNOWN;
-                        }
-                        onResponse.accept(GrpcResponse.create(statusCode, description));
+                        handleResponse(response, onResponse);
                       }
                     }));
   }
 
-  @Nullable
-  private static String grpcStatus(Response response) {
+  private void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
+    try (ResponseBody body = response.body()) {
+      // A gRPC message frame has a 5-byte header: 1 compression-flag byte + 4 message-length
+      // bytes. Read the header first so that the size limit applies to the message payload only,
+      // not the framing overhead.
+      boolean compressed;
+      try {
+        compressed = body.source().readByte() != 0;
+        body.source().skip(4); // message length — we bound reads by EOF instead
+      } catch (IOException e) {
+        logger.log(Level.FINE, "Invalid gRPC response frame");
+        onResponse.accept(
+            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
+        return;
+      }
+
+      // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
+      // lets us detect overflow: if the buffer ends up larger than maxResponseBodySize, the body
+      // exceeded the limit. A body exactly at the limit will only fill the buffer to
+      // maxResponseBodySize (EOF is reached before the extra byte is read).
+      // If maxResponseBodySize is Long.MAX_VALUE, adding 1 would overflow. In that case use
+      // Long.MAX_VALUE directly — the overflow check can never trigger for such a large limit.
+      long readUpTo =
+          maxResponseBodySize == Long.MAX_VALUE ? Long.MAX_VALUE : maxResponseBodySize + 1;
+      Buffer wireBuffer = new Buffer();
+      try {
+        while (wireBuffer.size() <= maxResponseBodySize) {
+          long n = body.source().read(wireBuffer, readUpTo - wireBuffer.size());
+          if (n == -1L) {
+            break;
+          }
+        }
+      } catch (IOException e) {
+        logger.log(Level.FINE, "Failed to read response body", e);
+      }
+
+      if (wireBuffer.size() > maxResponseBodySize) {
+        onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+        return;
+      }
+
+      // Must consume body before accessing trailers
+      byte[] bodyBytes = new byte[0];
+      if (!compressed) {
+        bodyBytes = wireBuffer.readByteArray();
+      } else {
+        // Compressed: validate the encoding and decompress with a post-decompression size limit
+        String encoding = response.header("grpc-encoding");
+        if (!"gzip".equalsIgnoreCase(encoding)) {
+          onResponse.accept(responseUnsupportedGrpcEncoding(encoding));
+          return;
+        }
+        try {
+          GzipSource gzipSource = new GzipSource(wireBuffer);
+          Buffer decompressedBuffer = new Buffer();
+          while (decompressedBuffer.size() <= maxResponseBodySize) {
+            long n = gzipSource.read(decompressedBuffer, readUpTo - decompressedBuffer.size());
+            if (n == -1L) {
+              break;
+            }
+          }
+          if (decompressedBuffer.size() > maxResponseBodySize) {
+            onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+            return;
+          }
+          bodyBytes = decompressedBuffer.readByteArray();
+        } catch (IOException e) {
+          logger.log(Level.FINE, "Failed to decompress response body", e);
+        }
+      }
+      onResponse.accept(
+          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes));
+    }
+  }
+
+  private static GrpcResponse responseMessageTooLarge(long maxResponseBodySize) {
+    return ImmutableGrpcResponse.create(
+        GrpcStatusCode.RESOURCE_EXHAUSTED,
+        "gRPC response body exceeded limit of " + maxResponseBodySize + " bytes",
+        new byte[0]);
+  }
+
+  private static GrpcResponse responseUnsupportedGrpcEncoding(@Nullable String encoding) {
+    return ImmutableGrpcResponse.create(
+        GrpcStatusCode.INTERNAL, "Unsupported gRPC message encoding: " + encoding, new byte[0]);
+  }
+
+  private static GrpcStatusCode grpcStatus(Response response) {
     // Status can either be in the headers or trailers depending on error
     String grpcStatus = response.header(GRPC_STATUS);
     if (grpcStatus == null) {
@@ -193,10 +268,17 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
         grpcStatus = response.trailers().get(GRPC_STATUS);
       } catch (IOException e) {
         // Could not read a status, this generally means the HTTP status is the error.
-        return null;
+        return GrpcStatusCode.UNKNOWN;
       }
     }
-    return grpcStatus;
+    if (grpcStatus == null) {
+      return GrpcStatusCode.UNKNOWN;
+    }
+    try {
+      return GrpcStatusCode.fromValue(Integer.parseInt(grpcStatus));
+    } catch (NumberFormatException ex) {
+      return GrpcStatusCode.UNKNOWN;
+    }
   }
 
   private static String grpcMessage(Response response) {

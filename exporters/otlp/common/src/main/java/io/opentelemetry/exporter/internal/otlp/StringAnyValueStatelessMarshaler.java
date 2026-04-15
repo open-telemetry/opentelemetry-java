@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
@@ -26,11 +27,14 @@ final class StringAnyValueStatelessMarshaler implements StatelessMarshaler<Strin
   @Override
   public void writeTo(Serializer output, String value, MarshalerContext context)
       throws IOException {
-    output.serializeStringWithContext(AnyValue.STRING_VALUE, value, context);
+    output.writeStringWithContext(AnyValue.STRING_VALUE, value, context);
   }
 
   @Override
   public int getBinarySerializedSize(String value, MarshalerContext context) {
-    return StatelessMarshalerUtil.sizeStringWithContext(AnyValue.STRING_VALUE, value, context);
+    int utf8Size = StatelessMarshalerUtil.getUtf8Size(value, context);
+    return AnyValue.STRING_VALUE.getTagSize()
+        + CodedOutputStream.computeUInt32SizeNoTag(utf8Size)
+        + utf8Size;
   }
 }

@@ -2,6 +2,313 @@
 
 ## Unreleased
 
+## Version 1.61.0 (2026-04-10)
+
+### API
+
+* Stabilize `isEnabled()` on `Tracer`, `Logger`, and metric instruments
+  ([#8200](https://github.com/open-telemetry/opentelemetry-java/pull/8200))
+
+#### Incubating
+
+* **BREAKING** Update `EnvironmentGetter` and `EnvironmentSetter` key normalization to reflect spec
+  changes
+  ([#8233](https://github.com/open-telemetry/opentelemetry-java/pull/8233))
+
+### SDK
+
+#### Traces
+
+* Retain propagated context when generating random trace IDs
+  ([#8263](https://github.com/open-telemetry/opentelemetry-java/pull/8263))
+* Add rate-limited warning log when `BatchSpanProcessor` drops spans
+  ([#8167](https://github.com/open-telemetry/opentelemetry-java/pull/8167))
+
+#### Metrics
+
+* Track series start time per aggregator rather than at `SdkMeterProvider` creation time
+  ([#8180](https://github.com/open-telemetry/opentelemetry-java/pull/8180))
+* Capture context class loader during async callback registration
+  ([#8091](https://github.com/open-telemetry/opentelemetry-java/pull/8091))
+* Make include/exclude work correctly with empty (but non-null) lists
+  ([#8185](https://github.com/open-telemetry/opentelemetry-java/pull/8185))
+
+#### Logs
+
+* Fix condition for recording successful log processing metrics
+  ([#8226](https://github.com/open-telemetry/opentelemetry-java/pull/8226))
+
+#### Exporters
+
+* OTLP: add configurable bounds to response body reading
+  ([#8224](https://github.com/open-telemetry/opentelemetry-java/pull/8224), [#8277](https://github.com/open-telemetry/opentelemetry-java/pull/8277))
+* OTLP: only throw invalid response exception when gRPC response size < 5 bytes
+  ([#8194](https://github.com/open-telemetry/opentelemetry-java/pull/8194))
+* OTLP: remove duplicate FINEST-level error logging in gRPC exporter
+  ([#8216](https://github.com/open-telemetry/opentelemetry-java/pull/8216))
+* OTLP Profiles: clean up profile signal exporters for consistency
+  ([#8172](https://github.com/open-telemetry/opentelemetry-java/pull/8172))
+
+#### Extensions
+
+* **BREAKING** Autoconfigure: remove deprecated `ComponentLoader` class (use
+  `io.opentelemetry.common.ComponentLoader` instead)
+  ([#8243](https://github.com/open-telemetry/opentelemetry-java/pull/8243))
+* Declarative config: fix `DeclarativeConfigProperties` javadoc to not throw exceptions
+  ([#8079](https://github.com/open-telemetry/opentelemetry-java/pull/8079))
+* Declarative config: resource attribute filtering should include attributes by default
+  ([#8177](https://github.com/open-telemetry/opentelemetry-java/pull/8177))
+* Declarative config: enforce IncludedExcludeModel .included and .excluded are not empty
+  ([#8266](https://github.com/open-telemetry/opentelemetry-java/pull/8266))
+* Autoconfigure: restructure SDK incubator to not depend on autoconfigure internals
+  ([#8242](https://github.com/open-telemetry/opentelemetry-java/pull/8242))
+
+### Project tooling
+
+* Disable Gradle build cache on releases to mitigate supply chain risk
+  ([#8254](https://github.com/open-telemetry/opentelemetry-java/pull/8254))
+
+## Version 1.60.1 (2026-03-08)
+
+### SDK
+
+#### Extensions
+
+* Autoconfigure: fix warning always emitted
+  ([#8157](https://github.com/open-telemetry/opentelemetry-java/pull/8157))
+
+## Version 1.60.0 (2026-03-06)
+
+### API
+
+* Support W3C trace context random flag
+  ([#8012](https://github.com/open-telemetry/opentelemetry-java/pull/8012))
+* Clarify that `SpanBuilder.setAttribute` allows null values
+  ([#8072](https://github.com/open-telemetry/opentelemetry-java/pull/8072))
+
+#### Incubating
+
+* Implement environment variable context propagation carriers
+  ([#8074](https://github.com/open-telemetry/opentelemetry-java/pull/8074))
+* Deprecate `ExtendedAttributes`, `ExtendedAttributeKey`, `ExtendedAttributeType`,
+  `ExtendedAttributesBuilder`
+  ([#8060](https://github.com/open-telemetry/opentelemetry-java/pull/8060))
+* Deprecate `peerServiceMapping` accessor from `InstrumentationConfigUtil`
+  ([#8088](https://github.com/open-telemetry/opentelemetry-java/pull/8088))
+
+### SDK
+
+#### Traces
+
+* Disable warning when using `TraceIdRatioBasedSampler` as root sampler
+  ([#8065](https://github.com/open-telemetry/opentelemetry-java/pull/8065))
+* User-supplied attributes take precedence over exception-derived attributes
+  ([#7993](https://github.com/open-telemetry/opentelemetry-java/pull/7993))
+* Exclude META-INF/maven from traces SDK shaded dependencies
+  ([#8096](https://github.com/open-telemetry/opentelemetry-java/pull/8096))
+* Fix inverted condition in LegacySpanProcessorInstrumentation#finishSpans
+  ([#8145](https://github.com/open-telemetry/opentelemetry-java/pull/8145))
+
+#### Metrics
+
+* Split out cumulative vs. delta storage
+  ([#8015](https://github.com/open-telemetry/opentelemetry-java/pull/8015))
+* Add metrics for `PeriodicMetricReader`
+  ([#8038](https://github.com/open-telemetry/opentelemetry-java/pull/8038))
+* Allow configuring min/max in histograms
+  ([#8095](https://github.com/open-telemetry/opentelemetry-java/pull/8095))
+* Remove deprecated `otel.experimental.metrics.cardinality.limit` property
+  ([#8124](https://github.com/open-telemetry/opentelemetry-java/pull/8124))
+* **BREAKING** bug fix: `GlobUtil` and `IncludePatternMatching`, used in views and declarative
+  config matching, previously were inconsistent in case sensitivity. If a glob char (* or ?) was
+  present, it was evaluated with case sensitivity. If no glob chars were present, it was evaluated
+  with case insensitivity. Now, all are consistently evaluated with case sensitivity.
+  ([#8152](https://github.com/open-telemetry/opentelemetry-java/pull/8152))
+
+#### Logs
+
+* Stabilize `LogRecordBuilder.setException`
+  ([#8089](https://github.com/open-telemetry/opentelemetry-java/pull/8089))
+* Clarify `setTimestamp` javadoc for event timestamp behavior
+  ([#8104](https://github.com/open-telemetry/opentelemetry-java/pull/8104))
+
+#### Exporters
+
+* OTLP: Fix marshaling for empty string attributes
+  ([#8014](https://github.com/open-telemetry/opentelemetry-java/pull/8014))
+* Prometheus: Update Prometheus client to 1.5.0
+  ([#8080](https://github.com/open-telemetry/opentelemetry-java/pull/8080))
+* OTLP: Serialize exponential histogram sum as optional double
+  ([#8107](https://github.com/open-telemetry/opentelemetry-java/pull/8107))
+* OTLP: Use `KeyManagerFactory.getDefaultAlgorithm()` in `TlsUtil.keyManager()`
+  ([#8122](https://github.com/open-telemetry/opentelemetry-java/pull/8122))
+* OTLP: Ensure proto serializer idCache is cleared when exception is thrown
+  ([#8147](https://github.com/open-telemetry/opentelemetry-java/pull/8147))
+
+#### Extensions
+
+* Autoconfigure: Decode plus sign in resource attributes
+  ([#8059](https://github.com/open-telemetry/opentelemetry-java/pull/8059))
+* Declarative config: update to 1.0 schema
+  ([#8123](https://github.com/open-telemetry/opentelemetry-java/pull/8123))
+* Declarative config: add support for setting schema URL
+  ([#8028](https://github.com/open-telemetry/opentelemetry-java/pull/8028))
+* Declarative config: add version mismatch warning
+  ([#8069](https://github.com/open-telemetry/opentelemetry-java/pull/8069))
+* Declarative config: cache component providers in `DeclarativeConfigContext`
+  ([#8070](https://github.com/open-telemetry/opentelemetry-java/pull/8070))
+* Declarative config: add system property substitution
+  ([#8073](https://github.com/open-telemetry/opentelemetry-java/pull/8073))
+* Declarative config: add exporter customizers
+  ([#8081](https://github.com/open-telemetry/opentelemetry-java/pull/8081))
+* Declarative config: add support for setting internal telemetry version
+  ([#8045](https://github.com/open-telemetry/opentelemetry-java/pull/8045))
+* Deprecate View File Configuration mechanism
+  ([#8133](https://github.com/open-telemetry/opentelemetry-java/pull/8133))
+* Autoconfigure: add property to allow autoconfiguration of SDK telemetry version
+  ([#8037](https://github.com/open-telemetry/opentelemetry-java/pull/8037))
+* Jaeger remote sampler: refactor to leverage senders
+  ([#8046](https://github.com/open-telemetry/opentelemetry-java/pull/8046))
+* Declarative config: document ObjectMapper config
+  ([#8075](https://github.com/open-telemetry/opentelemetry-java/pull/8075))
+* Declarative config: Remove unchecked warning
+  ([#8090](https://github.com/open-telemetry/opentelemetry-java/pull/8090))
+
+### Project tooling
+
+* Add architecture test to detect usage of shared internal code
+  ([#6978](https://github.com/open-telemetry/opentelemetry-java/pull/6978))
+* Replace Xlint deprecation check with custom error-prone check
+  ([#8061](https://github.com/open-telemetry/opentelemetry-java/pull/8061))
+* Enable error-prone's UnnecessarilyFullyQualified check
+  ([#8078](https://github.com/open-telemetry/opentelemetry-java/pull/8078))
+* Small refactoring to make safety clearer
+  ([#8083](https://github.com/open-telemetry/opentelemetry-java/pull/8083))
+* Rework span record benchmark and publish results
+  ([#8031](https://github.com/open-telemetry/opentelemetry-java/pull/8031))
+* Add `LogRecordBenchmark`
+  ([#8106](https://github.com/open-telemetry/opentelemetry-java/pull/8106),
+  [#8117](https://github.com/open-telemetry/opentelemetry-java/pull/8117))
+
+## Version 1.59.0 (2026-02-06)
+
+### API
+
+* Stabilize complex attributes
+  ([#7973](https://github.com/open-telemetry/opentelemetry-java/pull/7973))
+* Limit init valid hex array to range that can be true
+  ([#7809](https://github.com/open-telemetry/opentelemetry-java/pull/7809))
+
+#### Extensions
+
+* Trace propagators: Deprecate OtTracePropagator
+  ([#8020](https://github.com/open-telemetry/opentelemetry-java/pull/8020))
+* Trace propagators: Deprecate JaegerPropagator
+  ([#8019](https://github.com/open-telemetry/opentelemetry-java/pull/8019))
+
+### SDK
+
+* Move io.opentelemetry.sdk.internal to io.opentelemetry.sdk.common.internal
+  ([#8003](https://github.com/open-telemetry/opentelemetry-java/pull/8003))
+* Always return ExtendedOpenTelemetry when incubator is available
+  ([#7991](https://github.com/open-telemetry/opentelemetry-java/pull/7991))
+
+#### Traces
+
+* Fix memory leak in SdkSpan#spanEndingThread
+  ([#7984](https://github.com/open-telemetry/opentelemetry-java/pull/7984))
+
+#### Metrics
+
+* Rework and publish metric benchmarks
+  ([#8000](https://github.com/open-telemetry/opentelemetry-java/pull/8000))
+* Update LongLastValueAggregator algo to avoid allocations
+  ([#8017](https://github.com/open-telemetry/opentelemetry-java/pull/8017))
+
+#### Testing
+
+* Fix OTel JUnit5 Extension cleanup when using Nested test classes
+  ([#7999](https://github.com/open-telemetry/opentelemetry-java/pull/7999))
+* Add assertion support for Span hasException(null)
+  ([#8033](https://github.com/open-telemetry/opentelemetry-java/pull/8033))
+
+#### Exporters
+
+* **DEPRECATION**: `opentelemetry-exporter-zipkin` is now deprecated with the
+  last release planned for 1.65.0 (August 2026)
+  ([#7974](https://github.com/open-telemetry/opentelemetry-java/pull/7974))
+* Refactor http, grpc senders and promote to public API
+  ([#7782](https://github.com/open-telemetry/opentelemetry-java/pull/7782))
+
+#### Extensions
+
+* Jaeger remote sampler: Remove unused code
+  ([#7970](https://github.com/open-telemetry/opentelemetry-java/pull/7970))
+* Incubator: Add AlwaysRecordSampler
+  ([#7877](https://github.com/open-telemetry/opentelemetry-java/pull/7877))
+
+### Project tooling
+
+* Align generate release contributors
+  ([#8023](https://github.com/open-telemetry/opentelemetry-java/pull/8023))
+
+## Version 1.58.0 (2026-01-09)
+
+### API
+
+#### Incubator
+
+* Delete GlobalConfigProvider in favor of access via ExtendedOpenTelemetry
+  ([#7914](https://github.com/open-telemetry/opentelemetry-java/pull/7914))
+* Add DeclarativeConfigProperties#get method
+  ([#7923](https://github.com/open-telemetry/opentelemetry-java/pull/7923))
+* Update ConfigProvider#getInstrumentationConfig response to be non-null
+  ([#7954](https://github.com/open-telemetry/opentelemetry-java/pull/7954))
+* Add declarative config utility methods for common operations
+  ([#7927](https://github.com/open-telemetry/opentelemetry-java/pull/7927))
+
+### SDK
+
+#### Traces
+
+* Implement SDK metrics for trace
+  ([#7895](https://github.com/open-telemetry/opentelemetry-java/pull/7895),
+  [#7930](https://github.com/open-telemetry/opentelemetry-java/pull/7930))
+* Emit warning when TraceIdRatioBasedSampler is used as child sampler
+  ([#7937](https://github.com/open-telemetry/opentelemetry-java/pull/7937))
+
+#### Logs
+
+* Implement SDK metrics for logs
+  ([#7931](https://github.com/open-telemetry/opentelemetry-java/pull/7931))
+
+#### Exporters
+
+* Prom exporter update
+  ([#7934](https://github.com/open-telemetry/opentelemetry-java/pull/7934))
+
+#### Extensions
+
+* Declarative config: update to opentelemetry-configuration 1.0.0-rc.3
+  ([#7861](https://github.com/open-telemetry/opentelemetry-java/pull/7861))
+* Declarative config: update jaeger remote sampler to require endpoint, initial_sampler
+  ([#7943](https://github.com/open-telemetry/opentelemetry-java/pull/7943))
+* Declarative config: add support for view unit
+  ([#7942](https://github.com/open-telemetry/opentelemetry-java/pull/7942))
+* Declarative config: add support for new logger config minimum_severity and trace_based properties
+  ([#7940](https://github.com/open-telemetry/opentelemetry-java/pull/7940))
+* Declarative config: add support for composable parent threshold sampler
+  ([#7941](https://github.com/open-telemetry/opentelemetry-java/pull/7941))
+* Declarative config: improve pattern for validating and loading SDK extension plugins
+  ([#7947](https://github.com/open-telemetry/opentelemetry-java/pull/7947))
+
+### Project tooling
+
+* Use develocity build cache in PRs and local builds
+  ([#7906](https://github.com/open-telemetry/opentelemetry-java/pull/7906))
+* Configure japicmp classpath to avoid false positives
+  ([#7945](https://github.com/open-telemetry/opentelemetry-java/pull/7945))
+
 ## Version 1.57.0 (2025-12-05)
 
 ### API

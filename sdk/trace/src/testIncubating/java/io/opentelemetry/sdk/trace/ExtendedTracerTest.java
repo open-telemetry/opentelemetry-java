@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameEquals;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.disabled;
 

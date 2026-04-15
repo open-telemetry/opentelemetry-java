@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.incubator.logs;
 
-import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder.nameEquals;
 import static io.opentelemetry.sdk.logs.internal.LoggerConfig.disabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
@@ -31,6 +31,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Logs Bridge API. */
+@SuppressWarnings("deprecation")
 class ExtendedLogsBridgeApiUsageTest {
 
   private static final java.util.logging.Logger logger =
@@ -213,6 +214,11 @@ class ExtendedLogsBridgeApiUsageTest {
                           .put(longArrKey, Arrays.asList(1L, 2L))
                           .put(booleanArrKey, Arrays.asList(true, false))
                           .put(doubleArrKey, Arrays.asList(1.1, 2.2))
+                          .put(
+                              AttributeKey.valueKey("acme.value"),
+                              Value.of(
+                                  KeyValue.of("childStr", Value.of("value")),
+                                  KeyValue.of("childLong", Value.of(1L))))
                           .put("key1", "value")
                           .put("key2", "value")
                           .build());

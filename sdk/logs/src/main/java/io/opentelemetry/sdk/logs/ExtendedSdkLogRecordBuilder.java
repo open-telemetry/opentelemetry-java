@@ -13,12 +13,13 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ExtendedAttributesMap;
+import io.opentelemetry.sdk.common.internal.ExtendedAttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** SDK implementation of {@link ExtendedLogRecordBuilder}. */
+@SuppressWarnings("deprecation")
 final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     implements ExtendedLogRecordBuilder {
 
@@ -39,17 +40,7 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
 
   @Override
   public ExtendedSdkLogRecordBuilder setException(Throwable throwable) {
-    if (throwable == null) {
-      return this;
-    }
-
-    loggerSharedState
-        .getExceptionAttributeResolver()
-        .setExceptionAttributes(
-            this::setAttribute,
-            throwable,
-            loggerSharedState.getLogLimits().getMaxAttributeValueLength());
-
+    super.setException(throwable);
     return this;
   }
 
@@ -143,5 +134,15 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
         severityText,
         body,
         extendedAttributes);
+  }
+
+  @Override
+  protected <T> void setExceptionAttribute(AttributeKey<T> key, @Nullable T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return;
+    }
+    if (extendedAttributes == null || extendedAttributes.get(key) == null) {
+      setAttribute(key, value);
+    }
   }
 }

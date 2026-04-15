@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLabelName;
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
@@ -12,9 +13,10 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -80,6 +82,8 @@ final class Otel2PrometheusConverter {
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
+  private final boolean otelScopeLabelsEnabled;
+  private final boolean targetInfoMetricEnabled;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -89,17 +93,38 @@ final class Otel2PrometheusConverter {
   private final Map<Attributes, List<AttributeKey<?>>> resourceAttributesToAllowedKeysCache;
 
   /**
-   * Constructor with feature flag parameter.
+   * Constructor with feature flag parameters.
    *
+   * @param otelScopeLabelsEnabled whether to add OpenTelemetry scope labels to exported metrics
+   * @param targetInfoMetricEnabled whether to export the target_info metric with resource
+   *     attributes
    * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
    *     matching this predicate will be added as labels on each exported metric
    */
-  Otel2PrometheusConverter(@Nullable Predicate<String> allowedResourceAttributesFilter) {
+  Otel2PrometheusConverter(
+      boolean otelScopeLabelsEnabled,
+      boolean targetInfoMetricEnabled,
+      @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
+    this.targetInfoMetricEnabled = targetInfoMetricEnabled;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
             ? new ConcurrentHashMap<>()
             : Collections.emptyMap();
+  }
+
+  boolean isOtelScopeLabelsEnabled() {
+    return otelScopeLabelsEnabled;
+  }
+
+  boolean isTargetInfoMetricEnabled() {
+    return targetInfoMetricEnabled;
+  }
+
+  @Nullable
+  Predicate<String> getAllowedResourceAttributesFilter() {
+    return allowedResourceAttributesFilter;
   }
 
   MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
@@ -118,7 +143,7 @@ final class Otel2PrometheusConverter {
         resource = metricData.getResource();
       }
     }
-    if (resource != null) {
+    if (resource != null && targetInfoMetricEnabled) {
       putOrMerge(snapshotsByName, makeTargetInfo(resource));
     }
     return new MetricSnapshots(snapshotsByName.values());
@@ -450,14 +475,14 @@ final class Otel2PrometheusConverter {
     attributes.forEach(
         (key, value) ->
             labelNameToValue.put(
-                sanitizeLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+                convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
           requireNonNull(additionalAttributes[i]), additionalAttributes[i + 1]);
     }
 
-    if (scope != null) {
+    if (scope != null && otelScopeLabelsEnabled) {
       labelNameToValue.putIfAbsent(OTEL_SCOPE_NAME, scope.getName());
       if (scope.getVersion() != null) {
         labelNameToValue.putIfAbsent(OTEL_SCOPE_VERSION, scope.getVersion());
@@ -480,7 +505,7 @@ final class Otel2PrometheusConverter {
         Object attributeValue = resourceAttributes.get(attributeKey);
         if (attributeValue != null) {
           labelNameToValue.putIfAbsent(
-              sanitizeLabelName(attributeKey.getKey()), attributeValue.toString());
+              convertLabelName(attributeKey.getKey()), attributeValue.toString());
         }
       }
     }
@@ -520,14 +545,24 @@ final class Otel2PrometheusConverter {
     return allowedAttributeKeys;
   }
 
+  /**
+   * Convert an attribute key to a legacy Prometheus label name. {@code prometheusName} converts
+   * non-standard characters (dots, dashes, etc.) to underscores, and {@code sanitizeLabelName}
+   * strips invalid leading prefixes.
+   */
+  private static String convertLabelName(String key) {
+    return sanitizeLabelName(prometheusName(key));
+  }
+
   private static MetricMetadata convertMetadata(MetricData metricData) {
-    String name = sanitizeMetricName(metricData.getName());
+    String name = sanitizeMetricName(prometheusName(metricData.getName()));
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    // Repeated __ are not allowed according to spec, although this is allowed in prometheus
+    // Repeated __ are discouraged according to spec, although this is allowed in prometheus, see
+    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1
     while (name.contains("__")) {
       name = name.replace("__", "_");
     }
@@ -650,6 +685,8 @@ final class Otel2PrometheusConverter {
                   "Unexpected label value of %s for %s",
                   attributeValue.getClass().getName(), type.name()));
         }
+      case VALUE:
+        return ((Value<?>) attributeValue).asString();
     }
     throw new IllegalStateException("Unrecognized AttributeType: " + type);
   }

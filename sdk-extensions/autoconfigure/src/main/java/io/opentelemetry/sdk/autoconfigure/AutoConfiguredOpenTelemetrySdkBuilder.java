@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -578,15 +579,18 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
     }
 
-    String otelConfigFile = config.getString("otel.config.file");
-    if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
-      logger.warning(
-          "otel.config.file was set, but has been replaced with otel.experimental.config.file");
+    String configurationFile = config.getString("otel.config.file");
+    if (configurationFile == null || configurationFile.isEmpty()) {
+      configurationFile = config.getString("otel.experimental.config.file");
+      if (configurationFile != null && !configurationFile.isEmpty()) {
+        logger.warning(
+            "otel.experimental.config.file is deprecated and will be removed after 1.62.0 release. Please use otel.config.file instead.");
+      }
     }
-    String configurationFile = config.getString("otel.experimental.config.file");
     if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
+
     if (!INCUBATOR_AVAILABLE) {
       throw new ConfigurationException(
           "Cannot autoconfigure from config file without opentelemetry-sdk-extension-incubator on the classpath");
@@ -615,9 +619,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
   void mergeSdkTracerProviderConfigurer() {
-    for (io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer configurer :
-        componentLoader.load(
-            io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer.class)) {
+    for (SdkTracerProviderConfigurer configurer :
+        componentLoader.load(SdkTracerProviderConfigurer.class)) {
       addTracerProviderCustomizer(
           (builder, config) -> {
             configurer.configure(builder, config);

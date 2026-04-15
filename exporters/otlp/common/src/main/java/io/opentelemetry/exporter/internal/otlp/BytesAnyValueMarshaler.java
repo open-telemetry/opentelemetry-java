@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -21,9 +22,11 @@ final class BytesAnyValueMarshaler extends MarshalerWithSize {
     this.value = value;
   }
 
-  static MarshalerWithSize create(ByteBuffer value) {
-    byte[] bytes = new byte[value.remaining()];
-    value.get(bytes);
+  static MarshalerWithSize create(Value<ByteBuffer> value) {
+    ByteBuffer buf = value.getValue();
+    byte[] bytes = new byte[buf.remaining()];
+    // getValue() above returns a new ByteBuffer, so mutating its position here is safe
+    buf.get(bytes);
     return new BytesAnyValueMarshaler(bytes);
   }
 

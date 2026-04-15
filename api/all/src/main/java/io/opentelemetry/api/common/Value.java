@@ -26,6 +26,7 @@ import java.util.Map;
  *       are type {@link Value}, arrays can contain primitives, complex types like maps or arrays,
  *       or any combination.
  *   <li>Raw bytes via {@link #of(byte[])}
+ *   <li>An empty value via {@link #empty()}
  * </ul>
  *
  * <p>Currently, Value is only used as an argument for {@link
@@ -84,6 +85,15 @@ public interface Value<T> {
     return KeyValueList.createFromMap(value);
   }
 
+  /**
+   * Returns an empty {@link Value}.
+   *
+   * @since 1.59.0
+   */
+  static Value<Empty> empty() {
+    return ValueEmpty.create();
+  }
+
   /** Returns the type of this {@link Value}. Useful for building switch statements. */
   ValueType getType();
 
@@ -101,18 +111,42 @@ public interface Value<T> {
    *   <li>{@link ValueType#KEY_VALUE_LIST} returns {@link List} of {@link KeyValue}
    *   <li>{@link ValueType#BYTES} returns read only {@link ByteBuffer}. See {@link
    *       ByteBuffer#asReadOnlyBuffer()}.
+   *   <li>{@link ValueType#EMPTY} returns {@link Empty}
    * </ul>
    */
   T getValue();
 
   /**
-   * Return a string encoding of this {@link Value}. This is intended to be a fallback serialized
-   * representation in case there is no suitable encoding that can utilize {@link #getType()} /
-   * {@link #getValue()} to serialize specific types.
+   * Returns a string representation of this {@link Value}.
    *
-   * <p>WARNING: No guarantees are made about the encoding of this string response. It MAY change in
-   * a future minor release. If you need a reliable string encoding, write your own serializer.
+   * <p>The output follows the <a
+   * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#anyvalue-representation-for-non-otlp-protocols">
+   * string representation guidance</a> for complex attribute value types:
+   *
+   * <ul>
+   *   <li>{@link ValueType#STRING} String as-is without surrounding quotes. Examples: {@code hello
+   *       world}, (empty string)
+   *   <li>{@link ValueType#BOOLEAN} JSON boolean. Examples: {@code true}, {@code false}
+   *   <li>{@link ValueType#LONG} JSON number. Examples: {@code 42}, {@code -123}
+   *   <li>{@link ValueType#DOUBLE} JSON number, or {@code NaN}, {@code Infinity}, {@code -Infinity}
+   *       for special values (without surrounding quotes). Examples: {@code 3.14159}, {@code
+   *       1.23e10}, {@code NaN}, {@code -Infinity}
+   *   <li>{@link ValueType#ARRAY} JSON array. Nested byte arrays are encoded as Base64-encoded JSON
+   *       strings. Nested empty values are encoded as JSON {@code null}. The special floating point
+   *       values NaN and Infinity are encoded as JSON strings {@code "NaN"}, {@code "Infinity"},
+   *       and {@code "-Infinity"}. Examples: {@code []}, {@code [1, "-Infinity", "a", true,
+   *       {"nested": "aGVsbG8gd29ybGQ="}]}
+   *   <li>{@link ValueType#KEY_VALUE_LIST} JSON object. Nested byte arrays are encoded as
+   *       Base64-encoded JSON strings. Nested empty values are encoded as JSON {@code null}. The
+   *       special floating point values NaN and Infinity are encoded as JSON strings {@code "NaN"},
+   *       {@code "Infinity"}, and {@code "-Infinity"}. Examples: {@code {}}, {@code {"a":
+   *       "-Infinity", "b": 2, "c": [3, null]}}
+   *   <li>{@link ValueType#BYTES} Base64-encoded bytes without surrounding quotes. Example: {@code
+   *       aGVsbG8gd29ybGQ=}
+   *   <li>{@link ValueType#EMPTY} The empty string.
+   * </ul>
+   *
+   * @return a string representation of this value
    */
-  // TODO(jack-berg): Should this be a JSON encoding?
   String asString();
 }

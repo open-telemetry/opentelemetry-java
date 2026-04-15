@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.autoconfigure.LogRecordExporterConfiguration.
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
@@ -18,6 +19,7 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessorBuilder;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -44,13 +46,17 @@ final class LoggerProviderConfiguration {
       List<Closeable> closeables) {
 
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
-    loggerProviderBuilder.setMeterProvider(() -> meterProvider);
+    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
+    if (telemetryVersion != InternalTelemetryVersion.LEGACY) {
+      loggerProviderBuilder.setMeterProvider(() -> meterProvider);
+    }
 
     Map<String, LogRecordExporter> exportersByName =
         configureLogRecordExporters(config, spiHelper, logRecordExporterCustomizer, closeables);
 
     List<LogRecordProcessor> processors =
-        configureLogRecordProcessors(config, exportersByName, meterProvider, closeables);
+        configureLogRecordProcessors(
+            config, exportersByName, telemetryVersion, meterProvider, closeables);
     for (LogRecordProcessor processor : processors) {
       LogRecordProcessor wrapped = logRecordProcessorCustomizer.apply(processor, config);
       if (wrapped != processor) {
@@ -64,6 +70,7 @@ final class LoggerProviderConfiguration {
   static List<LogRecordProcessor> configureLogRecordProcessors(
       ConfigProperties config,
       Map<String, LogRecordExporter> exportersByName,
+      InternalTelemetryVersion telemetryVersion,
       MeterProvider meterProvider,
       List<Closeable> closeables) {
     Map<String, LogRecordExporter> exportersByNameCopy = new HashMap<>(exportersByName);
@@ -72,10 +79,12 @@ final class LoggerProviderConfiguration {
     for (String simpleProcessorExporterName : simpleProcessorExporterNames) {
       LogRecordExporter exporter = exportersByNameCopy.remove(simpleProcessorExporterName);
       if (exporter != null) {
-        LogRecordProcessor logRecordProcessor =
-            SimpleLogRecordProcessor.builder(exporter)
-                .setMeterProvider(() -> meterProvider)
-                .build();
+        SimpleLogRecordProcessorBuilder logRecordProcessorBuilder =
+            SimpleLogRecordProcessor.builder(exporter);
+        if (telemetryVersion != InternalTelemetryVersion.LEGACY) {
+          logRecordProcessorBuilder.setMeterProvider(() -> meterProvider);
+        }
+        LogRecordProcessor logRecordProcessor = logRecordProcessorBuilder.build();
         closeables.add(logRecordProcessor);
         logRecordProcessors.add(logRecordProcessor);
       }
@@ -85,7 +94,8 @@ final class LoggerProviderConfiguration {
       LogRecordExporter compositeLogRecordExporter =
           LogRecordExporter.composite(exportersByNameCopy.values());
       LogRecordProcessor logRecordProcessor =
-          configureBatchLogRecordProcessor(config, compositeLogRecordExporter, meterProvider);
+          configureBatchLogRecordProcessor(
+              config, compositeLogRecordExporter, telemetryVersion, meterProvider);
       closeables.add(logRecordProcessor);
       logRecordProcessors.add(logRecordProcessor);
     }
@@ -95,7 +105,10 @@ final class LoggerProviderConfiguration {
 
   // VisibleForTesting
   static BatchLogRecordProcessor configureBatchLogRecordProcessor(
-      ConfigProperties config, LogRecordExporter exporter, MeterProvider meterProvider) {
+      ConfigProperties config,
+      LogRecordExporter exporter,
+      InternalTelemetryVersion telemetryVersion,
+      MeterProvider meterProvider) {
     BatchLogRecordProcessorBuilder builder =
         BatchLogRecordProcessor.builder(exporter).setMeterProvider(meterProvider);
 
@@ -118,6 +131,8 @@ final class LoggerProviderConfiguration {
     if (timeout != null) {
       builder.setExporterTimeout(timeout);
     }
+
+    builder.setInternalTelemetryVersion(telemetryVersion);
 
     return builder.build();
   }

@@ -93,14 +93,22 @@ public final class StatelessMarshalerUtil {
     if (value == null || value.isEmpty()) {
       return sizeBytes(field, 0);
     }
+    return sizeBytes(field, getUtf8Size(value, context));
+  }
+
+  /**
+   * Returns the UTF-8 size of a string, adding data to the context for later serialization. Use
+   * together with {@link Serializer#writeString(ProtoFieldInfo, String, int, MarshalerContext)}.
+   */
+  public static int getUtf8Size(String value, MarshalerContext context) {
     if (context.marshalStringNoAllocation()) {
       int utf8Size = context.getStringEncoder().getUtf8Size(value);
       context.addSize(utf8Size);
-      return sizeBytes(field, utf8Size);
+      return utf8Size;
     } else {
       byte[] valueUtf8 = MarshalerUtil.toBytes(value);
       context.addData(valueUtf8);
-      return sizeBytes(field, valueUtf8.length);
+      return valueUtf8.length;
     }
   }
 

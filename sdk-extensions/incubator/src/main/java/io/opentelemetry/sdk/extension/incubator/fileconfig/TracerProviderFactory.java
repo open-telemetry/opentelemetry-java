@@ -7,13 +7,13 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
+import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerMatcherAndConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
-import io.opentelemetry.sdk.internal.ScopeConfigurator;
-import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -41,6 +41,8 @@ final class TracerProviderFactory
     if (tracerProviderModel == null) {
       return builder;
     }
+
+    context.setInternalTelemetry(builder::setMeterProvider);
 
     SpanLimits spanLimits =
         SpanLimitsFactory.getInstance()
@@ -102,7 +104,7 @@ final class TracerProviderFactory
     @Override
     public TracerConfig create(
         ExperimentalTracerConfigModel model, DeclarativeConfigContext context) {
-      if (model.getDisabled() != null && model.getDisabled()) {
+      if (model.getEnabled() != null && !model.getEnabled()) {
         return TracerConfig.disabled();
       }
       return TracerConfig.defaultConfig();
