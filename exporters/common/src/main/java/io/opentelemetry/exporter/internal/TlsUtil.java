@@ -84,7 +84,7 @@ public final class TlsUtil {
       ks.setKeyEntry("trusted", key, "".toCharArray(), chain.toArray(new Certificate[] {}));
 
       KeyManagerFactory kmf =
-          KeyManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+          KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
       kmf.init(ks, "".toCharArray());
       return (X509KeyManager) kmf.getKeyManagers()[0];
     } catch (CertificateException

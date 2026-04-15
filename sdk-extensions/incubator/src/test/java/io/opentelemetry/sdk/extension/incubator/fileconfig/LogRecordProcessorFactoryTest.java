@@ -9,9 +9,9 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordProcessorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -35,8 +36,12 @@ class LogRecordProcessorFactoryTest {
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   private final DeclarativeConfigContext context =
-      new DeclarativeConfigContext(
-          SpiHelper.create(LogRecordProcessorFactoryTest.class.getClassLoader()));
+      new DeclarativeConfigContext(ComponentLoader.forClassLoader(getClass().getClassLoader()));
+
+  @BeforeEach
+  void setup() {
+    context.setBuilder(new DeclarativeConfigurationBuilder());
+  }
 
   @Test
   void create_BatchNullExporter() {
@@ -54,7 +59,9 @@ class LogRecordProcessorFactoryTest {
   void create_BatchDefaults() {
     List<Closeable> closeables = new ArrayList<>();
     BatchLogRecordProcessor expectedProcessor =
-        BatchLogRecordProcessor.builder(OtlpHttpLogRecordExporter.getDefault()).build();
+        BatchLogRecordProcessor.builder(
+                OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
+            .build();
     cleanup.addCloseable(expectedProcessor);
 
     LogRecordProcessor processor =
@@ -77,7 +84,8 @@ class LogRecordProcessorFactoryTest {
   void create_BatchConfigured() {
     List<Closeable> closeables = new ArrayList<>();
     BatchLogRecordProcessor expectedProcessor =
-        BatchLogRecordProcessor.builder(OtlpHttpLogRecordExporter.getDefault())
+        BatchLogRecordProcessor.builder(
+                OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
             .setScheduleDelay(Duration.ofMillis(1))
             .setMaxExportBatchSize(2)
             .setExporterTimeout(Duration.ofMillis(3))
@@ -120,7 +128,8 @@ class LogRecordProcessorFactoryTest {
   void create_SimpleConfigured() {
     List<Closeable> closeables = new ArrayList<>();
     LogRecordProcessor expectedProcessor =
-        SimpleLogRecordProcessor.create(OtlpHttpLogRecordExporter.getDefault());
+        SimpleLogRecordProcessor.create(
+            OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build());
     cleanup.addCloseable(expectedProcessor);
 
     LogRecordProcessor processor =

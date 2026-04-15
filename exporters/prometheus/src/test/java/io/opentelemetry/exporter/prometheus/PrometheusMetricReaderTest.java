@@ -19,6 +19,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
@@ -782,7 +783,12 @@ class PrometheusMetricReaderTest {
               .registerView(
                   InstrumentSelector.builder().setName("my.exponential.histogram").build(),
                   View.builder()
-                      .setAggregation(Aggregation.base2ExponentialBucketHistogram(160, otelScale))
+                      .setAggregation(
+                          Aggregation.base2ExponentialBucketHistogram(
+                              Base2ExponentialHistogramOptions.builder()
+                                  .setMaxBuckets(160)
+                                  .setMaxScale(otelScale)
+                                  .build()))
                       .build())
               .build()
               .meterBuilder("test")
@@ -966,29 +972,23 @@ class PrometheusMetricReaderTest {
 
     LongCounter counter = meter.counterBuilder("requests").build();
     testClock.advance(Duration.ofMillis(1));
+    long bearStartNanos = testClock.now();
     counter.add(3, Attributes.builder().put("animal", "bear").build());
     testClock.advance(Duration.ofMillis(1));
+    long mouseStartNanos = testClock.now();
     counter.add(2, Attributes.builder().put("animal", "mouse").build());
     testClock.advance(Duration.ofMillis(1));
 
-    // There is a curious difference between Prometheus and OpenTelemetry:
-    // In Prometheus metrics the _created timestamp is per data point,
-    // i.e. the _created timestamp says when this specific set of label values
-    // was first observed.
-    // In the OTel Java SDK the _created timestamp is the initialization time
-    // of the SdkMeterProvider, i.e. all data points will have the same _created timestamp.
-    // So we expect the _created timestamp to be the start time of the application,
-    // not the timestamp when the counter or an individual data point was created.
     String expected =
         ""
             + "# TYPE requests counter\n"
             + "requests_total{animal=\"bear\",otel_scope_name=\"test\"} 3.0\n"
             + "requests_created{animal=\"bear\",otel_scope_name=\"test\"} "
-            + createdTimestamp
+            + convertTimestamp(bearStartNanos)
             + "\n"
             + "requests_total{animal=\"mouse\",otel_scope_name=\"test\"} 2.0\n"
             + "requests_created{animal=\"mouse\",otel_scope_name=\"test\"} "
-            + createdTimestamp
+            + convertTimestamp(mouseStartNanos)
             + "\n"
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"

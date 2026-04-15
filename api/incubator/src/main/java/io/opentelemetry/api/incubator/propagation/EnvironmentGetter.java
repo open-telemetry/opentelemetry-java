@@ -1,0 +1,106 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.api.incubator.propagation;
+
+import io.opentelemetry.context.propagation.TextMapGetter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nullable;
+
+/**
+ * A {@link TextMapGetter} that extracts context from a map carrier, intended for use with
+ * environment variables in child processes.
+ *
+ * <p>This is useful when a child process needs to extract propagated context from its environment.
+ * For example:
+ *
+ * <pre>{@code
+ * Map<String, String> env = System.getenv();
+ * Context context = contextPropagators.getTextMapPropagator()
+ *     .extract(Context.current(), env, EnvironmentGetter.getInstance());
+ * }</pre>
+ *
+ * <p>This getter automatically sanitizes keys to match environment variable naming conventions:
+ *
+ * <ul>
+ *   <li>Converts keys to uppercase (e.g., {@code traceparent} becomes {@code TRACEPARENT})
+ *   <li>Replaces {@code .} and {@code -} with underscores
+ * </ul>
+ *
+ * <p>Values are validated to contain only characters valid in HTTP header fields per <a
+ * href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.5">RFC 9110</a> (visible ASCII
+ * characters, space, and horizontal tab). Values containing invalid characters are treated as
+ * absent and {@code null} is returned.
+ *
+ * @see <a href=
+ *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/context/env-carriers.md#format-restrictions">Environment
+ *     Variable Format Restrictions</a>
+ */
+public final class EnvironmentGetter implements TextMapGetter<Map<String, String>> {
+
+  private static final AtomicBoolean LOG_KEYS_CALLED = new AtomicBoolean(false);
+  private static final Logger LOGGER = Logger.getLogger(EnvironmentGetter.class.getName());
+  private static final EnvironmentGetter INSTANCE = new EnvironmentGetter();
+
+  private EnvironmentGetter() {}
+
+  /** Returns the singleton instance of {@link EnvironmentGetter}. */
+  public static EnvironmentGetter getInstance() {
+    return INSTANCE;
+  }
+
+  @Override
+  public Iterable<String> keys(Map<String, String> carrier) {
+    if (LOG_KEYS_CALLED.compareAndSet(false, true)) {
+      LOGGER.log(
+          Level.WARNING,
+          "keys() called on EnvironmentGetter. "
+              + "This may produce unexpected results with propagators which depend on case sensitivity or special characters in keys.",
+          new Throwable());
+    }
+    if (carrier == null) {
+      return Collections.emptyList();
+    }
+    List<String> result = new ArrayList<>(carrier.size());
+    for (String key : carrier.keySet()) {
+      result.add(EnvironmentSetter.normalizeKey(key));
+    }
+    return Collections.unmodifiableList(result);
+  }
+
+  @Nullable
+  @Override
+  public String get(@Nullable Map<String, String> carrier, String key) {
+    if (carrier == null || key == null) {
+      return null;
+    }
+    String normalizedKey = EnvironmentSetter.normalizeKey(key);
+    // first, perform an optimistic lookup for an exact match on the normalized key
+    String value = carrier.get(normalizedKey);
+    if (value != null) {
+      return value;
+    }
+    // next, iterate over the carrier normalizing each entry and evaluating for a match
+    // if memory allocation becomes an issue, can implement using iterative normalization, comparing
+    // an entry character by character to the normalized key, normalizing along the way.
+    for (Map.Entry<String, String> entry : carrier.entrySet()) {
+      if (EnvironmentSetter.normalizeKey(entry.getKey()).equals(normalizedKey)) {
+        return entry.getValue();
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public String toString() {
+    return "EnvironmentGetter";
+  }
+}

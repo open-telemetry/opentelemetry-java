@@ -22,10 +22,10 @@ final class ProfileMarshaler extends MarshalerWithSize {
   private final ValueTypeMarshaler periodTypeMarshaler;
   private final long period;
   private final byte[] profileId;
-  private final List<Integer> attributeIndices;
   private final int droppedAttributesCount;
   private final byte[] originalPayloadFormatUtf8;
   private final ByteBuffer originalPayload;
+  private final List<Integer> attributeIndices;
 
   static ProfileMarshaler create(ProfileData profileData) {
 
@@ -44,10 +44,10 @@ final class ProfileMarshaler extends MarshalerWithSize {
         periodTypeMarshaler,
         profileData.getPeriod(),
         profileData.getProfileIdBytes(),
-        profileData.getAttributeIndices(),
         droppedAttributesCount,
         MarshalerUtil.toBytes(profileData.getOriginalPayloadFormat()),
-        profileData.getOriginalPayload());
+        profileData.getOriginalPayload(),
+        profileData.getAttributeIndices());
   }
 
   private ProfileMarshaler(
@@ -58,10 +58,10 @@ final class ProfileMarshaler extends MarshalerWithSize {
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
       byte[] profileId,
-      List<Integer> attributeIndices,
       int droppedAttributesCount,
       byte[] originalPayloadFormat,
-      ByteBuffer originalPayload) {
+      ByteBuffer originalPayload,
+      List<Integer> attributeIndices) {
     super(
         calculateSize(
             sampleTypeMarshaler,
@@ -71,10 +71,10 @@ final class ProfileMarshaler extends MarshalerWithSize {
             periodTypeMarshaler,
             period,
             profileId,
-            attributeIndices,
             droppedAttributesCount,
             originalPayloadFormat,
-            originalPayload));
+            originalPayload,
+            attributeIndices));
     this.sampleTypeMarshaler = sampleTypeMarshaler;
     this.sampleMarshalers = sampleMarshalers;
     this.timeNanos = timeNanos;
@@ -93,15 +93,15 @@ final class ProfileMarshaler extends MarshalerWithSize {
     output.serializeMessage(Profile.SAMPLE_TYPE, sampleTypeMarshaler);
     output.serializeRepeatedMessage(Profile.SAMPLES, sampleMarshalers);
     output.serializeFixed64(Profile.TIME_UNIX_NANO, timeNanos);
-    output.serializeInt64(Profile.DURATION_NANO, durationNanos);
+    output.serializeUInt64(Profile.DURATION_NANO, durationNanos);
     output.serializeMessage(Profile.PERIOD_TYPE, periodTypeMarshaler);
     output.serializeInt64(Profile.PERIOD, period);
 
     output.serializeBytes(Profile.PROFILE_ID, profileId);
-    output.serializeRepeatedInt32(Profile.ATTRIBUTE_INDICES, attributeIndices);
     output.serializeUInt32(Profile.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     output.serializeString(Profile.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormatUtf8);
     output.serializeByteBuffer(Profile.ORIGINAL_PAYLOAD, originalPayload);
+    output.serializeRepeatedInt32(Profile.ATTRIBUTE_INDICES, attributeIndices);
   }
 
   private static int calculateSize(
@@ -112,24 +112,24 @@ final class ProfileMarshaler extends MarshalerWithSize {
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
       byte[] profileId,
-      List<Integer> attributeIndices,
       int droppedAttributesCount,
       byte[] originalPayloadFormat,
-      ByteBuffer originalPayload) {
+      ByteBuffer originalPayload,
+      List<Integer> attributeIndices) {
     int size;
     size = 0;
     size += MarshalerUtil.sizeMessage(Profile.SAMPLE_TYPE, sampleTypeMarshaler);
     size += MarshalerUtil.sizeRepeatedMessage(Profile.SAMPLES, sampleMarshalers);
     size += MarshalerUtil.sizeFixed64(Profile.TIME_UNIX_NANO, timeNanos);
-    size += MarshalerUtil.sizeInt64(Profile.DURATION_NANO, durationNanos);
+    size += MarshalerUtil.sizeUInt64(Profile.DURATION_NANO, durationNanos);
     size += MarshalerUtil.sizeMessage(Profile.PERIOD_TYPE, periodTypeMarshaler);
     size += MarshalerUtil.sizeInt64(Profile.PERIOD, period);
 
     size += MarshalerUtil.sizeBytes(Profile.PROFILE_ID, profileId);
-    size += MarshalerUtil.sizeRepeatedInt32(Profile.ATTRIBUTE_INDICES, attributeIndices);
-    size += MarshalerUtil.sizeInt32(Profile.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    size += MarshalerUtil.sizeUInt32(Profile.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     size += MarshalerUtil.sizeBytes(Profile.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormat);
     size += MarshalerUtil.sizeByteBuffer(Profile.ORIGINAL_PAYLOAD, originalPayload);
+    size += MarshalerUtil.sizeRepeatedInt32(Profile.ATTRIBUTE_INDICES, attributeIndices);
 
     return size;
   }

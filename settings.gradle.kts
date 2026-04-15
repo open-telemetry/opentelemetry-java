@@ -1,11 +1,11 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "9.3.1"
-    id("com.gradle.develocity") version "4.3.2"
+    id("com.gradleup.shadow") version "9.4.1"
+    id("com.gradle.develocity") version "4.4.0"
     id("de.undercouch.download") version "5.7.0"
     id("org.jsonschema2pojo") version "1.3.3"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("org.graalvm.buildtools.native") version "0.11.4"
+    id("org.graalvm.buildtools.native") version "1.0.0"
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
   }
 }
@@ -76,6 +76,7 @@ include(":animal-sniffer-signature")
 val develocityServer = "https://develocity.opentelemetry.io"
 val isCI = System.getenv("CI") != null
 val develocityAccessKey = System.getenv("DEVELOCITY_ACCESS_KEY") ?: ""
+val disableRemoteBuildCache = System.getenv("DISABLE_REMOTE_BUILD_CACHE") != null
 
 develocity {
   if (develocityAccessKey.isNotEmpty()) {
@@ -111,6 +112,7 @@ develocity {
 buildCache {
   remote(HttpBuildCache::class) {
     url = uri("$develocityServer/cache/")
+    isEnabled = !disableRemoteBuildCache
     isPush = isCI && develocityAccessKey.isNotEmpty()
   }
 }

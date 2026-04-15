@@ -17,19 +17,21 @@ public enum HistogramAggregationParam {
       new DoubleExplicitBucketHistogramAggregator(
           ExplicitBucketHistogramUtils.createBoundaryArray(
               ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES),
+          /* recordMinMax= */ true,
           ExemplarReservoirFactory.noSamples(),
           IMMUTABLE_DATA)),
   EXPLICIT_SINGLE_BUCKET(
       new DoubleExplicitBucketHistogramAggregator(
           ExplicitBucketHistogramUtils.createBoundaryArray(Collections.emptyList()),
+          /* recordMinMax= */ true,
           ExemplarReservoirFactory.noSamples(),
           IMMUTABLE_DATA)),
   EXPONENTIAL_SMALL_CIRCULAR_BUFFER(
       new DoubleBase2ExponentialHistogramAggregator(
-          ExemplarReservoirFactory.noSamples(), 20, 0, IMMUTABLE_DATA)),
+          ExemplarReservoirFactory.noSamples(), 20, 0, /* recordMinMax= */ true, IMMUTABLE_DATA)),
   EXPONENTIAL_CIRCULAR_BUFFER(
       new DoubleBase2ExponentialHistogramAggregator(
-          ExemplarReservoirFactory.noSamples(), 160, 0, IMMUTABLE_DATA));
+          ExemplarReservoirFactory.noSamples(), 160, 0, /* recordMinMax= */ true, IMMUTABLE_DATA));
 
   private final Aggregator<?> aggregator;
 

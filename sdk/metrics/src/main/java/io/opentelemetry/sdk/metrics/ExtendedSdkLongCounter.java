@@ -20,11 +20,6 @@ final class ExtendedSdkLongCounter extends SdkLongCounter implements ExtendedLon
     super(descriptor, sdkMeter, storage);
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
-
   static final class ExtendedSdkLongCounterBuilder extends SdkLongCounterBuilder
       implements ExtendedLongCounterBuilder {
 

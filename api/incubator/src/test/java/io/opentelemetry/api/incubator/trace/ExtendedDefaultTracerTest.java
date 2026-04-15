@@ -32,11 +32,9 @@ class ExtendedDefaultTracerTest extends AbstractDefaultTracerTest {
   void incubatingApiIsLoaded() {
     Tracer tracer = TracerProvider.noop().get("test");
     assertThat(tracer).isSameAs(OpenTelemetry.noop().getTracer("test"));
+    assertThat(tracer.isEnabled()).isFalse();
 
-    assertThat(tracer)
-        .isInstanceOfSatisfying(
-            ExtendedTracer.class,
-            extendedTracer -> assertThat(extendedTracer.isEnabled()).isFalse());
+    assertThat(tracer).isInstanceOf(ExtendedTracer.class);
     assertThat(tracer.spanBuilder("test")).isInstanceOf(ExtendedSpanBuilder.class);
   }
 

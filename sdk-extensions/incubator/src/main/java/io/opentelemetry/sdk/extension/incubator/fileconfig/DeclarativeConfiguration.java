@@ -13,12 +13,11 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -124,7 +123,7 @@ public final class DeclarativeConfiguration {
    *
    * @throws DeclarativeConfigException if unable to parse or interpret
    */
-  public static ExtendedOpenTelemetrySdk parseAndCreate(InputStream inputStream) {
+  public static DeclarativeConfigResult parseAndCreate(InputStream inputStream) {
     OpenTelemetryConfigurationModel configurationModel = parse(inputStream);
     return create(configurationModel);
   }
@@ -134,11 +133,10 @@ public final class DeclarativeConfiguration {
    * corresponding to the configuration.
    *
    * @param configurationModel the configuration model
-   * @return the {@link OpenTelemetrySdk}
+   * @return the {@link DeclarativeConfigResult}
    * @throws DeclarativeConfigException if unable to interpret
    */
-  public static ExtendedOpenTelemetrySdk create(
-      OpenTelemetryConfigurationModel configurationModel) {
+  public static DeclarativeConfigResult create(OpenTelemetryConfigurationModel configurationModel) {
     return create(configurationModel, DEFAULT_COMPONENT_LOADER);
   }
 
@@ -149,31 +147,31 @@ public final class DeclarativeConfiguration {
    * @param configurationModel the configuration model
    * @param componentLoader the component loader used to load {@link ComponentProvider}
    *     implementations
-   * @return the {@link OpenTelemetrySdk}
+   * @return the {@link DeclarativeConfigResult}
    * @throws DeclarativeConfigException if unable to interpret
    */
-  public static ExtendedOpenTelemetrySdk create(
+  public static DeclarativeConfigResult create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
-    return create(configurationModel, DeclarativeConfigContext.create(componentLoader));
+    return create(configurationModel, new DeclarativeConfigContext(componentLoader));
   }
 
-  private static ExtendedOpenTelemetrySdk create(
+  private static DeclarativeConfigResult create(
       OpenTelemetryConfigurationModel configurationModel, DeclarativeConfigContext context) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+    context.setBuilder(builder);
 
-    SpiHelper spiHelper = context.getSpiHelper();
     for (DeclarativeConfigurationCustomizerProvider provider :
-        spiHelper.loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
+        Ordered.loadOrderedList(context, DeclarativeConfigurationCustomizerProvider.class)) {
       provider.customize(builder);
     }
 
-    ExtendedOpenTelemetrySdk sdk =
+    DeclarativeConfigResult result =
         createAndMaybeCleanup(
             OpenTelemetryConfigurationFactory.getInstance(),
             context,
             builder.customizeModel(configurationModel));
-    callAutoConfigureListeners(spiHelper, sdk);
-    return sdk;
+    callAutoConfigureListeners(context, result.getSdk());
+    return result;
   }
 
   /**
@@ -262,7 +260,7 @@ public final class DeclarativeConfiguration {
             DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
-        DeclarativeConfigContext.create(yamlDeclarativeConfigProperties.getComponentLoader()),
+        new DeclarativeConfigContext(yamlDeclarativeConfigProperties.getComponentLoader()),
         samplerModel);
   }
 
@@ -484,8 +482,9 @@ public final class DeclarativeConfiguration {
   }
 
   // Visible for testing
-  static void callAutoConfigureListeners(SpiHelper spiHelper, OpenTelemetrySdk openTelemetrySdk) {
-    for (AutoConfigureListener listener : spiHelper.getListeners()) {
+  static void callAutoConfigureListeners(
+      DeclarativeConfigContext context, OpenTelemetrySdk openTelemetrySdk) {
+    for (AutoConfigureListener listener : context.getListeners()) {
       try {
         listener.afterAutoConfigure(openTelemetrySdk);
       } catch (Throwable throwable) {

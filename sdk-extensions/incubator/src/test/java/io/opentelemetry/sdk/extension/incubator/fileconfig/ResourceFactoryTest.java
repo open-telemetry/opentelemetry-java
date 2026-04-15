@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
@@ -28,7 +28,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ResourceFactoryTest {
 
   private final DeclarativeConfigContext context =
-      new DeclarativeConfigContext(SpiHelper.create(ResourceFactoryTest.class.getClassLoader()));
+      new DeclarativeConfigContext(ComponentLoader.forClassLoader(getClass().getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArgs")
@@ -54,7 +54,10 @@ class ResourceFactoryTest {
                 .build()),
         Arguments.of(
             new ResourceModel().withSchemaUrl("http://foo"),
-            Resource.getDefault().toBuilder().setSchemaUrl("http://foo").build()));
+            Resource.getDefault().toBuilder().setSchemaUrl("http://foo").build()),
+        Arguments.of(
+            new ResourceModel().withAttributesList("key1=val1,key2=val2"),
+            Resource.getDefault().toBuilder().put("key1", "val1").put("key2", "val2").build()));
   }
 
   @ParameterizedTest
@@ -141,7 +144,11 @@ class ResourceFactoryTest {
         Arguments.of(
             Collections.singletonList("*o*"),
             Collections.singletonList("order"),
-            Resource.getDefault().toBuilder().put("color", "red").build()));
+            Resource.getDefault().toBuilder().put("color", "red").build()),
+        Arguments.of(
+            null,
+            Collections.singletonList("order"),
+            Resource.getDefault().toBuilder().put("color", "red").put("shape", "square").build()));
   }
 
   @ParameterizedTest
@@ -179,6 +186,24 @@ class ResourceFactoryTest {
                     new ExperimentalResourceDetectionModel()
                         .withDetectors(
                             Collections.singletonList(new ExperimentalResourceDetectorModel()))),
-            "resource detector must have exactly one entry but has 0"));
+            "resource detector must have exactly one entry but has 0"),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withAttributes(
+                            new IncludeExcludeModel()
+                                .withIncluded(Collections.emptyList())
+                                .withExcluded(null))),
+            "included must not be empty"),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withAttributes(
+                            new IncludeExcludeModel()
+                                .withIncluded(null)
+                                .withExcluded(Collections.emptyList()))),
+            "excluded must not be empty"));
   }
 }

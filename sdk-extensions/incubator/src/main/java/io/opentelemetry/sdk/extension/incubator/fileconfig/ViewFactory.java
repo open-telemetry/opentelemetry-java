@@ -5,12 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
-import java.util.List;
 
 final class ViewFactory implements Factory<ViewStreamModel, View> {
 
@@ -33,11 +31,8 @@ final class ViewFactory implements Factory<ViewStreamModel, View> {
     }
     IncludeExcludeModel attributeKeys = model.getAttributeKeys();
     if (attributeKeys != null) {
-      List<String> included = attributeKeys.getIncluded();
-      List<String> excluded = attributeKeys.getExcluded();
-      if (included != null || excluded != null) {
-        builder.setAttributeFilter(IncludeExcludePredicate.createExactMatching(included, excluded));
-      }
+      builder.setAttributeFilter(
+          IncludeExcludeFactory.getInstance().create(attributeKeys, context));
     }
     if (model.getAggregation() != null) {
       builder.setAggregation(

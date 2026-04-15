@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Explic
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions;
 import io.opentelemetry.sdk.metrics.View;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,9 +42,13 @@ class ViewFactoryTest {
             .setName("name")
             .setDescription("description")
             .setAttributeFilter(
-                IncludeExcludePredicate.createExactMatching(
+                IncludeExcludePredicate.createPatternMatching(
                     Arrays.asList("foo", "bar"), Collections.singletonList("baz")))
-            .setAggregation(Aggregation.explicitBucketHistogram(Arrays.asList(1.0, 2.0)))
+            .setAggregation(
+                Aggregation.explicitBucketHistogram(
+                    ExplicitBucketHistogramOptions.builder()
+                        .setBucketBoundaries(Arrays.asList(1.0, 2.0))
+                        .build()))
             .build();
 
     View view =

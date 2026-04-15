@@ -60,6 +60,8 @@ dependencies {
   // exporters/otlp/all/build.gradle.kts (testOkhttp4 suite).
   implementation("com.squareup.okhttp3:okhttp") { version { strictly("4.12.0") } }
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   compileOnly("io.grpc:grpc-stub")
   compileOnly("com.fasterxml.jackson.core:jackson-core")
 

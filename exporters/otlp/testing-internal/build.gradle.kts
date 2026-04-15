@@ -38,7 +38,7 @@ dependencies {
   implementation("org.mock-server:mockserver-netty")
 }
 
-// Skip OWASP dependencyCheck task on test module
-dependencyCheck {
-  skip = true
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
 }

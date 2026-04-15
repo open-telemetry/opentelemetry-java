@@ -10,6 +10,8 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggreg
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions;
+import io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions;
 import java.util.List;
 
 final class AggregationFactory implements Factory<AggregationModel, Aggregation> {
@@ -37,15 +39,20 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
         model.getBase2ExponentialBucketHistogram();
     if (exponentialBucketHistogram != null) {
       Integer maxScale = exponentialBucketHistogram.getMaxScale();
-      if (maxScale == null) {
-        maxScale = 20;
-      }
       Integer maxSize = exponentialBucketHistogram.getMaxSize();
-      if (maxSize == null) {
-        maxSize = 160;
+      Boolean recordMinMax = exponentialBucketHistogram.getRecordMinMax();
+      Base2ExponentialHistogramOptions.Builder builder = Base2ExponentialHistogramOptions.builder();
+      if (maxScale != null) {
+        builder.setMaxScale(maxScale);
+      }
+      if (maxSize != null) {
+        builder.setMaxBuckets(maxSize);
+      }
+      if (recordMinMax != null) {
+        builder.setRecordMinMax(recordMinMax);
       }
       try {
-        return Aggregation.base2ExponentialBucketHistogram(maxSize, maxScale);
+        return Aggregation.base2ExponentialBucketHistogram(builder.build());
       } catch (IllegalArgumentException e) {
         throw new DeclarativeConfigException("Invalid exponential bucket histogram", e);
       }
@@ -54,11 +61,16 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
         model.getExplicitBucketHistogram();
     if (explicitBucketHistogram != null) {
       List<Double> boundaries = explicitBucketHistogram.getBoundaries();
-      if (boundaries == null) {
-        return Aggregation.explicitBucketHistogram();
+      Boolean recordMinMax = explicitBucketHistogram.getRecordMinMax();
+      ExplicitBucketHistogramOptions.Builder builder = ExplicitBucketHistogramOptions.builder();
+      if (boundaries != null) {
+        builder.setBucketBoundaries(boundaries);
+      }
+      if (recordMinMax != null) {
+        builder.setRecordMinMax(recordMinMax);
       }
       try {
-        return Aggregation.explicitBucketHistogram(boundaries);
+        return Aggregation.explicitBucketHistogram(builder.build());
       } catch (IllegalArgumentException e) {
         throw new DeclarativeConfigException("Invalid explicit bucket histogram", e);
       }

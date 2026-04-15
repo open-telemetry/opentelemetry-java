@@ -46,7 +46,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
-import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_4_31_1.Metrics;
+import io.prometheus.metrics.expositionformats.generated.Metrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -590,6 +590,7 @@ class PrometheusHttpServerTest {
    * the protobuf java bindings, and assert against the string representation.
    */
   @Test
+  @SuppressWarnings("NonCanonicalType") // stable Metrics class extends versioned protobuf class
   void histogramDefaultBase2ExponentialHistogram() throws IOException {
     PrometheusHttpServer prometheusServer =
         PrometheusHttpServer.builder()

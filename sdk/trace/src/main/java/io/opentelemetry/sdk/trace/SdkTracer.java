@@ -51,6 +51,11 @@ class SdkTracer implements Tracer {
         : new SdkTracer(sharedState, instrumentationScopeInfo, tracerConfig);
   }
 
+  @Override
+  public boolean isEnabled() {
+    return tracerEnabled;
+  }
+
   /**
    * Note that {@link ExtendedSdkTracer#spanBuilder(String)} calls this and depends on it returning
    * {@link ExtendedSdkTracer} in all cases when the incubator is present.
@@ -76,11 +81,6 @@ class SdkTracer implements Tracer {
   // Visible for testing
   InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return instrumentationScopeInfo;
-  }
-
-  // Visible for testing
-  boolean isEnabled() {
-    return tracerEnabled;
   }
 
   void updateTracerConfig(TracerConfig tracerConfig) {

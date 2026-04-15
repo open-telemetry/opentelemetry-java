@@ -18,6 +18,20 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface LongCounter {
 
   /**
+   * Returns {@code true} if the counter is enabled.
+   *
+   * <p>This allows callers to avoid unnecessary compute when nothing is consuming the data. Because
+   * the response is subject to change over the application, callers should call this before each
+   * call to {@link #add(long)}, {@link #add(long, Attributes)}, or {@link #add(long, Attributes,
+   * Context)}.
+   *
+   * @since 1.61.0
+   */
+  default boolean isEnabled() {
+    return true;
+  }
+
+  /**
    * Records a value.
    *
    * <p>Note: This may use {@code Context.current()} to pull the context associated with this

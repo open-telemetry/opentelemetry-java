@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.view.Base2ExponentialHistogramAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.DefaultAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.DropAggregation;
@@ -64,9 +65,26 @@ public interface Aggregation {
    *
    * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
    *     order from lowest to highest.
+   * @deprecated Use {@link #explicitBucketHistogram(ExplicitBucketHistogramOptions)} instead.
    */
+  @Deprecated
   static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
-    return ExplicitBucketHistogramAggregation.create(bucketBoundaries);
+    return explicitBucketHistogram(
+        ExplicitBucketHistogramOptions.builder().setBucketBoundaries(bucketBoundaries).build());
+  }
+
+  /**
+   * Aggregates measurements into an explicit bucket {@link MetricDataType#HISTOGRAM}.
+   *
+   * @param options histogram options
+   * @since 1.60.0
+   */
+  static Aggregation explicitBucketHistogram(ExplicitBucketHistogramOptions options) {
+    List<Double> boundaries = options.getBucketBoundaries();
+    if (boundaries == null) {
+      boundaries = ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES;
+    }
+    return ExplicitBucketHistogramAggregation.create(boundaries, options.getRecordMinMax());
   }
 
   /**
@@ -89,8 +107,26 @@ public interface Aggregation {
    *     accommodated. Setting maxScale may reduce the number of downscales. Additionally, the
    *     performance of computing bucket index is improved when scale is {@code <= 0}.
    * @since 1.23.0
+   * @deprecated Use {@link #base2ExponentialBucketHistogram(Base2ExponentialHistogramOptions)}
+   *     instead.
    */
+  @Deprecated
   static Aggregation base2ExponentialBucketHistogram(int maxBuckets, int maxScale) {
-    return Base2ExponentialHistogramAggregation.create(maxBuckets, maxScale);
+    return base2ExponentialBucketHistogram(
+        Base2ExponentialHistogramOptions.builder()
+            .setMaxBuckets(maxBuckets)
+            .setMaxScale(maxScale)
+            .build());
+  }
+
+  /**
+   * Aggregates measurements into a base-2 {@link MetricDataType#EXPONENTIAL_HISTOGRAM}.
+   *
+   * @param options histogram options
+   * @since 1.60.0
+   */
+  static Aggregation base2ExponentialBucketHistogram(Base2ExponentialHistogramOptions options) {
+    return Base2ExponentialHistogramAggregation.create(
+        options.getMaxBuckets(), options.getMaxScale(), options.getRecordMinMax());
   }
 }

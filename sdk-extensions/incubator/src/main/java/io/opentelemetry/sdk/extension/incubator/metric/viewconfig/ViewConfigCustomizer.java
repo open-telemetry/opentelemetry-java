@@ -15,9 +15,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.logging.Logger;
 
-/** SPI implementation for loading view configuration YAML. */
+/**
+ * SPI implementation for loading view configuration YAML.
+ *
+ * @deprecated this mechanism is superseded by declarative config, which is now stable (spec and
+ *     schema at <a
+ *     href="https://github.com/open-telemetry/opentelemetry-configuration">opentelemetry-configuration</a>)
+ *     and will be removed after the 1.62.0 release. Please uses {@link
+ *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration#parseAndCreate(InputStream)}
+ *     instead.
+ */
+@Deprecated
 public final class ViewConfigCustomizer implements AutoConfigurationCustomizerProvider {
+  private static final Logger LOGGER = Logger.getLogger(ViewConfigCustomizer.class.getName());
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
@@ -29,6 +41,10 @@ public final class ViewConfigCustomizer implements AutoConfigurationCustomizerPr
       SdkMeterProviderBuilder meterProviderBuilder, ConfigProperties configProperties) {
     List<String> configFileLocations =
         configProperties.getList("otel.experimental.metrics.view.config");
+    if (!configFileLocations.isEmpty()) {
+      LOGGER.warning(
+          "otel.experimental.metrics.view.config is deprecated and will be removed after 1.62 release. Please use declarative config instead.");
+    }
     for (String configFileLocation : configFileLocations) {
       if (configFileLocation.startsWith("classpath:")) {
         String classpathLocation = configFileLocation.substring("classpath:".length());

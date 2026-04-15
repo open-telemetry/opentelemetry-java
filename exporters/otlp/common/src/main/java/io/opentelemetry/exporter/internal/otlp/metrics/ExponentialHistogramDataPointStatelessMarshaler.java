@@ -31,7 +31,7 @@ final class ExponentialHistogramDataPointStatelessMarshaler
         ExponentialHistogramDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
     output.serializeFixed64(ExponentialHistogramDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
     output.serializeFixed64(ExponentialHistogramDataPoint.COUNT, point.getCount());
-    output.serializeDouble(ExponentialHistogramDataPoint.SUM, point.getSum());
+    output.serializeDoubleOptional(ExponentialHistogramDataPoint.SUM, point.getSum());
     if (point.hasMin()) {
       output.serializeDoubleOptional(ExponentialHistogramDataPoint.MIN, point.getMin());
     }
@@ -73,7 +73,7 @@ final class ExponentialHistogramDataPointStatelessMarshaler
         MarshalerUtil.sizeFixed64(
             ExponentialHistogramDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
     size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.COUNT, point.getCount());
-    size += MarshalerUtil.sizeDouble(ExponentialHistogramDataPoint.SUM, point.getSum());
+    size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.SUM, point.getSum());
     if (point.hasMin()) {
       size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.MIN, point.getMin());
     }

@@ -84,7 +84,7 @@ public class SpanRecordBenchmark {
                       .build())
               .setSampler(Sampler.alwaysOn())
               .build();
-      tracer = tracerProvider.get("benchmarkTracer");
+      tracer = tracerProvider.get("benchmark");
 
       attributeKeys = new ArrayList<>(spanSize.attributes);
       attributeValues = new ArrayList<>(spanSize.attributes);

@@ -21,11 +21,6 @@ final class ExtendedSdkTracer extends SdkTracer implements ExtendedTracer {
   }
 
   @Override
-  public boolean isEnabled() {
-    return tracerEnabled;
-  }
-
-  @Override
   public ExtendedSpanBuilder spanBuilder(String spanName) {
     return (ExtendedSpanBuilder) super.spanBuilder(spanName);
   }

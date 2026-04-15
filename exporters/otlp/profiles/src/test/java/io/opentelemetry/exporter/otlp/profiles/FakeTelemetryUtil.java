@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.otlp.profiles;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileData;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileDictionaryData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfilesDictionaryData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableValueTypeData;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -17,8 +17,8 @@ import java.util.Collections;
 // TODO eventually merge with io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil
 class FakeTelemetryUtil {
 
-  private static final ProfileDictionaryData EMPTY_PROFILE_DICTIONARY_DATA =
-      ImmutableProfileDictionaryData.create(
+  private static final ProfilesDictionaryData EMPTY_PROFILE_DICTIONARY_DATA =
+      ImmutableProfilesDictionaryData.create(
           Collections.emptyList(),
           Collections.emptyList(),
           Collections.emptyList(),
@@ -48,11 +48,10 @@ class FakeTelemetryUtil {
         6L,
         ImmutableValueTypeData.create(1, 2),
         7L,
-        Collections.emptyList(),
         profileId,
-        Collections.emptyList(),
-        3,
+        8,
         "format",
-        ByteBuffer.wrap(new byte[] {4, 5}));
+        ByteBuffer.wrap(new byte[] {4, 5}),
+        Collections.emptyList());
   }
 }
