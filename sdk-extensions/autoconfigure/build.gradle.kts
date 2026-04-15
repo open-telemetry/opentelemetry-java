@@ -12,7 +12,6 @@ dependencies {
 
   compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk-extensions:declarative-config"))
-  // compileOnly(project(":sdk-extensions:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

@@ -65,17 +65,17 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private static final boolean DECLARATIVE_CONFIG_AVAILABLE;
 
   static {
-    boolean incubatorAvailable = false;
+    boolean declarativeConfigAvailable = false;
     try {
       Class.forName(
           "io.opentelemetry.sdk.declarativeconfig.DeclarativeConfiguration",
           false,
           AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
-      incubatorAvailable = true;
+      declarativeConfigAvailable = true;
     } catch (ClassNotFoundException e) {
       // Not available
     }
-    DECLARATIVE_CONFIG_AVAILABLE = incubatorAvailable;
+    DECLARATIVE_CONFIG_AVAILABLE = declarativeConfigAvailable;
   }
 
   @Nullable private ConfigProperties config;

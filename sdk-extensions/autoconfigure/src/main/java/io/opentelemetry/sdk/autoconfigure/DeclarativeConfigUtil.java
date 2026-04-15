@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  * Utilities for interacting with ({@code
  * io.opentelemetry:opentelemetry-sdk-extension-declarative-config}, which is not guaranteed to be
  * present on the classpath. For all methods, callers MUST first separately reflectively confirm
- * that the incubator is available on the classpath.
+ * that declarative config is available on the classpath.
  */
 final class DeclarativeConfigUtil {
 
