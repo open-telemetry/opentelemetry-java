@@ -65,23 +65,20 @@ class MetricExportBatcher {
     if (metrics.isEmpty()) {
       return Collections.emptyList();
     }
-
     Collection<Collection<MetricData>> preparedBatchesForExport = new ArrayList<>();
     Collection<MetricData> currentBatch = new ArrayList<>(maxExportBatchSize);
 
-    // Iterate through each MetricData and fill up the current batch, splitting if
-    // necessary
+    // Fill active batch and split overlapping metric points if needed
     for (MetricData metricData : metrics) {
       MetricDataSplitOperationResult splitResult = prepareExportBatches(metricData, currentBatch);
       preparedBatchesForExport.addAll(splitResult.getPreparedBatches());
       currentBatch = splitResult.getLastInProgressBatch();
     }
 
-    // Add the last in-progress batch if it is not empty
+    // Push trailing capacity block
     if (!currentBatch.isEmpty()) {
       preparedBatchesForExport.add(currentBatch);
     }
-
     return Collections.unmodifiableCollection(preparedBatchesForExport);
   }
 
@@ -103,17 +100,14 @@ class MetricExportBatcher {
       currentBatch.add(metricData);
       return new MetricDataSplitOperationResult(Collections.emptyList(), currentBatch);
     } else {
-      // remaining capacity in current batch cannot hold all points from metric data
-      // split the metric data into multiple metric data objects
+      // Remaining capacity can't hold all points, partition existing metric data object
       List<PointData> originalPointsList = new ArrayList<>(metricData.getData().getPoints());
       Collection<Collection<MetricData>> preparedBatches = new ArrayList<>();
 
-      // Split the points into chunks of size maxExportBatchSize
-      // From the first chunk, take as many points as possible to fill current batch
+      // Fill current batch buffer completely
       int pointsToTake = remainingCapacityInCurrentBatch;
       int currentIndex = 0;
 
-      // fill the current batch and add it to prepared batches
       if (pointsToTake > 0) {
         currentBatch.add(
             copyMetricData(metricData, originalPointsList, currentIndex, pointsToTake));
@@ -121,19 +115,13 @@ class MetricExportBatcher {
         preparedBatches.add(currentBatch);
       }
 
-      // If the current metric contains more data points than could fit into the
-      // filled batch above,
-      // we initialize a fresh batch to receive the spillover points on subsequent
-      // iterations.
+      // Buffer spillover onto fresh partitions
       int remainingPoints = totalPointsInMetricData - currentIndex;
       currentBatch = new ArrayList<>(maxExportBatchSize);
       remainingCapacityInCurrentBatch = maxExportBatchSize;
 
-      // Add remaining points in chunks of size maxExportBatchSize
+      // Iterate extra chunks sized to exact transport constraints
       while (currentIndex < totalPointsInMetricData && remainingPoints > 0) {
-        // There are still more points in the current metricData
-        // Take as many points as possible to fill current batch up till remaining
-        // capacity
         pointsToTake = Math.min(remainingPoints, remainingCapacityInCurrentBatch);
         currentBatch.add(
             copyMetricData(metricData, originalPointsList, currentIndex, pointsToTake));
