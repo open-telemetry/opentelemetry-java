@@ -80,6 +80,13 @@ val testOSGiTask = tasks.register<TestOSGi>("testOSGi") {
   group = JavaBasePlugin.VERIFICATION_GROUP
   bndrun = resolveTask.flatMap { it.outputBndrun }
   bundles = files(sourceSets.test.get().runtimeClasspath, testingBundleTask.get().archiveFile)
+  // BND reports success when zero tests ran (e.g. if bundles failed to start). Fail explicitly.
+  val testResultsDir = layout.buildDirectory.dir("test-results/testOSGi")
+  doLast {
+    check(testResultsDir.get().asFile.listFiles()?.isNotEmpty() == true) {
+      "No OSGi test results found — bundles may have failed to start. Check the output above."
+    }
+  }
 }
 
 tasks.named(LifecycleBasePlugin.CHECK_TASK_NAME) {
