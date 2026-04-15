@@ -557,26 +557,26 @@ class MetricExportBatcherTest {
     assertThat(secondBatch).hasSize(1);
     assertThat(thirdBatch).hasSize(1);
 
-    MetricData firstBatch_m1 = firstBatch.iterator().next();
-    assertThat(firstBatch_m1.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
-    assertThat(firstBatch_m1.getName()).isEqualTo("name");
-    assertThat(firstBatch_m1.getDescription()).isEqualTo("desc");
-    assertThat(firstBatch_m1.getUnit()).isEqualTo("1");
-    assertThat(firstBatch_m1.getLongGaugeData().getPoints()).containsExactly(p1, p2);
+    MetricData firstBatchMetricData = firstBatch.iterator().next();
+    assertThat(firstBatchMetricData.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
+    assertThat(firstBatchMetricData.getName()).isEqualTo("name");
+    assertThat(firstBatchMetricData.getDescription()).isEqualTo("desc");
+    assertThat(firstBatchMetricData.getUnit()).isEqualTo("1");
+    assertThat(firstBatchMetricData.getLongGaugeData().getPoints()).containsExactly(p1, p2);
 
-    MetricData secondBatch_m1 = secondBatch.iterator().next();
-    assertThat(secondBatch_m1.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
-    assertThat(secondBatch_m1.getName()).isEqualTo("name");
-    assertThat(secondBatch_m1.getDescription()).isEqualTo("desc");
-    assertThat(secondBatch_m1.getUnit()).isEqualTo("1");
-    assertThat(secondBatch_m1.getLongGaugeData().getPoints()).containsExactly(p3, p4);
+    MetricData secondBatchMetricData = secondBatch.iterator().next();
+    assertThat(secondBatchMetricData.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
+    assertThat(secondBatchMetricData.getName()).isEqualTo("name");
+    assertThat(secondBatchMetricData.getDescription()).isEqualTo("desc");
+    assertThat(secondBatchMetricData.getUnit()).isEqualTo("1");
+    assertThat(secondBatchMetricData.getLongGaugeData().getPoints()).containsExactly(p3, p4);
 
-    MetricData thirdBatch_m1 = thirdBatch.iterator().next();
-    assertThat(thirdBatch_m1.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
-    assertThat(thirdBatch_m1.getName()).isEqualTo("name");
-    assertThat(thirdBatch_m1.getDescription()).isEqualTo("desc");
-    assertThat(thirdBatch_m1.getUnit()).isEqualTo("1");
-    assertThat(thirdBatch_m1.getLongGaugeData().getPoints()).containsExactly(p5);
+    MetricData thirdBatchMetricData = thirdBatch.iterator().next();
+    assertThat(thirdBatchMetricData.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
+    assertThat(thirdBatchMetricData.getName()).isEqualTo("name");
+    assertThat(thirdBatchMetricData.getDescription()).isEqualTo("desc");
+    assertThat(thirdBatchMetricData.getUnit()).isEqualTo("1");
+    assertThat(thirdBatchMetricData.getLongGaugeData().getPoints()).containsExactly(p5);
   }
 
   @Test
