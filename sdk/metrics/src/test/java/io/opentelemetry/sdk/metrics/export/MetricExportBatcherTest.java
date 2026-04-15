@@ -192,7 +192,7 @@ class MetricExportBatcherTest {
     LongPointData p1 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 1L);
     LongPointData p2 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 2L);
 
-    MetricData metric_1 =
+    MetricData metric1 =
         ImmutableMetricData.createLongSum(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
@@ -202,7 +202,7 @@ class MetricExportBatcherTest {
             ImmutableSumData.create(
                 /* isMonotonic= */ false, AggregationTemporality.DELTA, Arrays.asList(p1, p2)));
 
-    MetricData metric_2 =
+    MetricData metric2 =
         ImmutableMetricData.createLongSum(
             Resource.empty(),
             InstrumentationScopeInfo.empty(),
@@ -213,7 +213,7 @@ class MetricExportBatcherTest {
                 /* isMonotonic= */ false, AggregationTemporality.DELTA, Arrays.asList(p1, p2)));
 
     Collection<Collection<MetricData>> batches =
-        batcher.batchMetrics(Arrays.asList(metric_1, metric_2));
+        batcher.batchMetrics(Arrays.asList(metric1, metric2));
 
     assertThat(batches).hasSize(4);
     Collection<MetricData> firstBatch = batches.iterator().next();
