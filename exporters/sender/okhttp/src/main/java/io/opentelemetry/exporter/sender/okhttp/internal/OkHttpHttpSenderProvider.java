@@ -30,6 +30,7 @@ public final class OkHttpHttpSenderProvider implements HttpSenderProvider {
         httpSenderConfig.getRetryPolicy(),
         httpSenderConfig.getSslContext(),
         httpSenderConfig.getTrustManager(),
-        httpSenderConfig.getExecutorService());
+        httpSenderConfig.getExecutorService(),
+        httpSenderConfig.getMaxResponseBodySize());
   }
 }

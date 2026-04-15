@@ -55,8 +55,8 @@ public final class DoubleSumAggregator
   }
 
   @Override
-  public AggregatorHandle<DoublePointData> createHandle() {
-    return new Handle(reservoirFactory, memoryMode);
+  public AggregatorHandle<DoublePointData> createHandle(long creationEpochNanos) {
+    return new Handle(creationEpochNanos, reservoirFactory, memoryMode);
   }
 
   @Override
@@ -112,8 +112,9 @@ public final class DoubleSumAggregator
     // Only used if memoryMode == MemoryMode.REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
 
-    Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
-      super(reservoirFactory, /* isDoubleType= */ true);
+    Handle(
+        long creationEpochNanos, ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(creationEpochNanos, reservoirFactory, /* isDoubleType= */ true);
       reusablePoint = memoryMode == MemoryMode.REUSABLE_DATA ? new MutableDoublePointData() : null;
     }
 

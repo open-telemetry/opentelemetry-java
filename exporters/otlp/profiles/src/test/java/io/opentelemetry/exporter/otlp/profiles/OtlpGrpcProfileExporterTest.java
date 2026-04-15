@@ -42,7 +42,7 @@ class OtlpGrpcProfileExporterTest
   @Override // whilst profile signal type is in development it uses a different error message
   @SuppressLogger(GrpcExporter.class)
   protected void testExport_Unimplemented() {
-    addGrpcError(GrpcStatusCode.UNIMPLEMENTED, "UNIMPLEMENTED");
+    addGrpcResponse(GrpcStatusCode.UNIMPLEMENTED, "UNIMPLEMENTED");
 
     TelemetryExporter<ProfileData> exporter = nonRetryingExporter();
 

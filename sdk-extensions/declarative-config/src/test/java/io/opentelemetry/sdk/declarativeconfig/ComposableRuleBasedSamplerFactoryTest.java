@@ -13,9 +13,11 @@ import static io.opentelemetry.api.trace.SpanKind.SERVER;
 import static io.opentelemetry.sdk.declarativeconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate.toSpanParent;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -56,6 +58,76 @@ class ComposableRuleBasedSamplerFactoryTest {
     ComposableSampler composableSampler =
         ComposableRuleBasedSamplerFactory.getInstance().create(model, context);
     assertThat(composableSampler.toString()).isEqualTo(expectedResult.toString());
+  }
+
+  @ParameterizedTest
+  @MethodSource("createInvalidTestCases")
+  void createInvalid(ExperimentalComposableRuleBasedSamplerModel model, String expectedMessage) {
+    assertThatThrownBy(() -> ComposableRuleBasedSamplerFactory.getInstance().create(model, context))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage(expectedMessage);
+  }
+
+  private static Stream<Arguments> createInvalidTestCases() {
+    return Stream.of(
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributePatterns(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                    .withKey("http.path")
+                                    .withIncluded(Collections.emptyList())
+                                    .withExcluded(null))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            "included must not be empty"),
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributePatterns(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                    .withKey("http.path")
+                                    .withIncluded(null)
+                                    .withExcluded(Collections.emptyList()))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            "excluded must not be empty"),
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributeValues(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
+                                    .withKey("http.route")
+                                    .withValues(null))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            ".values is required and must be non-empty"),
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributeValues(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
+                                    .withKey("http.route")
+                                    .withValues(Collections.emptyList()))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            ".values is required and must be non-empty"));
   }
 
   private static Stream<Arguments> createTestCases() {

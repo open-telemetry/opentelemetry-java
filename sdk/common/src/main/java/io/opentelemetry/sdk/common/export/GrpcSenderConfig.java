@@ -88,4 +88,16 @@ public interface GrpcSenderConfig {
    */
   @Nullable
   ExecutorService getExecutorService();
+
+  /**
+   * The maximum number of bytes to read from a response body. Defaults to 4 MiB.
+   *
+   * <p>Warning: setting a high or unbounded limit allows a malicious or misconfigured server to
+   * cause unbounded heap allocation, potentially leading to out-of-memory errors.
+   *
+   * @since 1.61.0
+   */
+  default long getMaxResponseBodySize() {
+    return 4 * 1024L * 1024L;
+  }
 }

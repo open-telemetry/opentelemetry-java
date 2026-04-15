@@ -32,6 +32,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -47,6 +48,7 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -938,6 +940,43 @@ class SdkSpanBuilderTest {
     } finally {
       parent.end();
     }
+  }
+
+  @Test
+  void samplerReceivesPropagatorContextWithRandomTraceId() {
+    Sampler mockSampler = Mockito.mock(Sampler.class);
+    Mockito.when(
+            mockSampler.shouldSample(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.anyList()))
+        .thenReturn(SamplingResult.recordAndSample());
+
+    SdkTracerProvider provider = SdkTracerProvider.builder().setSampler(mockSampler).build();
+    ContextKey<String> propagatorKey = ContextKey.named("propagator-test-key");
+    Context parentWithPropagatorData = Context.root().with(propagatorKey, "test-value");
+
+    Span span =
+        provider.get("test").spanBuilder(SPAN_NAME).setParent(parentWithPropagatorData).startSpan();
+    span.end();
+
+    ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+    Mockito.verify(mockSampler)
+        .shouldSample(
+            contextCaptor.capture(),
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.anyList());
+
+    Context samplerContext = contextCaptor.getValue();
+    assertThat(samplerContext.get(propagatorKey)).isEqualTo("test-value");
+    assertThat(Span.fromContext(samplerContext).getSpanContext().getTraceFlags().isTraceIdRandom())
+        .isTrue();
   }
 
   @Test
