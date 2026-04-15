@@ -4,6 +4,7 @@ plugins {
 
 description = "OpenTelemetry All"
 otelJava.moduleName.set("io.opentelemetry.all")
+otelJava.osgiEnabled.set(false)
 
 // Skip ossIndexAudit on test module
 tasks.named("ossIndexAudit") {

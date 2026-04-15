@@ -4,6 +4,7 @@ plugins {
 
 description = "OpenTelemetry Testing (Internal)"
 otelJava.moduleName.set("io.opentelemetry.internal.testing")
+otelJava.osgiEnabled.set(false)
 
 dependencies {
   api("org.junit.jupiter:junit-jupiter-api")

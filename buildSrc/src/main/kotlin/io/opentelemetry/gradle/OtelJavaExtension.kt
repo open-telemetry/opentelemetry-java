@@ -12,6 +12,10 @@ import org.gradle.api.provider.Property
 abstract class OtelJavaExtension {
     abstract val moduleName: Property<String>
 
+    // Set to false for modules that are not OSGi bundles (e.g. test helpers, build tooling,
+    // aggregators). Skips BND bundle metadata generation entirely.
+    abstract val osgiEnabled: Property<Boolean>
+
     abstract val osgiOptionalPackages: ListProperty<String>
 
     // Packages accessed via Class.forName that are not on the compile classpath (e.g. due to
@@ -24,6 +28,7 @@ abstract class OtelJavaExtension {
 
     init {
         minJavaVersionSupported.convention(JavaVersion.VERSION_1_8)
+        osgiEnabled.convention(true)
         osgiOptionalPackages.convention(emptyList<String>())
         osgiDynamicImportPackages.convention(emptyList<String>())
     }
