@@ -160,7 +160,7 @@ tasks {
             "Import-Package" to fullImportPackages
           )
           if (dynamicImportPackages.isNotEmpty()) {
-            bndInstructions["DynamicImport-Package"] = dynamicImportPackages.joinToString(",") { "$it,$it.*" }
+            bndInstructions["DynamicImport-Package"] = dynamicImportPackages.joinToString(",") { "$it.*" }
           }
           bnd(bndInstructions)
         }
