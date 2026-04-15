@@ -132,22 +132,36 @@ tasks {
     }
   }
 
-  named<Jar>("jar") {
-    // Configure OSGi metadata
-    bundle {
-      // Compute import packages.
-      // Certain packages like javax.annotation.* are always optional.
-      // Modules may have additional optional packages, typically corresponding to compileOnly dependencies.
-      // Append wildcard "*" last to import any other referenced packages
-      val optionalPackages = mutableListOf("javax.annotation")
-      optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
-      val importPackages = optionalPackages.joinToString(",") { it + ".*;resolution:=optional;version\"\${@}\"" } + ",*"
+  afterEvaluate {
+    named<Jar>("jar") {
+      // Configure OSGi metadata
+      bundle {
+        // Compute import packages.
+        // Certain packages like javax.annotation.* are always optional.
+        // Modules may have additional optional packages, typically corresponding to compileOnly dependencies.
+        // Append wildcard "*" last to import any other referenced packages
+        val optionalPackages = mutableListOf("javax.annotation")
+        optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
+        val importPackages = optionalPackages.joinToString(",") { "$it.*;resolution:=optional;version=\"\${@}\"" } + ",*"
 
-      bnd(mapOf(
-        // Once https://github.com/open-telemetry/opentelemetry-java/issues/6970 is resolved, exclude .internal packages
-        "-exportcontents" to "io.opentelemetry.*",
-        "Import-Package" to importPackages
-      ))
+        // Packages accessed via Class.forName that are not on the compile classpath cannot be made
+        // optional via Import-Package (BND cannot resolve version="${@}" for them). Instead, exclude
+        // them from Import-Package and declare them as DynamicImport-Package so OSGi does not
+        // require them at resolution time but can still wire them at runtime when available.
+        val dynamicImportPackages = otelJava.osgiDynamicImportPackages.get()
+        val negations = dynamicImportPackages.joinToString(",") { "!$it" }
+        val fullImportPackages = if (negations.isNotEmpty()) "$negations,$importPackages" else importPackages
+
+        val bndInstructions = mutableMapOf(
+          // Once https://github.com/open-telemetry/opentelemetry-java/issues/6970 is resolved, exclude .internal packages
+          "-exportcontents" to "io.opentelemetry.*",
+          "Import-Package" to fullImportPackages
+        )
+        if (dynamicImportPackages.isNotEmpty()) {
+          bndInstructions["DynamicImport-Package"] = dynamicImportPackages.joinToString(",") { "$it,$it.*" }
+        }
+        bnd(bndInstructions)
+      }
     }
   }
 
