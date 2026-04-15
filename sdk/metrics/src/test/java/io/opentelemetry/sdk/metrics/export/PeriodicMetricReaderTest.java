@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -55,8 +56,13 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PeriodicMetricReaderTest {
   private static final List<LongPointData> LONG_POINT_LIST =
-      Collections.singletonList(
-          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 1234567));
+      Arrays.asList(
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 1L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 2L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 3L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 4L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 5L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 6L));
 
   private static final MetricData METRIC_DATA =
       ImmutableMetricData.createLongSum(
@@ -98,7 +104,7 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
-  void build_withIllegalMaxExportSize() {
+  void build_WithIllegalMaxExportSize() {
     assertThatThrownBy(
             () -> PeriodicMetricReader.builder(metricExporter).setMaxExportBatchSize(0).build())
         .isInstanceOf(IllegalArgumentException.class)
@@ -126,6 +132,103 @@ class PeriodicMetricReaderTest {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
               Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void periodicExport_WithMaxExportBatchSize_PartiallyFilledBatch() throws Exception {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(waitingMetricExporter)
+            .setInterval(Duration.ofMillis(100))
+            .setMaxExportBatchSize(4)
+            .build();
+
+    reader.register(collectionRegistration);
+    MetricData expectedMetricDataBatch1 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(0, 4)));
+    MetricData expectedMetricDataBatch2 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(4, 6)));
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(2))
+          .containsExactly(
+              Collections.singletonList(expectedMetricDataBatch1),
+              Collections.singletonList(expectedMetricDataBatch2));
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void periodicExport_WithMaxExportBatchSize_CompletelyFilledBatch() throws Exception {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(waitingMetricExporter)
+            .setInterval(Duration.ofMillis(100))
+            .setMaxExportBatchSize(2)
+            .build();
+
+    reader.register(collectionRegistration);
+    MetricData expectedMetricDataBatch1 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(0, 2)));
+    MetricData expectedMetricDataBatch2 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(2, 4)));
+
+    MetricData expectedMetricDataBatch3 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(4, 6)));
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(3))
+          .containsExactly(
+              Collections.singletonList(expectedMetricDataBatch1),
+              Collections.singletonList(expectedMetricDataBatch2),
+              Collections.singletonList(expectedMetricDataBatch3));
     } finally {
       reader.shutdown();
     }
