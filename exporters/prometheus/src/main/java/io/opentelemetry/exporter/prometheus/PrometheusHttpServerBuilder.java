@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 public final class PrometheusHttpServerBuilder {
 
   static final int DEFAULT_PORT = 9464;
-  private static final String DEFAULT_HOST = "0.0.0.0";
+  private static final String DEFAULT_HOST = "localhost";
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   private String host = DEFAULT_HOST;
@@ -51,7 +51,12 @@ public final class PrometheusHttpServerBuilder {
     this.authenticator = builder.authenticator;
   }
 
-  /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
+  /**
+   * Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}.
+   *
+   * <p>Previously defaulted to {@code 0.0.0.0}. To restore the old behavior, set host to {@code
+   * 0.0.0.0} explicitly.
+   */
   public PrometheusHttpServerBuilder setHost(String host) {
     requireNonNull(host, "host");
     checkArgument(!host.isEmpty(), "host must not be empty");
