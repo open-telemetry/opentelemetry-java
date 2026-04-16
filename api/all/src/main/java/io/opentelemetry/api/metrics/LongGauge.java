@@ -24,6 +24,8 @@ public interface LongGauge {
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #set(long)}, {@link #set(long, Attributes)}, or {@link #set(long, Attributes,
    * Context)}.
+   *
+   * @since 1.61.0
    */
   default boolean isEnabled() {
     return true;

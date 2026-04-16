@@ -23,9 +23,9 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MeterProviderSharedState {
 
   public static MeterProviderSharedState create(
-      Clock clock, Resource resource, ExemplarFilterInternal exemplarFilter, long startEpochNanos) {
+      Clock clock, Resource resource, ExemplarFilterInternal exemplarFilter) {
     MeterProviderSharedState sharedState =
-        new AutoValue_MeterProviderSharedState(clock, resource, startEpochNanos, exemplarFilter);
+        new AutoValue_MeterProviderSharedState(clock, resource, exemplarFilter);
     return sharedState;
   }
 
@@ -36,9 +36,6 @@ public abstract class MeterProviderSharedState {
 
   /** Returns the {@link Resource} to attach telemetry to. */
   public abstract Resource getResource();
-
-  /** Returns the timestamp when the {@link SdkMeterProvider} was started, in epoch nanos. */
-  public abstract long getStartEpochNanos();
 
   /** Returns the {@link ExemplarFilterInternal} for remembering synchronous measurements. */
   public abstract ExemplarFilterInternal getExemplarFilter();

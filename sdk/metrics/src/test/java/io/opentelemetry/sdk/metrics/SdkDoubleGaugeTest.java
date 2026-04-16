@@ -103,6 +103,7 @@ class SdkDoubleGaugeTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleGauge.set(12d, Attributes.empty());
     doubleGauge.set(13d);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(cumulativeReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->

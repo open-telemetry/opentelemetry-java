@@ -66,6 +66,8 @@ public interface Tracer {
    * <p>This allows callers to avoid unnecessary compute when nothing is consuming the data. Because
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #spanBuilder(String)}.
+   *
+   * @since 1.61.0
    */
   default boolean isEnabled() {
     return true;
