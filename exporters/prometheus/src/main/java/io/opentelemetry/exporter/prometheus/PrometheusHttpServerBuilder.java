@@ -18,6 +18,7 @@ import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** A builder for {@link PrometheusHttpServer}. */
@@ -26,8 +27,12 @@ public final class PrometheusHttpServerBuilder {
   static final int DEFAULT_PORT = 9464;
   private static final String DEFAULT_HOST = "localhost";
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
+  private static final Logger LOGGER =
+      Logger.getLogger(PrometheusHttpServerBuilder.class.getName());
 
-  private String host = DEFAULT_HOST;
+  // Temporarily nullable to detect when it's not set and log warning about 0.0.0.0 -> localhost
+  // change
+  @Nullable private String host;
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
   private PrometheusMetricReaderBuilder metricReaderBuilder = PrometheusMetricReader.builder();
@@ -178,9 +183,17 @@ public final class PrometheusHttpServerBuilder {
           "MemoryMode REUSEABLE_DATA cannot be used with custom executor, "
               + "since data may be corrupted if reading metrics concurrently");
     }
+    String resolvedHost = host;
+    if (resolvedHost == null) {
+      // TODO (jack-berg): Remove log after 1.64.0 release
+      LOGGER.info(
+          "PrometheusHttpServer host not set, defaulting to localhost. Previously defaulted to 0.0.0.0. "
+              + "If you depend on the old behavior, set host to 0.0.0.0 explicitly.");
+      resolvedHost = DEFAULT_HOST;
+    }
     return new PrometheusHttpServer(
         new PrometheusHttpServerBuilder(this), // copy to prevent modification
-        host,
+        resolvedHost,
         port,
         executor,
         prometheusRegistry,
