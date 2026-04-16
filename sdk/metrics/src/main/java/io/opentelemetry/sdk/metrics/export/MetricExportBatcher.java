@@ -112,10 +112,13 @@ class MetricExportBatcher {
       while (currentIndex < totalPointsInMetricData) {
         int pointsToTake =
             Math.min(totalPointsInMetricData - currentIndex, remainingCapacityInCurrentBatch);
-        currentBatch.add(
-            copyMetricData(metricData, originalPointsList, currentIndex, pointsToTake));
-        currentIndex += pointsToTake;
-        remainingCapacityInCurrentBatch -= pointsToTake;
+
+        if (pointsToTake > 0) {
+          currentBatch.add(
+              copyMetricData(metricData, originalPointsList, currentIndex, pointsToTake));
+          currentIndex += pointsToTake;
+          remainingCapacityInCurrentBatch -= pointsToTake;
+        }
 
         if (remainingCapacityInCurrentBatch == 0) {
           preparedBatches.add(currentBatch);

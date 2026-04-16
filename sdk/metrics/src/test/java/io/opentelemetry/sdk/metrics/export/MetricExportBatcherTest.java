@@ -83,7 +83,6 @@ class MetricExportBatcherTest {
   }
 
   @Test
-  @SuppressWarnings("all")
   void batchMetrics_SplitsDoubleGauge_LastBatchPartiallyFilled() {
     MetricExportBatcher batcher = new MetricExportBatcher(2);
     DoublePointData p1 = ImmutableDoublePointData.create(1, 2, Attributes.empty(), 1.0);
