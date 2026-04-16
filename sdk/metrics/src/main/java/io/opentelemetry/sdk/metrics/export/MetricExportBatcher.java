@@ -133,7 +133,9 @@ class MetricExportBatcher {
       int dataPointsOffset,
       int dataPointsToTake) {
     List<PointData> points =
-        originalPointsList.subList(dataPointsOffset, dataPointsOffset + dataPointsToTake);
+        Collections.unmodifiableList(
+            new ArrayList<>(
+                originalPointsList.subList(dataPointsOffset, dataPointsOffset + dataPointsToTake)));
     return createMetricDataWithPoints(original, points);
   }
 
