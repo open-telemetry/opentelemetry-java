@@ -450,6 +450,62 @@ class MetricExportBatcherTest {
   }
 
   @Test
+  void batchMetrics_SplitsLongGauge_MultipleMetrics_PerfectFillThenSplit() {
+    // m1 fills the batch completely (remaining capacity becomes 0).
+    // m2 has 3 points, which forces it to split from the start of a fully-exhausted
+    // previous pass.
+    // This test case fails if there is an empty batch
+    MetricExportBatcher batcher = new MetricExportBatcher(2);
+    LongPointData p1 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 1L);
+    LongPointData p2 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 2L);
+    LongPointData p3 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 3L);
+    LongPointData p4 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 4L);
+    LongPointData p5 = ImmutableLongPointData.create(1, 2, Attributes.empty(), 5L);
+
+    MetricData m1 =
+        ImmutableMetricData.createLongGauge(
+            Resource.empty(),
+            InstrumentationScopeInfo.empty(),
+            "name_1",
+            "desc",
+            "1",
+            ImmutableGaugeData.create(Arrays.asList(p1, p2)));
+    MetricData m2 =
+        ImmutableMetricData.createLongGauge(
+            Resource.empty(),
+            InstrumentationScopeInfo.empty(),
+            "name_2",
+            "desc",
+            "1",
+            ImmutableGaugeData.create(Arrays.asList(p3, p4, p5)));
+
+    Collection<Collection<MetricData>> batches = batcher.batchMetrics(Arrays.asList(m1, m2));
+
+    assertThat(batches).hasSize(3);
+
+    // Batch 1 should contain exactly m1 (p1, p2)
+    Collection<MetricData> firstBatch = batches.iterator().next();
+    assertThat(firstBatch).hasSize(1);
+    MetricData b1m1 = firstBatch.iterator().next();
+    assertThat(b1m1.getName()).isEqualTo("name_1");
+    assertThat(b1m1.getLongGaugeData().getPoints()).containsExactly(p1, p2);
+
+    // Batch 2 should contain the first part of m2 (p3, p4)
+    Collection<MetricData> secondBatch = batches.stream().skip(1).findFirst().get();
+    assertThat(secondBatch).hasSize(1);
+    MetricData b2m1 = secondBatch.iterator().next();
+    assertThat(b2m1.getName()).isEqualTo("name_2");
+    assertThat(b2m1.getLongGaugeData().getPoints()).containsExactly(p3, p4);
+
+    // Batch 3 should contain the rest of m2 (p5)
+    Collection<MetricData> thirdBatch = batches.stream().skip(2).findFirst().get();
+    assertThat(thirdBatch).hasSize(1);
+    MetricData b3m1 = thirdBatch.iterator().next();
+    assertThat(b3m1.getName()).isEqualTo("name_2");
+    assertThat(b3m1.getLongGaugeData().getPoints()).containsExactly(p5);
+  }
+
+  @Test
   void batchMetrics_SplitsExponentialHistogram_MultipleBatchesCompletelyFilled_SingleMetric() {
     MetricExportBatcher batcher = new MetricExportBatcher(1);
     ExponentialHistogramBuckets buckets =
