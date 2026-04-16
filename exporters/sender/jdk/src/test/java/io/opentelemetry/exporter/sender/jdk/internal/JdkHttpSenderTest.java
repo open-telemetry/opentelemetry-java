@@ -9,15 +9,20 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.ConnectException;
@@ -25,10 +30,15 @@ import java.net.ServerSocket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
+import java.net.http.HttpHeaders;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
@@ -220,6 +230,124 @@ class JdkHttpSenderTest {
         .satisfies(
             httpClient ->
                 assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void send_successfulResponse_callsOnResponse() throws Exception {
+    java.net.http.HttpResponse<InputStream> mockJdkResponse =
+        mock(java.net.http.HttpResponse.class);
+    when(mockJdkResponse.statusCode()).thenReturn(200);
+    when(mockJdkResponse.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(mockJdkResponse.headers())
+        .thenReturn(HttpHeaders.of(Collections.emptyMap(), (a, b) -> true));
+    doReturn(mockJdkResponse).when(mockHttpClient).send(any(), any());
+
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            Long.MAX_VALUE);
+
+    try {
+      CountDownLatch latch = new CountDownLatch(1);
+      AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
+      AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+      testSender.send(
+          new NoOpRequestBodyWriter(),
+          response -> {
+            responseRef.set(response);
+            latch.countDown();
+          },
+          error -> {
+            errorRef.set(error);
+            latch.countDown();
+          });
+
+      assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
+      assertThat(responseRef.get()).isNotNull();
+      assertThat(responseRef.get().getStatusCode()).isEqualTo(200);
+      assertThat(errorRef.get()).isNull();
+    } finally {
+      testSender.shutdown();
+    }
+  }
+
+  @Test
+  void send_ioException_callsOnError() throws Exception {
+    doThrow(new IOException("send failed")).when(mockHttpClient).send(any(), any());
+
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            Long.MAX_VALUE);
+
+    try {
+      CountDownLatch latch = new CountDownLatch(1);
+      AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
+      AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+      testSender.send(
+          new NoOpRequestBodyWriter(),
+          response -> {
+            responseRef.set(response);
+            latch.countDown();
+          },
+          error -> {
+            errorRef.set(error);
+            latch.countDown();
+          });
+
+      assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
+      assertThat(errorRef.get()).isNotNull();
+      assertThat(errorRef.get()).hasRootCauseInstanceOf(IOException.class);
+      assertThat(errorRef.get()).hasRootCauseMessage("send failed");
+      assertThat(responseRef.get()).isNull();
+    } finally {
+      testSender.shutdown();
+    }
+  }
+
+  @Test
+  void send_rejectedExecution_callsOnError() {
+    ThreadPoolExecutor executor =
+        new ThreadPoolExecutor(0, 1, 0, TimeUnit.SECONDS, new SynchronousQueue<>());
+    executor.shutdown();
+
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            executor,
+            Long.MAX_VALUE);
+
+    AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
+    AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+    testSender.send(new NoOpRequestBodyWriter(), responseRef::set, errorRef::set);
+
+    assertThat(errorRef.get()).isNotNull();
+    assertThat(errorRef.get()).isInstanceOf(RejectedExecutionException.class);
+    assertThat(responseRef.get()).isNull();
   }
 
   private static class NoOpRequestBodyWriter implements MessageWriter {
