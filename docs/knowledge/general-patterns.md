@@ -119,7 +119,7 @@ frameworks in `src/main/`. Tests bridge JUL to SLF4J via `JulBridgeInitializer` 
 automatically by `otel.java-conventions`).
 
 ```java
-private static final Logger logger = Logger.getLogger(MyClass.class.getName());
+private static final Logger LOGGER = Logger.getLogger(MyClass.class.getName());
 ```
 
 ## toString()
