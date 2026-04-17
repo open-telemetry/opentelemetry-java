@@ -65,7 +65,7 @@ final class SpanShim implements Span, ImplicitContextKeyed {
     return span;
   }
 
-  io.opentelemetry.api.baggage.Baggage getBaggage() {
+  Baggage getBaggage() {
     return spanContextShim.getBaggage();
   }
 

@@ -10,8 +10,10 @@ import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
@@ -199,8 +201,7 @@ class SpanBuilderShimTest {
       try {
         // Incorrect typeref values get discarded.
         SpanData spanData = ((ReadableSpan) childSpan.getSpan()).toSpanData();
-        assertThat(spanData.getParentSpanContext())
-            .isEqualTo(io.opentelemetry.api.trace.SpanContext.getInvalid());
+        assertThat(spanData.getParentSpanContext()).isEqualTo(SpanContext.getInvalid());
         assertThat(spanData.getLinks()).isEmpty();
       } finally {
         childSpan.finish();
@@ -278,9 +279,8 @@ class SpanBuilderShimTest {
 
   @Test
   void baggage_spanWithInvalidSpan() {
-    io.opentelemetry.api.baggage.Baggage baggage =
-        io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
-    SpanShim span = new SpanShim(io.opentelemetry.api.trace.Span.getInvalid(), baggage);
+    Baggage baggage = Baggage.builder().put("foo", "bar").build();
+    SpanShim span = new SpanShim(Span.getInvalid(), baggage);
 
     SpanShim childSpan = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(span).start();
     assertThat(childSpan.getBaggage()).isEqualTo(baggage);
@@ -288,10 +288,8 @@ class SpanBuilderShimTest {
 
   @Test
   void baggage_spanContextWithInvalidSpan() {
-    io.opentelemetry.api.baggage.Baggage baggage =
-        io.opentelemetry.api.baggage.Baggage.builder().put("foo", "bar").build();
-    SpanContextShim spanContext =
-        new SpanContextShim(io.opentelemetry.api.trace.Span.getInvalid().getSpanContext(), baggage);
+    Baggage baggage = Baggage.builder().put("foo", "bar").build();
+    SpanContextShim spanContext = new SpanContextShim(Span.getInvalid().getSpanContext(), baggage);
 
     SpanShim childSpan =
         (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(spanContext).start();

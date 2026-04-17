@@ -33,7 +33,7 @@ class ResourceConfigurationFuzzTest {
           ResourceConfiguration.createEnvironmentResource(
                   DefaultConfigProperties.createFromMap(
                       singletonMap(
-                          ResourceConfiguration.ATTRIBUTE_PROPERTY,
+                          "otel.resource.attributes",
                           "key1=" + escaper.escape(value1) + ",key2=" + escaper.escape(value2))))
               .getAttributes();
 

@@ -25,7 +25,11 @@ public interface GrpcResponse {
   @Nullable
   String getStatusDescription();
 
-  /** The gRPC response message bytes. */
+  /**
+   * The unframed gRPC response protobuf message bytes, stripped of the length / compression prefix,
+   * and decompressed. The resulting bytes are deserialized to an in-memory representation of the
+   * protobuf message without any additional context.
+   */
   @SuppressWarnings("mutable")
   byte[] getResponseMessage();
 }

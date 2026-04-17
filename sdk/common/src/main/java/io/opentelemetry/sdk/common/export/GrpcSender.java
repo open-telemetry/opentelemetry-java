@@ -27,6 +27,9 @@ public interface GrpcSender {
    * called when the call could not be executed due to cancellation, connectivity problems, or
    * timeout.
    *
+   * <p>The byte array returned by {@link GrpcResponse#getResponseMessage()} should contain at most
+   * {@link GrpcSenderConfig#getMaxResponseBodySize()} bytes.
+   *
    * @param messageWriter the message writer
    * @param onResponse the callback to invoke with the gRPC response
    * @param onError the callback to invoke when the gRPC call could not be executed

@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
  * APIs (or a version of them) may be promoted to the public stable API in the future, but no
  * guarantees are made.
  */
+@SuppressWarnings("deprecation")
 public interface ExtendedReadWriteLogRecord extends ReadWriteLogRecord {
 
   /**

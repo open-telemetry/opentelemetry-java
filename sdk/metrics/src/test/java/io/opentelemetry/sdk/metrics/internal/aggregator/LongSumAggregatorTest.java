@@ -83,14 +83,14 @@ class LongSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void createHandle(MemoryMode memoryMode) {
     init(memoryMode);
-    assertThat(aggregator.createHandle()).isInstanceOf(LongSumAggregator.Handle.class);
+    assertThat(aggregator.createHandle(0)).isInstanceOf(LongSumAggregator.Handle.class);
   }
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
@@ -107,7 +107,7 @@ class LongSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void multipleRecords_WithNegatives(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(-23, Attributes.empty(), Context.current());
@@ -125,7 +125,7 @@ class LongSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
 
     aggregatorHandle.recordLong(13, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
@@ -171,7 +171,7 @@ class LongSumAggregatorTest {
                 Advice.empty()),
             reservoirFactory,
             memoryMode);
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(0, attributes, Context.root());
     assertThat(
             aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
@@ -313,7 +313,7 @@ class LongSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(10, Attributes.empty(), Context.current());
 
     MetricData metricData =
@@ -374,7 +374,7 @@ class LongSumAggregatorTest {
   @Test
   void sameObjectReturnedOnReusableDataMemoryMode() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
 
     aggregatorHandle.recordLong(1L, Attributes.empty(), Context.current());
     LongPointData firstCollection =

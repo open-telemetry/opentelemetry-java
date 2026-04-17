@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
@@ -44,11 +45,9 @@ public abstract class TestLogRecordData implements LogRecordData {
   }
 
   @Deprecated
-  public io.opentelemetry.sdk.logs.data.Body getBody() {
+  public Body getBody() {
     Value<?> valueBody = getBodyValue();
-    return valueBody == null
-        ? io.opentelemetry.sdk.logs.data.Body.empty()
-        : io.opentelemetry.sdk.logs.data.Body.string(valueBody.asString());
+    return valueBody == null ? Body.empty() : Body.string(valueBody.asString());
   }
 
   /**
@@ -156,10 +155,10 @@ public abstract class TestLogRecordData implements LogRecordData {
      * @deprecated Use {@link #setBodyValue(Value)}.
      */
     @Deprecated
-    public Builder setBody(io.opentelemetry.sdk.logs.data.Body body) {
-      if (body.getType() == io.opentelemetry.sdk.logs.data.Body.Type.STRING) {
+    public Builder setBody(Body body) {
+      if (body.getType() == Body.Type.STRING) {
         setBodyValue(Value.of(body.asString()));
-      } else if (body.getType() == io.opentelemetry.sdk.logs.data.Body.Type.EMPTY) {
+      } else if (body.getType() == Body.Type.EMPTY) {
         setBodyValue(null);
       }
       return this;

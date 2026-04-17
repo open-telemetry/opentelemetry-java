@@ -5,16 +5,6 @@
 
 package io.opentelemetry.api.incubator.common;
 
-import static io.opentelemetry.api.incubator.common.ArrayBackedExtendedAttributesBuilder.toList;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanArrayKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleArrayKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longArrayKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringArrayKey;
-import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringKey;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
@@ -22,7 +12,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-/** A builder of {@link ExtendedAttributes} supporting an arbitrary number of key-value pairs. */
+/**
+ * A builder of {@link ExtendedAttributes} supporting an arbitrary number of key-value pairs.
+ *
+ * @deprecated Use {@link io.opentelemetry.api.common.AttributesBuilder} with {@link
+ *     io.opentelemetry.api.common.AttributeKey#valueKey(String)} instead.
+ */
+@Deprecated
 public interface ExtendedAttributesBuilder {
   /** Create the {@link ExtendedAttributes} from this. */
   ExtendedAttributes build();
@@ -85,7 +81,7 @@ public interface ExtendedAttributesBuilder {
    * @return this Builder
    */
   default ExtendedAttributesBuilder put(String key, String value) {
-    return put(stringKey(key), value);
+    return put(ExtendedAttributeKey.stringKey(key), value);
   }
 
   /**
@@ -97,7 +93,7 @@ public interface ExtendedAttributesBuilder {
    * @return this Builder
    */
   default ExtendedAttributesBuilder put(String key, long value) {
-    return put(longKey(key), value);
+    return put(ExtendedAttributeKey.longKey(key), value);
   }
 
   /**
@@ -109,7 +105,7 @@ public interface ExtendedAttributesBuilder {
    * @return this Builder
    */
   default ExtendedAttributesBuilder put(String key, double value) {
-    return put(doubleKey(key), value);
+    return put(ExtendedAttributeKey.doubleKey(key), value);
   }
 
   /**
@@ -121,7 +117,7 @@ public interface ExtendedAttributesBuilder {
    * @return this Builder
    */
   default ExtendedAttributesBuilder put(String key, boolean value) {
-    return put(booleanKey(key), value);
+    return put(ExtendedAttributeKey.booleanKey(key), value);
   }
 
   /**
@@ -151,7 +147,7 @@ public interface ExtendedAttributesBuilder {
     if (value == null) {
       return this;
     }
-    return put(stringArrayKey(key), Arrays.asList(value));
+    return put(ExtendedAttributeKey.stringArrayKey(key), Arrays.asList(value));
   }
 
   /**
@@ -179,7 +175,8 @@ public interface ExtendedAttributesBuilder {
     if (value == null) {
       return this;
     }
-    return put(longArrayKey(key), toList(value));
+    return put(
+        ExtendedAttributeKey.longArrayKey(key), ArrayBackedExtendedAttributesBuilder.toList(value));
   }
 
   /**
@@ -194,7 +191,9 @@ public interface ExtendedAttributesBuilder {
     if (value == null) {
       return this;
     }
-    return put(doubleArrayKey(key), toList(value));
+    return put(
+        ExtendedAttributeKey.doubleArrayKey(key),
+        ArrayBackedExtendedAttributesBuilder.toList(value));
   }
 
   /**
@@ -209,7 +208,9 @@ public interface ExtendedAttributesBuilder {
     if (value == null) {
       return this;
     }
-    return put(booleanArrayKey(key), toList(value));
+    return put(
+        ExtendedAttributeKey.booleanArrayKey(key),
+        ArrayBackedExtendedAttributesBuilder.toList(value));
   }
 
   /**

@@ -74,6 +74,7 @@ class SdkLongHistogramTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longHistogram.record(12, Attributes.empty());
     longHistogram.record(12);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -192,7 +193,12 @@ class SdkLongHistogramTest {
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
                 View.builder()
-                    .setAggregation(Aggregation.base2ExponentialBucketHistogram(5, 20))
+                    .setAggregation(
+                        Aggregation.base2ExponentialBucketHistogram(
+                            Base2ExponentialHistogramOptions.builder()
+                                .setMaxBuckets(5)
+                                .setMaxScale(20)
+                                .build()))
                     .build())
             .build();
 
@@ -353,7 +359,12 @@ class SdkLongHistogramTest {
             .registerView(
                 InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
                 View.builder()
-                    .setAggregation(Aggregation.base2ExponentialBucketHistogram(5, 20))
+                    .setAggregation(
+                        Aggregation.base2ExponentialBucketHistogram(
+                            Base2ExponentialHistogramOptions.builder()
+                                .setMaxBuckets(5)
+                                .setMaxScale(20)
+                                .build()))
                     .build())
             .build();
     LongHistogram longHistogram =
@@ -366,8 +377,10 @@ class SdkLongHistogramTest {
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longHistogram.record(12L, Attributes.builder().put("key", "value").build());
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longHistogram.record(12L);
     longHistogram.record(13L);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(reader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -406,7 +419,7 @@ class SdkLongHistogramTest {
                                                         .hasCounts(Collections.emptyList())),
                                     point ->
                                         point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
                                             .hasEpochNanos(testClock.now())
                                             .hasAttributes(
                                                 Attributes.builder().put("key", "value").build())

@@ -60,22 +60,6 @@ class SdkLogger implements Logger {
   }
 
   @Override
-  public LogRecordBuilder logRecordBuilder() {
-    if (loggerEnabled) {
-      return INCUBATOR_AVAILABLE
-          ? IncubatingUtil.createExtendedLogRecordBuilder(
-              loggerSharedState, instrumentationScopeInfo, this)
-          : new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo, this);
-    }
-    return NOOP_LOGGER.logRecordBuilder();
-  }
-
-  // VisibleForTesting
-  InstrumentationScopeInfo getInstrumentationScopeInfo() {
-    return instrumentationScopeInfo;
-  }
-
-  // Visible for testing
   public boolean isEnabled(Severity severity, Context context) {
     if (!loggerEnabled) {
       return false;
@@ -94,6 +78,22 @@ class SdkLogger implements Logger {
     }
 
     return true;
+  }
+
+  @Override
+  public LogRecordBuilder logRecordBuilder() {
+    if (loggerEnabled) {
+      return INCUBATOR_AVAILABLE
+          ? IncubatingUtil.createExtendedLogRecordBuilder(
+              loggerSharedState, instrumentationScopeInfo, this)
+          : new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo, this);
+    }
+    return NOOP_LOGGER.logRecordBuilder();
+  }
+
+  // VisibleForTesting
+  InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
   }
 
   void updateLoggerConfig(LoggerConfig loggerConfig) {

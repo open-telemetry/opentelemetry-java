@@ -37,7 +37,7 @@ final class JsonEncoding {
         appendMap(sb, (List<KeyValue>) value.getValue());
         break;
       case BYTES:
-        appendBytes(sb, (ByteBuffer) value.getValue());
+        appendBytes(sb, (Value<ByteBuffer>) value);
         break;
       case EMPTY:
         sb.append("null");
@@ -97,9 +97,11 @@ final class JsonEncoding {
     }
   }
 
-  private static void appendBytes(StringBuilder sb, ByteBuffer value) {
-    byte[] bytes = new byte[value.remaining()];
-    value.get(bytes);
+  private static void appendBytes(StringBuilder sb, Value<ByteBuffer> value) {
+    ByteBuffer buf = value.getValue();
+    byte[] bytes = new byte[buf.remaining()];
+    // getValue() above returns a new ByteBuffer, so mutating its position here is safe
+    buf.get(bytes);
     sb.append('"').append(Base64.getEncoder().encodeToString(bytes)).append('"');
   }
 

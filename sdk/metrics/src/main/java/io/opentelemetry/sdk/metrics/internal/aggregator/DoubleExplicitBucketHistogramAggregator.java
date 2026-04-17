@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 public final class DoubleExplicitBucketHistogramAggregator
     implements Aggregator<HistogramPointData> {
   private final double[] boundaries;
+  private final boolean recordMinMax;
   private final MemoryMode memoryMode;
 
   // a cache for converting to MetricData
@@ -49,12 +50,17 @@ public final class DoubleExplicitBucketHistogramAggregator
    * Constructs an explicit bucket histogram aggregator.
    *
    * @param boundaries Bucket boundaries, in-order.
+   * @param recordMinMax whether to record min and max values
    * @param reservoirFactory Supplier of exemplar reservoirs per-stream.
    * @param memoryMode The {@link MemoryMode} to use in this aggregator.
    */
   public DoubleExplicitBucketHistogramAggregator(
-      double[] boundaries, ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      double[] boundaries,
+      boolean recordMinMax,
+      ExemplarReservoirFactory reservoirFactory,
+      MemoryMode memoryMode) {
     this.boundaries = boundaries;
+    this.recordMinMax = recordMinMax;
     this.memoryMode = memoryMode;
 
     List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
@@ -66,8 +72,9 @@ public final class DoubleExplicitBucketHistogramAggregator
   }
 
   @Override
-  public AggregatorHandle<HistogramPointData> createHandle() {
-    return new Handle(boundaryList, boundaries, reservoirFactory, memoryMode);
+  public AggregatorHandle<HistogramPointData> createHandle(long creationEpochNanos) {
+    return new Handle(
+        creationEpochNanos, boundaryList, boundaries, recordMinMax, reservoirFactory, memoryMode);
   }
 
   @Override
@@ -91,6 +98,7 @@ public final class DoubleExplicitBucketHistogramAggregator
     private final List<Double> boundaryList;
     // read-only
     private final double[] boundaries;
+    private final boolean recordMinMax;
 
     private final Cell[] cells;
     private final long[] countsArr;
@@ -99,13 +107,16 @@ public final class DoubleExplicitBucketHistogramAggregator
     @Nullable private final MutableHistogramPointData reusablePoint;
 
     Handle(
+        long creationEpochNanos,
         List<Double> boundaryList,
         double[] boundaries,
+        boolean recordMinMax,
         ExemplarReservoirFactory reservoirFactory,
         MemoryMode memoryMode) {
-      super(reservoirFactory, /* isDoubleType= */ true);
+      super(creationEpochNanos, reservoirFactory, /* isDoubleType= */ true);
       this.boundaryList = boundaryList;
       this.boundaries = boundaries;
+      this.recordMinMax = recordMinMax;
       this.cells = new Cell[Runtime.getRuntime().availableProcessors()];
       for (int i = 0; i < cells.length; i++) {
         cells[i] = new Cell(boundaries.length + 1);
@@ -167,10 +178,10 @@ public final class DoubleExplicitBucketHistogramAggregator
                   epochNanos,
                   attributes,
                   sum,
-                  count > 0,
-                  min,
-                  count > 0,
-                  max,
+                  recordMinMax && count > 0,
+                  recordMinMax ? min : 0,
+                  recordMinMax && count > 0,
+                  recordMinMax ? max : 0,
                   boundaryList,
                   PrimitiveLongList.wrap(Arrays.copyOf(countsArr, countsArr.length)),
                   exemplars);
@@ -181,10 +192,10 @@ public final class DoubleExplicitBucketHistogramAggregator
                   epochNanos,
                   attributes,
                   sum,
-                  count > 0,
-                  min,
-                  count > 0,
-                  max,
+                  recordMinMax && count > 0,
+                  recordMinMax ? min : 0,
+                  recordMinMax && count > 0,
+                  recordMinMax ? max : 0,
                   boundaryList,
                   countsArr,
                   exemplars);
@@ -206,8 +217,10 @@ public final class DoubleExplicitBucketHistogramAggregator
       cell.lock.lock();
       try {
         cell.sum += value;
-        cell.min = Math.min(cell.min, value);
-        cell.max = Math.max(cell.max, value);
+        if (recordMinMax) {
+          cell.min = Math.min(cell.min, value);
+          cell.max = Math.max(cell.max, value);
+        }
         cell.counts[bucketIndex]++;
       } finally {
         cell.lock.unlock();

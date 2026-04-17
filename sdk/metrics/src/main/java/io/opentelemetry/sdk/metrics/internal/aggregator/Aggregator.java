@@ -30,12 +30,16 @@ public interface Aggregator<T extends PointData> {
   }
 
   /**
-   * Returns a new {@link AggregatorHandle}. This MUST by used by the synchronous to aggregate
-   * recorded measurements during the collection cycle.
+   * Returns a new {@link AggregatorHandle}. Used by both synchronous and asynchronous metric
+   * storage to aggregate recorded measurements during the collection cycle.
    *
+   * @param creationEpochNanos the epoch timestamp (nanos) at which the handle is being created,
+   *     stored via {@link AggregatorHandle#getCreationEpochNanos()}. Whether this value is used as
+   *     the start timestamp of reported data points depends on the instrument and temporality — see
+   *     {@link AggregatorHandle#getCreationEpochNanos()} for details.
    * @return a new {@link AggregatorHandle}.
    */
-  AggregatorHandle<T> createHandle();
+  AggregatorHandle<T> createHandle(long creationEpochNanos);
 
   /**
    * Returns a new DELTA point by computing the difference between two cumulative points.

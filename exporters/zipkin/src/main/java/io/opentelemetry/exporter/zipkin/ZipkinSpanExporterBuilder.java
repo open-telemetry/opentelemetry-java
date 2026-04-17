@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import zipkin2.Span;
 import zipkin2.reporter.BytesEncoder;
 import zipkin2.reporter.BytesMessageSender;
+import zipkin2.reporter.Sender;
 import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
@@ -55,7 +56,7 @@ public final class ZipkinSpanExporterBuilder {
    * @deprecated Use {@link #setSender(BytesMessageSender)} insteead.
    */
   @Deprecated
-  public ZipkinSpanExporterBuilder setSender(zipkin2.reporter.Sender sender) {
+  public ZipkinSpanExporterBuilder setSender(Sender sender) {
     return setSender((BytesMessageSender) sender);
   }
 

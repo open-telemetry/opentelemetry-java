@@ -21,11 +21,6 @@ final class ExtendedSdkLongUpDownCounter extends SdkLongUpDownCounter
     super(descriptor, sdkMeter, storage);
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
-
   static final class ExtendedSdkLongUpDownCounterBuilder extends SdkLongUpDownCounterBuilder
       implements ExtendedLongUpDownCounterBuilder {
 

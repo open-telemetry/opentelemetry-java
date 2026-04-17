@@ -66,7 +66,8 @@ class JdkHttpSenderTest {
             Duration.ofSeconds(10),
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
-            null);
+            null,
+            Long.MAX_VALUE);
   }
 
   @Test
@@ -121,7 +122,8 @@ class JdkHttpSenderTest {
             Duration.ofSeconds(10),
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
-            null);
+            null,
+            Long.MAX_VALUE);
 
     assertThatThrownBy(() -> sender.sendInternal(new NoOpRequestBodyWriter()))
         .satisfies(
@@ -177,7 +179,8 @@ class JdkHttpSenderTest {
             null,
             null,
             null,
-            null);
+            null,
+            Long.MAX_VALUE);
 
     assertThat(sender)
         .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))

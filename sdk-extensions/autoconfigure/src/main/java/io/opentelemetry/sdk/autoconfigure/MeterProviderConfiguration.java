@@ -20,12 +20,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 final class MeterProviderConfiguration {
-
-  private static final Logger logger = Logger.getLogger(MeterProviderConfiguration.class.getName());
 
   static void configureMeterProvider(
       SdkMeterProviderBuilder meterProviderBuilder,
@@ -54,13 +51,6 @@ final class MeterProviderConfiguration {
     }
 
     Integer cardinalityLimit = config.getInt("otel.java.metrics.cardinality.limit");
-    if (cardinalityLimit == null) {
-      cardinalityLimit = config.getInt("otel.experimental.metrics.cardinality.limit");
-      if (cardinalityLimit != null) {
-        logger.warning(
-            "otel.experimental.metrics.cardinality.limit is deprecated and will be removed after 1.51.0 release. Please use otel.java.metrics.cardinality.limit instead.");
-      }
-    }
     if (cardinalityLimit != null && cardinalityLimit < 1) {
       throw new ConfigurationException("otel.java.metrics.cardinality.limit must be >= 1");
     }

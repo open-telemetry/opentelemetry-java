@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
  *
  * <p>Supports optional glob pattern matching. See {@link GlobUtil}.
  *
- * <p>String equality is evaluated using {@link String#equalsIgnoreCase(String)}.
+ * <p>String equality is evaluated using {@link String#equals(Object)}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -38,26 +38,28 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       @Nullable Collection<String> excluded,
       boolean globMatchingEnabled) {
     this.globMatchingEnabled = globMatchingEnabled;
-    this.included = included == null ? null : new LinkedHashSet<>(included);
-    this.excluded = excluded == null ? null : new LinkedHashSet<>(excluded);
+    this.included = copyIfNotEmpty(included);
+    this.excluded = copyIfNotEmpty(excluded);
     if (this.included != null && this.excluded != null) {
       this.predicate =
           includedPredicate(this.included, globMatchingEnabled)
               .and(excludedPredicate(this.excluded, globMatchingEnabled));
-    } else if (this.included == null && this.excluded != null) {
+    } else if (this.excluded != null) {
       this.predicate = excludedPredicate(this.excluded, globMatchingEnabled);
-    } else if (this.excluded == null && this.included != null) {
+    } else if (this.included != null) {
       this.predicate = includedPredicate(this.included, globMatchingEnabled);
     } else {
-      throw new IllegalArgumentException(
-          "At least one of includedPatterns or excludedPatterns must not be null");
+      // include everything by default if both included and excluded are null or empt
+      this.predicate = s -> true;
     }
   }
 
   /**
-   * Create a (case-insensitive) exact matching include exclude predicate.
+   * Create a (case-sensitive) exact matching include exclude predicate.
    *
-   * @throws IllegalArgumentException if {@code included} AND {@code excluded} are null.
+   * <p>When {@code included} is empty or {@literal null}, all values are included.
+   *
+   * <p>When {@code excluded} is empty or {@literal null}, no value are excluded.
    */
   public static Predicate<String> createExactMatching(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
@@ -67,9 +69,11 @@ public final class IncludeExcludePredicate implements Predicate<String> {
   /**
    * Create a pattern matching include exclude predicate.
    *
-   * <p>See {@link GlobUtil} for pattern matching details.
+   * <p>When {@code included} is empty or {@literal null}, all values are included by default.
    *
-   * @throws IllegalArgumentException if {@code included} AND {@code excluded} are null.
+   * <p>When {@code excluded} is empty or {@literal null}, no value is excluded by default.
+   *
+   * <p>See {@link GlobUtil} for pattern matching details.
    */
   public static Predicate<String> createPatternMatching(
       @Nullable Collection<String> included, @Nullable Collection<String> excluded) {
@@ -101,7 +105,7 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       if (globMatchingEnabled) {
         result = result.or(createGlobPatternPredicate(include));
       } else {
-        result = result.or(include::equalsIgnoreCase);
+        result = result.or(include::equals);
       }
     }
     return result;
@@ -114,9 +118,14 @@ public final class IncludeExcludePredicate implements Predicate<String> {
       if (globMatchingEnabled) {
         result = result.and(createGlobPatternPredicate(exclude).negate());
       } else {
-        result = result.and(s -> !exclude.equalsIgnoreCase(s));
+        result = result.and(s -> !exclude.equals(s));
       }
     }
     return result;
+  }
+
+  @Nullable
+  private static Set<String> copyIfNotEmpty(@Nullable Collection<String> collection) {
+    return collection == null || collection.isEmpty() ? null : new LinkedHashSet<>(collection);
   }
 }

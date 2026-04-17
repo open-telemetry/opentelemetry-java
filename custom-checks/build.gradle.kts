@@ -8,7 +8,7 @@ dependencies {
   testImplementation("com.google.errorprone:error_prone_test_helpers")
 }
 
-otelJava.moduleName.set("io.opentelemetry.javaagent.customchecks")
+otelJava.moduleName.set("io.opentelemetry.gradle.customchecks")
 
 // We cannot use "--release" javac option here because that will forbid exporting com.sun.tools package.
 // We also can't seem to use the toolchain without the "--release" option. So disable everything.
@@ -81,7 +81,7 @@ configurations {
   }
 }
 
-// Skip OWASP dependencyCheck task on test module
-dependencyCheck {
-  skip = true
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
 }

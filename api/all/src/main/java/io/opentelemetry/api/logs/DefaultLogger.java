@@ -24,6 +24,11 @@ class DefaultLogger implements Logger {
   }
 
   @Override
+  public boolean isEnabled(Severity severity, Context context) {
+    return false;
+  }
+
+  @Override
   public LogRecordBuilder logRecordBuilder() {
     return NOOP_LOG_RECORD_BUILDER;
   }

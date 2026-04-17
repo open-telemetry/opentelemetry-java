@@ -50,6 +50,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.KeyValueList;
+import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
@@ -113,7 +114,7 @@ abstract class OtlpExporterIntegrationTest {
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   private static final String COLLECTOR_IMAGE =
-      "otel/opentelemetry-collector-contrib:0.145.0@sha256:a7343f01869071ea3f4c5e1e97df1bb1b3c4d5c77247db80e053a80b9df530c4";
+      "otel/opentelemetry-collector-contrib:0.150.1@sha256:a516c26968aa1feb5e5fc0562e3338ea13755cb4f373603226bcc4e276374ad0";
 
   private static final Integer COLLECTOR_OTLP_GRPC_PORT = 4317;
   private static final Integer COLLECTOR_OTLP_HTTP_PORT = 4318;
@@ -689,7 +690,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(ilLogs.getLogRecordsCount()).isEqualTo(1);
 
     // LogRecord via Logger.logRecordBuilder()...emit()
-    io.opentelemetry.proto.logs.v1.LogRecord protoLog1 = ilLogs.getLogRecords(0);
+    LogRecord protoLog1 = ilLogs.getLogRecords(0);
     assertThat(protoLog1.getEventName()).isEqualTo("event name");
     assertThat(protoLog1.getBody())
         .isEqualTo(

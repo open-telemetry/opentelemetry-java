@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("deprecation")
 class ExtendedDefaultLogger implements ExtendedLogger {
 
   private static final Logger INSTANCE = new ExtendedDefaultLogger();

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.zipkin.internal;
 
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -26,8 +28,7 @@ public class ZipkinSpanExporterProvider implements ConfigurableSpanExporterProvi
 
   @Override
   public SpanExporter createExporter(ConfigProperties config) {
-    io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder builder =
-        io.opentelemetry.exporter.zipkin.ZipkinSpanExporter.builder();
+    ZipkinSpanExporterBuilder builder = ZipkinSpanExporter.builder();
 
     String endpoint = config.getString("otel.exporter.zipkin.endpoint");
     if (endpoint != null) {

@@ -45,6 +45,8 @@ final class LoggerProviderFactory
       return builder;
     }
 
+    context.setInternalTelemetry(builder::setMeterProvider);
+
     LogLimits logLimits =
         LogLimitsFactory.getInstance()
             .create(
@@ -101,7 +103,7 @@ final class LoggerProviderFactory
     public LoggerConfig create(
         ExperimentalLoggerConfigModel model, DeclarativeConfigContext context) {
       LoggerConfigBuilder configBuilder = LoggerConfig.builder();
-      if (model.getDisabled() != null && model.getDisabled()) {
+      if (model.getEnabled() != null && !model.getEnabled()) {
         configBuilder.setEnabled(false);
       }
       if (model.getTraceBased() != null && model.getTraceBased()) {

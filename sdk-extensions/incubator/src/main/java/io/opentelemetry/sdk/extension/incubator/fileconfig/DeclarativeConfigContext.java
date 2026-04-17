@@ -5,36 +5,53 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-/** Declarative configuration context and state carrier. */
-class DeclarativeConfigContext {
+/**
+ * Declarative configuration context and state carrier.
+ *
+ * <p>This implements {@link ComponentLoader} with an implementation which delegates to an
+ * underlying instance while tracking instances which implement {@link AutoConfigureListener},
+ * accessible via {@link #getListeners()}.
+ */
+class DeclarativeConfigContext implements ComponentLoader {
 
-  private final SpiHelper spiHelper;
+  private final ComponentLoader componentLoader;
+  private final Set<AutoConfigureListener> listeners =
+      Collections.newSetFromMap(new IdentityHashMap<>());
   private final List<Closeable> closeables = new ArrayList<>();
   @Nullable private volatile MeterProvider meterProvider;
-  @Nullable private Resource resource = null;
+  @Nullable private ConfigProvider configProvider;
   @Nullable private List<ComponentProvider> componentProviders = null;
+  @Nullable private DeclarativeConfigurationBuilder builder;
 
-  // Visible for testing
-  DeclarativeConfigContext(SpiHelper spiHelper) {
-    this.spiHelper = spiHelper;
+  DeclarativeConfigContext(ComponentLoader componentLoader) {
+    this.componentLoader = componentLoader;
   }
 
-  static DeclarativeConfigContext create(ComponentLoader componentLoader) {
-    return new DeclarativeConfigContext(SpiHelper.create(componentLoader));
+  /** Return the underlying component loader. */
+  ComponentLoader getDelegateComponentLoader() {
+    return componentLoader;
   }
 
   /**
@@ -50,29 +67,68 @@ class DeclarativeConfigContext {
     return Collections.unmodifiableList(closeables);
   }
 
-  @Nullable
-  public MeterProvider getMeterProvider() {
-    return meterProvider;
-  }
-
   public void setMeterProvider(MeterProvider meterProvider) {
     this.meterProvider = meterProvider;
   }
 
-  Resource getResource() {
-    // called via reflection from io.opentelemetry.sdk.autoconfigure.IncubatingUtil
-    if (resource == null) {
-      throw new DeclarativeConfigException("Resource has not been configured yet.");
+  public void setConfigProvider(ConfigProvider configProvider) {
+    this.configProvider = configProvider;
+  }
+
+  void setBuilder(DeclarativeConfigurationBuilder builder) {
+    this.builder = builder;
+  }
+
+  DeclarativeConfigurationBuilder getBuilder() {
+    return Objects.requireNonNull(builder, "builder has not been set");
+  }
+
+  /**
+   * Overload of {@link #setInternalTelemetry(Consumer, Consumer)} for components which do not
+   * support setting {@link InternalTelemetryVersion} because they only support {@link
+   * InternalTelemetryVersion#LATEST}.
+   */
+  public void setInternalTelemetry(Consumer<Supplier<MeterProvider>> meterProviderSetter) {
+    setInternalTelemetry(meterProviderSetter, unused -> {});
+  }
+
+  /**
+   * Set internal telemetry on built-in components.
+   *
+   * @param meterProviderSetter the component meter provider setter
+   * @param internalTelemetrySetter the component internal telemetry setter
+   */
+  public void setInternalTelemetry(
+      Consumer<Supplier<MeterProvider>> meterProviderSetter,
+      Consumer<InternalTelemetryVersion> internalTelemetrySetter) {
+    InternalTelemetryVersion telemetryVersion = getInternalTelemetryVersion();
+    if (telemetryVersion != null) {
+      meterProviderSetter.accept(() -> Objects.requireNonNull(meterProvider));
+      internalTelemetrySetter.accept(telemetryVersion);
+    } else {
+      meterProviderSetter.accept(MeterProvider::noop);
     }
-    return resource;
   }
 
-  void setResource(Resource resource) {
-    this.resource = resource;
-  }
-
-  SpiHelper getSpiHelper() {
-    return spiHelper;
+  @Nullable
+  private InternalTelemetryVersion getInternalTelemetryVersion() {
+    if (configProvider == null) {
+      return null;
+    }
+    String internalTelemetryVersion =
+        configProvider.getInstrumentationConfig("otel_sdk").getString("internal_telemetry_version");
+    if (internalTelemetryVersion == null) {
+      return null;
+    }
+    switch (internalTelemetryVersion.toLowerCase(Locale.ROOT)) {
+      case "legacy":
+        return InternalTelemetryVersion.LEGACY;
+      case "latest":
+        return InternalTelemetryVersion.LATEST;
+      default:
+        throw new DeclarativeConfigException(
+            "Invalid sdk telemetry version: " + internalTelemetryVersion);
+    }
   }
 
   /**
@@ -86,10 +142,13 @@ class DeclarativeConfigContext {
   @SuppressWarnings({"unchecked"})
   <T> T loadComponent(Class<T> type, ConfigKeyValue configKeyValue) {
     String name = configKeyValue.getKey();
-    DeclarativeConfigProperties config = configKeyValue.getValue();
+    ExtendedDeclarativeConfigProperties config =
+        new ExtendedDeclarativeConfigPropertiesImpl(
+            configKeyValue.getValue(),
+            configProvider == null ? ConfigProvider.noop() : configProvider);
 
     if (componentProviders == null) {
-      componentProviders = spiHelper.load(ComponentProvider.class);
+      componentProviders = ComponentLoader.loadList(this, ComponentProvider.class);
     }
     List<ComponentProvider> matchedProviders =
         componentProviders.stream()
@@ -135,6 +194,103 @@ class DeclarativeConfigContext {
     } catch (Throwable throwable) {
       throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
+    }
+  }
+
+  @Override
+  public <T> Iterable<T> load(Class<T> spiClass) {
+    List<T> result = ComponentLoader.loadList(componentLoader, spiClass);
+    result.forEach(
+        entry -> {
+          if (entry instanceof AutoConfigureListener) {
+            listeners.add((AutoConfigureListener) entry);
+          }
+        });
+    return result;
+  }
+
+  Set<AutoConfigureListener> getListeners() {
+    return Collections.unmodifiableSet(listeners);
+  }
+
+  private static class ExtendedDeclarativeConfigPropertiesImpl
+      implements ExtendedDeclarativeConfigProperties {
+
+    private final DeclarativeConfigProperties delegate;
+    private final ConfigProvider configProvider;
+
+    ExtendedDeclarativeConfigPropertiesImpl(
+        DeclarativeConfigProperties delegate, ConfigProvider configProvider) {
+      this.delegate = delegate;
+      this.configProvider = configProvider;
+    }
+
+    @Override
+    public ConfigProvider getConfigProvider() {
+      return configProvider;
+    }
+
+    @Nullable
+    @Override
+    public String getString(String name) {
+      return delegate.getString(name);
+    }
+
+    @Nullable
+    @Override
+    public Boolean getBoolean(String name) {
+      return delegate.getBoolean(name);
+    }
+
+    @Nullable
+    @Override
+    public Integer getInt(String name) {
+      return delegate.getInt(name);
+    }
+
+    @Nullable
+    @Override
+    public Long getLong(String name) {
+      return delegate.getLong(name);
+    }
+
+    @Nullable
+    @Override
+    public Double getDouble(String name) {
+      return delegate.getDouble(name);
+    }
+
+    @Nullable
+    @Override
+    public <T> List<T> getScalarList(String name, Class<T> scalarType) {
+      return delegate.getScalarList(name, scalarType);
+    }
+
+    @Nullable
+    @Override
+    public DeclarativeConfigProperties getStructured(String name) {
+      return delegate.getStructured(name);
+    }
+
+    @Nullable
+    @Override
+    public List<DeclarativeConfigProperties> getStructuredList(String name) {
+      return delegate.getStructuredList(name);
+    }
+
+    @Override
+    public Set<String> getPropertyKeys() {
+      return delegate.getPropertyKeys();
+    }
+
+    @Override
+    public ComponentLoader getComponentLoader() {
+      return delegate.getComponentLoader();
+    }
+
+    @Override
+    public String toString() {
+      return "ExtendedDeclarativeConfigPropertiesImpl{" + delegate + '}';
     }
   }
 }

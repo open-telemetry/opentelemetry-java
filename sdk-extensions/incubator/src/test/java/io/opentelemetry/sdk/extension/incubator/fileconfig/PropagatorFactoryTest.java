@@ -12,10 +12,10 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.TextMapPropagatorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.B3MultiPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.B3PropagatorModel;
@@ -34,7 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class PropagatorFactoryTest {
 
   private final DeclarativeConfigContext context =
-      new DeclarativeConfigContext(SpiHelper.create(PropagatorFactoryTest.class.getClassLoader()));
+      new DeclarativeConfigContext(ComponentLoader.forClassLoader(getClass().getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArguments")

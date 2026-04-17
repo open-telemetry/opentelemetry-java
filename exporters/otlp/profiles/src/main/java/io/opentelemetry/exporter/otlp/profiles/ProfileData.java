@@ -29,7 +29,7 @@ public interface ProfileData {
   InstrumentationScopeInfo getInstrumentationScopeInfo();
 
   /** Returns the dictionary data of this profile. */
-  ProfileDictionaryData getProfileDictionaryData();
+  ProfilesDictionaryData getProfileDictionaryData();
 
   /** A description of the type associated with each Sample.value. */
   ValueTypeData getSampleType();
@@ -51,9 +51,6 @@ public interface ProfileData {
   /** The number of events between sampled occurrences. */
   long getPeriod();
 
-  /** Free-form text associated with the profile. Indices into string table. */
-  List<Integer> getCommentStrIndices();
-
   /**
    * Returns a globally unique identifier for a profile, as 32 character lowercase hex String. An ID
    * with all zeroes is considered invalid. This field is required.
@@ -67,15 +64,6 @@ public interface ProfileData {
   default byte[] getProfileIdBytes() {
     return OtelEncodingUtils.bytesFromBase16(getProfileId(), 32);
   }
-
-  /**
-   * Returns indexes of profile-wide attributes, referencing to Profile.attribute_table. Attribute
-   * keys MUST be unique (it is not allowed to have more than one attribute with the same key).
-   *
-   * @see
-   *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#attribute"
-   */
-  List<Integer> getAttributeIndices();
 
   /**
    * Returns the total number of attributes that were recorded on this profile.
@@ -98,4 +86,13 @@ public interface ProfileData {
    * SHOULD not be included in this field.
    */
   ByteBuffer getOriginalPayload();
+
+  /**
+   * Returns indexes of profile-wide attributes, referencing to Profile.attribute_table. Attribute
+   * keys MUST be unique (it is not allowed to have more than one attribute with the same key).
+   *
+   * @see
+   *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#attribute"
+   */
+  List<Integer> getAttributeIndices();
 }

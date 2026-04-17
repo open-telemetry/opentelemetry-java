@@ -132,8 +132,7 @@ final class SdkMeter implements Meter {
       // Only invoke callbacks if meter is enabled
       if (meterEnabled) {
         for (CallbackRegistration callbackRegistration : currentRegisteredCallbacks) {
-          callbackRegistration.invokeCallback(
-              registeredReader, meterProviderSharedState.getStartEpochNanos(), epochNanos);
+          callbackRegistration.invokeCallback(registeredReader);
         }
       }
 
@@ -145,10 +144,7 @@ final class SdkMeter implements Meter {
       for (MetricStorage storage : storages) {
         MetricData current =
             storage.collect(
-                meterProviderSharedState.getResource(),
-                getInstrumentationScopeInfo(),
-                meterProviderSharedState.getStartEpochNanos(),
-                epochNanos);
+                meterProviderSharedState.getResource(), getInstrumentationScopeInfo(), epochNanos);
         // Ignore if the metric data doesn't have any data points, for example when aggregation is
         // Aggregation#drop()
         if (!current.isEmpty()) {
@@ -288,6 +284,7 @@ final class SdkMeter implements Meter {
                 SynchronousMetricStorage.create(
                     reader,
                     registeredView,
+                    meterProviderSharedState.getClock(),
                     instrument,
                     meterProviderSharedState.getExemplarFilter(),
                     meterEnabled)));
@@ -317,7 +314,11 @@ final class SdkMeter implements Meter {
         registeredStorages.add(
             registry.register(
                 AsynchronousMetricStorage.create(
-                    reader, registeredView, instrumentDescriptor, meterEnabled)));
+                    reader,
+                    registeredView,
+                    meterProviderSharedState.getClock(),
+                    instrumentDescriptor,
+                    meterEnabled)));
       }
     }
 

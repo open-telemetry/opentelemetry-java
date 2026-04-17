@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ValueTest {
 
@@ -204,12 +205,18 @@ class ValueTest {
         arguments(Value.of("hello world".getBytes(StandardCharsets.UTF_8)), "aGVsbG8gd29ybGQ="));
   }
 
-  @Test
-  void valueByteAsString() {
-    // TODO: add more test cases
-    String str = "hello world";
-    String base64Encoded = Value.of(str.getBytes(StandardCharsets.UTF_8)).asString();
-    byte[] decodedBytes = Base64.getDecoder().decode(base64Encoded);
-    assertThat(new String(decodedBytes, StandardCharsets.UTF_8)).isEqualTo(str);
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "standard string",
+        "special characters !@#$%^&*()",
+        "multi\nline\tstring",
+        "",
+        "emoji boundary test 🚀👩‍💻"
+      })
+  void valueByteAsString(String inputStr) {
+    String base64 = Value.of(inputStr.getBytes(StandardCharsets.UTF_8)).asString();
+    byte[] decoded = Base64.getDecoder().decode(base64);
+    assertThat(new String(decoded, StandardCharsets.UTF_8)).isEqualTo(inputStr);
   }
 }

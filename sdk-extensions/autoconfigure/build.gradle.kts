@@ -11,6 +11,7 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":api:incubator"))
+  compileOnly(project(":sdk-extensions:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -86,7 +87,12 @@ testing {
       dependencies {
         implementation(project(":sdk-extensions:incubator"))
         implementation(project(":exporters:logging"))
+        implementation(project(":exporters:otlp:all"))
         implementation(project(":sdk:testing"))
+
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+        implementation("com.linecorp.armeria:armeria-junit5")
+        implementation("com.linecorp.armeria:armeria-grpc")
       }
     }
 

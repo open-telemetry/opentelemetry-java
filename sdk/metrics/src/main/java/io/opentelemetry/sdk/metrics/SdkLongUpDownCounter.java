@@ -29,6 +29,11 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
   }
 
   @Override
+  public boolean isEnabled() {
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
+  }
+
+  @Override
   public void add(long increment, Attributes attributes, Context context) {
     storage.recordLong(increment, attributes, context);
   }

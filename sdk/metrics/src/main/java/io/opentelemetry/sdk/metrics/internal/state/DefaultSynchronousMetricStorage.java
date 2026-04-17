@@ -12,6 +12,7 @@ import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.DELTA;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
@@ -49,6 +50,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
   private final AttributesProcessor attributesProcessor;
+  protected final Clock clock;
   protected final MetricDescriptor metricDescriptor;
   protected final Aggregator<T> aggregator;
 
@@ -64,11 +66,13 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
       AttributesProcessor attributesProcessor,
+      Clock clock,
       int maxCardinality,
       boolean enabled) {
     this.metricDescriptor = metricDescriptor;
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
+    this.clock = clock;
     this.maxCardinality = maxCardinality - 1;
     this.enabled = enabled;
   }
@@ -79,6 +83,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       Aggregator<T> aggregator,
       AttributesProcessor processor,
       int maxCardinality,
+      Clock clock,
       boolean enabled) {
     AggregationTemporality aggregationTemporality =
         reader.getReader().getAggregationTemporality(descriptor.getSourceInstrument().getType());
@@ -87,11 +92,12 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             descriptor,
             aggregator,
             processor,
+            clock,
             maxCardinality,
             enabled,
             reader.getReader().getMemoryMode())
         : new DeltaSynchronousMetricStorage<>(
-            reader, descriptor, aggregator, processor, maxCardinality, enabled);
+            reader, descriptor, aggregator, processor, clock, maxCardinality, enabled);
   }
 
   @Override
@@ -160,9 +166,13 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       }
     }
     // Get handle from pool if available, else create a new one.
+    // Note: pooled handles (used only for delta temporality) retain their original
+    // creationEpochNanos, but delta storage does not use the handle's creation time for the
+    // start epoch — it uses the reader's last collect time directly in collect(). So the stale
+    // creation time on a recycled handle does not affect correctness.
     AggregatorHandle<T> newHandle = maybeGetPooledAggregatorHandle();
     if (newHandle == null) {
-      newHandle = aggregator.createHandle();
+      newHandle = aggregator.createHandle(clock.now());
     }
     handle = aggregatorHandles.putIfAbsent(attributes, newHandle);
     return handle != null ? handle : newHandle;
@@ -178,6 +188,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   private static class DeltaSynchronousMetricStorage<T extends PointData>
       extends DefaultSynchronousMetricStorage<T> {
+    private final long instrumentCreationEpochNanos;
     private final RegisteredReader registeredReader;
     private final MemoryMode memoryMode;
 
@@ -195,9 +206,11 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         MetricDescriptor metricDescriptor,
         Aggregator<T> aggregator,
         AttributesProcessor attributesProcessor,
+        Clock clock,
         int maxCardinality,
         boolean enabled) {
-      super(metricDescriptor, aggregator, attributesProcessor, maxCardinality, enabled);
+      super(metricDescriptor, aggregator, attributesProcessor, clock, maxCardinality, enabled);
+      this.instrumentCreationEpochNanos = clock.now();
       this.registeredReader = registeredReader;
       this.memoryMode = registeredReader.getReader().getMemoryMode();
     }
@@ -258,10 +271,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
     @Override
     public MetricData collect(
-        Resource resource,
-        InstrumentationScopeInfo instrumentationScopeInfo,
-        long startEpochNanos,
-        long epochNanos) {
+        Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
       AggregatorHolder<T> holder = this.aggregatorHolder;
       this.aggregatorHolder =
           (memoryMode == REUSABLE_DATA)
@@ -305,6 +315,11 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         }
       }
 
+      // Start time for synchronous delta instruments is the time of the last collection, or if no
+      // collection has yet taken place, the time the instrument was created.
+      long startEpochNanos =
+          registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos);
+
       // Grab aggregated points.
       aggregatorHandles.forEach(
           (attributes, handle) -> {
@@ -313,10 +328,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             }
             T point =
                 handle.aggregateThenMaybeReset(
-                    registeredReader.getLastCollectEpochNanos(),
-                    epochNanos,
-                    attributes,
-                    /* reset= */ true);
+                    startEpochNanos, epochNanos, attributes, /* reset= */ true);
 
             if (memoryMode == IMMUTABLE_DATA) {
               // Return the aggregator to the pool.
@@ -415,10 +427,11 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         MetricDescriptor metricDescriptor,
         Aggregator<T> aggregator,
         AttributesProcessor attributesProcessor,
+        Clock clock,
         int maxCardinality,
         boolean enabled,
         MemoryMode memoryMode) {
-      super(metricDescriptor, aggregator, attributesProcessor, maxCardinality, enabled);
+      super(metricDescriptor, aggregator, attributesProcessor, clock, maxCardinality, enabled);
       this.memoryMode = memoryMode;
     }
 
@@ -443,10 +456,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
     @Override
     public MetricData collect(
-        Resource resource,
-        InstrumentationScopeInfo instrumentationScopeInfo,
-        long startEpochNanos,
-        long epochNanos) {
+        Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
       List<T> points;
       if (memoryMode == REUSABLE_DATA) {
         reusableResultList.clear();
@@ -461,9 +471,11 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
             if (!handle.hasRecordedValues()) {
               return;
             }
+            // Start time for cumulative synchronous instruments is the time the first series
+            // measurement was recorded. I.e. the time the AggregatorHandle was created.
             T point =
                 handle.aggregateThenMaybeReset(
-                    startEpochNanos, epochNanos, attributes, /* reset= */ false);
+                    handle.getCreationEpochNanos(), epochNanos, attributes, /* reset= */ false);
 
             if (point != null) {
               points.add(point);

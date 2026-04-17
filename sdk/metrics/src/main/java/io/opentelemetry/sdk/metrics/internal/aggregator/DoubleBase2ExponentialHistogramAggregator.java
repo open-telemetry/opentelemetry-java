@@ -40,27 +40,35 @@ public final class DoubleBase2ExponentialHistogramAggregator
   private final ExemplarReservoirFactory reservoirFactory;
   private final int maxBuckets;
   private final int maxScale;
+  private final boolean recordMinMax;
   private final MemoryMode memoryMode;
 
   /**
    * Constructs an exponential histogram aggregator.
    *
    * @param reservoirFactory Supplier of exemplar reservoirs per-stream.
+   * @param maxBuckets maximum number of buckets in each of the positive and negative ranges
+   * @param maxScale maximum scale factor
+   * @param recordMinMax whether to record min and max values
+   * @param memoryMode The {@link MemoryMode} to use in this aggregator.
    */
   public DoubleBase2ExponentialHistogramAggregator(
       ExemplarReservoirFactory reservoirFactory,
       int maxBuckets,
       int maxScale,
+      boolean recordMinMax,
       MemoryMode memoryMode) {
     this.reservoirFactory = reservoirFactory;
     this.maxBuckets = maxBuckets;
     this.maxScale = maxScale;
+    this.recordMinMax = recordMinMax;
     this.memoryMode = memoryMode;
   }
 
   @Override
-  public AggregatorHandle<ExponentialHistogramPointData> createHandle() {
-    return new Handle(reservoirFactory, maxBuckets, maxScale, memoryMode);
+  public AggregatorHandle<ExponentialHistogramPointData> createHandle(long creationEpochNanos) {
+    return new Handle(
+        creationEpochNanos, reservoirFactory, maxBuckets, maxScale, recordMinMax, memoryMode);
   }
 
   @Override
@@ -82,6 +90,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
   static final class Handle extends AggregatorHandle<ExponentialHistogramPointData> {
     private final int maxBuckets;
     private final int maxScale;
+    private final boolean recordMinMax;
     @Nullable private DoubleBase2ExponentialHistogramBuckets positiveBuckets;
     @Nullable private DoubleBase2ExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
@@ -96,13 +105,16 @@ public final class DoubleBase2ExponentialHistogramAggregator
     @Nullable private final MutableExponentialHistogramPointData reusablePoint;
 
     Handle(
+        long creationEpochNanos,
         ExemplarReservoirFactory reservoirFactory,
         int maxBuckets,
         int maxScale,
+        boolean recordMinMax,
         MemoryMode memoryMode) {
-      super(reservoirFactory, /* isDoubleType= */ true);
+      super(creationEpochNanos, reservoirFactory, /* isDoubleType= */ true);
       this.maxBuckets = maxBuckets;
       this.maxScale = maxScale;
+      this.recordMinMax = recordMinMax;
       this.sum = 0;
       this.zeroCount = 0;
       this.min = Double.MAX_VALUE;
@@ -131,10 +143,10 @@ public final class DoubleBase2ExponentialHistogramAggregator
                 currentScale,
                 sum,
                 zeroCount,
-                this.count > 0,
-                this.min,
-                this.count > 0,
-                this.max,
+                recordMinMax && this.count > 0,
+                recordMinMax ? this.min : 0,
+                recordMinMax && this.count > 0,
+                recordMinMax ? this.max : 0,
                 resolveBuckets(
                     this.positiveBuckets, currentScale, reset, /* reusableBuckets= */ null),
                 resolveBuckets(
@@ -149,10 +161,10 @@ public final class DoubleBase2ExponentialHistogramAggregator
                 currentScale,
                 sum,
                 zeroCount,
-                this.count > 0,
-                this.min,
-                this.count > 0,
-                this.max,
+                recordMinMax && this.count > 0,
+                recordMinMax ? this.min : 0,
+                recordMinMax && this.count > 0,
+                recordMinMax ? this.max : 0,
                 resolveBuckets(
                     this.positiveBuckets, currentScale, reset, reusablePoint.getPositiveBuckets()),
                 resolveBuckets(
@@ -222,8 +234,10 @@ public final class DoubleBase2ExponentialHistogramAggregator
 
       sum += value;
 
-      this.min = Math.min(this.min, value);
-      this.max = Math.max(this.max, value);
+      if (recordMinMax) {
+        this.min = Math.min(this.min, value);
+        this.max = Math.max(this.max, value);
+      }
       count++;
 
       int c = Double.compare(value, 0);

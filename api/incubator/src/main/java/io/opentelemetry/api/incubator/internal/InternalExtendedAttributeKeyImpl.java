@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
+@SuppressWarnings("deprecation")
 public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttributeKey<T> {
 
   private final ExtendedAttributeType type;
@@ -115,7 +116,6 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
    * io.opentelemetry.api.common.AttributeType}.
    */
   @Nullable
-  @SuppressWarnings("deprecation") // Supporting deprecated EXTENDED_ATTRIBUTES until removed
   public static <T> AttributeKey<T> toAttributeKey(ExtendedAttributeKey<T> extendedAttributeKey) {
     switch (extendedAttributeKey.getType()) {
       case STRING:

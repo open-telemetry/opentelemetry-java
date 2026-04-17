@@ -31,16 +31,14 @@ public interface LogRecordBuilder {
   /**
    * Set the epoch {@code timestamp}, using the timestamp and unit.
    *
-   * <p>The {@code timestamp} is the time at which the log record occurred. If unset, it will be set
-   * to the current time when {@link #emit()} is called.
+   * <p>Note: If not set, the emitted log will not have a timestamp.
    */
   LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit);
 
   /**
    * Set the epoch {@code timestamp}, using the instant.
    *
-   * <p>The {@code timestamp} is the time at which the log record occurred. If unset, it will be set
-   * to the current time when {@link #emit()} is called.
+   * <p>Note: If not set, the emitted log will not have a timestamp.
    */
   LogRecordBuilder setTimestamp(Instant instant);
 
@@ -207,6 +205,16 @@ public interface LogRecordBuilder {
    * @since 1.50.0
    */
   default LogRecordBuilder setEventName(String eventName) {
+    return this;
+  }
+
+  /**
+   * Set {@code exception.type}, {@code exception.message}, and {@code exception.stacktrace}
+   * attributes based on the {@code throwable}.
+   *
+   * @since 1.60.0
+   */
+  default LogRecordBuilder setException(Throwable throwable) {
     return this;
   }
 

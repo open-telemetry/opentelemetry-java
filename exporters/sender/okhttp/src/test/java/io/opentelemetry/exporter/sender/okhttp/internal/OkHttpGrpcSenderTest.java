@@ -89,7 +89,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null,
-            null);
+            null,
+            Long.MAX_VALUE);
 
     CompletableResultCode sendResult = new CompletableResultCode();
     sender.send(
@@ -108,7 +109,7 @@ class OkHttpGrpcSenderTest {
         "CompletableResultCode should not be done immediately - it should wait for thread termination");
 
     // Now wait for it to complete
-    shutdownResult.join(10, java.util.concurrent.TimeUnit.SECONDS);
+    shutdownResult.join(10, TimeUnit.SECONDS);
     assertTrue(shutdownResult.isDone(), "CompletableResultCode should be done after waiting");
     assertTrue(shutdownResult.isSuccess(), "Shutdown should complete successfully");
   }
@@ -132,7 +133,8 @@ class OkHttpGrpcSenderTest {
               null,
               null,
               null,
-              customExecutor); // Pass custom executor -> managedExecutor = false
+              customExecutor, // Pass custom executor -> managedExecutor = false
+              Long.MAX_VALUE);
 
       CompletableResultCode shutdownResult = sender.shutdown();
 
@@ -169,7 +171,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null,
-            null); // null executor = managed
+            null, // null executor = managed
+            Long.MAX_VALUE);
 
     // Start multiple requests to ensure threads are busy
     CountDownLatch blockCallbacks = new CountDownLatch(1);
@@ -231,7 +234,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null,
-            null);
+            null,
+            Long.MAX_VALUE);
 
     // Trigger some activity
     sender.send(new TestMessageWriter(), response -> {}, error -> {});

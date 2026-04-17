@@ -35,6 +35,7 @@ import java.util.function.Consumer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Testing deprecated methods
 class ViewConfigTest {
 
   @Test

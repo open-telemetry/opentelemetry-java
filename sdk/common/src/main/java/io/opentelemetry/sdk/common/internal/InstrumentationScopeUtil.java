@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.common.internal;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfoBuilder;
 
@@ -14,11 +15,11 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfoBuilder;
  */
 public final class InstrumentationScopeUtil {
 
-  /** Convert to {@link io.opentelemetry.sdk.common.InstrumentationLibraryInfo}. */
+  /** Convert to {@link InstrumentationLibraryInfo}. */
   @SuppressWarnings("deprecation") // Utility method for compatibility
-  public static io.opentelemetry.sdk.common.InstrumentationLibraryInfo toInstrumentationLibraryInfo(
+  public static InstrumentationLibraryInfo toInstrumentationLibraryInfo(
       InstrumentationScopeInfo instrumentationScopeInfo) {
-    return io.opentelemetry.sdk.common.InstrumentationLibraryInfo.create(
+    return InstrumentationLibraryInfo.create(
         instrumentationScopeInfo.getName(),
         instrumentationScopeInfo.getVersion(),
         instrumentationScopeInfo.getSchemaUrl());
@@ -27,7 +28,7 @@ public final class InstrumentationScopeUtil {
   /** Convert to {@link InstrumentationScopeInfo}. */
   @SuppressWarnings("deprecation") // Utility method for compatibility
   public static InstrumentationScopeInfo toInstrumentationScopeInfo(
-      io.opentelemetry.sdk.common.InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     InstrumentationScopeInfoBuilder builder =
         InstrumentationScopeInfo.builder(instrumentationLibraryInfo.getName());
     if (instrumentationLibraryInfo.getVersion() != null) {

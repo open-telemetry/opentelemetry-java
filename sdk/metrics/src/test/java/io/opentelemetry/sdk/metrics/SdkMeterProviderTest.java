@@ -216,7 +216,11 @@ class SdkMeterProviderTest {
     sdkMeterProviderBuilder.registerView(
         InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
         View.builder()
-            .setAggregation(Aggregation.explicitBucketHistogram(Collections.emptyList()))
+            .setAggregation(
+                Aggregation.explicitBucketHistogram(
+                    ExplicitBucketHistogramOptions.builder()
+                        .setBucketBoundaries(Collections.emptyList())
+                        .build()))
             .build());
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
@@ -271,7 +275,11 @@ class SdkMeterProviderTest {
   @Test
   void collectAllSyncInstruments_DeltaHistogram() {
     registerViewForAllTypes(
-        sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
+        sdkMeterProviderBuilder,
+        Aggregation.explicitBucketHistogram(
+            ExplicitBucketHistogramOptions.builder()
+                .setBucketBoundaries(Collections.emptyList())
+                .build()));
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.createDelta();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
@@ -628,7 +636,11 @@ class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
-                    .setAggregation(Aggregation.explicitBucketHistogram(Collections.emptyList()))
+                    .setAggregation(
+                        Aggregation.explicitBucketHistogram(
+                            ExplicitBucketHistogramOptions.builder()
+                                .setBucketBoundaries(Collections.emptyList())
+                                .build()))
                     .build())
             .registerView(
                 selector,

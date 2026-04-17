@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.common.internal;
 
 import java.util.AbstractList;
+import java.util.Arrays;
 
 /**
  * A resizable list for storing primitive `long` values.
@@ -130,7 +131,7 @@ public class DynamicPrimitiveLongList extends AbstractList<Long> {
     int requiredArrays = (minCapacity + subarrayCapacity - 1) / subarrayCapacity;
 
     if (requiredArrays > arrayCount) {
-      arrays = java.util.Arrays.copyOf(arrays, /* newLength= */ requiredArrays);
+      arrays = Arrays.copyOf(arrays, /* newLength= */ requiredArrays);
       for (int i = arrayCount; i < requiredArrays; i++) {
         arrays[i] = new long[subarrayCapacity];
       }

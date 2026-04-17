@@ -13,9 +13,9 @@ jobs:
     permissions:
       contents: write # for git push to benchmarks branch
     name: Benchmark SDK
-    runs-on: oracle-bare-metal-64cpu-512gb-x86-64
+    runs-on: oracle-bare-metal-64cpu-1024gb-x86-64-ubuntu-24
     container:
-      image: ubuntu:24.04@sha256:cd1dba651b3080c3686ecf4e3c4220f026b521fb76978881737d24f200828b2b
+      image: ubuntu:24.04@sha256:84e77dee7d1bc93fb029a45e3c6cb9d8aa4831ccfcc7103d36e876938d28895b
     timeout-minutes: 20 # since there is only a single bare metal runner across all repos
     steps:
       - name: Install Git
@@ -36,27 +36,27 @@ jobs:
           java-version: 21
 
       - name: Set up gradle
-        uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5.0.1
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
       - name: Run jmh
         run: ./gradlew jmhJar
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       # TODO (jack-berg): Select or build appropriate benchmarks for other key areas:
-      # - Log SDK record & export
-      # - Trace SDK record & export
+      # - Log SDK export
+      # - Trace SDK export
       # - Metric SDK export
       # - Noop implementation
       - name: Run Benchmark
         run: |
           cd sdk/all/build
-          java -jar libs/opentelemetry-sdk-*-jmh.jar -rf json MetricRecordBenchmark
+          java -jar libs/opentelemetry-sdk-*-jmh.jar -rf json MetricRecordBenchmark SpanRecordBenchmark LogRecordBenchmark
 
       - name: Use CLA approved github bot
         run: .github/scripts/use-cla-approved-bot.sh
 
       - name: Store benchmark results
-        uses: benchmark-action/github-action-benchmark@4bdcce38c94cec68da58d012ac24b7b1155efe8b # v1.20.7
+        uses: benchmark-action/github-action-benchmark@a60cea5bc7b49e15c1f58f411161f99e0df48372 # v1.22.0
         with:
           tool: 'jmh'
           output-file-path: sdk/all/build/jmh-result.json

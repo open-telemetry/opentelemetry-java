@@ -1,0 +1,52 @@
+# the benefit of this over renovate is that this also analyzes transitive dependencies
+# while renovate (at least currently) only analyzes top-level dependencies
+name: OSS Index dependency audit (daily)
+
+on:
+  schedule:
+    - cron: "30 1 * * *" # daily at 1:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+
+      # --no-parallel is needed to avoid OverlappingFileLockException on the shared OSS Index cache
+      - run: ./gradlew ossIndexAudit --no-configuration-cache --no-parallel --info
+        id: audit
+        continue-on-error: true
+        env:
+          SONATYPE_OSS_INDEX_USER: ${{ secrets.SONATYPE_OSS_INDEX_USER }}
+          SONATYPE_OSS_INDEX_PASSWORD: ${{ secrets.SONATYPE_OSS_INDEX_PASSWORD }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
+      - name: Print vulnerability report
+        if: steps.audit.outcome == 'failure'
+        run: |
+          echo "=== OSS Index Vulnerability Report ==="
+          find . -name "oss-index-cyclonedx-bom.json" | xargs cat
+          exit 1
+
+  workflow-notification:
+    permissions:
+      contents: read
+      issues: write
+    needs:
+      - analyze
+    if: always()
+    uses: ./.github/workflows/reusable-workflow-notification.yml
+    with:
+      success: ${{ needs.analyze.result == 'success' }}

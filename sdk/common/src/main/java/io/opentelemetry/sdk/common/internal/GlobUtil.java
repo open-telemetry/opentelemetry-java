@@ -98,8 +98,8 @@ public final class GlobUtil {
       if (pattern != null) {
         return pattern.matcher(s).matches();
       }
-      // Exact match, ignoring case
-      return globPattern.equalsIgnoreCase(s);
+      // Exact match
+      return globPattern.equals(s);
     }
 
     @Override

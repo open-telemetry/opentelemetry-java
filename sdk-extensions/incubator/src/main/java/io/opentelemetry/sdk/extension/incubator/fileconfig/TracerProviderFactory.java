@@ -42,6 +42,8 @@ final class TracerProviderFactory
       return builder;
     }
 
+    context.setInternalTelemetry(builder::setMeterProvider);
+
     SpanLimits spanLimits =
         SpanLimitsFactory.getInstance()
             .create(
@@ -102,7 +104,7 @@ final class TracerProviderFactory
     @Override
     public TracerConfig create(
         ExperimentalTracerConfigModel model, DeclarativeConfigContext context) {
-      if (model.getDisabled() != null && model.getDisabled()) {
+      if (model.getEnabled() != null && !model.getEnabled()) {
         return TracerConfig.disabled();
       }
       return TracerConfig.defaultConfig();

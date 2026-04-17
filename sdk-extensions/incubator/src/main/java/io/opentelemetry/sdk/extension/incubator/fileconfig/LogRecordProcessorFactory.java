@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
@@ -15,6 +14,7 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessorBuilder;
 import java.time.Duration;
 
 final class LogRecordProcessorFactory
@@ -67,10 +67,7 @@ final class LogRecordProcessorFactory
     if (batchModel.getScheduleDelay() != null) {
       builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
     }
-    MeterProvider meterProvider = context.getMeterProvider();
-    if (meterProvider != null) {
-      builder.setMeterProvider(meterProvider);
-    }
+    context.setInternalTelemetry(builder::setMeterProvider, builder::setInternalTelemetryVersion);
 
     return context.addCloseable(builder.build());
   }
@@ -82,10 +79,8 @@ final class LogRecordProcessorFactory
             simpleModel.getExporter(), "simple log record processor exporter");
     LogRecordExporter logRecordExporter =
         LogRecordExporterFactory.getInstance().create(exporterModel, context);
-    MeterProvider meterProvider = context.getMeterProvider();
-    return context.addCloseable(
-        SimpleLogRecordProcessor.builder(logRecordExporter)
-            .setMeterProvider(() -> meterProvider)
-            .build());
+    SimpleLogRecordProcessorBuilder builder = SimpleLogRecordProcessor.builder(logRecordExporter);
+    context.setInternalTelemetry(builder::setMeterProvider);
+    return context.addCloseable(builder.build());
   }
 }

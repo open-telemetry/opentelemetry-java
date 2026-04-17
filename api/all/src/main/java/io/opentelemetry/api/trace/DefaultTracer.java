@@ -24,6 +24,11 @@ final class DefaultTracer implements Tracer {
   }
 
   @Override
+  public boolean isEnabled() {
+    return false;
+  }
+
+  @Override
   public SpanBuilder spanBuilder(String spanName) {
     return NoopSpanBuilder.create();
   }
@@ -74,7 +79,7 @@ final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setAttribute(String key, String value) {
+    public NoopSpanBuilder setAttribute(String key, @Nullable String value) {
       return this;
     }
 
@@ -94,7 +99,7 @@ final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public <T> NoopSpanBuilder setAttribute(AttributeKey<T> key, T value) {
+    public <T> NoopSpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
       return this;
     }
 

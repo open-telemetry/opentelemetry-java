@@ -65,6 +65,7 @@ class InstrumentationConfigUtilTest {
             new ByteArrayInputStream(configYaml.getBytes(StandardCharsets.UTF_8))));
   }
 
+  @SuppressWarnings("deprecation") // testing deprecated method
   @Test
   void peerServiceMapping() {
     assertThat(InstrumentationConfigUtil.peerServiceMapping(kitchenSinkConfigProvider))

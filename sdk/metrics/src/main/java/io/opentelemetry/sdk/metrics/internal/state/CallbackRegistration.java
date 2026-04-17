@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * A registered callback.
@@ -29,11 +30,13 @@ public final class CallbackRegistration {
   private final Runnable callback;
   private final List<InstrumentDescriptor> instrumentDescriptors;
   private final boolean hasStorages;
+  @Nullable private final ClassLoader contextClassLoader;
 
   private CallbackRegistration(
       List<SdkObservableMeasurement> observableMeasurements, Runnable callback) {
     this.observableMeasurements = observableMeasurements;
     this.callback = callback;
+    this.contextClassLoader = Thread.currentThread().getContextClassLoader();
     this.instrumentDescriptors =
         observableMeasurements.stream()
             .map(SdkObservableMeasurement::getInstrumentDescriptor)
@@ -53,8 +56,8 @@ public final class CallbackRegistration {
    *
    * <p>The {@code observableMeasurements} define the set of measurements the {@code runnable} may
    * record to. The active reader of each {@code observableMeasurements} is set via {@link
-   * SdkObservableMeasurement#setActiveReader(RegisteredReader, long, long)} before {@code runnable}
-   * is called, and set to {@code null} afterwards.
+   * SdkObservableMeasurement#setActiveReader(RegisteredReader)} before {@code runnable} is called,
+   * and set to {@code null} afterwards.
    *
    * @param observableMeasurements the measurements that the runnable may record to
    * @param runnable the callback
@@ -70,7 +73,7 @@ public final class CallbackRegistration {
     return "CallbackRegistration{instrumentDescriptors=" + instrumentDescriptors + "}";
   }
 
-  public void invokeCallback(RegisteredReader reader, long startEpochNanos, long epochNanos) {
+  public void invokeCallback(RegisteredReader reader) {
     // Return early if no storages are registered
     if (!hasStorages) {
       return;
@@ -78,8 +81,11 @@ public final class CallbackRegistration {
     // Set the active reader on each observable measurement so that measurements are only recorded
     // to relevant storages
     observableMeasurements.forEach(
-        observableMeasurement ->
-            observableMeasurement.setActiveReader(reader, startEpochNanos, epochNanos));
+        observableMeasurement -> observableMeasurement.setActiveReader(reader));
+    // Restore the context class loader that was active when the callback was registered.
+    Thread currentThread = Thread.currentThread();
+    ClassLoader previousContextClassLoader = currentThread.getContextClassLoader();
+    currentThread.setContextClassLoader(contextClassLoader);
     try {
       callback.run();
     } catch (Throwable e) {
@@ -87,6 +93,7 @@ public final class CallbackRegistration {
       throttlingLogger.log(
           Level.WARNING, "An exception occurred invoking callback for " + this + ".", e);
     } finally {
+      currentThread.setContextClassLoader(previousContextClassLoader);
       observableMeasurements.forEach(SdkObservableMeasurement::unsetActiveReader);
     }
   }
