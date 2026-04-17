@@ -53,7 +53,6 @@ class PrometheusUnitsHelper {
     initUnit("Cel", "celsius");
     initUnit("Hz", "hertz");
     initUnit("%", "percent");
-    initUnit("1", "ratio");
   }
 
   private PrometheusUnitsHelper() {}
@@ -70,12 +69,12 @@ class PrometheusUnitsHelper {
 
   @Nullable
   static Unit convertUnit(String otelUnit) {
-    if (otelUnit.isEmpty()) {
+    if (otelUnit.isEmpty() || otelUnit.equals("1")) {
       return null;
     }
     if (otelUnit.contains("{")) {
       otelUnit = otelUnit.replaceAll("\\{[^}]*}", "").trim();
-      if (otelUnit.isEmpty() || otelUnit.equals("/")) {
+      if (otelUnit.isEmpty() || otelUnit.equals("/") || otelUnit.equals("1")) {
         return null;
       }
     }
