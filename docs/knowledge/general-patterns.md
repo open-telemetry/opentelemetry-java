@@ -100,7 +100,8 @@ all parameters — this is enforced for public APIs. Package-private and private
 Javadoc at the author's discretion.
 
 - No `@author` tags.
-- New public API must include a `@since` annotation, but this is added as part of [release process](../../RELEASING.md), so omit.
+- New public API elements require a `@since` annotation. This is added automatically during the
+  [release process](../../RELEASING.md) — do not include it in your PR.
 - See [section 7.3.1](https://google.github.io/styleguide/javaguide.html#s7.3.1-javadoc-exception-self-explanatory)
   for self-explanatory exceptions.
 
