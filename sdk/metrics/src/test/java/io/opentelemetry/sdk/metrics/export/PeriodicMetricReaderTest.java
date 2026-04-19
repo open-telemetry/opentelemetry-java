@@ -452,6 +452,48 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  void periodicExport_SequentialBatches() throws Exception {
+    MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+    when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    CompletableResultCode batch1Result = new CompletableResultCode();
+    CompletableResultCode batch2Result = CompletableResultCode.ofSuccess();
+
+    // Configure mock to return pending for 1st call, success for 2nd
+    when(mockExporter.export(any())).thenReturn(batch1Result).thenReturn(batch2Result);
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(mockExporter)
+            .setInterval(
+                Duration.ofSeconds(Integer.MAX_VALUE)) // Long interval to prevent auto-trigger
+            .setMaxExportBatchSize(3)
+            .build();
+    // Setup metrics that will result in 2 batches (we have 6 points in
+    // LONG_POINT_LIST)
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
+    reader.register(collectionRegistration);
+
+    // Trigger manual flush
+    CompletableResultCode flushResult = reader.forceFlush();
+    // Verify that the first batch WAS exported
+    verify(mockExporter, times(1)).export(any());
+    // At this point, batch 1 is stuck waiting. Batch 2 should NOT be exported yet.
+    // We verify that export was only called once in total so far.
+    verify(mockExporter, times(1)).export(any());
+    // Now we complete the first batch
+    batch1Result.succeed();
+    // Verify that the second batch IS NOW exported
+    verify(mockExporter, times(2)).export(any());
+    // Ensure the flush operation completes successfully
+    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+    reader.shutdown();
+  }
+
+  @Test
   void stringRepresentation() {
     when(metricExporter.toString()).thenReturn("MockMetricExporter{}");
     assertThat(
