@@ -42,6 +42,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -413,7 +417,8 @@ class PeriodicMetricReaderTest {
     shutdownThread.start();
 
     // Give shutdown() time to reach the flushInProgress.join() wait.
-    // Even if this executes before shutdown enters the wait, the assertions below still
+    // Even if this executes before shutdown enters the wait, the assertions below
+    // still
     // validate correctness — they just won't exercise the concurrent case.
     Thread.sleep(200);
 
@@ -428,7 +433,8 @@ class PeriodicMetricReaderTest {
     assertThat(flushResult.isSuccess()).isTrue();
     // Final shutdown export also ran (in-flight + final = 2)
     assertThat(exportCount.get()).isEqualTo(2);
-    // Exporter.shutdown() was not called while the in-flight export was still pending
+    // Exporter.shutdown() was not called while the in-flight export was still
+    // pending
     assertThat(shutdownCalledWhileExportPending.get()).isFalse();
   }
 
@@ -491,6 +497,170 @@ class PeriodicMetricReaderTest {
     // Ensure the flush operation completes successfully
     assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
     reader.shutdown();
+  }
+
+  @Test
+  void periodicExport_SequentialBatches_PartialFailure() throws Exception {
+    MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+    when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    CompletableResultCode batch1Result = new CompletableResultCode();
+    CompletableResultCode batch2Result = new CompletableResultCode();
+    CompletableResultCode batch3Result = new CompletableResultCode();
+
+    when(mockExporter.export(any()))
+        .thenReturn(batch1Result)
+        .thenReturn(batch2Result)
+        .thenReturn(batch3Result);
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(mockExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(2) // 6 points / 2 = 3 batches
+            .build();
+
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
+    reader.register(collectionRegistration);
+
+    Logger targetLogger = Logger.getLogger(PeriodicMetricReader.class.getName());
+    Level originalLevel = targetLogger.getLevel();
+    targetLogger.setLevel(Level.FINE);
+
+    TestHandler testHandler = new TestHandler();
+    testHandler.setLevel(Level.FINE);
+    targetLogger.addHandler(testHandler);
+
+    try {
+      CompletableResultCode flushResult = reader.forceFlush();
+
+      verify(mockExporter, times(1)).export(any());
+
+      batch1Result.succeed();
+      verify(mockExporter, times(2)).export(any());
+
+      batch2Result.fail();
+      verify(mockExporter, times(3)).export(any());
+
+      batch3Result.succeed();
+
+      // Flush result should still be success
+      assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+      boolean logFound =
+          testHandler.getLogRecords().stream()
+              .anyMatch(
+                  record ->
+                      record.getLevel().equals(Level.FINE)
+                          && record.getMessage().equals("Exporter failed"));
+      assertThat(logFound).isTrue();
+
+      reader.shutdown();
+    } finally {
+      targetLogger.removeHandler(testHandler);
+      targetLogger.setLevel(originalLevel);
+    }
+  }
+
+  @Test
+  void periodicExport_SequentialBatches_PurelySynchronous() throws Exception {
+    MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+    when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    when(mockExporter.export(any()))
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenReturn(CompletableResultCode.ofSuccess());
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(mockExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(2) // 6 points / 2 = 3 batches
+            .build();
+
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flushResult = reader.forceFlush();
+
+    // Verify that all 3 batches WERE exported immediately
+    verify(mockExporter, times(3)).export(any());
+
+    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+    reader.shutdown();
+  }
+
+  @Test
+  void periodicExport_SequentialBatches_PurelyAsynchronous() throws Exception {
+    MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+    when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    CompletableResultCode batch1Result = new CompletableResultCode();
+    CompletableResultCode batch2Result = new CompletableResultCode();
+    CompletableResultCode batch3Result = new CompletableResultCode();
+
+    when(mockExporter.export(any()))
+        .thenReturn(batch1Result)
+        .thenReturn(batch2Result)
+        .thenReturn(batch3Result);
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(mockExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(2) // 6 points / 2 = 3 batches
+            .build();
+
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
+    reader.register(collectionRegistration);
+
+    Logger targetLogger = Logger.getLogger(PeriodicMetricReader.class.getName());
+    Level originalLevel = targetLogger.getLevel();
+    targetLogger.setLevel(Level.FINE);
+
+    TestHandler testHandler = new TestHandler();
+    testHandler.setLevel(Level.FINE);
+    targetLogger.addHandler(testHandler);
+
+    try {
+      CompletableResultCode flushResult = reader.forceFlush();
+
+      verify(mockExporter, times(1)).export(any());
+
+      batch1Result.succeed();
+      verify(mockExporter, times(2)).export(any());
+
+      batch2Result.succeed();
+      verify(mockExporter, times(3)).export(any());
+
+      batch3Result.succeed();
+
+      assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+      boolean logFound =
+          testHandler.getLogRecords().stream()
+              .anyMatch(
+                  record ->
+                      record.getLevel().equals(Level.FINE)
+                          && record.getMessage().equals("Exporter failed"));
+      assertThat(logFound).isFalse();
+
+      reader.shutdown();
+    } finally {
+      targetLogger.removeHandler(testHandler);
+      targetLogger.setLevel(originalLevel);
+    }
   }
 
   @Test
@@ -565,6 +735,27 @@ class PeriodicMetricReaderTest {
         result.add(export);
       }
       return result;
+    }
+  }
+
+  private static class TestHandler extends Handler {
+    private final List<LogRecord> logRecords = new ArrayList<>();
+
+    private TestHandler() {}
+
+    @Override
+    public void publish(LogRecord record) {
+      logRecords.add(record);
+    }
+
+    @Override
+    public void flush() {}
+
+    @Override
+    public void close() {}
+
+    List<LogRecord> getLogRecords() {
+      return logRecords;
     }
   }
 }
