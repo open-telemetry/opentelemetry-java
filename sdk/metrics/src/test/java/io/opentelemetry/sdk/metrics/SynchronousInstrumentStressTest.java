@@ -87,6 +87,18 @@ class SynchronousInstrumentStressTest {
       Aggregation aggregation,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType) {
+    for (int repetition = 0; repetition < 50; repetition++) {
+      stressTestOnce(
+          aggregationTemporality, instrumentType, aggregation, memoryMode, instrumentValueType);
+    }
+  }
+
+  private void stressTestOnce(
+      AggregationTemporality aggregationTemporality,
+      InstrumentType instrumentType,
+      Aggregation aggregation,
+      MemoryMode memoryMode,
+      InstrumentValueType instrumentValueType) {
     // Initialize metric SDK
     DefaultAggregationSelector aggregationSelector =
         DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);
@@ -100,6 +112,8 @@ class SynchronousInstrumentStressTest {
         SdkMeterProvider.builder().registerMetricReader(reader).build();
     cleanup.addCloseable(meterProvider);
     Meter meter = meterProvider.get("test");
+    List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
+    Collections.shuffle(attributes);
     Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
 
     // Define list of measurements to record
@@ -120,8 +134,6 @@ class SynchronousInstrumentStressTest {
       recordThreads.add(
           new Thread(
               () -> {
-                List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
-                Collections.shuffle(attributes);
                 for (Long measurement : measurements) {
                   for (Attributes attr : attributes) {
                     instrument.record(measurement, attr);
@@ -263,8 +275,8 @@ class SynchronousInstrumentStressTest {
                             assertThat(p.getMax()).isEqualTo((double) max.get());
                             assertThat(p.getZeroCount()).isEqualTo(zeroCount.get());
                             assertThat(
-                                    p.getPositiveBuckets().getBucketCounts().stream()
-                                        .reduce(0L, Long::sum))
+                                p.getPositiveBuckets().getBucketCounts().stream()
+                                    .reduce(0L, Long::sum))
                                 .isEqualTo(totalCount.get() - zeroCount.get());
                           }));
     } else {
@@ -307,15 +319,15 @@ class SynchronousInstrumentStressTest {
       case HISTOGRAM:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter
-                    .histogramBuilder(INSTRUMENT_NAME)
-                    .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
-                    .build()
-                ::record
+            .histogramBuilder(INSTRUMENT_NAME)
+            .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+            .build()
+            ::record
             : meter
-                    .histogramBuilder(INSTRUMENT_NAME)
-                    .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
-                    .ofLongs()
-                    .build()
+                .histogramBuilder(INSTRUMENT_NAME)
+                .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                .ofLongs()
+                .build()
                 ::record;
       case GAUGE:
         return instrumentValueType == InstrumentValueType.DOUBLE
