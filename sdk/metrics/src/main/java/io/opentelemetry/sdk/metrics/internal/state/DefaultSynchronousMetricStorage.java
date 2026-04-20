@@ -37,8 +37,8 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
   private static final Logger internalLogger =
       Logger.getLogger(DefaultSynchronousMetricStorage.class.getName());
 
-  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
-  private final AttributesProcessor attributesProcessor;
+  final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+  final AttributesProcessor attributesProcessor;
   protected final Clock clock;
   protected final MetricDescriptor metricDescriptor;
   protected final Aggregator<T> aggregator;
