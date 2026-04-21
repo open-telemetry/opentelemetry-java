@@ -46,6 +46,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   private final ArrayList<T> reusableResultList = new ArrayList<>();
   private final ConcurrentLinkedQueue<DeltaAggregatorHandle<T>> aggregatorHandlePool =
       new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedQueue<DeltaAggregatorHandle<T>> boundRecordOps =
+      new ConcurrentLinkedQueue<>();
 
   DeltaSynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -142,7 +144,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       // correctness.
       DeltaAggregatorHandle<T> newDeltaHandle = aggregatorHandlePool.poll();
       if (newDeltaHandle == null) {
-        newDeltaHandle = new DeltaAggregatorHandle<>(aggregator.createHandle(clock.now()));
+        newDeltaHandle =
+            new DeltaAggregatorHandle<>(attributes, aggregator.createHandle(clock.now()));
       }
       handle = aggregatorHandles.putIfAbsent(attributes, newDeltaHandle);
       if (handle == null) {
@@ -156,6 +159,47 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     } finally {
       holder.releaseNewSeries();
     }
+  }
+
+  @Override
+  public RecordOp bind(Attributes attributes) {
+    Attributes processedAttributes = attributesProcessor.process(attributes, Context.current());
+    // Bound handles are standalone: not inserted into the holder map and not subject to the
+    // holder-swap coordination. The collect thread uses lockForCollect / awaitRecorders /
+    // unlockAfterCollect directly on the bound wrapper to safely aggregate and, for
+    // IMMUTABLE_DATA, rotate the inner handle each collection interval.
+    DeltaAggregatorHandle<T> boundHandle =
+        new DeltaAggregatorHandle<>(processedAttributes, aggregator.createHandle(clock.now()));
+    boundRecordOps.add(boundHandle);
+    return new RecordOp() {
+      @Override
+      public void recordLong(long value) {
+        while (true) {
+          if (boundHandle.tryAcquireForRecord()) {
+            try {
+              boundHandle.handle.recordLong(value, attributes, Context.current());
+            } finally {
+              boundHandle.releaseRecord();
+            }
+            return;
+          }
+        }
+      }
+
+      @Override
+      public void recordDouble(double value) {
+        while (true) {
+          if (boundHandle.tryAcquireForRecord()) {
+            try {
+              boundHandle.handle.recordDouble(value, attributes, Context.current());
+            } finally {
+              boundHandle.releaseRecord();
+            }
+            return;
+          }
+        }
+      }
+    };
   }
 
   @Override
@@ -241,6 +285,35 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       previousCollectionAggregatorHandles = aggregatorHandles;
     }
 
+    // Collect bound handles. Each bound handle uses its own state machine so the collect thread
+    // can safely aggregate without racing with concurrent recordings:
+    //   1. lockForCollect: set state odd, blocking new recordings
+    //   2. awaitRecorders: wait for in-flight recordings to drain (state → 1), without unlocking
+    //   3. aggregateThenMaybeReset: safe since no recordings are in progress
+    //   4. IMMUTABLE_DATA: rotate inner handle while still locked so recordings after unlock
+    //      write to the fresh accumulator (guaranteed visible via the state unlock's HB edge)
+    //   5. unlockAfterCollect: state → 0, recordings resume against the new/reset inner handle
+    boundRecordOps.forEach(
+        boundHandle -> {
+          boundHandle.lockForCollect();
+          boundHandle.awaitRecorders();
+          T point = null;
+          if (boundHandle.handle.hasRecordedValues()) {
+            point =
+                boundHandle.handle.aggregateThenMaybeReset(
+                    startEpochNanos, epochNanos, boundHandle.attributes, /* reset= */ true);
+          }
+          if (memoryMode == IMMUTABLE_DATA) {
+            DeltaAggregatorHandle<T> fresh = aggregatorHandlePool.poll();
+            boundHandle.handle =
+                (fresh != null) ? fresh.handle : aggregator.createHandle(clock.now());
+          }
+          boundHandle.unlockAfterCollect();
+          if (point != null) {
+            points.add(point);
+          }
+        });
+
     if (points.isEmpty() || !enabled) {
       return EmptyMetricData.getInstance();
     }
@@ -297,7 +370,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   }
 
   private static final class DeltaAggregatorHandle<T extends PointData> {
-    final AggregatorHandle<T> handle;
+    private final Attributes attributes;
+    private volatile AggregatorHandle<T> handle;
     // Guards per-handle recording using the same even/odd protocol as
     // AggregatorHolder.newSeriesGate,
     // but scoped to a single series:
@@ -308,13 +382,14 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     //     thread decrements by 1 to restore it to even for the next cycle.
     private final AtomicInteger state = new AtomicInteger(0);
 
-    DeltaAggregatorHandle(AggregatorHandle<T> handle) {
+    DeltaAggregatorHandle(Attributes attributes, AggregatorHandle<T> handle) {
+      this.attributes = attributes;
       this.handle = handle;
     }
 
     /**
      * Tries to acquire a recording slot. Returns false if the collector has locked this handle (odd
-     * state); the caller should retry with a fresh holder.
+     * state); the caller should retry.
      */
     boolean tryAcquireForRecord() {
       int s = state.addAndGet(2);
@@ -349,6 +424,26 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     /** Waits for all in-flight recorders to finish, then clears the collection lock. */
     void awaitRecordersAndUnlock() {
       while (state.get() > 1) {}
+      state.addAndGet(-1);
+    }
+
+    /**
+     * Waits for all in-flight recorders to finish WITHOUT clearing the collection lock. Used by the
+     * collect thread for bound handles so that the inner handle can be aggregated and (in
+     * IMMUTABLE_DATA mode) rotated while the lock is still held, preventing any new recording from
+     * reaching the old accumulator before it is pooled.
+     */
+    void awaitRecorders() {
+      while (state.get() > 1) {}
+    }
+
+    /**
+     * Clears the collection lock after aggregation is complete. Must be called after {@link
+     * #awaitRecorders()} and any inner handle rotation. The happens-before edge from this write to
+     * the next {@link #tryAcquireForRecord()} ensures recording threads see the updated {@link
+     * #handle} value.
+     */
+    void unlockAfterCollect() {
       state.addAndGet(-1);
     }
   }

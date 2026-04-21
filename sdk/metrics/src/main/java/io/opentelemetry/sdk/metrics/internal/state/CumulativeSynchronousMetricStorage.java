@@ -90,6 +90,23 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
   }
 
   @Override
+  public RecordOp bind(Attributes attributes) {
+    AggregatorHandle<T> aggregatorHandle =
+        getAggregatorHandle(aggregatorHandles, attributes, Context.current());
+    return new RecordOp() {
+      @Override
+      public void recordLong(long value) {
+        aggregatorHandle.recordLong(value, attributes, Context.current());
+      }
+
+      @Override
+      public void recordDouble(double value) {
+        aggregatorHandle.recordDouble(value, attributes, Context.current());
+      }
+    };
+  }
+
+  @Override
   public MetricData collect(
       Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
     List<T> points;
