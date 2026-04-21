@@ -61,6 +61,9 @@ class StringEncoderTest {
   private static void testUtf8Encoding(StringEncoder stringEncoder) {
     assertThat(stringEncoder).isNotNull();
 
+    assertThat(stringEncoder.getUtf8Size(null)).isEqualTo(0);
+    assertThat(testUtf8(null, 0, stringEncoder)).isEqualTo("");
+
     assertThat(stringEncoder.getUtf8Size("")).isEqualTo(0);
     assertThat(testUtf8("", 0, stringEncoder)).isEqualTo("");
 
@@ -87,6 +90,8 @@ class StringEncoderTest {
   }
 
   private static void testUtf8SizeLatin1(StringEncoder stringEncoder) {
+    assertThat(stringEncoder.getUtf8Size(null)).isEqualTo(0);
+
     // Run repeated test logic for each encoder
     Random random = new Random();
     for (int i = 0; i < 1000; i++) {
