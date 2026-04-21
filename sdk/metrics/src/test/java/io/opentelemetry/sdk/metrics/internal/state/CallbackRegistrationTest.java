@@ -144,14 +144,11 @@ class CallbackRegistrationTest {
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Collections.singletonList(measurement1), callback);
 
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     assertThat(counter.get()).isEqualTo(1.1);
-    verify(storage1).setEpochInformation(0, 1);
     verify(storage1).record(Attributes.builder().put("key", "val").build(), 1.1);
-    verify(storage2, never()).setEpochInformation(anyLong(), anyLong());
     verify(storage2, never()).record(any(), anyDouble());
-    verify(storage3, never()).setEpochInformation(anyLong(), anyLong());
     verify(storage3, never()).record(any(), anyDouble());
   }
 
@@ -165,14 +162,11 @@ class CallbackRegistrationTest {
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Collections.singletonList(measurement2), callback);
 
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     assertThat(counter.get()).isEqualTo(1);
-    verify(storage1, never()).setEpochInformation(anyLong(), anyLong());
     verify(storage1, never()).record(any(), anyLong());
-    verify(storage2).setEpochInformation(0, 1);
     verify(storage2).record(Attributes.builder().put("key", "val").build(), 1);
-    verify(storage3).setEpochInformation(0, 1);
     verify(storage3).record(Attributes.builder().put("key", "val").build(), 1);
   }
 
@@ -190,15 +184,12 @@ class CallbackRegistrationTest {
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Arrays.asList(measurement1, measurement2), callback);
 
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     assertThat(doubleCounter.get()).isEqualTo(1.1);
     assertThat(longCounter.get()).isEqualTo(1);
-    verify(storage1).setEpochInformation(0, 1);
     verify(storage1).record(Attributes.builder().put("key", "val").build(), 1.1);
-    verify(storage2).setEpochInformation(0, 1);
     verify(storage2).record(Attributes.builder().put("key", "val").build(), 1);
-    verify(storage3).setEpochInformation(0, 1);
     verify(storage3).record(Attributes.builder().put("key", "val").build(), 1);
   }
 
@@ -215,7 +206,7 @@ class CallbackRegistrationTest {
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Collections.singletonList(measurement), callback);
 
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     assertThat(counter.get()).isEqualTo(0);
   }
@@ -236,7 +227,7 @@ class CallbackRegistrationTest {
 
     // Simulate invocation on a thread with null context class loader (like DaemonThreadFactory)
     Thread.currentThread().setContextClassLoader(null);
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     // Callback should have seen the registration-time classloader
     assertThat(observedClassLoader.get()).isSameAs(registrationClassLoader);
@@ -264,7 +255,7 @@ class CallbackRegistrationTest {
 
     // Simulate invocation on a thread with null context class loader
     Thread.currentThread().setContextClassLoader(null);
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     // Context classloader should still be restored even after exception
     assertThat(Thread.currentThread().getContextClassLoader()).isNull();
@@ -282,7 +273,7 @@ class CallbackRegistrationTest {
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Arrays.asList(measurement1, measurement2), callback);
 
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     verify(storage1, never()).record(any(), anyLong());
     verify(storage1, never()).record(any(), anyDouble());
@@ -302,7 +293,7 @@ class CallbackRegistrationTest {
     CallbackRegistration callbackRegistration =
         CallbackRegistration.create(Collections.singletonList(measurement2), callback);
 
-    callbackRegistration.invokeCallback(registeredReader, 0, 1);
+    callbackRegistration.invokeCallback(registeredReader);
 
     verify(storage1, never()).record(any(), anyLong());
     verify(storage1, never()).record(any(), anyDouble());

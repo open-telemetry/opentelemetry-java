@@ -62,6 +62,7 @@ class SdkLongCounterTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longCounter.add(12, Attributes.empty());
     longCounter.add(12);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->

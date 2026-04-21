@@ -24,6 +24,8 @@ public interface DoubleUpDownCounter {
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #add(double)}, {@link #add(double, Attributes)}, or {@link #add(double,
    * Attributes, Context)}.
+   *
+   * @since 1.61.0
    */
   default boolean isEnabled() {
     return true;

@@ -5,8 +5,12 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
+import com.google.protobuf.AbstractMessageLite;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.GrpcSslContexts;
@@ -15,8 +19,8 @@ import io.grpc.okhttp.OkHttpChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -25,6 +29,8 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -68,6 +74,8 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     // the User-Agent to be spec compliant they must manually set the user agent when building
     // their channel.
     channelBuilder.userAgent(OtlpUserAgent.getUserAgent());
+    // Its user's responsibility to set the max inbound message size when building their channel.
+    channelBuilder.maxInboundMessageSize(4 * 1024 * 1024);
     return this;
   }
 
@@ -148,9 +156,30 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
       throw new IllegalStateException("Can't happen");
     }
     requireNonNull(channelBuilder, "channel");
-    channelBuilder.defaultServiceConfig(
-        ManagedChannelUtil.toServiceConfig(grpcServiceName, retryPolicy));
+    channelBuilder.defaultServiceConfig(toServiceConfig(grpcServiceName, retryPolicy));
     return this;
+  }
+
+  /**
+   * Convert the {@link RetryPolicy} into a gRPC service config for the {@code serviceName}. The
+   * resulting map can be passed to {@link ManagedChannelBuilder#defaultServiceConfig(Map)}.
+   */
+  private static Map<String, ?> toServiceConfig(String serviceName, RetryPolicy retryPolicy) {
+    List<Double> retryableStatusCodes =
+        RetryUtil.retryableGrpcStatusCodes().stream().map(Double::parseDouble).collect(toList());
+
+    Map<String, Object> retryConfig = new HashMap<>();
+    retryConfig.put("retryableStatusCodes", retryableStatusCodes);
+    retryConfig.put("maxAttempts", (double) retryPolicy.getMaxAttempts());
+    retryConfig.put("initialBackoff", retryPolicy.getInitialBackoff().toMillis() / 1000.0 + "s");
+    retryConfig.put("maxBackoff", retryPolicy.getMaxBackoff().toMillis() / 1000.0 + "s");
+    retryConfig.put("backoffMultiplier", retryPolicy.getBackoffMultiplier());
+
+    Map<String, Object> methodConfig = new HashMap<>();
+    methodConfig.put("name", singletonList(singletonMap("service", serviceName)));
+    methodConfig.put("retryPolicy", retryConfig);
+
+    return singletonMap("methodConfig", singletonList(methodConfig));
   }
 
   @Override
@@ -229,6 +258,11 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
       public CompletableResultCode shutdown() {
         shutdownCallback.run();
         return delegateExporter.shutdown();
+      }
+
+      @Override
+      public AbstractMessageLite<?, ?> exportResponse(int minimumSize) {
+        return delegateExporter.exportResponse(minimumSize);
       }
     };
   }

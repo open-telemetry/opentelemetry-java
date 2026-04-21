@@ -70,19 +70,11 @@ public final class SdkObservableMeasurement
    * Set the active reader, and clock information. {@link #unsetActiveReader()} MUST be called
    * after.
    */
-  public void setActiveReader(
-      RegisteredReader registeredReader, long startEpochNanos, long epochNanos) {
+  public void setActiveReader(RegisteredReader registeredReader) {
     this.activeReader = registeredReader;
-    for (AsynchronousMetricStorage<?> storage : storages) {
-      if (storage.getRegisteredReader().equals(activeReader)) {
-        storage.setEpochInformation(startEpochNanos, epochNanos);
-      }
-    }
   }
 
-  /**
-   * Unset the active reader. Called after {@link #setActiveReader(RegisteredReader, long, long)}.
-   */
+  /** Unset the active reader. Called after {@link #setActiveReader(RegisteredReader)}. */
   public void unsetActiveReader() {
     this.activeReader = null;
   }

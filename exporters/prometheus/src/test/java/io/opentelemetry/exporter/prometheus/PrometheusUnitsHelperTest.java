@@ -69,8 +69,8 @@ class PrometheusUnitsHelperTest {
         Arguments.of("Cel", "celsius"),
         // Unit not found - Case sensitive
         Arguments.of("S", "S"),
-        // Special case - 1
-        Arguments.of("1", "ratio"),
+        // Special case - 1 is unitless
+        Arguments.of("1", null),
         // Special Case - Drop metric units in {}
         Arguments.of("{packets}", null),
         // Special Case - Dropped metric units only in {}

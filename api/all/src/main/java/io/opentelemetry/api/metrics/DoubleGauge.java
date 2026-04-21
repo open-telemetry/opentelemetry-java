@@ -24,6 +24,8 @@ public interface DoubleGauge {
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #set(double)}, {@link #set(double, Attributes)}, or {@link #set(double,
    * Attributes, Context)}.
+   *
+   * @since 1.61.0
    */
   default boolean isEnabled() {
     return true;

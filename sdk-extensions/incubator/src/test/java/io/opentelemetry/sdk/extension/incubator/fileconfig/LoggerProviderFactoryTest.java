@@ -9,9 +9,9 @@ import static io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil.setLogger
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
@@ -44,9 +44,9 @@ class LoggerProviderFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final DeclarativeConfigContext context =
+  private static final DeclarativeConfigContext context =
       new DeclarativeConfigContext(
-          SpiHelper.create(LoggerProviderFactoryTest.class.getClassLoader()));
+          ComponentLoader.forClassLoader(LoggerProviderFactoryTest.class.getClassLoader()));
 
   @BeforeEach
   void setup() {
@@ -123,7 +123,9 @@ class LoggerProviderFactoryTest {
                             .setMaxAttributeValueLength(2)
                             .build())
                 .addLogRecordProcessor(
-                    BatchLogRecordProcessor.builder(OtlpHttpLogRecordExporter.getDefault()).build())
+                    BatchLogRecordProcessor.builder(
+                            OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
+                        .build())
                 .build()));
   }
 

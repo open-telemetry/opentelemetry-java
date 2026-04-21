@@ -9,8 +9,8 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -46,7 +46,8 @@ import javax.annotation.Nullable;
  */
 public final class EnvironmentGetter implements TextMapGetter<Map<String, String>> {
 
-  private static final Logger logger = Logger.getLogger(EnvironmentGetter.class.getName());
+  private static final AtomicBoolean LOG_KEYS_CALLED = new AtomicBoolean(false);
+  private static final Logger LOGGER = Logger.getLogger(EnvironmentGetter.class.getName());
   private static final EnvironmentGetter INSTANCE = new EnvironmentGetter();
 
   private EnvironmentGetter() {}
@@ -58,14 +59,21 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
 
   @Override
   public Iterable<String> keys(Map<String, String> carrier) {
+    if (LOG_KEYS_CALLED.compareAndSet(false, true)) {
+      LOGGER.log(
+          Level.WARNING,
+          "keys() called on EnvironmentGetter. "
+              + "This may produce unexpected results with propagators which depend on case sensitivity or special characters in keys.",
+          new Throwable());
+    }
     if (carrier == null) {
       return Collections.emptyList();
     }
     List<String> result = new ArrayList<>(carrier.size());
     for (String key : carrier.keySet()) {
-      result.add(key.toLowerCase(Locale.ROOT));
+      result.add(EnvironmentSetter.normalizeKey(key));
     }
-    return result;
+    return Collections.unmodifiableList(result);
   }
 
   @Nullable
@@ -74,20 +82,21 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
     if (carrier == null || key == null) {
       return null;
     }
-    // Spec recommends using uppercase and underscores for environment variable
-    // names for maximum
-    // cross-platform compatibility.
-    String sanitizedKey = key.replace('.', '_').replace('-', '_').toUpperCase(Locale.ROOT);
-    String value = carrier.get(sanitizedKey);
-    if (value != null && !EnvironmentSetter.isValidHttpHeaderValue(value)) {
-      logger.log(
-          Level.FINE,
-          "Ignoring environment variable '{0}': "
-              + "value contains characters not valid in HTTP header fields per RFC 9110.",
-          sanitizedKey);
-      return null;
+    String normalizedKey = EnvironmentSetter.normalizeKey(key);
+    // first, perform an optimistic lookup for an exact match on the normalized key
+    String value = carrier.get(normalizedKey);
+    if (value != null) {
+      return value;
     }
-    return value;
+    // next, iterate over the carrier normalizing each entry and evaluating for a match
+    // if memory allocation becomes an issue, can implement using iterative normalization, comparing
+    // an entry character by character to the normalized key, normalizing along the way.
+    for (Map.Entry<String, String> entry : carrier.entrySet()) {
+      if (EnvironmentSetter.normalizeKey(entry.getKey()).equals(normalizedKey)) {
+        return entry.getValue();
+      }
+    }
+    return null;
   }
 
   @Override

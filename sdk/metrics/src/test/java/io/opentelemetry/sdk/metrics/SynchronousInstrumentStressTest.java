@@ -96,6 +96,24 @@ class SynchronousInstrumentStressTest {
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType,
       boolean isBound) {
+    for (int repetition = 0; repetition < 50; repetition++) {
+      stressTestOnce(
+          aggregationTemporality,
+          instrumentType,
+          aggregation,
+          memoryMode,
+          instrumentValueType,
+          isBound);
+    }
+  }
+
+  private void stressTestOnce(
+      AggregationTemporality aggregationTemporality,
+      InstrumentType instrumentType,
+      Aggregation aggregation,
+      MemoryMode memoryMode,
+      InstrumentValueType instrumentValueType,
+      boolean isBound) {
     // Initialize metric SDK
     DefaultAggregationSelector aggregationSelector =
         DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);

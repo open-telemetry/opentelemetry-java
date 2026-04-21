@@ -30,12 +30,18 @@ public interface Logger {
    * <p>This allows callers to avoid unnecessary compute when nothing is consuming the data. Because
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #logRecordBuilder()}.
+   *
+   * @since 1.61.0
    */
   default boolean isEnabled(Severity severity, Context context) {
     return true;
   }
 
-  /** Overload of {@link #isEnabled(Severity, Context)} assuming {@link Context#current()}. */
+  /**
+   * Overload of {@link #isEnabled(Severity, Context)} assuming {@link Context#current()}.
+   *
+   * @since 1.61.0
+   */
   default boolean isEnabled(Severity severity) {
     return isEnabled(severity, Context.current());
   }

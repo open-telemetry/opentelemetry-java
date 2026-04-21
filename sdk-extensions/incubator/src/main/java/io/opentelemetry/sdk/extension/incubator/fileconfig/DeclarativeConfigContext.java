@@ -10,14 +10,14 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedDeclarativeConfigProperties;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -27,24 +27,31 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-/** Declarative configuration context and state carrier. */
-class DeclarativeConfigContext {
+/**
+ * Declarative configuration context and state carrier.
+ *
+ * <p>This implements {@link ComponentLoader} with an implementation which delegates to an
+ * underlying instance while tracking instances which implement {@link AutoConfigureListener},
+ * accessible via {@link #getListeners()}.
+ */
+class DeclarativeConfigContext implements ComponentLoader {
 
-  private final SpiHelper spiHelper;
+  private final ComponentLoader componentLoader;
+  private final Set<AutoConfigureListener> listeners =
+      Collections.newSetFromMap(new IdentityHashMap<>());
   private final List<Closeable> closeables = new ArrayList<>();
   @Nullable private volatile MeterProvider meterProvider;
-  @Nullable private Resource resource = null;
   @Nullable private ConfigProvider configProvider;
   @Nullable private List<ComponentProvider> componentProviders = null;
   @Nullable private DeclarativeConfigurationBuilder builder;
 
-  // Visible for testing
-  DeclarativeConfigContext(SpiHelper spiHelper) {
-    this.spiHelper = spiHelper;
+  DeclarativeConfigContext(ComponentLoader componentLoader) {
+    this.componentLoader = componentLoader;
   }
 
-  static DeclarativeConfigContext create(ComponentLoader componentLoader) {
-    return new DeclarativeConfigContext(SpiHelper.create(componentLoader));
+  /** Return the underlying component loader. */
+  ComponentLoader getDelegateComponentLoader() {
+    return componentLoader;
   }
 
   /**
@@ -66,18 +73,6 @@ class DeclarativeConfigContext {
 
   public void setConfigProvider(ConfigProvider configProvider) {
     this.configProvider = configProvider;
-  }
-
-  Resource getResource() {
-    // called via reflection from io.opentelemetry.sdk.autoconfigure.IncubatingUtil
-    if (resource == null) {
-      throw new DeclarativeConfigException("Resource has not been configured yet.");
-    }
-    return resource;
-  }
-
-  void setResource(Resource resource) {
-    this.resource = resource;
   }
 
   void setBuilder(DeclarativeConfigurationBuilder builder) {
@@ -136,10 +131,6 @@ class DeclarativeConfigContext {
     }
   }
 
-  SpiHelper getSpiHelper() {
-    return spiHelper;
-  }
-
   /**
    * Find a registered {@link ComponentProvider} with {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
@@ -157,7 +148,7 @@ class DeclarativeConfigContext {
             configProvider == null ? ConfigProvider.noop() : configProvider);
 
     if (componentProviders == null) {
-      componentProviders = spiHelper.load(ComponentProvider.class);
+      componentProviders = ComponentLoader.loadList(this, ComponentProvider.class);
     }
     List<ComponentProvider> matchedProviders =
         componentProviders.stream()
@@ -204,6 +195,22 @@ class DeclarativeConfigContext {
       throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
     }
+  }
+
+  @Override
+  public <T> Iterable<T> load(Class<T> spiClass) {
+    List<T> result = ComponentLoader.loadList(componentLoader, spiClass);
+    result.forEach(
+        entry -> {
+          if (entry instanceof AutoConfigureListener) {
+            listeners.add((AutoConfigureListener) entry);
+          }
+        });
+    return result;
+  }
+
+  Set<AutoConfigureListener> getListeners() {
+    return Collections.unmodifiableSet(listeners);
   }
 
   private static class ExtendedDeclarativeConfigPropertiesImpl

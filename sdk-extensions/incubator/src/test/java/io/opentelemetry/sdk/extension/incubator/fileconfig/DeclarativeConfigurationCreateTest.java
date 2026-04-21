@@ -19,7 +19,6 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
@@ -101,7 +100,7 @@ class DeclarativeConfigurationCreateTest {
         new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
     // Verify that file can be parsed and interpreted without error
-    assertThatCode(() -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is)))
+    assertThatCode(() -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is).getSdk()))
         .as("Example file: " + example.getName())
         .doesNotThrowAnyException();
   }
@@ -176,10 +175,11 @@ class DeclarativeConfigurationCreateTest {
                     new SpanProcessorModel().withAdditionalProperty("test", null))));
     ExtendedOpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
-            model,
-            // customizer is TestDeclarativeConfigurationCustomizerProvider
-            ComponentLoader.forClassLoader(
-                DeclarativeConfigurationCreateTest.class.getClassLoader()));
+                model,
+                // customizer is TestDeclarativeConfigurationCustomizerProvider
+                ComponentLoader.forClassLoader(
+                    DeclarativeConfigurationCreateTest.class.getClassLoader()))
+            .getSdk();
     assertThat(sdk.toString())
         .contains(
             "resource=Resource{schemaUrl=null, attributes={"
@@ -194,8 +194,8 @@ class DeclarativeConfigurationCreateTest {
   @Test
   @SuppressLogger(DeclarativeConfiguration.class)
   void callAutoConfigureListeners_exceptionIsCaught() {
-    SpiHelper spiHelper = mock(SpiHelper.class);
-    when(spiHelper.getListeners())
+    DeclarativeConfigContext context = mock(DeclarativeConfigContext.class);
+    when(context.getListeners())
         .thenReturn(
             Collections.singleton(
                 sdk -> {
@@ -205,7 +205,7 @@ class DeclarativeConfigurationCreateTest {
     assertThatCode(
             () ->
                 DeclarativeConfiguration.callAutoConfigureListeners(
-                    spiHelper, OpenTelemetrySdk.builder().build()))
+                    context, OpenTelemetrySdk.builder().build()))
         .doesNotThrowAnyException();
   }
 }

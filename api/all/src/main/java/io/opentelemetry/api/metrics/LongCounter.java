@@ -24,6 +24,8 @@ public interface LongCounter extends LongCounterOp {
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #add(long)}, {@link #add(long, Attributes)}, or {@link #add(long, Attributes,
    * Context)}.
+   *
+   * @since 1.61.0
    */
   default boolean isEnabled() {
     return true;

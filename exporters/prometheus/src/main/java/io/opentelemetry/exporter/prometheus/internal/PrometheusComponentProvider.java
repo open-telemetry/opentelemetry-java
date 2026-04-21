@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
@@ -59,10 +60,14 @@ public class PrometheusComponentProvider implements ComponentProvider {
     if (withResourceConstantLabels != null) {
       List<String> included = withResourceConstantLabels.getScalarList("included", String.class);
       List<String> excluded = withResourceConstantLabels.getScalarList("excluded", String.class);
-      if (included != null || excluded != null) {
-        prometheusBuilder.setAllowedResourceAttributesFilter(
-            IncludeExcludePredicate.createPatternMatching(included, excluded));
+      if (included != null && included.isEmpty()) {
+        throw new DeclarativeConfigException("included must not be empty");
       }
+      if (excluded != null && excluded.isEmpty()) {
+        throw new DeclarativeConfigException("excluded must not be empty");
+      }
+      prometheusBuilder.setAllowedResourceAttributesFilter(
+          IncludeExcludePredicate.createPatternMatching(included, excluded));
     }
 
     return prometheusBuilder.build();

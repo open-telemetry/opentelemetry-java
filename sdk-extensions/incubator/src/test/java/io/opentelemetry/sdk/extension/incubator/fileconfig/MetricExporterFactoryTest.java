@@ -17,7 +17,6 @@ import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricE
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileMetricExporterModel;
@@ -58,14 +57,12 @@ class MetricExporterFactoryTest {
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
   private CapturingComponentLoader capturingComponentLoader;
-  private SpiHelper spiHelper;
   private DeclarativeConfigContext context;
 
   @BeforeEach
   void setup() {
     capturingComponentLoader = new CapturingComponentLoader();
-    spiHelper = SpiHelper.create(capturingComponentLoader);
-    context = new DeclarativeConfigContext(spiHelper);
+    context = new DeclarativeConfigContext(capturingComponentLoader);
     context.setBuilder(new DeclarativeConfigurationBuilder());
   }
 
@@ -74,7 +71,7 @@ class MetricExporterFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OtlpHttpMetricExporter expectedExporter =
         OtlpHttpMetricExporter.getDefault().toBuilder()
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -119,7 +116,7 @@ class MetricExporterFactoryTest {
             .setDefaultAggregationSelector(
                 DefaultAggregationSelector.getDefault()
                     .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()))
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -200,7 +197,7 @@ class MetricExporterFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OtlpGrpcMetricExporter expectedExporter =
         OtlpGrpcMetricExporter.getDefault().toBuilder()
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 
@@ -244,7 +241,7 @@ class MetricExporterFactoryTest {
             .setDefaultAggregationSelector(
                 DefaultAggregationSelector.getDefault()
                     .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()))
-            .setComponentLoader(capturingComponentLoader) // needed for the toString() check to pass
+            .setComponentLoader(context) // needed for the toString() check to pass
             .build();
     cleanup.addCloseable(expectedExporter);
 

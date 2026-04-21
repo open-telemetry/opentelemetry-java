@@ -35,6 +35,17 @@
       ],
       groupName: 'weekly update',
     },
+    {
+      // keep Kotlin Gradle plugin updates out of the catch-all patch PR because CodeQL often
+      // fails on them, which blocks unrelated patch updates
+      matchDepNames: [
+        'org.jetbrains.kotlin.jvm',
+      ],
+      schedule: [
+        '* 0-7 * * 2', // weekly, before 8am on Tuesday
+      ],
+      groupName: 'kotlin plugin updates',
+    },
 
     // ── Version constraints ────────────────────────────────────────────
 
@@ -125,11 +136,11 @@
       enabled: false,
     },
     {
-      // equals verifier v4+ requires java 17+
-      groupName: 'nl.jqno.equalsverifier',
-      matchPackageNames: [ 'equalsverifier'],
-      matchUpdateTypes: [ 'major' ],
-      enabled: false
+      // equalsverifier v4+ requires Java 17+
+      // https://github.com/jqno/equalsverifier/blob/HEAD/CHANGELOG.md#changed-13
+      matchPackageNames: ['nl.jqno.equalsverifier:equalsverifier'],
+      matchUpdateTypes: ['major'],
+      enabled: false,
     },
   ],
   customManagers: [

@@ -24,6 +24,8 @@ public interface DoubleHistogram {
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #record(double)}, {@link #record(double, Attributes)}, or {@link #record(double,
    * Attributes, Context)}.
+   *
+   * @since 1.61.0
    */
   default boolean isEnabled() {
     return true;

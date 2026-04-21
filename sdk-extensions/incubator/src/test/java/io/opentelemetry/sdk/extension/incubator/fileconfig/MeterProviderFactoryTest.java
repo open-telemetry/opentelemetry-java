@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil.setMeterConfigurator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterConfigModel;
@@ -45,9 +45,9 @@ class MeterProviderFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final DeclarativeConfigContext context =
+  private static final DeclarativeConfigContext context =
       new DeclarativeConfigContext(
-          SpiHelper.create(MeterProviderFactoryTest.class.getClassLoader()));
+          ComponentLoader.forClassLoader(MeterProviderFactoryTest.class.getClassLoader()));
 
   @BeforeEach
   void setup() {
@@ -108,7 +108,9 @@ class MeterProviderFactoryTest {
                         .build())
                 .setExemplarFilter(ExemplarFilter.alwaysOn())
                 .registerMetricReader(
-                    PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault()).build())
+                    PeriodicMetricReader.builder(
+                            OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
+                        .build())
                 .registerView(
                     InstrumentSelector.builder().setName("instrument-name").build(),
                     View.builder().setName("stream-name").build())

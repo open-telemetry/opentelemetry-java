@@ -15,10 +15,10 @@ import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
@@ -53,7 +53,7 @@ class MetricReaderFactoryTest {
   private final DeclarativeConfigContext context =
       spy(
           new DeclarativeConfigContext(
-              SpiHelper.create(MetricReaderFactoryTest.class.getClassLoader())));
+              ComponentLoader.forClassLoader(getClass().getClassLoader())));
 
   @BeforeEach
   void setup() {
@@ -76,7 +76,9 @@ class MetricReaderFactoryTest {
   void create_PeriodicDefaults() {
     List<Closeable> closeables = new ArrayList<>();
     PeriodicMetricReader expectedReader =
-        PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault()).build();
+        PeriodicMetricReader.builder(
+                OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
+            .build();
     cleanup.addCloseable(expectedReader);
 
     MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
@@ -101,7 +103,8 @@ class MetricReaderFactoryTest {
   void create_PeriodicConfigured() {
     List<Closeable> closeables = new ArrayList<>();
     MetricReader expectedReader =
-        PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault())
+        PeriodicMetricReader.builder(
+                OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
             .setInterval(Duration.ofMillis(1))
             .build();
     cleanup.addCloseable(expectedReader);
