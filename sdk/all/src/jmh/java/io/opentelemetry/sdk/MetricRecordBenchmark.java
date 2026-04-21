@@ -96,7 +96,7 @@ public class MetricRecordBenchmark {
 
     @Param AggregationTemporality aggregationTemporality;
 
-    @Param({"1", "100"})
+    @Param({"1", "128"})
     int cardinality;
 
     // The following parameters are excluded from the benchmark to reduce combinatorial explosion
