@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.profiles.internal.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.profiles.LineData;
-import io.opentelemetry.sdk.profiles.LocationData;
+import io.opentelemetry.sdk.profiles.data.LineData;
+import io.opentelemetry.sdk.profiles.data.LocationData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 

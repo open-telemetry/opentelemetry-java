@@ -16,7 +16,7 @@ import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.profiles.v1development.ResourceProfiles;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
-import io.opentelemetry.sdk.profiles.ProfileData;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;

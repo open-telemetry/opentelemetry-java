@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.profiles.jfr;
 import io.opentelemetry.sdk.profiles.ProfilesDictionaryCompositor;
 import io.opentelemetry.sdk.profiles.SampleCompositionBuilder;
 import io.opentelemetry.sdk.profiles.SampleCompositionKey;
-import io.opentelemetry.sdk.profiles.SampleData;
+import io.opentelemetry.sdk.profiles.data.SampleData;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;

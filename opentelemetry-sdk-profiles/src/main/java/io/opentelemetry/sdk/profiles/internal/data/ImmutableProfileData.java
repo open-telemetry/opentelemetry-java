@@ -7,10 +7,10 @@ package io.opentelemetry.sdk.profiles.internal.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.profiles.ProfileData;
-import io.opentelemetry.sdk.profiles.ProfilesDictionaryData;
-import io.opentelemetry.sdk.profiles.SampleData;
-import io.opentelemetry.sdk.profiles.ValueTypeData;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
+import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
+import io.opentelemetry.sdk.profiles.data.SampleData;
+import io.opentelemetry.sdk.profiles.data.ValueTypeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.ByteBuffer;
 import java.util.List;

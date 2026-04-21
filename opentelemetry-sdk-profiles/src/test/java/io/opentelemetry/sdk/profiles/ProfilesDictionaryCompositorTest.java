@@ -8,6 +8,13 @@ package io.opentelemetry.sdk.profiles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.sdk.profiles.data.FunctionData;
+import io.opentelemetry.sdk.profiles.data.KeyValueAndUnitData;
+import io.opentelemetry.sdk.profiles.data.LinkData;
+import io.opentelemetry.sdk.profiles.data.LocationData;
+import io.opentelemetry.sdk.profiles.data.MappingData;
+import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
+import io.opentelemetry.sdk.profiles.data.StackData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableFunctionData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableKeyValueAndUnitData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableLinkData;

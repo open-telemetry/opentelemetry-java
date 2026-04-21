@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.profiles.jfr;
 
-import io.opentelemetry.sdk.profiles.FunctionData;
-import io.opentelemetry.sdk.profiles.LineData;
-import io.opentelemetry.sdk.profiles.LocationData;
 import io.opentelemetry.sdk.profiles.ProfilesDictionaryCompositor;
-import io.opentelemetry.sdk.profiles.StackData;
+import io.opentelemetry.sdk.profiles.data.FunctionData;
+import io.opentelemetry.sdk.profiles.data.LineData;
+import io.opentelemetry.sdk.profiles.data.LocationData;
+import io.opentelemetry.sdk.profiles.data.StackData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableFunctionData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableLineData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableLocationData;

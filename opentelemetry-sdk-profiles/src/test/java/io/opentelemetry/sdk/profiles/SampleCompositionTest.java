@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.profiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.profiles.data.SampleData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

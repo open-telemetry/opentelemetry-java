@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.profiles.internal.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.profiles.StackData;
+import io.opentelemetry.sdk.profiles.data.StackData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 

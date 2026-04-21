@@ -6,14 +6,14 @@
 package io.opentelemetry.sdk.profiles.jfr;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfileExporter;
+import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.profiles.ProfileData;
 import io.opentelemetry.sdk.profiles.ProfileExporter;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfileData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableValueTypeData;
-// import io.opentelemetry.sdk.profiles.OtlpGrpcProfileExporter;
-// import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,15 +25,15 @@ import java.util.concurrent.TimeUnit;
 import jdk.jfr.consumer.RecordingFile;
 
 /**
- * Simple example of how to wire up the profile signal OTLP exporter to convert and send the content
- * of a JFR recording file. This is not a supported CLI and is not intended to be configurable by
- * e.g. command line flags.
+ * Simple example of how to wire up the profiles signal OTLP exporter to convert and send the
+ * content of a JFR recording file. This is not a supported CLI and is not intended to be
+ * configurable by e.g. command line flags.
  */
-public class JfrExportTool {
+public class JfrExportExample {
 
-  private JfrExportTool() {}
+  private JfrExportExample() {}
 
-  @SuppressWarnings({"SystemOut", "UnusedVariable", "NullAway"})
+  @SuppressWarnings("SystemOut")
   public static void main(String[] args) throws IOException {
 
     Path jfrFilePath = Path.of("/tmp/demo.jfr"); // TODO set the JFR file location here
@@ -43,9 +43,9 @@ public class JfrExportTool {
     // by default devfiler listens on port 11000
     String destination = "127.0.0.1:11000"; // TODO set the location of the backend receiver here
 
-    //    OtlpGrpcProfilesExporterBuilder exporterBuilder = OtlpGrpcProfileExporter.builder();
-    //    exporterBuilder.setEndpoint("http://" + destination);
-    ProfileExporter exporter = null; // exporterBuilder.build();
+    OtlpGrpcProfilesExporterBuilder exporterBuilder = OtlpGrpcProfileExporter.builder();
+    exporterBuilder.setEndpoint("http://" + destination);
+    ProfileExporter exporter = exporterBuilder.build();
 
     CompletableResultCode completableResultCode = exporter.export(List.of(profileData));
     completableResultCode.join(1, TimeUnit.MINUTES);

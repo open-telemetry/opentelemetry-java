@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.profiles;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
 import java.io.Closeable;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;

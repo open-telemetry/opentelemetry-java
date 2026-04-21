@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.profiles;
 
+import io.opentelemetry.sdk.profiles.data.SampleData;
 import io.opentelemetry.sdk.profiles.internal.data.ImmutableSampleData;
 import java.util.ArrayList;
 import java.util.HashMap;

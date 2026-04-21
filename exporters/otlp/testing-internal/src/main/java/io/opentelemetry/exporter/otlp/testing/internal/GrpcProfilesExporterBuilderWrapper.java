@@ -12,7 +12,7 @@ import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.profiles.ProfileData;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;

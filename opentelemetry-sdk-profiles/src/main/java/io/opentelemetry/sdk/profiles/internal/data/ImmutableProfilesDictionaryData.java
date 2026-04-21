@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.profiles.internal.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.profiles.FunctionData;
-import io.opentelemetry.sdk.profiles.KeyValueAndUnitData;
-import io.opentelemetry.sdk.profiles.LinkData;
-import io.opentelemetry.sdk.profiles.LocationData;
-import io.opentelemetry.sdk.profiles.MappingData;
-import io.opentelemetry.sdk.profiles.ProfilesDictionaryData;
-import io.opentelemetry.sdk.profiles.StackData;
+import io.opentelemetry.sdk.profiles.data.FunctionData;
+import io.opentelemetry.sdk.profiles.data.KeyValueAndUnitData;
+import io.opentelemetry.sdk.profiles.data.LinkData;
+import io.opentelemetry.sdk.profiles.data.LocationData;
+import io.opentelemetry.sdk.profiles.data.MappingData;
+import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
+import io.opentelemetry.sdk.profiles.data.StackData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 

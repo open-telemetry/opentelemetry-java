@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.profiles;
+package io.opentelemetry.sdk.profiles.data;
 
 import javax.annotation.concurrent.Immutable;
 
