@@ -6,6 +6,9 @@
 package io.opentelemetry.sdk;
 
 import static io.opentelemetry.sdk.metrics.InstrumentType.COUNTER;
+import static io.opentelemetry.sdk.metrics.InstrumentType.GAUGE;
+import static io.opentelemetry.sdk.metrics.InstrumentType.HISTOGRAM;
+import static io.opentelemetry.sdk.metrics.InstrumentType.UP_DOWN_COUNTER;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -231,12 +234,11 @@ public class MetricRecordBenchmark {
 
   @SuppressWarnings("ImmutableEnumChecker")
   public enum InstrumentTypeAndAggregation {
-    COUNTER_SUM(COUNTER, Aggregation.sum());
-
-    // UP_DOWN_COUNTER_SUM(UP_DOWN_COUNTER, Aggregation.sum()),
-    // GAUGE_LAST_VALUE(GAUGE, Aggregation.lastValue()),
-    // HISTOGRAM_EXPLICIT(HISTOGRAM, Aggregation.explicitBucketHistogram()),
-    // HISTOGRAM_BASE2_EXPONENTIAL(HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
+    COUNTER_SUM(COUNTER, Aggregation.sum()),
+    UP_DOWN_COUNTER_SUM(UP_DOWN_COUNTER, Aggregation.sum()),
+    GAUGE_LAST_VALUE(GAUGE, Aggregation.lastValue()),
+    HISTOGRAM_EXPLICIT(HISTOGRAM, Aggregation.explicitBucketHistogram()),
+    HISTOGRAM_BASE2_EXPONENTIAL(HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
 
     InstrumentTypeAndAggregation(InstrumentType instrumentType, Aggregation aggregation) {
       this.instrumentType = instrumentType;
@@ -293,9 +295,18 @@ public class MetricRecordBenchmark {
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.counterBuilder(name).ofDoubles().build().bind(attributes)::add
             : meter.counterBuilder(name).build().bind(attributes)::add;
-      case UP_DOWN_COUNTER: // TODO
-      case HISTOGRAM: // TODO
-      case GAUGE: // TODO
+      case UP_DOWN_COUNTER:
+        return instrumentValueType == InstrumentValueType.DOUBLE
+            ? meter.upDownCounterBuilder(name).ofDoubles().build().bind(attributes)::add
+            : meter.upDownCounterBuilder(name).build().bind(attributes)::add;
+      case HISTOGRAM:
+        return instrumentValueType == InstrumentValueType.DOUBLE
+            ? meter.histogramBuilder(name).build().bind(attributes)::record
+            : meter.histogramBuilder(name).ofLongs().build().bind(attributes)::record;
+      case GAUGE:
+        return instrumentValueType == InstrumentValueType.DOUBLE
+            ? meter.gaugeBuilder(name).build().bind(attributes)::set
+            : meter.gaugeBuilder(name).ofLongs().build().bind(attributes)::set;
       case OBSERVABLE_COUNTER:
       case OBSERVABLE_UP_DOWN_COUNTER:
       case OBSERVABLE_GAUGE:
