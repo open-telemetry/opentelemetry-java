@@ -96,7 +96,7 @@ public class MetricRecordBenchmark {
 
     @Param AggregationTemporality aggregationTemporality;
 
-    @Param({"1", "100"})
+    @Param({"1", "128"})
     int cardinality;
 
     @Param({"true", "false"})
