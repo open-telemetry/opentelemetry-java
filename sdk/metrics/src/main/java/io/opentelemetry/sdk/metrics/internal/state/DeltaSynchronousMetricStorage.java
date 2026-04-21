@@ -44,7 +44,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       previousCollectionAggregatorHandles = new ConcurrentHashMap<>();
   // Only populated if memoryMode == REUSABLE_DATA
   private final ArrayList<T> reusableResultList = new ArrayList<>();
-  private final ConcurrentLinkedQueue<AggregatorHandle<T>> aggregatorHandlePool =
+  private final ConcurrentLinkedQueue<DeltaAggregatorHandle<T>> aggregatorHandlePool =
       new ConcurrentLinkedQueue<>();
 
   DeltaSynchronousMetricStorage(
@@ -63,38 +63,32 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   @Override
   void doRecordLong(long value, Attributes attributes, Context context) {
-    do {
-      AggregatorHolder<T> aggregatorHolder = this.aggregatorHolder;
-      DeltaAggregatorHandle<T> deltaAggregatorHandle =
-          getDeltaAggregatorHandle(aggregatorHolder, attributes, context);
-      if (deltaAggregatorHandle == null) {
-        continue;
-      }
-      try {
-        deltaAggregatorHandle.handle.recordLong(value, attributes, context);
-        break;
-      } finally {
-        deltaAggregatorHandle.activeRecordingThreads.addAndGet(-2);
-      }
-    } while (true);
+    DeltaAggregatorHandle<T> handle = acquireHandleForRecord(attributes, context);
+    try {
+      handle.handle.recordLong(value, attributes, context);
+    } finally {
+      handle.releaseRecord();
+    }
   }
 
   @Override
   void doRecordDouble(double value, Attributes attributes, Context context) {
-    do {
-      AggregatorHolder<T> aggregatorHolder = this.aggregatorHolder;
-      DeltaAggregatorHandle<T> deltaAggregatorHandle =
-          getDeltaAggregatorHandle(aggregatorHolder, attributes, context);
-      if (deltaAggregatorHandle == null) {
-        continue;
+    DeltaAggregatorHandle<T> handle = acquireHandleForRecord(attributes, context);
+    try {
+      handle.handle.recordDouble(value, attributes, context);
+    } finally {
+      handle.releaseRecord();
+    }
+  }
+
+  private DeltaAggregatorHandle<T> acquireHandleForRecord(Attributes attributes, Context context) {
+    while (true) {
+      DeltaAggregatorHandle<T> handle =
+          getDeltaAggregatorHandle(this.aggregatorHolder, attributes, context);
+      if (handle != null) {
+        return handle;
       }
-      try {
-        deltaAggregatorHandle.handle.recordDouble(value, attributes, context);
-        break;
-      } finally {
-        deltaAggregatorHandle.activeRecordingThreads.addAndGet(-2);
-      }
-    } while (true);
+    }
   }
 
   @Nullable
@@ -117,62 +111,51 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       handle = aggregatorHandles.get(attributes);
     }
     if (handle != null) {
-      // Existing series: pre-increment the per-handle counter and check if odd (locked by the
-      // collect thread's lock pass).
-      int count = handle.activeRecordingThreads.addAndGet(2);
-      if (count % 2 != 0) {
-        handle.activeRecordingThreads.addAndGet(-2);
-        return null; // handle is being collected; caller should retry with new holder
+      // Existing series: try to acquire a recording slot. Returns false if the collector has
+      // locked this handle (odd state), meaning we should retry with the new holder.
+      if (!handle.tryAcquireForRecord()) {
+        return null;
       }
-      // Also check the holder-level counter. The collect thread sets it to 1 (odd) and never
-      // resets it. This catches the window after the collect thread's wait-pass decrements the
-      // per-handle counter back to 0 (even) but before collection finishes: a stale thread that
-      // read the old holder can still reach here with an even per-handle count. The hb chain
-      // (CT's holder lock → CT's wait-pass decrement → this addAndGet(2)) guarantees we see
-      // the holder counter as odd at that point.
-      if (holder.activeRecordingThreads.get() % 2 != 0) {
-        handle.activeRecordingThreads.addAndGet(-2);
-        return null; // holder is being collected; caller should retry with new holder
+      // Also check the holder-level gate. The collect thread sets it to locked (odd) and never
+      // resets it. This catches the window after the collect thread's awaitRecordersAndUnlock()
+      // decrements the per-handle state back to even but before collection finishes: a stale
+      // thread that read the old holder can still reach here with an even per-handle state. The
+      // hb chain (CT's holder lock → CT's awaitRecordersAndUnlock() decrement → this
+      // tryAcquireForRecord) guarantees we see the holder gate as locked at that point.
+      if (holder.isLockedForCollect()) {
+        handle.releaseRecord();
+        return null;
       }
       return handle;
     }
-    // New series: use the holder-level gate to coordinate with the collect thread.
+    // New series: acquire the holder gate to coordinate with the collect thread.
     // The gate ensures (a) we don't insert into a holder whose lock pass has already run,
     // and (b) the per-handle pre-increment below is visible to the collect thread's lock pass.
-    int holderCount = holder.activeRecordingThreads.addAndGet(2);
-    if (holderCount % 2 != 0) {
-      holder.activeRecordingThreads.addAndGet(-2);
-      return null; // holder is being collected; caller should retry with new holder
+    if (!holder.tryAcquireForNewSeries()) {
+      return null;
     }
     try {
       // Get handle from pool if available, else create a new one.
-      // Note: pooled handles (used only for delta temporality) retain their original
-      // creationEpochNanos, but delta storage does not use the handle's creation time for the
-      // start epoch — it uses the reader's last collect time directly in collect(). So the stale
-      // creation time on a recycled handle does not affect correctness.
-      AggregatorHandle<T> newHandle = maybeGetPooledAggregatorHandle();
-      if (newHandle == null) {
-        newHandle = aggregator.createHandle(clock.now());
+      // Note: pooled handles retain their original creationEpochNanos, but delta storage does not
+      // use the handle's creation time for the start epoch — it uses the reader's last collect time
+      // directly in collect(). So the stale creation time on a recycled handle does not affect
+      // correctness.
+      DeltaAggregatorHandle<T> newDeltaHandle = aggregatorHandlePool.poll();
+      if (newDeltaHandle == null) {
+        newDeltaHandle = new DeltaAggregatorHandle<>(aggregator.createHandle(clock.now()));
       }
-      DeltaAggregatorHandle<T> newDeltaHandle = new DeltaAggregatorHandle<>(newHandle);
       handle = aggregatorHandles.putIfAbsent(attributes, newDeltaHandle);
       if (handle == null) {
         handle = newDeltaHandle;
       }
-      // Pre-increment per-handle counter while the holder gate is still held. The collect
+      // Pre-increment per-handle state while the holder gate is still held. The collect
       // thread's lock pass cannot start until all threads release the holder gate, so this
       // increment is guaranteed to be observed by the lock pass before it runs.
-      handle.activeRecordingThreads.addAndGet(2);
+      handle.acquireForRecord();
       return handle;
     } finally {
-      holder.activeRecordingThreads.addAndGet(-2);
+      holder.releaseNewSeries();
     }
-  }
-
-  @Nullable
-  @Override
-  AggregatorHandle<T> maybeGetPooledAggregatorHandle() {
-    return aggregatorHandlePool.poll();
   }
 
   @Override
@@ -185,31 +168,14 @@ class DeltaSynchronousMetricStorage<T extends PointData>
             ? new AggregatorHolder<>(previousCollectionAggregatorHandles)
             : new AggregatorHolder<>();
 
-    // Lock out new series creation in the old holder by making its activeRecordingThreads odd,
-    // then wait until it equals 1, meaning no new-series creation is in flight.
-    // This guarantees the per-handle lock pass below sees every handle that will ever be
-    // inserted into holder.aggregatorHandles.
-    int holderRecordingThreads = holder.activeRecordingThreads.addAndGet(1);
-    while (holderRecordingThreads != 1) {
-      holderRecordingThreads = holder.activeRecordingThreads.get();
-    }
+    // Lock out new series creation in the old holder and wait for any in-flight new-series
+    // operations to complete. This guarantees the per-handle lock pass below sees every handle
+    // that will ever be inserted into holder.aggregatorHandles.
+    holder.lockForCollectAndAwait();
 
-    // Increment per-handle recordsInProgress by 1, which produces an odd number acting as a
-    // signal that record operations should re-read the volatile this.aggregatorHolder.
-    // Repeatedly grab recordsInProgress until it is <= 1, which signals all active record
-    // operations are complete.
-    holder.aggregatorHandles.values().forEach(handle -> handle.activeRecordingThreads.addAndGet(1));
-    holder
-        .aggregatorHandles
-        .values()
-        .forEach(
-            handle -> {
-              int recordsInProgress = handle.activeRecordingThreads.get();
-              while (recordsInProgress > 1) {
-                recordsInProgress = handle.activeRecordingThreads.get();
-              }
-              handle.activeRecordingThreads.addAndGet(-1);
-            });
+    // Lock each handle and wait for any in-flight recorders against it to finish.
+    holder.aggregatorHandles.values().forEach(DeltaAggregatorHandle::lockForCollect);
+    holder.aggregatorHandles.values().forEach(DeltaAggregatorHandle::awaitRecordersAndUnlock);
     aggregatorHandles = holder.aggregatorHandles;
 
     List<T> points;
@@ -222,9 +188,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
     // In DELTA aggregation temporality each Attributes is reset to 0
     // every time we perform a collection (by definition of DELTA).
-    // In IMMUTABLE_DATA MemoryMode, this is accomplished by removing all aggregator handles
-    // (into which the values are recorded) effectively starting from 0
-    // for each recorded Attributes.
+    // In IMMUTABLE_DATA MemoryMode, this is accomplished by swapping in a new empty holder,
+    // abandoning the old map so each new recording in the next interval starts fresh from 0.
     // In REUSABLE_DATA MemoryMode, we strive for zero allocations. Since even removing
     // a key-value from a map and putting it again on next recording will cost an allocation,
     // we are keeping the aggregator handles in their map, and only reset their value once
@@ -261,25 +226,16 @@ class DeltaSynchronousMetricStorage<T extends PointData>
                   startEpochNanos, epochNanos, attributes, /* reset= */ true);
 
           if (memoryMode == IMMUTABLE_DATA) {
-            // Return the aggregator to the pool.
-            // The pool is only used in DELTA temporality (since in CUMULATIVE the handler is
-            // always used as it is the place accumulating the values and never resets)
-            // AND only in IMMUTABLE_DATA memory mode since in REUSABLE_DATA we avoid
-            // using the pool since it allocates memory internally on each put() or remove()
-            aggregatorHandlePool.offer(handle.handle);
+            // Return the handle to the pool.
+            // Only in IMMUTABLE_DATA memory mode: in REUSABLE_DATA we avoid using the pool
+            // since ConcurrentLinkedQueue.offer() allocates memory internally.
+            aggregatorHandlePool.offer(handle);
           }
 
           if (point != null) {
             points.add(point);
           }
         });
-
-    // Trim pool down if needed. pool.size() will only exceed maxCardinality if new handles are
-    // created during collection.
-    int toDelete = aggregatorHandlePool.size() - (maxCardinality + 1);
-    for (int i = 0; i < toDelete; i++) {
-      aggregatorHandlePool.poll();
-    }
 
     if (memoryMode == REUSABLE_DATA) {
       previousCollectionAggregatorHandles = aggregatorHandles;
@@ -295,10 +251,12 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   private static class AggregatorHolder<T extends PointData> {
     private final ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles;
-    // Used as a gate for new-series creation (not for per-handle recording contention).
-    // Recording threads creating a new series increment by 2; the collect thread increments
-    // by 1 to lock out new-series creation and waits for the value to return to 1.
-    private final AtomicInteger activeRecordingThreads = new AtomicInteger(0);
+    // Guards new-series creation using an even/odd protocol:
+    //   - Threads creating a new series increment by 2 (keeping the value even while unlocked)
+    //     and decrement by 2 on release.
+    //   - The collect thread increments by 1 (making the value odd) to lock out new-series
+    //     creation, then waits for the value to return to 1 (no threads in-flight).
+    private final AtomicInteger newSeriesGate = new AtomicInteger(0);
 
     private AggregatorHolder() {
       aggregatorHandles = new ConcurrentHashMap<>();
@@ -308,21 +266,90 @@ class DeltaSynchronousMetricStorage<T extends PointData>
         ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles) {
       this.aggregatorHandles = aggregatorHandles;
     }
+
+    /** Returns true and acquires the gate if not locked for collection. */
+    boolean tryAcquireForNewSeries() {
+      int s = newSeriesGate.addAndGet(2);
+      if ((s & 1) != 0) {
+        newSeriesGate.addAndGet(-2);
+        return false;
+      }
+      return true;
+    }
+
+    /** Releases the gate acquired via {@link #tryAcquireForNewSeries()}. */
+    void releaseNewSeries() {
+      newSeriesGate.addAndGet(-2);
+    }
+
+    /** Returns true if the collector has locked this holder against new-series creation. */
+    boolean isLockedForCollect() {
+      return (newSeriesGate.get() & 1) != 0;
+    }
+
+    /** Locks new-series creation and waits for any in-flight new-series operations to complete. */
+    void lockForCollectAndAwait() {
+      int s = newSeriesGate.addAndGet(1);
+      while (s != 1) {
+        s = newSeriesGate.get();
+      }
+    }
   }
 
   private static final class DeltaAggregatorHandle<T extends PointData> {
     final AggregatorHandle<T> handle;
-    // Uses the same even/odd protocol as the former AggregatorHolder.activeRecordingThreads,
-    // but scoped to a single series instead of the entire map:
+    // Guards per-handle recording using the same even/odd protocol as
+    // AggregatorHolder.newSeriesGate,
+    // but scoped to a single series:
     //   - Recording threads increment by 2 before recording, decrement by 2 when done.
     //   - The collect thread increments by 1 (making the count odd) as a signal that this
     //     handle is being collected; recorders that observe an odd count release and retry.
     //   - Once all in-flight recordings finish the count returns to 1, and the collect
     //     thread decrements by 1 to restore it to even for the next cycle.
-    final AtomicInteger activeRecordingThreads = new AtomicInteger(0);
+    private final AtomicInteger state = new AtomicInteger(0);
 
     DeltaAggregatorHandle(AggregatorHandle<T> handle) {
       this.handle = handle;
+    }
+
+    /**
+     * Tries to acquire a recording slot. Returns false if the collector has locked this handle (odd
+     * state); the caller should retry with a fresh holder.
+     */
+    boolean tryAcquireForRecord() {
+      int s = state.addAndGet(2);
+      if ((s & 1) != 0) {
+        state.addAndGet(-2);
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * Acquires a recording slot unconditionally. Only safe to call while the holder gate is held,
+     * which prevents the collector from starting its lock pass.
+     */
+    void acquireForRecord() {
+      state.addAndGet(2);
+    }
+
+    /**
+     * Releases a recording slot acquired via {@link #tryAcquireForRecord()} or {@link
+     * #acquireForRecord()}.
+     */
+    void releaseRecord() {
+      state.addAndGet(-2);
+    }
+
+    /** Signals that collection is starting. Recorders that observe this will abort and retry. */
+    void lockForCollect() {
+      state.addAndGet(1);
+    }
+
+    /** Waits for all in-flight recorders to finish, then clears the collection lock. */
+    void awaitRecordersAndUnlock() {
+      while (state.get() > 1) {}
+      state.addAndGet(-1);
     }
   }
 }

@@ -15,15 +15,11 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -128,47 +124,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
   public boolean isEnabled() {
     return enabled;
   }
-
-  protected AggregatorHandle<T> getAggregatorHandle(
-      ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles,
-      Attributes attributes,
-      Context context) {
-    Objects.requireNonNull(attributes, "attributes");
-    attributes = attributesProcessor.process(attributes, context);
-    AggregatorHandle<T> handle = aggregatorHandles.get(attributes);
-    if (handle != null) {
-      return handle;
-    }
-    if (aggregatorHandles.size() >= maxCardinality) {
-      logger.log(
-          Level.WARNING,
-          "Instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " has exceeded the maximum allowed cardinality ("
-              + maxCardinality
-              + ").");
-      // Return handle for overflow series, first checking if a handle already exists for it
-      attributes = MetricStorage.CARDINALITY_OVERFLOW;
-      handle = aggregatorHandles.get(attributes);
-      if (handle != null) {
-        return handle;
-      }
-    }
-    // Get handle from pool if available, else create a new one.
-    // Note: pooled handles (used only for delta temporality) retain their original
-    // creationEpochNanos, but delta storage does not use the handle's creation time for the
-    // start epoch — it uses the reader's last collect time directly in collect(). So the stale
-    // creation time on a recycled handle does not affect correctness.
-    AggregatorHandle<T> newHandle = maybeGetPooledAggregatorHandle();
-    if (newHandle == null) {
-      newHandle = aggregator.createHandle(clock.now());
-    }
-    handle = aggregatorHandles.putIfAbsent(attributes, newHandle);
-    return handle != null ? handle : newHandle;
-  }
-
-  @Nullable
-  abstract AggregatorHandle<T> maybeGetPooledAggregatorHandle();
 
   @Override
   public MetricDescriptor getMetricDescriptor() {

@@ -23,8 +23,9 @@ import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.Nullable;
+import java.util.logging.Level;
 
 class CumulativeSynchronousMetricStorage<T extends PointData>
     extends DefaultSynchronousMetricStorage<T> {
@@ -58,11 +59,34 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
         .recordDouble(value, attributes, context);
   }
 
-  @Nullable
-  @Override
-  AggregatorHandle<T> maybeGetPooledAggregatorHandle() {
-    // No aggregator handle pooling for cumulative temporality
-    return null;
+  private AggregatorHandle<T> getAggregatorHandle(
+      ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles,
+      Attributes attributes,
+      Context context) {
+    Objects.requireNonNull(attributes, "attributes");
+    attributes = attributesProcessor.process(attributes, context);
+    AggregatorHandle<T> handle = aggregatorHandles.get(attributes);
+    if (handle != null) {
+      return handle;
+    }
+    if (aggregatorHandles.size() >= maxCardinality) {
+      logger.log(
+          Level.WARNING,
+          "Instrument "
+              + metricDescriptor.getSourceInstrument().getName()
+              + " has exceeded the maximum allowed cardinality ("
+              + maxCardinality
+              + ").");
+      // Return handle for overflow series, first checking if a handle already exists for it
+      attributes = MetricStorage.CARDINALITY_OVERFLOW;
+      handle = aggregatorHandles.get(attributes);
+      if (handle != null) {
+        return handle;
+      }
+    }
+    AggregatorHandle<T> newHandle = aggregator.createHandle(clock.now());
+    handle = aggregatorHandles.putIfAbsent(attributes, newHandle);
+    return handle != null ? handle : newHandle;
   }
 
   @Override
