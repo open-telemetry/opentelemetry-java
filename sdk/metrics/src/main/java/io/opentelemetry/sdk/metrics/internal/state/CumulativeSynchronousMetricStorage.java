@@ -1,4 +1,12 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
+
+import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
+import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -13,14 +21,10 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
-
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
-import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
+import javax.annotation.Nullable;
 
 class CumulativeSynchronousMetricStorage<T extends PointData>
     extends DefaultSynchronousMetricStorage<T> {

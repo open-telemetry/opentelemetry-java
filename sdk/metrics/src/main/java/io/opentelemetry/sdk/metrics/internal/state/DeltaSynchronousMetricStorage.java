@@ -1,4 +1,13 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
+
+import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
+import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
+import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.DELTA;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -14,8 +23,6 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
-
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,10 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-
-import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
-import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
-import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.DELTA;
+import javax.annotation.Nullable;
 
 class DeltaSynchronousMetricStorage<T extends PointData>
     extends DefaultSynchronousMetricStorage<T> {
@@ -61,7 +65,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   void doRecordLong(long value, Attributes attributes, Context context) {
     do {
       AggregatorHolder<T> aggregatorHolder = this.aggregatorHolder;
-      DeltaAggregatorHandle<T> deltaAggregatorHandle = getDeltaAggregatorHandle(aggregatorHolder, attributes, context);
+      DeltaAggregatorHandle<T> deltaAggregatorHandle =
+          getDeltaAggregatorHandle(aggregatorHolder, attributes, context);
       if (deltaAggregatorHandle == null) {
         continue;
       }
@@ -78,7 +83,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   void doRecordDouble(double value, Attributes attributes, Context context) {
     do {
       AggregatorHolder<T> aggregatorHolder = this.aggregatorHolder;
-      DeltaAggregatorHandle<T> deltaAggregatorHandle = getDeltaAggregatorHandle(aggregatorHolder, attributes, context);
+      DeltaAggregatorHandle<T> deltaAggregatorHandle =
+          getDeltaAggregatorHandle(aggregatorHolder, attributes, context);
       if (deltaAggregatorHandle == null) {
         continue;
       }
@@ -93,12 +99,11 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   @Nullable
   protected DeltaAggregatorHandle<T> getDeltaAggregatorHandle(
-      AggregatorHolder<T> holder,
-      Attributes attributes,
-      Context context) {
+      AggregatorHolder<T> holder, Attributes attributes, Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
-    ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles = holder.aggregatorHandles;
+    ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles =
+        holder.aggregatorHandles;
     DeltaAggregatorHandle<T> handle = aggregatorHandles.get(attributes);
     if (handle == null && aggregatorHandles.size() >= maxCardinality) {
       logger.log(
@@ -194,13 +199,17 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // Repeatedly grab recordsInProgress until it is <= 1, which signals all active record
     // operations are complete.
     holder.aggregatorHandles.values().forEach(handle -> handle.activeRecordingThreads.addAndGet(1));
-    holder.aggregatorHandles.values().forEach(handle -> {
-      int recordsInProgress = handle.activeRecordingThreads.get();
-      while (recordsInProgress > 1) {
-        recordsInProgress = handle.activeRecordingThreads.get();
-      }
-      handle.activeRecordingThreads.addAndGet(-1);
-    });
+    holder
+        .aggregatorHandles
+        .values()
+        .forEach(
+            handle -> {
+              int recordsInProgress = handle.activeRecordingThreads.get();
+              while (recordsInProgress > 1) {
+                recordsInProgress = handle.activeRecordingThreads.get();
+              }
+              handle.activeRecordingThreads.addAndGet(-1);
+            });
     aggregatorHandles = holder.aggregatorHandles;
 
     List<T> points;
@@ -295,7 +304,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       aggregatorHandles = new ConcurrentHashMap<>();
     }
 
-    private AggregatorHolder(ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles) {
+    private AggregatorHolder(
+        ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles) {
       this.aggregatorHandles = aggregatorHandles;
     }
   }

@@ -275,8 +275,8 @@ class SynchronousInstrumentStressTest {
                             assertThat(p.getMax()).isEqualTo((double) max.get());
                             assertThat(p.getZeroCount()).isEqualTo(zeroCount.get());
                             assertThat(
-                                p.getPositiveBuckets().getBucketCounts().stream()
-                                    .reduce(0L, Long::sum))
+                                    p.getPositiveBuckets().getBucketCounts().stream()
+                                        .reduce(0L, Long::sum))
                                 .isEqualTo(totalCount.get() - zeroCount.get());
                           }));
     } else {
@@ -319,15 +319,15 @@ class SynchronousInstrumentStressTest {
       case HISTOGRAM:
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter
-            .histogramBuilder(INSTRUMENT_NAME)
-            .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
-            .build()
-            ::record
+                    .histogramBuilder(INSTRUMENT_NAME)
+                    .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                    .build()
+                ::record
             : meter
-                .histogramBuilder(INSTRUMENT_NAME)
-                .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
-                .ofLongs()
-                .build()
+                    .histogramBuilder(INSTRUMENT_NAME)
+                    .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                    .ofLongs()
+                    .build()
                 ::record;
       case GAUGE:
         return instrumentValueType == InstrumentValueType.DOUBLE

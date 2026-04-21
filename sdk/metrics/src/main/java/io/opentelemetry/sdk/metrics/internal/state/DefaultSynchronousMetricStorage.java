@@ -174,5 +174,4 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
   public MetricDescriptor getMetricDescriptor() {
     return metricDescriptor;
   }
-
 }
