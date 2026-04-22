@@ -22,10 +22,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-        run: mise run lint:links
+        run: mise run lint
 
       - name: Link check for pushes and scheduled workflows
         if: github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: mise run lint:links --full
+        run: mise run lint
