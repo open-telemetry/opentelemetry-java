@@ -6,9 +6,12 @@
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
+import io.opentelemetry.api.incubator.config.ConfigChangeListener;
+import io.opentelemetry.api.incubator.config.ConfigChangeRegistration;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -51,6 +54,12 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
   }
 
   @Override
+  public CompletableResultCode shutdown() {
+    configProvider.unobfuscate().shutdown();
+    return super.shutdown();
+  }
+
+  @Override
   public String toString() {
     return "ExtendedOpenTelemetrySdk{"
         + "openTelemetrySdk="
@@ -79,6 +88,22 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
     @Override
     public DeclarativeConfigProperties getInstrumentationConfig() {
       return delegate.getInstrumentationConfig();
+    }
+
+    @Override
+    public ConfigChangeRegistration addConfigChangeListener(
+        String path, ConfigChangeListener listener) {
+      return delegate.addConfigChangeListener(path, listener);
+    }
+
+    @Override
+    public void updateConfig(String path, DeclarativeConfigProperties newSubtree) {
+      delegate.updateConfig(path, newSubtree);
+    }
+
+    @Override
+    public void setConfigProperty(String path, String key, Object value) {
+      delegate.setConfigProperty(path, key, value);
     }
 
     private SdkConfigProvider unobfuscate() {

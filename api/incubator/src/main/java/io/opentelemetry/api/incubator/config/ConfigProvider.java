@@ -87,6 +87,38 @@ public interface ConfigProvider {
     return () -> {};
   }
 
+  /**
+   * Updates the declarative configuration subtree at the given path.
+   *
+   * <p>The path uses {@code .} as a separator (e.g., {@code
+   * ".instrumentation/development.java.myLib"}). The subtree at that path is replaced with {@code
+   * newSubtree}, and any registered {@link ConfigChangeListener}s watching affected paths are
+   * notified.
+   *
+   * <p>The default implementation is a no-op.
+   *
+   * @param path the declarative configuration path to update
+   * @param newSubtree the new configuration subtree to set at the path
+   */
+  default void updateConfig(String path, DeclarativeConfigProperties newSubtree) {}
+
+  /**
+   * Sets a single scalar configuration property at the given path.
+   *
+   * <p>The path uses {@code .} as a separator (e.g., {@code
+   * ".instrumentation/development.java.myLib"}). The property identified by {@code key} within that
+   * path is set to {@code value}, and any registered {@link ConfigChangeListener}s watching affected
+   * paths are notified.
+   *
+   * <p>The default implementation is a no-op.
+   *
+   * @param path the declarative configuration path containing the property
+   * @param key the property key within the path
+   * @param value the new value for the property (must be a scalar: String, Boolean, Long, Double,
+   *     Integer, or a List of scalars)
+   */
+  default void setConfigProperty(String path, String key, Object value) {}
+
   /** Returns a no-op {@link ConfigProvider}. */
   static ConfigProvider noop() {
     return DeclarativeConfigProperties::empty;

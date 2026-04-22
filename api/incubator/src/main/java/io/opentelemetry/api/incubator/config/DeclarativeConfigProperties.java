@@ -44,6 +44,22 @@ public interface DeclarativeConfigProperties {
   }
 
   /**
+   * Create a {@link DeclarativeConfigProperties} from a {@code Map<String, Object>}.
+   *
+   * <p>This is the inverse of {@link #toMap(DeclarativeConfigProperties)}. Values in the map are
+   * expected to follow the same conventions: scalars, lists of scalars, nested maps, and lists of
+   * maps.
+   *
+   * @param map the map to wrap
+   * @param componentLoader the component loader to use
+   * @return a {@link DeclarativeConfigProperties} backed by the map
+   */
+  static DeclarativeConfigProperties fromMap(
+      Map<String, Object> map, ComponentLoader componentLoader) {
+    return new MapBackedDeclarativeConfigProperties(map, componentLoader);
+  }
+
+  /**
    * Returns a {@link String} configuration property.
    *
    * @return null if the property has not been configured
