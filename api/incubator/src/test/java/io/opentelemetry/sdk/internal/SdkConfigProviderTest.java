@@ -21,6 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
@@ -316,7 +317,7 @@ class SdkConfigProviderTest {
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     CountDownLatch startLatch = new CountDownLatch(1);
     CountDownLatch doneLatch = new CountDownLatch(threadCount);
-    List<java.util.concurrent.Future<?>> futures = new ArrayList<>();
+    List<Future<?>> futures = new ArrayList<>();
     for (int i = 0; i < threadCount; i++) {
       int index = i + 1;
       futures.add(
@@ -335,7 +336,7 @@ class SdkConfigProviderTest {
     }
     startLatch.countDown();
     assertThat(doneLatch.await(5, TimeUnit.SECONDS)).isTrue();
-    for (java.util.concurrent.Future<?> future : futures) {
+    for (Future<?> future : futures) {
       future.get(1, TimeUnit.SECONDS);
     }
     executor.shutdown();
