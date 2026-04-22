@@ -8,6 +8,7 @@ plugins {
 
 description = "OpenTelemetry SDK For Tracing"
 otelJava.moduleName.set("io.opentelemetry.sdk.trace")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
 sourceSets {
   main {

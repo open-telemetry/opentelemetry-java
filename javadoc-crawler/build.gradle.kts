@@ -11,6 +11,7 @@ dependencies {
 
 description = "OpenTelemetry Javadoc Crawler"
 otelJava.moduleName.set("io.opentelemetry.javadocs")
+otelJava.osgiEnabled.set(false)
 otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_17)
 
 tasks {

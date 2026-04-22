@@ -8,6 +8,7 @@ plugins {
 
 description = "OpenTelemetry API Incubator"
 otelJava.moduleName.set("io.opentelemetry.api.incubator")
+otelJava.osgiOptionalPackages.set(listOf("com.fasterxml.jackson.databind"))
 
 dependencies {
   api(project(":api:all"))
