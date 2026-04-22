@@ -46,7 +46,12 @@ graalvmNative {
 // GraalVM Native Build Tools plugin is not yet compatible with configuration cache
 // https://github.com/graalvm/native-build-tools/issues/477
 tasks.configureEach {
-  if (name.startsWith("native") || name == "test" || name == "collectReachabilityMetadata") {
+  if (name.startsWith("native")
+    || name.endsWith("ResourcesConfigFile")
+    || name.endsWith("DynamicAccessMetadata")
+    || name == "test"
+    || name == "collectReachabilityMetadata"
+    || name == "metadataCopy") {
     notCompatibleWithConfigurationCache("GraalVM Native Build Tools plugin is not compatible with configuration cache")
   }
 }
