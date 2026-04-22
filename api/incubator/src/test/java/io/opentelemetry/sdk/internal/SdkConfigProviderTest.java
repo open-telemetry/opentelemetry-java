@@ -355,8 +355,7 @@ class SdkConfigProviderTest {
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> provider.updateConfig("instrumentation", config(mapOf())))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(
-            () -> provider.setConfigProperty("instrumentation", "key", "value"))
+    assertThatThrownBy(() -> provider.setConfigProperty("instrumentation", "key", "value"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -376,8 +375,7 @@ class SdkConfigProviderTest {
   void pathValidation_rejectsBrackets() {
     SdkConfigProvider provider = SdkConfigProvider.create(config(mapOf()));
 
-    assertThatThrownBy(
-            () -> provider.addConfigChangeListener(".foo[0]", (path, newConfig) -> {}))
+    assertThatThrownBy(() -> provider.addConfigChangeListener(".foo[0]", (path, newConfig) -> {}))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> provider.updateConfig(".foo[0]", config(mapOf())))
         .isInstanceOf(IllegalArgumentException.class);
