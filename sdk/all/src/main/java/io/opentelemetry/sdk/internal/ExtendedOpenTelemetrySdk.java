@@ -11,7 +11,6 @@ import io.opentelemetry.api.incubator.config.ConfigChangeRegistration;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -54,9 +53,9 @@ public final class ExtendedOpenTelemetrySdk extends OpenTelemetrySdk
   }
 
   @Override
-  public CompletableResultCode shutdown() {
+  public void close() {
     configProvider.unobfuscate().shutdown();
-    return super.shutdown();
+    super.close();
   }
 
   @Override
