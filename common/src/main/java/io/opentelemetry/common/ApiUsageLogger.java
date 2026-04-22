@@ -28,6 +28,20 @@ public final class ApiUsageLogger {
   private static final Logger LOGGER = Logger.getLogger("io.opentelemetry.usage");
 
   /**
+   * Log that {@code paramName} was null in {@code apiClass#methodName}.
+   *
+   * <p>Convenience overload of {@link #log(Class, String, String)} for the common case of a null
+   * parameter that should not be null.
+   *
+   * @param apiClass the public API class where the misuse occurred
+   * @param methodName the name of the method where the misuse occurred
+   * @param paramName the name of the parameter that was null
+   */
+  public static void logNullParam(Class<?> apiClass, String methodName, String paramName) {
+    log(apiClass, methodName, paramName + " is null");
+  }
+
+  /**
    * Log a misuse of {@code apiClass#methodName} with the given {@code message}.
    *
    * <p>Logs at {@link Level#FINEST} and includes a stack trace.
