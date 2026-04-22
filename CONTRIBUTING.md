@@ -207,22 +207,9 @@ All changes to the SDK configuration options or autoconfigure module should be d
 
 ### Benchmarks
 
-Performance-sensitive modules include [JMH](https://openjdk.org/projects/code-tools/jmh/) benchmarks
-under `src/jmh/java`. To run all benchmarks in a module:
-
-```bash
-./gradlew :sdk:trace:jmh
-```
-
-To run a single benchmark class:
-
-```bash
-./gradlew -PjmhIncludeSingleClass=BatchSpanProcessorBenchmark :sdk:trace:jmh
-```
-
-Results are written as JSON to `build/results/jmh/results.json` and an HTML report is generated
-alongside it. When submitting a PR that claims a performance improvement, please include JMH output
-(number of threads, iterations, scores with error margins) so reviewers can evaluate the change.
+Benchmark instructions now live in [docs/knowledge/other-tasks.md#benchmarks-jmh](docs/knowledge/other-tasks.md#benchmarks-jmh).
+If you are submitting a performance-sensitive PR, include JMH output (number of threads,
+iterations, scores with error margins) so reviewers can evaluate the change.
 
 ## Specific tasks
 
