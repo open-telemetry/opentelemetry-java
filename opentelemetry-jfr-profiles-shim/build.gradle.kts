@@ -1,6 +1,8 @@
 plugins {
   id("otel.java-conventions")
-//  id("otel.publish-conventions")
+  // TODO decide what to do about JfrExportExample before publishing.
+  // unlike the other classes here it's an example, not a reusable utility.
+ //  id("otel.publish-conventions")
 }
 
 description = "OpenTelemetry - JFR to Profiles data conversion example"
@@ -23,5 +25,5 @@ tasks {
 
 dependencies {
   api(project(":exporters:otlp:profiles"))
-  api(project(":opentelemetry-sdk-profiles"))
+  api(project(":sdk:profiles"))
 }

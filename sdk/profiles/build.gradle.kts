@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Profiles SDK"
-otelJava.moduleName.set("io.opentelemetry.sdk.profiles")
+otelJava.moduleName.set("sdk.profiles")
 
 dependencies {
   api(project(":sdk:common"))

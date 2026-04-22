@@ -12,8 +12,8 @@ otelJava.moduleName.set("io.opentelemetry.exporter.otlp.profiles")
 val versions: Map<String, String> by project
 
 dependencies {
-  api(project(":opentelemetry-sdk-profiles"))
   api(project(":sdk:common"))
+  api(project(":sdk:profiles"))
   api(project(":exporters:common"))
   implementation(project(":exporters:otlp:common"))
 
