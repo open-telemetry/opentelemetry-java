@@ -107,8 +107,8 @@ public interface ConfigProvider {
    *
    * <p>The path uses {@code .} as a separator (e.g., {@code
    * ".instrumentation/development.java.myLib"}). The property identified by {@code key} within that
-   * path is set to {@code value}, and any registered {@link ConfigChangeListener}s watching affected
-   * paths are notified.
+   * path is set to {@code value}, and any registered {@link ConfigChangeListener}s watching
+   * affected paths are notified.
    *
    * <p>The default implementation is a no-op.
    *

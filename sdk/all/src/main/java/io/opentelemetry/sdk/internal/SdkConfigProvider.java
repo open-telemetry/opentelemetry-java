@@ -62,7 +62,7 @@ public final class SdkConfigProvider implements ConfigProvider {
   public ConfigChangeRegistration addConfigChangeListener(
       String path, ConfigChangeListener listener) {
     requireNonNull(listener, "listener");
-    String watchedPath = normalizeAndValidatePath(path); //fail fast on invalid path
+    String watchedPath = normalizeAndValidatePath(path); // fail fast on invalid path
     if (disposed.get()) {
       return NOOP_CHANGE_REGISTRATION;
     }

@@ -25,7 +25,8 @@ final class MapBackedDeclarativeConfigProperties implements DeclarativeConfigPro
   private final Map<String, Object> values;
   private final ComponentLoader componentLoader;
 
-  MapBackedDeclarativeConfigProperties(Map<String, Object> values, ComponentLoader componentLoader) {
+  MapBackedDeclarativeConfigProperties(
+      Map<String, Object> values, ComponentLoader componentLoader) {
     this.values = values;
     this.componentLoader = componentLoader;
   }
