@@ -43,7 +43,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span fromContext(Context context) {
     if (context == null) {
-      ApiUsageLogger.log(Span.class, "fromContext", "context is null");
+      ApiUsageLogger.logNullParam(Span.class, "fromContext", "context");
       return Span.getInvalid();
     }
     Span span = context.get(SpanContextKey.KEY);
@@ -57,7 +57,7 @@ public interface Span extends ImplicitContextKeyed {
   @Nullable
   static Span fromContextOrNull(Context context) {
     if (context == null) {
-      ApiUsageLogger.log(Span.class, "fromContextOrNull", "context is null");
+      ApiUsageLogger.logNullParam(Span.class, "fromContextOrNull", "context");
       return null;
     }
     return context.get(SpanContextKey.KEY);
@@ -78,7 +78,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   static Span wrap(SpanContext spanContext) {
     if (spanContext == null) {
-      ApiUsageLogger.log(Span.class, "wrap", "spanContext is null");
+      ApiUsageLogger.logNullParam(Span.class, "wrap", "spanContext");
       return getInvalid();
     }
     return PropagatedSpan.create(spanContext);

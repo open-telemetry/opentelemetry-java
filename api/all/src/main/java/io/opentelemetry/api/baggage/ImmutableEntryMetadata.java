@@ -25,7 +25,7 @@ abstract class ImmutableEntryMetadata implements BaggageEntryMetadata {
    */
   static ImmutableEntryMetadata create(String metadata) {
     if (metadata == null) {
-      ApiUsageLogger.log(BaggageEntryMetadata.class, "create", "metadata is null");
+      ApiUsageLogger.logNullParam(BaggageEntryMetadata.class, "create", "metadata");
       return EMPTY;
     }
     return new AutoValue_ImmutableEntryMetadata(metadata);

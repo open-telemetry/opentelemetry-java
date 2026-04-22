@@ -89,7 +89,7 @@ gracefully (return `this`, an empty/noop result, or substitute a safe default su
 @Override
 public Span addEvent(String name) {
   if (name == null) {
-    ApiUsageLogger.log(Span.class, "addEvent", "name is null");
+    ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
     return this;
   }
   // ... normal implementation
@@ -97,7 +97,8 @@ public Span addEvent(String name) {
 ```
 
 The class and method arguments identify the problem immediately in the log message without
-requiring stack trace analysis. `FINEST` is silent by default, so there is no production noise.
+requiring stack trace analysis. Use `ApiUsageLogger.log(...)` directly when the message is not
+simply "X is null" (e.g. `"spanIdBytes is null or too short"`). `FINEST` is silent by default, so there is no production noise.
 To investigate misuse, enable the logger named `io.opentelemetry.usage` at `FINEST` in
 development, or periodically in staging/production. Check each argument once, at the first
 public entry point — internal methods called by that entry point do not need to re-validate.

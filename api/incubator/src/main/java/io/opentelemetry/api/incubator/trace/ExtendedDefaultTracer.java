@@ -64,7 +64,7 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
     @Override
     public NoopSpanBuilder setParent(Context context) {
       if (context == null) {
-        ApiUsageLogger.log(SpanBuilder.class, "setParent", "context is null");
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setParent", "context");
         return this;
       }
       spanContext = Span.fromContext(context).getSpanContext();
