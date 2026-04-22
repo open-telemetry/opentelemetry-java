@@ -1,4 +1,4 @@
-# API Stability and Breaking Changes
+# API Design
 
 See [VERSIONING.md](../../VERSIONING.md) for the full versioning and compatibility policy.
 
@@ -53,6 +53,60 @@ a human-readable diff to `docs/apidiffs/current_vs_latest/<artifact>.txt`.
   handles those automatically.
 - The diff files are committed to the repo. Include any changes to them in your PR.
 - Run `./gradlew jApiCmp` to regenerate diffs after API changes.
+
+## Null guards
+
+`@Nullable` annotations (see [general-patterns.md](general-patterns.md)) and
+[NullAway](https://github.com/uber/NullAway) enforce null contracts at build time within this
+repo. At runtime there is no such guarantee — callers in other
+codebases can pass `null` regardless of annotations. Add null guards only at **public API entry
+points**; once inside the implementation, trust NullAway.
+
+### Configuration-time boundaries (SDK builders, provider factories)
+
+Fail fast with `Objects.requireNonNull`:
+
+```java
+public SdkTracerProviderBuilder setResource(Resource resource) {
+  Objects.requireNonNull(resource, "resource");
+  this.resource = resource;
+  return this;
+}
+```
+
+These APIs are called once during startup, so a hard failure surfaces the bug immediately and
+unambiguously.
+
+### Runtime / instrumentation-time boundaries (Span methods, metric recordings, log builders)
+
+Do **not** throw. Log the violation via
+[`ApiUsageLogger`](../../common/src/main/java/io/opentelemetry/common/ApiUsageLogger.java) —
+which logs at `FINEST` with a stack trace so the offending call site is visible — then degrade
+gracefully (return `this`, an empty/noop result, or substitute a safe default such as
+`Attributes.empty()` or `Context.current()`):
+
+```java
+@Override
+public Span addEvent(String name) {
+  if (name == null) {
+    ApiUsageLogger.log(Span.class, "addEvent", "name is null");
+    return this;
+  }
+  // ... normal implementation
+}
+```
+
+The class and method arguments identify the problem immediately in the log message without
+requiring stack trace analysis. `FINEST` is silent by default, so there is no production noise.
+To investigate misuse, enable the logger named `io.opentelemetry.usage` at `FINEST` in
+development, or periodically in staging/production. Check each argument once, at the first
+public entry point — internal methods called by that entry point do not need to re-validate.
+
+### Where to implement guards
+
+Add guards in the concrete implementation class, or in an existing `default` interface method
+that would otherwise NPE. Do **not** add new `default` methods to interfaces solely for null
+safety — that expands the interface surface without a functional benefit.
 
 ## Stable vs alpha modules
 

@@ -10,6 +10,8 @@ All arguments and members are treated as non-null by default. Annotate with `@Nu
 - **Return types**: annotate only if the method actually returns `null`. A non-null implementation
   of a `@Nullable`-declared interface method should omit the annotation — it is more precise.
 
+For null guard behavior at public API boundaries, see [api-design.md](api-design.md).
+
 ## API consistency
 
 The project aims to provide a consistent experience across all public APIs. When designing new
