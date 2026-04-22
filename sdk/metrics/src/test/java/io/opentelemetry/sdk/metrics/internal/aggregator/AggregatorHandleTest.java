@@ -40,6 +40,14 @@ class AggregatorHandleTest {
   @Mock LongExemplarReservoir longReservoir;
 
   @Test
+  void testCreationTimeEpochNanos() {
+    long creationEpochNanos = 12345L;
+    TestDoubleAggregatorHandle handle =
+        new TestDoubleAggregatorHandle(doubleReservoir, creationEpochNanos);
+    assertThat(handle.getCreationEpochNanos()).isEqualTo(creationEpochNanos);
+  }
+
+  @Test
   void testRecordings() {
     TestLongAggregatorHandle testLongAggregator = new TestLongAggregatorHandle(longReservoir);
 
@@ -102,14 +110,18 @@ class AggregatorHandleTest {
   private static class TestDoubleAggregatorHandle extends TestAggregatorHandle {
 
     TestDoubleAggregatorHandle(DoubleExemplarReservoir reservoir) {
-      super(reservoir, null, /* isDoubleType= */ true);
+      super(reservoir, null, /* isDoubleType= */ true, /* creationEpochNanos= */ 0);
+    }
+
+    TestDoubleAggregatorHandle(DoubleExemplarReservoir reservoir, long creationEpochNanos) {
+      super(reservoir, null, /* isDoubleType= */ true, creationEpochNanos);
     }
   }
 
   private static class TestLongAggregatorHandle extends TestAggregatorHandle {
 
     TestLongAggregatorHandle(LongExemplarReservoir reservoir) {
-      super(null, reservoir, /* isDoubleType= */ false);
+      super(null, reservoir, /* isDoubleType= */ false, /* creationEpochNanos= */ 0);
     }
   }
 
@@ -121,8 +133,10 @@ class AggregatorHandleTest {
     TestAggregatorHandle(
         @Nullable DoubleExemplarReservoir doubleReservoir,
         @Nullable LongExemplarReservoir longReservoir,
-        boolean isDoubleType) {
+        boolean isDoubleType,
+        long creationEpochNanos) {
       super(
+          creationEpochNanos,
           new ExemplarReservoirFactory() {
             @Override
             public DoubleExemplarReservoir createDoubleExemplarReservoir() {

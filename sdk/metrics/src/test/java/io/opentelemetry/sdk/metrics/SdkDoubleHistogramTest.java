@@ -74,6 +74,7 @@ class SdkDoubleHistogramTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleHistogram.record(12d, Attributes.empty());
     doubleHistogram.record(12d);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -203,8 +204,10 @@ class SdkDoubleHistogramTest {
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleHistogram.record(12d, Attributes.builder().put("key", "value").build());
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleHistogram.record(12d);
     doubleHistogram.record(13d);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -243,7 +246,7 @@ class SdkDoubleHistogramTest {
                                                         .hasCounts(Collections.emptyList())),
                                     point ->
                                         point
-                                            .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                            .hasStartEpochNanos(testClock.now() - 2 * SECOND_NANOS)
                                             .hasEpochNanos(testClock.now())
                                             .hasAttributes(
                                                 Attributes.builder().put("key", "value").build())

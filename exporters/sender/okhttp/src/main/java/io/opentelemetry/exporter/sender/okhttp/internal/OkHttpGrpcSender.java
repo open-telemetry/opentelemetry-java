@@ -32,7 +32,6 @@ import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -63,7 +62,6 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import okio.GzipSource;
-import okio.Okio;
 
 /**
  * A {@link GrpcSender} which uses OkHttp instead of grpc-java.
@@ -83,6 +81,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
   private final HttpUrl url;
   @Nullable private final Compressor compressor;
   private final Supplier<Map<String, List<String>>> headersSupplier;
+  private final long maxResponseBodySize;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   @SuppressWarnings("TooManyParameters")
@@ -95,7 +94,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -133,6 +133,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
     this.compressor = compressor;
     this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
+    this.maxResponseBodySize = maxResponseBodySize;
   }
 
   @Override
@@ -146,6 +147,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
           (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
     }
     requestBuilder.addHeader("te", "trailers");
+    // Mirror grpc-java's default DecompressorRegistry which advertises identity and gzip.
+    requestBuilder.addHeader("grpc-accept-encoding", "identity,gzip");
     if (compressor != null) {
       requestBuilder.addHeader("grpc-encoding", compressor.getEncoding());
     }
@@ -165,56 +168,96 @@ public final class OkHttpGrpcSender implements GrpcSender {
 
                       @Override
                       public void onResponse(Call call, Response response) {
-                        try (ResponseBody body = response.body()) {
-                          // Must consume body before accessing trailers
-                          byte[] bodyBytes = null;
-                          try {
-                            bodyBytes = getResponseMessageBytes(body.bytes());
-                          } catch (IOException e) {
-                            bodyBytes = new byte[0];
-                            logger.log(Level.FINE, "Failed to read response body", e);
-                          }
-                          byte[] resolvedBodyBytes = bodyBytes;
-                          GrpcStatusCode status = grpcStatus(response);
-                          String description = grpcMessage(response);
-                          onResponse.accept(
-                              new GrpcResponse() {
-                                @Override
-                                public GrpcStatusCode getStatusCode() {
-                                  return status;
-                                }
-
-                                @Override
-                                public String getStatusDescription() {
-                                  return description;
-                                }
-
-                                @Override
-                                public byte[] getResponseMessage() {
-                                  return resolvedBodyBytes;
-                                }
-                              });
-                        }
+                        handleResponse(response, onResponse);
                       }
                     }));
   }
 
-  private static byte[] getResponseMessageBytes(byte[] bodyBytes) throws IOException {
-    if (bodyBytes.length >= 5) {
-      ByteArrayInputStream bodyStream = new ByteArrayInputStream(bodyBytes);
-      bodyStream.skip(5);
-      if (bodyBytes[0] == 1) {
-        Buffer buffer = new Buffer();
-        buffer.readFrom(bodyStream);
-        GzipSource gzipSource = new GzipSource(buffer);
-        bodyBytes = Okio.buffer(gzipSource).readByteArray();
-      } else {
-        bodyBytes = Arrays.copyOfRange(bodyBytes, 5, bodyBytes.length);
+  private void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
+    try (ResponseBody body = response.body()) {
+      // A gRPC message frame has a 5-byte header: 1 compression-flag byte + 4 message-length
+      // bytes. Read the header first so that the size limit applies to the message payload only,
+      // not the framing overhead.
+      boolean compressed;
+      try {
+        compressed = body.source().readByte() != 0;
+        body.source().skip(4); // message length — we bound reads by EOF instead
+      } catch (IOException e) {
+        logger.log(Level.FINE, "Invalid gRPC response frame");
+        onResponse.accept(
+            ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
+        return;
       }
-      return bodyBytes;
-    } else {
-      throw new IOException("Invalid response");
+
+      // Read up to maxResponseBodySize + 1 bytes. Reading exactly one byte more than the limit
+      // lets us detect overflow: if the buffer ends up larger than maxResponseBodySize, the body
+      // exceeded the limit. A body exactly at the limit will only fill the buffer to
+      // maxResponseBodySize (EOF is reached before the extra byte is read).
+      // If maxResponseBodySize is Long.MAX_VALUE, adding 1 would overflow. In that case use
+      // Long.MAX_VALUE directly — the overflow check can never trigger for such a large limit.
+      long readUpTo =
+          maxResponseBodySize == Long.MAX_VALUE ? Long.MAX_VALUE : maxResponseBodySize + 1;
+      Buffer wireBuffer = new Buffer();
+      try {
+        while (wireBuffer.size() <= maxResponseBodySize) {
+          long n = body.source().read(wireBuffer, readUpTo - wireBuffer.size());
+          if (n == -1L) {
+            break;
+          }
+        }
+      } catch (IOException e) {
+        logger.log(Level.FINE, "Failed to read response body", e);
+      }
+
+      if (wireBuffer.size() > maxResponseBodySize) {
+        onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+        return;
+      }
+
+      // Must consume body before accessing trailers
+      byte[] bodyBytes = new byte[0];
+      if (!compressed) {
+        bodyBytes = wireBuffer.readByteArray();
+      } else {
+        // Compressed: validate the encoding and decompress with a post-decompression size limit
+        String encoding = response.header("grpc-encoding");
+        if (!"gzip".equalsIgnoreCase(encoding)) {
+          onResponse.accept(responseUnsupportedGrpcEncoding(encoding));
+          return;
+        }
+        try {
+          GzipSource gzipSource = new GzipSource(wireBuffer);
+          Buffer decompressedBuffer = new Buffer();
+          while (decompressedBuffer.size() <= maxResponseBodySize) {
+            long n = gzipSource.read(decompressedBuffer, readUpTo - decompressedBuffer.size());
+            if (n == -1L) {
+              break;
+            }
+          }
+          if (decompressedBuffer.size() > maxResponseBodySize) {
+            onResponse.accept(responseMessageTooLarge(maxResponseBodySize));
+            return;
+          }
+          bodyBytes = decompressedBuffer.readByteArray();
+        } catch (IOException e) {
+          logger.log(Level.FINE, "Failed to decompress response body", e);
+        }
+      }
+      onResponse.accept(
+          ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), bodyBytes));
     }
+  }
+
+  private static GrpcResponse responseMessageTooLarge(long maxResponseBodySize) {
+    return ImmutableGrpcResponse.create(
+        GrpcStatusCode.RESOURCE_EXHAUSTED,
+        "gRPC response body exceeded limit of " + maxResponseBodySize + " bytes",
+        new byte[0]);
+  }
+
+  private static GrpcResponse responseUnsupportedGrpcEncoding(@Nullable String encoding) {
+    return ImmutableGrpcResponse.create(
+        GrpcStatusCode.INTERNAL, "Unsupported gRPC message encoding: " + encoding, new byte[0]);
   }
 
   private static GrpcStatusCode grpcStatus(Response response) {

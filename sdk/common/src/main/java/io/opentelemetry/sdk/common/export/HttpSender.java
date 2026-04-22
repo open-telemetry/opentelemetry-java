@@ -27,6 +27,9 @@ public interface HttpSender {
    * called when the request could not be executed due to cancellation, connectivity problems, or
    * timeout.
    *
+   * <p>The byte array returned by {@link HttpResponse#getResponseBody()} should contain at most
+   * {@link HttpSenderConfig#getMaxResponseBodySize()} bytes.
+   *
    * @param messageWriter the request body message writer
    * @param onResponse the callback to invoke with the HTTP response
    * @param onError the callback to invoke when the HTTP request could not be executed
