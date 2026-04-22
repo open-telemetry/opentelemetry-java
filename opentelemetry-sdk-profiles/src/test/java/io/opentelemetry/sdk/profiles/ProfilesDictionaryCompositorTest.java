@@ -15,12 +15,6 @@ import io.opentelemetry.sdk.profiles.data.LocationData;
 import io.opentelemetry.sdk.profiles.data.MappingData;
 import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
 import io.opentelemetry.sdk.profiles.data.StackData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableFunctionData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableKeyValueAndUnitData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLinkData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLocationData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableMappingData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableStackData;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,8 +43,8 @@ class ProfilesDictionaryCompositorTest {
 
   @Test
   void handlesMappings() {
-    MappingData a = ImmutableMappingData.create(1, 2, 3, 4, Collections.emptyList());
-    MappingData b = ImmutableMappingData.create(2, 3, 4, 5, Collections.emptyList());
+    MappingData a = MappingData.create(1, 2, 3, 4, Collections.emptyList());
+    MappingData b = MappingData.create(2, 3, 4, 5, Collections.emptyList());
 
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
@@ -64,10 +58,8 @@ class ProfilesDictionaryCompositorTest {
 
   @Test
   void handlesLocations() {
-    LocationData a =
-        ImmutableLocationData.create(1, 2, Collections.emptyList(), Collections.emptyList());
-    LocationData b =
-        ImmutableLocationData.create(3, 4, Collections.emptyList(), Collections.emptyList());
+    LocationData a = LocationData.create(1, 2, Collections.emptyList(), Collections.emptyList());
+    LocationData b = LocationData.create(3, 4, Collections.emptyList(), Collections.emptyList());
 
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
@@ -81,8 +73,8 @@ class ProfilesDictionaryCompositorTest {
 
   @Test
   void handlesFunctions() {
-    FunctionData a = ImmutableFunctionData.create(1, 2, 3, 4);
-    FunctionData b = ImmutableFunctionData.create(5, 6, 7, 8);
+    FunctionData a = FunctionData.create(1, 2, 3, 4);
+    FunctionData b = FunctionData.create(5, 6, 7, 8);
 
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
@@ -96,8 +88,8 @@ class ProfilesDictionaryCompositorTest {
 
   @Test
   void handlesLinks() {
-    LinkData a = ImmutableLinkData.create("a1", "a2");
-    LinkData b = ImmutableLinkData.create("b1", "b2");
+    LinkData a = LinkData.create("a1", "a2");
+    LinkData b = LinkData.create("b1", "b2");
 
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
@@ -126,8 +118,8 @@ class ProfilesDictionaryCompositorTest {
 
   @Test
   void handlesAttributes() {
-    KeyValueAndUnitData a = ImmutableKeyValueAndUnitData.create(1, Value.of("a"), 2);
-    KeyValueAndUnitData b = ImmutableKeyValueAndUnitData.create(3, Value.of("b"), 4);
+    KeyValueAndUnitData a = KeyValueAndUnitData.create(1, Value.of("a"), 2);
+    KeyValueAndUnitData b = KeyValueAndUnitData.create(3, Value.of("b"), 4);
 
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
@@ -141,8 +133,8 @@ class ProfilesDictionaryCompositorTest {
 
   @Test
   void handlesStacks() {
-    StackData a = ImmutableStackData.create(Arrays.asList(1, 2));
-    StackData b = ImmutableStackData.create(Arrays.asList(3, 4));
+    StackData a = StackData.create(Arrays.asList(1, 2));
+    StackData b = StackData.create(Arrays.asList(3, 4));
 
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);
     assertThat(compositor.putIfAbsent(a)).isEqualTo(1);

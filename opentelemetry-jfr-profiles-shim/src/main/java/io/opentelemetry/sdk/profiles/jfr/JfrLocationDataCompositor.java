@@ -10,10 +10,6 @@ import io.opentelemetry.sdk.profiles.data.FunctionData;
 import io.opentelemetry.sdk.profiles.data.LineData;
 import io.opentelemetry.sdk.profiles.data.LocationData;
 import io.opentelemetry.sdk.profiles.data.StackData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableFunctionData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLineData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLocationData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableStackData;
 import java.util.Collections;
 import java.util.List;
 import jdk.jfr.consumer.RecordedFrame;
@@ -52,7 +48,7 @@ public class JfrLocationDataCompositor {
 
     List<Integer> locationIndices = frameList.stream().map(this::frameToLocation).toList();
 
-    StackData stackData = ImmutableStackData.create(locationIndices);
+    StackData stackData = StackData.create(locationIndices);
     int stackIndex = profilesDictionaryCompositor.putIfAbsent(stackData);
     return stackIndex;
   }
@@ -72,14 +68,14 @@ public class JfrLocationDataCompositor {
     String name = nameFrom(frame);
     int nameStringIndex = profilesDictionaryCompositor.putIfAbsent(name);
 
-    FunctionData functionData = ImmutableFunctionData.create(nameStringIndex, 0, 0, 0);
+    FunctionData functionData = FunctionData.create(nameStringIndex, 0, 0, 0);
     int functionIndex = profilesDictionaryCompositor.putIfAbsent(functionData);
 
     int lineNumber = frame.getLineNumber() != -1 ? frame.getLineNumber() : 0;
-    LineData lineData = ImmutableLineData.create(functionIndex, lineNumber, 0);
+    LineData lineData = LineData.create(functionIndex, lineNumber, 0);
 
     LocationData locationData =
-        ImmutableLocationData.create(0, 0, List.of(lineData), Collections.emptyList());
+        LocationData.create(0, 0, List.of(lineData), Collections.emptyList());
 
     int locationIndex = profilesDictionaryCompositor.putIfAbsent(locationData);
     return locationIndex;

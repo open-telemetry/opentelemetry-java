@@ -17,6 +17,17 @@ import javax.annotation.concurrent.Immutable;
 public interface LocationData {
 
   /**
+   * Returns a new LocationData describing the given function and line table information.
+   *
+   * @return a new LocationData describing the given function and line table information.
+   */
+  @SuppressWarnings("AutoValueSubclassLeaked")
+  static LocationData create(
+      int mappingIndex, long address, List<LineData> lines, List<Integer> attributeIndices) {
+    return new AutoValue_ImmutableLocationData(mappingIndex, address, lines, attributeIndices);
+  }
+
+  /**
    * The index of the corresponding profile.Mapping for this location. It can be 0 if the mapping is
    * unknown or not applicable for this profile type.
    */

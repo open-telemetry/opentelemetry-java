@@ -22,6 +22,44 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface ProfileData {
 
+  /**
+   * Returns a new ProfileData representing the given data.
+   *
+   * @return a new ProfileData representing the given data.
+   */
+  @SuppressWarnings({"TooManyParameters", "AutoValueSubclassLeaked"})
+  static ProfileData create(
+      Resource resource,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      ProfilesDictionaryData profilesDictionaryData,
+      ValueTypeData sampleType,
+      List<SampleData> samples,
+      long timeNanos,
+      long durationNanos,
+      ValueTypeData periodType,
+      long period,
+      String profileId,
+      int droppedAttributesCount,
+      String originalPayloadFormat,
+      ByteBuffer originalPayload,
+      List<Integer> attributeIndices) {
+    return new AutoValue_ImmutableProfileData(
+        resource,
+        instrumentationScopeInfo,
+        profilesDictionaryData,
+        sampleType,
+        samples,
+        timeNanos,
+        durationNanos,
+        periodType,
+        period,
+        profileId,
+        droppedAttributesCount,
+        originalPayloadFormat,
+        originalPayload,
+        attributeIndices);
+  }
+
   /** Returns the resource of this profile. */
   Resource getResource();
 

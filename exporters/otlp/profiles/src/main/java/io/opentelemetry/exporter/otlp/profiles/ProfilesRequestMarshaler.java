@@ -15,7 +15,6 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.collector.profiles.v1development.internal.ExportProfilesServiceRequest;
 import io.opentelemetry.sdk.profiles.data.ProfileData;
 import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfilesDictionaryData;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +28,7 @@ import java.util.Collections;
 public final class ProfilesRequestMarshaler extends MarshalerWithSize {
 
   private static final ProfilesDictionaryData EMPTY_DICTIONARY_DATA =
-      ImmutableProfilesDictionaryData.create(
+      ProfilesDictionaryData.create(
           Collections.emptyList(),
           Collections.emptyList(),
           Collections.emptyList(),

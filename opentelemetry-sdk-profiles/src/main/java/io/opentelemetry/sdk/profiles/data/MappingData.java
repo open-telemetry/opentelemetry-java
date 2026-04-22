@@ -16,6 +16,22 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface MappingData {
 
+  /**
+   * Returns a new MappingData describing the given mapping of a binary in memory.
+   *
+   * @return a new MappingData describing the given mapping of a binary in memory.
+   */
+  @SuppressWarnings({"TooManyParameters", "AutoValueSubclassLeaked"})
+  static MappingData create(
+      long memoryStart,
+      long memoryLimit,
+      long fileOffset,
+      int filenameStringIndex,
+      List<Integer> attributeIndices) {
+    return new AutoValue_ImmutableMappingData(
+        memoryStart, memoryLimit, fileOffset, filenameStringIndex, attributeIndices);
+  }
+
   /** Address at which the binary (or DLL) is loaded into memory. */
   long getMemoryStart();
 

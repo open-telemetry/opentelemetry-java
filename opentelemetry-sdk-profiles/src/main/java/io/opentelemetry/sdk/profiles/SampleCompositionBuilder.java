@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.profiles;
 
 import io.opentelemetry.sdk.profiles.data.SampleData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableSampleData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +38,7 @@ public class SampleCompositionBuilder {
       SampleCompositionKey key = entry.getKey();
       SampleCompositionValue value = entry.getValue();
       SampleData sampleData =
-          ImmutableSampleData.create(
+          SampleData.create(
               key.getStackIndex(),
               key.getAttributeIndices(),
               key.getLinkIndex(),

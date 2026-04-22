@@ -24,6 +24,22 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface SampleData {
 
+  /**
+   * Returns a new SampleData representing the given program context.
+   *
+   * @return a new SampleData representing the given program context.
+   */
+  @SuppressWarnings("AutoValueSubclassLeaked")
+  static SampleData create(
+      int stackIndex,
+      List<Integer> attributeIndices,
+      int linkIndex,
+      List<Long> values,
+      List<Long> timestamps) {
+    return new AutoValue_ImmutableSampleData(
+        stackIndex, attributeIndices, linkIndex, values, timestamps);
+  }
+
   /** Reference to stack in Profile.stack_table. */
   int getStackIndex();
 

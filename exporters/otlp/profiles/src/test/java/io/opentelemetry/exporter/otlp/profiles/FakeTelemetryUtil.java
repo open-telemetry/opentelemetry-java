@@ -9,9 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.profiles.data.ProfileData;
 import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfileData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfilesDictionaryData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableValueTypeData;
+import io.opentelemetry.sdk.profiles.data.ValueTypeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -20,7 +18,7 @@ import java.util.Collections;
 class FakeTelemetryUtil {
 
   private static final ProfilesDictionaryData EMPTY_PROFILE_DICTIONARY_DATA =
-      ImmutableProfilesDictionaryData.create(
+      ProfilesDictionaryData.create(
           Collections.emptyList(),
           Collections.emptyList(),
           Collections.emptyList(),
@@ -40,15 +38,15 @@ class FakeTelemetryUtil {
   /** Generate a fake {@link ProfileData}. */
   static ProfileData generateFakeProfileData() {
     String profileId = "0123456789abcdef0123456789abcdef";
-    return ImmutableProfileData.create(
+    return ProfileData.create(
         Resource.create(Attributes.empty()),
         SCOPE_INFO,
         EMPTY_PROFILE_DICTIONARY_DATA,
-        ImmutableValueTypeData.create(1, 2),
+        ValueTypeData.create(1, 2),
         Collections.emptyList(),
         5L,
         6L,
-        ImmutableValueTypeData.create(1, 2),
+        ValueTypeData.create(1, 2),
         7L,
         profileId,
         8,

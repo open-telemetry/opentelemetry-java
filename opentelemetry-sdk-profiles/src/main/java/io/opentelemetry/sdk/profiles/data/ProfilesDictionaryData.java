@@ -17,6 +17,30 @@ import javax.annotation.concurrent.Immutable;
 public interface ProfilesDictionaryData {
 
   /**
+   * Returns a new ProfileData representing the given data.
+   *
+   * @return a new ProfileData representing the given data.
+   */
+  @SuppressWarnings({"TooManyParameters", "AutoValueSubclassLeaked"})
+  static ProfilesDictionaryData create(
+      List<MappingData> mappingTable,
+      List<LocationData> locationTable,
+      List<FunctionData> functionTable,
+      List<LinkData> linkTable,
+      List<String> stringTable,
+      List<KeyValueAndUnitData> attributeTable,
+      List<StackData> stackTable) {
+    return new AutoValue_ImmutableProfilesDictionaryData(
+        mappingTable,
+        locationTable,
+        functionTable,
+        linkTable,
+        stringTable,
+        attributeTable,
+        stackTable);
+  }
+
+  /**
    * Mapping from address ranges to the image/binary/library mapped into that address range.
    * mapping[0] will be the main binary.
    */

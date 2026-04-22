@@ -36,20 +36,10 @@ import io.opentelemetry.sdk.profiles.data.LinkData;
 import io.opentelemetry.sdk.profiles.data.LocationData;
 import io.opentelemetry.sdk.profiles.data.MappingData;
 import io.opentelemetry.sdk.profiles.data.ProfileData;
+import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
 import io.opentelemetry.sdk.profiles.data.SampleData;
 import io.opentelemetry.sdk.profiles.data.StackData;
 import io.opentelemetry.sdk.profiles.data.ValueTypeData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableFunctionData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableKeyValueAndUnitData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLineData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLinkData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLocationData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableMappingData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfileData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfilesDictionaryData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableSampleData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableStackData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableValueTypeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -66,7 +56,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareFunctionMarshaling() {
-    FunctionData input = ImmutableFunctionData.create(1, 2, 3, 4);
+    FunctionData input = FunctionData.create(1, 2, 3, 4);
     Function builderResult =
         Function.newBuilder()
             .setNameStrindex(1)
@@ -83,8 +73,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedFunctionMarshaling() {
     List<FunctionData> inputs = new ArrayList<>();
-    inputs.add(ImmutableFunctionData.create(1, 2, 3, 4));
-    inputs.add(ImmutableFunctionData.create(5, 6, 7, 8));
+    inputs.add(FunctionData.create(1, 2, 3, 4));
+    inputs.add(FunctionData.create(5, 6, 7, 8));
 
     List<Function> builderResults = new ArrayList<>();
     builderResults.add(
@@ -112,7 +102,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareLineMarshaling() {
-    LineData input = ImmutableLineData.create(1, 2, 3);
+    LineData input = LineData.create(1, 2, 3);
     Line builderResult = Line.newBuilder().setFunctionIndex(1).setLine(2).setColumn(3).build();
 
     Line roundTripResult = parse(Line.getDefaultInstance(), LineMarshaler.create(input));
@@ -122,8 +112,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedLineMarshaling() {
     List<LineData> inputs = new ArrayList<>();
-    inputs.add(ImmutableLineData.create(1, 2, 3));
-    inputs.add(ImmutableLineData.create(4, 5, 6));
+    inputs.add(LineData.create(1, 2, 3));
+    inputs.add(LineData.create(4, 5, 6));
 
     List<Line> builderResults = new ArrayList<>();
     builderResults.add(Line.newBuilder().setFunctionIndex(1).setLine(2).setColumn(3).build());
@@ -139,7 +129,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareKeyValueAndUnitMarshaling() {
-    KeyValueAndUnitData input = ImmutableKeyValueAndUnitData.create(1, Value.of("foo"), 3);
+    KeyValueAndUnitData input = KeyValueAndUnitData.create(1, Value.of("foo"), 3);
     KeyValueAndUnit builderResult =
         KeyValueAndUnit.newBuilder()
             .setKeyStrindex(1)
@@ -155,8 +145,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedKeyValueAndUnitMarshaling() {
     List<KeyValueAndUnitData> inputs = new ArrayList<>();
-    inputs.add(ImmutableKeyValueAndUnitData.create(1, Value.of("foo"), 3));
-    inputs.add(ImmutableKeyValueAndUnitData.create(4, Value.of("bar"), 6));
+    inputs.add(KeyValueAndUnitData.create(1, Value.of("foo"), 3));
+    inputs.add(KeyValueAndUnitData.create(4, Value.of("bar"), 6));
 
     List<KeyValueAndUnit> builderResults = new ArrayList<>();
     builderResults.add(
@@ -184,7 +174,7 @@ public class ProfilesRequestMarshalerTest {
   void compareLinkMarshaling() {
     String traceId = "0123456789abcdef0123456789abcdef";
     String spanId = "fedcba9876543210";
-    LinkData input = ImmutableLinkData.create(traceId, spanId);
+    LinkData input = LinkData.create(traceId, spanId);
     Link builderResult =
         Link.newBuilder()
             .setTraceId(ByteString.fromHex(traceId))
@@ -198,8 +188,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedLinkMarshaling() {
     List<LinkData> inputs = new ArrayList<>();
-    inputs.add(ImmutableLinkData.create("0123456789abcdef0123456789abcdef", "fedcba9876543210"));
-    inputs.add(ImmutableLinkData.create("123456789abcdef0123456789abcdef0", "edcba9876543210f"));
+    inputs.add(LinkData.create("0123456789abcdef0123456789abcdef", "fedcba9876543210"));
+    inputs.add(LinkData.create("123456789abcdef0123456789abcdef0", "edcba9876543210f"));
 
     List<Link> builderResults = new ArrayList<>();
     builderResults.add(
@@ -223,7 +213,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareLocationMarshaling() {
-    LocationData input = ImmutableLocationData.create(1, 2, Collections.emptyList(), listOf(4, 5));
+    LocationData input = LocationData.create(1, 2, Collections.emptyList(), listOf(4, 5));
     Location builderResult =
         Location.newBuilder()
             .setMappingIndex(1)
@@ -239,8 +229,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedLocationMarshaling() {
     List<LocationData> inputs = new ArrayList<>();
-    inputs.add(ImmutableLocationData.create(1, 2, Collections.emptyList(), listOf(3, 4)));
-    inputs.add(ImmutableLocationData.create(5, 6, Collections.emptyList(), listOf(7, 8)));
+    inputs.add(LocationData.create(1, 2, Collections.emptyList(), listOf(3, 4)));
+    inputs.add(LocationData.create(5, 6, Collections.emptyList(), listOf(7, 8)));
 
     List<Location> builderResults = new ArrayList<>();
     builderResults.add(
@@ -266,7 +256,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareMappingMarshaling() {
-    MappingData input = ImmutableMappingData.create(1, 2, 3, 4, listOf(5, 6));
+    MappingData input = MappingData.create(1, 2, 3, 4, listOf(5, 6));
     Mapping builderResult =
         Mapping.newBuilder()
             .setMemoryStart(1)
@@ -283,8 +273,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedMappingMarshaling() {
     List<MappingData> inputs = new ArrayList<>();
-    inputs.add(ImmutableMappingData.create(1, 2, 3, 4, listOf(5, 6)));
-    inputs.add(ImmutableMappingData.create(7, 8, 9, 10, listOf(11, 12)));
+    inputs.add(MappingData.create(1, 2, 3, 4, listOf(5, 6)));
+    inputs.add(MappingData.create(7, 8, 9, 10, listOf(11, 12)));
 
     List<Mapping> builderResults = new ArrayList<>();
     builderResults.add(
@@ -314,7 +304,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareStackMarshaling() {
-    StackData input = ImmutableStackData.create(listOf(1, 2));
+    StackData input = StackData.create(listOf(1, 2));
     Stack builderResult = Stack.newBuilder().addAllLocationIndices(listOf(1, 2)).build();
 
     Stack roundTripResult = parse(Stack.getDefaultInstance(), StackMarshaler.create(input));
@@ -324,8 +314,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedStackMarshaling() {
     List<StackData> inputs = new ArrayList<>();
-    inputs.add(ImmutableStackData.create(listOf(1, 2)));
-    inputs.add(ImmutableStackData.create(listOf(3, 4)));
+    inputs.add(StackData.create(listOf(1, 2)));
+    inputs.add(StackData.create(listOf(3, 4)));
 
     List<Stack> builderResults = new ArrayList<>();
     builderResults.add(Stack.newBuilder().addAllLocationIndices(listOf(1, 2)).build());
@@ -344,10 +334,10 @@ public class ProfilesRequestMarshalerTest {
 
     String profileId = "0123456789abcdef0123456789abcdef";
     ProfileData profileContainerData =
-        ImmutableProfileData.create(
+        ProfileData.create(
             Resource.create(Attributes.empty()),
             InstrumentationScopeInfo.create("testscope"),
-            ImmutableProfilesDictionaryData.create(
+            ProfilesDictionaryData.create(
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
@@ -355,11 +345,11 @@ public class ProfilesRequestMarshalerTest {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList()),
-            ImmutableValueTypeData.create(1, 2),
+            ValueTypeData.create(1, 2),
             Collections.emptyList(),
             5L,
             6L,
-            ImmutableValueTypeData.create(1, 2),
+            ValueTypeData.create(1, 2),
             7L,
             profileId,
             8,
@@ -401,8 +391,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareSampleMarshaling() {
-    SampleData input =
-        ImmutableSampleData.create(1, listOf(2, 3), 4, listOf(5L, 6L), listOf(7L, 8L));
+    SampleData input = SampleData.create(1, listOf(2, 3), 4, listOf(5L, 6L), listOf(7L, 8L));
     Sample builderResult =
         Sample.newBuilder()
             .setStackIndex(1)
@@ -419,9 +408,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedSampleMarshaling() {
     List<SampleData> inputs = new ArrayList<>();
-    inputs.add(ImmutableSampleData.create(1, listOf(2, 3), 4, listOf(5L, 6L), listOf(7L, 8L)));
-    inputs.add(
-        ImmutableSampleData.create(11, listOf(12, 13), 14, listOf(15L, 16L), listOf(17L, 18L)));
+    inputs.add(SampleData.create(1, listOf(2, 3), 4, listOf(5L, 6L), listOf(7L, 8L)));
+    inputs.add(SampleData.create(11, listOf(12, 13), 14, listOf(15L, 16L), listOf(17L, 18L)));
 
     List<Sample> builderResults = new ArrayList<>();
     builderResults.add(
@@ -451,7 +439,7 @@ public class ProfilesRequestMarshalerTest {
 
   @Test
   void compareValueTypeMarshaling() {
-    ValueTypeData input = ImmutableValueTypeData.create(1, 2);
+    ValueTypeData input = ValueTypeData.create(1, 2);
     ValueType builderResult = ValueType.newBuilder().setTypeStrindex(1).setUnitStrindex(2).build();
 
     ValueType roundTripResult =
@@ -462,8 +450,8 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareRepeatedValueTypeMarshaling() {
     List<ValueTypeData> inputs = new ArrayList<>();
-    inputs.add(ImmutableValueTypeData.create(1, 2));
-    inputs.add(ImmutableValueTypeData.create(3, 4));
+    inputs.add(ValueTypeData.create(1, 2));
+    inputs.add(ValueTypeData.create(3, 4));
 
     List<ValueType> builderResults = new ArrayList<>();
     builderResults.add(ValueType.newBuilder().setTypeStrindex(1).setUnitStrindex(2).build());

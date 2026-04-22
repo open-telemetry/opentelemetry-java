@@ -16,5 +16,15 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface StackData {
 
+  /**
+   * Returns a new StackData representing the given list of frames.
+   *
+   * @return a new StackData representing the given list of frames.
+   */
+  @SuppressWarnings("AutoValueSubclassLeaked")
+  static StackData create(List<Integer> locationIndices) {
+    return new AutoValue_ImmutableStackData(locationIndices);
+  }
+
   List<Integer> getLocationIndices();
 }

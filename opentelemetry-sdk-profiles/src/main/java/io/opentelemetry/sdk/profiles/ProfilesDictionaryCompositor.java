@@ -13,13 +13,6 @@ import io.opentelemetry.sdk.profiles.data.LocationData;
 import io.opentelemetry.sdk.profiles.data.MappingData;
 import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
 import io.opentelemetry.sdk.profiles.data.StackData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableFunctionData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableKeyValueAndUnitData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLinkData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableLocationData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableMappingData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfilesDictionaryData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableStackData;
 import java.util.Collections;
 
 /**
@@ -57,14 +50,14 @@ public class ProfilesDictionaryCompositor {
     // They could be public static constants on this class or the corresponding Immutable*Data
     // classes if other use cases require them.
 
-    mappingTable.putIfAbsent(ImmutableMappingData.create(0, 0, 0, 0, Collections.emptyList()));
+    mappingTable.putIfAbsent(MappingData.create(0, 0, 0, 0, Collections.emptyList()));
     locationTable.putIfAbsent(
-        ImmutableLocationData.create(0, 0, Collections.emptyList(), Collections.emptyList()));
-    functionTable.putIfAbsent(ImmutableFunctionData.create(0, 0, 0, 0));
-    linkTable.putIfAbsent(ImmutableLinkData.create("", ""));
+        LocationData.create(0, 0, Collections.emptyList(), Collections.emptyList()));
+    functionTable.putIfAbsent(FunctionData.create(0, 0, 0, 0));
+    linkTable.putIfAbsent(LinkData.create("", ""));
     stringTable.putIfAbsent("");
-    attributeTable.putIfAbsent(ImmutableKeyValueAndUnitData.create(0, Value.of(""), 0));
-    stackTable.putIfAbsent(ImmutableStackData.create(Collections.emptyList()));
+    attributeTable.putIfAbsent(KeyValueAndUnitData.create(0, Value.of(""), 0));
+    stackTable.putIfAbsent(StackData.create(Collections.emptyList()));
   }
 
   /**
@@ -76,7 +69,7 @@ public class ProfilesDictionaryCompositor {
    * @return a ProfileDictionaryData with the contents of the tables.
    */
   public ProfilesDictionaryData getProfileDictionaryData() {
-    return ImmutableProfilesDictionaryData.create(
+    return ProfilesDictionaryData.create(
         mappingTable.getTable(),
         locationTable.getTable(),
         functionTable.getTable(),

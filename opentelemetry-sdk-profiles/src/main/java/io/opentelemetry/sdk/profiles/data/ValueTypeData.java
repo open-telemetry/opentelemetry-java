@@ -15,6 +15,16 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface ValueTypeData {
 
+  /**
+   * Returns a new ValueTypeData describing the given type and unit characteristics.
+   *
+   * @return a new ValueTypeData describing the given type and unit characteristics.
+   */
+  @SuppressWarnings("AutoValueSubclassLeaked")
+  static ValueTypeData create(int typeStringIndex, int unitStringIndex) {
+    return new AutoValue_ImmutableValueTypeData(typeStringIndex, unitStringIndex);
+  }
+
   /** Index into string table. */
   int getTypeStringIndex();
 

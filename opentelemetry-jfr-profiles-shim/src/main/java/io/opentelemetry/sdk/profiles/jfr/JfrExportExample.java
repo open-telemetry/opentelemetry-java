@@ -12,8 +12,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.profiles.ProfileExporter;
 import io.opentelemetry.sdk.profiles.data.ProfileData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableProfileData;
-import io.opentelemetry.sdk.profiles.internal.data.ImmutableValueTypeData;
+import io.opentelemetry.sdk.profiles.data.ValueTypeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -77,15 +76,15 @@ public class JfrExportExample {
             .setSchemaUrl("http://url")
             .build();
 
-    return ImmutableProfileData.create(
+    return ProfileData.create(
         Resource.create(Attributes.empty()),
         scopeInfo,
         converter.getProfilesDictionaryCompositor().getProfileDictionaryData(),
-        ImmutableValueTypeData.create(0, 0),
+        ValueTypeData.create(0, 0),
         converter.getSamples(),
         0,
         0,
-        ImmutableValueTypeData.create(0, 0),
+        ValueTypeData.create(0, 0),
         0,
         profileId,
         0,

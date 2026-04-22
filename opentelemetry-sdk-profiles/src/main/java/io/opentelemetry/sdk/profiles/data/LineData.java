@@ -15,6 +15,16 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface LineData {
 
+  /**
+   * Returns a new LineData describing the given details a specific line in a source code.
+   *
+   * @return a new LineData describing the given details a specific line in a source code.
+   */
+  @SuppressWarnings("AutoValueSubclassLeaked")
+  static LineData create(int functionIndex, long line, long column) {
+    return new AutoValue_ImmutableLineData(functionIndex, line, column);
+  }
+
   /** The index of the corresponding Function for this line. Index into function table. */
   int getFunctionIndex();
 

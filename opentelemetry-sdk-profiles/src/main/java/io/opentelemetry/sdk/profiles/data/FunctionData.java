@@ -15,6 +15,18 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface FunctionData {
 
+  /**
+   * Returns a new FunctionData describing the given function characteristics.
+   *
+   * @return a new FunctionData describing the given function characteristics.
+   */
+  @SuppressWarnings("AutoValueSubclassLeaked")
+  static FunctionData create(
+      int nameStringIndex, int systemNameStringIndex, int filenameStringIndex, long startLine) {
+    return new AutoValue_ImmutableFunctionData(
+        nameStringIndex, systemNameStringIndex, filenameStringIndex, startLine);
+  }
+
   /** Name of the function, in human-readable form if available. Index into string table. */
   int getNameStringIndex();
 
