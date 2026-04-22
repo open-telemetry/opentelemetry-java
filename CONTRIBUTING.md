@@ -55,6 +55,12 @@ your change, file an issue or submit a PR there first. Exceptions to strict spec
 For an overview of the other repositories in the OpenTelemetry Java ecosystem, see
 [opentelemetry.io/docs/languages/java/intro/#repositories](https://opentelemetry.io/docs/languages/java/intro/#repositories).
 
+## Benchmarks
+
+JMH benchmark instructions live in [docs/knowledge/other-tasks.md#benchmarks-jmh](docs/knowledge/other-tasks.md#benchmarks-jmh).
+If you are submitting a performance-sensitive PR, include JMH output (number of threads,
+iterations, scores with error margins) so reviewers can evaluate the change.
+
 ## User-facing documentation
 
 End-user documentation for the Java SDK lives at
