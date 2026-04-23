@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.grpc;
+package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.exporter.internal.grpc.ExtendedGrpcSenderConfig;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;

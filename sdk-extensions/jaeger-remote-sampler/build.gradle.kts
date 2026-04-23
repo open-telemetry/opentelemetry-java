@@ -20,6 +20,8 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":exporters:sender:okhttp"))
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   compileOnly("io.grpc:grpc-api")
   compileOnly("io.grpc:grpc-protobuf")
   compileOnly("io.grpc:grpc-stub")

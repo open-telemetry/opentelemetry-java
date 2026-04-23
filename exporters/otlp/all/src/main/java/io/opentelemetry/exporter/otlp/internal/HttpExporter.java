@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.grpc;
+package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.FailedExportException;
@@ -11,49 +11,51 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.common.export.GrpcResponse;
-import io.opentelemetry.sdk.common.export.GrpcSender;
-import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.HttpResponse;
+import io.opentelemetry.sdk.common.export.HttpSender;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
+import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
- * Generic gRPC exporter.
+ * An exporter for http/protobuf or http/json using a signal-specific Marshaler.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
 @SuppressWarnings("checkstyle:JavadocMethod")
-public final class GrpcExporter {
+public final class HttpExporter {
 
-  private static final Logger internalLogger = Logger.getLogger(GrpcExporter.class.getName());
+  private static final Logger internalLogger = Logger.getLogger(HttpExporter.class.getName());
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
-
-  // We only log unimplemented once since it's a configuration issue that won't be recovered.
-  private final AtomicBoolean loggedUnimplemented = new AtomicBoolean();
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final String type;
-  private final GrpcSender grpcSender;
+  private final HttpSender httpSender;
   private final ExporterInstrumentation exporterMetrics;
+  private final boolean exportAsJson;
 
-  public GrpcExporter(
-      GrpcSender grpcSender,
-      InternalTelemetryVersion internalTelemetryVersion,
+  public HttpExporter(
       StandardComponentId componentId,
+      HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
-      URI endpoint) {
+      InternalTelemetryVersion internalTelemetryVersion,
+      URI endpoint,
+      boolean exportAsJson) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
-    this.grpcSender = grpcSender;
+    this.httpSender = httpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
+    this.exportAsJson = exportAsJson;
   }
 
   public CompletableResultCode export(Marshaler exportRequest, int numItems) {
@@ -65,10 +67,12 @@ public final class GrpcExporter {
         exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
+    MessageWriter messageWriter =
+        exportAsJson ? exportRequest.toJsonMessageWriter() : exportRequest.toBinaryMessageWriter();
 
-    grpcSender.send(
-        exportRequest.toBinaryMessageWriter(),
-        grpcResponse -> onResponse(result, metricRecording, grpcResponse),
+    httpSender.send(
+        messageWriter,
+        httpResponse -> onResponse(result, metricRecording, httpResponse),
         throwable -> onError(result, metricRecording, throwable));
 
     return result;
@@ -77,47 +81,33 @@ public final class GrpcExporter {
   private void onResponse(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
-      GrpcResponse grpcResponse) {
-    GrpcStatusCode statusCode = grpcResponse.getStatusCode();
+      HttpResponse httpResponse) {
+    int statusCode = httpResponse.getStatusCode();
 
-    metricRecording.setGrpcStatusCode(statusCode);
+    metricRecording.setHttpStatusCode(statusCode);
 
-    if (statusCode == GrpcStatusCode.OK) {
+    if (statusCode >= 200 && statusCode < 300) {
       metricRecording.finishSuccessful();
       result.succeed();
       return;
     }
 
-    metricRecording.finishFailed(String.valueOf(statusCode.getValue()));
-    switch (statusCode) {
-      case UNIMPLEMENTED:
-        if (loggedUnimplemented.compareAndSet(false, true)) {
-          GrpcExporterUtil.logUnimplemented(
-              internalLogger, type, grpcResponse.getStatusDescription());
-        }
-        break;
-      case UNAVAILABLE:
-        logger.log(
-            Level.SEVERE,
-            "Failed to export "
-                + type
-                + "s. Server is UNAVAILABLE. "
-                + "Make sure your collector is running and reachable from this network. "
-                + "Full error message:"
-                + grpcResponse.getStatusDescription());
-        break;
-      default:
-        logger.log(
-            Level.WARNING,
-            "Failed to export "
-                + type
-                + "s. Server responded with gRPC status code "
-                + statusCode.getValue()
-                + ". Error message: "
-                + grpcResponse.getStatusDescription());
-        break;
-    }
-    result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
+    metricRecording.finishFailed(String.valueOf(statusCode));
+
+    byte[] body = httpResponse.getResponseBody();
+
+    String status = extractErrorStatus(httpResponse.getStatusMessage(), body);
+
+    logger.log(
+        Level.WARNING,
+        "Failed to export "
+            + type
+            + "s. Server responded with HTTP status code "
+            + statusCode
+            + ". Error message: "
+            + status);
+
+    result.failExceptionally(FailedExportException.httpFailedWithResponse(httpResponse));
   }
 
   private void onError(
@@ -129,13 +119,10 @@ public final class GrpcExporter {
         Level.SEVERE,
         "Failed to export "
             + type
-            + "s. The request could not be executed. Error message: "
+            + "s. The request could not be executed. Full error message: "
             + e.getMessage(),
         e);
-    if (logger.isLoggable(Level.FINEST)) {
-      logger.log(Level.FINEST, "Failed to export " + type + "s. Details follow:", e);
-    }
-    result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
+    result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
   }
 
   public CompletableResultCode shutdown() {
@@ -143,6 +130,17 @@ public final class GrpcExporter {
       logger.log(Level.INFO, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
-    return grpcSender.shutdown();
+    return httpSender.shutdown();
+  }
+
+  private static String extractErrorStatus(String statusMessage, @Nullable byte[] responseBody) {
+    if (responseBody == null) {
+      return "Response body missing, HTTP status message: " + statusMessage;
+    }
+    try {
+      return GrpcExporterUtil.getStatusMessage(responseBody);
+    } catch (IOException e) {
+      return "Unable to parse response body, HTTP status message: " + statusMessage;
+    }
   }
 }
