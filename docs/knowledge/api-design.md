@@ -103,6 +103,19 @@ To investigate misuse, enable the logger named `io.opentelemetry.usage` at `FINE
 development, or periodically in staging/production. Check each argument once, at the first
 public entry point — internal methods called by that entry point do not need to re-validate.
 
+### SDK extension interfaces and SPIs
+
+These interfaces are called by the SDK, not directly by application developers.
+Examples include `Sampler`, `SpanExporter`, `SpanProcessor`, `LogRecordExporter`,
+`MetricExporter`, `MetricReader`, `ComponentProvider`, and SPI interfaces such as those in
+`sdk-extensions/autoconfigure-spi` (`ResourceProvider`, `AutoConfigurationCustomizerProvider`,
+etc.), `HttpSenderProvider`, and `ContextStorageProvider`.
+
+Because the SDK is NullAway-verified, a null argument here indicates a bug in the SDK itself,
+not misuse by an application developer. Use `Objects.requireNonNull` — a hard failure surfaces
+the bug immediately and unambiguously, which is preferable to silent degradation that would
+mask the underlying SDK defect.
+
 ### Where to implement guards
 
 Add guards in the concrete implementation class, or in an existing `default` interface method
