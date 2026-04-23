@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -41,6 +42,7 @@ public final class AlwaysRecordSampler implements Sampler {
   private final Sampler rootSampler;
 
   public static AlwaysRecordSampler create(Sampler rootSampler) {
+    Objects.requireNonNull(rootSampler, "rootSampler");
     return new AlwaysRecordSampler(rootSampler);
   }
 

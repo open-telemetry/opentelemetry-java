@@ -7,6 +7,7 @@ package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -59,26 +60,46 @@ class DefaultLogger implements Logger {
 
     @Override
     public LogRecordBuilder setContext(Context context) {
+      if (context == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setContext", "context");
+        return this;
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setSeverity(Severity severity) {
+      if (severity == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setSeverity", "severity");
+        return this;
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setSeverityText(String severityText) {
+      if (severityText == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setSeverityText", "severityText");
+        return this;
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setBody(String body) {
+      if (body == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setBody", "body");
+        return this;
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setBody(Value<?> body) {
+      if (body == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setBody", "body");
+        return this;
+      }
       return this;
     }
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -51,6 +52,7 @@ public interface TextMapPropagator {
    * TextMapPropagator#extract()} for registered trace propagators is undefined.
    */
   static TextMapPropagator composite(TextMapPropagator... propagators) {
+    Objects.requireNonNull(propagators, "propagators");
     return composite(Arrays.asList(propagators));
   }
 
@@ -62,6 +64,7 @@ public interface TextMapPropagator {
    * TextMapPropagator#extract()} for registered trace propagators is undefined.
    */
   static TextMapPropagator composite(Iterable<TextMapPropagator> propagators) {
+    Objects.requireNonNull(propagators, "propagators");
     List<TextMapPropagator> propagatorsList = new ArrayList<>();
     for (TextMapPropagator propagator : propagators) {
       propagatorsList.add(propagator);

@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.common.ApiUsageLogger;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -44,76 +45,139 @@ final class PropagatedSpan implements Span {
 
   @Override
   public Span setAttribute(String key, @Nullable String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+    }
     return this;
   }
 
   @Override
   public Span setAttribute(String key, long value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+    }
     return this;
   }
 
   @Override
   public Span setAttribute(String key, double value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+    }
     return this;
   }
 
   @Override
   public Span setAttribute(String key, boolean value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+    }
     return this;
   }
 
   @Override
   public <T> Span setAttribute(AttributeKey<T> key, @Nullable T value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+    }
     return this;
   }
 
   @Override
   public Span setAllAttributes(Attributes attributes) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAllAttributes", "attributes");
+    }
     return this;
   }
 
   @Override
   public Span addEvent(String name) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
+    }
     return this;
   }
 
   @Override
   public Span addEvent(String name, long timestamp, TimeUnit unit) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
+    }
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "unit");
+    }
     return this;
   }
 
   @Override
   public Span addEvent(String name, Attributes attributes) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "attributes");
+    }
     return this;
   }
 
   @Override
   public Span addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "attributes");
+    }
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "unit");
+    }
     return this;
   }
 
   @Override
   public Span setStatus(StatusCode statusCode) {
+    if (statusCode == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setStatus", "statusCode");
+    }
     return this;
   }
 
   @Override
   public Span setStatus(StatusCode statusCode, String description) {
+    if (statusCode == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setStatus", "statusCode");
+    }
+    if (description == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setStatus", "description");
+    }
     return this;
   }
 
   @Override
   public Span recordException(Throwable exception) {
+    if (exception == null) {
+      ApiUsageLogger.logNullParam(Span.class, "recordException", "exception");
+    }
     return this;
   }
 
   @Override
   public Span recordException(Throwable exception, Attributes additionalAttributes) {
+    if (exception == null) {
+      ApiUsageLogger.logNullParam(Span.class, "recordException", "exception");
+    }
+    if (additionalAttributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "recordException", "additionalAttributes");
+    }
     return this;
   }
 
   @Override
   public Span updateName(String name) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "updateName", "name");
+    }
     return this;
   }
 
@@ -121,7 +185,11 @@ final class PropagatedSpan implements Span {
   public void end() {}
 
   @Override
-  public void end(long timestamp, TimeUnit unit) {}
+  public void end(long timestamp, TimeUnit unit) {
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(Span.class, "end", "unit");
+    }
+  }
 
   @Override
   public SpanContext getSpanContext() {

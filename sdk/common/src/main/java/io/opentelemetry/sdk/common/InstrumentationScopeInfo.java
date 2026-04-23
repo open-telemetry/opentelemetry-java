@@ -55,6 +55,7 @@ public abstract class InstrumentationScopeInfo {
    * @since 1.18.0
    */
   public static InstrumentationScopeInfoBuilder builder(String name) {
+    requireNonNull(name, "name");
     return new InstrumentationScopeInfoBuilder(name);
   }
 

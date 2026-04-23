@@ -169,6 +169,7 @@ public final class GlobalOpenTelemetry {
    * OpenTelemetrySdk.builder().buildAndRegisterGlobal()} instead of calling this method directly.
    */
   public static void set(OpenTelemetry openTelemetry) {
+    Objects.requireNonNull(openTelemetry, "openTelemetry");
     synchronized (mutex) {
       if (globalOpenTelemetry != null) {
         throw new IllegalStateException(
@@ -192,6 +193,7 @@ public final class GlobalOpenTelemetry {
    * @since 1.52.0
    */
   public static void set(Supplier<OpenTelemetry> supplier) {
+    Objects.requireNonNull(supplier, "supplier");
     synchronized (mutex) {
       OpenTelemetry openTelemetry = supplier.get();
       set(openTelemetry);
@@ -386,6 +388,7 @@ public final class GlobalOpenTelemetry {
 
     @Override
     public TracerBuilder tracerBuilder(String instrumentationScopeName) {
+      Objects.requireNonNull(instrumentationScopeName, "instrumentationScopeName");
       return delegate.tracerBuilder(instrumentationScopeName);
     }
   }

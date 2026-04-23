@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +30,7 @@ public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider 
 
   @Override
   public Sampler createSampler(ConfigProperties config) {
+    Objects.requireNonNull(config, "config");
     JaegerRemoteSamplerBuilder builder = JaegerRemoteSampler.builder();
 
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);

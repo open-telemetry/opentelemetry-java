@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.prometheus.metrics.model.registry.MultiCollector;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -86,6 +87,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
 
   @Override
   public void register(CollectionRegistration registration) {
+    Objects.requireNonNull(registration, "registration");
     this.collectionRegistration = registration;
   }
 

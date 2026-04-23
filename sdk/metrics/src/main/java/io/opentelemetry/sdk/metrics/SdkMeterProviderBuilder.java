@@ -87,6 +87,7 @@ public final class SdkMeterProviderBuilder {
    * @since 1.56.0
    */
   public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
+    Objects.requireNonNull(filter, "filter");
     this.exemplarFilter = ExemplarFilterInternal.asExemplarFilterInternal(filter);
     return this;
   }
@@ -130,6 +131,7 @@ public final class SdkMeterProviderBuilder {
 
   /** Registers a {@link MetricReader}. */
   public SdkMeterProviderBuilder registerMetricReader(MetricReader reader) {
+    Objects.requireNonNull(reader, "reader");
     metricReaders.put(reader, CardinalityLimitSelector.defaultCardinalityLimitSelector());
     return this;
   }
@@ -144,6 +146,8 @@ public final class SdkMeterProviderBuilder {
    */
   public SdkMeterProviderBuilder registerMetricReader(
       MetricReader reader, CardinalityLimitSelector cardinalityLimitSelector) {
+    Objects.requireNonNull(reader, "reader");
+    Objects.requireNonNull(cardinalityLimitSelector, "cardinalityLimitSelector");
     metricReaders.put(reader, cardinalityLimitSelector);
     return this;
   }
@@ -154,6 +158,7 @@ public final class SdkMeterProviderBuilder {
    * @since 1.31.0
    */
   public SdkMeterProviderBuilder registerMetricProducer(MetricProducer metricProducer) {
+    Objects.requireNonNull(metricProducer, "metricProducer");
     metricProducers.add(metricProducer);
     return this;
   }

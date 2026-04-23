@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import java.util.Objects;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -85,9 +86,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
-    if (logRecord == null) {
-      return;
-    }
+    Objects.requireNonNull(logRecord, "logRecord");
     worker.addLog(logRecord);
   }
 

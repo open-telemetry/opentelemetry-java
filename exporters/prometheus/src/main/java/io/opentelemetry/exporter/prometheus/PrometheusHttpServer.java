@@ -26,6 +26,7 @@ import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -127,6 +128,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   @Override
   public void register(CollectionRegistration registration) {
+    Objects.requireNonNull(registration, "registration");
     prometheusMetricReader.register(registration);
   }
 

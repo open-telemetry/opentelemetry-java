@@ -8,6 +8,7 @@ package io.opentelemetry.extension.trace.propagation;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
+import java.util.Objects;
 
 /**
  * A {@link ConfigurablePropagatorProvider} which allows enabling the {@link OtTracePropagator} with
@@ -17,6 +18,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
 public final class OtTraceConfigurablePropagator implements ConfigurablePropagatorProvider {
   @Override
   public TextMapPropagator getPropagator(ConfigProperties config) {
+    Objects.requireNonNull(config, "config");
     return OtTracePropagator.getInstance();
   }
 

@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.logging;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.api.common.Value;
+import java.util.Objects;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -42,6 +43,7 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
+    Objects.requireNonNull(logs, "logs");
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }

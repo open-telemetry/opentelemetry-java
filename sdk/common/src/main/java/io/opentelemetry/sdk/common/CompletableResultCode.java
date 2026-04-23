@@ -9,6 +9,7 @@ import io.opentelemetry.api.internal.GuardedBy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,6 +52,7 @@ public final class CompletableResultCode {
    * exceptionally with the first {@link Throwable} from {@code codes}.
    */
   public static CompletableResultCode ofAll(Collection<CompletableResultCode> codes) {
+    Objects.requireNonNull(codes, "codes");
     if (codes.isEmpty()) {
       return ofSuccess();
     }
@@ -179,6 +181,7 @@ public final class CompletableResultCode {
    * @return this completable result so that it may be further composed
    */
   public CompletableResultCode whenComplete(Runnable action) {
+    Objects.requireNonNull(action, "action");
     boolean runNow = false;
     synchronized (lock) {
       if (succeeded != null) {

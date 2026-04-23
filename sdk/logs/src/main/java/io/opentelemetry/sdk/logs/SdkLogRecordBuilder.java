@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
@@ -46,18 +47,30 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
 
   @Override
   public SdkLogRecordBuilder setEventName(String eventName) {
+    if (eventName == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setEventName", "eventName");
+      return this;
+    }
     this.eventName = eventName;
     return this;
   }
 
   @Override
   public SdkLogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setTimestamp", "unit");
+      return this;
+    }
     this.timestampEpochNanos = unit.toNanos(timestamp);
     return this;
   }
 
   @Override
   public SdkLogRecordBuilder setTimestamp(Instant instant) {
+    if (instant == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setTimestamp", "instant");
+      return this;
+    }
     this.timestampEpochNanos =
         TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     return this;
@@ -65,12 +78,20 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
 
   @Override
   public LogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setObservedTimestamp", "unit");
+      return this;
+    }
     this.observedTimestampEpochNanos = unit.toNanos(timestamp);
     return this;
   }
 
   @Override
   public LogRecordBuilder setObservedTimestamp(Instant instant) {
+    if (instant == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setObservedTimestamp", "instant");
+      return this;
+    }
     this.observedTimestampEpochNanos =
         TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     return this;
@@ -84,6 +105,10 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
 
   @Override
   public SdkLogRecordBuilder setSeverity(Severity severity) {
+    if (severity == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setSeverity", "severity");
+      return this;
+    }
     this.severity = severity;
     return this;
   }

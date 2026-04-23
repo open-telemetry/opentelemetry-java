@@ -23,6 +23,8 @@
 package io.opentelemetry.context;
 
 import com.google.errorprone.annotations.MustBeClosed;
+import io.opentelemetry.common.ApiUsageLogger;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -118,6 +120,7 @@ public interface Context {
    * @since 1.1.0
    */
   static Executor taskWrapping(Executor executor) {
+    Objects.requireNonNull(executor, "executor");
     return command -> executor.execute(Context.current().wrap(command));
   }
 
@@ -136,6 +139,7 @@ public interface Context {
    * @since 1.1.0
    */
   static ExecutorService taskWrapping(ExecutorService executorService) {
+    Objects.requireNonNull(executorService, "executorService");
     if (executorService instanceof CurrentContextExecutorService) {
       return executorService;
     }
@@ -161,6 +165,7 @@ public interface Context {
    * @since 1.43.0
    */
   static ScheduledExecutorService taskWrapping(ScheduledExecutorService executorService) {
+    Objects.requireNonNull(executorService, "executorService");
     if (executorService instanceof CurrentContextScheduledExecutorService) {
       return executorService;
     }
@@ -200,6 +205,10 @@ public interface Context {
 
   /** Returns a new {@link Context} with the given {@link ImplicitContextKeyed} set. */
   default Context with(ImplicitContextKeyed value) {
+    if (value == null) {
+      ApiUsageLogger.logNullParam(Context.class, "with", "value");
+      return this;
+    }
     return value.storeInContext(this);
   }
 

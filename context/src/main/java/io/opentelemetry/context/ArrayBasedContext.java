@@ -22,6 +22,7 @@
 
 package io.opentelemetry.context;
 
+import io.opentelemetry.common.ApiUsageLogger;
 import java.util.Arrays;
 import javax.annotation.Nullable;
 
@@ -66,6 +67,10 @@ final class ArrayBasedContext implements Context {
 
   @Override
   public <V> Context with(ContextKey<V> key, V value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Context.class, "with", "key");
+      return this;
+    }
     for (int i = 0; i < entries.length; i += 2) {
       if (entries[i] == key) {
         if (entries[i + 1] == value) {

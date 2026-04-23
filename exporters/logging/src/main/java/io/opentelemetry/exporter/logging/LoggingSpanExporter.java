@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.logging;
 
+import java.util.Objects;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -36,6 +37,7 @@ public final class LoggingSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    Objects.requireNonNull(spans, "spans");
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }

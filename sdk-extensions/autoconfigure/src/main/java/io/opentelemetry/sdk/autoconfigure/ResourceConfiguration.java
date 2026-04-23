@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -54,6 +55,7 @@ public final class ResourceConfiguration {
    * @return the resource.
    */
   public static Resource createEnvironmentResource(ConfigProperties config) {
+    Objects.requireNonNull(config, "config");
     return EnvironmentResource.createEnvironmentResource(config);
   }
 

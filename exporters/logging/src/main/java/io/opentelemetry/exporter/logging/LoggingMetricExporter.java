@@ -5,12 +5,14 @@
 
 package io.opentelemetry.exporter.logging;
 
+import java.util.Objects;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -32,6 +34,7 @@ public final class LoggingMetricExporter implements MetricExporter {
 
   /** Returns a new {@link LoggingMetricExporter} with the given {@code aggregationTemporality}. */
   public static LoggingMetricExporter create(AggregationTemporality aggregationTemporality) {
+    Objects.requireNonNull(aggregationTemporality, "aggregationTemporality");
     return new LoggingMetricExporter(aggregationTemporality);
   }
 
@@ -66,6 +69,7 @@ public final class LoggingMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
+    Objects.requireNonNull(metrics, "metrics");
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }

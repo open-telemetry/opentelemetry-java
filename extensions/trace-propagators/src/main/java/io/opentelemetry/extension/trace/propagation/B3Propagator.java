@@ -5,6 +5,7 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -106,11 +107,27 @@ public final class B3Propagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(B3Propagator.class, "inject", "context");
+      return;
+    }
+    if (setter == null) {
+      ApiUsageLogger.logNullParam(B3Propagator.class, "inject", "setter");
+      return;
+    }
     b3PropagatorInjector.inject(context, carrier, setter);
   }
 
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(B3Propagator.class, "extract", "context");
+      return Context.root();
+    }
+    if (getter == null) {
+      ApiUsageLogger.logNullParam(B3Propagator.class, "extract", "getter");
+      return context;
+    }
     Optional<Context> ctx = singleHeaderExtractor.extract(context, carrier, getter);
     if (ctx.isPresent()) {
       return ctx.get();

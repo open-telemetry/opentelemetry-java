@@ -27,6 +27,7 @@ public class SampleCompositionKey {
   private final int linkIndex;
 
   public SampleCompositionKey(int stackIndex, List<Integer> attributeIndices, int linkIndex) {
+    Objects.requireNonNull(attributeIndices, "attributeIndices");
     this.stackIndex = stackIndex;
     List<Integer> tmp = new ArrayList<>(attributeIndices);
     Collections.sort(tmp);

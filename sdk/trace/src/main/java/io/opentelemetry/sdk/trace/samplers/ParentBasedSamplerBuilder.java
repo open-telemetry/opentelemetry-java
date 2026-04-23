@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace.samplers;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -32,6 +33,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setRemoteParentSampled(Sampler remoteParentSampled) {
+    Objects.requireNonNull(remoteParentSampled, "remoteParentSampled");
     maybeLogTraceIdSamplerWarning(remoteParentSampled, "remoteParentSampled");
     this.remoteParentSampled = remoteParentSampled;
     return this;
@@ -44,6 +46,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setRemoteParentNotSampled(Sampler remoteParentNotSampled) {
+    Objects.requireNonNull(remoteParentNotSampled, "remoteParentNotSampled");
     maybeLogTraceIdSamplerWarning(remoteParentNotSampled, "remoteParentNotSampled");
     this.remoteParentNotSampled = remoteParentNotSampled;
     return this;
@@ -56,6 +59,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setLocalParentSampled(Sampler localParentSampled) {
+    Objects.requireNonNull(localParentSampled, "localParentSampled");
     maybeLogTraceIdSamplerWarning(localParentSampled, "localParentSampled");
     this.localParentSampled = localParentSampled;
     return this;
@@ -68,6 +72,7 @@ public final class ParentBasedSamplerBuilder {
    * @return this Builder
    */
   public ParentBasedSamplerBuilder setLocalParentNotSampled(Sampler localParentNotSampled) {
+    Objects.requireNonNull(localParentNotSampled, "localParentNotSampled");
     maybeLogTraceIdSamplerWarning(localParentNotSampled, "localParentNotSampled");
     this.localParentNotSampled = localParentNotSampled;
     return this;
