@@ -13,6 +13,17 @@ Benchmark sources live in `jmh/` directories within their respective modules.
 ./gradlew -PjmhIncludeSingleClass=BatchSpanProcessorBenchmark :sdk:trace:jmh
 ```
 
+The following JMH parameters can be configured via `-P` flags:
+
+| Flag | JMH setting | Example |
+|---|---|---|
+| `-PjmhIncludeSingleClass=<class>` | Run only this benchmark class | `-PjmhIncludeSingleClass=BatchSpanProcessorBenchmark` |
+| `-PjmhFork=<n>` | Number of forks | `-PjmhFork=1` |
+| `-PjmhIterations=<n>` | Measurement iterations | `-PjmhIterations=5` |
+| `-PjmhTime=<duration>` | Time per measurement iteration | `-PjmhTime=2s` |
+| `-PjmhWarmupIterations=<n>` | Warmup iterations | `-PjmhWarmupIterations=3` |
+| `-PjmhWarmup=<duration>` | Time per warmup iteration | `-PjmhWarmup=1s` |
+
 ## Composite builds
 
 > **No compatibility guarantees**: this process can change at any time. Steps that work for one
