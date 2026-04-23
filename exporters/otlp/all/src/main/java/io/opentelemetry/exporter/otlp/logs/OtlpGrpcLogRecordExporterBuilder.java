@@ -79,6 +79,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   @Deprecated
   public OtlpGrpcLogRecordExporterBuilder setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
     delegate.setChannel(channel);
     return this;
   }
@@ -174,6 +175,8 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   public OtlpGrpcLogRecordExporterBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
+    requireNonNull(sslContext, "sslContext");
+    requireNonNull(trustManager, "trustManager");
     delegate.setSslContext(sslContext, trustManager);
     return this;
   }
@@ -189,6 +192,8 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    * @return this builder's instance
    */
   public OtlpGrpcLogRecordExporterBuilder addHeader(String key, String value) {
+    requireNonNull(key, "key");
+    requireNonNull(value, "value");
     delegate.addConstantHeader(key, value);
     return this;
   }
@@ -201,6 +206,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    * @since 1.33.0
    */
   public OtlpGrpcLogRecordExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    requireNonNull(headerSupplier, "headerSupplier");
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }

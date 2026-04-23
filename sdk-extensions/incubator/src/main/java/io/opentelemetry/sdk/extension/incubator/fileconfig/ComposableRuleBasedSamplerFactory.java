@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.extension.incubator.trace.samplers.SamplingPredicate
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
@@ -142,6 +143,12 @@ final class ComposableRuleBasedSamplerFactory
         SpanKind spanKind,
         Attributes attributes,
         List<LinkData> parentLinks) {
+      Objects.requireNonNull(parentContext, "parentContext");
+      Objects.requireNonNull(traceId, "traceId");
+      Objects.requireNonNull(name, "name");
+      Objects.requireNonNull(spanKind, "spanKind");
+      Objects.requireNonNull(attributes, "attributes");
+      Objects.requireNonNull(parentLinks, "parentLinks");
       // all conditions must match
 
       // check attribute value condition

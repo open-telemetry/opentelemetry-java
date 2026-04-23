@@ -6,6 +6,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.opentracing.shim.internal.OtelVersion;
 import io.opentracing.Scope;
@@ -70,6 +71,10 @@ final class TracerShim implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
+    if (operationName == null) {
+      ApiUsageLogger.logNullParam(TracerShim.class, "buildSpan", "operationName");
+      return new NoopSpanBuilderShim(operationName);
+    }
     if (isShutdown.get()) {
       return new NoopSpanBuilderShim(operationName);
     }
@@ -80,7 +85,11 @@ final class TracerShim implements Tracer {
   @Override
   public <C> void inject(SpanContext context, Format<C> format, C carrier) {
     if (context == null) {
-      logger.log(Level.WARNING, "Cannot inject a null span context.");
+      ApiUsageLogger.logNullParam(TracerShim.class, "inject", "context");
+      return;
+    }
+    if (format == null) {
+      ApiUsageLogger.logNullParam(TracerShim.class, "inject", "format");
       return;
     }
 

@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -85,9 +86,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
-    if (logRecord == null) {
-      return;
-    }
+    Objects.requireNonNull(logRecord, "logRecord");
     worker.addLog(logRecord);
   }
 

@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -42,6 +43,7 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
+    Objects.requireNonNull(logs, "logs");
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }

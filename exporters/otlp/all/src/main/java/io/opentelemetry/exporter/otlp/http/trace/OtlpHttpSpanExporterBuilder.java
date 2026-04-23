@@ -124,6 +124,8 @@ public final class OtlpHttpSpanExporterBuilder {
    * name or a one from {@link #setHeaders(Supplier)}, the values from both are included.
    */
   public OtlpHttpSpanExporterBuilder addHeader(String key, String value) {
+    requireNonNull(key, "key");
+    requireNonNull(value, "value");
     delegate.addConstantHeaders(key, value);
     return this;
   }
@@ -135,6 +137,7 @@ public final class OtlpHttpSpanExporterBuilder {
    * @since 1.33.0
    */
   public OtlpHttpSpanExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    requireNonNull(headerSupplier, "headerSupplier");
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
@@ -166,6 +169,8 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporterBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
+    requireNonNull(sslContext, "sslContext");
+    requireNonNull(trustManager, "trustManager");
     delegate.setSslContext(sslContext, trustManager);
     return this;
   }

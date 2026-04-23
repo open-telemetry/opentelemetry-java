@@ -59,6 +59,7 @@ public final class ViewBuilder {
    * @param aggregation aggregation to use.
    */
   public ViewBuilder setAggregation(Aggregation aggregation) {
+    Objects.requireNonNull(aggregation, "aggregation");
     if (!(aggregation instanceof AggregatorFactory)) {
       throw new IllegalArgumentException(
           "Custom Aggregation implementations are currently not supported. "

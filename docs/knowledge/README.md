@@ -15,7 +15,7 @@ is the signal.
 | --- | --- |
 | [build.md](build.md) | Always — build requirements and common tasks |
 | [general-patterns.md](general-patterns.md) | Always — style, nullability, visibility, AutoValue, locking, logging |
-| [api-stability.md](api-stability.md) | Public API additions, removals, renames, or deprecations; stable vs alpha compatibility |
+| [api-design.md](api-design.md) | Public API additions, removals, renames, deprecations, or implementations; null guards; stable vs alpha compatibility |
 | [gradle-conventions.md](gradle-conventions.md) | `build.gradle.kts` or `settings.gradle.kts` changes; new modules |
 | [testing-patterns.md](testing-patterns.md) | Test files in scope — assertions, test utilities, test suites |
 | [other-tasks.md](other-tasks.md) | Dev environment setup, benchmarks, composite builds, OTLP protobuf updates |

@@ -124,6 +124,7 @@ public final class DeclarativeConfiguration {
    * @throws DeclarativeConfigException if unable to parse or interpret
    */
   public static DeclarativeConfigResult parseAndCreate(InputStream inputStream) {
+    Objects.requireNonNull(inputStream, "inputStream");
     OpenTelemetryConfigurationModel configurationModel = parse(inputStream);
     return create(configurationModel);
   }
@@ -137,6 +138,7 @@ public final class DeclarativeConfiguration {
    * @throws DeclarativeConfigException if unable to interpret
    */
   public static DeclarativeConfigResult create(OpenTelemetryConfigurationModel configurationModel) {
+    Objects.requireNonNull(configurationModel, "configurationModel");
     return create(configurationModel, DEFAULT_COMPONENT_LOADER);
   }
 
@@ -152,6 +154,8 @@ public final class DeclarativeConfiguration {
    */
   public static DeclarativeConfigResult create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
+    Objects.requireNonNull(configurationModel, "configurationModel");
+    Objects.requireNonNull(componentLoader, "componentLoader");
     return create(configurationModel, new DeclarativeConfigContext(componentLoader));
   }
 
@@ -185,6 +189,7 @@ public final class DeclarativeConfiguration {
    * @throws DeclarativeConfigException if unable to parse
    */
   public static OpenTelemetryConfigurationModel parse(InputStream configuration) {
+    Objects.requireNonNull(configuration, "configuration");
     try {
       return parse(configuration, System.getenv(), System.getProperties());
     } catch (RuntimeException e) {
@@ -228,6 +233,7 @@ public final class DeclarativeConfiguration {
    * @return a generic {@link DeclarativeConfigProperties} representation of the model
    */
   public static DeclarativeConfigProperties toConfigProperties(InputStream configuration) {
+    Objects.requireNonNull(configuration, "configuration");
     Object yamlObj = loadYaml(configuration, System.getenv(), System.getProperties());
     return toConfigProperties(yamlObj, DEFAULT_COMPONENT_LOADER);
   }
@@ -253,6 +259,7 @@ public final class DeclarativeConfiguration {
   // TODO(jack-berg): add create methods for all SDK extension components supported by
   // ComponentProvider
   public static Sampler createSampler(DeclarativeConfigProperties genericSamplerModel) {
+    Objects.requireNonNull(genericSamplerModel, "genericSamplerModel");
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
         requireYamlDeclarativeConfigProperties(genericSamplerModel);
     SamplerModel samplerModel =

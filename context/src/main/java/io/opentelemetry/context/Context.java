@@ -23,6 +23,8 @@
 package io.opentelemetry.context;
 
 import com.google.errorprone.annotations.MustBeClosed;
+import io.opentelemetry.common.ApiUsageLogger;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -118,6 +120,7 @@ public interface Context {
    * @since 1.1.0
    */
   static Executor taskWrapping(Executor executor) {
+    Objects.requireNonNull(executor, "executor");
     return command -> executor.execute(Context.current().wrap(command));
   }
 
@@ -136,6 +139,7 @@ public interface Context {
    * @since 1.1.0
    */
   static ExecutorService taskWrapping(ExecutorService executorService) {
+    Objects.requireNonNull(executorService, "executorService");
     if (executorService instanceof CurrentContextExecutorService) {
       return executorService;
     }
@@ -161,6 +165,7 @@ public interface Context {
    * @since 1.43.0
    */
   static ScheduledExecutorService taskWrapping(ScheduledExecutorService executorService) {
+    Objects.requireNonNull(executorService, "executorService");
     if (executorService instanceof CurrentContextScheduledExecutorService) {
       return executorService;
     }
@@ -200,6 +205,10 @@ public interface Context {
 
   /** Returns a new {@link Context} with the given {@link ImplicitContextKeyed} set. */
   default Context with(ImplicitContextKeyed value) {
+    if (value == null) {
+      ApiUsageLogger.logNullParam(Context.class, "with", "value");
+      return this;
+    }
     return value.storeInContext(this);
   }
 
@@ -236,6 +245,10 @@ public interface Context {
    * and then invokes the input {@link Runnable}.
    */
   default Runnable wrap(Runnable runnable) {
+    if (runnable == null) {
+      ApiUsageLogger.logNullParam(Context.class, "wrap", "runnable");
+      return () -> {};
+    }
     return () -> {
       try (Scope ignored = makeCurrent()) {
         runnable.run();
@@ -248,6 +261,10 @@ public interface Context {
    * and then invokes the input {@link Runnable}.
    */
   default <T> Callable<T> wrap(Callable<T> callable) {
+    if (callable == null) {
+      ApiUsageLogger.logNullParam(Context.class, "wrap", "callable");
+      return () -> null;
+    }
     return () -> {
       try (Scope ignored = makeCurrent()) {
         return callable.call();
@@ -260,6 +277,10 @@ public interface Context {
    * this the {@linkplain Context#current() current context} before each execution.
    */
   default Executor wrap(Executor executor) {
+    if (executor == null) {
+      ApiUsageLogger.logNullParam(Context.class, "wrap", "executor");
+      return command -> {};
+    }
     return command -> executor.execute(wrap(command));
   }
 
@@ -291,6 +312,10 @@ public interface Context {
    * and then invokes the input {@link Function}.
    */
   default <T, U> Function<T, U> wrapFunction(Function<T, U> function) {
+    if (function == null) {
+      ApiUsageLogger.logNullParam(Context.class, "wrapFunction", "function");
+      return t -> null;
+    }
     return t -> {
       try (Scope ignored = makeCurrent()) {
         return function.apply(t);
@@ -303,6 +328,10 @@ public interface Context {
    * and then invokes the input {@link BiFunction}.
    */
   default <T, U, V> BiFunction<T, U, V> wrapFunction(BiFunction<T, U, V> function) {
+    if (function == null) {
+      ApiUsageLogger.logNullParam(Context.class, "wrapFunction", "function");
+      return (t, u) -> null;
+    }
     return (t, u) -> {
       try (Scope ignored = makeCurrent()) {
         return function.apply(t, u);
@@ -315,6 +344,10 @@ public interface Context {
    * and then invokes the input {@link Consumer}.
    */
   default <T> Consumer<T> wrapConsumer(Consumer<T> consumer) {
+    if (consumer == null) {
+      ApiUsageLogger.logNullParam(Context.class, "wrapConsumer", "consumer");
+      return t -> {};
+    }
     return t -> {
       try (Scope ignored = makeCurrent()) {
         consumer.accept(t);
@@ -327,6 +360,10 @@ public interface Context {
    * and then invokes the input {@link BiConsumer}.
    */
   default <T, U> BiConsumer<T, U> wrapConsumer(BiConsumer<T, U> consumer) {
+    if (consumer == null) {
+      ApiUsageLogger.logNullParam(Context.class, "wrapConsumer", "consumer");
+      return (t, u) -> {};
+    }
     return (t, u) -> {
       try (Scope ignored = makeCurrent()) {
         consumer.accept(t, u);
@@ -339,6 +376,10 @@ public interface Context {
    * and then invokes the input {@link Supplier}.
    */
   default <T> Supplier<T> wrapSupplier(Supplier<T> supplier) {
+    if (supplier == null) {
+      ApiUsageLogger.logNullParam(Context.class, "wrapSupplier", "supplier");
+      return () -> null;
+    }
     return () -> {
       try (Scope ignored = makeCurrent()) {
         return supplier.get();

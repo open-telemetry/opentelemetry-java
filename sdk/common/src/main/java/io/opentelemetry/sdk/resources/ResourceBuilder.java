@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -176,6 +177,7 @@ public class ResourceBuilder {
 
   /** Remove all attributes that satisfy the given predicate from {@link Resource}. */
   public ResourceBuilder removeIf(Predicate<AttributeKey<?>> filter) {
+    Objects.requireNonNull(filter, "filter");
     attributesBuilder.removeIf(filter);
     return this;
   }
@@ -188,6 +190,7 @@ public class ResourceBuilder {
    * @since 1.4.0
    */
   public ResourceBuilder setSchemaUrl(String schemaUrl) {
+    Objects.requireNonNull(schemaUrl, "schemaUrl");
     this.schemaUrl = schemaUrl;
     return this;
   }

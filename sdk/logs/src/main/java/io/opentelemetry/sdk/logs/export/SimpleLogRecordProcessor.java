@@ -85,6 +85,7 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
 
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
+    requireNonNull(logRecord, "logRecord");
     try {
       List<LogRecordData> logs = Collections.singletonList(logRecord.toLogRecordData());
       CompletableResultCode result;

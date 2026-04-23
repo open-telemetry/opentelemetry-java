@@ -5,6 +5,8 @@
 
 package io.opentelemetry.context;
 
+import java.util.Objects;
+
 /**
  * Key for indexing values of type {@link T} stored in a {@link Context}. {@link ContextKey} are
  * compared by reference, so it is expected that only one {@link ContextKey} is created for a
@@ -39,6 +41,7 @@ public interface ContextKey<T> {
    * keys.
    */
   static <T> ContextKey<T> named(String name) {
+    Objects.requireNonNull(name, "name");
     return new DefaultContextKey<>(name);
   }
 }

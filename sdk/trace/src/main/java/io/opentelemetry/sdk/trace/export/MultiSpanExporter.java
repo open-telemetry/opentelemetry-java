@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,6 +39,7 @@ final class MultiSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    Objects.requireNonNull(spans, "spans");
     List<CompletableResultCode> results = new ArrayList<>(spanExporters.length);
     for (SpanExporter spanExporter : spanExporters) {
       CompletableResultCode exportResult;

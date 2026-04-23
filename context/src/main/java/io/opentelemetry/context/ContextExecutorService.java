@@ -7,6 +7,7 @@ package io.opentelemetry.context;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -29,22 +30,26 @@ class ContextExecutorService extends ForwardingExecutorService {
 
   @Override
   public <T> Future<T> submit(Callable<T> task) {
+    Objects.requireNonNull(task, "task");
     return delegate().submit(context.wrap(task));
   }
 
   @Override
   public <T> Future<T> submit(Runnable task, T result) {
+    Objects.requireNonNull(task, "task");
     return delegate().submit(context.wrap(task), result);
   }
 
   @Override
   public Future<?> submit(Runnable task) {
+    Objects.requireNonNull(task, "task");
     return delegate().submit(context.wrap(task));
   }
 
   @Override
   public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
       throws InterruptedException {
+    Objects.requireNonNull(tasks, "tasks");
     return delegate().invokeAll(wrap(context, tasks));
   }
 
@@ -52,23 +57,27 @@ class ContextExecutorService extends ForwardingExecutorService {
   public <T> List<Future<T>> invokeAll(
       Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
       throws InterruptedException {
+    Objects.requireNonNull(tasks, "tasks");
     return delegate().invokeAll(wrap(context, tasks), timeout, unit);
   }
 
   @Override
   public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
       throws InterruptedException, ExecutionException {
+    Objects.requireNonNull(tasks, "tasks");
     return delegate().invokeAny(wrap(context, tasks));
   }
 
   @Override
   public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
       throws InterruptedException, ExecutionException, TimeoutException {
+    Objects.requireNonNull(tasks, "tasks");
     return delegate().invokeAny(wrap(context, tasks), timeout, unit);
   }
 
   @Override
   public void execute(Runnable command) {
+    Objects.requireNonNull(command, "command");
     delegate().execute(context.wrap(command));
   }
 }

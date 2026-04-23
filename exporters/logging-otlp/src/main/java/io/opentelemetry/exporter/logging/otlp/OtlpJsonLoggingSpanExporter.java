@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -37,6 +38,7 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> logs) {
+    Objects.requireNonNull(logs, "logs");
     return delegate.export(logs);
   }
 

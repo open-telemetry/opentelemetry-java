@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
+import java.util.Objects;
 
 /** A sampler that can be composed to make a final sampling decision. */
 public interface ComposableSampler {
@@ -33,6 +34,7 @@ public interface ComposableSampler {
    * falls back to the given sampler if it is a root span.
    */
   static ComposableSampler parentThreshold(ComposableSampler rootSampler) {
+    Objects.requireNonNull(rootSampler, "rootSampler");
     return new ComposableParentThresholdSampler(rootSampler);
   }
 
@@ -50,6 +52,8 @@ public interface ComposableSampler {
    * spans.
    */
   static ComposableSampler annotating(ComposableSampler sampler, Attributes attributes) {
+    Objects.requireNonNull(sampler, "sampler");
+    Objects.requireNonNull(attributes, "attributes");
     return new ComposableAnnotatingSampler(sampler, attributes);
   }
 
