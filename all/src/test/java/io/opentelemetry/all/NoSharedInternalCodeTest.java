@@ -69,6 +69,11 @@ class NoSharedInternalCodeTest {
               .filter(packageName -> packageName.startsWith(OTEL_BASE_PACKAGE))
               .collect(Collectors.toSet());
 
+      if (artifactOtelPackages.isEmpty()) {
+        logger.log(Level.INFO, artifactId + " has no OpenTelemetry classes, skipping check");
+        return;
+      }
+
       ClassesShouldConjunction noSharedInternalCodeRule =
           noClasses()
               .that()

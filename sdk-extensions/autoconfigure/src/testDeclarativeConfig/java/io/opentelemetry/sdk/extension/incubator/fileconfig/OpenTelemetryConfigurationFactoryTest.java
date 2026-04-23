@@ -170,7 +170,7 @@ class OpenTelemetryConfigurationFactoryTest {
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder(),
-                SdkConfigProvider.create(DeclarativeConfiguration.toConfigProperties(model)))
+                SdkConfigProvider.create(DeclarativeConfigurationParser.toConfigProperties(model)))
             .build();
     cleanup.addCloseable(expectedSdk);
 
@@ -203,7 +203,7 @@ class OpenTelemetryConfigurationFactoryTest {
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder(),
-                SdkConfigProvider.create(DeclarativeConfiguration.toConfigProperties(model)))
+                SdkConfigProvider.create(DeclarativeConfigurationParser.toConfigProperties(model)))
             .build();
     cleanup.addCloseable(expectedSdk);
 
@@ -363,7 +363,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                 InstrumentSelector.builder().setName("instrument-name").build(),
                                 View.builder().setName("stream-name").build())
                             .build()),
-                SdkConfigProvider.create(DeclarativeConfiguration.toConfigProperties(model)))
+                SdkConfigProvider.create(DeclarativeConfigurationParser.toConfigProperties(model)))
             .build();
 
     cleanup.addCloseable(expectedSdk);

@@ -42,7 +42,7 @@ class DeclarativeConfigurationParseTest {
   void parse_BadInputStream() {
     assertThatThrownBy(
             () ->
-                DeclarativeConfiguration.parseAndCreate(
+                DeclarativeConfigurationParser.parseAndCreate(
                     new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("Unable to parse configuration input stream");
@@ -65,7 +65,7 @@ class DeclarativeConfigurationParseTest {
             + "        aggregation:\n"
             + "          drop: {}\n";
     OpenTelemetryConfigurationModel objectPlaceholderModel =
-        DeclarativeConfiguration.parse(
+        DeclarativeConfigurationParser.parse(
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
@@ -83,7 +83,7 @@ class DeclarativeConfigurationParseTest {
             + "        aggregation:\n"
             + "          drop:\n";
     OpenTelemetryConfigurationModel noObjectPlaceholderModel =
-        DeclarativeConfiguration.parse(
+        DeclarativeConfigurationParser.parse(
             new ByteArrayInputStream(noOjbectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     SpanExporterModel exporter =
@@ -117,7 +117,7 @@ class DeclarativeConfigurationParseTest {
             + "      ratio:\n"; // Double
 
     OpenTelemetryConfigurationModel model =
-        DeclarativeConfiguration.parse(
+        DeclarativeConfigurationParser.parse(
             new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
 
     assertThat(model.getFileFormat()).isNull();
@@ -147,7 +147,7 @@ class DeclarativeConfigurationParseTest {
             + "      value: \"\\\"double\\\"\"";
 
     OpenTelemetryConfigurationModel model =
-        DeclarativeConfiguration.parse(
+        DeclarativeConfigurationParser.parse(
             new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
 
     Assertions.assertNotNull(model.getResource());
@@ -161,7 +161,7 @@ class DeclarativeConfigurationParseTest {
   @MethodSource("coreSchemaValuesArgs")
   void coreSchemaValues(String rawYaml, Object expectedYamlResult) {
     Object yaml =
-        DeclarativeConfiguration.loadYaml(
+        DeclarativeConfigurationParser.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
             Collections.emptyMap(),
             Collections.emptyMap());
@@ -192,7 +192,7 @@ class DeclarativeConfigurationParseTest {
     environmentVariables.put("HEX", "0xdeadbeef");
 
     Object yaml =
-        DeclarativeConfiguration.loadYaml(
+        DeclarativeConfigurationParser.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
             environmentVariables,
             Collections.emptyMap());
@@ -312,7 +312,7 @@ class DeclarativeConfigurationParseTest {
     systemProperties.put("hex.prop", "0xdeadbeef");
 
     Object yaml =
-        DeclarativeConfiguration.loadYaml(
+        DeclarativeConfigurationParser.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
             Collections.emptyMap(),
             systemProperties);
@@ -372,7 +372,7 @@ class DeclarativeConfigurationParseTest {
     Map<String, String> envVars = new HashMap<>();
     envVars.put("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4317");
     OpenTelemetryConfigurationModel model =
-        DeclarativeConfiguration.parse(
+        DeclarativeConfigurationParser.parse(
             new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)),
             envVars,
             Collections.emptyMap());
@@ -419,7 +419,7 @@ class DeclarativeConfigurationParseTest {
     Map<Object, Object> sysProps = new HashMap<>();
     sysProps.put("otel.exporter.otlp.endpoint", "http://collector:4318");
     OpenTelemetryConfigurationModel model =
-        DeclarativeConfiguration.parse(
+        DeclarativeConfigurationParser.parse(
             new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)),
             Collections.emptyMap(),
             sysProps);
@@ -466,7 +466,7 @@ class DeclarativeConfigurationParseTest {
     Map<Object, Object> sysProps = new HashMap<>();
     sysProps.put("app.version", "1.2.3");
     OpenTelemetryConfigurationModel model =
-        DeclarativeConfiguration.parse(
+        DeclarativeConfigurationParser.parse(
             new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)), envVars, sysProps);
     assertThat(model)
         .isEqualTo(

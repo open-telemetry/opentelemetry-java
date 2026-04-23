@@ -68,9 +68,9 @@ class YamlDeclarativeConfigPropertiesTest {
   @BeforeEach
   void setup() {
     OpenTelemetryConfigurationModel configuration =
-        DeclarativeConfiguration.parse(
+        DeclarativeConfigurationParser.parse(
             new ByteArrayInputStream(extendedSchema.getBytes(StandardCharsets.UTF_8)));
-    structuredConfigProps = DeclarativeConfiguration.toConfigProperties(configuration);
+    structuredConfigProps = DeclarativeConfigurationParser.toConfigProperties(configuration);
   }
 
   @Test

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
@@ -29,7 +29,7 @@ public class TestDeclarativeConfigurationProvider implements DeclarativeConfigur
             + "        exporter:\n"
             + "          console: {}\n";
 
-    return DeclarativeConfiguration.parse(
+    return DeclarativeConfigurationParser.parse(
         new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
   }
 }

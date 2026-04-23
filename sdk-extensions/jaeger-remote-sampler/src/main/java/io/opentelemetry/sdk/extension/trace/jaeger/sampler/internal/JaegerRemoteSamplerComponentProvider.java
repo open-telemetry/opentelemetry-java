@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler.internal;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfigurationParser;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSamplerBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -45,7 +45,7 @@ public class JaegerRemoteSamplerComponentProvider implements ComponentProvider {
     if (initialSamplerModel == null) {
       throw new DeclarativeConfigException("jaeger remote sampler initial_sampler is required");
     }
-    builder.setInitialSampler(DeclarativeConfiguration.createSampler(initialSamplerModel));
+    builder.setInitialSampler(DeclarativeConfigurationParser.createSampler(initialSamplerModel));
 
     Long pollingIntervalMs = config.getLong("internal");
     if (pollingIntervalMs != null) {

@@ -63,12 +63,13 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private static final Logger logger =
       Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
   private static final boolean INCUBATOR_AVAILABLE;
+  private static final boolean PARSER_AVAILABLE;
 
   static {
     boolean incubatorAvailable = false;
     try {
       Class.forName(
-          "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration",
+          "io.opentelemetry.api.incubator.config.DeclarativeConfigException",
           false,
           AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
       incubatorAvailable = true;
@@ -76,6 +77,18 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       // Not available
     }
     INCUBATOR_AVAILABLE = incubatorAvailable;
+
+    boolean parserAvailable = false;
+    try {
+      Class.forName(
+          "org.snakeyaml.engine.v2.api.Load",
+          false,
+          AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
+      parserAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    PARSER_AVAILABLE = parserAvailable;
   }
 
   @Nullable private ConfigProperties config;
@@ -591,9 +604,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return null;
     }
 
-    if (!INCUBATOR_AVAILABLE) {
+    if (!INCUBATOR_AVAILABLE || !PARSER_AVAILABLE) {
       throw new ConfigurationException(
-          "Cannot autoconfigure from config file without opentelemetry-sdk-extension-incubator on the classpath");
+          "Cannot autoconfigure from config file without opentelemetry-api-incubator, snakeyaml-engine, and jackson-databind on the classpath");
     }
     return IncubatingUtil.configureFromFile(logger, configurationFile, componentLoader);
   }

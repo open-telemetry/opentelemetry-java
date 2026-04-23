@@ -25,6 +25,9 @@ dependencies {
   implementation(project(":exporters:otlp:all"))
   implementation(project(":api:incubator"))
   implementation(project(":sdk-extensions:incubator"))
+  implementation(project(":sdk-extensions:autoconfigure"))
+  implementation("org.snakeyaml:snakeyaml-engine")
+  implementation("com.fasterxml.jackson.core:jackson-databind")
 }
 
 // org.graalvm.buildtools.native plugin requires java 17+ as of version 0.11.0

@@ -12,21 +12,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,12 +38,16 @@ import org.snakeyaml.engine.v2.scanner.StreamReader;
 import org.snakeyaml.engine.v2.schema.CoreSchema;
 
 /**
- * Configure {@link OpenTelemetrySdk} using <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/configuration#declarative-configuration">declarative
- * configuration</a>. For most users, this means calling {@link #parseAndCreate(InputStream)} with a
- * <a
+ * Parses <a
  * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#yaml-file-format">YAML
- * configuration file</a>.
+ * declarative configuration</a> into an {@link OpenTelemetryConfigurationModel}.
+ *
+ * <p>Requires {@code org.snakeyaml:snakeyaml-engine} and {@code
+ * com.fasterxml.jackson.core:jackson-databind} on the classpath at runtime.
+ *
+ * <p>For programmatic SDK configuration that does not need YAML parsing, use {@link
+ * DeclarativeConfiguration#create(OpenTelemetryConfigurationModel)} directly, which has no YAML
+ * dependencies.
  *
  * <h2>For Implementers</h2>
  *
@@ -78,12 +74,12 @@ import org.snakeyaml.engine.v2.schema.CoreSchema;
  *   <li>Boxed primitives remain null to distinguish between absent and explicitly null values
  * </ul>
  */
-public final class DeclarativeConfiguration {
+public final class DeclarativeConfigurationParser {
 
-  private static final Logger logger = Logger.getLogger(DeclarativeConfiguration.class.getName());
   // Matches ${VAR_NAME}, ${env:VAR_NAME}, or ${sys:property.name} with optional :-default
   private static final Pattern ENV_VARIABLE_REFERENCE =
       Pattern.compile("\\$\\{(?:(env|sys):)?([a-zA-Z_][a-zA-Z0-9_.]*)(?::-([^\\n}]*))?}");
+
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
 
@@ -116,62 +112,17 @@ public final class DeclarativeConfiguration {
     MAPPER.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
   }
 
-  private DeclarativeConfiguration() {}
+  private DeclarativeConfigurationParser() {}
 
   /**
-   * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfigurationModel)}.
+   * Combines {@link #parse(InputStream)} and {@link
+   * DeclarativeConfiguration#create(OpenTelemetryConfigurationModel)}.
    *
    * @throws DeclarativeConfigException if unable to parse or interpret
    */
   public static DeclarativeConfigResult parseAndCreate(InputStream inputStream) {
     OpenTelemetryConfigurationModel configurationModel = parse(inputStream);
-    return create(configurationModel);
-  }
-
-  /**
-   * Interpret the {@code configurationModel} to create {@link OpenTelemetrySdk} instance
-   * corresponding to the configuration.
-   *
-   * @param configurationModel the configuration model
-   * @return the {@link DeclarativeConfigResult}
-   * @throws DeclarativeConfigException if unable to interpret
-   */
-  public static DeclarativeConfigResult create(OpenTelemetryConfigurationModel configurationModel) {
-    return create(configurationModel, DEFAULT_COMPONENT_LOADER);
-  }
-
-  /**
-   * Interpret the {@code configurationModel} to create {@link OpenTelemetrySdk} instance
-   * corresponding to the configuration.
-   *
-   * @param configurationModel the configuration model
-   * @param componentLoader the component loader used to load {@link ComponentProvider}
-   *     implementations
-   * @return the {@link DeclarativeConfigResult}
-   * @throws DeclarativeConfigException if unable to interpret
-   */
-  public static DeclarativeConfigResult create(
-      OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
-    return create(configurationModel, new DeclarativeConfigContext(componentLoader));
-  }
-
-  private static DeclarativeConfigResult create(
-      OpenTelemetryConfigurationModel configurationModel, DeclarativeConfigContext context) {
-    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
-    context.setBuilder(builder);
-
-    for (DeclarativeConfigurationCustomizerProvider provider :
-        Ordered.loadOrderedList(context, DeclarativeConfigurationCustomizerProvider.class)) {
-      provider.customize(builder);
-    }
-
-    DeclarativeConfigResult result =
-        createAndMaybeCleanup(
-            OpenTelemetryConfigurationFactory.getInstance(),
-            context,
-            builder.customizeModel(configurationModel));
-    callAutoConfigureListeners(context, result.getSdk());
-    return result;
+    return DeclarativeConfiguration.create(configurationModel);
   }
 
   /**
@@ -212,16 +163,6 @@ public final class DeclarativeConfiguration {
   }
 
   /**
-   * Convert the {@code model} to a generic {@link DeclarativeConfigProperties}.
-   *
-   * @param model the configuration model
-   * @return a generic {@link DeclarativeConfigProperties} representation of the model
-   */
-  public static DeclarativeConfigProperties toConfigProperties(Object model) {
-    return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
-  }
-
-  /**
    * Convert the {@code configuration} YAML to a generic {@link DeclarativeConfigProperties}.
    *
    * @param configuration configuration YAML
@@ -230,6 +171,16 @@ public final class DeclarativeConfiguration {
   public static DeclarativeConfigProperties toConfigProperties(InputStream configuration) {
     Object yamlObj = loadYaml(configuration, System.getenv(), System.getProperties());
     return toConfigProperties(yamlObj, DEFAULT_COMPONENT_LOADER);
+  }
+
+  /**
+   * Convert the {@code model} to a generic {@link DeclarativeConfigProperties}.
+   *
+   * @param model the configuration model
+   * @return a generic {@link DeclarativeConfigProperties} representation of the model
+   */
+  public static DeclarativeConfigProperties toConfigProperties(Object model) {
+    return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
   }
 
   static DeclarativeConfigProperties toConfigProperties(
@@ -246,8 +197,9 @@ public final class DeclarativeConfiguration {
    * Create a {@link SamplerModel} from the {@code samplerModel} representing the sampler config.
    *
    * <p>This is used when samplers are composed, with one sampler accepting one or more additional
-   * samplers as config properties. The {@link ComponentProvider} implementation can call this to
-   * configure a delegate {@link SamplerModel} from the {@link DeclarativeConfigProperties}
+   * samplers as config properties. The {@link
+   * io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider} implementation can call this
+   * to configure a delegate {@link SamplerModel} from the {@link DeclarativeConfigProperties}
    * corresponding to a particular config property.
    */
   // TODO(jack-berg): add create methods for all SDK extension components supported by
@@ -258,7 +210,7 @@ public final class DeclarativeConfiguration {
     SamplerModel samplerModel =
         MAPPER.convertValue(
             DeclarativeConfigProperties.toMap(yamlDeclarativeConfigProperties), SamplerModel.class);
-    return createAndMaybeCleanup(
+    return DeclarativeConfiguration.createAndMaybeCleanup(
         SamplerFactory.getInstance(),
         new DeclarativeConfigContext(yamlDeclarativeConfigProperties.getComponentLoader()),
         samplerModel);
@@ -271,28 +223,6 @@ public final class DeclarativeConfiguration {
           "Only YamlDeclarativeConfigProperties can be converted to model");
     }
     return (YamlDeclarativeConfigProperties) declarativeConfigProperties;
-  }
-
-  static <M, R> R createAndMaybeCleanup(
-      Factory<M, R> factory, DeclarativeConfigContext context, M model) {
-    try {
-      return factory.create(model, context);
-    } catch (RuntimeException e) {
-      logger.info("Error encountered interpreting model. Closing partially configured components.");
-      for (Closeable closeable : context.getCloseables()) {
-        try {
-          logger.fine("Closing " + closeable.getClass().getName());
-          closeable.close();
-        } catch (IOException ex) {
-          logger.warning(
-              "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
-        }
-      }
-      if (e instanceof DeclarativeConfigException) {
-        throw e;
-      }
-      throw new DeclarativeConfigException("Unexpected configuration error", e);
-    }
   }
 
   private static final class EnvLoad extends Load {
@@ -478,19 +408,6 @@ public final class DeclarativeConfiguration {
       }
 
       return newVal;
-    }
-  }
-
-  // Visible for testing
-  static void callAutoConfigureListeners(
-      DeclarativeConfigContext context, OpenTelemetrySdk openTelemetrySdk) {
-    for (AutoConfigureListener listener : context.getListeners()) {
-      try {
-        listener.afterAutoConfigure(openTelemetrySdk);
-      } catch (Throwable throwable) {
-        logger.log(
-            Level.WARNING, "Error invoking listener " + listener.getClass().getName(), throwable);
-      }
     }
   }
 }

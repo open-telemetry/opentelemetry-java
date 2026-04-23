@@ -17,14 +17,12 @@ import java.util.Map;
  * Creates an OpenTelemetry {@link Resource} from environment configuration.
  *
  * <p>This class is intentionally self-contained (no dependencies on other autoconfigure-internal
- * classes) so that it can be copied wholesale into declarative configuration without pulling in
- * additional dependencies. Do not add dependencies on non-API, non-SPI classes.
+ * classes). Do not add dependencies on non-API, non-SPI classes.
  */
 final class EnvironmentResource {
 
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
-  // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
 
