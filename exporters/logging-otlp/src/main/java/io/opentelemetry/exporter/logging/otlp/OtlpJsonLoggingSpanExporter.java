@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
+import java.util.Objects;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -37,6 +38,7 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> logs) {
+    Objects.requireNonNull(logs, "logs");
     return delegate.export(logs);
   }
 

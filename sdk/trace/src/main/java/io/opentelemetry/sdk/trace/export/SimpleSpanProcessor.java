@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace.export;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import java.util.Objects;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -98,7 +99,8 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (span != null && (exportUnsampledSpans || span.getSpanContext().isSampled())) {
+    Objects.requireNonNull(span, "span");
+    if (exportUnsampledSpans || span.getSpanContext().isSampled()) {
       try {
         List<SpanData> spans = Collections.singletonList(span.toSpanData());
         CompletableResultCode result;

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Interface to be extended by SPIs that need to guarantee ordering during loading.
@@ -34,6 +35,8 @@ public interface Ordered {
    */
   static <T extends Ordered> List<T> loadOrderedList(
       ComponentLoader componentLoader, Class<T> spiClass) {
+    Objects.requireNonNull(componentLoader, "componentLoader");
+    Objects.requireNonNull(spiClass, "spiClass");
     List<T> result = new ArrayList<>(ComponentLoader.loadList(componentLoader, spiClass));
     result.sort(Comparator.comparing(Ordered::order));
     return Collections.unmodifiableList(result);

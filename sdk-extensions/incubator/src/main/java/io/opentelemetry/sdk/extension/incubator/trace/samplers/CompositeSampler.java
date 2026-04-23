@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A sampler that uses a {@link ComposableSampler} to make its sampling decisions while handlign
@@ -32,6 +33,7 @@ public final class CompositeSampler implements Sampler {
    * Returns a new composite {@link Sampler} that delegates to the given {@link ComposableSampler}.
    */
   public static Sampler wrap(ComposableSampler delegate) {
+    Objects.requireNonNull(delegate, "delegate");
     return new CompositeSampler(delegate);
   }
 

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.internal;
 
 import io.opentelemetry.api.logs.Severity;
+import java.util.Objects;
 
 /**
  * Builder for {@link LoggerConfig}.
@@ -42,6 +43,7 @@ public final class LoggerConfigBuilder {
    * @return this builder
    */
   public LoggerConfigBuilder setMinimumSeverity(Severity minimumSeverity) {
+    Objects.requireNonNull(minimumSeverity, "minimumSeverity");
     this.minimumSeverity = minimumSeverity;
     return this;
   }

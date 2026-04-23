@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
+import java.util.Objects;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -39,6 +40,7 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
+    Objects.requireNonNull(logs, "logs");
     return delegate.export(logs);
   }
 

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /** A builder for a composable rule-based sampler. */
 public final class ComposableRuleBasedSamplerBuilder {
@@ -20,6 +21,8 @@ public final class ComposableRuleBasedSamplerBuilder {
    */
   public ComposableRuleBasedSamplerBuilder add(
       SamplingPredicate predicate, ComposableSampler sampler) {
+    Objects.requireNonNull(predicate, "predicate");
+    Objects.requireNonNull(sampler, "sampler");
     rules.add(ImmutableSamplingRule.create(predicate, sampler));
     return this;
   }

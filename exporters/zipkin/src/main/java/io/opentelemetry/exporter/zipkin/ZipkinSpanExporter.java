@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.zipkin;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
+import java.util.Objects;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -83,6 +84,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spanDataList) {
+    Objects.requireNonNull(spanDataList, "spanDataList");
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }

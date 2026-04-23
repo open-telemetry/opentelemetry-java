@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -58,6 +59,7 @@ public class SampleCompositionBuilder {
    * @param timestamp the time of the observation.
    */
   public void add(SampleCompositionKey key, @Nullable Long value, @Nullable Long timestamp) {
+    Objects.requireNonNull(key, "key");
     SampleCompositionValue v = map.computeIfAbsent(key, key1 -> new SampleCompositionValue());
     v.add(value, timestamp);
   }

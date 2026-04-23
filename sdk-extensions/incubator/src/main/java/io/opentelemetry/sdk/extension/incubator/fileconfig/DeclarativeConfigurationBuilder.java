@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -34,24 +35,31 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
   @Override
   public void addModelCustomizer(
       Function<OpenTelemetryConfigurationModel, OpenTelemetryConfigurationModel> customizer) {
+    Objects.requireNonNull(customizer, "customizer");
     modelCustomizer = mergeCustomizer(modelCustomizer, customizer);
   }
 
   @Override
   public <T extends SpanExporter> void addSpanExporterCustomizer(
       Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer) {
+    Objects.requireNonNull(exporterType, "exporterType");
+    Objects.requireNonNull(customizer, "customizer");
     spanExporterCustomizers.add(new Customizer<>(exporterType, customizer));
   }
 
   @Override
   public <T extends MetricExporter> void addMetricExporterCustomizer(
       Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer) {
+    Objects.requireNonNull(exporterType, "exporterType");
+    Objects.requireNonNull(customizer, "customizer");
     metricExporterCustomizers.add(new Customizer<>(exporterType, customizer));
   }
 
   @Override
   public <T extends LogRecordExporter> void addLogRecordExporterCustomizer(
       Class<T> exporterType, BiFunction<T, DeclarativeConfigProperties, T> customizer) {
+    Objects.requireNonNull(exporterType, "exporterType");
+    Objects.requireNonNull(customizer, "customizer");
     logRecordExporterCustomizers.add(new Customizer<>(exporterType, customizer));
   }
 
@@ -78,6 +86,7 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
   /** Customize the configuration model. */
   public OpenTelemetryConfigurationModel customizeModel(
       OpenTelemetryConfigurationModel configurationModel) {
+    Objects.requireNonNull(configurationModel, "configurationModel");
     return modelCustomizer.apply(configurationModel);
   }
 

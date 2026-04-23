@@ -14,6 +14,7 @@ import io.opentelemetry.exporter.otlp.internal.data.ImmutableMappingData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfilesDictionaryData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableStackData;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * This class allows for the assembly of the reference tables which form a ProfilesDictionaryData.
@@ -86,6 +87,7 @@ public class ProfilesDictionaryCompositor {
    * @return the index of the added or existing element.
    */
   public int putIfAbsent(MappingData mappingData) {
+    Objects.requireNonNull(mappingData, "mappingData");
     return mappingTable.putIfAbsent(mappingData);
   }
 
@@ -96,6 +98,7 @@ public class ProfilesDictionaryCompositor {
    * @return the index of the added or existing element.
    */
   public int putIfAbsent(LocationData locationData) {
+    Objects.requireNonNull(locationData, "locationData");
     return locationTable.putIfAbsent(locationData);
   }
 
@@ -106,6 +109,7 @@ public class ProfilesDictionaryCompositor {
    * @return the index of the added or existing element.
    */
   public int putIfAbsent(FunctionData functionData) {
+    Objects.requireNonNull(functionData, "functionData");
     return functionTable.putIfAbsent(functionData);
   }
 
@@ -116,6 +120,7 @@ public class ProfilesDictionaryCompositor {
    * @return the index of the added or existing element.
    */
   public int putIfAbsent(LinkData linkData) {
+    Objects.requireNonNull(linkData, "linkData");
     return linkTable.putIfAbsent(linkData);
   }
 
@@ -126,6 +131,7 @@ public class ProfilesDictionaryCompositor {
    * @return the index of the added or existing element.
    */
   public int putIfAbsent(String string) {
+    Objects.requireNonNull(string, "string");
     return stringTable.putIfAbsent(string);
   }
 
@@ -136,6 +142,7 @@ public class ProfilesDictionaryCompositor {
    * @return the index of the added or existing element.
    */
   public int putIfAbsent(KeyValueAndUnitData keyValueAndUnitData) {
+    Objects.requireNonNull(keyValueAndUnitData, "keyValueAndUnitData");
     return attributeTable.putIfAbsent(keyValueAndUnitData);
   }
 
@@ -146,6 +153,7 @@ public class ProfilesDictionaryCompositor {
    * @return the index of the added or existing element.
    */
   public int putIfAbsent(StackData stackData) {
+    Objects.requireNonNull(stackData, "stackData");
     return stackTable.putIfAbsent(stackData);
   }
 }

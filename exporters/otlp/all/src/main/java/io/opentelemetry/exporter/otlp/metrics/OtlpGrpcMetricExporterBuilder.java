@@ -194,6 +194,8 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporterBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
+    requireNonNull(sslContext, "sslContext");
+    requireNonNull(trustManager, "trustManager");
     delegate.setSslContext(sslContext, trustManager);
     return this;
   }
@@ -209,6 +211,8 @@ public final class OtlpGrpcMetricExporterBuilder {
    * @return this builder's instance
    */
   public OtlpGrpcMetricExporterBuilder addHeader(String key, String value) {
+    requireNonNull(key, "key");
+    requireNonNull(value, "value");
     delegate.addConstantHeader(key, value);
     return this;
   }
@@ -221,6 +225,7 @@ public final class OtlpGrpcMetricExporterBuilder {
    * @since 1.33.0
    */
   public OtlpGrpcMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    requireNonNull(headerSupplier, "headerSupplier");
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }

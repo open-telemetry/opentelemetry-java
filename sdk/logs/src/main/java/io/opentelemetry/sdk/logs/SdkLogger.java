@@ -11,6 +11,7 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
@@ -61,6 +62,14 @@ class SdkLogger implements Logger {
 
   @Override
   public boolean isEnabled(Severity severity, Context context) {
+    if (severity == null) {
+      ApiUsageLogger.logNullParam(SdkLogger.class, "isEnabled", "severity");
+      return false;
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(SdkLogger.class, "isEnabled", "context");
+      return false;
+    }
     if (!loggerEnabled) {
       return false;
     }

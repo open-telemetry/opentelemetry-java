@@ -9,6 +9,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.Objects;
 
 /** A SpanProcessor that only handles onStart(). */
 public final class OnStartSpanProcessor implements SpanProcessor {
@@ -20,6 +21,7 @@ public final class OnStartSpanProcessor implements SpanProcessor {
   }
 
   public static SpanProcessor create(OnStart onStart) {
+    Objects.requireNonNull(onStart, "onStart");
     return new OnStartSpanProcessor(onStart);
   }
 
