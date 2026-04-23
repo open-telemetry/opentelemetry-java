@@ -70,6 +70,20 @@ cp buildscripts/pre-commit .git/hooks/pre-commit
 ln -s ../../buildscripts/pre-commit .git/hooks/pre-commit
 ```
 
+## Native image tests (GraalVM)
+
+GraalVM native image integration tests live in `integration-tests/graal` and
+`integration-tests/graal-incubating`. They are **not** part of the standard `build` task and
+require a GraalVM JDK with `native-image` installed.
+
+```bash
+./gradlew nativeTest --no-configuration-cache
+```
+
+The `--no-configuration-cache` flag is required because the GraalVM Native Build Tools plugin
+triggers cross-project configuration resolution during the cache store phase, which races with
+task execution under Gradle's parallel executor.
+
 ## Updating OTLP protobufs
 
 OTLP protobuf Java bindings are published via

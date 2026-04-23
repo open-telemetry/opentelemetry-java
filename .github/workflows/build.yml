@@ -127,7 +127,9 @@ jobs:
           echo "JAVA_HOME: $JAVA_HOME"
           java --version
           native-image --version
-          ./gradlew nativeTest
+          # GraalVM Native Build Tools plugin is not compatible with configuration cache
+          # https://github.com/graalvm/native-build-tools/issues/477
+          ./gradlew nativeTest --no-configuration-cache
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
