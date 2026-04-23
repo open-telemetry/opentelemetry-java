@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
-import io.opentelemetry.sdk.declarativeconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalInstrumentationModel;
 import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalLanguageSpecificInstrumentationPropertyModel;

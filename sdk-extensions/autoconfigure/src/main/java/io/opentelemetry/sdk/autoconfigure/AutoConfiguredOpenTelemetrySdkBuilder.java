@@ -68,7 +68,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     boolean declarativeConfigAvailable = false;
     try {
       Class.forName(
-          "io.opentelemetry.sdk.declarativeconfig.DeclarativeConfiguration",
+          "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfiguration",
           false,
           AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
       declarativeConfigAvailable = true;

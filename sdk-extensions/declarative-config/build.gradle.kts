@@ -152,12 +152,12 @@ val copyResourceConfiguration by tasks.registering(Copy::class) {
       "src/main/java/io/opentelemetry/sdk/autoconfigure/EnvironmentResource.java"
     )
   )
-  into(generatedResourceConfigDir.map { it.dir("io/opentelemetry/sdk/declarativeconfig") })
+  into(generatedResourceConfigDir.map { it.dir("io/opentelemetry/sdk/autoconfigure/declarativeconfig") })
   // Only the package declaration needs rewriting; everything else is copied verbatim.
   filter { line: String ->
     line.replace(
       "package io.opentelemetry.sdk.autoconfigure;",
-      "package io.opentelemetry.sdk.declarativeconfig;"
+      "package io.opentelemetry.sdk.autoconfigure.declarativeconfig;"
     )
   }
 }

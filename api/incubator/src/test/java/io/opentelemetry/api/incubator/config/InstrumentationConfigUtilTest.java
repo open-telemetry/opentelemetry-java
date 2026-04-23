@@ -8,8 +8,8 @@ package io.opentelemetry.api.incubator.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.sdk.declarativeconfig.DeclarativeConfiguration;
-import io.opentelemetry.sdk.declarativeconfig.YamlDeclarativeConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.YamlDeclarativeConfigProperties;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;

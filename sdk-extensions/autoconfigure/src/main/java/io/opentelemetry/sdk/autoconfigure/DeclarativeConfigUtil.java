@@ -9,10 +9,10 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigResult;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.declarativeconfig.DeclarativeConfigResult;
-import io.opentelemetry.sdk.declarativeconfig.DeclarativeConfiguration;
-import io.opentelemetry.sdk.declarativeconfig.DeclarativeConfigurationProvider;
 import io.opentelemetry.sdk.declarativeconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

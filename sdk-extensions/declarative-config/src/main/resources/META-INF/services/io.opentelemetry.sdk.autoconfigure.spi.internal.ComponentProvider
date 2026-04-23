@@ -1,1 +1,1 @@
-io.opentelemetry.sdk.declarativeconfig.ServiceResourceDetector
+io.opentelemetry.sdk.autoconfigure.declarativeconfig.ServiceResourceDetector
