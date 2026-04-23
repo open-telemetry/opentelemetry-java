@@ -88,12 +88,12 @@ GraalVM native image integration tests live in `integration-tests/graal` and
 require a GraalVM JDK with `native-image` installed.
 
 ```bash
-./gradlew nativeTest --no-configuration-cache
+# Both flags required due to https://github.com/graalvm/native-build-tools/issues/477:
+# --no-parallel prevents a race where the plugin's shared build service creates project-scoped
+# detached configurations that are concurrently accessed during task fingerprinting.
+# --no-configuration-cache prevents the cache store phase from adding additional concurrency.
+./gradlew nativeTest --no-configuration-cache --no-parallel
 ```
-
-The `--no-configuration-cache` flag is required because the GraalVM Native Build Tools plugin
-triggers cross-project configuration resolution during the cache store phase, which races with
-task execution under Gradle's parallel executor.
 
 ## Updating OTLP protobufs
 
