@@ -85,7 +85,11 @@ final class TracerShim implements Tracer {
   @Override
   public <C> void inject(SpanContext context, Format<C> format, C carrier) {
     if (context == null) {
-      logger.log(Level.WARNING, "Cannot inject a null span context.");
+      ApiUsageLogger.logNullParam(TracerShim.class, "inject", "context");
+      return;
+    }
+    if (format == null) {
+      ApiUsageLogger.logNullParam(TracerShim.class, "inject", "format");
       return;
     }
 

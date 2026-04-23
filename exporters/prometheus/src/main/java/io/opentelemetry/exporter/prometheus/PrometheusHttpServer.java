@@ -113,11 +113,13 @@ public final class PrometheusHttpServer implements MetricReader {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return prometheusMetricReader.getAggregationTemporality(instrumentType);
   }
 
   @Override
   public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return defaultAggregationSelector.getDefaultAggregation(instrumentType);
   }
 

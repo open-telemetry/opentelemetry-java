@@ -27,6 +27,8 @@ public final class OnStartSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(span, "span");
     onStart.apply(parentContext, span);
   }
 
@@ -37,6 +39,7 @@ public final class OnStartSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
+    Objects.requireNonNull(span, "span");
     // nop
   }
 

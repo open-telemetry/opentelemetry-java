@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -75,6 +76,7 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
    */
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
+    Objects.requireNonNull(logs, "logs");
     return marshaler.export(logs);
   }
 

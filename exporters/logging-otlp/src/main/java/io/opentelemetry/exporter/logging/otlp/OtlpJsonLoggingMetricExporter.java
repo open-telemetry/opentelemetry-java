@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
-import java.util.Objects;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -83,6 +82,7 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return aggregationTemporality;
   }
 }

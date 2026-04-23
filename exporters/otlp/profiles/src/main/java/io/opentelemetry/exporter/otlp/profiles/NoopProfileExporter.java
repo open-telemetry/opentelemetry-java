@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.profiles;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collection;
+import java.util.Objects;
 
 final class NoopProfileExporter implements ProfileExporter {
 
@@ -18,6 +19,7 @@ final class NoopProfileExporter implements ProfileExporter {
 
   @Override
   public CompletableResultCode export(Collection<ProfileData> profiles) {
+    Objects.requireNonNull(profiles, "profiles");
     return CompletableResultCode.ofSuccess();
   }
 

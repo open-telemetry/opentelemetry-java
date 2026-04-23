@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.context.Context;
+import java.util.Objects;
 
 final class NoopLogRecordProcessor implements LogRecordProcessor {
   private static final NoopLogRecordProcessor INSTANCE = new NoopLogRecordProcessor();
@@ -17,7 +18,10 @@ final class NoopLogRecordProcessor implements LogRecordProcessor {
   private NoopLogRecordProcessor() {}
 
   @Override
-  public void onEmit(Context context, ReadWriteLogRecord logRecord) {}
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(logRecord, "logRecord");
+  }
 
   @Override
   public String toString() {

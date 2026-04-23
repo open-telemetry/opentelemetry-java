@@ -5,7 +5,6 @@
 
 package io.opentelemetry.common;
 
-import javax.annotation.Nullable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

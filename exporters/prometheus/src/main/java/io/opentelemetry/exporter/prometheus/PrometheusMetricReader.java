@@ -82,6 +82,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return AggregationTemporality.CUMULATIVE;
   }
 

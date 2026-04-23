@@ -71,6 +71,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
    */
   @Deprecated
   public OtlpGrpcProfilesExporterBuilder setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
     delegate.setChannel(channel);
     return this;
   }

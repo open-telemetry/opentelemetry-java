@@ -199,6 +199,7 @@ class DeclarativeConfigContext implements ComponentLoader {
 
   @Override
   public <T> Iterable<T> load(Class<T> spiClass) {
+    Objects.requireNonNull(spiClass, "spiClass");
     List<T> result = ComponentLoader.loadList(componentLoader, spiClass);
     result.forEach(
         entry -> {

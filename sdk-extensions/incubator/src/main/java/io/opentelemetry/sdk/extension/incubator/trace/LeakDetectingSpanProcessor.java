@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.lang.ref.Reference;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
@@ -49,6 +50,8 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(span, "span");
     CallerStackTrace caller = new CallerStackTrace(span);
     StackTraceElement[] stackTrace = caller.getStackTrace();
 
@@ -66,6 +69,7 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
+    Objects.requireNonNull(span, "span");
     pendingSpans.remove(span).ended = true;
   }
 

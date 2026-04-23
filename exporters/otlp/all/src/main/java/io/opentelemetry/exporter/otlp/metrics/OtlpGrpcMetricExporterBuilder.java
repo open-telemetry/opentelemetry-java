@@ -98,6 +98,7 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   @Deprecated
   public OtlpGrpcMetricExporterBuilder setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
     delegate.setChannel(channel);
     return this;
   }

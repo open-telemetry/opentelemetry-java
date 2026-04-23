@@ -79,6 +79,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   @Deprecated
   public OtlpGrpcLogRecordExporterBuilder setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
     delegate.setChannel(channel);
     return this;
   }

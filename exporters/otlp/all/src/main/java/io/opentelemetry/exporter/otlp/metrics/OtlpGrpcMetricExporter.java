@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -88,11 +89,13 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
   }
 
   @Override
   public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return defaultAggregationSelector.getDefaultAggregation(instrumentType);
   }
 
@@ -109,6 +112,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
+    Objects.requireNonNull(metrics, "metrics");
     return marshaler.export(metrics);
   }
 

@@ -135,6 +135,7 @@ public abstract class Resource {
    */
   @Nullable
   public <T> T getAttribute(AttributeKey<T> key) {
+    Objects.requireNonNull(key, "key");
     return getAttributes().get(key);
   }
 

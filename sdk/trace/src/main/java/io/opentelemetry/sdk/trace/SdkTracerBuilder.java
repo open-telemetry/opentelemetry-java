@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.sdk.common.internal.ComponentRegistry;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 class SdkTracerBuilder implements TracerBuilder {
@@ -25,12 +26,14 @@ class SdkTracerBuilder implements TracerBuilder {
 
   @Override
   public TracerBuilder setSchemaUrl(String schemaUrl) {
+    Objects.requireNonNull(schemaUrl, "schemaUrl");
     this.schemaUrl = schemaUrl;
     return this;
   }
 
   @Override
   public TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
+    Objects.requireNonNull(instrumentationScopeVersion, "instrumentationScopeVersion");
     this.instrumentationScopeVersion = instrumentationScopeVersion;
     return this;
   }

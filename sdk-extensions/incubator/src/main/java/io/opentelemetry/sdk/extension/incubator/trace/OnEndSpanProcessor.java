@@ -9,6 +9,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.Objects;
 
 /** A SpanProcessor implementation that is only capable of processing spans when they end. */
 public final class OnEndSpanProcessor implements SpanProcessor {
@@ -24,6 +25,7 @@ public final class OnEndSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
+    Objects.requireNonNull(span, "span");
     onEnd.apply(span);
   }
 
@@ -34,6 +36,8 @@ public final class OnEndSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(span, "span");
     // nop
   }
 
