@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -30,11 +31,14 @@ public final class ServiceInstanceIdResourceProvider implements ConditionalResou
 
   @Override
   public Resource createResource(ConfigProperties config) {
+    Objects.requireNonNull(config, "config");
     return RANDOM;
   }
 
   @Override
   public boolean shouldApply(ConfigProperties config, Resource existing) {
+    Objects.requireNonNull(config, "config");
+    Objects.requireNonNull(existing, "existing");
     return existing.getAttribute(SERVICE_INSTANCE_ID) == null;
   }
 

@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -67,7 +68,12 @@ public final class OtTracePropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
-    if (context == null || setter == null) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(OtTracePropagator.class, "inject", "context");
+      return;
+    }
+    if (setter == null) {
+      ApiUsageLogger.logNullParam(OtTracePropagator.class, "inject", "setter");
       return;
     }
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
@@ -94,9 +100,11 @@ public final class OtTracePropagator implements TextMapPropagator {
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
+      ApiUsageLogger.logNullParam(OtTracePropagator.class, "extract", "context");
       return Context.root();
     }
     if (getter == null) {
+      ApiUsageLogger.logNullParam(OtTracePropagator.class, "extract", "getter");
       return context;
     }
     String incomingTraceId = getter.get(carrier, TRACE_ID_HEADER);

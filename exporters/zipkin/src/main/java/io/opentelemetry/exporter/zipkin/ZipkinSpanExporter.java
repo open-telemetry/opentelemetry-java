@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.zipkin;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
-import java.util.Objects;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -21,6 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;

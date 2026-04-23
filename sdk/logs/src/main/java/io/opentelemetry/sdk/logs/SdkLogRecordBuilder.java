@@ -99,6 +99,10 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
 
   @Override
   public SdkLogRecordBuilder setContext(Context context) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setContext", "context");
+      return this;
+    }
     this.context = context;
     return this;
   }

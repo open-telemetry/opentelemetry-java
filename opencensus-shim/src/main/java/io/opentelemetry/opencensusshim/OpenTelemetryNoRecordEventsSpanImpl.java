@@ -34,6 +34,7 @@ import io.opencensus.trace.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.common.ApiUsageLogger;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -91,11 +92,26 @@ final class OpenTelemetryNoRecordEventsSpanImpl extends Span
 
   @Override
   public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode) {
+    if (canonicalCode == null) {
+      ApiUsageLogger.logNullParam(
+          OpenTelemetryNoRecordEventsSpanImpl.class, "setStatus", "canonicalCode");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode, String description) {
+    if (canonicalCode == null) {
+      ApiUsageLogger.logNullParam(
+          OpenTelemetryNoRecordEventsSpanImpl.class, "setStatus", "canonicalCode");
+      return this;
+    }
+    if (description == null) {
+      ApiUsageLogger.logNullParam(
+          OpenTelemetryNoRecordEventsSpanImpl.class, "setStatus", "description");
+      return this;
+    }
     return this;
   }
 
@@ -111,63 +127,136 @@ final class OpenTelemetryNoRecordEventsSpanImpl extends Span
 
   @Override
   public io.opentelemetry.api.trace.Span setAttribute(String key, @Nullable String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "setAttribute", "key");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span setAttribute(String key, long value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "setAttribute", "key");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span setAttribute(String key, double value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "setAttribute", "key");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span setAttribute(String key, boolean value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "setAttribute", "key");
+      return this;
+    }
     return this;
   }
 
   @Override
   public <T> io.opentelemetry.api.trace.Span setAttribute(AttributeKey<T> key, @Nullable T value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "setAttribute", "key");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span addEvent(String name) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "addEvent", "name");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span addEvent(String name, long timestamp, TimeUnit unit) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "addEvent", "name");
+      return this;
+    }
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "addEvent", "unit");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span addEvent(String name, Attributes attributes) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "addEvent", "name");
+      return this;
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(
+          OpenTelemetryNoRecordEventsSpanImpl.class, "addEvent", "attributes");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span addEvent(
       String name, Attributes attributes, long timestamp, TimeUnit unit) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "addEvent", "name");
+      return this;
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(
+          OpenTelemetryNoRecordEventsSpanImpl.class, "addEvent", "attributes");
+      return this;
+    }
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "addEvent", "unit");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span recordException(Throwable exception) {
+    if (exception == null) {
+      ApiUsageLogger.logNullParam(
+          OpenTelemetryNoRecordEventsSpanImpl.class, "recordException", "exception");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span recordException(
       Throwable exception, Attributes additionalAttributes) {
+    if (exception == null) {
+      ApiUsageLogger.logNullParam(
+          OpenTelemetryNoRecordEventsSpanImpl.class, "recordException", "exception");
+      return this;
+    }
+    if (additionalAttributes == null) {
+      ApiUsageLogger.logNullParam(
+          OpenTelemetryNoRecordEventsSpanImpl.class, "recordException", "additionalAttributes");
+      return this;
+    }
     return this;
   }
 
   @Override
   public io.opentelemetry.api.trace.Span updateName(String name) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetryNoRecordEventsSpanImpl.class, "updateName", "name");
+      return this;
+    }
     return this;
   }
 

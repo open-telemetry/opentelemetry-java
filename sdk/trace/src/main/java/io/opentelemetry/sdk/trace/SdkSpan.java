@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -359,6 +360,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public ReadWriteSpan addEvent(String name) {
     if (name == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "name");
       return this;
     }
     addTimedEvent(EventData.create(clock.now(), name, Attributes.empty(), 0));
@@ -367,7 +369,12 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   public ReadWriteSpan addEvent(String name, long timestamp, TimeUnit unit) {
-    if (name == null || unit == null) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "name");
+      return this;
+    }
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "unit");
       return this;
     }
     addTimedEvent(EventData.create(unit.toNanos(timestamp), name, Attributes.empty(), 0));
@@ -377,6 +384,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public ReadWriteSpan addEvent(String name, Attributes attributes) {
     if (name == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "name");
       return this;
     }
     if (attributes == null) {
@@ -397,7 +405,12 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
-    if (name == null || unit == null) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "name");
+      return this;
+    }
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "unit");
       return this;
     }
     if (attributes == null) {
@@ -435,6 +448,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public ReadWriteSpan setStatus(StatusCode statusCode, @Nullable String description) {
     if (statusCode == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "setStatus", "statusCode");
       return this;
     }
     synchronized (lock) {
@@ -468,6 +482,10 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   public ReadWriteSpan recordException(Throwable exception) {
+    if (exception == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "recordException", "exception");
+      return this;
+    }
     recordException(exception, Attributes.empty());
     return this;
   }
@@ -475,6 +493,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "recordException", "exception");
       return this;
     }
     if (additionalAttributes == null) {
@@ -500,6 +519,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public ReadWriteSpan updateName(String name) {
     if (name == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "updateName", "name");
       return this;
     }
     synchronized (lock) {

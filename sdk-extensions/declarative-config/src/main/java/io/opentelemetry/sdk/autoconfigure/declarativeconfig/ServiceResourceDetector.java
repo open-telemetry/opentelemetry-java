@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ServiceResourceDetector implements ComponentProvider {
@@ -36,6 +37,7 @@ public class ServiceResourceDetector implements ComponentProvider {
 
   @Override
   public Resource create(DeclarativeConfigProperties config) {
+    Objects.requireNonNull(config, "config");
     ResourceBuilder builder = Resource.builder();
 
     ConfigProperties properties =

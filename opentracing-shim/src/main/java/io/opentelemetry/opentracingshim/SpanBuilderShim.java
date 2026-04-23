@@ -17,6 +17,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentracing.References;
 import io.opentracing.Span;
@@ -118,6 +119,10 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SpanBuilderShim.class, "withTag", "key");
+      return this;
+    }
     if (Tags.ERROR.getKey().equals(key)) {
       error = Boolean.parseBoolean(value);
     } else {
@@ -130,6 +135,10 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, boolean value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SpanBuilderShim.class, "withTag", "key");
+      return this;
+    }
     if (Tags.ERROR.getKey().equals(key)) {
       error = value;
     } else {
@@ -141,6 +150,10 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, Number value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SpanBuilderShim.class, "withTag", "key");
+      return this;
+    }
     if (value == null) {
       return this;
     }

@@ -5,13 +5,13 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
-import java.util.Objects;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**

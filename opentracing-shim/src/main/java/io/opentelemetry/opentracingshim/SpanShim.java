@@ -121,6 +121,10 @@ final class SpanShim implements Span, ImplicitContextKeyed {
 
   @Override
   public Span setTag(String key, Number value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SpanShim.class, "setTag", "key");
+      return this;
+    }
     if (value == null) {
       return this;
     }
@@ -170,20 +174,32 @@ final class SpanShim implements Span, ImplicitContextKeyed {
 
   @Override
   public Span log(String event) {
+    if (event == null) {
+      ApiUsageLogger.logNullParam(SpanShim.class, "log", "event");
+      return this;
+    }
     span.addEvent(event);
     return this;
   }
 
   @Override
   public Span log(long timestampMicroseconds, String event) {
+    if (event == null) {
+      ApiUsageLogger.logNullParam(SpanShim.class, "log", "event");
+      return this;
+    }
     span.addEvent(event, timestampMicroseconds, TimeUnit.MICROSECONDS);
     return this;
   }
 
   @Override
   public Span setBaggageItem(String key, String value) {
-    // TagKey nor TagValue can be created with null values.
-    if (key == null || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SpanShim.class, "setBaggageItem", "key");
+      return this;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(SpanShim.class, "setBaggageItem", "value");
       return this;
     }
 
@@ -206,6 +222,10 @@ final class SpanShim implements Span, ImplicitContextKeyed {
 
   @Override
   public Span setOperationName(String operationName) {
+    if (operationName == null) {
+      ApiUsageLogger.logNullParam(SpanShim.class, "setOperationName", "operationName");
+      return this;
+    }
     span.updateName(operationName);
     return this;
   }

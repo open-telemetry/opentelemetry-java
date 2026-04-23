@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.logging;
 
-import java.util.Objects;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -64,6 +63,7 @@ public final class LoggingMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return aggregationTemporality;
   }
 

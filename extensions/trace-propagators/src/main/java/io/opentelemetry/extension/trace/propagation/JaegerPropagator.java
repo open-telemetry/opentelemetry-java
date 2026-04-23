@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -91,9 +92,11 @@ public final class JaegerPropagator implements TextMapPropagator {
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
     if (context == null) {
+      ApiUsageLogger.logNullParam(JaegerPropagator.class, "inject", "context");
       return;
     }
     if (setter == null) {
+      ApiUsageLogger.logNullParam(JaegerPropagator.class, "inject", "setter");
       return;
     }
 
@@ -133,9 +136,11 @@ public final class JaegerPropagator implements TextMapPropagator {
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
+      ApiUsageLogger.logNullParam(JaegerPropagator.class, "extract", "context");
       return Context.root();
     }
     if (getter == null) {
+      ApiUsageLogger.logNullParam(JaegerPropagator.class, "extract", "getter");
       return context;
     }
 

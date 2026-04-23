@@ -202,6 +202,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   @Override
   public <T> List<T> getScalarList(String name, Class<T> scalarType) {
     Objects.requireNonNull(name, "Null configuration property name");
+    Objects.requireNonNull(scalarType, "scalarType");
     if (!SUPPORTED_SCALAR_TYPES.contains(scalarType)) {
       throw new DeclarativeConfigException(
           "Unsupported scalar type "

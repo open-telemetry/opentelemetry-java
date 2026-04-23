@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -25,6 +26,12 @@ enum AlwaysOffSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(traceId, "traceId");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(spanKind, "spanKind");
+    Objects.requireNonNull(attributes, "attributes");
+    Objects.requireNonNull(parentLinks, "parentLinks");
     return ImmutableSamplingResult.EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
   }
 

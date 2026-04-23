@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
+import java.util.Objects;
 
 final class ComposableAnnotatingSampler implements ComposableSampler {
   private final ComposableSampler delegate;
@@ -32,6 +33,12 @@ final class ComposableAnnotatingSampler implements ComposableSampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(traceId, "traceId");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(spanKind, "spanKind");
+    Objects.requireNonNull(attributes, "attributes");
+    Objects.requireNonNull(parentLinks, "parentLinks");
     SamplingIntent intent =
         delegate.getSamplingIntent(parentContext, traceId, name, spanKind, attributes, parentLinks);
     return SamplingIntent.create(

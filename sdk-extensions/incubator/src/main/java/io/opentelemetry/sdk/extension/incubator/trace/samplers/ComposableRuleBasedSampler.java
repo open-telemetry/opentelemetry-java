@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
+import java.util.Objects;
 
 final class ComposableRuleBasedSampler implements ComposableSampler {
 
@@ -46,6 +47,12 @@ final class ComposableRuleBasedSampler implements ComposableSampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(traceId, "traceId");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(spanKind, "spanKind");
+    Objects.requireNonNull(attributes, "attributes");
+    Objects.requireNonNull(parentLinks, "parentLinks");
     for (SamplingRule rule : rules) {
       if (rule.predicate()
           .matches(parentContext, traceId, name, spanKind, attributes, parentLinks)) {

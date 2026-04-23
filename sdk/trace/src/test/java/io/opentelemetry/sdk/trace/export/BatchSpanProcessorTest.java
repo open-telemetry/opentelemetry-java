@@ -450,15 +450,11 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void ignoresNullSpans() {
+  void rejectsNullSpanOnEnd() {
     BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     try {
-      assertThatCode(
-              () -> {
-                processor.onStart(null, null);
-                processor.onEnd(null);
-              })
-          .doesNotThrowAnyException();
+      assertThatCode(() -> processor.onStart(null, null)).doesNotThrowAnyException();
+      assertThatThrownBy(() -> processor.onEnd(null)).isInstanceOf(NullPointerException.class);
     } finally {
       processor.shutdown();
     }

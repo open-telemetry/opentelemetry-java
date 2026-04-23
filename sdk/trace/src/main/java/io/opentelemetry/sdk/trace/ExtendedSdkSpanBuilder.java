@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.common.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -104,19 +105,41 @@ final class ExtendedSdkSpanBuilder extends SdkSpanBuilder implements ExtendedSpa
   @Override
   public ExtendedSpanBuilder setParentFrom(
       ContextPropagators propagators, Map<String, String> carrier) {
+    if (propagators == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkSpanBuilder.class, "setParentFrom", "propagators");
+      return this;
+    }
+    if (carrier == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkSpanBuilder.class, "setParentFrom", "carrier");
+      return this;
+    }
     super.setParent(
         ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators));
     return this;
   }
 
+  @SuppressWarnings("NullAway")
   @Override
   public <T, E extends Throwable> T startAndCall(SpanCallable<T, E> spanCallable) throws E {
+    if (spanCallable == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkSpanBuilder.class, "startAndCall", "spanCallable");
+      return null;
+    }
     return startAndCall(spanCallable, ExtendedSdkSpanBuilder::setSpanError);
   }
 
+  @SuppressWarnings("NullAway")
   @Override
   public <T, E extends Throwable> T startAndCall(
       SpanCallable<T, E> spanCallable, BiConsumer<Span, Throwable> handleException) throws E {
+    if (spanCallable == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkSpanBuilder.class, "startAndCall", "spanCallable");
+      return null;
+    }
+    if (handleException == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkSpanBuilder.class, "startAndCall", "handleException");
+      return null;
+    }
     Span span = startSpan();
 
     //noinspection unused
@@ -132,6 +155,10 @@ final class ExtendedSdkSpanBuilder extends SdkSpanBuilder implements ExtendedSpa
 
   @Override
   public <E extends Throwable> void startAndRun(SpanRunnable<E> runnable) throws E {
+    if (runnable == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkSpanBuilder.class, "startAndRun", "runnable");
+      return;
+    }
     startAndRun(runnable, ExtendedSdkSpanBuilder::setSpanError);
   }
 
@@ -139,6 +166,14 @@ final class ExtendedSdkSpanBuilder extends SdkSpanBuilder implements ExtendedSpa
   @Override
   public <E extends Throwable> void startAndRun(
       SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E {
+    if (runnable == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkSpanBuilder.class, "startAndRun", "runnable");
+      return;
+    }
+    if (handleException == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkSpanBuilder.class, "startAndRun", "handleException");
+      return;
+    }
     startAndCall(
         () -> {
           runnable.runInSpan();

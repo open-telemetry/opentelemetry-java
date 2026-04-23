@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** {@link PerOperationSampler} samples spans per operation. */
 class PerOperationSampler implements Sampler {
@@ -42,6 +43,12 @@ class PerOperationSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(traceId, "traceId");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(spanKind, "spanKind");
+    Objects.requireNonNull(attributes, "attributes");
+    Objects.requireNonNull(parentLinks, "parentLinks");
     Sampler sampler = this.perOperationSampler.get(name);
     if (sampler == null) {
       sampler = this.defaultSampler;

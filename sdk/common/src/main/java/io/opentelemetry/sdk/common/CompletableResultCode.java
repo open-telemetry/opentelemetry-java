@@ -211,6 +211,7 @@ public final class CompletableResultCode {
    * @return this {@link CompletableResultCode}
    */
   public CompletableResultCode join(long timeout, TimeUnit unit) {
+    Objects.requireNonNull(unit, "unit");
     if (isDone()) {
       return this;
     }

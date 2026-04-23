@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import java.util.Objects;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -18,6 +17,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

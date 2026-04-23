@@ -44,6 +44,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.common.ApiUsageLogger;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -128,6 +129,14 @@ class OpenTelemetrySpanImpl extends Span
 
   @Override
   public io.opentelemetry.api.trace.Span setStatus(StatusCode canonicalCode, String description) {
+    if (canonicalCode == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetrySpanImpl.class, "setStatus", "canonicalCode");
+      return this;
+    }
+    if (description == null) {
+      ApiUsageLogger.logNullParam(OpenTelemetrySpanImpl.class, "setStatus", "description");
+      return this;
+    }
     return DelegatingSpan.super.setStatus(canonicalCode, description);
   }
 

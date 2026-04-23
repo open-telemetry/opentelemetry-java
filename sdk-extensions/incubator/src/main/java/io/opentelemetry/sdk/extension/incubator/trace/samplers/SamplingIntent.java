@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace.samplers;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TraceState;
+import java.util.Objects;
 import java.util.function.Function;
 
 /** Information to make a sampling decision. */
@@ -18,6 +19,8 @@ public interface SamplingIntent {
       boolean thresholdReliable,
       Attributes attributes,
       Function<TraceState, TraceState> traceStateUpdater) {
+    Objects.requireNonNull(attributes, "attributes");
+    Objects.requireNonNull(traceStateUpdater, "traceStateUpdater");
     return ImmutableSamplingIntent.create(
         threshold, thresholdReliable, attributes, traceStateUpdater);
   }

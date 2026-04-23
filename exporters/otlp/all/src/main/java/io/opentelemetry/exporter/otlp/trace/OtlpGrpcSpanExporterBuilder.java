@@ -76,6 +76,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   @Deprecated
   public OtlpGrpcSpanExporterBuilder setChannel(ManagedChannel channel) {
+    requireNonNull(channel, "channel");
     delegate.setChannel(channel);
     return this;
   }
