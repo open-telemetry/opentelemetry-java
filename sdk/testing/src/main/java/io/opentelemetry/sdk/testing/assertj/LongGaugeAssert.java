@@ -44,4 +44,30 @@ public final class LongGaugeAssert
         .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, LongPointAssert::new));
     return this;
   }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the gauge satisfies it. Extra
+   * points that match none of the assertions are allowed, and a single point may satisfy multiple
+   * assertions.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final LongGaugeAssert containsPointsSatisfying(Consumer<LongPointAssert>... assertions) {
+    return containsPointsSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the gauge satisfies it. Extra
+   * points that match none of the assertions are allowed, and a single point may satisfy multiple
+   * assertions.
+   */
+  public LongGaugeAssert containsPointsSatisfying(
+      Iterable<? extends Consumer<LongPointAssert>> assertions) {
+    isNotNull();
+    for (Consumer<LongPointAssert> assertion : assertions) {
+      assertThat(actual.getPoints())
+          .anySatisfy(point -> assertion.accept(new LongPointAssert(point)));
+    }
+    return this;
+  }
 }
