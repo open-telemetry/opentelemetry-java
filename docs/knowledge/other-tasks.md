@@ -13,6 +13,17 @@ Benchmark sources live in `jmh/` directories within their respective modules.
 ./gradlew -PjmhIncludeSingleClass=BatchSpanProcessorBenchmark :sdk:trace:jmh
 ```
 
+The following JMH parameters can be configured via `-P` flags:
+
+| Flag | JMH setting | Example |
+|---|---|---|
+| `-PjmhIncludeSingleClass=<class>` | Run only this benchmark class | `-PjmhIncludeSingleClass=BatchSpanProcessorBenchmark` |
+| `-PjmhFork=<n>` | Number of forks | `-PjmhFork=1` |
+| `-PjmhIterations=<n>` | Measurement iterations | `-PjmhIterations=5` |
+| `-PjmhTime=<duration>` | Time per measurement iteration | `-PjmhTime=2s` |
+| `-PjmhWarmupIterations=<n>` | Warmup iterations | `-PjmhWarmupIterations=3` |
+| `-PjmhWarmup=<duration>` | Time per warmup iteration | `-PjmhWarmup=1s` |
+
 ## Composite builds
 
 > **No compatibility guarantees**: this process can change at any time. Steps that work for one
@@ -68,6 +79,20 @@ Copy or symlink it into `.git/hooks/` to delegate formatting to the machine:
 cp buildscripts/pre-commit .git/hooks/pre-commit
 # or
 ln -s ../../buildscripts/pre-commit .git/hooks/pre-commit
+```
+
+## Native image tests (GraalVM)
+
+GraalVM native image integration tests live in `integration-tests/graal` and
+`integration-tests/graal-incubating`. They are **not** part of the standard `build` task and
+require a GraalVM JDK with `native-image` installed.
+
+```bash
+# Both flags required due to https://github.com/graalvm/native-build-tools/issues/477:
+# --no-parallel prevents a race where the plugin's shared build service creates project-scoped
+# detached configurations that are concurrently accessed during task fingerprinting.
+# --no-configuration-cache prevents the cache store phase from adding additional concurrency.
+./gradlew nativeTest --no-configuration-cache --no-parallel
 ```
 
 ## Updating OTLP protobufs
