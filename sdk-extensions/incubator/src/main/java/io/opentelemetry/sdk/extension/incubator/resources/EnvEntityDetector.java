@@ -40,20 +40,13 @@ class EnvEntityDetector implements EntityDetector {
   /**
    * Segment class represents a start/stop endpoint within a source String.
    *
-   * <p>
-   * A segment can be used to extract a substring from the source string *without
-   * interning* the
-   * string into the JDK's string tables. This can dramatically reduce allocations
-   * when parsing.
-   * Segment is intended to provide a similar interface to using {@code substring}
-   * on {@code
+   * <p>A segment can be used to extract a substring from the source string *without interning* the
+   * string into the JDK's string tables. This can dramatically reduce allocations when parsing.
+   * Segment is intended to provide a similar interface to using {@code substring} on {@code
    * String}.
    *
-   * <p>
-   * Additionally, a Segment can be denoted as URL-encoded (e.g. using '%20' to
-   * denote a
-   * character.) In this case, the segment will be decoded when extracting its
-   * String value.
+   * <p>Additionally, a Segment can be denoted as URL-encoded (e.g. using '%20' to denote a
+   * character.) In this case, the segment will be decoded when extracting its String value.
    */
   private static final class Segment {
     private final String source;
@@ -79,8 +72,7 @@ class EnvEntityDetector implements EntityDetector {
     }
 
     /**
-     * Denotes that the segment is URL encoded, and should be decoded when calling
-     * {@code
+     * Denotes that the segment is URL encoded, and should be decoded when calling {@code
      * getValue()}.
      */
     void markNeedsDecoding() {
@@ -93,12 +85,10 @@ class EnvEntityDetector implements EntityDetector {
     }
 
     /**
-     * Returns the string represented by the bounds of the segment *and* decodes it
-     * if {@code
+     * Returns the string represented by the bounds of the segment *and* decodes it if {@code
      * markNeedsDecoding} has been called.
      *
-     * <p>
-     * Note: This will trim whitespace from the segment before returning it.
+     * <p>Note: This will trim whitespace from the segment before returning it.
      */
     String getValue() {
       if (isEmpty()) {
@@ -142,18 +132,12 @@ class EnvEntityDetector implements EntityDetector {
     /**
      * The current state of parsing.
      *
-     * <p>
-     * The format is TYPE{KEY1=VAL1,KEY2=VAL2}[ATTR1=VAL1,ATTR2=VAL2]@SCHEMA_URL;
+     * <p>The format is TYPE{KEY1=VAL1,KEY2=VAL2}[ATTR1=VAL1,ATTR2=VAL2]@SCHEMA_URL;
      *
-     * <p>
-     * The parser state machine transitions between the following states: - TYPE:
-     * Parsing an
-     * entity type - ID_KEY: Parsing a "key" of an identity attribute - ID_VAL:
-     * Parsing a "value" of
-     * an identity attribute - DESC_KEY: Parsing a "key" of a description attribute
-     * - DESC_VAL:
-     * Parsing a "value" of a description attribute - SCHEMA_URL: Parsing the schema
-     * URL of a
+     * <p>The parser state machine transitions between the following states: - TYPE: Parsing an
+     * entity type - ID_KEY: Parsing a "key" of an identity attribute - ID_VAL: Parsing a "value" of
+     * an identity attribute - DESC_KEY: Parsing a "key" of a description attribute - DESC_VAL:
+     * Parsing a "value" of a description attribute - SCHEMA_URL: Parsing the schema URL of a
      * specific entity - SKIP_TO_NEXT: Skip to the next entity
      */
     private enum State {
@@ -183,8 +167,7 @@ class EnvEntityDetector implements EntityDetector {
     // Temporary state for building an entity.
 
     /** The parsed entity type. */
-    @Nullable
-    private String currentType;
+    @Nullable private String currentType;
 
     /** Parsed attributes denoting the entity identity. */
     private Attributes currentIdAttrs = Attributes.empty();
@@ -193,19 +176,13 @@ class EnvEntityDetector implements EntityDetector {
     private Attributes currentDescAttrs = Attributes.empty();
 
     /** Parsed schema URL for the entity. */
-    @Nullable
-    private String currentSchemaUrl;
+    @Nullable private String currentSchemaUrl;
 
-    /**
-     * A temporary builder we use when parsing key-value pairs for identity or
-     * description.
-     */
-    @Nullable
-    private AttributesBuilder currentBuilder;
+    /** A temporary builder we use when parsing key-value pairs for identity or description. */
+    @Nullable private AttributesBuilder currentBuilder;
 
     /** The current key of a key-value pair that we are parsing. */
-    @Nullable
-    private String currentKey;
+    @Nullable private String currentKey;
 
     EntityParser(String input) {
       this.input = input;
@@ -370,9 +347,7 @@ class EnvEntityDetector implements EntityDetector {
       return entities;
     }
 
-    /**
-     * Adds the current attribute key-value pair into the current attribute builder.
-     */
+    /** Adds the current attribute key-value pair into the current attribute builder. */
     private void putAttr() {
       String val = currentSegment.getValue();
       if (currentKey != null && !currentKey.isEmpty() && currentBuilder != null) {

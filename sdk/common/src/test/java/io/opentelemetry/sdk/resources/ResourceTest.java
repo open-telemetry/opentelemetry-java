@@ -23,6 +23,8 @@ import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -234,6 +236,31 @@ class ResourceTest {
     assertThat(schemaTwo.merge(schemaTwoAgain).getSchemaUrl()).isEqualTo(schemaTwo.getSchemaUrl());
     assertThat(schemaOne.merge(schemaTwo).getSchemaUrl()).isNull();
     assertThat(schemaTwo.merge(schemaOne).getSchemaUrl()).isNull();
+  }
+
+  @Test
+  void testMergeResources_entities_separate_types_and_schema() {
+    Resource resource1 =
+        Resource.builder()
+            .add(
+                Entity.builder("a")
+                    .setSchemaUrl("one")
+                    .withId(Attributes.builder().put("a.id", "a").build())
+                    .build())
+            .build();
+    Resource resource2 =
+        Resource.builder()
+            .add(
+                Entity.builder("b")
+                    .setSchemaUrl("two")
+                    .withId(Attributes.builder().put("b.id", "b").build())
+                    .build())
+            .build();
+    Resource merged = resource1.merge(resource2);
+    assertThat(merged.getSchemaUrl()).isNull();
+    assertThat(merged.getEntities()).hasSize(2);
+    OpenTelemetryAssertions.assertThat(merged.getAttributes()).containsEntry("a.id", "a");
+    OpenTelemetryAssertions.assertThat(merged.getAttributes()).containsEntry("b.id", "b");
   }
 
   @Test
