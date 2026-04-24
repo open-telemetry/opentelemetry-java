@@ -287,6 +287,12 @@
       return isoTimestamp.slice(0, 10);
     }
 
+    function formatValue(value) {
+      if (value >= 1_000_000) return (value / 1_000_000).toLocaleString(undefined, {maximumFractionDigits: 2}) + 'M';
+      if (value >= 1_000) return (value / 1_000).toLocaleString(undefined, {maximumFractionDigits: 2}) + 'K';
+      return value.toLocaleString(undefined, {maximumFractionDigits: 2});
+    }
+
     // Parse "methodName ( {json} )" into a compact label like "methodName [val1, val2]".
     function formatSeriesLabel(nameAfterClass) {
       const jsonMatch = nameAfterClass.match(/\(\s*(\{[\s\S]*?\})\s*\)/);
@@ -426,13 +432,7 @@
             y: {
               beginAtZero: true,
               title: {display: true, text: unit},
-              ticks: {
-                callback: (value) => {
-                  if (value >= 1_000_000) return (value / 1_000_000).toLocaleString(undefined, {maximumFractionDigits: 1}) + 'M';
-                  if (value >= 1_000) return (value / 1_000).toLocaleString(undefined, {maximumFractionDigits: 1}) + 'K';
-                  return value;
-                },
-              },
+              ticks: {callback: formatValue},
             },
           },
           plugins: {
@@ -455,7 +455,7 @@
                   const d = results[item.datasetIndex].dataset[currentIndices[item.dataIndex]];
                   if (!d) return item.dataset.label;
                   const {range, unit} = d.bench;
-                  let text = `${item.dataset.label}: ${item.formattedValue} ${unit}`;
+                  let text = `${item.dataset.label}: ${formatValue(d.bench.value)} ${unit}`;
                   if (range) text += ' (' + range + ')';
                   return text;
                 },
