@@ -7,7 +7,7 @@ package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.common.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;

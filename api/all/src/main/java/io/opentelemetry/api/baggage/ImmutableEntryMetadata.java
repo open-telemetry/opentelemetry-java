@@ -6,7 +6,7 @@
 package io.opentelemetry.api.baggage;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
