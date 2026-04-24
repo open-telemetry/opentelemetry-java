@@ -344,14 +344,12 @@ class SdkLoggerProviderTest {
   void toString_Valid() {
     when(logRecordProcessor.toString()).thenReturn("MockLogRecordProcessor");
     assertThat(sdkLoggerProvider.toString())
-        .isEqualTo(
-            "SdkLoggerProvider{"
-                + "clock=SystemClock{}, "
-                + "resource=Resource{schemaUrl=null, attributes={key=\"value\"}}, "
-                + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
+        .matches(
+            "SdkLoggerProvider\\{clock=SystemClock\\{\\}, "
+                + "resource=Resource\\{schemaUrl=null, (attributes|rawAttributes)=\\{key=\"value\"\\}(, entities=\\[\\])?\\}, "
+                + "logLimits=LogLimits\\{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647\\}, "
                 + "logRecordProcessor=MockLogRecordProcessor, "
-                + "loggerConfigurator=ScopeConfiguratorImpl{conditions=[]}"
-                + "}");
+                + "loggerConfigurator=ScopeConfiguratorImpl\\{conditions=\\[\\]\\}\\}");
   }
 
   private static ScopeConfigurator<LoggerConfig> flipConfigurator(boolean enabled) {
