@@ -117,7 +117,7 @@ code from module `bar`. Cross-module internal usage is a known issue being track
 in open-telemetry/opentelemetry-java#6970.
 
 See also [Impl (Implementation) code](#impl-implementation-code) for cross-module code that is not for application developers but
-requires a stable ABI.
+requires a stable API.
 
 ## Javadoc
 
