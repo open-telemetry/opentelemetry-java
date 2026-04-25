@@ -7,6 +7,7 @@ package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import java.util.function.Predicate;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -62,21 +63,21 @@ public interface LongUpDownCounter {
   void add(long value, Attributes attributes, Context context);
 
   /**
-   * Finish the instrument record.
+   * Finish the recording of the instrument.
    *
-   * @param attributes A set of attributes to identify the instrument.
-   * @since 1.56.0
+   * @param condition A function evaluating which instruments to remove based on their attributes.
+   * @since TODO
    */
-  default void finish(Attributes attributes) {
-    finish(attributes, Context.current());
+  default void finish(Predicate<Attributes> condition) {
+    finish(condition, Context.current());
   }
 
   /**
-   * Finish the instrument record.
+   * Finish the recording of the instrument.
    *
-   * @param attributes A set of attributes to identify the instrument.
+   * @param condition A function evaluating which instruments to remove based on their attributes.
    * @param context The explicit context to associate with this measurement.
-   * @since 1.56.0
+   * @since TODO
    */
-  default void finish(Attributes attributes, Context context) {}
+  default void finish(Predicate<Attributes> condition, Context context) {}
 }

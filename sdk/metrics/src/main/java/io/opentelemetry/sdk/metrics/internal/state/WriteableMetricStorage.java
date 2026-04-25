@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.function.Predicate;
 
 /**
  * Stores {@link MetricData} and allows synchronous writes of measurements.
@@ -23,8 +24,8 @@ public interface WriteableMetricStorage {
   /** Records a measurement. */
   void recordDouble(double value, Attributes attributes, Context context);
 
-  /** Remove a measurement. */
-  default void remove(Attributes attributes, Context context) {}
+  /** Finish measurements matching the predicate. */
+  default void finish(Predicate<Attributes> condition, Context context) {}
 
   /**
    * Returns {@code true} if the storage is actively recording measurements, and {@code false}

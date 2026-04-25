@@ -56,7 +56,7 @@ class SdkLongUpDownCounterTest {
     LongUpDownCounter counter = sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     counter.add(1, attrs);
-    counter.finish(attrs);
+    counter.finish(at -> true);
     Assertions.assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 

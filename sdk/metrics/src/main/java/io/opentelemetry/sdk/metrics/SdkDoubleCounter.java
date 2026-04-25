@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,8 +63,8 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
   }
 
   @Override
-  public void finish(Attributes attributes, Context context) {
-    storage.remove(attributes, context);
+  public void finish(Predicate<Attributes> condition, Context context) {
+    storage.finish(condition, context);
   }
 
   static class SdkDoubleCounterBuilder implements DoubleCounterBuilder {

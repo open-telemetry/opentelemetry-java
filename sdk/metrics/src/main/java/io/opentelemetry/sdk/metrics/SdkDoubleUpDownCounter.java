@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownCounter {
 
@@ -49,8 +50,8 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
   }
 
   @Override
-  public void finish(Attributes attributes, Context context) {
-    storage.remove(attributes, context);
+  public void finish(Predicate<Attributes> condition, Context context) {
+    storage.finish(condition, context);
   }
 
   static class SdkDoubleUpDownCounterBuilder implements DoubleUpDownCounterBuilder {

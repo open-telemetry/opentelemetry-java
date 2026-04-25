@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -238,13 +239,18 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     }
 
     @Override
-    public void remove(Attributes attributes, Context context) {
+    public void finish(Predicate<Attributes> condition, Context context) {
       if (!enabled) {
         return;
       }
       AggregatorHolder<T> holderForRecord = getHolderForRecord();
       try {
-        holderForRecord.aggregatorHandles.remove(attributes);
+        holderForRecord.aggregatorHandles.forEach(
+            (attributes, tAggregatorHandle) -> {
+              if (condition.test(attributes)) {
+                holderForRecord.aggregatorHandles.remove(attributes);
+              }
+            });
       } finally {
         releaseHolderForRecord(holderForRecord);
       }
@@ -448,11 +454,16 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     }
 
     @Override
-    public void remove(Attributes attributes, Context context) {
+    public void finish(Predicate<Attributes> condition, Context context) {
       if (!enabled) {
         return;
       }
-      aggregatorHandles.remove(attributes);
+      aggregatorHandles.forEach(
+          (attributes, tAggregatorHandle) -> {
+            if (condition.test(attributes)) {
+              aggregatorHandles.remove(attributes);
+            }
+          });
     }
 
     @Nullable

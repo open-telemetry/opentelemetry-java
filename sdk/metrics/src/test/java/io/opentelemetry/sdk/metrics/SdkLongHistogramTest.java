@@ -68,7 +68,7 @@ class SdkLongHistogramTest {
     LongHistogram histogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     histogram.record(1, attrs);
-    histogram.finish(attrs);
+    histogram.finish(at -> true);
     Assertions.assertThat(reader.collectAllMetrics()).isEmpty();
   }
 

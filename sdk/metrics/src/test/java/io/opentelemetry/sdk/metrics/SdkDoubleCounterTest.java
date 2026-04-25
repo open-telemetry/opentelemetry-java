@@ -62,7 +62,7 @@ class SdkDoubleCounterTest {
     DoubleCounter counter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     counter.add(1, attrs);
-    counter.finish(attrs);
+    counter.finish(at -> true);
     assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 

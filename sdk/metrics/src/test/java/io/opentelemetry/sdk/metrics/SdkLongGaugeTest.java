@@ -86,7 +86,7 @@ class SdkLongGaugeTest {
     assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     gauge.set(1, attrs);
-    gauge.finish(attrs);
+    gauge.finish(at -> true);
     Assertions.assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
   }
 

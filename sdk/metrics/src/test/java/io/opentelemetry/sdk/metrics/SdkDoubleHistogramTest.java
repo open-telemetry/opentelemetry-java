@@ -69,7 +69,7 @@ class SdkDoubleHistogramTest {
     DoubleHistogram histogram = sdkMeter.histogramBuilder("testHistogram").build();
     Attributes attrs = Attributes.of(stringKey("key"), "value");
     histogram.record(1, attrs);
-    histogram.finish(attrs);
+    histogram.finish(at -> true);
     Assertions.assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 

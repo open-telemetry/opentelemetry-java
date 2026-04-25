@@ -942,7 +942,7 @@ public class SynchronousMetricStorageTest {
 
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10).isEmpty()).isTrue();
 
-    storage.remove(Attributes.empty(), Context.current());
+    storage.finish(at -> true, Context.current());
 
     storage.setEnabled(true);
 
@@ -950,11 +950,11 @@ public class SynchronousMetricStorageTest {
 
     storage.setEnabled(false);
 
-    storage.remove(Attributes.empty(), Context.current());
+    storage.finish(at -> true, Context.current());
 
     storage.setEnabled(true);
 
-    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isFalse();
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10).isEmpty()).isFalse();
   }
 
   @ParameterizedTest

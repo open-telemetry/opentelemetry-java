@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -371,9 +372,9 @@ final class SdkMeter implements Meter {
     }
 
     @Override
-    public void remove(Attributes attributes, Context context) {
+    public void finish(Predicate<Attributes> condition, Context context) {
       for (WriteableMetricStorage storage : storages) {
-        storage.remove(attributes, context);
+        storage.finish(condition, context);
       }
     }
 
