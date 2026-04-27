@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.marshal;
 
 import java.io.IOException;
+import javax.annotation.Nullable;
 
 /**
  * This class contains shared logic for UTF-8 encoding operations while allowing subclasses to
@@ -20,8 +21,11 @@ abstract class AbstractStringEncoder implements StringEncoder {
   private final FallbackStringEncoder fallback = new FallbackStringEncoder();
 
   @Override
-  public final void writeUtf8(CodedOutputStream output, String string, int utf8Length)
+  public final void writeUtf8(CodedOutputStream output, @Nullable String string, int utf8Length)
       throws IOException {
+    if (string == null) {
+      return;
+    }
     // if the length of the latin1 string and the utf8 output are the same then the string must be
     // composed of only 7bit characters and can be directly copied to the output
     if (string.length() == utf8Length && isLatin1(string)) {
@@ -33,8 +37,10 @@ abstract class AbstractStringEncoder implements StringEncoder {
   }
 
   @Override
-  public final int getUtf8Size(String string) {
-    if (isLatin1(string)) {
+  public final int getUtf8Size(@Nullable String string) {
+    if (string == null) {
+      return 0;
+    } else if (isLatin1(string)) {
       byte[] bytes = getStringBytes(string);
       // latin1 bytes with negative value (most significant bit set) are encoded as 2 bytes in utf8
       return string.length() + countNegative(bytes);

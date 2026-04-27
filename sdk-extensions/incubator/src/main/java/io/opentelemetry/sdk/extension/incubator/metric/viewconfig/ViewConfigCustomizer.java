@@ -23,8 +23,8 @@ import java.util.logging.Logger;
  * @deprecated this mechanism is superseded by declarative config, which is now stable (spec and
  *     schema at <a
  *     href="https://github.com/open-telemetry/opentelemetry-configuration">opentelemetry-configuration</a>)
- *     and will be removed after the 1.62.0 release. Please uses {@link
- *     io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration#parseAndCreate(InputStream)}
+ *     and will be removed after the 1.62.0 release. Please uses {@code
+ *     io.opentelemetry.sdk.declarativeconfig.DeclarativeConfiguration#parseAndCreate(InputStream)}
  *     instead.
  */
 @Deprecated

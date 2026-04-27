@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.marshal;
 
 import java.io.IOException;
+import javax.annotation.Nullable;
 
 /**
  * Fallback StringEncoder implementation using standard Java string operations.
@@ -20,14 +21,16 @@ final class FallbackStringEncoder implements StringEncoder {
   FallbackStringEncoder() {}
 
   @Override
-  public int getUtf8Size(String string) {
-    return encodedUtf8Length(string);
+  public int getUtf8Size(@Nullable String string) {
+    return string != null ? encodedUtf8Length(string) : 0;
   }
 
   @Override
-  public void writeUtf8(CodedOutputStream output, String string, int utf8Length)
+  public void writeUtf8(CodedOutputStream output, @Nullable String string, int utf8Length)
       throws IOException {
-    encodeUtf8(output, string);
+    if (string != null) {
+      encodeUtf8(output, string);
+    }
   }
 
   // adapted from
