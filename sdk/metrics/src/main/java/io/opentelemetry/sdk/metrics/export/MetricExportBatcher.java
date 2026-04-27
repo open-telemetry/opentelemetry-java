@@ -257,10 +257,21 @@ class MetricExportBatcher {
     }
   }
 
+  /**
+   * Tracks the active batch while batching stays linear: {@code metrics} is the current export
+   * payload being assembled and {@code points} is its running point count, so callers do not need
+   * to rescan the batch on every append.
+   */
   private static final class BatchState {
     private final Collection<MetricData> metrics;
     private int points;
 
+    /**
+     * Creates the mutable state for the current in-progress batch.
+     *
+     * @param metrics metric entries collected into the current export batch
+     * @param points running total of data points across {@code metrics}
+     */
     private BatchState(Collection<MetricData> metrics, int points) {
       this.metrics = metrics;
       this.points = points;
