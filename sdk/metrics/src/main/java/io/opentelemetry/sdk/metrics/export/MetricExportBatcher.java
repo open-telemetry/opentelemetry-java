@@ -243,8 +243,7 @@ class MetricExportBatcher {
      *     than {@link #maxExportBatchSize} points.
      */
     MetricDataSplitOperationResult(
-        Collection<Collection<MetricData>> preparedBatches,
-        BatchState lastInProgressBatch) {
+        Collection<Collection<MetricData>> preparedBatches, BatchState lastInProgressBatch) {
       this.preparedBatches = preparedBatches;
       this.lastInProgressBatch = lastInProgressBatch;
     }

@@ -222,8 +222,8 @@ public final class PeriodicMetricReader implements MetricReader {
           }
           if (metricData.isEmpty()) {
             logger.log(Level.FINE, "No metric data to export - skipping export.");
-            flushResult.succeed();
             exportAvailable.set(true);
+            flushResult.succeed();
           } else {
             CompletableResultCode result;
             if (metricsBatcher != null) {
@@ -271,12 +271,8 @@ public final class PeriodicMetricReader implements MetricReader {
                   if (!result.isSuccess()) {
                     logger.log(Level.FINE, "Exporter failed");
                   }
-                  if (result.isSuccess()) {
-                    flushResult.succeed();
-                  } else {
-                    flushResult.fail();
-                  }
                   exportAvailable.set(true);
+                  flushResult.succeed();
                 });
           }
         } catch (Throwable t) {

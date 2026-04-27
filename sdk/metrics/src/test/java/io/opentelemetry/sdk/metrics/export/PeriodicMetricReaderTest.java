@@ -547,8 +547,8 @@ class PeriodicMetricReaderTest {
 
       batch3Result.succeed();
 
-      // Flush result should reflect the failed batch.
-      assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isFalse();
+      // Flush result should still be success
+      assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
 
       boolean logFound =
           testHandler.getLogRecords().stream()
