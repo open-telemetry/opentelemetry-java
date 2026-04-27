@@ -5,7 +5,7 @@ lychee = "0.23.0"
 [tasks.lint]
 description = "Run link checks"
 raw_args = true
-run = "flint run lychee"
+run = "flint run"
 
 [tasks."lint:fix"]
 description = "Auto-fix lint issues"
