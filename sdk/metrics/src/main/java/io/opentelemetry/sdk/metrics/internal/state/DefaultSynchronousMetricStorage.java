@@ -246,7 +246,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       AggregatorHolder<T> holderForRecord = getHolderForRecord();
       try {
         holderForRecord.aggregatorHandles.forEach(
-            (attributes, tAggregatorHandle) -> {
+//            (attributes, tAggregatorHandle) -> {
               if (condition.test(attributes)) {
                 holderForRecord.aggregatorHandles.remove(attributes);
               }
@@ -459,7 +459,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
         return;
       }
       aggregatorHandles.forEach(
-          (attributes, tAggregatorHandle) -> {
+          (attributes, handle) -> {
             if (condition.test(attributes)) {
               aggregatorHandles.remove(attributes);
             }
