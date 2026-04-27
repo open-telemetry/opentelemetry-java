@@ -6,6 +6,7 @@
 
 #### Testing
 
+* Add `hasValueSatisfying` to `LongPointAssert` and `DoublePointAssert` for fuzzy value matching
 * Add `containsPointsSatisfying` to metric data asserts for "each given assertion must be
   satisfied by at least one point, extras allowed" checks on sum, gauge, histogram, exponential
   histogram, and summary data

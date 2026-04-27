@@ -4,6 +4,9 @@ Comparing source compatibility of opentelemetry-sdk-testing-1.62.0-SNAPSHOT.jar 
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoubleGaugeAssert containsPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.DoublePointAssert>)
 		+++  NEW ANNOTATION: java.lang.SafeVarargs
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoubleGaugeAssert containsPointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.DoublePointAssert>>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.DoublePointAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoublePointAssert hasValueSatisfying(java.util.function.Consumer<org.assertj.core.api.AbstractDoubleAssert<?>>)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.DoubleSumAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoubleSumAssert containsPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.DoublePointAssert>)
@@ -24,6 +27,9 @@ Comparing source compatibility of opentelemetry-sdk-testing-1.62.0-SNAPSHOT.jar 
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongGaugeAssert containsPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.LongPointAssert>)
 		+++  NEW ANNOTATION: java.lang.SafeVarargs
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongGaugeAssert containsPointsSatisfying(java.lang.Iterable<? extends java.util.function.Consumer<? extends io.opentelemetry.sdk.testing.assertj.LongPointAssert>>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LongPointAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongPointAssert hasValueSatisfying(java.util.function.Consumer<org.assertj.core.api.AbstractLongAssert<?>>)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LongSumAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LongSumAssert containsPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.LongPointAssert>)
