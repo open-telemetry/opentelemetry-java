@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### SDK
+
+#### Testing
+
+* Add `hasValueSatisfying` to `LongPointAssert` and `DoublePointAssert` for fuzzy value matching
+
 ## Version 1.61.0 (2026-04-10)
 
 ### API

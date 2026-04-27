@@ -180,6 +180,6 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   public void close() {
     pollFuture.cancel(true);
     pollExecutor.shutdownNow();
-    grpcSender.shutdown();
+    grpcSender.shutdown().join(10, TimeUnit.SECONDS);
   }
 }
