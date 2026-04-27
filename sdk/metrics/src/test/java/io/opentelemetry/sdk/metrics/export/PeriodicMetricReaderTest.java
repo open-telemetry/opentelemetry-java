@@ -299,7 +299,7 @@ class PeriodicMetricReaderTest {
       reader.register(collectionRegistration);
       assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
-      assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
     } finally {
       reader.shutdown();
     }
@@ -547,8 +547,8 @@ class PeriodicMetricReaderTest {
 
       batch3Result.succeed();
 
-      // forceFlush still reports the explicit exporter.flush() result even if a batch export
-      // failed.
+      // Failed export results are logged, but forceFlush preserves the prior partial-success
+      // behavior.
       assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
 
       boolean logFound =
