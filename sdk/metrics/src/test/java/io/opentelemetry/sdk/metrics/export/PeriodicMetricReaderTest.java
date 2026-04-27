@@ -547,7 +547,8 @@ class PeriodicMetricReaderTest {
 
       batch3Result.succeed();
 
-      // Flush result should still be success
+      // Failed export results are logged, but forceFlush preserves the prior partial-success
+      // behavior.
       assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
 
       boolean logFound =
