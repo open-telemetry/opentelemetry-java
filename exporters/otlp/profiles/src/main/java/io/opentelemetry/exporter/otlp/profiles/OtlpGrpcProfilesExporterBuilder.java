@@ -11,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.GrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
