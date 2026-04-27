@@ -501,8 +501,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
           logger.fine("Closing " + closeable.getClass().getName());
           closeable.close();
         } catch (IOException ex) {
-          logger.warning(
-              "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
+          logger.log(Level.WARNING, "Error closing " + closeable.getClass().getName(), ex);
         }
       }
       if (e instanceof ConfigurationException) {

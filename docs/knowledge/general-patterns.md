@@ -149,6 +149,17 @@ automatically by `otel.java-conventions`).
 private static final Logger LOGGER = Logger.getLogger(MyClass.class.getName());
 ```
 
+When logging exceptions, pass the exception as the `Throwable` parameter to the logger rather
+than stringifying it via `getMessage()` or concatenation. This ensures logging frameworks can
+render the full stack trace.
+
+```java
+// Do:
+logger.log(Level.WARNING, "Failed to process request", exception);
+// Don't:
+logger.warning("Failed to process request: " + exception.getMessage());
+```
+
 ## toString()
 
 Adding `toString()` overrides is encouraged for debugging assistance. All `toString()`

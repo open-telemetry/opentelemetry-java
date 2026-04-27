@@ -703,7 +703,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(tracerProvider).close();
     verify(meterProvider).close();
 
-    logs.assertContains("Error closing io.opentelemetry.sdk.trace.SdkTracerProvider: Error!");
+    logs.assertContains("Error closing io.opentelemetry.sdk.trace.SdkTracerProvider");
   }
 
   @Test
