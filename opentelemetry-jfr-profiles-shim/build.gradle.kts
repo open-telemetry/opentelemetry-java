@@ -2,7 +2,7 @@ plugins {
   id("otel.java-conventions")
   // TODO decide what to do about JfrExportExample before publishing.
   // unlike the other classes here it's an example, not a reusable utility.
- //  id("otel.publish-conventions")
+  //  id("otel.publish-conventions")
 }
 
 description = "OpenTelemetry - JFR to Profiles data conversion example"
