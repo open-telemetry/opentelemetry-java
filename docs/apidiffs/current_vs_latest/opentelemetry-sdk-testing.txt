@@ -1,2 +1,7 @@
 Comparing source compatibility of opentelemetry-sdk-testing-1.62.0-SNAPSHOT.jar against opentelemetry-sdk-testing-1.61.0.jar
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.DoublePointAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.DoublePointAssert hasValueSatisfying(java.util.function.Consumer<org.assertj.core.api.AbstractDoubleAssert<?>>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LongPointAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LongPointAssert hasValueSatisfying(java.util.function.Consumer<org.assertj.core.api.AbstractLongAssert<?>>)

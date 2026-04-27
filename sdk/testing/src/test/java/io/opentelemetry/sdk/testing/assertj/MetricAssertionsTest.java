@@ -352,6 +352,7 @@ class MetricAssertionsTest {
                             .hasEpochNanos(4)
                             .hasAttributes(Attributes.empty())
                             .hasValue(3.0)
+                            .hasValueSatisfying(val -> val.isEqualTo(3.0))
                             .hasExemplars(DOUBLE_EXEMPLAR2, DOUBLE_EXEMPLAR1)
                             .hasExemplarsSatisfying(
                                 exemplar ->
@@ -857,6 +858,7 @@ class MetricAssertionsTest {
                     point ->
                         point
                             .hasValue(Long.MAX_VALUE)
+                            .hasValueSatisfying(val -> val.isEqualTo(Long.MAX_VALUE))
                             .hasExemplarsSatisfying(
                                 exemplar -> exemplar.hasValue(2),
                                 exemplar ->
@@ -902,6 +904,15 @@ class MetricAssertionsTest {
                         gauge ->
                             gauge.hasPointsSatisfying(
                                 point -> point.hasValue(2), point -> point.hasValue(1))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_GAUGE_METRIC)
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point -> point.hasValueSatisfying(val -> val.isNegative()),
+                                point -> point.hasValueSatisfying(val -> val.isNegative()))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
