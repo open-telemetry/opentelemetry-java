@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   backport:
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     permissions:
       contents: write  # for git push to PR branch
     runs-on: ubuntu-latest
