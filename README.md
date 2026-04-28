@@ -6,6 +6,7 @@
 [![FOSSA Security Status](https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-java.svg?type=shield&issueType=security)](https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fopen-telemetry%2Fopentelemetry-java?ref=badge_shield&issueType=security)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/open-telemetry/opentelemetry-java/badge)](https://scorecard.dev/viewer/?uri=github.com/open-telemetry/opentelemetry-java)
 [![Reproducible Builds](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jvm-repo-rebuild/reproducible-central/master/content/io/opentelemetry/java/badge.json)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/io/opentelemetry/java/README.md)
+[![REUSE status](https://api.reuse.software/badge/github.com/apeirora/opentelemetry-java)](https://api.reuse.software/info/github.com/apeirora/opentelemetry-java)
 
 `opentelemetry-java` is the home of the Java implementation of the OpenTelemetry API for recording
 telemetry, and SDK for managing telemetry recorded by the API.
