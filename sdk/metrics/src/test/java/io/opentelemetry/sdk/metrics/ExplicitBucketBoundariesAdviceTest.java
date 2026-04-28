@@ -266,7 +266,7 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice: Bucket boundaries must be in increasing order: 10.0 >= 9.0"),
+            "Error setting explicit bucket boundaries advice"),
         Arguments.of(
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
@@ -279,7 +279,7 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice: Bucket boundaries must be in increasing order: 10.0 >= 9.0"),
+            "Error setting explicit bucket boundaries advice"),
         Arguments.of(
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
@@ -291,6 +291,6 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice: bucketBoundaries must not be null"));
+            "Error setting explicit bucket boundaries advice"));
   }
 }

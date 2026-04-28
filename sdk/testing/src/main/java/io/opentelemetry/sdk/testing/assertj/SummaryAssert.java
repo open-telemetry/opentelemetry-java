@@ -52,4 +52,30 @@ public final class SummaryAssert extends AbstractAssert<SummaryAssert, SummaryDa
         .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, SummaryPointAssert::new));
     return this;
   }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the summary satisfies it. Extra
+   * points that match none of the assertions are allowed, and a single point may satisfy multiple
+   * assertions.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final SummaryAssert containsPointsSatisfying(Consumer<SummaryPointAssert>... assertions) {
+    return containsPointsSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the summary satisfies it. Extra
+   * points that match none of the assertions are allowed, and a single point may satisfy multiple
+   * assertions.
+   */
+  public SummaryAssert containsPointsSatisfying(
+      Iterable<? extends Consumer<SummaryPointAssert>> assertions) {
+    isNotNull();
+    for (Consumer<SummaryPointAssert> assertion : assertions) {
+      assertThat(actual.getPoints())
+          .anySatisfy(point -> assertion.accept(new SummaryPointAssert(point)));
+    }
+    return this;
+  }
 }
