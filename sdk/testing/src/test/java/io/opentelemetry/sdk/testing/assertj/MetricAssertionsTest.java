@@ -1299,4 +1299,70 @@ class MetricAssertionsTest {
                                 point -> point.hasValuesSatisfying(value -> value.hasValue(3.0)))))
         .isInstanceOf(AssertionError.class);
   }
+
+  @Test
+  void containsPointsSatisfying() {
+    assertThat(DOUBLE_GAUGE_METRIC)
+        .hasDoubleGaugeSatisfying(
+            gauge -> gauge.containsPointsSatisfying(point -> point.hasValue(3.0)));
+    assertThat(LONG_GAUGE_METRIC)
+        .hasLongGaugeSatisfying(
+            gauge ->
+                gauge.containsPointsSatisfying(
+                    point -> point.hasValue(Long.MAX_VALUE), point -> point.hasValue(1)));
+    assertThat(DOUBLE_SUM_METRIC)
+        .hasDoubleSumSatisfying(sum -> sum.containsPointsSatisfying(point -> point.hasValue(3.0)));
+    assertThat(LONG_SUM_METRIC)
+        .hasLongSumSatisfying(
+            sum -> sum.containsPointsSatisfying(point -> point.hasValue(Long.MAX_VALUE)));
+    assertThat(HISTOGRAM_METRIC)
+        .hasHistogramSatisfying(
+            histogram -> histogram.containsPointsSatisfying(point -> point.hasSum(15)));
+    assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+        .hasExponentialHistogramSatisfying(
+            histogram -> histogram.containsPointsSatisfying(point -> point.hasSum(10.0)));
+    assertThat(SUMMARY_METRIC)
+        .hasSummarySatisfying(
+            summary -> summary.containsPointsSatisfying(point -> point.hasSum(2.0)));
+  }
+
+  @Test
+  void containsPointsSatisfyingFailure() {
+    // single assertion that matches no point
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasDoubleGaugeSatisfying(
+                        gauge -> gauge.containsPointsSatisfying(point -> point.hasValue(42.0))))
+        .isInstanceOf(AssertionError.class);
+    // one of multiple assertions unmatched
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_GAUGE_METRIC)
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.containsPointsSatisfying(
+                                point -> point.hasValue(Long.MAX_VALUE),
+                                point -> point.hasValue(42))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram -> histogram.containsPointsSatisfying(point -> point.hasSum(42))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(EXPONENTIAL_HISTOGRAM_METRIC)
+                    .hasExponentialHistogramSatisfying(
+                        histogram ->
+                            histogram.containsPointsSatisfying(point -> point.hasSum(42.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SUMMARY_METRIC)
+                    .hasSummarySatisfying(
+                        summary -> summary.containsPointsSatisfying(point -> point.hasSum(42.0))))
+        .isInstanceOf(AssertionError.class);
+  }
 }
