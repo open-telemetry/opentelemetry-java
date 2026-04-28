@@ -49,20 +49,15 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
 
   @Override
   void doRecordLong(long value, Attributes attributes, Context context) {
-    getAggregatorHandle(aggregatorHandles, attributes, context)
-        .recordLong(value, attributes, context);
+    getAggregatorHandle(attributes, context).recordLong(value, attributes, context);
   }
 
   @Override
   void doRecordDouble(double value, Attributes attributes, Context context) {
-    getAggregatorHandle(aggregatorHandles, attributes, context)
-        .recordDouble(value, attributes, context);
+    getAggregatorHandle(attributes, context).recordDouble(value, attributes, context);
   }
 
-  private AggregatorHandle<T> getAggregatorHandle(
-      ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorHandles,
-      Attributes attributes,
-      Context context) {
+  private AggregatorHandle<T> getAggregatorHandle(Attributes attributes, Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
     AggregatorHandle<T> handle = aggregatorHandles.get(attributes);
