@@ -45,6 +45,10 @@ class SdkSpanBuilder implements SpanBuilder {
               TraceFlags.builder().setRandomTraceId(true).build(),
               TraceState.getDefault()));
 
+  // Pre-built for the common case where parentContext is root (no extra context to preserve).
+  private static final Context ROOT_CONTEXT_WITH_RANDOM_TRACE_ID_BIT =
+      Context.root().with(RANDOM_TRACE_ID_PRIMORDIAL_SPAN);
+
   private final String spanName;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final TracerSharedState tracerSharedState;
@@ -190,8 +194,13 @@ class SdkSpanBuilder implements SpanBuilder {
       traceId = idGenerator.generateTraceId();
       if (idGenerator.generatesRandomTraceIds()) {
         isTraceIdRandom = true;
-        // Replace parentContext for sampling with one with RANDOM_TRACE_ID bit set
-        parentContextForSampler = parentContext.with(RANDOM_TRACE_ID_PRIMORDIAL_SPAN);
+        // Replace parentContext for sampling with one with RANDOM_TRACE_ID bit set.
+        // Use the pre-built singleton when parentContext is root to avoid an allocation;
+        // otherwise graft onto parentContext to preserve any extra context values.
+        parentContextForSampler =
+            parentContext == Context.root()
+                ? ROOT_CONTEXT_WITH_RANDOM_TRACE_ID_BIT
+                : parentContext.with(RANDOM_TRACE_ID_PRIMORDIAL_SPAN);
       } else {
         isTraceIdRandom = false;
       }
