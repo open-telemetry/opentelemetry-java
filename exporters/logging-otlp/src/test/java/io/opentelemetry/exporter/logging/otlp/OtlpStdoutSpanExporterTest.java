@@ -32,11 +32,15 @@ class OtlpStdoutSpanExporterTest extends AbstractOtlpStdoutExporterTest<OtlpStdo
 
   @Override
   protected OtlpStdoutSpanExporter createExporter(
-      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject) {
+      @Nullable OutputStream outputStream,
+      MemoryMode memoryMode,
+      boolean wrapperJsonObject,
+      boolean prettyPrint) {
     OtlpStdoutSpanExporterBuilder builder =
         OtlpStdoutSpanExporter.builder()
             .setMemoryMode(memoryMode)
-            .setWrapperJsonObject(wrapperJsonObject);
+            .setWrapperJsonObject(wrapperJsonObject)
+            .setPrettyPrint(prettyPrint);
     if (outputStream != null) {
       builder.setOutput(outputStream);
     } else {
