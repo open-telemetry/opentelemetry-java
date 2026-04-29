@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +52,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
+  @Nullable private final MetricExportBatcher metricsBatcher;
 
   /**
    * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
@@ -66,10 +68,14 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   PeriodicMetricReader(
-      MetricExporter exporter, long intervalNanos, ScheduledExecutorService scheduler) {
+      MetricExporter exporter,
+      long intervalNanos,
+      ScheduledExecutorService scheduler,
+      @Nullable MetricExportBatcher metricsBatcher) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
+    this.metricsBatcher = metricsBatcher;
     this.scheduled = new Scheduled();
   }
 
@@ -163,6 +169,8 @@ public final class PeriodicMetricReader implements MetricReader {
         + exporter
         + ", intervalNanos="
         + intervalNanos
+        + ", metricsBatcher="
+        + metricsBatcher
         + '}';
   }
 
@@ -217,7 +225,47 @@ public final class PeriodicMetricReader implements MetricReader {
             exportAvailable.set(true);
             flushResult.succeed();
           } else {
-            CompletableResultCode result = exporter.export(metricData);
+            CompletableResultCode result;
+            if (metricsBatcher != null) {
+              Collection<Collection<MetricData>> batches = metricsBatcher.batchMetrics(metricData);
+              CompletableResultCode sequentialResult = new CompletableResultCode();
+              AtomicBoolean anyFailed = new AtomicBoolean(false);
+              Iterator<Collection<MetricData>> batchIterator = batches.iterator();
+
+              Runnable exportNext =
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      while (batchIterator.hasNext()) {
+                        Collection<MetricData> currentBatch = batchIterator.next();
+                        CompletableResultCode currentResult = exporter.export(currentBatch);
+                        if (currentResult.isDone()) {
+                          if (!currentResult.isSuccess()) {
+                            anyFailed.set(true);
+                          }
+                        } else {
+                          currentResult.whenComplete(
+                              () -> {
+                                if (!currentResult.isSuccess()) {
+                                  anyFailed.set(true);
+                                }
+                                this.run();
+                              });
+                          return;
+                        }
+                      }
+                      if (anyFailed.get()) {
+                        sequentialResult.fail();
+                      } else {
+                        sequentialResult.succeed();
+                      }
+                    }
+                  };
+              exportNext.run();
+              result = sequentialResult;
+            } else {
+              result = exporter.export(metricData);
+            }
             result.whenComplete(
                 () -> {
                   if (!result.isSuccess()) {
