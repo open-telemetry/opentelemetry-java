@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -367,6 +368,13 @@ final class SdkMeter implements Meter {
     public void recordDouble(double value, Attributes attributes, Context context) {
       for (WriteableMetricStorage storage : storages) {
         storage.recordDouble(value, attributes, context);
+      }
+    }
+
+    @Override
+    public void finish(Predicate<Attributes> condition, Context context) {
+      for (WriteableMetricStorage storage : storages) {
+        storage.finish(condition, context);
       }
     }
 

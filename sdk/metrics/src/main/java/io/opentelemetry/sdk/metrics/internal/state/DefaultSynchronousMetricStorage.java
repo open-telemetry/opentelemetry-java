@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -237,6 +238,24 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
       }
     }
 
+    @Override
+    public void finish(Predicate<Attributes> condition, Context context) {
+      if (!enabled) {
+        return;
+      }
+      AggregatorHolder<T> holderForRecord = getHolderForRecord();
+      try {
+        holderForRecord.aggregatorHandles.forEach(
+            (attributes, handle) -> {
+              if (condition.test(attributes)) {
+                holderForRecord.aggregatorHandles.remove(attributes);
+              }
+            });
+      } finally {
+        releaseHolderForRecord(holderForRecord);
+      }
+    }
+
     @Nullable
     @Override
     AggregatorHandle<T> maybeGetPooledAggregatorHandle() {
@@ -432,6 +451,19 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     void doRecordDouble(double value, Attributes attributes, Context context) {
       getAggregatorHandle(aggregatorHandles, attributes, context)
           .recordDouble(value, attributes, context);
+    }
+
+    @Override
+    public void finish(Predicate<Attributes> condition, Context context) {
+      if (!enabled) {
+        return;
+      }
+      aggregatorHandles.forEach(
+          (attributes, handle) -> {
+            if (condition.test(attributes)) {
+              aggregatorHandles.remove(attributes);
+            }
+          });
     }
 
     @Nullable

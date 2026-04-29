@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 class SdkLongGauge extends AbstractInstrument implements LongGauge {
 
@@ -45,6 +46,11 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
   @Override
   public void set(long value) {
     set(value, Attributes.empty());
+  }
+
+  @Override
+  public void finish(Predicate<Attributes> condition, Context context) {
+    storage.finish(condition, context);
   }
 
   static class SdkLongGaugeBuilder implements LongGaugeBuilder {

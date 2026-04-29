@@ -941,6 +941,20 @@ public class SynchronousMetricStorageTest {
     storage.recordDouble(10d, Attributes.empty(), Context.current());
 
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10).isEmpty()).isTrue();
+
+    storage.finish(at -> true, Context.current());
+
+    storage.setEnabled(true);
+
+    storage.recordDouble(10d, Attributes.empty(), Context.current());
+
+    storage.setEnabled(false);
+
+    storage.finish(at -> true, Context.current());
+
+    storage.setEnabled(true);
+
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 10).isEmpty()).isFalse();
   }
 
   @ParameterizedTest

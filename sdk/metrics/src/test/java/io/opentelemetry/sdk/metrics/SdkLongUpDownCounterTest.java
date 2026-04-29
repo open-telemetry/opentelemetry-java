@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SdkLongUpDownCounter}. */
@@ -48,6 +49,15 @@ class SdkLongUpDownCounterTest {
   void collectMetrics_NoRecords() {
     sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
     assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
+  void collectMetrics_finish() {
+    LongUpDownCounter counter = sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
+    Attributes attrs = Attributes.of(stringKey("key"), "value");
+    counter.add(1, attrs);
+    counter.finish(at -> true);
+    Assertions.assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test

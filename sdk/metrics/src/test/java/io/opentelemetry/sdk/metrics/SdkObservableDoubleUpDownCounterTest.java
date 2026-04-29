@@ -35,7 +35,7 @@ class SdkObservableDoubleUpDownCounterTest {
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
 
   @Test
-  void removeCallback() {
+  void finishCallback() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     ObservableDoubleUpDownCounter counter =
         sdkMeterProviderBuilder

@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,6 +61,11 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
   @Override
   public void add(long increment) {
     add(increment, Attributes.empty());
+  }
+
+  @Override
+  public void finish(Predicate<Attributes> condition, Context context) {
+    storage.finish(condition, context);
   }
 
   static class SdkLongCounterBuilder implements LongCounterBuilder {
