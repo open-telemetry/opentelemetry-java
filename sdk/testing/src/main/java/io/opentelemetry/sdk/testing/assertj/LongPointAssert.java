@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import org.assertj.core.api.AbstractLongAssert;
 
 /**
  * Assertions for an exported {@link LongPointData}.
@@ -28,6 +29,13 @@ public final class LongPointAssert extends AbstractPointAssert<LongPointAssert, 
   public LongPointAssert hasValue(long expected) {
     isNotNull();
     assertThat(actual.getValue()).as("value").isEqualTo(expected);
+    return this;
+  }
+
+  /** Asserts the point's value satisfies the given assertion. */
+  public LongPointAssert hasValueSatisfying(Consumer<AbstractLongAssert<?>> valueAssertion) {
+    isNotNull();
+    valueAssertion.accept(assertThat(actual.getValue()).as("value"));
     return this;
   }
 

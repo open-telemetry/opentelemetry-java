@@ -1,3 +1,4 @@
 io.opentelemetry.gradle.customchecks.OtelDeprecatedApiUsage
+io.opentelemetry.gradle.customchecks.OtelImplJavadoc
 io.opentelemetry.gradle.customchecks.OtelInternalJavadoc
 io.opentelemetry.gradle.customchecks.OtelPrivateConstructorForUtilityClass

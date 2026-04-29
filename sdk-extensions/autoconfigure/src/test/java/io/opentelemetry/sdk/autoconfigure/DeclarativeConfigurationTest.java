@@ -51,7 +51,7 @@ class DeclarativeConfigurationTest {
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(
-            "Cannot autoconfigure from config file without opentelemetry-sdk-extension-incubator on the classpath");
+            "Cannot autoconfigure from config file without opentelemetry-sdk-extension-declarative-config on the classpath");
   }
 
   @Test
