@@ -31,7 +31,7 @@ jobs:
           - 11
           - 17
           - 21
-          - 25 # renovate(java-version)
+          - 26 # renovate(java-version)
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-latest
@@ -112,7 +112,7 @@ jobs:
       matrix:
         test-graal-version:
           - 21
-          - 25 # renovate(java-version)
+          - 26 # renovate(java-version)
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: graalvm/setup-graalvm@60c26726de13f8b90771df4bc1641a52a3159994 # v1.5.2
