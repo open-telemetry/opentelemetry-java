@@ -271,7 +271,6 @@ For more information about the maintainer role, see the [community repository](h
 
 - [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
-- [Josh Suereth](https://github.com/jsuereth), Google
 - [Lauri Tulmin](https://github.com/laurit), Splunk
 - [Trask Stalnaker](https://github.com/trask), Microsoft
 
@@ -287,6 +286,7 @@ For more information about the triager role, see the [community repository](http
 
 - [Bogdan Drutu](https://github.com/BogdanDrutu), Maintainer
 - [Carlos Alberto](https://github.com/carlosalberto), Maintainer
+- [Josh Suereth](https://github.com/jsuereth), Approver
 - [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek), Approver
 
 For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
