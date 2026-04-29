@@ -574,6 +574,10 @@ final class Otel2PrometheusConverter {
       throw new IllegalArgumentException("label name is empty");
     }
 
+    // The OTel compatibility spec requires invalid attribute-name characters and repeated
+    // underscores to collapse to a single "_". Prometheus label names beginning with "__" are
+    // reserved for internal labels like "__name__" and scrape/relabel labels, and Prometheus Java
+    // rejects them as user labels, so do not preserve "__...__" reserved-looking names here.
     StringBuilder result = new StringBuilder(key.length());
     boolean previousWasUnderscore = false;
     for (int i = 0; i < key.length(); ) {
