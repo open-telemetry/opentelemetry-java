@@ -80,22 +80,12 @@ public class PrometheusComponentProvider implements ComponentProvider {
 
   private static TranslationStrategy parseTranslationStrategy(String value) {
     switch (value) {
-      case "UnderscoreEscapingWithSuffixes":
       case "underscore_escaping_with_suffixes":
         return TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES;
-      case "UnderscoreEscapingWithoutSuffixes":
-      case "UnderscoreEscapingWithoutSuffixes/Development":
-      case "underscore_escaping_without_suffixes":
       case "underscore_escaping_without_suffixes/development":
         return TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES;
-      case "NoUTF8EscapingWithSuffixes":
-      case "NoUTF8EscapingWithSuffixes/Development":
-      case "no_utf8_escaping_with_suffixes":
       case "no_utf8_escaping_with_suffixes/development":
         return TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES;
-      case "NoTranslation":
-      case "NoTranslation/Development":
-      case "no_translation":
       case "no_translation/development":
         return TranslationStrategy.NO_TRANSLATION;
       default:
