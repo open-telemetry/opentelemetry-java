@@ -99,10 +99,10 @@ jobs:
           name: coverage-report
           path: all/build/reports/jacoco/test/html
 
-  markdown-link-check:
+  lint:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}
-    uses: ./.github/workflows/reusable-link-check.yml
+    uses: ./.github/workflows/reusable-lint-check.yml
 
   build-graal:
     name: Build GraalVM
@@ -136,7 +136,7 @@ jobs:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
   required-status-check:
-    # markdown-link-check is not required so pull requests are not blocked if external links break
+    # lint is not required so pull requests are not blocked if external links break
     needs:
       - build
       - build-graal

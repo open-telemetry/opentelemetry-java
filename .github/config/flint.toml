@@ -1,0 +1,5 @@
+[checks.lychee]
+check_all_local = true
+
+[settings]
+setup_migration_version = 2
