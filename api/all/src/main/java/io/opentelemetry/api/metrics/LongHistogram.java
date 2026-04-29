@@ -60,4 +60,6 @@ public interface LongHistogram {
    * @param context The explicit context to associate with this measurement.
    */
   void record(long value, Attributes attributes, Context context);
+
+  LongHistogramOp bind(Attributes attributes);
 }

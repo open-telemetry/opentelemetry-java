@@ -54,4 +54,6 @@ public interface DoubleGauge {
    * @param context The explicit context to associate with this measurement.
    */
   void set(double value, Attributes attributes, Context context);
+
+  DoubleGaugeOp bind(Attributes attributes);
 }

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
+import io.opentelemetry.api.metrics.DoubleCounterOp;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
@@ -49,6 +50,11 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
       return;
     }
     storage.recordDouble(increment, attributes, context);
+  }
+
+  @Override
+  public DoubleCounterOp bind(Attributes attributes) {
+    return storage.bind(attributes)::recordDouble;
   }
 
   @Override

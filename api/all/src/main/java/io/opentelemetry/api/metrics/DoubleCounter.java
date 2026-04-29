@@ -15,7 +15,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 1.10.0
  */
 @ThreadSafe
-public interface DoubleCounter {
+public interface DoubleCounter extends DoubleCounterOp {
 
   /**
    * Returns {@code true} if the counter is enabled.
@@ -30,16 +30,6 @@ public interface DoubleCounter {
   default boolean isEnabled() {
     return true;
   }
-
-  /**
-   * Records a value.
-   *
-   * <p>Note: This may use {@code Context.current()} to pull the context associated with this
-   * measurement.
-   *
-   * @param value The increment amount. MUST be non-negative.
-   */
-  void add(double value);
 
   /**
    * Records a value with a set of attributes.
@@ -60,4 +50,6 @@ public interface DoubleCounter {
    * @param context The explicit context to associate with this measurement.
    */
   void add(double value, Attributes attributes, Context context);
+
+  DoubleCounterOp bind(Attributes attributes);
 }

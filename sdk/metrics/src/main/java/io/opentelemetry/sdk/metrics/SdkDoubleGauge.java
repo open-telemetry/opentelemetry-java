@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
+import io.opentelemetry.api.metrics.DoubleGaugeOp;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -46,6 +47,11 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
   @Override
   public void set(double value) {
     set(value, Attributes.empty());
+  }
+
+  @Override
+  public DoubleGaugeOp bind(Attributes attributes) {
+    return storage.bind(attributes)::recordDouble;
   }
 
   static class SdkDoubleGaugeBuilder implements DoubleGaugeBuilder {

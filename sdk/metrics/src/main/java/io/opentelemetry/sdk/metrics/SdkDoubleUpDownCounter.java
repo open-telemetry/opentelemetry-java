@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
+import io.opentelemetry.api.metrics.DoubleUpDownCounterOp;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
@@ -46,6 +47,11 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
   @Override
   public void add(double increment) {
     add(increment, Attributes.empty());
+  }
+
+  @Override
+  public DoubleUpDownCounterOp bind(Attributes attributes) {
+    return storage.bind(attributes)::recordDouble;
   }
 
   static class SdkDoubleUpDownCounterBuilder implements DoubleUpDownCounterBuilder {

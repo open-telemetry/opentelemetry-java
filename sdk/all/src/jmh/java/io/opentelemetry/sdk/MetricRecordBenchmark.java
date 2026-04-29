@@ -99,6 +99,9 @@ public class MetricRecordBenchmark {
     @Param({"1", "128"})
     int cardinality;
 
+    @Param({"true", "false"})
+    boolean isBoundInstruments;
+
     // The following parameters are excluded from the benchmark to reduce combinatorial explosion
     // but can optionally be enabled for adhoc evaluation.
 
@@ -125,6 +128,7 @@ public class MetricRecordBenchmark {
     List<Attributes> attributesList;
     Span span;
     io.opentelemetry.context.Scope contextScope;
+    List<BoundInstrument> boundInstruments;
 
     @Setup
     @SuppressWarnings("MustBeClosedChecker")
@@ -159,13 +163,17 @@ public class MetricRecordBenchmark {
 
       Random random = new Random(INITIAL_SEED);
       attributesList = new ArrayList<>(cardinality);
+      boundInstruments = new ArrayList<>(cardinality);
       AttributeKey<String> key = AttributeKey.stringKey("key");
       String last = "aaaaaaaaaaaaaaaaaaaaaaaaaa";
       for (int i = 0; i < cardinality; i++) {
         char[] chars = last.toCharArray();
         chars[random.nextInt(last.length())] = (char) (random.nextInt(26) + 'a');
         last = new String(chars);
-        attributesList.add(Attributes.of(key, last));
+        Attributes attributes = Attributes.of(key, last);
+        attributesList.add(attributes);
+        boundInstruments.add(
+            getBoundInstrument(meter, instrumentType, instrumentValueType, attributes));
       }
       Collections.shuffle(attributesList);
 
@@ -207,11 +215,20 @@ public class MetricRecordBenchmark {
   }
 
   private static void record(BenchmarkState benchmarkState) {
-    for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
-      Attributes attributes =
-          benchmarkState.attributesList.get(i % benchmarkState.attributesList.size());
-      long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
-      benchmarkState.instrument.record(value, attributes);
+    if (benchmarkState.isBoundInstruments) {
+      for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
+        BoundInstrument instrument =
+            benchmarkState.boundInstruments.get(i % benchmarkState.boundInstruments.size());
+        long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
+        instrument.record(value);
+      }
+    } else {
+      for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
+        Attributes attributes =
+            benchmarkState.attributesList.get(i % benchmarkState.attributesList.size());
+        long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
+        benchmarkState.instrument.record(value, attributes);
+      }
     }
   }
 
@@ -230,6 +247,10 @@ public class MetricRecordBenchmark {
 
     private final InstrumentType instrumentType;
     private final Aggregation aggregation;
+  }
+
+  private interface BoundInstrument {
+    void record(long value);
   }
 
   private interface Instrument {
@@ -256,6 +277,36 @@ public class MetricRecordBenchmark {
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.gaugeBuilder(name).build()::set
             : meter.gaugeBuilder(name).ofLongs().build()::set;
+      case OBSERVABLE_COUNTER:
+      case OBSERVABLE_UP_DOWN_COUNTER:
+      case OBSERVABLE_GAUGE:
+    }
+    throw new IllegalArgumentException();
+  }
+
+  private static BoundInstrument getBoundInstrument(
+      Meter meter,
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      Attributes attributes) {
+    String name = "instrument";
+    switch (instrumentType) {
+      case COUNTER:
+        return instrumentValueType == InstrumentValueType.DOUBLE
+            ? meter.counterBuilder(name).ofDoubles().build().bind(attributes)::add
+            : meter.counterBuilder(name).build().bind(attributes)::add;
+      case UP_DOWN_COUNTER:
+        return instrumentValueType == InstrumentValueType.DOUBLE
+            ? meter.upDownCounterBuilder(name).ofDoubles().build().bind(attributes)::add
+            : meter.upDownCounterBuilder(name).build().bind(attributes)::add;
+      case HISTOGRAM:
+        return instrumentValueType == InstrumentValueType.DOUBLE
+            ? meter.histogramBuilder(name).build().bind(attributes)::record
+            : meter.histogramBuilder(name).ofLongs().build().bind(attributes)::record;
+      case GAUGE:
+        return instrumentValueType == InstrumentValueType.DOUBLE
+            ? meter.gaugeBuilder(name).build().bind(attributes)::set
+            : meter.gaugeBuilder(name).ofLongs().build().bind(attributes)::set;
       case OBSERVABLE_COUNTER:
       case OBSERVABLE_UP_DOWN_COUNTER:
       case OBSERVABLE_GAUGE:
