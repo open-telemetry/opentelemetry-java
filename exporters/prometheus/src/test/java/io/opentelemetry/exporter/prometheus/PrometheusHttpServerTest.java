@@ -240,6 +240,50 @@ class PrometheusHttpServerTest {
   }
 
   @Test
+  void fetchOpenMetrics_translationStrategyEnablesOm2() {
+    try (PrometheusHttpServer prometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setTranslationStrategy(TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES)
+            .build()) {
+      prometheusServer.register(
+          new CollectionRegistration() {
+            @Override
+            public Collection<MetricData> collectAllMetrics() {
+              return metricData.get();
+            }
+          });
+      WebClient client =
+          WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              .build();
+
+      AggregatedHttpResponse response =
+          client
+              .execute(
+                  RequestHeaders.of(
+                      HttpMethod.GET,
+                      "/metrics",
+                      HttpHeaderNames.ACCEPT,
+                      "application/openmetrics-text"))
+              .aggregate()
+              .join();
+
+      assertThat(response.status()).isEqualTo(HttpStatus.OK);
+      assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+          .isEqualTo("application/openmetrics-text; version=1.0.0; charset=utf-8");
+      assertThat(response.contentUtf8())
+          .contains(
+              "grpc_name{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0")
+          .contains(
+              "http_name{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5")
+          .doesNotContain("grpc_name_unit_total")
+          .doesNotContain("http_name_unit_total");
+    }
+  }
+
+  @Test
   void fetchProtobuf() {
     AggregatedHttpResponse response =
         client
@@ -432,7 +476,7 @@ class PrometheusHttpServerTest {
             "PrometheusHttpServer{"
                 + "host=localhost,"
                 + "port=0,"
-                + "metricReader=PrometheusMetricReader{otelScopeLabelsEnabled=true,targetInfoMetricEnabled=true,allowedResourceAttributesFilter=null},"
+                + "metricReader=PrometheusMetricReader{otelScopeLabelsEnabled=true,targetInfoMetricEnabled=true,translationStrategy=UNDERSCORE_ESCAPING_WITH_SUFFIXES,allowedResourceAttributesFilter=null},"
                 + "memoryMode=REUSABLE_DATA,"
                 + "defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}"
                 + "}");

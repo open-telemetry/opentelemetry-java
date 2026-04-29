@@ -16,6 +16,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
@@ -40,6 +41,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
+import io.prometheus.metrics.model.snapshots.MetricMetadata;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import java.io.ByteArrayOutputStream;
@@ -73,6 +75,7 @@ class Otel2PrometheusConverterTest {
       new Otel2PrometheusConverter(
           /* otelScopeLabelsEnabled= */ true,
           /* targetInfoMetricEnabled= */ true,
+          TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
           /* allowedResourceAttributesFilter= */ null);
 
   @ParameterizedTest
@@ -194,6 +197,130 @@ class Otel2PrometheusConverterTest {
   }
 
   @ParameterizedTest
+  @MethodSource("translationStrategyArgs")
+  void metricMetadata_translationStrategy(
+      TranslationStrategy translationStrategy,
+      String expectedName,
+      String expectedExpositionBaseName,
+      String expectedOriginalName) {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ true,
+            /* targetInfoMetricEnabled= */ true,
+            translationStrategy,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData("sample.name", "By", MetricDataType.LONG_SUM)));
+
+    MetricMetadata metadata = snapshots.get(0).getMetadata();
+    assertThat(metadata.getName()).isEqualTo(expectedName);
+    assertThat(metadata.getExpositionBaseName()).isEqualTo(expectedExpositionBaseName);
+    assertThat(metadata.getOriginalName()).isEqualTo(expectedOriginalName);
+  }
+
+  private static Stream<Arguments> translationStrategyArgs() {
+    return Stream.of(
+        Arguments.of(
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
+            "sample_name_bytes",
+            "sample_name_bytes",
+            "sample_name_bytes"),
+        Arguments.of(
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
+            "sample_name",
+            "sample_name",
+            "sample_name"),
+        Arguments.of(
+            TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES,
+            "sample.name_bytes",
+            "sample.name_bytes_total",
+            "sample.name_bytes_total"),
+        Arguments.of(
+            TranslationStrategy.NO_TRANSLATION, "sample.name", "sample.name", "sample.name"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("legacyLabelNameTranslationArgs")
+  void labelNameTranslation_underscoreEscaping(String labelName, String expectedLabelName) {
+    Labels labels =
+        convertAttributeLabels(labelName, TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES);
+
+    assertThat(labels.size()).isEqualTo(1);
+    assertThat(labels.getName(0)).isEqualTo(expectedLabelName);
+    assertThat(labels.getValue(0)).isEqualTo("value");
+  }
+
+  private static Stream<Arguments> legacyLabelNameTranslationArgs() {
+    return Stream.of(
+        Arguments.of("label:with:colons", "label_with_colons"),
+        Arguments.of("LabelWithCapitalLetters", "LabelWithCapitalLetters"),
+        Arguments.of("label!with&special$chars)", "label_with_special_chars_"),
+        Arguments.of("label_with_foreign_characters_字符", "label_with_foreign_characters_"),
+        Arguments.of("label.with.dots", "label_with_dots"),
+        Arguments.of("123label", "key_123label"),
+        Arguments.of("_label_starting_with_underscore", "_label_starting_with_underscore"),
+        Arguments.of("__label_starting_with_2underscores", "_label_starting_with_2underscores"),
+        Arguments.of("label__with__double__underscores", "label_with_double_underscores"),
+        Arguments.of("label.name__with&&special##chars", "label_name_with_special_chars"),
+        // Prometheus Java rejects user labels starting with "__".
+        Arguments.of("__reserved__label__name__", "_reserved_label_name_"),
+        Arguments.of("trailing_underscores___", "trailing_underscores_"));
+  }
+
+  @Test
+  void labelNameTranslation_legacyRejectsInvalidNormalizedName() {
+    assertThatThrownBy(
+            () ->
+                convertAttributeLabels(
+                    "ようこそ", TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("normalization for label name \"ようこそ\" resulted in invalid name" + " \"_\"");
+  }
+
+  @ParameterizedTest
+  @MethodSource("nonEscapingTranslationStrategyArgs")
+  void labelNameTranslation_nonEscapingStrategiesPreserveLabels(
+      TranslationStrategy translationStrategy) {
+    Labels labels = convertAttributeLabels("label:with:colons", translationStrategy);
+
+    assertThat(labels.size()).isEqualTo(1);
+    assertThat(labels.getName(0)).isEqualTo("label:with:colons");
+    assertThat(labels.getValue(0)).isEqualTo("value");
+  }
+
+  private static Stream<Arguments> nonEscapingTranslationStrategyArgs() {
+    return Stream.of(
+        Arguments.of(TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES),
+        Arguments.of(TranslationStrategy.NO_TRANSLATION));
+  }
+
+  private static Labels convertAttributeLabels(
+      String labelName, TranslationStrategy translationStrategy) {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            translationStrategy,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData(
+                    "sample",
+                    "1",
+                    MetricDataType.LONG_SUM,
+                    Attributes.of(stringKey(labelName), "value"),
+                    Resource.empty())));
+
+    assertThat(snapshots).hasSize(1);
+    return snapshots.get(0).getDataPoints().get(0).getLabels();
+  }
+
+  @ParameterizedTest
   @MethodSource("resourceAttributesAdditionArgs")
   void resourceAttributesAddition(
       MetricData metricData,
@@ -206,6 +333,7 @@ class Otel2PrometheusConverterTest {
         new Otel2PrometheusConverter(
             /* otelScopeLabelsEnabled= */ true,
             /* targetInfoMetricEnabled= */ true,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             allowedResourceAttributesFilter);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -289,7 +417,7 @@ class Otel2PrometheusConverterTest {
   }
 
   @Test
-  void prometheusNameCollisionTest_Issue6277() {
+  void metricNameCollisionTest_Issue6277() {
     // NOTE: Metrics with the same resolved prometheus name should merge. However,
     // Otel2PrometheusConverter is not responsible for merging individual series, so the merge will
     // fail if the two different metrics contain overlapping series. Users should deal with this by
@@ -509,6 +637,7 @@ class Otel2PrometheusConverterTest {
         new Otel2PrometheusConverter(
             /* otelScopeLabelsEnabled= */ true,
             /* targetInfoMetricEnabled= */ true,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             /* allowedResourceAttributesFilter= */ countPredicate);
 
     // Create 20 different metric data objects with 2 different resource attributes;
