@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.prometheus;
 
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLabelName;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -563,16 +562,60 @@ final class Otel2PrometheusConverter {
     return allowedAttributeKeys;
   }
 
-  /**
-   * Convert an attribute key to a legacy Prometheus label name. {@code prometheusName} converts
-   * non-standard characters (dots, dashes, etc.) to underscores, and {@code sanitizeLabelName}
-   * strips invalid leading prefixes.
-   */
   private String convertLabelName(String key) {
     if (translationStrategy.shouldEscape()) {
-      return sanitizeLabelName(prometheusName(key));
+      return convertLegacyLabelName(key);
     }
     return key;
+  }
+
+  private static String convertLegacyLabelName(String key) {
+    if (key.isEmpty()) {
+      throw new IllegalArgumentException("label name is empty");
+    }
+
+    StringBuilder result = new StringBuilder(key.length());
+    boolean previousWasUnderscore = false;
+    for (int i = 0; i < key.length(); ) {
+      int codePoint = key.codePointAt(i);
+      if (isValidLegacyLabelChar(codePoint)) {
+        result.appendCodePoint(codePoint);
+        previousWasUnderscore = false;
+      } else if (!previousWasUnderscore) {
+        result.append('_');
+        previousWasUnderscore = true;
+      }
+      i += Character.charCount(codePoint);
+    }
+
+    String normalized = result.toString();
+    if (!normalized.isEmpty() && Character.isDigit(normalized.charAt(0))) {
+      normalized = "key_" + normalized;
+    }
+    if (containsOnlyUnderscores(normalized)) {
+      throw new IllegalArgumentException(
+          "normalization for label name \""
+              + key
+              + "\" resulted in invalid name \""
+              + normalized
+              + "\"");
+    }
+    return normalized;
+  }
+
+  private static boolean isValidLegacyLabelChar(int codePoint) {
+    return (codePoint >= 'a' && codePoint <= 'z')
+        || (codePoint >= 'A' && codePoint <= 'Z')
+        || (codePoint >= '0' && codePoint <= '9');
+  }
+
+  private static boolean containsOnlyUnderscores(String value) {
+    for (int i = 0; i < value.length(); i++) {
+      if (value.charAt(i) != '_') {
+        return false;
+      }
+    }
+    return true;
   }
 
   private MetricMetadata convertMetadata(MetricData metricData, boolean isCounter) {

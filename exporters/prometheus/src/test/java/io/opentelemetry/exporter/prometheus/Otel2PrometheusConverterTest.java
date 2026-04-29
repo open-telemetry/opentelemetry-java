@@ -16,6 +16,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
@@ -239,6 +240,88 @@ class Otel2PrometheusConverterTest {
             "sample.name_bytes_total"),
         Arguments.of(
             TranslationStrategy.NO_TRANSLATION, "sample.name", "sample.name", "sample.name"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("legacyLabelNameTranslationArgs")
+  void labelNameTranslation_underscoreEscaping(String labelName, String expectedLabelName) {
+    Labels labels =
+        convertAttributeLabels(labelName, TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES);
+
+    assertThat(labels.size()).isEqualTo(1);
+    assertThat(labels.getName(0)).isEqualTo(expectedLabelName);
+    assertThat(labels.getValue(0)).isEqualTo("value");
+  }
+
+  private static Stream<Arguments> legacyLabelNameTranslationArgs() {
+    return Stream.of(
+        Arguments.of("label:with:colons", "label_with_colons"),
+        Arguments.of("LabelWithCapitalLetters", "LabelWithCapitalLetters"),
+        Arguments.of("label!with&special$chars)", "label_with_special_chars_"),
+        Arguments.of(
+            "label_with_foreign_characters_\u5b57\u7b26", "label_with_foreign_characters_"),
+        Arguments.of("label.with.dots", "label_with_dots"),
+        Arguments.of("123label", "key_123label"),
+        Arguments.of("_label_starting_with_underscore", "_label_starting_with_underscore"),
+        Arguments.of("__label_starting_with_2underscores", "_label_starting_with_2underscores"),
+        Arguments.of("label__with__double__underscores", "label_with_double_underscores"),
+        Arguments.of("label.name__with&&special##chars", "label_name_with_special_chars"),
+        // Prometheus Java rejects user labels starting with "__".
+        Arguments.of("__reserved__label__name__", "_reserved_label_name_"),
+        Arguments.of("trailing_underscores___", "trailing_underscores_"));
+  }
+
+  @Test
+  void labelNameTranslation_legacyRejectsInvalidNormalizedName() {
+    assertThatThrownBy(
+            () ->
+                convertAttributeLabels(
+                    "\u3088\u3046\u3053\u305d",
+                    TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "normalization for label name \"\u3088\u3046\u3053\u305d\" resulted in invalid name"
+                + " \"_\"");
+  }
+
+  @ParameterizedTest
+  @MethodSource("nonEscapingTranslationStrategyArgs")
+  void labelNameTranslation_nonEscapingStrategiesPreserveLabels(
+      TranslationStrategy translationStrategy) {
+    Labels labels = convertAttributeLabels("label:with:colons", translationStrategy);
+
+    assertThat(labels.size()).isEqualTo(1);
+    assertThat(labels.getName(0)).isEqualTo("label:with:colons");
+    assertThat(labels.getValue(0)).isEqualTo("value");
+  }
+
+  private static Stream<Arguments> nonEscapingTranslationStrategyArgs() {
+    return Stream.of(
+        Arguments.of(TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES),
+        Arguments.of(TranslationStrategy.NO_TRANSLATION));
+  }
+
+  private static Labels convertAttributeLabels(
+      String labelName, TranslationStrategy translationStrategy) {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            translationStrategy,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData(
+                    "sample",
+                    "1",
+                    MetricDataType.LONG_SUM,
+                    Attributes.of(stringKey(labelName), "value"),
+                    Resource.empty())));
+
+    assertThat(snapshots).hasSize(1);
+    return snapshots.get(0).getDataPoints().get(0).getLabels();
   }
 
   @ParameterizedTest
