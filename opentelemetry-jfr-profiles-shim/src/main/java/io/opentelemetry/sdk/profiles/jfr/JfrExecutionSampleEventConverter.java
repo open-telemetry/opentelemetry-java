@@ -22,6 +22,17 @@ import jdk.jfr.consumer.RecordedEvent;
  */
 public class JfrExecutionSampleEventConverter {
 
+  private JfrExecutionSampleEventConverter() {}
+
+  /**
+   * Returns a new converter, initialized with an empty dictionary.
+   *
+   * @return a new JfrExecutionSampleEventConverter.
+   */
+  public static JfrExecutionSampleEventConverter create() {
+    return new JfrExecutionSampleEventConverter();
+  }
+
   /*
    * The profiles signal encoding uses dictionary lookup tables to save space by deduplicating
    * repeated object occurrences. The dictionary compositor is used to assemble these tables.
@@ -37,7 +48,7 @@ public class JfrExecutionSampleEventConverter {
    * This assembly is handled by a JfrLocationDataCompositor wrapping the dictionary
    */
   private final JfrLocationDataCompositor locationCompositor =
-      new JfrLocationDataCompositor(profilesDictionaryCompositor);
+      JfrLocationDataCompositor.create(profilesDictionaryCompositor);
 
   /*
    * Samples are occurrences of the same observation, with an optional value and timestamp.

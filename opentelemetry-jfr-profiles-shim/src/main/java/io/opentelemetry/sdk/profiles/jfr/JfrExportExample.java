@@ -61,7 +61,7 @@ public class JfrExportExample {
    */
   public static ProfileData convertJfrFile(Path jfrFilePath) throws IOException {
 
-    JfrExecutionSampleEventConverter converter = new JfrExecutionSampleEventConverter();
+    JfrExecutionSampleEventConverter converter = JfrExecutionSampleEventConverter.create();
 
     RecordingFile recordingFile = new RecordingFile(jfrFilePath);
     while (recordingFile.hasMoreEvents()) {

@@ -29,11 +29,22 @@ public class JfrLocationDataCompositor {
   private final ProfilesDictionaryCompositor profilesDictionaryCompositor;
 
   /**
+   * Returns a new JFR Compositor, using the offered Dictionary for storage.
+   *
+   * @param profilesDictionaryCompositor the underlying dictionary state store.
+   * @return a new ProfilesDictionaryCompositor.
+   */
+  public static JfrLocationDataCompositor create(
+      ProfilesDictionaryCompositor profilesDictionaryCompositor) {
+    return new JfrLocationDataCompositor(profilesDictionaryCompositor);
+  }
+
+  /**
    * Wrap the given dictionary with additional JFR-specific stack data handling functionality.
    *
    * @param profilesDictionaryCompositor the underlying storage.
    */
-  public JfrLocationDataCompositor(ProfilesDictionaryCompositor profilesDictionaryCompositor) {
+  private JfrLocationDataCompositor(ProfilesDictionaryCompositor profilesDictionaryCompositor) {
     this.profilesDictionaryCompositor = profilesDictionaryCompositor;
   }
 
