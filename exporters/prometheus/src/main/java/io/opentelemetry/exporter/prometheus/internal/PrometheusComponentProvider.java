@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Declarative configuration SPI implementation for {@link PrometheusHttpServer}.
@@ -80,16 +79,27 @@ public class PrometheusComponentProvider implements ComponentProvider {
   }
 
   private static TranslationStrategy parseTranslationStrategy(String value) {
-    String normalized =
-        value
-            .replaceAll("([a-z0-9])([A-Z])", "$1_$2")
-            .replace('-', '_')
-            .replace('/', '_')
-            .replace(' ', '_')
-            .toUpperCase(Locale.ROOT);
-    if (normalized.endsWith("_DEVELOPMENT")) {
-      normalized = normalized.substring(0, normalized.length() - "_DEVELOPMENT".length());
+    switch (value) {
+      case "UnderscoreEscapingWithSuffixes":
+      case "underscore_escaping_with_suffixes":
+        return TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES;
+      case "UnderscoreEscapingWithoutSuffixes":
+      case "UnderscoreEscapingWithoutSuffixes/Development":
+      case "underscore_escaping_without_suffixes":
+      case "underscore_escaping_without_suffixes/development":
+        return TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES;
+      case "NoUTF8EscapingWithSuffixes":
+      case "NoUTF8EscapingWithSuffixes/Development":
+      case "no_utf8_escaping_with_suffixes":
+      case "no_utf8_escaping_with_suffixes/development":
+        return TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES;
+      case "NoTranslation":
+      case "NoTranslation/Development":
+      case "no_translation":
+      case "no_translation/development":
+        return TranslationStrategy.NO_TRANSLATION;
+      default:
+        throw new IllegalArgumentException("Unsupported translation_strategy: " + value);
     }
-    return TranslationStrategy.valueOf(normalized);
   }
 }
