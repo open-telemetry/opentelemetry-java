@@ -40,6 +40,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
+import io.prometheus.metrics.model.snapshots.MetricMetadata;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import java.io.ByteArrayOutputStream;
@@ -73,6 +74,7 @@ class Otel2PrometheusConverterTest {
       new Otel2PrometheusConverter(
           /* otelScopeLabelsEnabled= */ true,
           /* targetInfoMetricEnabled= */ true,
+          TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
           /* allowedResourceAttributesFilter= */ null);
 
   @ParameterizedTest
@@ -194,6 +196,52 @@ class Otel2PrometheusConverterTest {
   }
 
   @ParameterizedTest
+  @MethodSource("translationStrategyArgs")
+  void metricMetadata_translationStrategy(
+      TranslationStrategy translationStrategy,
+      String expectedName,
+      String expectedExpositionBaseName,
+      String expectedOriginalName) {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ true,
+            /* targetInfoMetricEnabled= */ true,
+            translationStrategy,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData("sample.name", "By", MetricDataType.LONG_SUM)));
+
+    MetricMetadata metadata = snapshots.get(0).getMetadata();
+    assertThat(metadata.getName()).isEqualTo(expectedName);
+    assertThat(metadata.getExpositionBaseName()).isEqualTo(expectedExpositionBaseName);
+    assertThat(metadata.getOriginalName()).isEqualTo(expectedOriginalName);
+  }
+
+  private static Stream<Arguments> translationStrategyArgs() {
+    return Stream.of(
+        Arguments.of(
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
+            "sample_name_bytes",
+            "sample_name_bytes",
+            "sample_name_bytes"),
+        Arguments.of(
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
+            "sample_name",
+            "sample_name",
+            "sample_name"),
+        Arguments.of(
+            TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES,
+            "sample.name_bytes",
+            "sample.name_bytes_total",
+            "sample.name_bytes_total"),
+        Arguments.of(
+            TranslationStrategy.NO_TRANSLATION, "sample.name", "sample.name", "sample.name"));
+  }
+
+  @ParameterizedTest
   @MethodSource("resourceAttributesAdditionArgs")
   void resourceAttributesAddition(
       MetricData metricData,
@@ -206,6 +254,7 @@ class Otel2PrometheusConverterTest {
         new Otel2PrometheusConverter(
             /* otelScopeLabelsEnabled= */ true,
             /* targetInfoMetricEnabled= */ true,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             allowedResourceAttributesFilter);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -509,6 +558,7 @@ class Otel2PrometheusConverterTest {
         new Otel2PrometheusConverter(
             /* otelScopeLabelsEnabled= */ true,
             /* targetInfoMetricEnabled= */ true,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             /* allowedResourceAttributesFilter= */ countPredicate);
 
     // Create 20 different metric data objects with 2 different resource attributes;

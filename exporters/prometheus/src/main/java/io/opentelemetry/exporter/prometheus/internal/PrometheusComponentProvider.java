@@ -9,10 +9,12 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
+import io.opentelemetry.exporter.prometheus.TranslationStrategy;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Declarative configuration SPI implementation for {@link PrometheusHttpServer}.
@@ -54,6 +56,10 @@ public class PrometheusComponentProvider implements ComponentProvider {
     if (withoutScopeInfo != null) {
       prometheusBuilder.setOtelScopeLabelsEnabled(!withoutScopeInfo);
     }
+    String translationStrategy = config.getString("translation_strategy");
+    if (translationStrategy != null) {
+      prometheusBuilder.setTranslationStrategy(parseTranslationStrategy(translationStrategy));
+    }
 
     DeclarativeConfigProperties withResourceConstantLabels =
         config.getStructured("with_resource_constant_labels");
@@ -71,5 +77,19 @@ public class PrometheusComponentProvider implements ComponentProvider {
     }
 
     return prometheusBuilder.build();
+  }
+
+  private static TranslationStrategy parseTranslationStrategy(String value) {
+    String normalized =
+        value
+            .replaceAll("([a-z0-9])([A-Z])", "$1_$2")
+            .replace('-', '_')
+            .replace('/', '_')
+            .replace(' ', '_')
+            .toUpperCase(Locale.ROOT);
+    if (normalized.endsWith("_DEVELOPMENT")) {
+      normalized = normalized.substring(0, normalized.length() - "_DEVELOPMENT".length());
+    }
+    return TranslationStrategy.valueOf(normalized);
   }
 }

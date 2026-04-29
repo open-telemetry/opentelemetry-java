@@ -18,6 +18,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
+import io.opentelemetry.exporter.prometheus.TranslationStrategy;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.declarativeconfig.internal.model.CardinalityLimitsModel;
@@ -172,6 +173,7 @@ class MetricReaderFactoryTest {
         PrometheusHttpServer.builder()
             .setHost("localhost")
             .setPort(port)
+            .setTranslationStrategy(TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES)
             .setAllowedResourceAttributesFilter(
                 IncludeExcludePredicate.createPatternMatching(
                     singletonList("foo"), singletonList("bar")))

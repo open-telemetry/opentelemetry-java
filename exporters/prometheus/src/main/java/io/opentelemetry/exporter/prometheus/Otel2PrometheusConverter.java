@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.prometheus;
 
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLabelName;
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -84,6 +83,7 @@ final class Otel2PrometheusConverter {
 
   private final boolean otelScopeLabelsEnabled;
   private final boolean targetInfoMetricEnabled;
+  private final TranslationStrategy translationStrategy;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -104,9 +104,11 @@ final class Otel2PrometheusConverter {
   Otel2PrometheusConverter(
       boolean otelScopeLabelsEnabled,
       boolean targetInfoMetricEnabled,
+      TranslationStrategy translationStrategy,
       @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
     this.targetInfoMetricEnabled = targetInfoMetricEnabled;
+    this.translationStrategy = translationStrategy;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
@@ -120,6 +122,10 @@ final class Otel2PrometheusConverter {
 
   boolean isTargetInfoMetricEnabled() {
     return targetInfoMetricEnabled;
+  }
+
+  TranslationStrategy getTranslationStrategy() {
+    return translationStrategy;
   }
 
   @Nullable
@@ -155,7 +161,8 @@ final class Otel2PrometheusConverter {
     // Note that AggregationTemporality.DELTA should never happen
     // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
 
-    MetricMetadata metadata = convertMetadata(metricData);
+    boolean isCounter = isMonotonicSum(metricData);
+    MetricMetadata metadata = convertMetadata(metricData, isCounter);
     InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
     switch (metricData.getType()) {
       case LONG_GAUGE:
@@ -208,6 +215,17 @@ final class Otel2PrometheusConverter {
             metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
     }
     return null;
+  }
+
+  private static boolean isMonotonicSum(MetricData metricData) {
+    switch (metricData.getType()) {
+      case LONG_SUM:
+        return metricData.getLongSumData().isMonotonic();
+      case DOUBLE_SUM:
+        return metricData.getDoubleSumData().isMonotonic();
+      default:
+        return false;
+    }
   }
 
   private GaugeSnapshot convertLongGauge(
@@ -550,29 +568,91 @@ final class Otel2PrometheusConverter {
    * non-standard characters (dots, dashes, etc.) to underscores, and {@code sanitizeLabelName}
    * strips invalid leading prefixes.
    */
-  private static String convertLabelName(String key) {
-    return sanitizeLabelName(prometheusName(key));
+  private String convertLabelName(String key) {
+    if (translationStrategy.shouldEscape()) {
+      return sanitizeLabelName(prometheusName(key));
+    }
+    return key;
   }
 
-  private static MetricMetadata convertMetadata(MetricData metricData) {
-    String name = sanitizeMetricName(prometheusName(metricData.getName()));
+  private MetricMetadata convertMetadata(MetricData metricData, boolean isCounter) {
+    switch (translationStrategy) {
+      case UNDERSCORE_ESCAPING_WITH_SUFFIXES:
+        return convertMetadataEscapedWithSuffixes(metricData);
+      case UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES:
+        return convertMetadataEscapedWithoutSuffixes(metricData);
+      case NO_UTF8_ESCAPING_WITH_SUFFIXES:
+        return convertMetadataUtf8WithSuffixes(metricData, isCounter);
+      case NO_TRANSLATION:
+        return convertMetadataNoTranslation(metricData);
+    }
+    throw new IllegalStateException("Unknown strategy: " + translationStrategy);
+  }
+
+  private static MetricMetadata convertMetadataEscapedWithSuffixes(MetricData metricData) {
+    String name = prometheusName(metricData.getName());
+    String help = metricData.getDescription();
+    Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
+    name = stripRepeatedUnderscores(stripReservedMetricSuffixes(name));
+    if (unit != null && !name.endsWith(unit.toString())) {
+      name = name + "_" + unit;
+    }
+    return new MetricMetadata(stripRepeatedUnderscores(name), help, unit);
+  }
+
+  private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
+    String rawName = stripRepeatedUnderscores(prometheusName(metricData.getName()));
+    String name = stripReservedMetricSuffixes(rawName);
+    return new MetricMetadata(name, rawName, rawName, metricData.getDescription(), null);
+  }
+
+  private static MetricMetadata convertMetadataUtf8WithSuffixes(
+      MetricData metricData, boolean isCounter) {
+    String name = metricData.getName();
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    // Repeated __ are discouraged according to spec, although this is allowed in prometheus, see
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1
+    String expositionBaseName = name;
+    if (isCounter && !expositionBaseName.endsWith("_total")) {
+      expositionBaseName = expositionBaseName + "_total";
+    }
+    return new MetricMetadata(stripReservedMetricSuffixes(name), expositionBaseName, help, unit);
+  }
+
+  private static MetricMetadata convertMetadataNoTranslation(MetricData metricData) {
+    String rawName = metricData.getName();
+    String name = stripReservedMetricSuffixes(rawName);
+    return new MetricMetadata(name, rawName, rawName, metricData.getDescription(), null);
+  }
+
+  private static String stripReservedMetricSuffixes(String name) {
+    boolean modified = true;
+    while (modified) {
+      modified = false;
+      for (String suffix : PrometheusUnitsHelper.RESERVED_SUFFIXES) {
+        if (name.equals(suffix)) {
+          return name.substring(1);
+        }
+        if (name.endsWith(suffix)) {
+          name = name.substring(0, name.length() - suffix.length());
+          modified = true;
+        }
+      }
+    }
+    return name;
+  }
+
+  private static String stripRepeatedUnderscores(String name) {
     while (name.contains("__")) {
       name = name.replace("__", "_");
     }
-
-    return new MetricMetadata(name, help, unit);
+    return name;
   }
 
-  private static void putOrMerge(
-      Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
-    String name = snapshot.getMetadata().getPrometheusName();
+  private void putOrMerge(Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
+    String name = getMergeKey(snapshot.getMetadata());
     if (snapshotsByName.containsKey(name)) {
       MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {
@@ -581,6 +661,13 @@ final class Otel2PrometheusConverter {
     } else {
       snapshotsByName.put(name, snapshot);
     }
+  }
+
+  private String getMergeKey(MetricMetadata metadata) {
+    if (translationStrategy.shouldEscape()) {
+      return metadata.getPrometheusName();
+    }
+    return metadata.getName();
   }
 
   /**

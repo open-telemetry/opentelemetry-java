@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.prometheus.metrics.config.PrometheusProperties;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.IOException;
@@ -73,6 +74,7 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable HttpHandler defaultHandler,
       DefaultAggregationSelector defaultAggregationSelector,
       @Nullable Authenticator authenticator,
+      TranslationStrategy translationStrategy,
       PrometheusMetricReader prometheusMetricReader) {
     this.host = host;
     this.port = port;
@@ -95,9 +97,17 @@ public final class PrometheusHttpServer implements MetricReader {
               new LinkedBlockingQueue<>(),
               new DaemonThreadFactory("prometheus-http-server"));
     }
+    HTTPServer.Builder httpServerBuilder = HTTPServer.builder();
+    if (translationStrategy != TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES) {
+      // Intentionally enable OM2 without content negotiation so OpenMetrics responses keep the
+      // legacy OM1 content type while using OM2 name-preservation semantics.
+      PrometheusProperties prometheusProperties =
+          PrometheusProperties.builder().enableOpenMetrics2(om2 -> {}).build();
+      httpServerBuilder = HTTPServer.builder(prometheusProperties);
+    }
     try {
       this.httpServer =
-          HTTPServer.builder()
+          httpServerBuilder
               .hostname(host)
               .port(port)
               .executorService(executor)

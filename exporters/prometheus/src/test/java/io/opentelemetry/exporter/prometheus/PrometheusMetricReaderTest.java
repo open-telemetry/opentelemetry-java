@@ -1074,10 +1074,13 @@ class PrometheusMetricReaderTest {
     assertThat(new PrometheusMetricReader(/* otelScopeEnabled= */ false, null))
         .usingRecursiveComparison()
         .isEqualTo(new PrometheusMetricReader(null));
-    // The 3-arg constructor should behave the same as the 2-arg deprecated constructor
+    // The 4-arg constructor should behave the same as the 2-arg deprecated constructor
     assertThat(
             new PrometheusMetricReader(
-                null, /* otelScopeLabelsEnabled= */ true, /* targetInfoMetricEnabled */ true))
+                null,
+                /* otelScopeLabelsEnabled= */ true,
+                /* targetInfoMetricEnabled */ true,
+                TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES))
         .usingRecursiveComparison()
         .isEqualTo(new PrometheusMetricReader(null));
   }

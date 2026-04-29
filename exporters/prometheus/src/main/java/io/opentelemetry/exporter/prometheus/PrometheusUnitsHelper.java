@@ -14,6 +14,8 @@ import javax.annotation.Nullable;
 /** Convert OpenTelemetry unit names to Prometheus units. */
 class PrometheusUnitsHelper {
 
+  static final String[] RESERVED_SUFFIXES = {"_total", "_created", "_bucket", "_info"};
+
   private static final Map<String, String> pluralNames = new ConcurrentHashMap<>();
   private static final Map<String, String> singularNames = new ConcurrentHashMap<>();
   private static final Map<String, Unit> predefinedUnits = new ConcurrentHashMap<>();
@@ -97,11 +99,36 @@ class PrometheusUnitsHelper {
   @Nullable
   private static Unit unitOrNull(String name) {
     try {
-      return new Unit(PrometheusNaming.sanitizeUnitName(name));
+      String sanitized = PrometheusNaming.sanitizeUnitName(name);
+      sanitized = stripReservedUnitSuffixes(sanitized);
+      if (sanitized.isEmpty()) {
+        return null;
+      }
+      return new Unit(sanitized);
     } catch (IllegalArgumentException e) {
-      // This happens if the name cannot be converted to a valid Prometheus unit name,
-      // for example if name is "total".
       return null;
     }
+  }
+
+  private static String stripReservedUnitSuffixes(String name) {
+    boolean modified = true;
+    while (modified) {
+      modified = false;
+      for (String suffix : RESERVED_SUFFIXES) {
+        String suffixWithoutUnderscore = suffix.substring(1);
+        if (name.equals(suffixWithoutUnderscore)) {
+          return "";
+        }
+        if (name.endsWith(suffix)) {
+          name = name.substring(0, name.length() - suffix.length());
+          modified = true;
+        }
+      }
+      while (name.endsWith("_") || name.endsWith(".")) {
+        name = name.substring(0, name.length() - 1);
+        modified = true;
+      }
+    }
+    return name;
   }
 }
