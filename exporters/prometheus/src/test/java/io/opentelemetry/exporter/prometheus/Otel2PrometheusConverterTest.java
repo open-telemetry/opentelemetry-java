@@ -258,8 +258,7 @@ class Otel2PrometheusConverterTest {
         Arguments.of("label:with:colons", "label_with_colons"),
         Arguments.of("LabelWithCapitalLetters", "LabelWithCapitalLetters"),
         Arguments.of("label!with&special$chars)", "label_with_special_chars_"),
-        Arguments.of(
-            "label_with_foreign_characters_\u5b57\u7b26", "label_with_foreign_characters_"),
+        Arguments.of("label_with_foreign_characters_字符", "label_with_foreign_characters_"),
         Arguments.of("label.with.dots", "label_with_dots"),
         Arguments.of("123label", "key_123label"),
         Arguments.of("_label_starting_with_underscore", "_label_starting_with_underscore"),
@@ -276,12 +275,9 @@ class Otel2PrometheusConverterTest {
     assertThatThrownBy(
             () ->
                 convertAttributeLabels(
-                    "\u3088\u3046\u3053\u305d",
-                    TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES))
+                    "ようこそ", TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-            "normalization for label name \"\u3088\u3046\u3053\u305d\" resulted in invalid name"
-                + " \"_\"");
+        .hasMessage("normalization for label name \"ようこそ\" resulted in invalid name" + " \"_\"");
   }
 
   @ParameterizedTest
