@@ -421,7 +421,7 @@ class Otel2PrometheusConverterTest {
   }
 
   @Test
-  void prometheusNameCollisionTest_Issue6277() {
+  void metricNameCollisionTest_Issue6277() {
     // NOTE: Metrics with the same resolved prometheus name should merge. However,
     // Otel2PrometheusConverter is not responsible for merging individual series, so the merge will
     // fail if the two different metrics contain overlapping series. Users should deal with this by

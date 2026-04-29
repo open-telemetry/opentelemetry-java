@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import io.prometheus.metrics.model.snapshots.PrometheusNaming;
 import io.prometheus.metrics.model.snapshots.Unit;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -99,7 +98,7 @@ class PrometheusUnitsHelper {
   @Nullable
   private static Unit unitOrNull(String name) {
     try {
-      String sanitized = PrometheusNaming.sanitizeUnitName(name);
+      String sanitized = sanitizeUnitName(name);
       sanitized = stripReservedUnitSuffixes(sanitized);
       if (sanitized.isEmpty()) {
         return null;
@@ -108,6 +107,42 @@ class PrometheusUnitsHelper {
     } catch (IllegalArgumentException e) {
       return null;
     }
+  }
+
+  private static String sanitizeUnitName(String unitName) {
+    if (unitName.isEmpty()) {
+      throw new IllegalArgumentException("Cannot convert an empty string to a valid unit name.");
+    }
+    String sanitizedName = replaceIllegalCharsInUnitName(unitName);
+    while (sanitizedName.startsWith("_") || sanitizedName.startsWith(".")) {
+      sanitizedName = sanitizedName.substring(1);
+    }
+    while (sanitizedName.endsWith(".") || sanitizedName.endsWith("_")) {
+      sanitizedName = sanitizedName.substring(0, sanitizedName.length() - 1);
+    }
+    if (sanitizedName.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Cannot convert '" + unitName + "' into a valid unit name.");
+    }
+    return sanitizedName;
+  }
+
+  private static String replaceIllegalCharsInUnitName(String name) {
+    int length = name.length();
+    char[] sanitized = new char[length];
+    for (int i = 0; i < length; i++) {
+      char ch = name.charAt(i);
+      if (ch == ':'
+          || ch == '.'
+          || (ch >= 'a' && ch <= 'z')
+          || (ch >= 'A' && ch <= 'Z')
+          || (ch >= '0' && ch <= '9')) {
+        sanitized[i] = ch;
+      } else {
+        sanitized[i] = '_';
+      }
+    }
+    return new String(sanitized);
   }
 
   private static String stripReservedUnitSuffixes(String name) {

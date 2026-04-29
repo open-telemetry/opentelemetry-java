@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -624,6 +623,32 @@ final class Otel2PrometheusConverter {
     return true;
   }
 
+  private static String convertLegacyMetricName(String name) {
+    if (name.isEmpty()) {
+      return name;
+    }
+
+    StringBuilder result = new StringBuilder(name.length());
+    for (int i = 0; i < name.length(); ) {
+      int codePoint = name.codePointAt(i);
+      if (isValidLegacyMetricChar(codePoint, i)) {
+        result.appendCodePoint(codePoint);
+      } else {
+        result.append('_');
+      }
+      i += Character.charCount(codePoint);
+    }
+    return result.toString();
+  }
+
+  private static boolean isValidLegacyMetricChar(int codePoint, int index) {
+    return (codePoint >= 'a' && codePoint <= 'z')
+        || (codePoint >= 'A' && codePoint <= 'Z')
+        || codePoint == '_'
+        || codePoint == ':'
+        || (codePoint >= '0' && codePoint <= '9' && index > 0);
+  }
+
   private MetricMetadata convertMetadata(MetricData metricData, boolean isCounter) {
     switch (translationStrategy) {
       case UNDERSCORE_ESCAPING_WITH_SUFFIXES:
@@ -639,7 +664,7 @@ final class Otel2PrometheusConverter {
   }
 
   private static MetricMetadata convertMetadataEscapedWithSuffixes(MetricData metricData) {
-    String name = prometheusName(metricData.getName());
+    String name = convertLegacyMetricName(metricData.getName());
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     name = stripRepeatedUnderscores(stripReservedMetricSuffixes(name));
@@ -650,7 +675,7 @@ final class Otel2PrometheusConverter {
   }
 
   private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
-    String rawName = stripRepeatedUnderscores(prometheusName(metricData.getName()));
+    String rawName = stripRepeatedUnderscores(convertLegacyMetricName(metricData.getName()));
     String name = stripReservedMetricSuffixes(rawName);
     return new MetricMetadata(name, rawName, rawName, metricData.getDescription(), null);
   }
