@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -109,6 +110,32 @@ class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
                 .get("client")
                 .getScalarList("request_captured_headers", String.class))
         .isEqualTo(Arrays.asList("client-request-header1", "client-request-header2"));
+  }
+
+  @Test
+  void close_shutsDownConfigProvider() {
+    String configYaml =
+        "instrumentation/development:\n"
+            + "  general:\n"
+            + "    http:\n"
+            + "      enabled: \"false\"";
+    SdkConfigProvider configProvider =
+        SdkConfigProvider.create(
+            DeclarativeConfiguration.toConfigProperties(
+                new ByteArrayInputStream(configYaml.getBytes(StandardCharsets.UTF_8))));
+    ExtendedOpenTelemetrySdk sdk =
+        ExtendedOpenTelemetrySdk.create(OpenTelemetrySdk.builder().build(), configProvider);
+
+    AtomicInteger callbackCount = new AtomicInteger();
+    configProvider.addConfigChangeListener(
+        ".instrumentation/development.general.http",
+        (path, newConfig) -> callbackCount.incrementAndGet());
+
+    sdk.close();
+
+    configProvider.setConfigProperty(
+        ".instrumentation/development.general.http", "enabled", "true");
+    assertThat(callbackCount.get()).isEqualTo(0);
   }
 
   @Test

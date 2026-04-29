@@ -6,8 +6,11 @@
 package io.opentelemetry.api.incubator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
+import io.opentelemetry.api.incubator.config.ConfigChangeRegistration;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import org.junit.jupiter.api.Test;
 
 class ConfigProviderTest {
@@ -24,5 +27,23 @@ class ConfigProviderTest {
     assertThat(configProvider.getInstrumentationConfig()).isNotNull();
     assertThat(configProvider.getInstrumentationConfig("servlet")).isNotNull();
     assertThat(configProvider.getGeneralInstrumentationConfig()).isNotNull();
+    ConfigChangeRegistration listenerRegistration =
+        configProvider.addConfigChangeListener(
+            ".instrumentation/development.java.servlet", (path, newConfig) -> {});
+    assertThatCode(listenerRegistration::close).doesNotThrowAnyException();
+  }
+
+  @Test
+  void defaultUpdateConfig_isNoop() {
+    ConfigProvider configProvider = ConfigProvider.noop();
+    assertThatCode(() -> configProvider.updateConfig(".foo", DeclarativeConfigProperties.empty()))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void defaultSetConfigProperty_isNoop() {
+    ConfigProvider configProvider = ConfigProvider.noop();
+    assertThatCode(() -> configProvider.setConfigProperty(".foo", "key", "value"))
+        .doesNotThrowAnyException();
   }
 }
