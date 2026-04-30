@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    uses: ./.github/workflows/reusable-lint-check.yml
+  link-check:
+    uses: ./.github/workflows/reusable-link-check.yml
 
   publish-snapshots:
     runs-on: ubuntu-24.04
@@ -42,13 +42,13 @@ jobs:
       contents: read
       issues: write
     needs:
-      - lint
+      - link-check
       - publish-snapshots
     if: always()
     uses: ./.github/workflows/reusable-workflow-notification.yml
     with:
       success: >-
         ${{
-          needs.lint.result == 'success' &&
+          needs.link-check.result == 'success' &&
           needs.publish-snapshots.result == 'success'
         }}

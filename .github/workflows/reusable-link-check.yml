@@ -1,4 +1,4 @@
-name: Reusable - Lint check
+name: Reusable - Link check
 
 on:
   workflow_call:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  lint-check:
+  link-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -16,7 +16,7 @@ jobs:
 
       - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
 
-      - name: Lint for pull requests
+      - name: Link check for pull requests
         if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -24,10 +24,10 @@ jobs:
           GITHUB_BASE_REF: ${{ github.base_ref }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-        run: mise run lint
+        run: mise run lint:links
 
-      - name: Lint for pushes and scheduled workflows
+      - name: Link check for pushes and scheduled workflows
         if: github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: mise run lint --full
+        run: mise run lint:links --full
