@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.state;
+package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 public interface RecordOp {
 

@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.DoubleExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.metrics.internal.exemplar.LongExemplarReservoir;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -28,7 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-public abstract class AggregatorHandle<T extends PointData> {
+public abstract class AggregatorHandle<T extends PointData> implements RecordOp {
 
   private static final String UNSUPPORTED_LONG_MESSAGE =
       "This aggregator does not support long values.";
@@ -41,6 +42,11 @@ public abstract class AggregatorHandle<T extends PointData> {
   @Nullable private final LongExemplarReservoir longReservoirFactory;
   private final boolean isDoubleType;
   private volatile boolean valuesRecorded = false;
+  // The processed attributes associated with this handle's series. Set by synchronous metric
+  // storage when the handle is first created or (for pooled delta handles) when reused for a new
+  // series. Volatile so that setAttributes() is visible across threads without requiring
+  // external synchronization.
+  @Nullable private volatile Attributes attributes;
 
   protected AggregatorHandle(
       long creationEpochNanos, ExemplarReservoirFactory reservoirFactory, boolean isDoubleType) {
@@ -103,6 +109,15 @@ public abstract class AggregatorHandle<T extends PointData> {
     throw new UnsupportedOperationException(UNSUPPORTED_LONG_MESSAGE);
   }
 
+  /** {@inheritDoc} Delegates to {@link #recordLong(long, Attributes, Context)}. */
+  @Override
+  public void recordLong(long value) {
+    recordLong(
+        value,
+        Objects.requireNonNull(attributes, "setAttributes must be called before recordLong"),
+        Context.current());
+  }
+
   public void recordLong(long value, Attributes attributes, Context context) {
     throwUnsupportedIfNull(this.longReservoirFactory, UNSUPPORTED_LONG_MESSAGE)
         .offerLongMeasurement(value, attributes, context);
@@ -116,6 +131,15 @@ public abstract class AggregatorHandle<T extends PointData> {
    */
   protected void doRecordLong(long value) {
     throw new UnsupportedOperationException("This aggregator does not support long values.");
+  }
+
+  /** {@inheritDoc} Delegates to {@link #recordDouble(double, Attributes, Context)}. */
+  @Override
+  public void recordDouble(double value) {
+    recordDouble(
+        value,
+        Objects.requireNonNull(attributes, "setAttributes must be called before recordDouble"),
+        Context.current());
   }
 
   public final void recordDouble(double value, Attributes attributes, Context context) {
@@ -165,5 +189,18 @@ public abstract class AggregatorHandle<T extends PointData> {
    */
   public long getCreationEpochNanos() {
     return creationEpochNanos;
+  }
+
+  /**
+   * Sets the attributes for this handle's series. Called by synchronous metric storage when the
+   * handle is created (cumulative) or when a pooled handle is reused for a new series (delta).
+   */
+  public void setAttributes(Attributes attributes) {
+    this.attributes = attributes;
+  }
+
+  /** Returns the attributes associated with this handle's series. */
+  public Attributes getAttributes() {
+    return Objects.requireNonNull(attributes, "setAttributes must be called before getAttributes");
   }
 }

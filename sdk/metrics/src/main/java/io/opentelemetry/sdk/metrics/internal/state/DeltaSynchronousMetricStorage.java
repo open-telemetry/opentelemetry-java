@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
+import io.opentelemetry.sdk.metrics.internal.aggregator.RecordOp;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedQueue; // pool only
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
@@ -39,14 +40,13 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   private final MemoryMode memoryMode;
 
   private volatile AggregatorHolder<T> aggregatorHolder = new AggregatorHolder<>();
-  // Only populated if memoryMode == REUSABLE_DATA
+  // Only used when memoryMode == REUSABLE_DATA. Alternates with the current holder's map so
+  // that new recordings never race with an in-progress collection on the same accumulator.
   private volatile ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>>
       previousCollectionAggregatorHandles = new ConcurrentHashMap<>();
   // Only populated if memoryMode == REUSABLE_DATA
   private final ArrayList<T> reusableResultList = new ArrayList<>();
   private final ConcurrentLinkedQueue<DeltaAggregatorHandle<T>> aggregatorHandlePool =
-      new ConcurrentLinkedQueue<>();
-  private final ConcurrentLinkedQueue<DeltaAggregatorHandle<T>> boundRecordOps =
       new ConcurrentLinkedQueue<>();
 
   DeltaSynchronousMetricStorage(
@@ -146,6 +146,10 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       if (newDeltaHandle == null) {
         newDeltaHandle =
             new DeltaAggregatorHandle<>(attributes, aggregator.createHandle(clock.now()));
+      } else {
+        // Pooled handles retain their old inner handle and creationEpochNanos; update attributes
+        // for the new series so that RecordOp recordings use the correct attribute set.
+        newDeltaHandle.handle.setAttributes(attributes);
       }
       handle = aggregatorHandles.putIfAbsent(attributes, newDeltaHandle);
       if (handle == null) {
@@ -163,95 +167,78 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   @Override
   public RecordOp bind(Attributes attributes) {
-    Attributes processedAttributes = attributesProcessor.process(attributes, Context.current());
-    // Bound handles are standalone: not inserted into the holder map and not subject to the
-    // holder-swap coordination. The collect thread uses lockForCollect / awaitRecorders /
-    // unlockAfterCollect directly on the bound wrapper to safely aggregate and, for
-    // IMMUTABLE_DATA, rotate the inner handle each collection interval.
-    DeltaAggregatorHandle<T> boundHandle =
-        new DeltaAggregatorHandle<>(processedAttributes, aggregator.createHandle(clock.now()));
-    boundRecordOps.add(boundHandle);
-    return new RecordOp() {
-      @Override
-      public void recordLong(long value) {
-        while (true) {
-          if (boundHandle.tryAcquireForRecord()) {
-            try {
-              boundHandle.handle.recordLong(value, attributes, Context.current());
-            } finally {
-              boundHandle.releaseRecord();
-            }
-            return;
-          }
-        }
+    // Get or create the handle in the current holder's map (same coordination as a normal
+    // recording), then mark it as bound and release the transient recording slot. The bound flag
+    // tells collect() to use the awaitRecorders/rotate/unlock path and to carry the handle over
+    // to the new holder on each IMMUTABLE_DATA collection.
+    while (true) {
+      DeltaAggregatorHandle<T> handle =
+          getDeltaAggregatorHandle(this.aggregatorHolder, attributes, Context.current());
+      if (handle != null) {
+        handle.bound = true;
+        handle.releaseRecord();
+        return handle;
       }
-
-      @Override
-      public void recordDouble(double value) {
-        while (true) {
-          if (boundHandle.tryAcquireForRecord()) {
-            try {
-              boundHandle.handle.recordDouble(value, attributes, Context.current());
-            } finally {
-              boundHandle.releaseRecord();
-            }
-            return;
-          }
-        }
-      }
-    };
+    }
   }
 
   @Override
   public MetricData collect(
       Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
-    ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles;
     AggregatorHolder<T> holder = this.aggregatorHolder;
-    this.aggregatorHolder =
-        (memoryMode == REUSABLE_DATA)
-            ? new AggregatorHolder<>(previousCollectionAggregatorHandles)
-            : new AggregatorHolder<>();
 
     // Lock out new series creation in the old holder and wait for any in-flight new-series
-    // operations to complete. This guarantees the per-handle lock pass below sees every handle
-    // that will ever be inserted into holder.aggregatorHandles.
+    // operations to complete BEFORE installing the new holder. This makes the subsequent scan
+    // for bound handles (IMMUTABLE_DATA) race-free: no new bind() can sneak in after the scan.
     holder.lockForCollectAndAwait();
 
-    // Lock each handle and wait for any in-flight recorders against it to finish.
+    if (memoryMode == REUSABLE_DATA) {
+      // REUSABLE_DATA: ping-pong between two maps. New recordings must NOT write to the same
+      // accumulator that is mid-collection, because some aggregators (e.g. LastValue) hold a
+      // single shared mutable field — a concurrent write would corrupt the collected value.
+      // Bound handles are an exception: their RecordOp spins on the per-handle lock and cannot
+      // write during the collection window, so they are safe to appear in both maps. Copy them
+      // into previousCollectionAggregatorHandles now (before the swap) so they are visible in
+      // the new holder and are collected every interval rather than every other interval.
+      holder.aggregatorHandles.forEach(
+          (attrs, h) -> {
+            if (h.bound) previousCollectionAggregatorHandles.put(attrs, h);
+          });
+      this.aggregatorHolder = new AggregatorHolder<>(previousCollectionAggregatorHandles);
+    } else {
+      // IMMUTABLE_DATA: seed the new holder with only the bound handles from the old holder.
+      // Non-bound series start fresh each interval (delta semantics via holder abandonment).
+      // Bound series must survive so their RecordOp references remain valid across intervals.
+      ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> boundHandles =
+          new ConcurrentHashMap<>();
+      holder.aggregatorHandles.forEach(
+          (attrs, h) -> {
+            if (h.bound) boundHandles.put(attrs, h);
+          });
+      this.aggregatorHolder = new AggregatorHolder<>(boundHandles);
+    }
+
+    // Pass 1: signal all handles in the old holder that collection is starting.
     holder.aggregatorHandles.values().forEach(DeltaAggregatorHandle::lockForCollect);
-    holder.aggregatorHandles.values().forEach(DeltaAggregatorHandle::awaitRecordersAndUnlock);
-    aggregatorHandles = holder.aggregatorHandles;
 
     List<T> points;
     if (memoryMode == REUSABLE_DATA) {
       reusableResultList.clear();
       points = reusableResultList;
     } else {
-      points = new ArrayList<>(aggregatorHandles.size());
+      points = new ArrayList<>(holder.aggregatorHandles.size());
     }
 
-    // In DELTA aggregation temporality each Attributes is reset to 0
-    // every time we perform a collection (by definition of DELTA).
-    // In IMMUTABLE_DATA MemoryMode, this is accomplished by swapping in a new empty holder,
-    // abandoning the old map so each new recording in the next interval starts fresh from 0.
-    // In REUSABLE_DATA MemoryMode, we strive for zero allocations. Since even removing
-    // a key-value from a map and putting it again on next recording will cost an allocation,
-    // we are keeping the aggregator handles in their map, and only reset their value once
-    // we finish collecting the aggregated value from each one.
-    // The SDK must adhere to keeping no more than maxCardinality unique Attributes in memory,
-    // hence during collect(), when the map is at full capacity, we try to clear away unused
-    // aggregator handles, so on next recording cycle using this map, there will be room for newly
-    // recorded Attributes. This comes at the expanse of memory allocations. This can be avoided
-    // if the user chooses to increase the maxCardinality.
-    if (memoryMode == REUSABLE_DATA) {
-      if (aggregatorHandles.size() >= maxCardinality) {
-        aggregatorHandles.forEach(
-            (attribute, handle) -> {
-              if (!handle.handle.hasRecordedValues()) {
-                aggregatorHandles.remove(attribute);
-              }
-            });
-      }
+    // REUSABLE_DATA: when at capacity, remove handles that had no recordings so that the map
+    // has room for newly seen attribute sets next interval. Bound handles are kept
+    // unconditionally since their RecordOp references must remain valid.
+    if (memoryMode == REUSABLE_DATA && holder.aggregatorHandles.size() >= maxCardinality) {
+      holder.aggregatorHandles.forEach(
+          (attribute, handle) -> {
+            if (!handle.bound && !handle.handle.hasRecordedValues()) {
+              holder.aggregatorHandles.remove(attribute);
+            }
+          });
     }
 
     // Start time for synchronous delta instruments is the time of the last collection, or if no
@@ -259,60 +246,52 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     long startEpochNanos =
         registeredReader.getLastCollectEpochNanosOrDefault(instrumentCreationEpochNanos);
 
-    // Grab aggregated points.
-    aggregatorHandles.forEach(
+    // Pass 2: drain, aggregate, and (where needed) reset or rotate each handle.
+    // Unbound handles use awaitRecordersAndUnlock (state → 0 immediately after drain).
+    // Bound handles stay locked through aggregation so the inner accumulator can be rotated
+    // (IMMUTABLE_DATA) before recordings resume; this guarantees new recordings write to the
+    // fresh accumulator, not the one being aggregated.
+    holder.aggregatorHandles.forEach(
         (attributes, handle) -> {
-          if (!handle.handle.hasRecordedValues()) {
-            return;
-          }
-          T point =
-              handle.handle.aggregateThenMaybeReset(
-                  startEpochNanos, epochNanos, attributes, /* reset= */ true);
-
-          if (memoryMode == IMMUTABLE_DATA) {
-            // Return the handle to the pool.
-            // Only in IMMUTABLE_DATA memory mode: in REUSABLE_DATA we avoid using the pool
-            // since ConcurrentLinkedQueue.offer() allocates memory internally.
-            aggregatorHandlePool.offer(handle);
-          }
-
-          if (point != null) {
-            points.add(point);
+          if (handle.bound) {
+            handle.awaitRecorders();
+            T point = null;
+            if (handle.handle.hasRecordedValues()) {
+              point =
+                  handle.handle.aggregateThenMaybeReset(
+                      startEpochNanos, epochNanos, attributes, /* reset= */ true);
+            }
+            if (memoryMode == IMMUTABLE_DATA) {
+              DeltaAggregatorHandle<T> fresh = aggregatorHandlePool.poll();
+              AggregatorHandle<T> freshInner =
+                  (fresh != null) ? fresh.handle : aggregator.createHandle(clock.now());
+              freshInner.setAttributes(attributes);
+              handle.handle = freshInner;
+            }
+            handle.unlockAfterCollect();
+            if (point != null) {
+              points.add(point);
+            }
+          } else {
+            handle.awaitRecordersAndUnlock();
+            if (!handle.handle.hasRecordedValues()) {
+              return;
+            }
+            T point =
+                handle.handle.aggregateThenMaybeReset(
+                    startEpochNanos, epochNanos, attributes, /* reset= */ true);
+            if (memoryMode == IMMUTABLE_DATA) {
+              aggregatorHandlePool.offer(handle);
+            }
+            if (point != null) {
+              points.add(point);
+            }
           }
         });
 
     if (memoryMode == REUSABLE_DATA) {
-      previousCollectionAggregatorHandles = aggregatorHandles;
+      previousCollectionAggregatorHandles = holder.aggregatorHandles;
     }
-
-    // Collect bound handles. Each bound handle uses its own state machine so the collect thread
-    // can safely aggregate without racing with concurrent recordings:
-    //   1. lockForCollect: set state odd, blocking new recordings
-    //   2. awaitRecorders: wait for in-flight recordings to drain (state → 1), without unlocking
-    //   3. aggregateThenMaybeReset: safe since no recordings are in progress
-    //   4. IMMUTABLE_DATA: rotate inner handle while still locked so recordings after unlock
-    //      write to the fresh accumulator (guaranteed visible via the state unlock's HB edge)
-    //   5. unlockAfterCollect: state → 0, recordings resume against the new/reset inner handle
-    boundRecordOps.forEach(
-        boundHandle -> {
-          boundHandle.lockForCollect();
-          boundHandle.awaitRecorders();
-          T point = null;
-          if (boundHandle.handle.hasRecordedValues()) {
-            point =
-                boundHandle.handle.aggregateThenMaybeReset(
-                    startEpochNanos, epochNanos, boundHandle.attributes, /* reset= */ true);
-          }
-          if (memoryMode == IMMUTABLE_DATA) {
-            DeltaAggregatorHandle<T> fresh = aggregatorHandlePool.poll();
-            boundHandle.handle =
-                (fresh != null) ? fresh.handle : aggregator.createHandle(clock.now());
-          }
-          boundHandle.unlockAfterCollect();
-          if (point != null) {
-            points.add(point);
-          }
-        });
 
     if (points.isEmpty() || !enabled) {
       return EmptyMetricData.getInstance();
@@ -369,9 +348,11 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     }
   }
 
-  private static final class DeltaAggregatorHandle<T extends PointData> {
-    private final Attributes attributes;
+  private static final class DeltaAggregatorHandle<T extends PointData> implements RecordOp {
     private volatile AggregatorHandle<T> handle;
+    // Written by bind(), read by collect(). Volatile so the collect thread sees the write
+    // even though it is not protected by the per-handle state machine.
+    volatile boolean bound = false;
     // Guards per-handle recording using the same even/odd protocol as
     // AggregatorHolder.newSeriesGate,
     // but scoped to a single series:
@@ -383,8 +364,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     private final AtomicInteger state = new AtomicInteger(0);
 
     DeltaAggregatorHandle(Attributes attributes, AggregatorHandle<T> handle) {
-      this.attributes = attributes;
       this.handle = handle;
+      this.handle.setAttributes(attributes);
     }
 
     /**
@@ -445,6 +426,34 @@ class DeltaSynchronousMetricStorage<T extends PointData>
      */
     void unlockAfterCollect() {
       state.addAndGet(-1);
+    }
+
+    @Override
+    public void recordLong(long value) {
+      while (true) {
+        if (tryAcquireForRecord()) {
+          try {
+            handle.recordLong(value);
+          } finally {
+            releaseRecord();
+          }
+          return;
+        }
+      }
+    }
+
+    @Override
+    public void recordDouble(double value) {
+      while (true) {
+        if (tryAcquireForRecord()) {
+          try {
+            handle.recordDouble(value);
+          } finally {
+            releaseRecord();
+          }
+          return;
+        }
+      }
     }
   }
 }

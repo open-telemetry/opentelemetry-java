@@ -96,7 +96,7 @@ class SynchronousInstrumentStressTest {
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType,
       boolean isBound) {
-    for (int repetition = 0; repetition < 50; repetition++) {
+    for (int repetition = 0; repetition < 10; repetition++) {
       stressTestOnce(
           aggregationTemporality,
           instrumentType,

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.aggregator.RecordOp;
 
 /**
  * Stores {@link MetricData} and allows synchronous writes of measurements.
