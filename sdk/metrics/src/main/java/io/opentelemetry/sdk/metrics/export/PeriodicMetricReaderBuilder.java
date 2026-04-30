@@ -69,7 +69,7 @@ public final class PeriodicMetricReaderBuilder {
    * @param maxExportBatchSize The maximum number of data points to include in a single export
    *     batch.
    */
-  public PeriodicMetricReaderBuilder setMaxExportBatchSize(int maxExportBatchSize) {
+  PeriodicMetricReaderBuilder setMaxExportBatchSize(int maxExportBatchSize) {
     checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive");
     this.metricsBatcher = new MetricExportBatcher(maxExportBatchSize);
     return this;

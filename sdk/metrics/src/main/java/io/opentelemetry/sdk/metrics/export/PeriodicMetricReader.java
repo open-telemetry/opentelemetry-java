@@ -269,7 +269,7 @@ public final class PeriodicMetricReader implements MetricReader {
             result.whenComplete(
                 () -> {
                   if (!result.isSuccess()) {
-                    logger.log(Level.FINE, "Exporter failed");
+                    logger.log(Level.WARNING, "Exporter failed");
                   }
                   exportAvailable.set(true);
                   flushResult.succeed();
