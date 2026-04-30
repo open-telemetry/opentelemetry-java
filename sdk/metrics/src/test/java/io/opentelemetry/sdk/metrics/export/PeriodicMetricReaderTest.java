@@ -15,6 +15,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -42,15 +43,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -80,6 +78,10 @@ class PeriodicMetricReaderTest {
 
   @Mock private CollectionRegistration collectionRegistration;
   @Mock private MetricExporter metricExporter;
+
+  @RegisterExtension
+  LogCapturer logCapturer =
+      LogCapturer.create().captureForLogger(PeriodicMetricReader.class.getName());
 
   @BeforeEach
   void setup() {
@@ -500,6 +502,7 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  @SuppressLogger(PeriodicMetricReader.class)
   void periodicExport_SequentialBatches_PartialFailure() throws Exception {
     MetricExporter mockExporter = mock(MetricExporter.class);
     when(mockExporter.getAggregationTemporality(any()))
@@ -526,44 +529,26 @@ class PeriodicMetricReaderTest {
         .thenReturn(Collections.singletonList(METRIC_DATA));
     reader.register(collectionRegistration);
 
-    Logger targetLogger = Logger.getLogger(PeriodicMetricReader.class.getName());
-    Level originalLevel = targetLogger.getLevel();
-    targetLogger.setLevel(Level.FINE);
+    CompletableResultCode flushResult = reader.forceFlush();
 
-    TestHandler testHandler = new TestHandler();
-    testHandler.setLevel(Level.FINE);
-    targetLogger.addHandler(testHandler);
+    verify(mockExporter, times(1)).export(any());
 
-    try {
-      CompletableResultCode flushResult = reader.forceFlush();
+    batch1Result.succeed();
+    verify(mockExporter, times(2)).export(any());
 
-      verify(mockExporter, times(1)).export(any());
+    batch2Result.fail();
+    verify(mockExporter, times(3)).export(any());
 
-      batch1Result.succeed();
-      verify(mockExporter, times(2)).export(any());
+    batch3Result.succeed();
 
-      batch2Result.fail();
-      verify(mockExporter, times(3)).export(any());
+    // Failed export results are logged, but forceFlush preserves the prior
+    // partial-success
+    // behavior.
+    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
 
-      batch3Result.succeed();
+    logCapturer.assertContains("Exporter failed");
 
-      // Failed export results are logged, but forceFlush preserves the prior partial-success
-      // behavior.
-      assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
-
-      boolean logFound =
-          testHandler.getLogRecords().stream()
-              .anyMatch(
-                  record ->
-                      record.getLevel().equals(Level.FINE)
-                          && record.getMessage().equals("Exporter failed"));
-      assertThat(logFound).isTrue();
-
-      reader.shutdown();
-    } finally {
-      targetLogger.removeHandler(testHandler);
-      targetLogger.setLevel(originalLevel);
-    }
+    reader.shutdown();
   }
 
   @Test
@@ -626,42 +611,22 @@ class PeriodicMetricReaderTest {
         .thenReturn(Collections.singletonList(METRIC_DATA));
     reader.register(collectionRegistration);
 
-    Logger targetLogger = Logger.getLogger(PeriodicMetricReader.class.getName());
-    Level originalLevel = targetLogger.getLevel();
-    targetLogger.setLevel(Level.FINE);
+    CompletableResultCode flushResult = reader.forceFlush();
 
-    TestHandler testHandler = new TestHandler();
-    testHandler.setLevel(Level.FINE);
-    targetLogger.addHandler(testHandler);
+    verify(mockExporter, times(1)).export(any());
 
-    try {
-      CompletableResultCode flushResult = reader.forceFlush();
+    batch1Result.succeed();
+    verify(mockExporter, times(2)).export(any());
 
-      verify(mockExporter, times(1)).export(any());
+    batch2Result.succeed();
+    verify(mockExporter, times(3)).export(any());
 
-      batch1Result.succeed();
-      verify(mockExporter, times(2)).export(any());
+    batch3Result.succeed();
 
-      batch2Result.succeed();
-      verify(mockExporter, times(3)).export(any());
+    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+    logCapturer.assertDoesNotContain("Exporter failed");
 
-      batch3Result.succeed();
-
-      assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
-
-      boolean logFound =
-          testHandler.getLogRecords().stream()
-              .anyMatch(
-                  record ->
-                      record.getLevel().equals(Level.FINE)
-                          && record.getMessage().equals("Exporter failed"));
-      assertThat(logFound).isFalse();
-
-      reader.shutdown();
-    } finally {
-      targetLogger.removeHandler(testHandler);
-      targetLogger.setLevel(originalLevel);
-    }
+    reader.shutdown();
   }
 
   @Test
@@ -736,27 +701,6 @@ class PeriodicMetricReaderTest {
         result.add(export);
       }
       return result;
-    }
-  }
-
-  private static class TestHandler extends Handler {
-    private final List<LogRecord> logRecords = new ArrayList<>();
-
-    private TestHandler() {}
-
-    @Override
-    public void publish(LogRecord record) {
-      logRecords.add(record);
-    }
-
-    @Override
-    public void flush() {}
-
-    @Override
-    public void close() {}
-
-    List<LogRecord> getLogRecords() {
-      return logRecords;
     }
   }
 }
