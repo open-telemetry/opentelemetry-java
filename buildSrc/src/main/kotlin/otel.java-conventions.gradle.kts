@@ -244,7 +244,7 @@ testing {
     useJUnitJupiter()
 
     dependencies {
-      implementation(project(project.path))
+      implementation(project())
 
       implementation(project(":testing-internal"))
 
