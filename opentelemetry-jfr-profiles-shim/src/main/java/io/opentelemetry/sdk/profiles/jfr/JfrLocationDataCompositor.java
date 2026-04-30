@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.profiles.jfr;
 
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.profiles.ProfilesDictionaryCompositor;
 import io.opentelemetry.sdk.profiles.data.FunctionData;
+import io.opentelemetry.sdk.profiles.data.KeyValueAndUnitData;
 import io.opentelemetry.sdk.profiles.data.LineData;
 import io.opentelemetry.sdk.profiles.data.LocationData;
 import io.opentelemetry.sdk.profiles.data.StackData;
-import java.util.Collections;
 import java.util.List;
 import jdk.jfr.consumer.RecordedFrame;
 
@@ -85,8 +86,13 @@ public class JfrLocationDataCompositor {
     int lineNumber = frame.getLineNumber() != -1 ? frame.getLineNumber() : 0;
     LineData lineData = LineData.create(functionIndex, lineNumber, 0);
 
+    // https://opentelemetry.io/docs/specs/semconv/general/profiles/#frame-types
+    int typeKeyIndex = profilesDictionaryCompositor.putIfAbsent("profile.frame.type");
+    KeyValueAndUnitData frameType = KeyValueAndUnitData.create(typeKeyIndex, Value.of("jvm"), 0);
+    int typeAttributeIndex = profilesDictionaryCompositor.putIfAbsent(frameType);
+
     LocationData locationData =
-        LocationData.create(0, 0, List.of(lineData), Collections.emptyList());
+        LocationData.create(0, 0, List.of(lineData), List.of(typeAttributeIndex));
 
     int locationIndex = profilesDictionaryCompositor.putIfAbsent(locationData);
     return locationIndex;
