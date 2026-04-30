@@ -14,4 +14,4 @@ use_file_shell_for_executable_tasks = true
 # Pick the tasks you need from flint (https://github.com/grafana/flint)
 [tasks."lint:links"]
 description = "Check for broken links in changed files + all local links"
-file = "https://raw.githubusercontent.com/grafana/flint/9de186b090a2ce39486ae3b1d3e696bd2e200d6a/tasks/lint/links.sh" # v0.20.3
+file = "https://raw.githubusercontent.com/grafana/flint/feab606ce514fbbf2722cc26aeafa39956383cf3/tasks/lint/links.sh" # v0.21.0
