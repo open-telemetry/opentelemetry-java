@@ -195,13 +195,55 @@ public final class PeriodicMetricReader implements MetricReader {
 
     private Scheduled() {}
 
+    private CompletableResultCode exportMetrics(Collection<MetricData> metricData) {
+      if (metricsBatcher == null) {
+        return exporter.export(metricData);
+      }
+      Collection<Collection<MetricData>> batches = metricsBatcher.batchMetrics(metricData);
+      CompletableResultCode sequentialResult = new CompletableResultCode();
+      AtomicBoolean anyFailed = new AtomicBoolean(false);
+      Iterator<Collection<MetricData>> batchIterator = batches.iterator();
+      Runnable exportNext =
+          new Runnable() {
+            @Override
+            public void run() {
+              while (batchIterator.hasNext()) {
+                Collection<MetricData> currentBatch = batchIterator.next();
+                CompletableResultCode currentResult = exporter.export(currentBatch);
+                if (currentResult.isDone()) {
+                  if (!currentResult.isSuccess()) {
+                    anyFailed.set(true);
+                  }
+                } else {
+                  currentResult.whenComplete(
+                      () -> {
+                        if (!currentResult.isSuccess()) {
+                          anyFailed.set(true);
+                        }
+                        this.run();
+                      });
+                  return;
+                }
+              }
+              if (anyFailed.get()) {
+                sequentialResult.fail();
+              } else {
+                sequentialResult.succeed();
+              }
+            }
+          };
+      exportNext.run();
+      return sequentialResult;
+    }
+
     void setMeterProvider(MeterProvider meterProvider) {
       instrumentation = new MetricReaderInstrumentation(COMPONENT_ID, meterProvider);
     }
 
     @Override
     public void run() {
-      // Ignore the CompletableResultCode from doRun() in order to keep run() asynchronous
+      // Ignore the CompletableResultCode from doRun() in order to keep run()
+      // asynchronous
       doRun();
     }
 
@@ -225,47 +267,7 @@ public final class PeriodicMetricReader implements MetricReader {
             exportAvailable.set(true);
             flushResult.succeed();
           } else {
-            CompletableResultCode result;
-            if (metricsBatcher != null) {
-              Collection<Collection<MetricData>> batches = metricsBatcher.batchMetrics(metricData);
-              CompletableResultCode sequentialResult = new CompletableResultCode();
-              AtomicBoolean anyFailed = new AtomicBoolean(false);
-              Iterator<Collection<MetricData>> batchIterator = batches.iterator();
-
-              Runnable exportNext =
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      while (batchIterator.hasNext()) {
-                        Collection<MetricData> currentBatch = batchIterator.next();
-                        CompletableResultCode currentResult = exporter.export(currentBatch);
-                        if (currentResult.isDone()) {
-                          if (!currentResult.isSuccess()) {
-                            anyFailed.set(true);
-                          }
-                        } else {
-                          currentResult.whenComplete(
-                              () -> {
-                                if (!currentResult.isSuccess()) {
-                                  anyFailed.set(true);
-                                }
-                                this.run();
-                              });
-                          return;
-                        }
-                      }
-                      if (anyFailed.get()) {
-                        sequentialResult.fail();
-                      } else {
-                        sequentialResult.succeed();
-                      }
-                    }
-                  };
-              exportNext.run();
-              result = sequentialResult;
-            } else {
-              result = exporter.export(metricData);
-            }
+            CompletableResultCode result = exportMetrics(metricData);
             result.whenComplete(
                 () -> {
                   if (!result.isSuccess()) {
