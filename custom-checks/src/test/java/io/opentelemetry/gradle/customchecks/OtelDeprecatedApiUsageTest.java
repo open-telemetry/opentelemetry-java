@@ -181,9 +181,9 @@ class OtelDeprecatedApiUsageTest {
             "ExternalDeprecated.java",
             "package test;",
             "public class ExternalDeprecated {",
-            "  void method(Thread t) {",
+            "  void method() {",
             "    // BUG: Diagnostic contains: Use of deprecated API",
-            "    t.stop();",
+            "    new Boolean(false);",
             "  }",
             "}")
         .doTest();
