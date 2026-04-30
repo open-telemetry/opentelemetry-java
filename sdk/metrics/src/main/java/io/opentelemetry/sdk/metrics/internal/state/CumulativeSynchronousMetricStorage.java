@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
-import io.opentelemetry.sdk.metrics.internal.aggregator.RecordOp;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -92,7 +91,7 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
   }
 
   @Override
-  public RecordOp bind(Attributes attributes) {
+  public AggregatorHandle<T> bind(Attributes attributes) {
     return getAggregatorHandle(aggregatorHandles, attributes, Context.current());
   }
 

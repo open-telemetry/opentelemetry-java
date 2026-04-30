@@ -61,5 +61,7 @@ public interface LongHistogram {
    */
   void record(long value, Attributes attributes, Context context);
 
-  LongHistogramOp bind(Attributes attributes);
+  default LongHistogram bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

@@ -8,11 +8,11 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
-import io.opentelemetry.api.metrics.DoubleCounterOp;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -53,8 +53,8 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
   }
 
   @Override
-  public DoubleCounterOp bind(Attributes attributes) {
-    return storage.bind(attributes)::recordDouble;
+  public DoubleCounter bind(Attributes attributes) {
+    return storage.cachedBind(attributes, BoundDoubleCounter::new);
   }
 
   @Override
@@ -115,6 +115,43 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
     @Override
     public String toString() {
       return builder.toStringHelper(getClass().getSimpleName());
+    }
+  }
+
+  private final class BoundDoubleCounter implements DoubleCounter {
+
+    private final AggregatorHandle<?> op;
+    private final Attributes boundAttributes;
+
+    BoundDoubleCounter(AggregatorHandle<?> op, Attributes boundAttributes) {
+      this.op = op;
+      this.boundAttributes = boundAttributes;
+    }
+
+    @Override
+    public void add(double value) {
+      op.recordDouble(value);
+    }
+
+    @Override
+    public void add(double value, Attributes attributes) {
+      SdkDoubleCounter.this.add(value, boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public void add(double value, Attributes attributes, Context context) {
+      SdkDoubleCounter.this.add(
+          value, boundAttributes.toBuilder().putAll(attributes).build(), context);
+    }
+
+    @Override
+    public DoubleCounter bind(Attributes attributes) {
+      return SdkDoubleCounter.this.bind(boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return SdkDoubleCounter.this.isEnabled();
     }
   }
 }

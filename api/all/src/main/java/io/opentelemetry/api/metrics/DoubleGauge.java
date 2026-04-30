@@ -55,5 +55,7 @@ public interface DoubleGauge {
    */
   void set(double value, Attributes attributes, Context context);
 
-  DoubleGaugeOp bind(Attributes attributes);
+  default DoubleGauge bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

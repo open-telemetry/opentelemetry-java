@@ -61,5 +61,7 @@ public interface DoubleHistogram {
    */
   void record(double value, Attributes attributes, Context context);
 
-  DoubleHistogramOp bind(Attributes attributes);
+  default DoubleHistogram bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

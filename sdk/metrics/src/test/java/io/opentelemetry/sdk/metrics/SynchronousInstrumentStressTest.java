@@ -18,14 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleCounterOp;
-import io.opentelemetry.api.metrics.DoubleGaugeOp;
-import io.opentelemetry.api.metrics.DoubleHistogramOp;
-import io.opentelemetry.api.metrics.DoubleUpDownCounterOp;
-import io.opentelemetry.api.metrics.LongCounterOp;
-import io.opentelemetry.api.metrics.LongGaugeOp;
-import io.opentelemetry.api.metrics.LongHistogramOp;
-import io.opentelemetry.api.metrics.LongUpDownCounterOp;
+import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleGauge;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.DoubleUpDownCounter;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongGauge;
+import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -389,26 +389,26 @@ class SynchronousInstrumentStressTest {
     switch (instrumentType) {
       case COUNTER:
         if (instrumentValueType == InstrumentValueType.DOUBLE) {
-          DoubleCounterOp bound =
+          DoubleCounter bound =
               meter.counterBuilder(INSTRUMENT_NAME).ofDoubles().build().bind(attributes);
           return value -> bound.add(value);
         } else {
-          LongCounterOp bound = meter.counterBuilder(INSTRUMENT_NAME).build().bind(attributes);
+          LongCounter bound = meter.counterBuilder(INSTRUMENT_NAME).build().bind(attributes);
           return bound::add;
         }
       case UP_DOWN_COUNTER:
         if (instrumentValueType == InstrumentValueType.DOUBLE) {
-          DoubleUpDownCounterOp bound =
+          DoubleUpDownCounter bound =
               meter.upDownCounterBuilder(INSTRUMENT_NAME).ofDoubles().build().bind(attributes);
           return value -> bound.add(value);
         } else {
-          LongUpDownCounterOp bound =
+          LongUpDownCounter bound =
               meter.upDownCounterBuilder(INSTRUMENT_NAME).build().bind(attributes);
           return bound::add;
         }
       case HISTOGRAM:
         if (instrumentValueType == InstrumentValueType.DOUBLE) {
-          DoubleHistogramOp bound =
+          DoubleHistogram bound =
               meter
                   .histogramBuilder(INSTRUMENT_NAME)
                   .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
@@ -416,7 +416,7 @@ class SynchronousInstrumentStressTest {
                   .bind(attributes);
           return value -> bound.record(value);
         } else {
-          LongHistogramOp bound =
+          LongHistogram bound =
               meter
                   .histogramBuilder(INSTRUMENT_NAME)
                   .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
@@ -427,11 +427,10 @@ class SynchronousInstrumentStressTest {
         }
       case GAUGE:
         if (instrumentValueType == InstrumentValueType.DOUBLE) {
-          DoubleGaugeOp bound = meter.gaugeBuilder(INSTRUMENT_NAME).build().bind(attributes);
+          DoubleGauge bound = meter.gaugeBuilder(INSTRUMENT_NAME).build().bind(attributes);
           return value -> bound.set(value);
         } else {
-          LongGaugeOp bound =
-              meter.gaugeBuilder(INSTRUMENT_NAME).ofLongs().build().bind(attributes);
+          LongGauge bound = meter.gaugeBuilder(INSTRUMENT_NAME).ofLongs().build().bind(attributes);
           return bound::set;
         }
       default:

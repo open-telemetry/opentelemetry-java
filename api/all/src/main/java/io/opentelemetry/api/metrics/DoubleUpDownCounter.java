@@ -61,5 +61,7 @@ public interface DoubleUpDownCounter {
    */
   void add(double value, Attributes attributes, Context context);
 
-  DoubleUpDownCounterOp bind(Attributes attributes);
+  default DoubleUpDownCounter bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

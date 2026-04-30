@@ -50,17 +50,17 @@ class BoundInstrumentUsageTest {
               .setUnit("{roll}")
               .build();
 
-      // Bind one LongCounterOp per die face. Each bind() call resolves the underlying timeseries
+      // Bind one LongCounter per die face. Each bind() call resolves the underlying timeseries
       // once, so subsequent add() calls record directly without any attribute lookup.
       //
       // Equivalent unbound setup (no bind calls needed, but per-recording overhead is higher):
       //   // no setup — just call rolls.add(1, ROLL_N) inline below
-      LongCounterOp face1 = rolls.bind(ROLL_1);
-      LongCounterOp face2 = rolls.bind(ROLL_2);
-      LongCounterOp face3 = rolls.bind(ROLL_3);
-      LongCounterOp face4 = rolls.bind(ROLL_4);
-      LongCounterOp face5 = rolls.bind(ROLL_5);
-      LongCounterOp face6 = rolls.bind(ROLL_6);
+      LongCounter face1 = rolls.bind(ROLL_1);
+      LongCounter face2 = rolls.bind(ROLL_2);
+      LongCounter face3 = rolls.bind(ROLL_3);
+      LongCounter face4 = rolls.bind(ROLL_4);
+      LongCounter face5 = rolls.bind(ROLL_5);
+      LongCounter face6 = rolls.bind(ROLL_6);
 
       // Simulate 600 rolls with a fixed seed for a reproducible distribution.
       Random random = new Random(42);

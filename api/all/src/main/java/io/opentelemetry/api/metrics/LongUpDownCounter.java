@@ -61,5 +61,7 @@ public interface LongUpDownCounter {
    */
   void add(long value, Attributes attributes, Context context);
 
-  LongUpDownCounterOp bind(Attributes attributes);
+  default LongUpDownCounter bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

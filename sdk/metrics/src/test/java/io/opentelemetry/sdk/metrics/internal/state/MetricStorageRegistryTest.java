@@ -121,5 +121,16 @@ class MetricStorageRegistryTest {
     public void setEnabled(boolean enabled) {
       throw new UnsupportedOperationException("Not implemented");
     }
+
+    @Override
+    public <T> T cachedBind(
+        io.opentelemetry.api.common.Attributes attributes,
+        java.util.function.BiFunction<
+                io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle<?>,
+                io.opentelemetry.api.common.Attributes,
+                T>
+            factory) {
+      throw new UnsupportedOperationException("Not implemented");
+    }
   }
 }

@@ -55,5 +55,7 @@ public interface LongGauge {
    */
   void set(long value, Attributes attributes, Context context);
 
-  LongGaugeOp bind(Attributes attributes);
+  default LongGauge bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

@@ -15,9 +15,12 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +49,7 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
   protected final int maxCardinality;
 
   protected volatile boolean enabled;
+  private final ConcurrentHashMap<Attributes, Object> bindCache = new ConcurrentHashMap<>();
 
   DefaultSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
@@ -114,6 +118,22 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
   abstract void doRecordLong(long value, Attributes attributes, Context context);
 
   abstract void doRecordDouble(double value, Attributes attributes, Context context);
+
+  /** Returns the {@link AggregatorHandle} for the given attributes, creating it if necessary. */
+  protected abstract AggregatorHandle<T> bind(Attributes attributes);
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> T cachedBind(
+      Attributes attributes, BiFunction<AggregatorHandle<?>, Attributes, T> factory) {
+    T hit = (T) bindCache.get(attributes);
+    if (hit != null) {
+      return hit;
+    }
+    T created = factory.apply(bind(attributes), attributes);
+    T existing = (T) bindCache.putIfAbsent(attributes, created);
+    return existing != null ? existing : created;
+  }
 
   @Override
   public void setEnabled(boolean enabled) {

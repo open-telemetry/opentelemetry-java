@@ -8,10 +8,10 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
-import io.opentelemetry.api.metrics.DoubleHistogramOp;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -63,8 +63,8 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
   }
 
   @Override
-  public DoubleHistogramOp bind(Attributes attributes) {
-    return storage.bind(attributes)::recordDouble;
+  public DoubleHistogram bind(Attributes attributes) {
+    return storage.cachedBind(attributes, BoundDoubleHistogram::new);
   }
 
   static class SdkDoubleHistogramBuilder implements DoubleHistogramBuilder {
@@ -115,6 +115,43 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
     @Override
     public String toString() {
       return builder.toStringHelper(getClass().getSimpleName());
+    }
+  }
+
+  private final class BoundDoubleHistogram implements DoubleHistogram {
+
+    private final AggregatorHandle<?> op;
+    private final Attributes boundAttributes;
+
+    BoundDoubleHistogram(AggregatorHandle<?> op, Attributes boundAttributes) {
+      this.op = op;
+      this.boundAttributes = boundAttributes;
+    }
+
+    @Override
+    public void record(double value) {
+      op.recordDouble(value);
+    }
+
+    @Override
+    public void record(double value, Attributes attributes) {
+      SdkDoubleHistogram.this.record(value, boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public void record(double value, Attributes attributes, Context context) {
+      SdkDoubleHistogram.this.record(
+          value, boundAttributes.toBuilder().putAll(attributes).build(), context);
+    }
+
+    @Override
+    public DoubleHistogram bind(Attributes attributes) {
+      return SdkDoubleHistogram.this.bind(boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return SdkDoubleHistogram.this.isEnabled();
     }
   }
 }

@@ -9,11 +9,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
-import io.opentelemetry.api.metrics.LongCounterOp;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
@@ -64,8 +64,8 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
   }
 
   @Override
-  public LongCounterOp bind(Attributes attributes) {
-    return storage.bind(attributes)::recordLong;
+  public LongCounter bind(Attributes attributes) {
+    return storage.cachedBind(attributes, BoundLongCounter::new);
   }
 
   static class SdkLongCounterBuilder implements LongCounterBuilder {
@@ -112,6 +112,43 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
     @Override
     public String toString() {
       return builder.toStringHelper(getClass().getSimpleName());
+    }
+  }
+
+  private final class BoundLongCounter implements LongCounter {
+
+    private final AggregatorHandle<?> op;
+    private final Attributes boundAttributes;
+
+    BoundLongCounter(AggregatorHandle<?> op, Attributes boundAttributes) {
+      this.op = op;
+      this.boundAttributes = boundAttributes;
+    }
+
+    @Override
+    public void add(long value) {
+      op.recordLong(value);
+    }
+
+    @Override
+    public void add(long value, Attributes attributes) {
+      SdkLongCounter.this.add(value, boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public void add(long value, Attributes attributes, Context context) {
+      SdkLongCounter.this.add(
+          value, boundAttributes.toBuilder().putAll(attributes).build(), context);
+    }
+
+    @Override
+    public LongCounter bind(Attributes attributes) {
+      return SdkLongCounter.this.bind(boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return SdkLongCounter.this.isEnabled();
     }
   }
 }

@@ -8,10 +8,10 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
-import io.opentelemetry.api.metrics.DoubleUpDownCounterOp;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -50,8 +50,8 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
   }
 
   @Override
-  public DoubleUpDownCounterOp bind(Attributes attributes) {
-    return storage.bind(attributes)::recordDouble;
+  public DoubleUpDownCounter bind(Attributes attributes) {
+    return storage.cachedBind(attributes, BoundDoubleUpDownCounter::new);
   }
 
   static class SdkDoubleUpDownCounterBuilder implements DoubleUpDownCounterBuilder {
@@ -104,6 +104,45 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
     @Override
     public String toString() {
       return builder.toStringHelper(getClass().getSimpleName());
+    }
+  }
+
+  private final class BoundDoubleUpDownCounter implements DoubleUpDownCounter {
+
+    private final AggregatorHandle<?> op;
+    private final Attributes boundAttributes;
+
+    BoundDoubleUpDownCounter(AggregatorHandle<?> op, Attributes boundAttributes) {
+      this.op = op;
+      this.boundAttributes = boundAttributes;
+    }
+
+    @Override
+    public void add(double value) {
+      op.recordDouble(value);
+    }
+
+    @Override
+    public void add(double value, Attributes attributes) {
+      SdkDoubleUpDownCounter.this.add(
+          value, boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public void add(double value, Attributes attributes, Context context) {
+      SdkDoubleUpDownCounter.this.add(
+          value, boundAttributes.toBuilder().putAll(attributes).build(), context);
+    }
+
+    @Override
+    public DoubleUpDownCounter bind(Attributes attributes) {
+      return SdkDoubleUpDownCounter.this.bind(
+          boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return SdkDoubleUpDownCounter.this.isEnabled();
     }
   }
 }

@@ -15,7 +15,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 1.10.0
  */
 @ThreadSafe
-public interface LongCounter extends LongCounterOp {
+public interface LongCounter {
 
   /**
    * Returns {@code true} if the counter is enabled.
@@ -30,6 +30,16 @@ public interface LongCounter extends LongCounterOp {
   default boolean isEnabled() {
     return true;
   }
+
+  /**
+   * Records a value.
+   *
+   * <p>Note: This may use {@code Context.current()} to pull the context associated with this
+   * measurement.
+   *
+   * @param value The increment amount. MUST be non-negative.
+   */
+  void add(long value);
 
   /**
    * Records a value with a set of attributes.
@@ -51,5 +61,7 @@ public interface LongCounter extends LongCounterOp {
    */
   void add(long value, Attributes attributes, Context context);
 
-  LongCounterOp bind(Attributes attributes);
+  default LongCounter bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

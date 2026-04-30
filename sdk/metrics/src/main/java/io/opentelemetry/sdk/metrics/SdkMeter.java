@@ -20,8 +20,11 @@ import io.opentelemetry.api.metrics.ObservableMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
@@ -40,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -378,6 +382,36 @@ final class SdkMeter implements Meter {
         }
       }
       return false;
+    }
+
+    @Override
+    public <T> T cachedBind(
+        Attributes attributes, BiFunction<AggregatorHandle<?>, Attributes, T> factory) {
+      // Multi-reader: supply a forwarding handle that routes through recordLong/recordDouble,
+      // which this class already multiplexes to every underlying storage. The trade-off vs the
+      // single-reader path is that the no-attr add(long) hot path pays a per-reader map lookup
+      // on every call instead of going direct to a cached handle. That is acceptable given
+      // multi-reader setups are rare.
+      AggregatorHandle<PointData> forwardingHandle =
+          new AggregatorHandle<PointData>(0, ExemplarReservoirFactory.noSamples(), true) {
+            @Override
+            public void recordLong(long value) {
+              MultiWritableMetricStorage.this.recordLong(value, attributes, Context.current());
+            }
+
+            @Override
+            public void recordDouble(double value) {
+              MultiWritableMetricStorage.this.recordDouble(value, attributes, Context.current());
+            }
+
+            @Override
+            protected void doRecordLong(long value) {}
+
+            @Override
+            protected void doRecordDouble(double value) {}
+          };
+      forwardingHandle.setAttributes(attributes);
+      return factory.apply(forwardingHandle, attributes);
     }
   }
 }
