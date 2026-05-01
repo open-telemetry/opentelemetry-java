@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776971401039,
+  "lastUpdate": 1777667519250,
   "repoUrl": "https://github.com/open-telemetry/opentelemetry-java",
   "entries": {
     "Benchmark": [
@@ -61112,6 +61112,342 @@ window.BENCHMARK_DATA = {
             "value": 143093.46641896144,
             "unit": "ops/s",
             "extra": "iterations: 5\nforks: 1\nthreads: 4"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "34418638+jack-berg@users.noreply.github.com",
+            "name": "Jack Berg",
+            "username": "jack-berg"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "18f4583d9f6f1c8a61e47dbdedd1f3d28dcf17c4",
+          "message": "Change benchmark timeout to 120 minutes (#8358)",
+          "timestamp": "2026-05-01T13:33:44-05:00",
+          "tree_id": "84802dac940c771141f57fd026c63be0b8c7a75d",
+          "url": "https://github.com/open-telemetry/opentelemetry-java/commit/18f4583d9f6f1c8a61e47dbdedd1f3d28dcf17c4"
+        },
+        "date": 1777667511805,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "io.opentelemetry.sdk.LogRecordBenchmark.threads1 ( {\"logSize\":\"SMALL\"} )",
+            "value": 1480013.952728697,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.LogRecordBenchmark.threads1 ( {\"logSize\":\"MEDIUM\"} )",
+            "value": 1085789.752338338,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.LogRecordBenchmark.threads1 ( {\"logSize\":\"LARGE\"} )",
+            "value": 117410.26670342531,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.LogRecordBenchmark.threads4 ( {\"logSize\":\"SMALL\"} )",
+            "value": 1257205.0802890665,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.LogRecordBenchmark.threads4 ( {\"logSize\":\"MEDIUM\"} )",
+            "value": 523354.9030784759,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.LogRecordBenchmark.threads4 ( {\"logSize\":\"LARGE\"} )",
+            "value": 442357.9997944945,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"COUNTER_SUM\"} )",
+            "value": 29982629.859535705,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"UP_DOWN_COUNTER_SUM\"} )",
+            "value": 23069509.101619866,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"GAUGE_LAST_VALUE\"} )",
+            "value": 24494760.867557406,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_EXPLICIT\"} )",
+            "value": 20451668.170648597,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_BASE2_EXPONENTIAL\"} )",
+            "value": 20920878.331452586,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"COUNTER_SUM\"} )",
+            "value": 29889107.202594034,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"UP_DOWN_COUNTER_SUM\"} )",
+            "value": 22010436.652085725,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"GAUGE_LAST_VALUE\"} )",
+            "value": 26240279.92475066,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_EXPLICIT\"} )",
+            "value": 18503713.51225006,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_BASE2_EXPONENTIAL\"} )",
+            "value": 18317619.87673878,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"COUNTER_SUM\"} )",
+            "value": 59660784.92303375,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"UP_DOWN_COUNTER_SUM\"} )",
+            "value": 57347296.24914842,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"GAUGE_LAST_VALUE\"} )",
+            "value": 41007695.70285516,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_EXPLICIT\"} )",
+            "value": 24833198.096740652,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_BASE2_EXPONENTIAL\"} )",
+            "value": 25777846.5559817,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"COUNTER_SUM\"} )",
+            "value": 52818439.37510047,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"UP_DOWN_COUNTER_SUM\"} )",
+            "value": 54606744.89765528,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"GAUGE_LAST_VALUE\"} )",
+            "value": 39510255.5961546,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_EXPLICIT\"} )",
+            "value": 21687146.54351035,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads1 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_BASE2_EXPONENTIAL\"} )",
+            "value": 20728304.38582223,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"COUNTER_SUM\"} )",
+            "value": 6423914.939878753,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"UP_DOWN_COUNTER_SUM\"} )",
+            "value": 5072454.524740062,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"GAUGE_LAST_VALUE\"} )",
+            "value": 3802992.5286664325,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_EXPLICIT\"} )",
+            "value": 1806706.8372425658,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_BASE2_EXPONENTIAL\"} )",
+            "value": 1689052.5313755397,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"COUNTER_SUM\"} )",
+            "value": 7265200.989520528,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"UP_DOWN_COUNTER_SUM\"} )",
+            "value": 7165101.746509894,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"GAUGE_LAST_VALUE\"} )",
+            "value": 7675080.43307603,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_EXPLICIT\"} )",
+            "value": 6980197.2764383815,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"DELTA\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_BASE2_EXPONENTIAL\"} )",
+            "value": 6033739.707972829,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"COUNTER_SUM\"} )",
+            "value": 11272467.31384016,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"UP_DOWN_COUNTER_SUM\"} )",
+            "value": 14105082.863149513,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"GAUGE_LAST_VALUE\"} )",
+            "value": 5570366.253791352,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_EXPLICIT\"} )",
+            "value": 2194225.421779707,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"1\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_BASE2_EXPONENTIAL\"} )",
+            "value": 1825473.9260487487,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"COUNTER_SUM\"} )",
+            "value": 27242580.427038465,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"UP_DOWN_COUNTER_SUM\"} )",
+            "value": 28534794.55451078,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"GAUGE_LAST_VALUE\"} )",
+            "value": 30985208.883956365,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_EXPLICIT\"} )",
+            "value": 16249094.968667248,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.MetricRecordBenchmark.threads4 ( {\"aggregationTemporality\":\"CUMULATIVE\",\"cardinality\":\"128\",\"instrumentTypeAndAggregation\":\"HISTOGRAM_BASE2_EXPONENTIAL\"} )",
+            "value": 12771950.715761287,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.SpanRecordBenchmark.threads1 ( {\"spanSize\":\"SMALL\"} )",
+            "value": 3430549.33591196,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.SpanRecordBenchmark.threads1 ( {\"spanSize\":\"MEDIUM\"} )",
+            "value": 389136.7506965564,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.SpanRecordBenchmark.threads1 ( {\"spanSize\":\"LARGE\"} )",
+            "value": 47277.04762848632,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.SpanRecordBenchmark.threads4 ( {\"spanSize\":\"SMALL\"} )",
+            "value": 1302205.4247118128,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.SpanRecordBenchmark.threads4 ( {\"spanSize\":\"MEDIUM\"} )",
+            "value": 1231766.7323358348,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
+          },
+          {
+            "name": "io.opentelemetry.sdk.SpanRecordBenchmark.threads4 ( {\"spanSize\":\"LARGE\"} )",
+            "value": 158488.1934347965,
+            "unit": "ops/s",
+            "extra": "iterations: 10\nforks: 3\nthreads: 4"
           }
         ]
       }
