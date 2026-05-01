@@ -43,7 +43,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "13.4.0"
+  toolVersion = "13.4.1"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -244,7 +244,7 @@ testing {
     useJUnitJupiter()
 
     dependencies {
-      implementation(project(project.path))
+      implementation(project())
 
       implementation(project(":testing-internal"))
 

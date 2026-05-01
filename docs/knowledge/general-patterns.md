@@ -64,6 +64,29 @@ most violations automatically.
 - **EditorConfig** (`.editorconfig`) — configures IntelliJ to match project style automatically.
   It doesn't cover all rules, so `spotlessApply` is still required.
 
+## Impl (Implementation) code
+
+Use `*.impl.*` sub-packages for code that must be `public` to be shared across OpenTelemetry
+modules, but is not intended for use by application developers. This is the right choice when
+`*.internal.*` is too restrictive — for example, a utility used by both the API and SDK modules
+that needs a stable contract across module boundaries.
+
+Unlike `*.internal.*` packages, `*.impl.*` packages carry full backwards-compatibility guarantees
+and are included in `japicmp` compatibility checks.
+
+Public classes in `impl` packages must carry the following disclaimer (enforced by the
+`OtelImplJavadoc` Error Prone check in `custom-checks/`):
+
+```java
+/**
+ * This class is not intended for use by application developers. Its API is stable and will not
+ * be changed or removed in a backwards-incompatible manner.
+ */
+```
+
+See also [Internal code](#internal-code) for code that is not for application developers and has
+no stability guarantees.
+
 ## Internal code
 
 Prefer package-private over putting code in an `internal` package. Use `internal` only when the
@@ -93,6 +116,9 @@ Internal code must not be used across module boundaries — module `foo` must no
 code from module `bar`. Cross-module internal usage is a known issue being tracked and cleaned up
 in open-telemetry/opentelemetry-java#6970.
 
+See also [Impl (Implementation) code](#impl-implementation-code) for cross-module code that is not for application developers but
+requires a stable API.
+
 ## Javadoc
 
 All public classes, and their public and protected methods, must have complete Javadoc including
@@ -121,6 +147,17 @@ automatically by `otel.java-conventions`).
 
 ```java
 private static final Logger LOGGER = Logger.getLogger(MyClass.class.getName());
+```
+
+When logging exceptions, pass the exception as the `Throwable` parameter to the logger rather
+than stringifying it via `getMessage()` or concatenation. This ensures logging frameworks can
+render the full stack trace.
+
+```java
+// Do:
+logger.log(Level.WARNING, "Failed to process request", exception);
+// Don't:
+logger.warning("Failed to process request: " + exception.getMessage());
 ```
 
 ## toString()

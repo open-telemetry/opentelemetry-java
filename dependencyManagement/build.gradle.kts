@@ -17,7 +17,7 @@ val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.5.1"
 val armeriaVersion = "1.38.0"
-val junitVersion = "5.14.3"
+val junitVersion = "5.14.4"
 val okhttpVersion = "5.3.2"
 
 val DEPENDENCY_BOMS = listOf(
@@ -31,7 +31,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:4.34.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.80.0",
+  "io.grpc:grpc-bom:1.81.0",
   "io.netty:netty-bom:4.2.12.Final",
   "io.zipkin.brave:brave-bom:6.3.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.3",
@@ -81,8 +81,8 @@ val DEPENDENCIES = listOf(
   "io.github.crac:org-crac:0.1.3",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.55.0-alpha",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.40.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.56.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.41.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.10.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",

@@ -128,14 +128,9 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private static void onError(Throwable e) {
     logger.log(
-        Level.SEVERE,
-        "Failed to execute "
-            + TYPE
-            + "s. The request could not be executed. Error message: "
-            + e.getMessage(),
-        e);
+        Level.SEVERE, "Failed to execute " + TYPE + "s. The request could not be executed.", e);
     if (logger.isLoggable(Level.FINEST)) {
-      logger.log(Level.FINEST, "Failed to execute " + TYPE + "s. Details follow: " + e);
+      logger.log(Level.FINEST, "Failed to execute " + TYPE + "s. Details follow:", e);
     }
   }
 

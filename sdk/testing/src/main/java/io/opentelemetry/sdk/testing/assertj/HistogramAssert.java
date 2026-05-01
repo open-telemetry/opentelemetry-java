@@ -72,4 +72,31 @@ public final class HistogramAssert extends AbstractAssert<HistogramAssert, Histo
         .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, HistogramPointAssert::new));
     return this;
   }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the histogram satisfies it. Extra
+   * points that match none of the assertions are allowed, and a single point may satisfy multiple
+   * assertions.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final HistogramAssert containsPointsSatisfying(
+      Consumer<HistogramPointAssert>... assertions) {
+    return containsPointsSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the histogram satisfies it. Extra
+   * points that match none of the assertions are allowed, and a single point may satisfy multiple
+   * assertions.
+   */
+  public HistogramAssert containsPointsSatisfying(
+      Iterable<? extends Consumer<HistogramPointAssert>> assertions) {
+    isNotNull();
+    for (Consumer<HistogramPointAssert> assertion : assertions) {
+      assertThat(actual.getPoints())
+          .anySatisfy(point -> assertion.accept(new HistogramPointAssert(point)));
+    }
+    return this;
+  }
 }
