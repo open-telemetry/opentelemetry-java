@@ -135,6 +135,33 @@ class ComposableRuleBasedSamplerFactoryTest {
         Arguments.of(
             new ExperimentalComposableRuleBasedSamplerModel(),
             ComposableSampler.ruleBasedBuilder().build()),
+        // attributePatterns with only included (no excluded) - analogous to
+        // https://github.com/open-telemetry/opentelemetry-java/issues/8337
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributePatterns(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                    .withKey("http.path")
+                                    .withIncluded(Collections.singletonList("/internal/*")))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            ComposableSampler.ruleBasedBuilder()
+                .add(
+                    new DeclarativeConfigSamplingPredicate(
+                        null,
+                        new AttributeMatcher(
+                            "http.path",
+                            IncludeExcludePredicate.createPatternMatching(
+                                Collections.singletonList("/internal/*"), null)),
+                        null,
+                        null),
+                    ComposableSampler.alwaysOn())
+                .build()),
         // Recreate example
         Arguments.of(
             new ExperimentalComposableRuleBasedSamplerModel()
