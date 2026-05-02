@@ -82,7 +82,7 @@ public final class LoggingSpanExporter implements SpanExporter {
         resultCode.fail();
       }
     }
-    return resultCode.succeed();
+    return resultCode;
   }
 
   @Override

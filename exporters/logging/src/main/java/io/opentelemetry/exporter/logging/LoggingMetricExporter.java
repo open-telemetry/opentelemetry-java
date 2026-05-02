@@ -92,7 +92,7 @@ public final class LoggingMetricExporter implements MetricExporter {
         return resultCode.fail();
       }
     }
-    return resultCode.succeed();
+    return resultCode;
   }
 
   @Override
