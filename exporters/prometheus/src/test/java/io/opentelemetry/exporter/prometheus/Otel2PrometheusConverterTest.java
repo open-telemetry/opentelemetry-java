@@ -20,10 +20,14 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
@@ -39,6 +43,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
+import io.prometheus.metrics.model.snapshots.GaugeSnapshot.GaugeDataPointSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
@@ -554,5 +559,80 @@ class Otel2PrometheusConverterTest {
     // but if the cache was cleared, it used the predicate for each resource, since it as if
     // it never saw those resources before.
     assertThat(predicateCalledCount.get()).isEqualTo(2);
+  }
+
+  @Test
+  void exemplarLabelsWithinLimit() {
+    SpanContext spanContext =
+        SpanContext.create(
+            "00000000000000000000000000000001",
+            "0000000000000001",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+    ImmutableDoubleExemplarData exemplar =
+        (ImmutableDoubleExemplarData)
+            ImmutableDoubleExemplarData.create(
+                Attributes.of(stringKey("short"), "val"), 1000L, spanContext, 1.0);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleGauge(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.create("test"),
+            "my.gauge",
+            "desc",
+            "unit",
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    assertThat(snapshots).isNotNull();
+    // Labels within limit — both trace/span and filtered attribute should be present
+    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
+    Labels exemplarLabels = point.getExemplar().getLabels();
+    assertThat(exemplarLabels.get("trace_id")).isEqualTo(spanContext.getTraceId());
+    assertThat(exemplarLabels.get("span_id")).isEqualTo(spanContext.getSpanId());
+    assertThat(exemplarLabels.get("short")).isEqualTo("val");
+  }
+
+  @Test
+  void exemplarLabelsExceedingLimitDropsFilteredAttributes() {
+    SpanContext spanContext =
+        SpanContext.create(
+            "00000000000000000000000000000001",
+            "0000000000000001",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+    // Build a filtered attribute whose name+value alone would push total over 128
+    char[] chars = new char[100];
+    Arrays.fill(chars, 'x');
+    String longValue = new String(chars);
+    ImmutableDoubleExemplarData exemplar =
+        (ImmutableDoubleExemplarData)
+            ImmutableDoubleExemplarData.create(
+                Attributes.of(stringKey("long_attr"), longValue), 1000L, spanContext, 1.0);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleGauge(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.create("test"),
+            "my.gauge",
+            "desc",
+            "unit",
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    assertThat(snapshots).isNotNull();
+    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
+    Labels exemplarLabels = point.getExemplar().getLabels();
+    // trace_id and span_id are preserved
+    assertThat(exemplarLabels.get("trace_id")).isEqualTo(spanContext.getTraceId());
+    assertThat(exemplarLabels.get("span_id")).isEqualTo(spanContext.getSpanId());
+    // filtered attribute is dropped to stay within limit
+    assertThat(exemplarLabels.get("long_attr")).isNull();
   }
 }
