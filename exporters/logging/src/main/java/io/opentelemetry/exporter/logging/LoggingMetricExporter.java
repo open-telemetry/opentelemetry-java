@@ -84,15 +84,14 @@ public final class LoggingMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode flush() {
-    CompletableResultCode resultCode = new CompletableResultCode();
     for (Handler handler : logger.getHandlers()) {
       try {
         handler.flush();
       } catch (Throwable t) {
-        return resultCode.fail();
+        return CompletableResultCode.ofFailure();
       }
     }
-    return resultCode;
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
