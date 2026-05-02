@@ -635,4 +635,61 @@ class Otel2PrometheusConverterTest {
     // filtered attribute is dropped to stay within limit
     assertThat(exemplarLabels.get("long_attr")).isNull();
   }
+
+  @Test
+  void exemplarWithoutSpanContextExceedingLimitDropsFilteredAttributes() {
+    char[] chars = new char[150];
+    Arrays.fill(chars, 'x');
+    String longValue = new String(chars);
+    ImmutableDoubleExemplarData exemplar =
+        (ImmutableDoubleExemplarData)
+            ImmutableDoubleExemplarData.create(
+                Attributes.of(stringKey("long_attr"), longValue),
+                1000L,
+                SpanContext.getInvalid(),
+                1.0);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleGauge(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.create("test"),
+            "my.gauge",
+            "desc",
+            "unit",
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
+    Labels exemplarLabels = point.getExemplar().getLabels();
+    // No span context means no trace_id/span_id, and oversized filtered attr is dropped
+    assertThat(exemplarLabels.size()).isZero();
+  }
+
+  @Test
+  void exemplarWithoutSpanContextWithinLimit() {
+    ImmutableDoubleExemplarData exemplar =
+        (ImmutableDoubleExemplarData)
+            ImmutableDoubleExemplarData.create(
+                Attributes.of(stringKey("short"), "val"), 1000L, SpanContext.getInvalid(), 1.0);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleGauge(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.create("test"),
+            "my.gauge",
+            "desc",
+            "unit",
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
+    Labels exemplarLabels = point.getExemplar().getLabels();
+    assertThat(exemplarLabels.get("short")).isEqualTo("val");
+  }
 }
