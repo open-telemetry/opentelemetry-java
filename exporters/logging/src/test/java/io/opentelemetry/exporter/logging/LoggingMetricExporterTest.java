@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
@@ -99,6 +100,23 @@ class LoggingMetricExporterTest {
             });
     exporter.flush();
     assertThat(flushed.get()).isTrue();
+  }
+
+  @Test
+  void flush_failure() {
+    Handler failingHandler =
+        new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {
+          @Override
+          public synchronized void flush() {
+            throw new RuntimeException("Flush failed");
+          }
+        };
+    Logger.getLogger(LoggingMetricExporter.class.getName()).addHandler(failingHandler);
+    try {
+      assertThat(exporter.flush().isSuccess()).isFalse();
+    } finally {
+      Logger.getLogger(LoggingMetricExporter.class.getName()).removeHandler(failingHandler);
+    }
   }
 
   @Test
