@@ -54,7 +54,9 @@ import io.prometheus.metrics.model.snapshots.Unit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -536,11 +538,8 @@ final class Otel2PrometheusConverter {
             ? filterAllowedResourceAttributeKeys(resource)
             : Collections.emptyList();
 
-    Map<String, String> labelNameToValue = new HashMap<>();
-    attributes.forEach(
-        (key, value) ->
-            labelNameToValue.put(
-                convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+    Map<String, String> labelNameToValue = new LinkedHashMap<>();
+    addAttributeLabels(labelNameToValue, attributes);
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
@@ -566,15 +565,7 @@ final class Otel2PrometheusConverter {
     }
 
     if (resource != null) {
-      Attributes resourceAttributes = resource.getAttributes();
-      for (AttributeKey attributeKey : allowedAttributeKeys) {
-        Object attributeValue = resourceAttributes.get(attributeKey);
-        if (attributeValue != null) {
-          labelNameToValue.putIfAbsent(
-              convertLabelName(attributeKey.getKey()),
-              toLabelValue(attributeKey.getType(), attributeValue));
-        }
-      }
+      addResourceAttributeLabels(labelNameToValue, resource.getAttributes(), allowedAttributeKeys);
     }
 
     String[] names = new String[labelNameToValue.size()];
@@ -588,6 +579,141 @@ final class Otel2PrometheusConverter {
         });
 
     return Labels.of(names, values);
+  }
+
+  private void addAttributeLabels(Map<String, String> labelNameToValue, Attributes attributes) {
+    if (!shouldEscape(translationStrategy)) {
+      attributes.forEach(
+          (key, value) ->
+              labelNameToValue.put(
+                  convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+      return;
+    }
+
+    labelNameToValue.putAll(normalizeAndMergeAttributeLabels(attributes));
+  }
+
+  private void addResourceAttributeLabels(
+      Map<String, String> labelNameToValue,
+      Attributes resourceAttributes,
+      List<AttributeKey<?>> allowedAttributeKeys) {
+    if (allowedAttributeKeys.isEmpty()) {
+      return;
+    }
+
+    if (!shouldEscape(translationStrategy)) {
+      for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+        Object attributeValue = resourceAttributes.get(attributeKey);
+        if (attributeValue != null) {
+          labelNameToValue.putIfAbsent(
+              convertLabelName(attributeKey.getKey()),
+              toLabelValue(attributeKey.getType(), attributeValue));
+        }
+      }
+      return;
+    }
+
+    normalizeAndMergeResourceAttributeLabels(resourceAttributes, allowedAttributeKeys)
+        .forEach(labelNameToValue::putIfAbsent);
+  }
+
+  /**
+   * Normalize attribute keys to Prometheus label names and join colliding values into a single
+   * label.
+   */
+  private Map<String, String> normalizeAndMergeAttributeLabels(Attributes attributes) {
+    Map<String, String> labelNameToValue = new LinkedHashMap<>();
+    boolean[] hasCollision = new boolean[1];
+    attributes.forEach(
+        (key, value) ->
+            addLabelValueFastPath(
+                labelNameToValue,
+                convertLabelName(key.getKey()),
+                toLabelValue(key.getType(), value),
+                hasCollision));
+    if (!hasCollision[0]) {
+      return labelNameToValue;
+    }
+
+    Map<String, List<OriginalLabelKeyValue>> labelNameToValues = new LinkedHashMap<>();
+    attributes.forEach(
+        (key, value) ->
+            addNormalizedLabelValue(
+                labelNameToValues,
+                convertLabelName(key.getKey()),
+                key.getKey(),
+                toLabelValue(key.getType(), value)));
+    return joinCollidingLabelValues(labelNameToValues);
+  }
+
+  private Map<String, String> normalizeAndMergeResourceAttributeLabels(
+      Attributes resourceAttributes, List<AttributeKey<?>> allowedAttributeKeys) {
+    Map<String, String> labelNameToValue = new LinkedHashMap<>();
+    boolean[] hasCollision = new boolean[1];
+    for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+      Object attributeValue = resourceAttributes.get(attributeKey);
+      if (attributeValue != null) {
+        addLabelValueFastPath(
+            labelNameToValue,
+            convertLabelName(attributeKey.getKey()),
+            toLabelValue(attributeKey.getType(), attributeValue),
+            hasCollision);
+      }
+    }
+    if (!hasCollision[0]) {
+      return labelNameToValue;
+    }
+
+    Map<String, List<OriginalLabelKeyValue>> labelNameToValues = new LinkedHashMap<>();
+    for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+      Object attributeValue = resourceAttributes.get(attributeKey);
+      if (attributeValue != null) {
+        addNormalizedLabelValue(
+            labelNameToValues,
+            convertLabelName(attributeKey.getKey()),
+            attributeKey.getKey(),
+            toLabelValue(attributeKey.getType(), attributeValue));
+      }
+    }
+    return joinCollidingLabelValues(labelNameToValues);
+  }
+
+  private static void addLabelValueFastPath(
+      Map<String, String> labelNameToValue,
+      String labelName,
+      String value,
+      boolean[] hasCollision) {
+    if (labelNameToValue.containsKey(labelName)) {
+      hasCollision[0] = true;
+      return;
+    }
+    labelNameToValue.put(labelName, value);
+  }
+
+  private static void addNormalizedLabelValue(
+      Map<String, List<OriginalLabelKeyValue>> labelNameToValues,
+      String labelName,
+      String originalKey,
+      String value) {
+    labelNameToValues
+        .computeIfAbsent(labelName, ignored -> new ArrayList<>())
+        .add(new OriginalLabelKeyValue(originalKey, value));
+  }
+
+  /** Join values for each normalized label name in lexicographic order of the original keys. */
+  private static Map<String, String> joinCollidingLabelValues(
+      Map<String, List<OriginalLabelKeyValue>> labelNameToValues) {
+    Map<String, String> joinedLabels = new LinkedHashMap<>();
+    labelNameToValues.forEach(
+        (labelName, labelValues) -> {
+          labelValues.sort(Comparator.comparing(OriginalLabelKeyValue::originalKey));
+          joinedLabels.put(
+              labelName,
+              labelValues.stream()
+                  .map(OriginalLabelKeyValue::value)
+                  .collect(Collectors.joining(";")));
+        });
+    return joinedLabels;
   }
 
   private List<AttributeKey<?>> filterAllowedResourceAttributeKeys(@Nullable Resource resource) {
@@ -972,5 +1098,24 @@ final class Otel2PrometheusConverter {
     }
     sb.append('"');
     return sb.toString();
+  }
+
+  /** Stores the original attribute key and rendered value for one normalized label collision. */
+  private static final class OriginalLabelKeyValue {
+    private final String originalKey;
+    private final String value;
+
+    private OriginalLabelKeyValue(String originalKey, String value) {
+      this.originalKey = originalKey;
+      this.value = value;
+    }
+
+    private String originalKey() {
+      return originalKey;
+    }
+
+    private String value() {
+      return value;
+    }
   }
 }
