@@ -318,6 +318,7 @@ final class SdkMeter implements Meter {
                     registeredView,
                     meterProviderSharedState.getClock(),
                     instrumentDescriptor,
+                    meterProviderSharedState.getExemplarFilter(),
                     meterEnabled)));
       }
     }
