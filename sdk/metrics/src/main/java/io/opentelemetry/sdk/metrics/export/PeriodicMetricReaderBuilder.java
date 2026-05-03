@@ -30,7 +30,7 @@ public final class PeriodicMetricReaderBuilder {
 
   @Nullable private ScheduledExecutorService executor;
 
-  @Nullable private MetricExportBatcher metricsBatcher;
+  private int maxExportBatchSize;
 
   PeriodicMetricReaderBuilder(MetricExporter metricExporter) {
     this.metricExporter = metricExporter;
@@ -71,7 +71,7 @@ public final class PeriodicMetricReaderBuilder {
    */
   PeriodicMetricReaderBuilder setMaxExportBatchSize(int maxExportBatchSize) {
     checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive");
-    this.metricsBatcher = new MetricExportBatcher(maxExportBatchSize);
+    this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
 
@@ -82,6 +82,6 @@ public final class PeriodicMetricReaderBuilder {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReader(metricExporter, intervalNanos, executor, metricsBatcher);
+    return new PeriodicMetricReader(metricExporter, intervalNanos, executor, maxExportBatchSize);
   }
 }

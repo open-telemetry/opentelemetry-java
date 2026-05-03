@@ -642,7 +642,7 @@ class PeriodicMetricReaderTest {
             "PeriodicMetricReader{"
                 + "exporter=MockMetricExporter{}, "
                 + "intervalNanos=1000000000, "
-                + "metricsBatcher=MetricExportBatcher{maxExportBatchSize=200}"
+                + "maxExportBatchSize=200"
                 + "}");
   }
 

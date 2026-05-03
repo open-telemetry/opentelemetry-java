@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
-import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
@@ -35,23 +34,13 @@ import java.util.List;
  * at any time.
  */
 class MetricExportBatcher {
-  private final int maxExportBatchSize;
 
-  /**
-   * Creates a new {@link MetricExportBatcher} with the given maximum export batch size.
-   *
-   * @param maxExportBatchSize The maximum number of {@link Data#getPoints()} in each export.
-   */
-  MetricExportBatcher(int maxExportBatchSize) {
+  private MetricExportBatcher() {}
+
+  private static void validateMaxExportBatchSize(int maxExportBatchSize) {
     if (maxExportBatchSize <= 0) {
       throw new IllegalArgumentException("maxExportBatchSize must be positive");
     }
-    this.maxExportBatchSize = maxExportBatchSize;
-  }
-
-  @Override
-  public String toString() {
-    return "MetricExportBatcher{maxExportBatchSize=" + maxExportBatchSize + "}";
   }
 
   /**
@@ -61,7 +50,9 @@ class MetricExportBatcher {
    *     points they contain.
    * @return A collection of batches of metric data.
    */
-  Collection<Collection<MetricData>> batchMetrics(Collection<MetricData> metrics) {
+  static Collection<Collection<MetricData>> batchMetrics(
+      Collection<MetricData> metrics, int maxExportBatchSize) {
+    validateMaxExportBatchSize(maxExportBatchSize);
     if (metrics.isEmpty()) {
       return Collections.emptyList();
     }

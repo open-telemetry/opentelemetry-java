@@ -52,7 +52,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
-  @Nullable private final MetricExportBatcher metricsBatcher;
+  private final int maxExportBatchSize;
 
   /**
    * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
@@ -71,11 +71,11 @@ public final class PeriodicMetricReader implements MetricReader {
       MetricExporter exporter,
       long intervalNanos,
       ScheduledExecutorService scheduler,
-      @Nullable MetricExportBatcher metricsBatcher) {
+      int maxExportBatchSize) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
-    this.metricsBatcher = metricsBatcher;
+    this.maxExportBatchSize = maxExportBatchSize;
     this.scheduled = new Scheduled();
   }
 
@@ -169,8 +169,8 @@ public final class PeriodicMetricReader implements MetricReader {
         + exporter
         + ", intervalNanos="
         + intervalNanos
-        + ", metricsBatcher="
-        + metricsBatcher
+        + ", maxExportBatchSize="
+        + maxExportBatchSize
         + '}';
   }
 
@@ -196,10 +196,11 @@ public final class PeriodicMetricReader implements MetricReader {
     private Scheduled() {}
 
     private CompletableResultCode exportMetrics(Collection<MetricData> metricData) {
-      if (metricsBatcher == null) {
+      if (maxExportBatchSize == 0) {
         return exporter.export(metricData);
       }
-      Collection<Collection<MetricData>> batches = metricsBatcher.batchMetrics(metricData);
+      Collection<Collection<MetricData>> batches =
+          MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize);
       CompletableResultCode sequentialResult = new CompletableResultCode();
       AtomicBoolean anyFailed = new AtomicBoolean(false);
       Iterator<Collection<MetricData>> batchIterator = batches.iterator();
