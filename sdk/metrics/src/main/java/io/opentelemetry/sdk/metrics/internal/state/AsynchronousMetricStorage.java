@@ -117,9 +117,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
     Aggregator<T> aggregator =
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(
-                instrumentDescriptor,
-                exemplarFilter,
-                registeredReader.getReader().getMemoryMode());
+                instrumentDescriptor, exemplarFilter, registeredReader.getReader().getMemoryMode());
     AttributesProcessor attributesProcessor = registeredView.getViewAttributesProcessor();
     int cardinalityLimit = registeredView.getCardinalityLimit();
     return aggregationTemporality == AggregationTemporality.DELTA

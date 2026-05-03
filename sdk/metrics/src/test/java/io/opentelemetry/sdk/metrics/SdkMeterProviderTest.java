@@ -955,7 +955,8 @@ class SdkMeterProviderTest {
             .build()
             .get("my-meter");
 
-    meter.counterBuilder("async-counter")
+    meter
+        .counterBuilder("async-counter")
         .buildWithCallback(measurement -> measurement.record(1, Attributes.empty()));
 
     assertThat(collector.collectAllMetrics())
