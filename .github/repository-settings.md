@@ -10,8 +10,7 @@ private admin repo.
 
 - `GPG_PASSWORD` - stored in OpenTelemetry-Java 1Password
 - `GPG_PRIVATE_KEY` - stored in OpenTelemetry-Java 1Password
-- `SONATYPE_OSS_INDEX_USER` - owned by [@jack-berg](https://github.com/jack-berg)
-- `SONATYPE_OSS_INDEX_PASSWORD` - owned by [@jack-berg](https://github.com/jack-berg)
+- `SONATYPE_GUIDE_PAT` - owned by [@jack-berg](https://github.com/jack-berg)
 - `SONATYPE_KEY` - owned by [@jack-berg](https://github.com/jack-berg)
 - `SONATYPE_USER` - owned by [@jack-berg](https://github.com/jack-berg)
 
