@@ -16,7 +16,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
@@ -242,6 +241,24 @@ class Otel2PrometheusConverterTest {
             TranslationStrategy.NO_TRANSLATION, "sample.name", "sample.name", "sample.name"));
   }
 
+  @Test
+  void metricMetadata_underscoreEscapingCollapsesRepeatedUnderscores() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData("sample__name", "By", MetricDataType.LONG_SUM)));
+
+    MetricMetadata metadata =
+        snapshots.stream()
+            .filter(snapshot -> snapshot instanceof CounterSnapshot)
+            .findFirst()
+            .orElseThrow(AssertionError::new)
+            .getMetadata();
+    assertThat(metadata.getName()).isEqualTo("sample_name_bytes");
+    assertThat(metadata.getExpositionBaseName()).isEqualTo("sample_name_bytes");
+    assertThat(metadata.getOriginalName()).isEqualTo("sample_name_bytes");
+  }
+
   @ParameterizedTest
   @MethodSource("legacyLabelNameTranslationArgs")
   void labelNameTranslation_underscoreEscaping(String labelName, String expectedLabelName) {
@@ -271,13 +288,42 @@ class Otel2PrometheusConverterTest {
   }
 
   @Test
-  void labelNameTranslation_legacyRejectsInvalidNormalizedName() {
-    assertThatThrownBy(
-            () ->
-                convertAttributeLabels(
-                    "ようこそ", TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("normalization for label name \"ようこそ\" resulted in invalid name" + " \"_\"");
+  void labelNameTranslation_legacyDropsMetricWithInvalidNormalizedName() {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData(
+                    "sample",
+                    "1",
+                    MetricDataType.LONG_SUM,
+                    Attributes.of(stringKey("ようこそ"), "value"),
+                    Resource.empty())));
+
+    assertThat(snapshots).isEmpty();
+  }
+
+  @Test
+  void metricNameTranslation_legacyDropsMetricWithInvalidNormalizedName() {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData("ようこそ", "1", MetricDataType.LONG_SUM)));
+
+    assertThat(snapshots).isEmpty();
   }
 
   @ParameterizedTest

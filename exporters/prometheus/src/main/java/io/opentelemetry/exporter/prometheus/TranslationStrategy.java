@@ -30,9 +30,4 @@ public enum TranslationStrategy {
 
   /** Metric and label names are passed through without translation. */
   NO_TRANSLATION;
-
-  boolean shouldEscape() {
-    return this == UNDERSCORE_ESCAPING_WITH_SUFFIXES
-        || this == UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES;
-  }
 }

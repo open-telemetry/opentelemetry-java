@@ -155,62 +155,72 @@ final class Otel2PrometheusConverter {
 
   @Nullable
   private MetricSnapshot convert(MetricData metricData) {
+    try {
+      // Note that AggregationTemporality.DELTA should never happen
+      // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
 
-    // Note that AggregationTemporality.DELTA should never happen
-    // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
-
-    boolean isCounter = isMonotonicSum(metricData);
-    MetricMetadata metadata = convertMetadata(metricData, isCounter);
-    InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
-    switch (metricData.getType()) {
-      case LONG_GAUGE:
-        return convertLongGauge(
-            metadata, scope, metricData.getLongGaugeData().getPoints(), metricData.getResource());
-      case DOUBLE_GAUGE:
-        return convertDoubleGauge(
-            metadata, scope, metricData.getDoubleGaugeData().getPoints(), metricData.getResource());
-      case LONG_SUM:
-        SumData<LongPointData> longSumData = metricData.getLongSumData();
-        if (longSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
-          return null;
-        } else if (longSumData.isMonotonic()) {
-          return convertLongCounter(
-              metadata, scope, longSumData.getPoints(), metricData.getResource());
-        } else {
+      boolean isCounter = isMonotonicSum(metricData);
+      MetricMetadata metadata = convertMetadata(metricData, isCounter);
+      InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
+      switch (metricData.getType()) {
+        case LONG_GAUGE:
           return convertLongGauge(
-              metadata, scope, longSumData.getPoints(), metricData.getResource());
-        }
-      case DOUBLE_SUM:
-        SumData<DoublePointData> doubleSumData = metricData.getDoubleSumData();
-        if (doubleSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
-          return null;
-        } else if (doubleSumData.isMonotonic()) {
-          return convertDoubleCounter(
-              metadata, scope, doubleSumData.getPoints(), metricData.getResource());
-        } else {
+              metadata, scope, metricData.getLongGaugeData().getPoints(), metricData.getResource());
+        case DOUBLE_GAUGE:
           return convertDoubleGauge(
-              metadata, scope, doubleSumData.getPoints(), metricData.getResource());
-        }
-      case HISTOGRAM:
-        HistogramData histogramData = metricData.getHistogramData();
-        if (histogramData.getAggregationTemporality() == AggregationTemporality.DELTA) {
-          return null;
-        } else {
-          return convertHistogram(
-              metadata, scope, histogramData.getPoints(), metricData.getResource());
-        }
-      case EXPONENTIAL_HISTOGRAM:
-        ExponentialHistogramData exponentialHistogramData =
-            metricData.getExponentialHistogramData();
-        if (exponentialHistogramData.getAggregationTemporality() == AggregationTemporality.DELTA) {
-          return null;
-        } else {
-          return convertExponentialHistogram(
-              metadata, scope, exponentialHistogramData.getPoints(), metricData.getResource());
-        }
-      case SUMMARY:
-        return convertSummary(
-            metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
+              metadata,
+              scope,
+              metricData.getDoubleGaugeData().getPoints(),
+              metricData.getResource());
+        case LONG_SUM:
+          SumData<LongPointData> longSumData = metricData.getLongSumData();
+          if (longSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
+            return null;
+          } else if (longSumData.isMonotonic()) {
+            return convertLongCounter(
+                metadata, scope, longSumData.getPoints(), metricData.getResource());
+          } else {
+            return convertLongGauge(
+                metadata, scope, longSumData.getPoints(), metricData.getResource());
+          }
+        case DOUBLE_SUM:
+          SumData<DoublePointData> doubleSumData = metricData.getDoubleSumData();
+          if (doubleSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
+            return null;
+          } else if (doubleSumData.isMonotonic()) {
+            return convertDoubleCounter(
+                metadata, scope, doubleSumData.getPoints(), metricData.getResource());
+          } else {
+            return convertDoubleGauge(
+                metadata, scope, doubleSumData.getPoints(), metricData.getResource());
+          }
+        case HISTOGRAM:
+          HistogramData histogramData = metricData.getHistogramData();
+          if (histogramData.getAggregationTemporality() == AggregationTemporality.DELTA) {
+            return null;
+          } else {
+            return convertHistogram(
+                metadata, scope, histogramData.getPoints(), metricData.getResource());
+          }
+        case EXPONENTIAL_HISTOGRAM:
+          ExponentialHistogramData exponentialHistogramData =
+              metricData.getExponentialHistogramData();
+          if (exponentialHistogramData.getAggregationTemporality()
+              == AggregationTemporality.DELTA) {
+            return null;
+          } else {
+            return convertExponentialHistogram(
+                metadata, scope, exponentialHistogramData.getPoints(), metricData.getResource());
+          }
+        case SUMMARY:
+          return convertSummary(
+              metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
+      }
+    } catch (IllegalArgumentException e) {
+      THROTTLING_LOGGER.log(
+          Level.WARNING,
+          "Failed to convert metric " + metricData.getName() + ". Dropping metric.",
+          e);
     }
     return null;
   }
@@ -562,12 +572,19 @@ final class Otel2PrometheusConverter {
   }
 
   private String convertLabelName(String key) {
-    if (translationStrategy.shouldEscape()) {
+    if (shouldEscape(translationStrategy)) {
       return convertLegacyLabelName(key);
     }
     return key;
   }
 
+  /**
+   * Normalize an attribute name to the legacy Prometheus label scheme.
+   *
+   * <p>This mirrors {@code prometheus/otlptranslator}'s invalid-character collapsing rules, but we
+   * intentionally do not preserve {@code __...__} names because Prometheus Java rejects user label
+   * names that begin with {@code __}.
+   */
   private static String convertLegacyLabelName(String key) {
     if (key.isEmpty()) {
       throw new IllegalArgumentException("label name is empty");
@@ -594,7 +611,7 @@ final class Otel2PrometheusConverter {
     }
 
     String normalized = result.toString();
-    if (!normalized.isEmpty() && Character.isDigit(normalized.charAt(0))) {
+    if (Character.isDigit(normalized.charAt(0))) {
       normalized = "key_" + normalized;
     }
     if (containsOnlyUnderscores(normalized)) {
@@ -629,12 +646,22 @@ final class Otel2PrometheusConverter {
     }
 
     StringBuilder result = new StringBuilder(name.length());
+    boolean previousWasUnderscore = false;
     for (int i = 0; i < name.length(); ) {
       int codePoint = name.codePointAt(i);
       if (isValidLegacyMetricChar(codePoint, i)) {
-        result.appendCodePoint(codePoint);
-      } else {
+        if (codePoint == '_') {
+          if (!previousWasUnderscore) {
+            result.append('_');
+            previousWasUnderscore = true;
+          }
+        } else {
+          result.appendCodePoint(codePoint);
+          previousWasUnderscore = false;
+        }
+      } else if (!previousWasUnderscore) {
         result.append('_');
+        previousWasUnderscore = true;
       }
       i += Character.charCount(codePoint);
     }
@@ -667,16 +694,19 @@ final class Otel2PrometheusConverter {
     String name = convertLegacyMetricName(metricData.getName());
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
-    name = stripRepeatedUnderscores(stripReservedMetricSuffixes(name));
+    name = stripReservedMetricSuffixes(name);
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    return new MetricMetadata(stripRepeatedUnderscores(name), help, unit);
+    validateNormalizedMetricName(metricData.getName(), name);
+    return new MetricMetadata(name, help, unit);
   }
 
   private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
-    String rawName = stripRepeatedUnderscores(convertLegacyMetricName(metricData.getName()));
+    String rawName = convertLegacyMetricName(metricData.getName());
     String name = stripReservedMetricSuffixes(rawName);
+    validateNormalizedMetricName(metricData.getName(), rawName);
+    validateNormalizedMetricName(metricData.getName(), name);
     return new MetricMetadata(name, rawName, rawName, metricData.getDescription(), null);
   }
 
@@ -718,13 +748,6 @@ final class Otel2PrometheusConverter {
     return name;
   }
 
-  private static String stripRepeatedUnderscores(String name) {
-    while (name.contains("__")) {
-      name = name.replace("__", "_");
-    }
-    return name;
-  }
-
   private void putOrMerge(Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
     String name = getMergeKey(snapshot.getMetadata());
     if (snapshotsByName.containsKey(name)) {
@@ -738,10 +761,30 @@ final class Otel2PrometheusConverter {
   }
 
   private String getMergeKey(MetricMetadata metadata) {
-    if (translationStrategy.shouldEscape()) {
+    if (shouldEscape(translationStrategy)) {
       return metadata.getPrometheusName();
     }
     return metadata.getName();
+  }
+
+  private static boolean shouldEscape(TranslationStrategy translationStrategy) {
+    return translationStrategy == TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES
+        || translationStrategy == TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES;
+  }
+
+  private static void validateNormalizedMetricName(String originalName, String normalizedName) {
+    if (normalizedName.isEmpty()) {
+      throw new IllegalArgumentException(
+          "normalization for metric \"" + originalName + "\" resulted in empty name");
+    }
+    if (containsOnlyUnderscores(normalizedName)) {
+      throw new IllegalArgumentException(
+          "normalization for metric \""
+              + originalName
+              + "\" resulted in invalid name \""
+              + normalizedName
+              + "\"");
+    }
   }
 
   /**

@@ -109,6 +109,8 @@ class PrometheusUnitsHelper {
     }
   }
 
+  // These helpers are adapted from Prometheus naming sanitization. We keep a local copy because
+  // the exporter still needs unit normalization behavior that fits the Prometheus Java model API.
   private static String sanitizeUnitName(String unitName) {
     if (unitName.isEmpty()) {
       throw new IllegalArgumentException("Cannot convert an empty string to a valid unit name.");

@@ -89,7 +89,7 @@ public class PrometheusComponentProvider implements ComponentProvider {
       case "no_translation/development":
         return TranslationStrategy.NO_TRANSLATION;
       default:
-        throw new IllegalArgumentException("Unsupported translation_strategy: " + value);
+        throw new DeclarativeConfigException("Unsupported translation_strategy: " + value);
     }
   }
 }
