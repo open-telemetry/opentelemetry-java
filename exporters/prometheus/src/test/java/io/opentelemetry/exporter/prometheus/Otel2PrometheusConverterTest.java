@@ -303,22 +303,51 @@ class Otel2PrometheusConverterTest {
             "my_metric_units",
             "foo_bar=\"c;a;b\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
+    arguments.add(
+        Arguments.of(
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                createMapAttributes("foo-bar", "metric"),
+                Resource.create(createMapAttributes("foo.bar", "resource"))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("foo"),
+            "my_metric_units",
+            "foo_bar=\"metric\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
     return arguments.stream();
   }
 
-  @Test
-  void metricAttributeCollisionsAreMergedAndSorted() {
-    Attributes attributes = createMapAttributes("foo_bar", "b", "foo-bar", "c", "foo.bar", "a");
+  @ParameterizedTest
+  @MethodSource("metricAttributeCollisionArgs")
+  void metricAttributeCollisionsAreMergedAndSorted(
+      Attributes attributes, String expectedLabelName, String expectedLabelValue) {
     MetricData metricData =
         createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
 
-    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    Labels labels = extractCounterLabels(metricData);
+    assertThat(extractLabelNames(labels))
+        .containsExactly(
+            expectedLabelName,
+            "otel_scope_foo",
+            "otel_scope_name",
+            "otel_scope_schema_url",
+            "otel_scope_version");
+    assertThat(labels.getName(0)).isEqualTo(expectedLabelName);
+    assertThat(labels.get(expectedLabelName)).isEqualTo(expectedLabelValue);
+  }
 
-    Optional<MetricSnapshot> metricSnapshot =
-        snapshots.stream().filter(snapshot -> snapshot instanceof CounterSnapshot).findFirst();
-    assertThat(metricSnapshot).isPresent();
-    Labels labels = metricSnapshot.get().getDataPoints().get(0).getLabels();
-    assertThat(labels.get("foo_bar")).isEqualTo("c;a;b");
+  private static Stream<Arguments> metricAttributeCollisionArgs() {
+    return Stream.of(
+        Arguments.of(
+            createMapAttributes("foo_bar", "b", "foo-bar", "c", "foo.bar", "a"),
+            "foo_bar",
+            "c;a;b"),
+        Arguments.of(createMapAttributes("foo.bar", "a;b", "foo-bar", "c"), "foo_bar", "c;a;b"),
+        Arguments.of(
+            createMapAttributes("a.b", "1", "a-b", "2", "a_b", "3", "a/b", "4", "a@b", "5"),
+            "a_b",
+            "2;1;3;5;4"));
   }
 
   @Test
@@ -590,11 +619,28 @@ class Otel2PrometheusConverterTest {
   }
 
   private static Attributes createMapAttributes(String... keyValues) {
-    LinkedHashMap<AttributeKey<?>, Object> map = new LinkedHashMap<>();
+    Map<AttributeKey<?>, Object> map = new LinkedHashMap<>();
     for (int i = 0; i < keyValues.length; i += 2) {
       map.put(stringKey(keyValues[i]), keyValues[i + 1]);
     }
     return new MapAttributes(map);
+  }
+
+  private Labels extractCounterLabels(MetricData metricData) {
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    Optional<MetricSnapshot> metricSnapshot =
+        snapshots.stream().filter(snapshot -> snapshot instanceof CounterSnapshot).findFirst();
+    assertThat(metricSnapshot).isPresent();
+    return metricSnapshot.get().getDataPoints().get(0).getLabels();
+  }
+
+  private static List<String> extractLabelNames(Labels labels) {
+    List<String> names = new ArrayList<>();
+    for (int i = 0; i < labels.size(); i++) {
+      names.add(labels.getName(i));
+    }
+    return names;
   }
 
   @SuppressWarnings("unchecked")
