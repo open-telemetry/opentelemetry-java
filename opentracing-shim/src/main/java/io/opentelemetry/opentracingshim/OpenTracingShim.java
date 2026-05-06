@@ -15,9 +15,9 @@ import io.opentracing.Tracer;
  * OpenTelemetry APIs.
  *
  * @since 1.26.0
- * @deprecated OpenTracing is deprecated in the OpenTelemetry specification. This shim is
- *     deprecated accordingly and is expected to stop being published sometime in 2027 per spec
- *     guidance. Prefer migrating to the OpenTelemetry API directly.
+ * @deprecated OpenTracing is deprecated in the OpenTelemetry specification. This shim is deprecated
+ *     accordingly and is expected to stop being published sometime in 2027 per spec guidance.
+ *     Prefer migrating to the OpenTelemetry API directly.
  */
 @Deprecated
 public final class OpenTracingShim {
