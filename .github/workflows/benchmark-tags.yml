@@ -13,7 +13,7 @@ jobs:
     name: Benchmark SDK
     runs-on: oracle-bare-metal-64cpu-1024gb-x86-64-ubuntu-24
     container:
-      image: ubuntu:26.04@sha256:5e275723f82c67e387ba9e3c24baa0abdcb268917f276a0561c97bef9450d0b4
+      image: ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64
     timeout-minutes: 20 # since there is only a single bare metal runner across all repos
     strategy:
       fail-fast: false

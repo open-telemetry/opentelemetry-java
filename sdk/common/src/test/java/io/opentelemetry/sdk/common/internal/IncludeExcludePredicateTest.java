@@ -162,4 +162,19 @@ class IncludeExcludePredicateTest {
                   .isEqualTo("IncludeExcludePredicate{globMatchingEnabled=true}");
             });
   }
+
+  @Test
+  void shouldExcludeWhenValueMatchesBothIncludeAndExclude() {
+    String value = "a";
+    Collection<String> exactMatchingArg = Collections.singletonList("a");
+
+    Predicate<String> exactMatching =
+        IncludeExcludePredicate.createExactMatching(exactMatchingArg, exactMatchingArg);
+    assertThat(exactMatching.test(value)).isFalse();
+
+    Collection<String> patternMatchingArg = Collections.singletonList("*");
+    Predicate<String> patternMatching =
+        IncludeExcludePredicate.createPatternMatching(patternMatchingArg, patternMatchingArg);
+    assertThat(patternMatching.test(value)).isFalse();
+  }
 }

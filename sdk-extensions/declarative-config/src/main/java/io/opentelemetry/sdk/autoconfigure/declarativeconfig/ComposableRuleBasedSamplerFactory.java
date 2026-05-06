@@ -54,12 +54,10 @@ final class ComposableRuleBasedSamplerFactory
           rule -> {
             AttributeMatcher valueMatcher = attributeValuesMatcher(rule.getAttributeValues());
             AttributeMatcher patternMatcher = attributePatternsMatcher(rule.getAttributePatterns());
-            // TODO: should be null when omitted but is empty
             Set<ExperimentalSpanParent> matchingParents =
                 rule.getParent() != null && !rule.getParent().isEmpty()
                     ? new HashSet<>(rule.getParent())
                     : null;
-            // TODO: should be null when omitted but is empty
             Set<SpanKind> matchingSpanKinds =
                 rule.getSpanKinds() != null && !rule.getSpanKinds().isEmpty()
                     ? rule.getSpanKinds().stream()

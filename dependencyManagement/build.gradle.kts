@@ -26,13 +26,13 @@ val DEPENDENCY_BOMS = listOf(
   // (which is EPL licensed) or armeria bom (which is Apache licensed but is getting flagged
   // by FOSSA for containing EPL-licensed)
 
-  "com.fasterxml.jackson:jackson-bom:2.21.2",
+  "com.fasterxml.jackson:jackson-bom:2.21.3",
   "com.google.guava:guava-bom:33.6.0-jre",
   "com.google.protobuf:protobuf-bom:4.34.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.81.0",
-  "io.netty:netty-bom:4.2.12.Final",
+  "io.netty:netty-bom:4.2.13.Final",
   "io.zipkin.brave:brave-bom:6.3.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.3",
   "org.assertj:assertj-bom:3.27.7",
