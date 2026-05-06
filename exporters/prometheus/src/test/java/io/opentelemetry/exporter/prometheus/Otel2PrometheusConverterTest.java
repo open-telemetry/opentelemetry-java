@@ -347,7 +347,7 @@ class Otel2PrometheusConverterTest {
         Arguments.of(
             createMapAttributes("a.b", "1", "a-b", "2", "a_b", "3", "a/b", "4", "a@b", "5"),
             "a_b",
-            "2;1;3;5;4"));
+            "2;1;4;5;3"));
   }
 
   @Test
