@@ -99,7 +99,7 @@ class LogRecordProcessorFactoryTest {
             new LogRecordProcessorModel()
                 .withAdditionalProperty(
                     "test",
-                    new LogRecordProcessorPropertyModel().withAdditionalProperty("key1", "value1")),
+                    new LogRecordProcessorPropertyModel()),
             LogRecordProcessorComponentProvider.TestLogRecordProcessor.create()));
   }
 
