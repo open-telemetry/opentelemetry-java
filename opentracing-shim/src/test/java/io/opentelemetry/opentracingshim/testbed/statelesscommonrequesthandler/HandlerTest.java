@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * There is only one instance of 'RequestHandler' per 'Client'. Methods of 'RequestHandler' are
  * executed in the same thread (beforeRequest() and its resulting afterRequest(), that is).
  */
+@SuppressWarnings("deprecation") // testing deprecated shim API
 public final class HandlerTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
