@@ -81,6 +81,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     }
   }
 
+  @SuppressWarnings("ThreadPriorityCheck")
   private DeltaAggregatorHandle<T> acquireHandleForRecord(Attributes attributes, Context context) {
     while (true) {
       DeltaAggregatorHandle<T> handle =
@@ -88,6 +89,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       if (handle != null) {
         return handle;
       }
+      // Holder or handle is locked for collection; yield to let the collector advance
+      Thread.yield();
     }
   }
 
