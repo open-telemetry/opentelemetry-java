@@ -74,4 +74,31 @@ public final class ExponentialHistogramAssert
             AssertUtil.toConsumers(assertions, ExponentialHistogramPointAssert::new));
     return this;
   }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the exponential histogram
+   * satisfies it. Extra points that match none of the assertions are allowed, and a single point
+   * may satisfy multiple assertions.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final ExponentialHistogramAssert containsPointsSatisfying(
+      Consumer<ExponentialHistogramPointAssert>... assertions) {
+    return containsPointsSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the exponential histogram
+   * satisfies it. Extra points that match none of the assertions are allowed, and a single point
+   * may satisfy multiple assertions.
+   */
+  public ExponentialHistogramAssert containsPointsSatisfying(
+      Iterable<? extends Consumer<ExponentialHistogramPointAssert>> assertions) {
+    isNotNull();
+    for (Consumer<ExponentialHistogramPointAssert> assertion : assertions) {
+      assertThat(actual.getPoints())
+          .anySatisfy(point -> assertion.accept(new ExponentialHistogramPointAssert(point)));
+    }
+    return this;
+  }
 }

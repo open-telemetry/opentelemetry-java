@@ -8,6 +8,8 @@ package io.opentelemetry.exporter.otlp.profiles;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.profiles.ProfileExporter;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
 import java.util.Collection;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;

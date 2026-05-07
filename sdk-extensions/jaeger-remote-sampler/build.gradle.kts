@@ -14,7 +14,7 @@ dependencies {
   api(project(":sdk:all"))
   compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk-extensions:autoconfigure"))
-  compileOnly(project(":sdk-extensions:incubator"))
+  compileOnly(project(":sdk-extensions:declarative-config"))
 
   implementation(project(":sdk:all"))
   implementation(project(":exporters:common"))

@@ -108,10 +108,7 @@ final class TracerShim implements Tracer {
       }
     } catch (RuntimeException e) {
       logger.log(
-          Level.WARNING,
-          "Exception caught while extracting span context; returning null. "
-              + "Exception: [{0}] Message: [{1}]",
-          new String[] {e.getClass().getName(), e.getMessage()});
+          Level.WARNING, "Exception caught while extracting span context; returning null.", e);
     }
 
     return null;

@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.profiles.v1development.internal.ValueType;
+import io.opentelemetry.sdk.profiles.data.ValueTypeData;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -51,8 +52,8 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt64(ValueType.TYPE_STRINDEX, typeStringIndex);
-    output.serializeInt64(ValueType.UNIT_STRINDEX, unitStringIndex);
+    output.serializeInt32(ValueType.TYPE_STRINDEX, typeStringIndex);
+    output.serializeInt32(ValueType.UNIT_STRINDEX, unitStringIndex);
   }
 
   private static int calculateSize(int typeStringIndex, int unitStringIndex) {

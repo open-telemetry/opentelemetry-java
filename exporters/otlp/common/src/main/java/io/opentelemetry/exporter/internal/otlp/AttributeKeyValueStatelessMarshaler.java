@@ -58,8 +58,9 @@ public final class AttributeKeyValueStatelessMarshaler
         byte[] keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
         size += MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8);
       } else {
-        return StatelessMarshalerUtil.sizeStringWithContext(
-            KeyValue.KEY, attributeKey.getKey(), context);
+        size +=
+            StatelessMarshalerUtil.sizeStringWithContext(
+                KeyValue.KEY, attributeKey.getKey(), context);
       }
     }
     size +=

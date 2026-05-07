@@ -112,7 +112,21 @@ class JaegerRemoteSamplerGrpcNettyTest {
   private ManagedChannel managedChannel() {
     ManagedChannel channel =
         ManagedChannelBuilder.forTarget(server.httpUri().getAuthority()).usePlaintext().build();
-    cleanup.addCloseable(channel::shutdownNow);
+    cleanup.addCloseable(
+        () -> {
+          // Graceful shutdown ensures the server has processed all in-flight requests before
+          // the next test starts, preventing stale requests from consuming errors added to the
+          // queue by a subsequent test.
+          channel.shutdown();
+          try {
+            if (!channel.awaitTermination(10, TimeUnit.SECONDS)) {
+              channel.shutdownNow();
+            }
+          } catch (InterruptedException e) {
+            channel.shutdownNow();
+            Thread.currentThread().interrupt();
+          }
+        });
     return channel;
   }
 

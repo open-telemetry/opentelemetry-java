@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### SDK
+
+#### Testing
+
+* Add `hasValueSatisfying` to `LongPointAssert` and `DoublePointAssert` for fuzzy value matching
+* Add `containsPointsSatisfying` to metric data asserts for "each given assertion must be
+  satisfied by at least one point, extras allowed" checks on sum, gauge, histogram, exponential
+  histogram, and summary data
+
 ## Version 1.61.0 (2026-04-10)
 
 ### API
@@ -10,6 +19,8 @@
   ([#8200](https://github.com/open-telemetry/opentelemetry-java/pull/8200))
 
 #### Incubating
+
+* Add support for configuring `setMaxExportBatchSize` in `PeriodicMetricReader` ([#8296](https://github.com/open-telemetry/opentelemetry-java/pull/8296))
 
 * **BREAKING** Update `EnvironmentGetter` and `EnvironmentSetter` key normalization to reflect spec
   changes

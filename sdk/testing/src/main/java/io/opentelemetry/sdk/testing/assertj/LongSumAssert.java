@@ -87,4 +87,30 @@ public final class LongSumAssert extends AbstractAssert<LongSumAssert, SumData<L
         .satisfiesExactlyInAnyOrder(AssertUtil.toConsumers(assertions, LongPointAssert::new));
     return this;
   }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the sum satisfies it. Extra points
+   * that match none of the assertions are allowed, and a single point may satisfy multiple
+   * assertions.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final LongSumAssert containsPointsSatisfying(Consumer<LongPointAssert>... assertions) {
+    return containsPointsSatisfying(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts that for each given assertion, at least one point in the sum satisfies it. Extra points
+   * that match none of the assertions are allowed, and a single point may satisfy multiple
+   * assertions.
+   */
+  public LongSumAssert containsPointsSatisfying(
+      Iterable<? extends Consumer<LongPointAssert>> assertions) {
+    isNotNull();
+    for (Consumer<LongPointAssert> assertion : assertions) {
+      assertThat(actual.getPoints())
+          .anySatisfy(point -> assertion.accept(new LongPointAssert(point)));
+    }
+    return this;
+  }
 }

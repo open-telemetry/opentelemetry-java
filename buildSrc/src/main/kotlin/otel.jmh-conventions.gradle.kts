@@ -28,6 +28,31 @@ jmh {
     includes.add(jmhIncludeSingleClass as String)
   }
 
+  val jmhFork: String? by project
+  if (jmhFork != null) {
+    fork.set(jmhFork!!.toInt())
+  }
+
+  val jmhIterations: String? by project
+  if (jmhIterations != null) {
+    iterations.set(jmhIterations!!.toInt())
+  }
+
+  val jmhTime: String? by project
+  if (jmhTime != null) {
+    timeOnIteration.set(jmhTime)
+  }
+
+  val jmhWarmupIterations: String? by project
+  if (jmhWarmupIterations != null) {
+    warmupIterations.set(jmhWarmupIterations!!.toInt())
+  }
+
+  val jmhWarmup: String? by project
+  if (jmhWarmup != null) {
+    warmup.set(jmhWarmup)
+  }
+
   val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
   if (testJavaVersion != null) {
     val javaExecutable = javaToolchains.launcherFor {

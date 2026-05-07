@@ -44,14 +44,15 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "13.4.0"
+  toolVersion = "13.4.2"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
 
 ossIndexAudit {
-  username = System.getenv("SONATYPE_OSS_INDEX_USER") ?: ""
-  password = System.getenv("SONATYPE_OSS_INDEX_PASSWORD") ?: ""
+  // Guide PAT authentication ignores this, but the scan plugin requires it.
+  username = "unused"
+  password = System.getenv("SONATYPE_GUIDE_PAT") ?: ""
   outputFormat = org.sonatype.gradle.plugins.scan.ossindex.OutputFormat.JSON_CYCLONE_DX_1_4
   isPrintBanner = false
 }
@@ -277,7 +278,7 @@ testing {
     useJUnitJupiter()
 
     dependencies {
-      implementation(project(project.path))
+      implementation(project())
 
       implementation(project(":testing-internal"))
 

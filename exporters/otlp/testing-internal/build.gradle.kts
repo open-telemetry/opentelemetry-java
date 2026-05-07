@@ -9,6 +9,7 @@ dependencies {
   api(project(":exporters:otlp:common"))
   api(project(":sdk:logs"))
   api(project(":sdk:metrics"))
+  api(project(":sdk:profiles"))
   api(project(":sdk:trace"))
   api(project(":sdk:testing"))
 
