@@ -25,6 +25,8 @@ import java.util.logging.Logger;
  *
  * <p>This class is not intended for use by application developers. Its API is stable and will not
  * be changed or removed in a backwards-incompatible manner.
+ *
+ * @since 1.62.0
  */
 public final class ApiUsageLogger {
 
