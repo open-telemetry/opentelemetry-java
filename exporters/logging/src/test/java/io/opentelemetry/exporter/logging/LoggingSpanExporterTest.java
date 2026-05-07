@@ -127,16 +127,21 @@ class LoggingSpanExporterTest {
   @Test
   void flush() {
     AtomicBoolean flushed = new AtomicBoolean(false);
-    Logger.getLogger(LoggingSpanExporter.class.getName())
-        .addHandler(
-            new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {
-              @Override
-              public synchronized void flush() {
-                flushed.set(true);
-              }
-            });
-    exporter.flush();
-    assertThat(flushed.get()).isTrue();
+    Logger logger = Logger.getLogger(LoggingSpanExporter.class.getName());
+    StreamHandler handler =
+        new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {
+          @Override
+          public synchronized void flush() {
+            flushed.set(true);
+          }
+        };
+    logger.addHandler(handler);
+    try {
+      exporter.flush();
+      assertThat(flushed.get()).isTrue();
+    } finally {
+      logger.removeHandler(handler);
+    }
   }
 
   @Test
