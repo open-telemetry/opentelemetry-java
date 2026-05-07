@@ -74,14 +74,15 @@ public final class LoggingSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode flush() {
+    CompletableResultCode resultCode = new CompletableResultCode();
     for (Handler handler : logger.getHandlers()) {
       try {
         handler.flush();
       } catch (Throwable t) {
-        return CompletableResultCode.ofFailure();
+        return resultCode.fail();
       }
     }
-    return CompletableResultCode.ofSuccess();
+    return resultCode.succeed();
   }
 
   @Override
