@@ -97,9 +97,7 @@ class LogRecordProcessorFactoryTest {
             EventToSpanEventBridge.create()),
         Arguments.of(
             new LogRecordProcessorModel()
-                .withAdditionalProperty(
-                    "test",
-                    new LogRecordProcessorPropertyModel()),
+                .withAdditionalProperty("test", new LogRecordProcessorPropertyModel()),
             LogRecordProcessorComponentProvider.TestLogRecordProcessor.create()));
   }
 
