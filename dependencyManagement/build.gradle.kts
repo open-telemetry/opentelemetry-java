@@ -36,7 +36,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.zipkin.brave:brave-bom:6.3.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.3",
   "org.assertj:assertj-bom:3.27.7",
-  "org.osgi:org.osgi.test.bom:1.2.1",
+  "org.osgi:org.osgi.test.bom:1.3.0",
   "org.testcontainers:testcontainers-bom:2.0.5",
   "org.snakeyaml:snakeyaml-engine:2.10"
 )
