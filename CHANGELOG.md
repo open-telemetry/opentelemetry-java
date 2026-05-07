@@ -20,6 +20,8 @@
 
 #### Incubating
 
+* Add support for configuring `setMaxExportBatchSize` in `PeriodicMetricReader` ([#8296](https://github.com/open-telemetry/opentelemetry-java/pull/8296))
+
 * **BREAKING** Update `EnvironmentGetter` and `EnvironmentSetter` key normalization to reflect spec
   changes
   ([#8233](https://github.com/open-telemetry/opentelemetry-java/pull/8233))

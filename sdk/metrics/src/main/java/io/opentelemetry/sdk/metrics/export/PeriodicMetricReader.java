@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +52,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
+  private final int maxExportBatchSize;
 
   /**
    * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
@@ -66,10 +68,14 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   PeriodicMetricReader(
-      MetricExporter exporter, long intervalNanos, ScheduledExecutorService scheduler) {
+      MetricExporter exporter,
+      long intervalNanos,
+      ScheduledExecutorService scheduler,
+      int maxExportBatchSize) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
+    this.maxExportBatchSize = maxExportBatchSize;
     this.scheduled = new Scheduled();
   }
 
@@ -163,6 +169,8 @@ public final class PeriodicMetricReader implements MetricReader {
         + exporter
         + ", intervalNanos="
         + intervalNanos
+        + ", maxExportBatchSize="
+        + maxExportBatchSize
         + '}';
   }
 
@@ -187,13 +195,56 @@ public final class PeriodicMetricReader implements MetricReader {
 
     private Scheduled() {}
 
+    private CompletableResultCode exportMetrics(Collection<MetricData> metricData) {
+      if (maxExportBatchSize == 0) {
+        return exporter.export(metricData);
+      }
+      Collection<Collection<MetricData>> batches =
+          MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize);
+      CompletableResultCode sequentialResult = new CompletableResultCode();
+      AtomicBoolean anyFailed = new AtomicBoolean(false);
+      Iterator<Collection<MetricData>> batchIterator = batches.iterator();
+      Runnable exportNext =
+          new Runnable() {
+            @Override
+            public void run() {
+              while (batchIterator.hasNext()) {
+                Collection<MetricData> currentBatch = batchIterator.next();
+                CompletableResultCode currentResult = exporter.export(currentBatch);
+                if (currentResult.isDone()) {
+                  if (!currentResult.isSuccess()) {
+                    anyFailed.set(true);
+                  }
+                } else {
+                  currentResult.whenComplete(
+                      () -> {
+                        if (!currentResult.isSuccess()) {
+                          anyFailed.set(true);
+                        }
+                        this.run();
+                      });
+                  return;
+                }
+              }
+              if (anyFailed.get()) {
+                sequentialResult.fail();
+              } else {
+                sequentialResult.succeed();
+              }
+            }
+          };
+      exportNext.run();
+      return sequentialResult;
+    }
+
     void setMeterProvider(MeterProvider meterProvider) {
       instrumentation = new MetricReaderInstrumentation(COMPONENT_ID, meterProvider);
     }
 
     @Override
     public void run() {
-      // Ignore the CompletableResultCode from doRun() in order to keep run() asynchronous
+      // Ignore the CompletableResultCode from doRun() in order to keep run()
+      // asynchronous
       doRun();
     }
 
@@ -217,11 +268,11 @@ public final class PeriodicMetricReader implements MetricReader {
             exportAvailable.set(true);
             flushResult.succeed();
           } else {
-            CompletableResultCode result = exporter.export(metricData);
+            CompletableResultCode result = exportMetrics(metricData);
             result.whenComplete(
                 () -> {
                   if (!result.isSuccess()) {
-                    logger.log(Level.FINE, "Exporter failed");
+                    logger.log(Level.WARNING, "Exporter failed");
                   }
                   exportAvailable.set(true);
                   flushResult.succeed();
