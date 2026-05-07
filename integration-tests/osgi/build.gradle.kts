@@ -1,6 +1,7 @@
 import aQute.bnd.gradle.Bundle
 import aQute.bnd.gradle.Resolve
 import aQute.bnd.gradle.TestOSGi
+import java.time.Duration
 
 plugins {
   id("otel.java-conventions")
@@ -12,19 +13,6 @@ otelJava.moduleName.set("io.opentelemetry.integration.tests.osgi")
 // For similar test examples see:
 // https://github.com/micrometer-metrics/micrometer/tree/main/micrometer-osgi-test
 // https://github.com/eclipse-osgi-technology/osgi-test/tree/main/examples/osgi-test-example-gradle
-
-configurations.all {
-  resolutionStrategy {
-    // BND not compatible with JUnit 5.13+; see https://github.com/bndtools/bnd/issues/6651
-    val junitVersion = "5.14.4"
-    val junitLauncherVersion = "1.14.4"
-    force("org.junit.jupiter:junit-jupiter:$junitVersion")
-    force("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    force("org.junit.jupiter:junit-jupiter-params:$junitVersion")
-    force("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    force("org.junit.platform:junit-platform-launcher:$junitLauncherVersion")
-  }
-}
 
 dependencies {
   // Testing the "kitchen sink" hides OSGi configuration issues. For example, opentelemetry-api has
@@ -80,6 +68,7 @@ val testOSGiTask = tasks.register<TestOSGi>("testOSGi") {
   group = JavaBasePlugin.VERIFICATION_GROUP
   bndrun = resolveTask.flatMap { it.outputBndrun }
   bundles = files(sourceSets.test.get().runtimeClasspath, testingBundleTask.get().archiveFile)
+  timeout.set(Duration.ofMinutes(2))
   // BND reports success when zero tests ran (e.g. if bundles failed to start). Fail explicitly.
   val testResultsDir = layout.buildDirectory.dir("test-results/testOSGi")
   doLast {
