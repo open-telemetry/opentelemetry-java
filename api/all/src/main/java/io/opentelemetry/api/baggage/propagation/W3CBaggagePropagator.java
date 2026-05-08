@@ -12,6 +12,7 @@ import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntry;
 import io.opentelemetry.api.internal.PercentEscaper;
 import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -45,7 +46,12 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
-    if (context == null || setter == null) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(TextMapPropagator.class, "inject", "context");
+      return;
+    }
+    if (setter == null) {
+      ApiUsageLogger.logNullParam(TextMapPropagator.class, "inject", "setter");
       return;
     }
     Baggage baggage = Baggage.fromContext(context);
@@ -90,9 +96,11 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
+      ApiUsageLogger.logNullParam(TextMapPropagator.class, "extract", "context");
       return Context.root();
     }
     if (getter == null) {
+      ApiUsageLogger.logNullParam(TextMapPropagator.class, "extract", "getter");
       return context;
     }
 

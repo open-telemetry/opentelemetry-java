@@ -26,6 +26,12 @@ class DefaultLogger implements Logger {
 
   @Override
   public boolean isEnabled(Severity severity, Context context) {
+    if (severity == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "severity");
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "context");
+    }
     return false;
   }
 
@@ -40,21 +46,33 @@ class DefaultLogger implements Logger {
 
     @Override
     public LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setTimestamp", "unit");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setTimestamp(Instant instant) {
+      if (instant == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setTimestamp", "instant");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setObservedTimestamp", "unit");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setObservedTimestamp(Instant instant) {
+      if (instant == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setObservedTimestamp", "instant");
+      }
       return this;
     }
 
@@ -62,7 +80,6 @@ class DefaultLogger implements Logger {
     public LogRecordBuilder setContext(Context context) {
       if (context == null) {
         ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setContext", "context");
-        return this;
       }
       return this;
     }
@@ -71,7 +88,6 @@ class DefaultLogger implements Logger {
     public LogRecordBuilder setSeverity(Severity severity) {
       if (severity == null) {
         ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setSeverity", "severity");
-        return this;
       }
       return this;
     }
@@ -80,7 +96,6 @@ class DefaultLogger implements Logger {
     public LogRecordBuilder setSeverityText(String severityText) {
       if (severityText == null) {
         ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setSeverityText", "severityText");
-        return this;
       }
       return this;
     }
@@ -89,7 +104,6 @@ class DefaultLogger implements Logger {
     public LogRecordBuilder setBody(String body) {
       if (body == null) {
         ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setBody", "body");
-        return this;
       }
       return this;
     }
@@ -98,7 +112,6 @@ class DefaultLogger implements Logger {
     public LogRecordBuilder setBody(Value<?> body) {
       if (body == null) {
         ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setBody", "body");
-        return this;
       }
       return this;
     }

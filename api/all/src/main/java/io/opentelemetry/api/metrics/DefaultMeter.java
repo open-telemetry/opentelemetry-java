@@ -8,7 +8,6 @@ package io.opentelemetry.api.metrics;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
-import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -40,25 +39,33 @@ class DefaultMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    Objects.requireNonNull(name, "name");
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "counterBuilder", "name");
+    }
     return NOOP_LONG_COUNTER_BUILDER;
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    Objects.requireNonNull(name, "name");
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "upDownCounterBuilder", "name");
+    }
     return NOOP_LONG_UP_DOWN_COUNTER_BUILDER;
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    Objects.requireNonNull(name, "name");
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "histogramBuilder", "name");
+    }
     return NOOP_DOUBLE_HISTOGRAM_BUILDER;
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    Objects.requireNonNull(name, "name");
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "gaugeBuilder", "name");
+    }
     return NOOP_DOUBLE_GAUGE_BUILDER;
   }
 
@@ -67,6 +74,12 @@ class DefaultMeter implements Meter {
       Runnable callback,
       ObservableMeasurement observableMeasurement,
       ObservableMeasurement... additionalMeasurements) {
+    if (callback == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "callback");
+    }
+    if (observableMeasurement == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "observableMeasurement");
+    }
     return NOOP_BATCH_CALLBACK;
   }
 
@@ -90,9 +103,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(long value, Attributes attributes) {
-      if (attributes == null) {
-        ApiUsageLogger.logNullParam(LongCounter.class, "add", "attributes");
-      }
+      add(value, attributes, Context.current());
     }
 
     @Override
@@ -117,9 +128,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(double value, Attributes attributes) {
-      if (attributes == null) {
-        ApiUsageLogger.logNullParam(DoubleCounter.class, "add", "attributes");
-      }
+      add(value, attributes, Context.current());
     }
 
     @Override
@@ -155,6 +164,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(LongCounterBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_COUNTER;
     }
 
@@ -187,6 +199,9 @@ class DefaultMeter implements Meter {
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(DoubleCounterBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_COUNTER;
     }
 
@@ -214,9 +229,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(long value, Attributes attributes) {
-      if (attributes == null) {
-        ApiUsageLogger.logNullParam(LongUpDownCounter.class, "add", "attributes");
-      }
+      add(value, attributes, Context.current());
     }
 
     @Override
@@ -241,9 +254,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(double value, Attributes attributes) {
-      if (attributes == null) {
-        ApiUsageLogger.logNullParam(DoubleUpDownCounter.class, "add", "attributes");
-      }
+      add(value, attributes, Context.current());
     }
 
     @Override
@@ -280,6 +291,10 @@ class DefaultMeter implements Meter {
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(
+            LongUpDownCounterBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_UP_DOWN_COUNTER;
     }
 
@@ -313,6 +328,10 @@ class DefaultMeter implements Meter {
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(
+            DoubleUpDownCounterBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_UP_DOWN_COUNTER;
     }
 
@@ -340,9 +359,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(double value, Attributes attributes) {
-      if (attributes == null) {
-        ApiUsageLogger.logNullParam(DoubleHistogram.class, "record", "attributes");
-      }
+      record(value, attributes, Context.current());
     }
 
     @Override
@@ -367,9 +384,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(long value, Attributes attributes) {
-      if (attributes == null) {
-        ApiUsageLogger.logNullParam(LongHistogram.class, "record", "attributes");
-      }
+      record(value, attributes, Context.current());
     }
 
     @Override
@@ -444,6 +459,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(DoubleGaugeBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_GAUGE;
     }
 
@@ -469,9 +487,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public void set(double value, Attributes attributes) {
-      if (attributes == null) {
-        ApiUsageLogger.logNullParam(DoubleGauge.class, "set", "attributes");
-      }
+      set(value, attributes, Context.current());
     }
 
     @Override
@@ -501,6 +517,9 @@ class DefaultMeter implements Meter {
 
     @Override
     public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(LongGaugeBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_GAUGE;
     }
 
@@ -526,9 +545,7 @@ class DefaultMeter implements Meter {
 
     @Override
     public void set(long value, Attributes attributes) {
-      if (attributes == null) {
-        ApiUsageLogger.logNullParam(LongGauge.class, "set", "attributes");
-      }
+      set(value, attributes, Context.current());
     }
 
     @Override

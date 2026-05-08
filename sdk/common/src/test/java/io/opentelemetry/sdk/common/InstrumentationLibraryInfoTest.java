@@ -24,6 +24,6 @@ class InstrumentationLibraryInfoTest {
   void nullName() {
     assertThatThrownBy(() -> InstrumentationLibraryInfo.create(null, "1.0.0"))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("name");
+        .hasMessageContaining("name");
   }
 }

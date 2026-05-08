@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.incubator.propagation;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,6 +68,7 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
           new Throwable());
     }
     if (carrier == null) {
+      ApiUsageLogger.logNullParam(EnvironmentGetter.class, "keys", "carrier");
       return Collections.emptyList();
     }
     List<String> result = new ArrayList<>(carrier.size());
@@ -79,7 +81,11 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
   @Nullable
   @Override
   public String get(@Nullable Map<String, String> carrier, String key) {
-    if (carrier == null || key == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(EnvironmentGetter.class, "get", "key");
+      return null;
+    }
+    if (carrier == null) {
       return null;
     }
     String normalizedKey = EnvironmentSetter.normalizeKey(key);

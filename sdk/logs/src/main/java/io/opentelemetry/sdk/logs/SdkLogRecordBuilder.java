@@ -137,6 +137,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   @Override
   public SdkLogRecordBuilder setException(Throwable throwable) {
     if (throwable == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setException", "throwable");
       return this;
     }
 

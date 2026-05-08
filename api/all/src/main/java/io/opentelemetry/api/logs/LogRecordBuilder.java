@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -84,6 +85,10 @@ public interface LogRecordBuilder {
    * @since 1.42.0
    */
   default LogRecordBuilder setBody(Value<?> body) {
+    if (body == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setBody", "body");
+      return this;
+    }
     setBody(body.asString());
     return this;
   }
@@ -94,7 +99,11 @@ public interface LogRecordBuilder {
    */
   @SuppressWarnings("unchecked")
   default LogRecordBuilder setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAllAttributes", "attributes");
+      return this;
+    }
+    if (attributes.isEmpty()) {
       return this;
     }
     attributes.forEach(

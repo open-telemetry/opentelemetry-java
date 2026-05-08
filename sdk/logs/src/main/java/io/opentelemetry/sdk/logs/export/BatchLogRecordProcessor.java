@@ -86,6 +86,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
+    Objects.requireNonNull(context, "context");
     Objects.requireNonNull(logRecord, "logRecord");
     worker.addLog(logRecord);
   }

@@ -388,6 +388,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     if (attributes == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "attributes");
       attributes = Attributes.empty();
     }
     int totalAttributeCount = attributes.size();
@@ -414,6 +415,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     if (attributes == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "attributes");
       attributes = Attributes.empty();
     }
     int totalAttributeCount = attributes.size();
@@ -497,6 +499,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     if (additionalAttributes == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "recordException", "additionalAttributes");
       additionalAttributes = Attributes.empty();
     }
 
@@ -571,7 +574,9 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public void end(long timestamp, TimeUnit unit) {
     if (unit == null) {
-      unit = TimeUnit.NANOSECONDS;
+      ApiUsageLogger.logNullParam(SdkSpan.class, "end", "unit");
+      endInternal(clock.now());
+      return;
     }
     endInternal(timestamp == 0 ? clock.now() : unit.toNanos(timestamp));
   }

@@ -88,7 +88,24 @@ Do **not** throw. Log the violation via
 [`ApiUsageLogger`](../../common/src/main/java/io/opentelemetry/common/impl/ApiUsageLogger.java) —
 which logs at `FINEST` with a stack trace so the offending call site is visible — then degrade
 gracefully (return `this`, an empty/noop result, or substitute a safe default such as
-`Attributes.empty()` or `Context.current()`):
+`Attributes.empty()` or `Context.current()`).
+
+The preferred noop is a strict no-op (skip the operation entirely). However, if the method
+already degrades gracefully for a null argument — for example, substituting `Attributes.empty()`
+and continuing rather than returning early — preserve that existing behavior. The goal is to
+**always log** the misuse, **never change** existing graceful degradation that is already correct:
+
+```java
+// Existing graceful degradation — add the log, keep the substitution
+@Override
+public ReadWriteSpan addEvent(String name, Attributes attributes) {
+  if (attributes == null) {
+    ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "attributes");
+    attributes = Attributes.empty(); // preserve existing fallback, do not return early
+  }
+  // ... normal implementation
+}
+```
 
 ```java
 @Override

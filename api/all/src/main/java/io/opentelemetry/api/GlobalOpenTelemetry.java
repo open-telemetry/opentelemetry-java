@@ -388,7 +388,6 @@ public final class GlobalOpenTelemetry {
 
     @Override
     public TracerBuilder tracerBuilder(String instrumentationScopeName) {
-      Objects.requireNonNull(instrumentationScopeName, "instrumentationScopeName");
       return delegate.tracerBuilder(instrumentationScopeName);
     }
   }

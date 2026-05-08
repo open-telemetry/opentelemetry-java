@@ -332,6 +332,9 @@ final class SdkMeter implements Meter {
   }
 
   /** Check if the instrument name is valid. If invalid, log a warning. */
+  // TODO: consider replacing with ApiUsageLogger for consistency with the null guard policy
+  // (see docs/knowledge/api-design.md). Current approach logs at WARNING per-call with the
+  // invalid name inline, but creates a separate observability channel from other API misuse.
   // Visible for testing
   static boolean checkValidInstrumentName(String name) {
     if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
-import java.util.Objects;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 
 class DefaultTracerBuilder implements TracerBuilder {
   private static final DefaultTracerBuilder INSTANCE = new DefaultTracerBuilder();
@@ -16,13 +16,18 @@ class DefaultTracerBuilder implements TracerBuilder {
 
   @Override
   public TracerBuilder setSchemaUrl(String schemaUrl) {
-    Objects.requireNonNull(schemaUrl, "schemaUrl");
+    if (schemaUrl == null) {
+      ApiUsageLogger.logNullParam(TracerBuilder.class, "setSchemaUrl", "schemaUrl");
+    }
     return this;
   }
 
   @Override
   public TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
-    Objects.requireNonNull(instrumentationScopeVersion, "instrumentationScopeVersion");
+    if (instrumentationScopeVersion == null) {
+      ApiUsageLogger.logNullParam(
+          TracerBuilder.class, "setInstrumentationVersion", "instrumentationScopeVersion");
+    }
     return this;
   }
 

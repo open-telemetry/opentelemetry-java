@@ -14,6 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +49,11 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   public <T> AttributesBuilder put(AttributeKey<T> key, @Nullable T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "put", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     if (key.getType() == AttributeType.VALUE && value instanceof Value) {
@@ -164,6 +169,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   // Safe: Attributes guarantees iteration over matching AttributeKey<T> / value pairs.
   public AttributesBuilder putAll(Attributes attributes) {
     if (attributes == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "putAll", "attributes");
       return this;
     }
     attributes.forEach((key, value) -> put((AttributeKey) key, value));
@@ -172,7 +178,11 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   public <T> AttributesBuilder remove(AttributeKey<T> key) {
-    if (key == null || key.getKey().isEmpty()) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "remove", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty()) {
       return this;
     }
     return removeIf(
@@ -183,6 +193,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   @Override
   public AttributesBuilder removeIf(Predicate<AttributeKey<?>> predicate) {
     if (predicate == null) {
+      ApiUsageLogger.logNullParam(AttributesBuilder.class, "removeIf", "predicate");
       return this;
     }
     for (int i = 0; i < data.size() - 1; i += 2) {

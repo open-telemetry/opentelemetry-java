@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.common.impl.ApiUsageLogger;
-import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -230,7 +229,10 @@ public class ResourceBuilder {
 
   /** Remove all attributes that satisfy the given predicate from {@link Resource}. */
   public ResourceBuilder removeIf(Predicate<AttributeKey<?>> filter) {
-    Objects.requireNonNull(filter, "filter");
+    if (filter == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "removeIf", "filter");
+      return this;
+    }
     attributesBuilder.removeIf(filter);
     return this;
   }

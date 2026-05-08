@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.incubator.propagation;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -59,7 +60,15 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
 
   @Override
   public void set(@Nullable Map<String, String> carrier, String key, String value) {
-    if (carrier == null || key == null || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(EnvironmentSetter.class, "set", "key");
+      return;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(EnvironmentSetter.class, "set", "value");
+      return;
+    }
+    if (carrier == null) {
       return;
     }
     String normalizedKey = normalizeKey(key);
