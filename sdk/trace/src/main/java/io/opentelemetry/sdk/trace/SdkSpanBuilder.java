@@ -101,7 +101,11 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext) {
-    if (spanContext == null || !spanContext.isValid()) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "addLink", "spanContext");
+      return this;
+    }
+    if (!spanContext.isValid()) {
       return this;
     }
     addLink(LinkData.create(spanContext));
@@ -110,7 +114,11 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
-    if (spanContext == null || !spanContext.isValid()) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "addLink", "spanContext");
+      return this;
+    }
+    if (!spanContext.isValid()) {
       return this;
     }
     if (attributes == null) {

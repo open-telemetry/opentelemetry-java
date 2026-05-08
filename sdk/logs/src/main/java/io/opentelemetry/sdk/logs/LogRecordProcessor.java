@@ -13,6 +13,7 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -38,6 +39,7 @@ public interface LogRecordProcessor extends Closeable {
    * processors} in order.
    */
   static LogRecordProcessor composite(Iterable<LogRecordProcessor> processors) {
+    Objects.requireNonNull(processors, "processors");
     List<LogRecordProcessor> processorList = new ArrayList<>();
     for (LogRecordProcessor processor : processors) {
       processorList.add(processor);

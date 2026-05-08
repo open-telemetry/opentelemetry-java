@@ -12,6 +12,7 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -35,6 +36,7 @@ public interface SpanProcessor extends Closeable {
    * in order.
    */
   static SpanProcessor composite(Iterable<SpanProcessor> processors) {
+    Objects.requireNonNull(processors, "processors");
     List<SpanProcessor> processorsList = new ArrayList<>();
     for (SpanProcessor processor : processors) {
       processorsList.add(processor);
