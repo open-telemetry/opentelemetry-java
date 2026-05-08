@@ -97,23 +97,23 @@ class PrometheusUnitsHelper {
 
   @Nullable
   private static Unit unitOrNull(String name) {
-    try {
-      String sanitized = sanitizeUnitName(name);
-      sanitized = stripReservedUnitSuffixes(sanitized);
-      if (sanitized.isEmpty()) {
-        return null;
-      }
-      return new Unit(sanitized);
-    } catch (IllegalArgumentException e) {
+    String sanitized = sanitizeUnitName(name);
+    if (sanitized == null) {
       return null;
     }
+    sanitized = stripReservedUnitSuffixes(sanitized);
+    if (sanitized.isEmpty()) {
+      return null;
+    }
+    return new Unit(sanitized);
   }
 
   // These helpers are adapted from Prometheus naming sanitization. We keep a local copy because
   // the exporter still needs unit normalization behavior that fits the Prometheus Java model API.
+  @Nullable
   private static String sanitizeUnitName(String unitName) {
     if (unitName.isEmpty()) {
-      throw new IllegalArgumentException("Cannot convert an empty string to a valid unit name.");
+      return null;
     }
     String sanitizedName = replaceIllegalCharsInUnitName(unitName);
     while (sanitizedName.startsWith("_") || sanitizedName.startsWith(".")) {
@@ -123,8 +123,7 @@ class PrometheusUnitsHelper {
       sanitizedName = sanitizedName.substring(0, sanitizedName.length() - 1);
     }
     if (sanitizedName.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Cannot convert '" + unitName + "' into a valid unit name.");
+      return null;
     }
     return sanitizedName;
   }

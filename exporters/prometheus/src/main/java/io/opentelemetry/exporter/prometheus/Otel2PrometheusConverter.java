@@ -156,71 +156,73 @@ final class Otel2PrometheusConverter {
   @Nullable
   private MetricSnapshot convert(MetricData metricData) {
     try {
-      // Note that AggregationTemporality.DELTA should never happen
-      // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
-
-      boolean isCounter = isMonotonicSum(metricData);
-      MetricMetadata metadata = convertMetadata(metricData, isCounter);
-      InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
-      switch (metricData.getType()) {
-        case LONG_GAUGE:
-          return convertLongGauge(
-              metadata, scope, metricData.getLongGaugeData().getPoints(), metricData.getResource());
-        case DOUBLE_GAUGE:
-          return convertDoubleGauge(
-              metadata,
-              scope,
-              metricData.getDoubleGaugeData().getPoints(),
-              metricData.getResource());
-        case LONG_SUM:
-          SumData<LongPointData> longSumData = metricData.getLongSumData();
-          if (longSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
-            return null;
-          } else if (longSumData.isMonotonic()) {
-            return convertLongCounter(
-                metadata, scope, longSumData.getPoints(), metricData.getResource());
-          } else {
-            return convertLongGauge(
-                metadata, scope, longSumData.getPoints(), metricData.getResource());
-          }
-        case DOUBLE_SUM:
-          SumData<DoublePointData> doubleSumData = metricData.getDoubleSumData();
-          if (doubleSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
-            return null;
-          } else if (doubleSumData.isMonotonic()) {
-            return convertDoubleCounter(
-                metadata, scope, doubleSumData.getPoints(), metricData.getResource());
-          } else {
-            return convertDoubleGauge(
-                metadata, scope, doubleSumData.getPoints(), metricData.getResource());
-          }
-        case HISTOGRAM:
-          HistogramData histogramData = metricData.getHistogramData();
-          if (histogramData.getAggregationTemporality() == AggregationTemporality.DELTA) {
-            return null;
-          } else {
-            return convertHistogram(
-                metadata, scope, histogramData.getPoints(), metricData.getResource());
-          }
-        case EXPONENTIAL_HISTOGRAM:
-          ExponentialHistogramData exponentialHistogramData =
-              metricData.getExponentialHistogramData();
-          if (exponentialHistogramData.getAggregationTemporality()
-              == AggregationTemporality.DELTA) {
-            return null;
-          } else {
-            return convertExponentialHistogram(
-                metadata, scope, exponentialHistogramData.getPoints(), metricData.getResource());
-          }
-        case SUMMARY:
-          return convertSummary(
-              metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
-      }
+      return doConvert(metricData);
     } catch (IllegalArgumentException e) {
       THROTTLING_LOGGER.log(
           Level.WARNING,
           "Failed to convert metric " + metricData.getName() + ". Dropping metric.",
           e);
+      return null;
+    }
+  }
+
+  @Nullable
+  private MetricSnapshot doConvert(MetricData metricData) {
+    // Note that AggregationTemporality.DELTA should never happen
+    // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
+
+    boolean isCounter = isMonotonicSum(metricData);
+    MetricMetadata metadata = convertMetadata(metricData, isCounter);
+    InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
+    switch (metricData.getType()) {
+      case LONG_GAUGE:
+        return convertLongGauge(
+            metadata, scope, metricData.getLongGaugeData().getPoints(), metricData.getResource());
+      case DOUBLE_GAUGE:
+        return convertDoubleGauge(
+            metadata, scope, metricData.getDoubleGaugeData().getPoints(), metricData.getResource());
+      case LONG_SUM:
+        SumData<LongPointData> longSumData = metricData.getLongSumData();
+        if (longSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
+          return null;
+        } else if (longSumData.isMonotonic()) {
+          return convertLongCounter(
+              metadata, scope, longSumData.getPoints(), metricData.getResource());
+        } else {
+          return convertLongGauge(
+              metadata, scope, longSumData.getPoints(), metricData.getResource());
+        }
+      case DOUBLE_SUM:
+        SumData<DoublePointData> doubleSumData = metricData.getDoubleSumData();
+        if (doubleSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
+          return null;
+        } else if (doubleSumData.isMonotonic()) {
+          return convertDoubleCounter(
+              metadata, scope, doubleSumData.getPoints(), metricData.getResource());
+        } else {
+          return convertDoubleGauge(
+              metadata, scope, doubleSumData.getPoints(), metricData.getResource());
+        }
+      case HISTOGRAM:
+        HistogramData histogramData = metricData.getHistogramData();
+        if (histogramData.getAggregationTemporality() == AggregationTemporality.DELTA) {
+          return null;
+        } else {
+          return convertHistogram(
+              metadata, scope, histogramData.getPoints(), metricData.getResource());
+        }
+      case EXPONENTIAL_HISTOGRAM:
+        ExponentialHistogramData exponentialHistogramData =
+            metricData.getExponentialHistogramData();
+        if (exponentialHistogramData.getAggregationTemporality() == AggregationTemporality.DELTA) {
+          return null;
+        } else {
+          return convertExponentialHistogram(
+              metadata, scope, exponentialHistogramData.getPoints(), metricData.getResource());
+        }
+      case SUMMARY:
+        return convertSummary(
+            metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
     }
     return null;
   }
@@ -691,15 +693,15 @@ final class Otel2PrometheusConverter {
   }
 
   private static MetricMetadata convertMetadataEscapedWithSuffixes(MetricData metricData) {
-    String name = convertLegacyMetricName(metricData.getName());
+    String originalName = metricData.getName();
+    String name = stripReservedMetricSuffixes(convertLegacyMetricName(originalName));
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
-    name = stripReservedMetricSuffixes(name);
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    validateNormalizedMetricName(metricData.getName(), name);
-    return new MetricMetadata(name, help, unit);
+    validateNormalizedMetricName(originalName, name);
+    return new MetricMetadata(name, name, name, help, unit);
   }
 
   private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
@@ -749,7 +751,9 @@ final class Otel2PrometheusConverter {
   }
 
   private void putOrMerge(Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
-    String name = getMergeKey(snapshot.getMetadata());
+    MetricMetadata metadata = snapshot.getMetadata();
+    String name =
+        shouldEscape(translationStrategy) ? metadata.getPrometheusName() : metadata.getName();
     if (snapshotsByName.containsKey(name)) {
       MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {
@@ -758,13 +762,6 @@ final class Otel2PrometheusConverter {
     } else {
       snapshotsByName.put(name, snapshot);
     }
-  }
-
-  private String getMergeKey(MetricMetadata metadata) {
-    if (shouldEscape(translationStrategy)) {
-      return metadata.getPrometheusName();
-    }
-    return metadata.getName();
   }
 
   private static boolean shouldEscape(TranslationStrategy translationStrategy) {
