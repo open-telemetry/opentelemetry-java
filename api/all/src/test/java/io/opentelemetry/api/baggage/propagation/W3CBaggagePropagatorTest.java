@@ -649,25 +649,10 @@ class W3CBaggagePropagatorTest {
   @Test
   void extract_limit_maxBytes_exceedsLimit() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-    // Single header over 8192 bytes — truncated to the byte limit; the entry within budget is
-    // extracted with a truncated value
-    String header = "k=" + fillChars('v', 8192); // 8194 bytes; truncated to 8192 → k=<8190 v's>
+    // Single header over 8192 bytes — dropped entirely; partial values must not be extracted
+    String header = "k=" + fillChars('v', 8192); // 8194 bytes
     Context result = propagator.extract(Context.root(), ImmutableMap.of("baggage", header), getter);
-    assertThat(Baggage.fromContext(result).getEntryValue("k")).isEqualTo(fillChars('v', 8190));
-  }
-
-  @Test
-  void extract_limit_maxBytes_partialHeader() {
-    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-    // A header where the first entry is complete within the byte budget but the second entry's
-    // key is cut off by the truncation — only the first entry is extracted.
-    // "k1=" (3) + 8186 'v's + "," (1) + "k2=v2" (5) = 8195 bytes;
-    // truncated to 8192 → "k1=<8186 v's>,k2" (k2's "=" is beyond the budget)
-    String header = "k1=" + fillChars('v', 8186) + ",k2=v2";
-    Context result = propagator.extract(Context.root(), ImmutableMap.of("baggage", header), getter);
-    Baggage baggage = Baggage.fromContext(result);
-    assertThat(baggage.getEntryValue("k1")).isEqualTo(fillChars('v', 8186));
-    assertThat(baggage.getEntryValue("k2")).isNull();
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
 
   @Test

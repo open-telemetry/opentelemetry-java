@@ -155,29 +155,18 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
         continue;
       }
 
-      int remainingBytes = MAX_BAGGAGE_BYTES - totalBytes;
       totalBytes += header.length();
-
-      if (totalEntries >= MAX_BAGGAGE_ENTRIES) {
+      if (totalBytes > MAX_BAGGAGE_BYTES || totalEntries >= MAX_BAGGAGE_ENTRIES) {
         LOGGER.fine("Baggage header exceeded W3C limits, dropping remaining entries");
         break;
       }
 
-      String headerToParse =
-          totalBytes > MAX_BAGGAGE_BYTES ? header.substring(0, remainingBytes) : header;
-
       try {
-        int added =
-            extractEntries(headerToParse, baggageBuilder, MAX_BAGGAGE_ENTRIES - totalEntries);
+        int added = extractEntries(header, baggageBuilder, MAX_BAGGAGE_ENTRIES - totalEntries);
         extracted = true;
         totalEntries += added;
       } catch (RuntimeException expected) {
         // invalid baggage header, continue
-      }
-
-      if (totalBytes > MAX_BAGGAGE_BYTES) {
-        LOGGER.fine("Baggage header exceeded W3C limits, dropping remaining entries");
-        break;
       }
     }
 
