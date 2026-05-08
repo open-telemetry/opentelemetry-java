@@ -1,4 +1,4 @@
-Comparing source compatibility of opentelemetry-sdk-testing-1.62.0-SNAPSHOT.jar against opentelemetry-sdk-testing-1.61.0.jar
+Comparing source compatibility of opentelemetry-sdk-testing-1.63.0-SNAPSHOT.jar against opentelemetry-sdk-testing-1.61.0.jar
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.DoubleGaugeAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.DoubleGaugeAssert containsPointsSatisfying(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.DoublePointAssert>)
