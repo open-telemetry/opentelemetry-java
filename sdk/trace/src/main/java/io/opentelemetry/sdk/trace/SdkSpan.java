@@ -332,7 +332,11 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   public <T> ReadWriteSpan setAttribute(AttributeKey<T> key, @Nullable T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "setAttribute", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     synchronized (lock) {
@@ -537,10 +541,15 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   public Span addLink(SpanContext spanContext, Attributes attributes) {
-    if (spanContext == null || !spanContext.isValid()) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addLink", "spanContext");
+      return this;
+    }
+    if (!spanContext.isValid()) {
       return this;
     }
     if (attributes == null) {
+      ApiUsageLogger.logNullParam(SdkSpan.class, "addLink", "attributes");
       attributes = Attributes.empty();
     }
     LinkData link =

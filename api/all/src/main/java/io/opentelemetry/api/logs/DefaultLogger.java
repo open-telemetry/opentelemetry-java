@@ -118,6 +118,9 @@ class DefaultLogger implements Logger {
 
     @Override
     public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
+      if (key == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "key");
+      }
       return this;
     }
 

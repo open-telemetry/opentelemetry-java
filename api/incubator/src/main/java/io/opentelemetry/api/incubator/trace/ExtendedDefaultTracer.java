@@ -17,6 +17,7 @@ import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -175,7 +176,6 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
     public NoopSpanBuilder setSpanKind(SpanKind spanKind) {
       if (spanKind == null) {
         ApiUsageLogger.logNullParam(SpanBuilder.class, "setSpanKind", "spanKind");
-        return this;
       }
       return this;
     }
@@ -184,22 +184,22 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
     public NoopSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
       if (unit == null) {
         ApiUsageLogger.logNullParam(SpanBuilder.class, "setStartTimestamp", "unit");
-        return this;
       }
       return this;
     }
 
     @Override
     public <T, E extends Throwable> T startAndCall(SpanCallable<T, E> spanCallable) throws E {
+      Objects.requireNonNull(spanCallable, "spanCallable");
       return spanCallable.callInSpan();
     }
 
     @Override
     public <T, E extends Throwable> T startAndCall(
         SpanCallable<T, E> spanCallable, BiConsumer<Span, Throwable> handleException) throws E {
+      Objects.requireNonNull(spanCallable, "spanCallable");
       if (handleException == null) {
         ApiUsageLogger.logNullParam(ExtendedSpanBuilder.class, "startAndCall", "handleException");
-        return spanCallable.callInSpan();
       }
       return spanCallable.callInSpan();
     }

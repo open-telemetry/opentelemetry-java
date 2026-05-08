@@ -261,10 +261,7 @@ public interface Context {
    * and then invokes the input {@link Runnable}.
    */
   default <T> Callable<T> wrap(Callable<T> callable) {
-    if (callable == null) {
-      ApiUsageLogger.logNullParam(Context.class, "wrap", "callable");
-      return () -> null;
-    }
+    Objects.requireNonNull(callable, "callable");
     return () -> {
       try (Scope ignored = makeCurrent()) {
         return callable.call();
@@ -312,10 +309,7 @@ public interface Context {
    * and then invokes the input {@link Function}.
    */
   default <T, U> Function<T, U> wrapFunction(Function<T, U> function) {
-    if (function == null) {
-      ApiUsageLogger.logNullParam(Context.class, "wrapFunction", "function");
-      return t -> null;
-    }
+    Objects.requireNonNull(function, "function");
     return t -> {
       try (Scope ignored = makeCurrent()) {
         return function.apply(t);
@@ -328,10 +322,7 @@ public interface Context {
    * and then invokes the input {@link BiFunction}.
    */
   default <T, U, V> BiFunction<T, U, V> wrapFunction(BiFunction<T, U, V> function) {
-    if (function == null) {
-      ApiUsageLogger.logNullParam(Context.class, "wrapFunction", "function");
-      return (t, u) -> null;
-    }
+    Objects.requireNonNull(function, "function");
     return (t, u) -> {
       try (Scope ignored = makeCurrent()) {
         return function.apply(t, u);
@@ -376,10 +367,7 @@ public interface Context {
    * and then invokes the input {@link Supplier}.
    */
   default <T> Supplier<T> wrapSupplier(Supplier<T> supplier) {
-    if (supplier == null) {
-      ApiUsageLogger.logNullParam(Context.class, "wrapSupplier", "supplier");
-      return () -> null;
-    }
+    Objects.requireNonNull(supplier, "supplier");
     return () -> {
       try (Scope ignored = makeCurrent()) {
         return supplier.get();

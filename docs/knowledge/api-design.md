@@ -93,7 +93,13 @@ gracefully (return `this`, an empty/noop result, or substitute a safe default su
 The preferred noop is a strict no-op (skip the operation entirely). However, if the method
 already degrades gracefully for a null argument — for example, substituting `Attributes.empty()`
 and continuing rather than returning early — preserve that existing behavior. The goal is to
-**always log** the misuse, **never change** existing graceful degradation that is already correct:
+**always log** the misuse, **never change** existing graceful degradation that is already correct.
+
+**Exception — non-void functional interfaces**: methods that accept a `Callable<T>`,
+`Function<T,U>`, `Supplier<T>`, or similar non-void callback have no safe noop — a
+null-returning lambda would cause downstream NPEs. Use `Objects.requireNonNull` even at a
+runtime boundary. Void-producing types (`Runnable`, `Consumer`, `Executor`) are fine with a
+no-op lambda.
 
 ```java
 // Existing graceful degradation — add the log, keep the substitution

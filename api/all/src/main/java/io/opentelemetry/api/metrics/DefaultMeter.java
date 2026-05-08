@@ -144,11 +144,17 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongCounterBuilder setDescription(String description) {
+      if (description == null) {
+        ApiUsageLogger.logNullParam(LongCounterBuilder.class, "setDescription", "description");
+      }
       return this;
     }
 
     @Override
     public LongCounterBuilder setUnit(String unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(LongCounterBuilder.class, "setUnit", "unit");
+      }
       return this;
     }
 
@@ -183,11 +189,17 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleCounterBuilder setDescription(String description) {
+      if (description == null) {
+        ApiUsageLogger.logNullParam(DoubleCounterBuilder.class, "setDescription", "description");
+      }
       return this;
     }
 
     @Override
     public DoubleCounterBuilder setUnit(String unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(DoubleCounterBuilder.class, "setUnit", "unit");
+      }
       return this;
     }
 
@@ -270,11 +282,18 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongUpDownCounterBuilder setDescription(String description) {
+      if (description == null) {
+        ApiUsageLogger.logNullParam(
+            LongUpDownCounterBuilder.class, "setDescription", "description");
+      }
       return this;
     }
 
     @Override
     public LongUpDownCounterBuilder setUnit(String unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(LongUpDownCounterBuilder.class, "setUnit", "unit");
+      }
       return this;
     }
 
@@ -312,11 +331,18 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleUpDownCounterBuilder setDescription(String description) {
+      if (description == null) {
+        ApiUsageLogger.logNullParam(
+            DoubleUpDownCounterBuilder.class, "setDescription", "description");
+      }
       return this;
     }
 
     @Override
     public DoubleUpDownCounterBuilder setUnit(String unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(DoubleUpDownCounterBuilder.class, "setUnit", "unit");
+      }
       return this;
     }
 
@@ -398,11 +424,17 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleHistogramBuilder setDescription(String description) {
+      if (description == null) {
+        ApiUsageLogger.logNullParam(DoubleHistogramBuilder.class, "setDescription", "description");
+      }
       return this;
     }
 
     @Override
     public DoubleHistogramBuilder setUnit(String unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(DoubleHistogramBuilder.class, "setUnit", "unit");
+      }
       return this;
     }
 
@@ -422,11 +454,17 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongHistogramBuilder setDescription(String description) {
+      if (description == null) {
+        ApiUsageLogger.logNullParam(LongHistogramBuilder.class, "setDescription", "description");
+      }
       return this;
     }
 
     @Override
     public LongHistogramBuilder setUnit(String unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(LongHistogramBuilder.class, "setUnit", "unit");
+      }
       return this;
     }
 
@@ -444,11 +482,17 @@ class DefaultMeter implements Meter {
 
     @Override
     public DoubleGaugeBuilder setDescription(String description) {
+      if (description == null) {
+        ApiUsageLogger.logNullParam(DoubleGaugeBuilder.class, "setDescription", "description");
+      }
       return this;
     }
 
     @Override
     public DoubleGaugeBuilder setUnit(String unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(DoubleGaugeBuilder.class, "setUnit", "unit");
+      }
       return this;
     }
 
@@ -507,11 +551,17 @@ class DefaultMeter implements Meter {
 
     @Override
     public LongGaugeBuilder setDescription(String description) {
+      if (description == null) {
+        ApiUsageLogger.logNullParam(LongGaugeBuilder.class, "setDescription", "description");
+      }
       return this;
     }
 
     @Override
     public LongGaugeBuilder setUnit(String unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(LongGaugeBuilder.class, "setUnit", "unit");
+      }
       return this;
     }
 

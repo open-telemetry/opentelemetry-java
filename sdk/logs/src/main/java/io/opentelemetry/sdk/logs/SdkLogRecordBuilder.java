@@ -153,7 +153,11 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
 
   @Override
   public <T> SdkLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkLogRecordBuilder.class, "setAttribute", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     if (this.attributes == null) {

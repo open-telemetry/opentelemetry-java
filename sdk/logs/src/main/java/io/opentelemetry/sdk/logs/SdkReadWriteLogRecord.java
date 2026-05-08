@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -91,7 +92,11 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
   @Override
   public <T> ReadWriteLogRecord setAttribute(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkReadWriteLogRecord.class, "setAttribute", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     synchronized (lock) {

@@ -101,6 +101,12 @@ class ExtendedDefaultMeter implements Meter {
       Runnable callback,
       ObservableMeasurement observableMeasurement,
       ObservableMeasurement... additionalMeasurements) {
+    if (callback == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "callback");
+    }
+    if (observableMeasurement == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "observableMeasurement");
+    }
     return NOOP_BATCH_CALLBACK;
   }
 
@@ -185,6 +191,9 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(LongCounterBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_COUNTER;
     }
 
@@ -217,6 +226,9 @@ class ExtendedDefaultMeter implements Meter {
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(DoubleCounterBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_COUNTER;
     }
 
@@ -306,6 +318,10 @@ class ExtendedDefaultMeter implements Meter {
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(
+            LongUpDownCounterBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_UP_DOWN_COUNTER;
     }
 
@@ -340,6 +356,10 @@ class ExtendedDefaultMeter implements Meter {
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(
+            DoubleUpDownCounterBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_UP_DOWN_COUNTER;
     }
 
@@ -467,6 +487,9 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(DoubleGaugeBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_GAUGE;
     }
 
@@ -522,6 +545,9 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(LongGaugeBuilder.class, "buildWithCallback", "callback");
+      }
       return NOOP_OBSERVABLE_GAUGE;
     }
 

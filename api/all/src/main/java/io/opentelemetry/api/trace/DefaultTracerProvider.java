@@ -34,6 +34,9 @@ class DefaultTracerProvider implements TracerProvider {
     if (instrumentationScopeName == null) {
       ApiUsageLogger.logNullParam(TracerProvider.class, "get", "instrumentationScopeName");
     }
+    if (instrumentationScopeVersion == null) {
+      ApiUsageLogger.logNullParam(TracerProvider.class, "get", "instrumentationScopeVersion");
+    }
     return DefaultTracer.getInstance();
   }
 

@@ -114,6 +114,7 @@ class SdkSpanBuilder implements SpanBuilder {
       return this;
     }
     if (attributes == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "addLink", "attributes");
       attributes = Attributes.empty();
     }
     int totalAttributeCount = attributes.size();
@@ -180,7 +181,11 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setAttribute", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     attributes().put(key, value);
