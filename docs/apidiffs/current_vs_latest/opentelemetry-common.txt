@@ -1,6 +1,2 @@
-Comparing source compatibility of opentelemetry-common-1.63.0-SNAPSHOT.jar against opentelemetry-common-1.61.0.jar
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.common.impl.ApiUsageLogger  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) void logNullParam(java.lang.Class<?>, java.lang.String, java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) void logUsageIssue(java.lang.Class<?>, java.lang.String, java.lang.String)
+Comparing source compatibility of opentelemetry-common-1.63.0-SNAPSHOT.jar against opentelemetry-common-1.62.0.jar
+No changes.
