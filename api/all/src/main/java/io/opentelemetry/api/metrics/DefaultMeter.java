@@ -76,6 +76,11 @@ class DefaultMeter implements Meter {
     public void add(long value, Attributes attributes, Context context) {}
 
     @Override
+    public LongCounter bind(Attributes attributes) {
+      return this;
+    }
+
+    @Override
     public void add(long value, Attributes attributes) {}
 
     @Override
@@ -90,6 +95,11 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(double value, Attributes attributes, Context context) {}
+
+    @Override
+    public DoubleCounter bind(Attributes attributes) {
+      return this;
+    }
 
     @Override
     public void add(double value, Attributes attributes) {}
@@ -182,6 +192,11 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(long value) {}
+
+    @Override
+    public LongUpDownCounter bind(Attributes attributes) {
+      return this;
+    }
   }
 
   private static class NoopDoubleUpDownCounter implements DoubleUpDownCounter {
@@ -198,6 +213,11 @@ class DefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
+
+    @Override
+    public DoubleUpDownCounter bind(Attributes attributes) {
+      return this;
+    }
   }
 
   private static class NoopLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
@@ -286,6 +306,11 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(double value) {}
+
+    @Override
+    public DoubleHistogram bind(Attributes attributes) {
+      return this;
+    }
   }
 
   private static class NoopLongHistogram implements LongHistogram {
@@ -302,6 +327,11 @@ class DefaultMeter implements Meter {
 
     @Override
     public void record(long value) {}
+
+    @Override
+    public LongHistogram bind(Attributes attributes) {
+      return this;
+    }
   }
 
   private static class NoopDoubleHistogramBuilder implements DoubleHistogramBuilder {
@@ -400,6 +430,11 @@ class DefaultMeter implements Meter {
 
     @Override
     public void set(double value, Attributes attributes, Context context) {}
+
+    @Override
+    public DoubleGauge bind(Attributes attributes) {
+      return this;
+    }
   }
 
   private static class NoopLongGaugeBuilder implements LongGaugeBuilder {
@@ -446,6 +481,11 @@ class DefaultMeter implements Meter {
 
     @Override
     public void set(long value, Attributes attributes, Context context) {}
+
+    @Override
+    public LongGauge bind(Attributes attributes) {
+      return this;
+    }
   }
 
   private static class NoopObservableDoubleMeasurement implements ObservableDoubleMeasurement {

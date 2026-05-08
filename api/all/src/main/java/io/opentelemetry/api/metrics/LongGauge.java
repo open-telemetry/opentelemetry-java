@@ -54,4 +54,8 @@ public interface LongGauge {
    * @param context The explicit context to associate with this measurement.
    */
   void set(long value, Attributes attributes, Context context);
+
+  default LongGauge bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

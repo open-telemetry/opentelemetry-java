@@ -60,4 +60,8 @@ public interface DoubleHistogram {
    * @param context The explicit context to associate with this measurement.
    */
   void record(double value, Attributes attributes, Context context);
+
+  default DoubleHistogram bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

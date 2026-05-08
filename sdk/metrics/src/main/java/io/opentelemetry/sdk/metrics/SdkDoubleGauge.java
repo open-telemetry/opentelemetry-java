@@ -12,6 +12,7 @@ import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
@@ -46,6 +47,11 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
   @Override
   public void set(double value) {
     set(value, Attributes.empty());
+  }
+
+  @Override
+  public DoubleGauge bind(Attributes attributes) {
+    return storage.cachedBind(attributes, BoundDoubleGauge::new);
   }
 
   static class SdkDoubleGaugeBuilder implements DoubleGaugeBuilder {
@@ -91,6 +97,43 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
     @Override
     public String toString() {
       return builder.toStringHelper(getClass().getSimpleName());
+    }
+  }
+
+  private final class BoundDoubleGauge implements DoubleGauge {
+
+    private final AggregatorHandle<?> op;
+    private final Attributes boundAttributes;
+
+    BoundDoubleGauge(AggregatorHandle<?> op, Attributes boundAttributes) {
+      this.op = op;
+      this.boundAttributes = boundAttributes;
+    }
+
+    @Override
+    public void set(double value) {
+      op.recordDouble(value);
+    }
+
+    @Override
+    public void set(double value, Attributes attributes) {
+      SdkDoubleGauge.this.set(value, boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public void set(double value, Attributes attributes, Context context) {
+      SdkDoubleGauge.this.set(
+          value, boundAttributes.toBuilder().putAll(attributes).build(), context);
+    }
+
+    @Override
+    public DoubleGauge bind(Attributes attributes) {
+      return SdkDoubleGauge.this.bind(boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return SdkDoubleGauge.this.isEnabled();
     }
   }
 }

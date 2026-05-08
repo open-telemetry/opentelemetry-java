@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -60,6 +61,11 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   @Override
   public void record(long value) {
     record(value, Attributes.empty());
+  }
+
+  @Override
+  public LongHistogram bind(Attributes attributes) {
+    return storage.cachedBind(attributes, BoundLongHistogram::new);
   }
 
   static class SdkLongHistogramBuilder implements LongHistogramBuilder {
@@ -114,6 +120,43 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
     @Override
     public String toString() {
       return builder.toStringHelper(getClass().getSimpleName());
+    }
+  }
+
+  private final class BoundLongHistogram implements LongHistogram {
+
+    private final AggregatorHandle<?> op;
+    private final Attributes boundAttributes;
+
+    BoundLongHistogram(AggregatorHandle<?> op, Attributes boundAttributes) {
+      this.op = op;
+      this.boundAttributes = boundAttributes;
+    }
+
+    @Override
+    public void record(long value) {
+      op.recordLong(value);
+    }
+
+    @Override
+    public void record(long value, Attributes attributes) {
+      SdkLongHistogram.this.record(value, boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public void record(long value, Attributes attributes, Context context) {
+      SdkLongHistogram.this.record(
+          value, boundAttributes.toBuilder().putAll(attributes).build(), context);
+    }
+
+    @Override
+    public LongHistogram bind(Attributes attributes) {
+      return SdkLongHistogram.this.bind(boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return SdkLongHistogram.this.isEnabled();
     }
   }
 }

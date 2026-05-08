@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
+import java.util.function.BiFunction;
 
 /**
  * Stores {@link MetricData} and allows synchronous writes of measurements.
@@ -16,6 +18,13 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
  * at any time.
  */
 public interface WriteableMetricStorage {
+
+  /**
+   * Returns a bound instrument wrapper for the given attributes, creating and caching it as
+   * appropriate for this storage implementation. The factory receives the {@link AggregatorHandle}
+   * and the original attributes so the bound wrapper can use them for attribute-merging overloads.
+   */
+  <T> T cachedBind(Attributes attributes, BiFunction<AggregatorHandle<?>, Attributes, T> factory);
 
   /** Records a measurement. */
   void recordLong(long value, Attributes attributes, Context context);

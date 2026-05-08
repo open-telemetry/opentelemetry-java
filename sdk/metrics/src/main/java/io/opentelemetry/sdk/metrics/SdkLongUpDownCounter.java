@@ -12,6 +12,7 @@ import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
@@ -46,6 +47,11 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
   @Override
   public void add(long increment) {
     add(increment, Attributes.empty());
+  }
+
+  @Override
+  public LongUpDownCounter bind(Attributes attributes) {
+    return storage.cachedBind(attributes, BoundLongUpDownCounter::new);
   }
 
   static class SdkLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
@@ -95,6 +101,43 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
     @Override
     public String toString() {
       return builder.toStringHelper(getClass().getSimpleName());
+    }
+  }
+
+  private final class BoundLongUpDownCounter implements LongUpDownCounter {
+
+    private final AggregatorHandle<?> op;
+    private final Attributes boundAttributes;
+
+    BoundLongUpDownCounter(AggregatorHandle<?> op, Attributes boundAttributes) {
+      this.op = op;
+      this.boundAttributes = boundAttributes;
+    }
+
+    @Override
+    public void add(long value) {
+      op.recordLong(value);
+    }
+
+    @Override
+    public void add(long value, Attributes attributes) {
+      SdkLongUpDownCounter.this.add(value, boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public void add(long value, Attributes attributes, Context context) {
+      SdkLongUpDownCounter.this.add(
+          value, boundAttributes.toBuilder().putAll(attributes).build(), context);
+    }
+
+    @Override
+    public LongUpDownCounter bind(Attributes attributes) {
+      return SdkLongUpDownCounter.this.bind(boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return SdkLongUpDownCounter.this.isEnabled();
     }
   }
 }

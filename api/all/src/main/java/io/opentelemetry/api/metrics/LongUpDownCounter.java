@@ -60,4 +60,8 @@ public interface LongUpDownCounter {
    * @param context The explicit context to associate with this measurement.
    */
   void add(long value, Attributes attributes, Context context);
+
+  default LongUpDownCounter bind(Attributes attributes) {
+    throw new UnsupportedOperationException();
+  }
 }

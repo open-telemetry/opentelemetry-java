@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -45,6 +46,11 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
   @Override
   public void set(long value) {
     set(value, Attributes.empty());
+  }
+
+  @Override
+  public LongGauge bind(Attributes attributes) {
+    return storage.cachedBind(attributes, BoundLongGauge::new);
   }
 
   static class SdkLongGaugeBuilder implements LongGaugeBuilder {
@@ -94,6 +100,42 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
     @Override
     public String toString() {
       return builder.toStringHelper(getClass().getSimpleName());
+    }
+  }
+
+  private final class BoundLongGauge implements LongGauge {
+
+    private final AggregatorHandle<?> op;
+    private final Attributes boundAttributes;
+
+    BoundLongGauge(AggregatorHandle<?> op, Attributes boundAttributes) {
+      this.op = op;
+      this.boundAttributes = boundAttributes;
+    }
+
+    @Override
+    public void set(long value) {
+      op.recordLong(value);
+    }
+
+    @Override
+    public void set(long value, Attributes attributes) {
+      SdkLongGauge.this.set(value, boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public void set(long value, Attributes attributes, Context context) {
+      SdkLongGauge.this.set(value, boundAttributes.toBuilder().putAll(attributes).build(), context);
+    }
+
+    @Override
+    public LongGauge bind(Attributes attributes) {
+      return SdkLongGauge.this.bind(boundAttributes.toBuilder().putAll(attributes).build());
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return SdkLongGauge.this.isEnabled();
     }
   }
 }
