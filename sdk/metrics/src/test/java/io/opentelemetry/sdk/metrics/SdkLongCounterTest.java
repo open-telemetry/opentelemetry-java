@@ -56,6 +56,15 @@ class SdkLongCounterTest {
   }
 
   @Test
+  void collectMetrics_finish() {
+    LongCounter counter = sdkMeter.counterBuilder("Counter").build();
+    Attributes attrs = Attributes.of(stringKey("key"), "value");
+    counter.add(1, attrs);
+    counter.finish(at -> true);
+    assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
   void collectMetrics_WithEmptyAttributes() {
     LongCounter longCounter =
         sdkMeter.counterBuilder("testCounter").setDescription("description").setUnit("By").build();

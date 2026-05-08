@@ -30,7 +30,7 @@ class SdkObservableLongCounterTest {
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
 
   @Test
-  void removeCallback() {
+  void finishCallback() {
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     ObservableLongCounter counter =
         sdkMeterProviderBuilder

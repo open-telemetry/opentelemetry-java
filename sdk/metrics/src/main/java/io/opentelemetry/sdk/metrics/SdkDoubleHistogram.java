@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,6 +60,11 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
   @Override
   public void record(double value) {
     record(value, Attributes.empty());
+  }
+
+  @Override
+  public void finish(Predicate<Attributes> condition, Context context) {
+    storage.finish(condition, context);
   }
 
   static class SdkDoubleHistogramBuilder implements DoubleHistogramBuilder {

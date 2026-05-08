@@ -54,7 +54,7 @@ class SdkLongGaugeTest {
   }
 
   @Test
-  void observable_RemoveCallback() {
+  void observable_finishCallback() {
     ObservableLongGauge gauge =
         sdkMeter
             .gaugeBuilder("testGauge")
@@ -78,6 +78,16 @@ class SdkLongGaugeTest {
   void collectMetrics_NoRecords() {
     sdkMeter.gaugeBuilder("testGauge").ofLongs().build();
     assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
+  }
+
+  @Test
+  void collectMetrics_finish() {
+    LongGauge gauge = sdkMeter.gaugeBuilder("testGauge").ofLongs().build();
+    assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
+    Attributes attrs = Attributes.of(stringKey("key"), "value");
+    gauge.set(1, attrs);
+    gauge.finish(at -> true);
+    Assertions.assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
   }
 
   @Test

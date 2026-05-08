@@ -7,6 +7,7 @@ package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import java.util.function.Predicate;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -60,4 +61,23 @@ public interface LongHistogram {
    * @param context The explicit context to associate with this measurement.
    */
   void record(long value, Attributes attributes, Context context);
+
+  /**
+   * Finish the recording of the instrument.
+   *
+   * @param condition A function evaluating which instruments to remove based on their attributes.
+   * @since TODO
+   */
+  default void finish(Predicate<Attributes> condition) {
+    finish(condition, Context.current());
+  }
+
+  /**
+   * Finish the recording of the instrument.
+   *
+   * @param condition A function evaluating which instruments to remove based on their attributes.
+   * @param context The explicit context to associate with this measurement.
+   * @since TODO
+   */
+  default void finish(Predicate<Attributes> condition, Context context) {}
 }
