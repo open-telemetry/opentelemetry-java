@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
 import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -25,11 +26,16 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link JaegerPropagator}. */
 @SuppressWarnings("deprecation")
@@ -464,6 +470,73 @@ class JaegerPropagatorTest {
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
             Context.current());
     assertThat(jaegerPropagator.extract(context, Collections.emptyMap(), null)).isSameAs(context);
+  }
+
+  @Test
+  void inject_baggageLimit_maxEntries() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    jaegerPropagator.inject(Context.root().with(baggageWithEntries(0, 65)), carrier, Map::put);
+    long count = carrier.keySet().stream().filter(k -> k.startsWith(BAGGAGE_PREFIX)).count();
+    assertThat(count).isEqualTo(64);
+  }
+
+  @Test
+  void inject_baggageLimit_maxBytes() {
+    Baggage baggage = Baggage.builder().put("k", fillChars('v', 8192)).build();
+    Map<String, String> carrier = new LinkedHashMap<>();
+    jaegerPropagator.inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier).doesNotContainKey(BAGGAGE_PREFIX + "k");
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  void extract_baggageLimit(Map<String, String> carrier, Baggage expectedBaggage) {
+    assertThat(fromContext(jaegerPropagator.extract(Context.root(), carrier, getter)))
+        .isEqualTo(expectedBaggage);
+  }
+
+  static Stream<Arguments> extract_baggageLimit() {
+    Map<String, String> prefixCarrier = new LinkedHashMap<>();
+    for (int i = 0; i < 65; i++) {
+      prefixCarrier.put(BAGGAGE_PREFIX + "k" + i, "v" + i);
+    }
+    StringBuilder jaegerHeader = new StringBuilder();
+    for (int i = 0; i < 65; i++) {
+      if (i > 0) {
+        jaegerHeader.append(",");
+      }
+      jaegerHeader.append("k").append(i).append("=v").append(i);
+    }
+    Map<String, String> headerCarrier = new LinkedHashMap<>();
+    headerCarrier.put(BAGGAGE_HEADER, jaegerHeader.toString());
+    Map<String, String> bigValueCarrier = new LinkedHashMap<>();
+    bigValueCarrier.put(BAGGAGE_PREFIX + "k", fillChars('v', 8192));
+    return Stream.of(
+        // 65 uberctx- prefix keys — only first 64 extracted
+        Arguments.of(prefixCarrier, baggageWithEntries(0, 64)),
+        // 65 entries in jaeger-baggage header — only first 64 extracted
+        Arguments.of(headerCarrier, baggageWithEntries(0, 64)),
+        // single entry whose value exceeds the byte limit — not extracted
+        Arguments.of(bigValueCarrier, Baggage.empty()));
+  }
+
+  /**
+   * Builds a {@link Baggage} with entries {@code k{start}=v{start}} through {@code
+   * k{start+count-1}=v{start+count-1}}.
+   */
+  private static Baggage baggageWithEntries(int start, int count) {
+    BaggageBuilder builder = Baggage.builder();
+    for (int i = start; i < start + count; i++) {
+      builder.put("k" + i, "v" + i);
+    }
+    return builder.build();
+  }
+
+  /** Returns a string of {@code count} repetitions of {@code c}. */
+  private static String fillChars(char c, int count) {
+    char[] chars = new char[count];
+    Arrays.fill(chars, c);
+    return new String(chars);
   }
 
   @Test
