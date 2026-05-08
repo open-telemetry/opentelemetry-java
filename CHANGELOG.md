@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### API
+
+#### Context
+
+* Apply limits to baggage entries for `W3CBaggagePropagator`, `OtTracePropagator`, `JaegerPropagator`
+  ([#8378](https://github.com/open-telemetry/opentelemetry-java/pull/8378))
+
 ### SDK
 
 #### Traces
