@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -35,6 +36,14 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
 
   @Override
   public void add(long increment, Attributes attributes, Context context) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(LongUpDownCounter.class, "add", "attributes");
+      return;
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(LongUpDownCounter.class, "add", "context");
+      return;
+    }
     storage.recordLong(increment, attributes, context);
   }
 

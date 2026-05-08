@@ -76,6 +76,8 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   @SuppressWarnings("unchecked")
   public static YamlDeclarativeConfigProperties create(
       Map<String, Object> properties, ComponentLoader componentLoader) {
+    Objects.requireNonNull(properties, "properties");
+    Objects.requireNonNull(componentLoader, "componentLoader");
     Map<String, Object> simpleEntries = new LinkedHashMap<>();
     Map<String, List<YamlDeclarativeConfigProperties>> listEntries = new LinkedHashMap<>();
     Map<String, YamlDeclarativeConfigProperties> mapEntries = new LinkedHashMap<>();

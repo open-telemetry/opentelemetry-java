@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
@@ -39,15 +39,14 @@ class SdkDoubleUpDownCounterTest {
 
   @Test
   void add_PreventNullAttributes() {
-    assertThatThrownBy(
+    assertThatCode(
             () ->
                 sdkMeter
                     .upDownCounterBuilder("testUpDownCounter")
                     .ofDoubles()
                     .build()
                     .add(1.0, null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("attributes");
+        .doesNotThrowAnyException();
   }
 
   @Test

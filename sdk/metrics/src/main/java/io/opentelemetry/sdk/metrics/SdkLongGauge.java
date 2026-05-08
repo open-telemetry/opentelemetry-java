@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -34,11 +35,19 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
 
   @Override
   public void set(long value, Attributes attributes) {
-    storage.recordLong(value, attributes, Context.current());
+    set(value, attributes, Context.current());
   }
 
   @Override
   public void set(long value, Attributes attributes, Context context) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(LongGauge.class, "set", "attributes");
+      return;
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(LongGauge.class, "set", "context");
+      return;
+    }
     storage.recordLong(value, attributes, context);
   }
 

@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.profiles.data.ProfilesDictionaryData;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * {@link Marshaler} to convert SDK {@link ProfileData} to OTLP ExportProfilesServiceRequest.
@@ -48,6 +49,7 @@ public final class ProfilesRequestMarshaler extends MarshalerWithSize {
    * ProfileData} into a serialized OTLP ExportProfilesServiceRequest.
    */
   public static ProfilesRequestMarshaler create(Collection<ProfileData> profileList) {
+    Objects.requireNonNull(profileList, "profileList");
     // Verify all profiles in batch have identical dictionary
     ProfilesDictionaryData profilesDictionaryData = null;
     for (ProfileData profileData : profileList) {

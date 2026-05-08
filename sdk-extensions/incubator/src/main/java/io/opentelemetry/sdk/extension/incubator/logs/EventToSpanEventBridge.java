@@ -11,6 +11,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -51,6 +52,8 @@ public final class EventToSpanEventBridge implements LogRecordProcessor {
 
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(logRecord, "logRecord");
     LogRecordData logRecordData = logRecord.toLogRecordData();
     String eventName = logRecordData.getEventName();
     if (eventName == null || eventName.isEmpty()) {

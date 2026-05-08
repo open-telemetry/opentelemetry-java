@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.profiles.data.LocationData;
 import io.opentelemetry.sdk.profiles.data.StackData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import jdk.jfr.consumer.RecordedFrame;
 
 /**
@@ -36,6 +37,7 @@ public class JfrLocationDataCompositor {
    */
   public static JfrLocationDataCompositor create(
       ProfilesDictionaryCompositor profilesDictionaryCompositor) {
+    Objects.requireNonNull(profilesDictionaryCompositor, "profilesDictionaryCompositor");
     return new JfrLocationDataCompositor(profilesDictionaryCompositor);
   }
 

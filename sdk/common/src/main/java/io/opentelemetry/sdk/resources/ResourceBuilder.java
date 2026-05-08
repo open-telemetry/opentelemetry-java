@@ -33,9 +33,15 @@ public class ResourceBuilder {
    * @return this Builder
    */
   public ResourceBuilder put(String key, String value) {
-    if (key != null && value != null) {
-      attributesBuilder.put(key, value);
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
     }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "value");
+      return this;
+    }
+    attributesBuilder.put(key, value);
     return this;
   }
 
@@ -48,9 +54,11 @@ public class ResourceBuilder {
    * @return this Builder
    */
   public ResourceBuilder put(String key, long value) {
-    if (key != null) {
-      attributesBuilder.put(key, value);
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
     }
+    attributesBuilder.put(key, value);
     return this;
   }
 
@@ -63,9 +71,11 @@ public class ResourceBuilder {
    * @return this Builder
    */
   public ResourceBuilder put(String key, double value) {
-    if (key != null) {
-      attributesBuilder.put(key, value);
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
     }
+    attributesBuilder.put(key, value);
     return this;
   }
 
@@ -78,9 +88,11 @@ public class ResourceBuilder {
    * @return this Builder
    */
   public ResourceBuilder put(String key, boolean value) {
-    if (key != null) {
-      attributesBuilder.put(key, value);
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
     }
+    attributesBuilder.put(key, value);
     return this;
   }
 
@@ -93,9 +105,15 @@ public class ResourceBuilder {
    * @return this Builder
    */
   public ResourceBuilder put(String key, String... values) {
-    if (key != null && values != null) {
-      attributesBuilder.put(key, values);
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
     }
+    if (values == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "values");
+      return this;
+    }
+    attributesBuilder.put(key, values);
     return this;
   }
 
@@ -108,9 +126,15 @@ public class ResourceBuilder {
    * @return this Builder
    */
   public ResourceBuilder put(String key, long... values) {
-    if (key != null && values != null) {
-      attributesBuilder.put(key, values);
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
     }
+    if (values == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "values");
+      return this;
+    }
+    attributesBuilder.put(key, values);
     return this;
   }
 
@@ -123,9 +147,15 @@ public class ResourceBuilder {
    * @return this Builder
    */
   public ResourceBuilder put(String key, double... values) {
-    if (key != null && values != null) {
-      attributesBuilder.put(key, values);
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
     }
+    if (values == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "values");
+      return this;
+    }
+    attributesBuilder.put(key, values);
     return this;
   }
 
@@ -138,15 +168,29 @@ public class ResourceBuilder {
    * @return this Builder
    */
   public ResourceBuilder put(String key, boolean... values) {
-    if (key != null && values != null) {
-      attributesBuilder.put(key, values);
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
     }
+    if (values == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "values");
+      return this;
+    }
+    attributesBuilder.put(key, values);
     return this;
   }
 
   /** Puts a {@link AttributeKey} with associated value into this. */
   public <T> ResourceBuilder put(AttributeKey<T> key, T value) {
-    if (key != null && key.getKey() != null && !key.getKey().isEmpty() && value != null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "value");
+      return this;
+    }
+    if (key.getKey() != null && !key.getKey().isEmpty()) {
       attributesBuilder.put(key, value);
     }
     return this;
@@ -154,7 +198,11 @@ public class ResourceBuilder {
 
   /** Puts a {@link AttributeKey} with associated value into this. */
   public ResourceBuilder put(AttributeKey<Long> key, int value) {
-    if (key != null && key.getKey() != null && !key.getKey().isEmpty()) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "put", "key");
+      return this;
+    }
+    if (key.getKey() != null && !key.getKey().isEmpty()) {
       attributesBuilder.put(key, value);
     }
     return this;
@@ -162,17 +210,21 @@ public class ResourceBuilder {
 
   /** Puts all {@link Attributes} into this. */
   public ResourceBuilder putAll(Attributes attributes) {
-    if (attributes != null) {
-      attributesBuilder.putAll(attributes);
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "putAll", "attributes");
+      return this;
     }
+    attributesBuilder.putAll(attributes);
     return this;
   }
 
   /** Puts all attributes from {@link Resource} into this. */
   public ResourceBuilder putAll(Resource resource) {
-    if (resource != null) {
-      attributesBuilder.putAll(resource.getAttributes());
+    if (resource == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "putAll", "resource");
+      return this;
     }
+    attributesBuilder.putAll(resource.getAttributes());
     return this;
   }
 

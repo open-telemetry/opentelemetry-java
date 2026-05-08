@@ -6,6 +6,7 @@
 package io.opentelemetry.api.incubator.propagation;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -47,6 +48,11 @@ public final class ExtendedContextPropagators {
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    */
   public static Map<String, String> getTextMapPropagationContext(ContextPropagators propagators) {
+    if (propagators == null) {
+      ApiUsageLogger.logNullParam(
+          ExtendedContextPropagators.class, "getTextMapPropagationContext", "propagators");
+      return Collections.emptyMap();
+    }
     Map<String, String> carrier = new HashMap<>();
     propagators
         .getTextMapPropagator()
@@ -71,10 +77,17 @@ public final class ExtendedContextPropagators {
    */
   public static Context extractTextMapPropagationContext(
       Map<String, String> carrier, ContextPropagators propagators) {
-    Context current = Context.current();
-    if (carrier == null) {
-      return current;
+    if (propagators == null) {
+      ApiUsageLogger.logNullParam(
+          ExtendedContextPropagators.class, "extractTextMapPropagationContext", "propagators");
+      return Context.current();
     }
+    if (carrier == null) {
+      ApiUsageLogger.logNullParam(
+          ExtendedContextPropagators.class, "extractTextMapPropagationContext", "carrier");
+      return Context.current();
+    }
+    Context current = Context.current();
     CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(carrier);
     return propagators.getTextMapPropagator().extract(current, caseInsensitiveMap, TEXT_MAP_GETTER);
   }

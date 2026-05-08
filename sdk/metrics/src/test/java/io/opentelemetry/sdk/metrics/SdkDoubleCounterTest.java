@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
@@ -45,10 +45,8 @@ class SdkDoubleCounterTest {
 
   @Test
   void add_PreventNullAttributes() {
-    assertThatThrownBy(
-            () -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().add(1.0, null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("attributes");
+    assertThatCode(() -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().add(1.0, null))
+        .doesNotThrowAnyException();
   }
 
   @Test

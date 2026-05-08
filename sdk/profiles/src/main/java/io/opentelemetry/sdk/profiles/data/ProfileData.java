@@ -40,7 +40,7 @@ public interface ProfileData {
       long period,
       String profileId,
       int droppedAttributesCount,
-      String originalPayloadFormat,
+      @Nullable String originalPayloadFormat,
       ByteBuffer originalPayload,
       List<Integer> attributeIndices) {
     return new AutoValue_ImmutableProfileData(

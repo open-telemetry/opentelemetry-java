@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import jdk.jfr.consumer.RecordingFile;
 
@@ -60,6 +61,7 @@ public class JfrExportExample {
    * @throws IOException if the conversion fails.
    */
   public static ProfileData convertJfrFile(Path jfrFilePath) throws IOException {
+    Objects.requireNonNull(jfrFilePath, "jfrFilePath");
 
     JfrExecutionSampleEventConverter converter = JfrExecutionSampleEventConverter.create();
 

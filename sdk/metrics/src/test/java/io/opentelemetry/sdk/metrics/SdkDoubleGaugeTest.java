@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleGauge;
@@ -50,9 +50,8 @@ class SdkDoubleGaugeTest {
 
   @Test
   void set_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.gaugeBuilder("testGauge").build().set(1.0, null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("attributes");
+    assertThatCode(() -> sdkMeter.gaugeBuilder("testGauge").build().set(1.0, null))
+        .doesNotThrowAnyException();
   }
 
   @Test
