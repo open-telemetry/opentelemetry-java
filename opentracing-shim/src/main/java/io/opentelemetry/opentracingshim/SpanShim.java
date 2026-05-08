@@ -15,7 +15,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.common.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.ImplicitContextKeyed;
@@ -47,6 +47,8 @@ final class SpanShim implements Span, ImplicitContextKeyed {
   private static final String ERROR = "error";
   private static final ContextKey<SpanShim> SPAN_SHIM_KEY =
       ContextKey.named("opentracing-shim-key");
+
+  private static final String LOG_METHOD_NAME = "log";
 
   private final io.opentelemetry.api.trace.Span span;
   private final Object spanContextShimLock;
@@ -155,7 +157,7 @@ final class SpanShim implements Span, ImplicitContextKeyed {
   @Override
   public Span log(Map<String, ?> fields) {
     if (fields == null) {
-      ApiUsageLogger.logNullParam(SpanShim.class, "log", "fields");
+      ApiUsageLogger.logNullParam(SpanShim.class, LOG_METHOD_NAME, "fields");
       return this;
     }
     logInternal(-1, fields);
@@ -165,7 +167,7 @@ final class SpanShim implements Span, ImplicitContextKeyed {
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
     if (fields == null) {
-      ApiUsageLogger.logNullParam(SpanShim.class, "log", "fields");
+      ApiUsageLogger.logNullParam(SpanShim.class, LOG_METHOD_NAME, "fields");
       return this;
     }
     logInternal(timestampMicroseconds, fields);
@@ -175,7 +177,7 @@ final class SpanShim implements Span, ImplicitContextKeyed {
   @Override
   public Span log(String event) {
     if (event == null) {
-      ApiUsageLogger.logNullParam(SpanShim.class, "log", "event");
+      ApiUsageLogger.logNullParam(SpanShim.class, LOG_METHOD_NAME, "event");
       return this;
     }
     span.addEvent(event);
@@ -185,7 +187,7 @@ final class SpanShim implements Span, ImplicitContextKeyed {
   @Override
   public Span log(long timestampMicroseconds, String event) {
     if (event == null) {
-      ApiUsageLogger.logNullParam(SpanShim.class, "log", "event");
+      ApiUsageLogger.logNullParam(SpanShim.class, LOG_METHOD_NAME, "event");
       return this;
     }
     span.addEvent(event, timestampMicroseconds, TimeUnit.MICROSECONDS);

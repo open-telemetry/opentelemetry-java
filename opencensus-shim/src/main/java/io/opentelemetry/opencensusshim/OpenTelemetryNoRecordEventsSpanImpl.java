@@ -34,7 +34,7 @@ import io.opencensus.trace.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.common.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;

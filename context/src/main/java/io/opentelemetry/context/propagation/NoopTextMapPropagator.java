@@ -5,7 +5,7 @@
 
 package io.opentelemetry.context.propagation;
 
-import io.opentelemetry.common.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.util.Collection;
 import java.util.Collections;

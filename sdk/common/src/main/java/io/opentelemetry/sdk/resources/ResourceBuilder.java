@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -190,7 +191,10 @@ public class ResourceBuilder {
    * @since 1.4.0
    */
   public ResourceBuilder setSchemaUrl(String schemaUrl) {
-    Objects.requireNonNull(schemaUrl, "schemaUrl");
+    if (schemaUrl == null) {
+      ApiUsageLogger.logNullParam(ResourceBuilder.class, "setSchemaUrl", "schemaUrl");
+      return this;
+    }
     this.schemaUrl = schemaUrl;
     return this;
   }

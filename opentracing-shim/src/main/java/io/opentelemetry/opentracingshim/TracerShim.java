@@ -6,7 +6,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.api.trace.TracerProvider;
-import io.opentelemetry.common.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.opentracing.shim.internal.OtelVersion;
 import io.opentracing.Scope;

@@ -23,7 +23,7 @@
 package io.opentelemetry.context;
 
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentelemetry.common.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;

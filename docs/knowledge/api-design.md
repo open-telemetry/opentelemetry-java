@@ -77,6 +77,11 @@ public SdkTracerProviderBuilder setResource(Resource resource) {
 These APIs are called once during startup, so a hard failure surfaces the bug immediately and
 unambiguously.
 
+> **Grey area — Resource construction is used both by application code at
+> startup *and* by `ResourceProvider` implementations that detect environment information at
+> initialization time (similar to instrumentation). Treat `Resource` and `ResourceBuilder` as an
+> instrumentation-time boundary: use `ApiUsageLogger` and degrade gracefully rather than throwing.
+
 ### Runtime / instrumentation-time boundaries (Span methods, metric recordings, log builders)
 
 Do **not** throw. Log the violation via

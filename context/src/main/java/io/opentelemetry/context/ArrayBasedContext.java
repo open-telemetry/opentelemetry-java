@@ -22,7 +22,7 @@
 
 package io.opentelemetry.context;
 
-import io.opentelemetry.common.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.Arrays;
 import javax.annotation.Nullable;
 

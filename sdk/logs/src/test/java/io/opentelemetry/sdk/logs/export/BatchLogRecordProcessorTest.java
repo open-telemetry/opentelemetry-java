@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.logs.export;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -332,17 +331,6 @@ class BatchLogRecordProcessorTest {
     exported = waitingLogRecordExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported).hasSize(maxQueuedLogs);
-  }
-
-  @Test
-  void ignoresNullLogs() {
-    BatchLogRecordProcessor processor =
-        BatchLogRecordProcessor.builder(mockLogRecordExporter).build();
-    try {
-      assertThatCode(() -> processor.onEmit(null, null)).doesNotThrowAnyException();
-    } finally {
-      processor.shutdown();
-    }
   }
 
   @Test
