@@ -58,6 +58,7 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
 
   static class SdkLongGaugeBuilder implements LongGaugeBuilder {
 
+    private static final ObservableLongGauge NOOP_OBSERVABLE_GAUGE = new ObservableLongGauge() {};
     final InstrumentBuilder builder;
 
     SdkLongGaugeBuilder(
@@ -92,6 +93,10 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
 
     @Override
     public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(LongGaugeBuilder.class, "buildWithCallback", "callback");
+        return NOOP_OBSERVABLE_GAUGE;
+      }
       return builder.buildLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 

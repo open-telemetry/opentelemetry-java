@@ -72,6 +72,8 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
 
   static class SdkDoubleCounterBuilder implements DoubleCounterBuilder {
 
+    private static final ObservableDoubleCounter NOOP_OBSERVABLE_COUNTER =
+        new ObservableDoubleCounter() {};
     final InstrumentBuilder builder;
 
     SdkDoubleCounterBuilder(
@@ -107,6 +109,10 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(DoubleCounterBuilder.class, "buildWithCallback", "callback");
+        return NOOP_OBSERVABLE_COUNTER;
+      }
       return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 

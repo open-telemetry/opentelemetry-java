@@ -12,6 +12,7 @@ import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +59,10 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
   /** {@inheritDoc} */
   @Override
   default ExtendedLogRecordBuilder setBody(Value<?> body) {
+    if (body == null) {
+      ApiUsageLogger.logNullParam(ExtendedLogRecordBuilder.class, "setBody", "body");
+      return this;
+    }
     setBody(body.asString());
     return this;
   }
@@ -83,7 +88,11 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
   @SuppressWarnings("unchecked")
   @Override
   default ExtendedLogRecordBuilder setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(ExtendedLogRecordBuilder.class, "setAllAttributes", "attributes");
+      return this;
+    }
+    if (attributes.isEmpty()) {
       return this;
     }
     attributes.forEach(
@@ -103,7 +112,11 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    */
   @SuppressWarnings("unchecked")
   default ExtendedLogRecordBuilder setAllAttributes(ExtendedAttributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(ExtendedLogRecordBuilder.class, "setAllAttributes", "attributes");
+      return this;
+    }
+    if (attributes.isEmpty()) {
       return this;
     }
     attributes.forEach(

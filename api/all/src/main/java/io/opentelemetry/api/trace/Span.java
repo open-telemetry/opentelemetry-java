@@ -407,6 +407,12 @@ public interface Span extends ImplicitContextKeyed {
    * @since 1.37.0
    */
   default Span addLink(SpanContext spanContext, Attributes attributes) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addLink", "spanContext");
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addLink", "attributes");
+    }
     return this;
   }
 

@@ -8,6 +8,7 @@ package io.opentelemetry.api.incubator.common;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -221,6 +222,7 @@ public interface ExtendedAttributesBuilder {
   @SuppressWarnings({"unchecked"})
   default ExtendedAttributesBuilder putAll(Attributes attributes) {
     if (attributes == null) {
+      ApiUsageLogger.logNullParam(ExtendedAttributesBuilder.class, "putAll", "attributes");
       return this;
     }
     attributes.forEach((key, value) -> put((AttributeKey<Object>) key, value));
@@ -235,6 +237,7 @@ public interface ExtendedAttributesBuilder {
   @SuppressWarnings({"unchecked"})
   default ExtendedAttributesBuilder putAll(ExtendedAttributes attributes) {
     if (attributes == null) {
+      ApiUsageLogger.logNullParam(ExtendedAttributesBuilder.class, "putAll", "attributes");
       return this;
     }
     attributes.forEach((key, value) -> put((ExtendedAttributeKey<Object>) key, value));

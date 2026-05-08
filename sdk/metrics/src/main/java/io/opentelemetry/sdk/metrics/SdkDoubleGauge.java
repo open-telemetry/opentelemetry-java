@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.common.impl.ApiUsageLogger;
@@ -58,6 +59,9 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
   }
 
   static class SdkDoubleGaugeBuilder implements DoubleGaugeBuilder {
+
+    private static final ObservableDoubleGauge NOOP_OBSERVABLE_GAUGE =
+        new ObservableDoubleGauge() {};
     final InstrumentBuilder builder;
 
     SdkDoubleGaugeBuilder(SdkMeter sdkMeter, String name) {
@@ -89,6 +93,10 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
 
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(DoubleGaugeBuilder.class, "buildWithCallback", "callback");
+        return NOOP_OBSERVABLE_GAUGE;
+      }
       return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 

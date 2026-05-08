@@ -59,6 +59,8 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
 
   static class SdkLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
 
+    private static final ObservableLongUpDownCounter NOOP_OBSERVABLE_COUNTER =
+        new ObservableLongUpDownCounter() {};
     final InstrumentBuilder builder;
 
     SdkLongUpDownCounterBuilder(SdkMeter sdkMeter, String name) {
@@ -92,6 +94,11 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(
+            LongUpDownCounterBuilder.class, "buildWithCallback", "callback");
+        return NOOP_OBSERVABLE_COUNTER;
+      }
       return builder.buildLongAsynchronousInstrument(
           InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
     }
