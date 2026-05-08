@@ -100,6 +100,7 @@ public final class InMemoryMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return aggregationTemporality;
   }
 

@@ -124,11 +124,13 @@ public class InMemoryMetricReader implements MetricReader {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
   }
 
   @Override
   public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return defaultAggregationSelector.getDefaultAggregation(instrumentType);
   }
 
