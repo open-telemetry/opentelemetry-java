@@ -8,7 +8,7 @@
 
 #### Context
 
-* Apply limits to baggage entries for `W3CBaggagePropagator`, `OtTracePropagator`, `JaegerPropagator`
+* Fix [GHSA-rcgg-9c38-7xpx](https://github.com/open-telemetry/opentelemetry-java/security/advisories/GHSA-rcgg-9c38-7xpx): Apply limits to baggage entries for `W3CBaggagePropagator`, `OtTracePropagator`, `JaegerPropagator`
   ([#8378](https://github.com/open-telemetry/opentelemetry-java/pull/8378))
 
 ### SDK
