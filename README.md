@@ -244,6 +244,11 @@ See the [VERSIONING.md](VERSIONING.md) for complete details on compatibility pol
 
 We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#implementation-sigs).
 
+The meeting is open for all to join. We invite everyone to join our meeting,
+regardless of your experience level. Whether you're a seasoned OpenTelemetry
+developer, just starting your journey, or simply curious about the work we do,
+you're more than welcome to participate!
+
 To report a bug, or request a new feature,
 please [open an issue](https://github.com/open-telemetry/opentelemetry-java/issues/new/choose).
 
