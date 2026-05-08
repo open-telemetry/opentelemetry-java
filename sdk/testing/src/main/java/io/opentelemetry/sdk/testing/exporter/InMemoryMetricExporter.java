@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -75,6 +76,7 @@ public final class InMemoryMetricExporter implements MetricExporter {
 
   /** Returns a new {@link InMemoryMetricExporter} with the given {@code aggregationTemporality}. */
   public static InMemoryMetricExporter create(AggregationTemporality aggregationTemporality) {
+    Objects.requireNonNull(aggregationTemporality, "aggregationTemporality");
     return new InMemoryMetricExporter(aggregationTemporality);
   }
 
@@ -108,6 +110,7 @@ public final class InMemoryMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
+    Objects.requireNonNull(metrics, "metrics");
     if (isStopped) {
       return CompletableResultCode.ofFailure();
     }

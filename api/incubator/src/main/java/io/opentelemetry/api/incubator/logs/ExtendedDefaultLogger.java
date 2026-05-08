@@ -31,6 +31,12 @@ class ExtendedDefaultLogger implements ExtendedLogger {
 
   @Override
   public boolean isEnabled(Severity severity, Context context) {
+    if (severity == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "severity");
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "context");
+    }
     return false;
   }
 

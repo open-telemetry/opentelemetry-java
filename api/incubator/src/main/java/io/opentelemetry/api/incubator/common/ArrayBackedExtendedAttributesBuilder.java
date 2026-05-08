@@ -7,6 +7,7 @@ package io.opentelemetry.api.incubator.common;
 
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.common.ValueType;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +37,11 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
 
   @Override
   public <T> ExtendedAttributesBuilder put(ExtendedAttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ExtendedAttributesBuilder.class, "put", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     if (key.getType() == ExtendedAttributeType.VALUE && value instanceof Value) {
@@ -156,6 +161,7 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
   @Override
   public ExtendedAttributesBuilder removeIf(Predicate<ExtendedAttributeKey<?>> predicate) {
     if (predicate == null) {
+      ApiUsageLogger.logNullParam(ExtendedAttributesBuilder.class, "removeIf", "predicate");
       return this;
     }
     for (int i = 0; i < data.size() - 1; i += 2) {

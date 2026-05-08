@@ -90,7 +90,11 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
 
   @Override
   public <T> ExtendedSdkReadWriteLogRecord setAttribute(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkReadWriteLogRecord.class, "setAttribute", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     return setAttribute(ExtendedAttributeKey.fromAttributeKey(key), value);

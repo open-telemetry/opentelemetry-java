@@ -286,6 +286,7 @@ public interface Context {
    * making this the {@linkplain Context#current() current context} before each execution.
    */
   default ExecutorService wrap(ExecutorService executor) {
+    Objects.requireNonNull(executor, "executor");
     if (executor instanceof ContextExecutorService) {
       return executor;
     }
@@ -298,6 +299,7 @@ public interface Context {
    * execution.
    */
   default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
+    Objects.requireNonNull(executor, "executor");
     if (executor instanceof ContextScheduledExecutorService) {
       return executor;
     }

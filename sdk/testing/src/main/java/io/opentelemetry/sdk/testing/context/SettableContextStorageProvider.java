@@ -11,6 +11,7 @@ import io.opentelemetry.context.ContextStorageProvider;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 
@@ -23,6 +24,7 @@ public final class SettableContextStorageProvider implements ContextStorageProvi
 
   /** Sets the {@link ContextStorage} to use for future context operations. */
   public static void setContextStorage(ContextStorage storage) {
+    Objects.requireNonNull(storage, "storage");
     SettableContextStorage.delegate = storage;
   }
 

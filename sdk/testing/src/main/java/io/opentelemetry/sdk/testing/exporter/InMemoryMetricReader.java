@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -81,6 +82,8 @@ public class InMemoryMetricReader implements MetricReader {
   public static InMemoryMetricReader create(
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector) {
+    Objects.requireNonNull(aggregationTemporalitySelector, "aggregationTemporalitySelector");
+    Objects.requireNonNull(defaultAggregationSelector, "defaultAggregationSelector");
     return new InMemoryMetricReader(aggregationTemporalitySelector, defaultAggregationSelector);
   }
 
@@ -115,6 +118,7 @@ public class InMemoryMetricReader implements MetricReader {
 
   @Override
   public void register(CollectionRegistration collectionRegistration) {
+    Objects.requireNonNull(collectionRegistration, "collectionRegistration");
     this.collectionRegistration = collectionRegistration;
   }
 

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -60,6 +61,7 @@ public final class InMemoryLogRecordExporter implements LogRecordExporter {
    */
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
+    Objects.requireNonNull(logs, "logs");
     if (isStopped) {
       return CompletableResultCode.ofFailure();
     }

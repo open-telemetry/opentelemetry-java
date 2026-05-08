@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.Objects;
 
 /**
  * Builder for {@link InMemoryMetricReader}.
@@ -42,6 +43,7 @@ public final class InMemoryMetricReaderBuilder {
    */
   public InMemoryMetricReaderBuilder setAggregationTemporalitySelector(
       AggregationTemporalitySelector aggregationTemporalitySelector) {
+    Objects.requireNonNull(aggregationTemporalitySelector, "aggregationTemporalitySelector");
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     return this;
   }
@@ -56,6 +58,7 @@ public final class InMemoryMetricReaderBuilder {
   @SuppressWarnings("unused")
   public InMemoryMetricReaderBuilder setDefaultAggregationSelector(
       DefaultAggregationSelector defaultAggregationSelector) {
+    Objects.requireNonNull(defaultAggregationSelector, "defaultAggregationSelector");
     this.defaultAggregationSelector = defaultAggregationSelector;
     return this;
   }
@@ -67,6 +70,7 @@ public final class InMemoryMetricReaderBuilder {
    * @return this {@link InMemoryMetricReaderBuilder}
    */
   public InMemoryMetricReaderBuilder setMemoryMode(MemoryMode memoryMode) {
+    Objects.requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
     return this;
   }

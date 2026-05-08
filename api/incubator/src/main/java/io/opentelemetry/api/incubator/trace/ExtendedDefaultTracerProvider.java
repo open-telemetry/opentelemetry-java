@@ -35,6 +35,10 @@ public class ExtendedDefaultTracerProvider implements TracerProvider {
       ApiUsageLogger.logNullParam(
           ExtendedDefaultTracerProvider.class, "get", "instrumentationScopeName");
     }
+    if (instrumentationScopeVersion == null) {
+      ApiUsageLogger.logNullParam(
+          ExtendedDefaultTracerProvider.class, "get", "instrumentationScopeVersion");
+    }
     return ExtendedDefaultTracer.getNoop();
   }
 
