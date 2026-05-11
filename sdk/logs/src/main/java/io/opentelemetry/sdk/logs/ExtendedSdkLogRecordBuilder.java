@@ -7,23 +7,17 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.internal.ExtendedAttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** SDK implementation of {@link ExtendedLogRecordBuilder}. */
-@SuppressWarnings("deprecation")
 final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     implements ExtendedLogRecordBuilder {
-
-  @Nullable private ExtendedAttributesMap extendedAttributes;
 
   ExtendedSdkLogRecordBuilder(
       LoggerSharedState loggerSharedState,
@@ -99,50 +93,8 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
-  public <T> ExtendedSdkLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
-      return this;
-    }
-    if (this.extendedAttributes == null) {
-      this.extendedAttributes =
-          ExtendedAttributesMap.create(
-              logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
-    }
-    this.extendedAttributes.put(key, value);
-    return this;
-  }
-
-  @Override
   public <T> ExtendedSdkLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
-      return this;
-    }
-    return setAttribute(ExtendedAttributeKey.fromAttributeKey(key), value);
-  }
-
-  @Override
-  protected ReadWriteLogRecord createLogRecord(Context context, long observedTimestampEpochNanos) {
-    return ExtendedSdkReadWriteLogRecord.create(
-        loggerSharedState.getLogLimits(),
-        loggerSharedState.getResource(),
-        instrumentationScopeInfo,
-        eventName,
-        timestampEpochNanos,
-        observedTimestampEpochNanos,
-        Span.fromContext(context).getSpanContext(),
-        severity,
-        severityText,
-        body,
-        extendedAttributes);
-  }
-
-  @Override
-  protected <T> void setExceptionAttribute(AttributeKey<T> key, @Nullable T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
-      return;
-    }
-    if (extendedAttributes == null || extendedAttributes.get(key) == null) {
-      setAttribute(key, value);
-    }
+    super.setAttribute(key, value);
+    return this;
   }
 }
