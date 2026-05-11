@@ -580,13 +580,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     String configurationFile = config.getString("otel.config.file");
     if (configurationFile == null || configurationFile.isEmpty()) {
-      configurationFile = config.getString("otel.experimental.config.file");
-      if (configurationFile != null && !configurationFile.isEmpty()) {
-        logger.warning(
-            "otel.experimental.config.file is deprecated and will be removed after 1.62.0 release. Please use otel.config.file instead.");
-      }
-    }
-    if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
 
