@@ -1,7 +1,7 @@
 [tools]
 
 # Linters
-"aqua:grafana/flint" = "0.22.0"
+"aqua:grafana/flint" = "0.22.2"
 lychee = "0.24.2"
 
 [env]
@@ -10,8 +10,6 @@ FLINT_CONFIG_DIR = ".github/config"
 [settings]
 # Only install tools explicitly defined in the [tools] section above
 idiomatic_version_file_enable_tools = []
-# flint releases do not have GitHub artifact attestations
-aqua.github_attestations = false
 
 # Windows configuration for file-based tasks
 # Based on: https://github.com/jdx/mise/discussions/4461
