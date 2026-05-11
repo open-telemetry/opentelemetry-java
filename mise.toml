@@ -1,7 +1,7 @@
 [tools]
 
 # Linters
-"github:grafana/flint" = "0.21.0"
+"github:grafana/flint" = "0.22.0"
 lychee = "0.24.2"
 
 [env]
