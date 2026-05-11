@@ -204,8 +204,8 @@ public interface LogRecordBuilder {
    * pre-allocate your keys, if possible.
    *
    * <p>Instrumentations should assume that backends do not index individual properties of complex
-   * attributes, that querying or aggregating on such properties is inefficient and complicated,
-   * and that reporting complex attributes carries higher performance overhead.
+   * attributes, that querying or aggregating on such properties is inefficient and complicated, and
+   * that reporting complex attributes carries higher performance overhead.
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
