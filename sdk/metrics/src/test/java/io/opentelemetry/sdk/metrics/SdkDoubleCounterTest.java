@@ -69,6 +69,7 @@ class SdkDoubleCounterTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleCounter.add(12d, Attributes.empty());
     doubleCounter.add(12d);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->

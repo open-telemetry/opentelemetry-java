@@ -68,6 +68,7 @@ class SdkDoubleUpDownCounterTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleUpDownCounter.add(12d, Attributes.empty());
     doubleUpDownCounter.add(12d);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->

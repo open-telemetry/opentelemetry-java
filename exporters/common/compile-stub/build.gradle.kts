@@ -4,3 +4,4 @@ plugins {
 
 description = "OpenTelemetry Exporter Compile Stub"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal.compile-stub")
+otelJava.osgiEnabled.set(false)

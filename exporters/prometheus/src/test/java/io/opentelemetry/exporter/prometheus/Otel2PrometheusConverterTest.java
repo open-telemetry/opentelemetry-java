@@ -100,24 +100,24 @@ class Otel2PrometheusConverterTest {
 
   private static Stream<Arguments> metricMetadataArgs() {
     return Stream.of(
-        // the unity unit "1" is translated to "ratio"
+        // the unity unit "1" is unitless - no suffix added
         Arguments.of(
             createSampleMetricData("sample", "1", MetricDataType.LONG_GAUGE),
-            "sample_ratio gauge",
-            "sample_ratio description",
-            "sample_ratio"),
+            "sample gauge",
+            "sample description",
+            "sample"),
         // unit is appended to metric name
         Arguments.of(
             createSampleMetricData("sample", "unit", MetricDataType.LONG_GAUGE),
             "sample_unit gauge",
             "sample_unit description",
             "sample_unit"),
-        // units in curly braces are dropped
+        // units in curly braces are dropped, "1" is unitless
         Arguments.of(
             createSampleMetricData("sample", "1{dropped}", MetricDataType.LONG_GAUGE),
-            "sample_ratio gauge",
-            "sample_ratio description",
-            "sample_ratio"),
+            "sample gauge",
+            "sample description",
+            "sample"),
         // monotonic sums always include _total suffix
         Arguments.of(
             createSampleMetricData("sample", "unit", MetricDataType.LONG_SUM),
@@ -126,9 +126,9 @@ class Otel2PrometheusConverterTest {
             "sample_unit_total"),
         Arguments.of(
             createSampleMetricData("sample", "1", MetricDataType.LONG_SUM),
-            "sample_ratio_total counter",
-            "sample_ratio_total description",
-            "sample_ratio_total"),
+            "sample_total counter",
+            "sample_total description",
+            "sample_total"),
         // units expressed as numbers other than 1 are retained
         Arguments.of(
             createSampleMetricData("sample", "2", MetricDataType.LONG_SUM),

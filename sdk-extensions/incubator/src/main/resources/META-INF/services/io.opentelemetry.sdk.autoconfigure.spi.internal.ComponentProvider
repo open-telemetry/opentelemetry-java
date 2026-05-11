@@ -1,1 +1,1 @@
-io.opentelemetry.sdk.extension.incubator.fileconfig.ServiceResourceDetector
+io.opentelemetry.sdk.extension.incubator.logs.internal.EventToSpanEventBridgeComponentProvider

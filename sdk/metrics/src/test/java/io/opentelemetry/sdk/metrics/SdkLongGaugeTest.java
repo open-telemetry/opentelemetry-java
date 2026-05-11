@@ -92,6 +92,7 @@ class SdkLongGaugeTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longGauge.set(12, Attributes.empty());
     longGauge.set(13);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(cumulativeReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->

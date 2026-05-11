@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -15,9 +16,15 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.Message;
+import com.google.protobuf.Parser;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpRequest;
 import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.common.ResponseHeaders;
 import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
@@ -80,6 +87,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -111,13 +119,19 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   private static final ConcurrentLinkedQueue<Object> exportedResourceTelemetry =
       new ConcurrentLinkedQueue<>();
 
-  private static final ConcurrentLinkedQueue<ArmeriaStatusException> grpcErrors =
+  private static final ConcurrentLinkedQueue<GrpcServerResponse> grpcResponses =
       new ConcurrentLinkedQueue<>();
+
+  private static volatile byte[] defaultResponseBytes = new byte[0];
 
   private static final AtomicInteger attempts = new AtomicInteger();
 
   private static final ConcurrentLinkedQueue<HttpRequest> httpRequests =
       new ConcurrentLinkedQueue<>();
+
+  private static final AtomicInteger grpcEncodingServerAttempts = new AtomicInteger();
+
+  private static volatile String grpcEncodingServerEncoding = "brotli";
 
   @RegisterExtension
   @Order(1)
@@ -143,13 +157,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                             ExportLogsServiceRequest request,
                             StreamObserver<ExportLogsServiceResponse> responseObserver) {
                           exportedResourceTelemetry.addAll(request.getResourceLogsList());
-                          ArmeriaStatusException grpcError = grpcErrors.poll();
-                          if (grpcError != null) {
-                            responseObserver.onError(grpcError);
-                          } else {
-                            responseObserver.onNext(ExportLogsServiceResponse.getDefaultInstance());
-                            responseObserver.onCompleted();
-                          }
+                          handleExport(responseObserver, ExportLogsServiceResponse.parser());
                         }
                       })
                   .addService(
@@ -159,14 +167,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                             ExportMetricsServiceRequest request,
                             StreamObserver<ExportMetricsServiceResponse> responseObserver) {
                           exportedResourceTelemetry.addAll(request.getResourceMetricsList());
-                          ArmeriaStatusException grpcError = grpcErrors.poll();
-                          if (grpcError != null) {
-                            responseObserver.onError(grpcError);
-                          } else {
-                            responseObserver.onNext(
-                                ExportMetricsServiceResponse.getDefaultInstance());
-                            responseObserver.onCompleted();
-                          }
+                          handleExport(responseObserver, ExportMetricsServiceResponse.parser());
                         }
                       })
                   .addService(
@@ -176,14 +177,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                             ExportTraceServiceRequest request,
                             StreamObserver<ExportTraceServiceResponse> responseObserver) {
                           exportedResourceTelemetry.addAll(request.getResourceSpansList());
-                          ArmeriaStatusException grpcError = grpcErrors.poll();
-                          if (grpcError != null) {
-                            responseObserver.onError(grpcError);
-                          } else {
-                            responseObserver.onNext(
-                                ExportTraceServiceResponse.getDefaultInstance());
-                            responseObserver.onCompleted();
-                          }
+                          handleExport(responseObserver, ExportTraceServiceResponse.parser());
                         }
                       })
                   .addService(
@@ -193,14 +187,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                             ExportProfilesServiceRequest request,
                             StreamObserver<ExportProfilesServiceResponse> responseObserver) {
                           exportedResourceTelemetry.addAll(request.getResourceProfilesList());
-                          ArmeriaStatusException grpcError = grpcErrors.poll();
-                          if (grpcError != null) {
-                            responseObserver.onError(grpcError);
-                          } else {
-                            responseObserver.onNext(
-                                ExportProfilesServiceResponse.getDefaultInstance());
-                            responseObserver.onCompleted();
-                          }
+                          handleExport(responseObserver, ExportProfilesServiceResponse.parser());
                         }
                       })
                   .decompressorRegistry(
@@ -239,6 +226,53 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         }
       };
 
+  private static <R extends Message> void handleExport(
+      StreamObserver<R> responseObserver, Parser<R> parser) {
+    GrpcServerResponse grpcResponse = grpcResponses.poll();
+    if (grpcResponse != null && grpcResponse.error != null) {
+      responseObserver.onError(grpcResponse.error);
+    } else {
+      try {
+        byte[] responseBytes =
+            grpcResponse != null && grpcResponse.responseBytes != null
+                ? grpcResponse.responseBytes
+                : defaultResponseBytes;
+        responseObserver.onNext(parser.parseFrom(responseBytes));
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+      responseObserver.onCompleted();
+    }
+  }
+
+  // A minimal server that returns a configurable grpc-encoding to test encoding handling.
+  // The encoding is controlled via grpcEncodingServerEncoding (defaults to "brotli").
+  // Both OkHttpGrpcSender (our code) and UpstreamGrpcSender (grpc-java framework) reject unknown
+  // encodings and fail the export with INTERNAL status.
+  @RegisterExtension
+  @Order(4)
+  static final ServerExtension grpcEncodingServer =
+      new ServerExtension() {
+        @Override
+        protected void configure(ServerBuilder sb) {
+          sb.service(
+              "prefix:/",
+              (ctx, req) -> {
+                grpcEncodingServerAttempts.incrementAndGet();
+                // gRPC frame: compressed flag=1, declared length=0 (no payload bytes follow)
+                byte[] frame = {1, 0, 0, 0, 0};
+                return HttpResponse.of(
+                    ResponseHeaders.builder(HttpStatus.OK)
+                        .contentType(MediaType.parse("application/grpc+proto"))
+                        .add("grpc-encoding", grpcEncodingServerEncoding)
+                        .add("grpc-status", "0")
+                        .build(),
+                    HttpData.wrap(frame));
+              });
+          sb.http(0);
+        }
+      };
+
   @RegisterExtension
   protected LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
 
@@ -265,6 +299,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(1))
                     .build())
             .build();
+    defaultResponseBytes = exporter.exportResponse(0).toByteArray();
 
     // Sanity check that TLS files are in PEM format.
     assertThat(certificate.certificateFile())
@@ -293,9 +328,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @AfterEach
   void reset() {
     exportedResourceTelemetry.clear();
-    grpcErrors.clear();
+    grpcResponses.clear();
     attempts.set(0);
     httpRequests.clear();
+    grpcEncodingServerAttempts.set(0);
+    grpcEncodingServerEncoding = "brotli";
   }
 
   @Test
@@ -330,6 +367,132 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
             req ->
                 assertThat(req.headers().get("User-Agent"))
                     .matches("OTel-OTLP-Exporter-Java/1\\..*"));
+  }
+
+  @Test
+  // @SuppressLogger(HttpExporter.class)
+  void responseBodyBounds() {
+    // We have a 4mb hardcoded response body limit. Responses <= 4mb succeed. Responses >= 4mb
+    // fail. We can't test payloads exactly at 4mb because protobuf message lengths are finicky -
+    // its hard to create a message with an exact size.
+
+    // Body below the limit, succeeds
+    addGrpcResponse(GrpcStatusCode.OK, null, exporter.exportResponse(100));
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isTrue();
+
+    // Body over the limit, fails with RESOURCE_EXHAUSTED
+    addGrpcResponse(GrpcStatusCode.OK, null, exporter.exportResponse(4 * 1024 * 1024 + 1));
+    result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.GrpcExportException.class,
+            ex ->
+                assertThat(requireNonNull(ex.getResponse()))
+                    .isNotNull()
+                    .satisfies(
+                        grpcResponse ->
+                            assertThat(grpcResponse.getStatusCode())
+                                .isEqualTo(GrpcStatusCode.RESOURCE_EXHAUSTED)));
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void responseBodyBoundsGzipCompressed() throws IOException {
+    // Verify the body size limit is applied to the decompressed bytes, not the compressed wire
+    // bytes. The server compresses the response with gzip (because the sender advertises
+    // grpc-accept-encoding: gzip), so the wire bytes are well under 4MB while the decompressed
+    // bytes exceed it.
+    AbstractMessageLite<?, ?> responseMsg = exporter.exportResponse(4 * 1024 * 1024 + 1);
+    byte[] responseBytes = responseMsg.toByteArray();
+    // Sanity: confirm payload is over the limit uncompressed but compresses well under the limit
+    assertThat(responseBytes).hasSizeGreaterThan(4 * 1024 * 1024);
+    ByteArrayOutputStream compressedBaos = new ByteArrayOutputStream();
+    try (GZIPOutputStream gzip = new GZIPOutputStream(compressedBaos)) {
+      gzip.write(responseBytes);
+    }
+    assertThat(compressedBaos.toByteArray()).hasSizeLessThan(4 * 1024 * 1024);
+
+    addGrpcResponse(GrpcStatusCode.OK, null, responseMsg);
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable())
+        .isInstanceOfSatisfying(
+            FailedExportException.GrpcExportException.class,
+            ex ->
+                assertThat(requireNonNull(ex.getResponse()))
+                    .satisfies(
+                        grpcResponse ->
+                            assertThat(grpcResponse.getStatusCode())
+                                .isEqualTo(GrpcStatusCode.RESOURCE_EXHAUSTED)));
+  }
+
+  // Verifies that a response with an unrecognized grpc-encoding fails with INTERNAL rather than
+  // attempting to decompress with an unsupported algorithm.
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void unsupportedGrpcMessageEncoding() {
+    try (TelemetryExporter<T> testExporter =
+        exporterBuilder()
+            .setEndpoint(grpcEncodingServer.httpUri().toString())
+            .setRetryPolicy(null)
+            .build()) {
+      CompletableResultCode result =
+          testExporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+      assertThat(result.isSuccess()).isFalse();
+      assertThat(grpcEncodingServerAttempts).hasValue(1);
+      assertThat(result.getFailureThrowable())
+          .isInstanceOfSatisfying(
+              FailedExportException.GrpcExportException.class,
+              ex ->
+                  assertThat(requireNonNull(ex.getResponse()))
+                      .satisfies(
+                          grpcResponse ->
+                              assertThat(grpcResponse.getStatusCode())
+                                  .isEqualTo(GrpcStatusCode.INTERNAL)));
+    }
+  }
+
+  // Verifies that a response with flag=1 and grpc-encoding: identity is rejected with INTERNAL.
+  // Although identity is advertised in grpc-accept-encoding (meaning "no encoding applied"),
+  // a server setting the compressed flag to 1 is contradictory and should not be accepted.
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void identityGrpcMessageEncodingWithCompressedFlagRejected() {
+    grpcEncodingServerEncoding = "identity";
+    try (TelemetryExporter<T> testExporter =
+        exporterBuilder()
+            .setEndpoint(grpcEncodingServer.httpUri().toString())
+            .setRetryPolicy(null)
+            .build()) {
+      CompletableResultCode result =
+          testExporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+      assertThat(result.isSuccess()).isFalse();
+      assertThat(grpcEncodingServerAttempts).hasValue(1);
+      assertThat(result.getFailureThrowable())
+          .isInstanceOfSatisfying(
+              FailedExportException.GrpcExportException.class,
+              ex ->
+                  assertThat(requireNonNull(ex.getResponse()))
+                      .satisfies(
+                          grpcResponse ->
+                              assertThat(grpcResponse.getStatusCode())
+                                  .isEqualTo(GrpcStatusCode.INTERNAL)));
+    }
   }
 
   @Test
@@ -603,7 +766,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @SuppressLogger(GrpcExporter.class)
   void error() {
     GrpcStatusCode statusCode = GrpcStatusCode.INTERNAL;
-    addGrpcError(statusCode, null);
+    addGrpcResponse(statusCode, null);
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       CompletableResultCode result =
@@ -639,7 +802,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void errorWithUnknownError() {
-    addGrpcError(GrpcStatusCode.UNKNOWN, null);
+    addGrpcResponse(GrpcStatusCode.UNKNOWN, null);
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -662,7 +825,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void errorWithMessage() {
-    addGrpcError(GrpcStatusCode.RESOURCE_EXHAUSTED, "out of quota");
+    addGrpcResponse(GrpcStatusCode.RESOURCE_EXHAUSTED, "out of quota");
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -683,7 +846,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void errorWithEscapedMessage() {
-    addGrpcError(GrpcStatusCode.NOT_FOUND, "クマ🐻");
+    addGrpcResponse(GrpcStatusCode.NOT_FOUND, "クマ🐻");
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -704,7 +867,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void testExport_Unavailable() {
-    addGrpcError(GrpcStatusCode.UNAVAILABLE, null);
+    addGrpcResponse(GrpcStatusCode.UNAVAILABLE, null);
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -726,7 +889,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   protected void testExport_Unimplemented() {
-    addGrpcError(GrpcStatusCode.UNIMPLEMENTED, "UNIMPLEMENTED");
+    addGrpcResponse(GrpcStatusCode.UNIMPLEMENTED, "UNIMPLEMENTED");
 
     try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
@@ -772,7 +935,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @ValueSource(ints = {1, 4, 8, 10, 11, 14, 15})
   @SuppressLogger(GrpcExporter.class)
   void retryableError(int code) {
-    addGrpcError(GrpcStatusCode.fromValue(code), null);
+    addGrpcResponse(GrpcStatusCode.fromValue(code), null);
 
     assertThat(
             exporter
@@ -787,8 +950,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void retryableError_tooManyAttempts() {
-    addGrpcError(GrpcStatusCode.CANCELLED, null);
-    addGrpcError(GrpcStatusCode.CANCELLED, null);
+    addGrpcResponse(GrpcStatusCode.CANCELLED, null);
+    addGrpcResponse(GrpcStatusCode.CANCELLED, null);
 
     assertThat(
             exporter
@@ -804,7 +967,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @ValueSource(ints = {2, 3, 5, 6, 7, 9, 12, 13, 16})
   @SuppressLogger(GrpcExporter.class)
   void nonRetryableError(int code) {
-    addGrpcError(GrpcStatusCode.fromValue(code), null);
+    addGrpcResponse(GrpcStatusCode.fromValue(code), null);
 
     assertThat(
             exporter
@@ -1273,7 +1436,27 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     return exporterBuilder().setEndpoint(server.httpUri().toString()).setRetryPolicy(null).build();
   }
 
-  protected static void addGrpcError(GrpcStatusCode code, @Nullable String message) {
-    grpcErrors.add(new ArmeriaStatusException(code.getValue(), message));
+  protected static void addGrpcResponse(GrpcStatusCode code, @Nullable String message) {
+    addGrpcResponse(code, message, null);
+  }
+
+  protected static void addGrpcResponse(
+      GrpcStatusCode code,
+      @Nullable String message,
+      @Nullable AbstractMessageLite<?, ?> bodyMessage) {
+    grpcResponses.add(
+        new GrpcServerResponse(
+            code == GrpcStatusCode.OK ? null : new ArmeriaStatusException(code.getValue(), message),
+            bodyMessage == null ? null : bodyMessage.toByteArray()));
+  }
+
+  private static final class GrpcServerResponse {
+    @Nullable final ArmeriaStatusException error;
+    @Nullable final byte[] responseBytes;
+
+    GrpcServerResponse(@Nullable ArmeriaStatusException error, @Nullable byte[] responseBytes) {
+      this.error = error;
+      this.responseBytes = responseBytes;
+    }
   }
 }

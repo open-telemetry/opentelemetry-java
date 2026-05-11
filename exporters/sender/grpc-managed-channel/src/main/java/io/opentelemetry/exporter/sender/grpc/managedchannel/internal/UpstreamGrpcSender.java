@@ -21,7 +21,6 @@ import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.ClientCalls;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.exporter.internal.grpc.ImmutableGrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.GrpcResponse;

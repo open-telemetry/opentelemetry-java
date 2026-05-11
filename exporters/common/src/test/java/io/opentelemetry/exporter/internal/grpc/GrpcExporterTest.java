@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -120,8 +121,7 @@ class GrpcExporterTest {
                                                     pa.hasAttributes(expectedAttributes)
                                                         .hasValue(42))));
 
-                onResponse.accept(
-                    ImmutableGrpcResponse.create(GrpcStatusCode.OK, null, new byte[0]));
+                onResponse.accept(grpcResponse(GrpcStatusCode.OK));
 
                 return null;
               })
@@ -133,7 +133,7 @@ class GrpcExporterTest {
       doAnswer(
               invoc -> {
                 Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
-                onResponse.accept(ImmutableGrpcResponse.create(UNAVAILABLE, null, new byte[0]));
+                onResponse.accept(grpcResponse(UNAVAILABLE));
 
                 return null;
               })
@@ -223,5 +223,25 @@ class GrpcExporterTest {
                                                   .build())
                                           .hasBucketCounts(1))));
     }
+  }
+
+  private static GrpcResponse grpcResponse(GrpcStatusCode statusCode) {
+    return new GrpcResponse() {
+      @Override
+      public GrpcStatusCode getStatusCode() {
+        return statusCode;
+      }
+
+      @Override
+      @Nullable
+      public String getStatusDescription() {
+        return null;
+      }
+
+      @Override
+      public byte[] getResponseMessage() {
+        return new byte[0];
+      }
+    };
   }
 }

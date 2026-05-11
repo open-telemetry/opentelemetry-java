@@ -79,7 +79,7 @@ public final class LoggingSpanExporter implements SpanExporter {
       try {
         handler.flush();
       } catch (Throwable t) {
-        resultCode.fail();
+        return resultCode.fail();
       }
     }
     return resultCode.succeed();

@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
 import io.opentelemetry.proto.profiles.v1development.internal.KeyValueAndUnit;
+import io.opentelemetry.sdk.profiles.data.KeyValueAndUnitData;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -63,7 +64,7 @@ final class KeyValueAndUnitMarshaler extends MarshalerWithSize {
   protected void writeTo(Serializer output) throws IOException {
     output.serializeInt32(KeyValueAndUnit.KEY_STRINDEX, keyStringIndex);
     output.serializeMessage(KeyValueAndUnit.VALUE, valueMarshaler);
-    output.serializeInt64(KeyValueAndUnit.UNIT_STRINDEX, unitStringIndex);
+    output.serializeInt32(KeyValueAndUnit.UNIT_STRINDEX, unitStringIndex);
   }
 
   private static int calculateSize(

@@ -42,12 +42,14 @@ public final class JaegerRemoteSamplerBuilder {
   private static final Sampler INITIAL_SAMPLER =
       Sampler.parentBased(Sampler.traceIdRatioBased(0.001));
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
+  private static final long DEFAULT_MAX_RESPONSE_BODY_SIZE = 4 * 1024L * 1024L;
 
   private URI endpoint = DEFAULT_ENDPOINT;
   private Sampler initialSampler = INITIAL_SAMPLER;
   private int pollingIntervalMillis = DEFAULT_POLLING_INTERVAL_MILLIS;
   private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
+  private long maxResponseBodySize = DEFAULT_MAX_RESPONSE_BODY_SIZE;
 
   @Nullable private String serviceName;
 
@@ -148,6 +150,18 @@ public final class JaegerRemoteSamplerBuilder {
   }
 
   /**
+   * Sets the maximum number of bytes to read from a sampling strategy response body. If unset,
+   * defaults to 4 MiB. Must be positive.
+   *
+   * @since 1.61.0
+   */
+  public JaegerRemoteSamplerBuilder setMaxSamplingStrategyResponseBodySize(long bytes) {
+    Utils.checkArgument(bytes > 0, "maxSamplingStrategyResponseBodySize must be positive");
+    this.maxResponseBodySize = bytes;
+    return this;
+  }
+
+  /**
    * Sets the managed channel to use when communicating with the backend. Takes precedence over
    * {@link #setEndpoint(String)} if both are called.
    *
@@ -195,7 +209,8 @@ public final class JaegerRemoteSamplerBuilder {
             tlsConfigHelper.getSslContext(),
             tlsConfigHelper.getTrustManager(),
             null,
-            grpcChannel);
+            grpcChannel,
+            maxResponseBodySize);
     return grpcSenderProvider.createSender(grpcSenderConfig);
   }
 }

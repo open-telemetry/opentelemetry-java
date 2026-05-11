@@ -24,6 +24,8 @@ public interface LongHistogram {
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #record(long)}, {@link #record(long, Attributes)}, or {@link #record(long,
    * Attributes, Context)}.
+   *
+   * @since 1.61.0
    */
   default boolean isEnabled() {
     return true;

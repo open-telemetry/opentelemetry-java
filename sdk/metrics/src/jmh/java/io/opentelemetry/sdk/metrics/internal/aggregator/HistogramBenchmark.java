@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleSupplier;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -40,7 +41,7 @@ public class HistogramBenchmark {
 
     @Setup(Level.Trial)
     public final void setup() {
-      aggregatorHandle = aggregation.getAggregator().createHandle();
+      aggregatorHandle = aggregation.getAggregator().createHandle(Clock.getDefault().now());
       valueSupplier = valueGen.supplier();
     }
 

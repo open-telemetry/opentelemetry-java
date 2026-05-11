@@ -236,7 +236,11 @@ public final class OtlpConfigUtil {
       throw new ConfigurationException("Invalid OTLP certificate/key path: " + filePath);
     }
     try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-      byte[] bytes = new byte[(int) raf.length()];
+      long length = raf.length();
+      if (length > Integer.MAX_VALUE) {
+        throw new ConfigurationException("File too large: " + filePath);
+      }
+      byte[] bytes = new byte[(int) length];
       raf.readFully(bytes);
       return bytes;
     } catch (IOException e) {

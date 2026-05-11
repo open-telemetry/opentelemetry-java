@@ -31,6 +31,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
         grpcSenderConfig.getRetryPolicy(),
         grpcSenderConfig.getSslContext(),
         grpcSenderConfig.getTrustManager(),
-        grpcSenderConfig.getExecutorService());
+        grpcSenderConfig.getExecutorService(),
+        grpcSenderConfig.getMaxResponseBodySize());
   }
 }

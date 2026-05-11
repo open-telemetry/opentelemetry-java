@@ -1,0 +1,90 @@
+name: Detect API Changes
+
+on:
+  # pull_request_target is used instead of pull_request so that the workflow has write access
+  # (to post comments and apply labels) even when triggered by fork PRs.
+  #
+  # SECURITY: this workflow must never checkout or execute any code from the PR branch.
+  # Doing so would allow malicious PRs to exfiltrate secrets. All we use from the PR
+  # is github.event.pull_request.number (an integer), which is safe.
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions: {}
+
+jobs:
+  detect-api-changes:
+    name: Detect API surface area changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        id: otelbot-token
+        with:
+          app-id: ${{ vars.OTELBOT_APP_ID }}
+          private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+
+      - name: Check for API changes and update PR
+        env:
+          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          MARKER="<!-- api-change-detector -->"
+
+          # Get list of apidiff files changed in this PR
+          api_files=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate \
+            --jq '.[] | select(.filename | startswith("docs/apidiffs/current_vs_latest/")) | .filename')
+
+          # Find existing bot comment (if any)
+          comment_id=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -1)
+
+          if [[ -z "$api_files" ]]; then
+            echo "No API diff files changed."
+
+            # Remove label if present (ok to fail if label doesn't exist on PR)
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "api-change" 2>/dev/null || true
+
+            # Delete existing comment if present
+            if [[ -n "$comment_id" ]]; then
+              gh api --method DELETE "repos/${REPO}/issues/comments/${comment_id}"
+              echo "Removed stale API change comment."
+            fi
+            exit 0
+          fi
+
+          echo "API diff files changed:"
+          echo "$api_files"
+
+          # Add label
+          gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "api-change"
+
+          # Build bulleted module list
+          modules=$(echo "$api_files" \
+            | sed 's|docs/apidiffs/current_vs_latest/||' \
+            | sed 's|\.txt$||' \
+            | sort \
+            | sed 's/^/- /')
+
+          BODY=$(cat <<EOF
+          ${MARKER}
+          ## :warning: API changes detected — additional maintainer review required
+
+          @jack-berg @jkwatson
+
+          This PR modifies the public API surface area of the following module(s):
+
+          ${modules}
+
+          Please review the changes in \`docs/apidiffs/current_vs_latest/\` carefully before approving.
+          EOF
+          )
+
+          if [[ -n "$comment_id" ]]; then
+            echo "Updating existing comment ${comment_id}"
+            gh api --method PATCH "repos/${REPO}/issues/comments/${comment_id}" \
+              --field body="$BODY"
+          else
+            echo "Creating new comment"
+            gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$BODY"
+          fi

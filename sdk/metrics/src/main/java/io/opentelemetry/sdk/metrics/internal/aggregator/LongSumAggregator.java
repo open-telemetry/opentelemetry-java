@@ -48,8 +48,8 @@ public final class LongSumAggregator
   }
 
   @Override
-  public AggregatorHandle<LongPointData> createHandle() {
-    return new Handle(reservoirFactory, memoryMode);
+  public AggregatorHandle<LongPointData> createHandle(long creationEpochNanos) {
+    return new Handle(creationEpochNanos, reservoirFactory, memoryMode);
   }
 
   @Override
@@ -105,8 +105,9 @@ public final class LongSumAggregator
     // Only used if memoryMode == MemoryMode.REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePointData;
 
-    Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
-      super(reservoirFactory, /* isDoubleType= */ false);
+    Handle(
+        long creationEpochNanos, ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(creationEpochNanos, reservoirFactory, /* isDoubleType= */ false);
       reusablePointData =
           memoryMode == MemoryMode.REUSABLE_DATA ? new MutableLongPointData() : null;
     }

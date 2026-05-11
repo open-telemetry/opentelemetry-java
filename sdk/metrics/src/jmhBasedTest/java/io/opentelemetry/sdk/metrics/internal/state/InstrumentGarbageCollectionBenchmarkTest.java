@@ -30,8 +30,8 @@ public class InstrumentGarbageCollectionBenchmarkTest {
 
   /**
    * This test validates that in {@link MemoryMode#REUSABLE_DATA}, any {@link
-   * MetricStorage#collect(Resource, InstrumentationScopeInfo, long, long)} barely allocates memory
-   * which is then subsequently garbage collected. It is done so comparatively to {@link
+   * MetricStorage#collect(Resource, InstrumentationScopeInfo, long)} barely allocates memory which
+   * is then subsequently garbage collected. It is done so comparatively to {@link
    * MemoryMode#IMMUTABLE_DATA},
    *
    * <p>It runs the JMH test {@link InstrumentGarbageCollectionBenchmark} with GC profiler, and

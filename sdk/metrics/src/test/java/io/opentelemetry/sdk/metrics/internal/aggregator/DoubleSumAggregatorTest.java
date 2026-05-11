@@ -84,14 +84,14 @@ class DoubleSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void createHandle(MemoryMode memoryMode) {
     init(memoryMode);
-    assertThat(aggregator.createHandle()).isInstanceOf(DoubleSumAggregator.Handle.class);
+    assertThat(aggregator.createHandle(0)).isInstanceOf(DoubleSumAggregator.Handle.class);
   }
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.current());
@@ -108,7 +108,7 @@ class DoubleSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void multipleRecords_WithNegatives(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(12, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(12, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(-23, Attributes.empty(), Context.current());
@@ -126,7 +126,7 @@ class DoubleSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle(0);
 
     aggregatorHandle.recordDouble(13, Attributes.empty(), Context.current());
     aggregatorHandle.recordDouble(12, Attributes.empty(), Context.current());
@@ -172,7 +172,7 @@ class DoubleSumAggregatorTest {
                 Advice.empty()),
             reservoirFactory,
             memoryMode);
-    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(
             aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
@@ -315,7 +315,7 @@ class DoubleSumAggregatorTest {
   @EnumSource(MemoryMode.class)
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(10, Attributes.empty(), Context.current());
 
     MetricData metricData =
@@ -375,7 +375,7 @@ class DoubleSumAggregatorTest {
   @Test
   void sameObjectReturnedOnReusableDataMemoryMode() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoublePointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(1.0, Attributes.empty(), Context.current());
 
     DoublePointData firstCollection =

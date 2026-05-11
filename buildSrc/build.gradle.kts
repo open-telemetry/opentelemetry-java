@@ -33,15 +33,16 @@ repositories {
 }
 
 dependencies {
+  implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:7.2.0")
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:6.2.0"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.1")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:8.4.0")
-  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.4.0")
+  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.4.1")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
-  implementation("com.google.protobuf:protobuf-gradle-plugin:0.9.6")
+  implementation("com.google.protobuf:protobuf-gradle-plugin:0.10.0")
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.6")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")

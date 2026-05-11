@@ -50,14 +50,14 @@ class LongLastValueAggregatorTest {
   @EnumSource(MemoryMode.class)
   void createHandle(MemoryMode memoryMode) {
     init(memoryMode);
-    assertThat(aggregator.createHandle()).isInstanceOf(LongLastValueAggregator.Handle.class);
+    assertThat(aggregator.createHandle(0)).isInstanceOf(LongLastValueAggregator.Handle.class);
   }
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
   void multipleRecords(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(12, Attributes.empty(), Context.current());
     assertThat(
             aggregatorHandle
@@ -77,7 +77,7 @@ class LongLastValueAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
 
     aggregatorHandle.recordLong(13, Attributes.empty(), Context.current());
     assertThat(
@@ -190,7 +190,7 @@ class LongLastValueAggregatorTest {
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
 
-    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(10, Attributes.empty(), Context.current());
 
     MetricData metricData =
@@ -218,7 +218,7 @@ class LongLastValueAggregatorTest {
   @Test
   void testReusablePointOnCollect() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<LongPointData> handle = aggregator.createHandle();
+    AggregatorHandle<LongPointData> handle = aggregator.createHandle(0);
     handle.recordLong(1, Attributes.empty(), Context.current());
     LongPointData pointData =
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);

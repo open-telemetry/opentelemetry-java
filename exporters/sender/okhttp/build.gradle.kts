@@ -12,6 +12,8 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   implementation("com.squareup.okhttp3:okhttp")
 
   compileOnly("io.grpc:grpc-stub")

@@ -5,6 +5,9 @@
 
 package io.opentelemetry.common;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.ServiceLoader;
 
 /** A loader for components that are discovered via SPI. */
@@ -24,5 +27,17 @@ public interface ComponentLoader {
    */
   static ComponentLoader forClassLoader(ClassLoader classLoader) {
     return new ServiceLoaderComponentLoader(classLoader);
+  }
+
+  /**
+   * Convenience method to load a list of SPI implementations rather than the iterable returned by
+   * {@link #load(Class)}.
+   *
+   * @since 1.61.0
+   */
+  static <T> List<T> loadList(ComponentLoader componentLoader, Class<T> spiClass) {
+    List<T> result = new ArrayList<>();
+    componentLoader.load(spiClass).forEach(result::add);
+    return Collections.unmodifiableList(result);
   }
 }

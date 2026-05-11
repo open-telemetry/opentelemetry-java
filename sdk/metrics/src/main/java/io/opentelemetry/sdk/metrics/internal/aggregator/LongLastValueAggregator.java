@@ -47,8 +47,8 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData> 
   }
 
   @Override
-  public AggregatorHandle<LongPointData> createHandle() {
-    return new Handle(reservoirFactory, memoryMode);
+  public AggregatorHandle<LongPointData> createHandle(long creationEpochNanos) {
+    return new Handle(creationEpochNanos, reservoirFactory, memoryMode);
   }
 
   @Override
@@ -95,8 +95,9 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData> 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePoint;
 
-    Handle(ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
-      super(reservoirFactory, /* isDoubleType= */ false);
+    Handle(
+        long creationEpochNanos, ExemplarReservoirFactory reservoirFactory, MemoryMode memoryMode) {
+      super(creationEpochNanos, reservoirFactory, /* isDoubleType= */ false);
       if (memoryMode == MemoryMode.REUSABLE_DATA) {
         reusablePoint = new MutableLongPointData();
       } else {

@@ -35,7 +35,8 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
-      @Nullable ExecutorService executorService) {
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize) {
     return new AutoValue_ImmutableHttpSenderConfig(
         endpoint,
         contentType,
@@ -47,6 +48,10 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
         retryPolicy,
         sslContext,
         trustManager,
-        executorService);
+        executorService,
+        maxResponseBodySize);
   }
+
+  @Override
+  public abstract long getMaxResponseBodySize();
 }

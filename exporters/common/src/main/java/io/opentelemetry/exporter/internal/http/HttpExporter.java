@@ -117,12 +117,7 @@ public final class HttpExporter {
       Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
-        Level.SEVERE,
-        "Failed to export "
-            + type
-            + "s. The request could not be executed. Full error message: "
-            + e.getMessage(),
-        e);
+        Level.SEVERE, "Failed to export " + type + "s. The request could not be executed.", e);
     result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
   }
 

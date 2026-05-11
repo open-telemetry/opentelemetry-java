@@ -12,7 +12,6 @@ import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler2;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.ScopeMetrics;
-import io.opentelemetry.proto.trace.v1.internal.ScopeSpans;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
@@ -59,7 +58,7 @@ final class InstrumentationScopeMetricsStatelessMarshaler
             ScopeMetrics.METRICS, metrics, MetricStatelessMarshaler.INSTANCE, context);
     size +=
         StatelessMarshalerUtil.sizeStringWithContext(
-            ScopeSpans.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
+            ScopeMetrics.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
 
     return size;
   }

@@ -39,6 +39,7 @@ class OkHttpGrpcSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpGrpc
         null,
         null,
         null,
-        null);
+        null,
+        Long.MAX_VALUE);
   }
 }

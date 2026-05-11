@@ -1,38 +1,7 @@
-Comparing source compatibility of opentelemetry-api-1.61.0-SNAPSHOT.jar against opentelemetry-api-1.60.1.jar
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.logs.Logger  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled(io.opentelemetry.api.logs.Severity, io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled(io.opentelemetry.api.logs.Severity)
+Comparing source compatibility of opentelemetry-api-1.63.0-SNAPSHOT.jar against opentelemetry-api-1.62.0.jar
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.logs.LogRecordBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(java.lang.String, io.opentelemetry.api.common.Value<?>)
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleCounter  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleGauge  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleHistogram  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleUpDownCounter  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongCounter  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongGauge  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongHistogram  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongUpDownCounter  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.Span  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.Span setAttribute(java.lang.String, io.opentelemetry.api.common.Value<?>)
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.Tracer  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) boolean isEnabled()

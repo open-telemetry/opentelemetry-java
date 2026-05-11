@@ -8,6 +8,7 @@ plugins {
 
 description = "Build tool to generate the Animal Sniffer Android signature"
 otelJava.moduleName.set("io.opentelemetry.internal.animalsniffer")
+otelJava.osgiEnabled.set(false)
 
 val signatureJar = configurations.create("signatureJar") {
   isCanBeConsumed = false
@@ -24,7 +25,7 @@ val generatedSignature = configurations.create("generatedSignature") {
 }
 
 dependencies {
-  signature("com.toasttab.android:gummy-bears-api-23:0.12.0@signature")
+  signature("com.toasttab.android:gummy-bears-api-23:0.14.0@signature")
   signatureJar("com.android.tools:desugar_jdk_libs")
 }
 

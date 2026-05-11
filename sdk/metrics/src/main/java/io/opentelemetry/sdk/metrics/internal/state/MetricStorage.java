@@ -38,15 +38,11 @@ public interface MetricStorage {
    *
    * @param resource The resource associated with the metrics.
    * @param instrumentationScopeInfo The instrumentation scope generating the metrics.
-   * @param startEpochNanos The start timestamp for this SDK.
    * @param epochNanos The timestamp for this collection.
    * @return The {@link MetricData} from this collection period.
    */
   MetricData collect(
-      Resource resource,
-      InstrumentationScopeInfo instrumentationScopeInfo,
-      long startEpochNanos,
-      long epochNanos);
+      Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos);
 
   void setEnabled(boolean enabled);
 }

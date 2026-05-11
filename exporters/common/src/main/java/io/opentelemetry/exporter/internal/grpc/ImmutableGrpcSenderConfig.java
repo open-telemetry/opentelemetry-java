@@ -37,7 +37,8 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
-      @Nullable Object managedChannel) {
+      @Nullable Object managedChannel,
+      long maxResponseBodySize) {
     return new AutoValue_ImmutableGrpcSenderConfig(
         endpoint,
         fullMethodName,
@@ -49,6 +50,10 @@ public abstract class ImmutableGrpcSenderConfig implements ExtendedGrpcSenderCon
         sslContext,
         trustManager,
         executorService,
-        managedChannel);
+        managedChannel,
+        maxResponseBodySize);
   }
+
+  @Override
+  public abstract long getMaxResponseBodySize();
 }

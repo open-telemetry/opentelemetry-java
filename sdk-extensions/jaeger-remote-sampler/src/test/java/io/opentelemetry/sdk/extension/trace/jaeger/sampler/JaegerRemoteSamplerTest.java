@@ -103,9 +103,10 @@ class JaegerRemoteSamplerTest {
                                     io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2
                                         .Sampling.SamplingStrategyResponse>
                                 responseObserver) {
-                          ArmeriaStatusException grpcError = grpcErrors.peek();
+                          ArmeriaStatusException grpcError = grpcErrors.poll();
                           if (grpcError != null) {
                             responseObserver.onError(grpcError);
+                            return;
                           }
                           Sampling.SamplingStrategyResponse response = responses.poll();
                           // use default

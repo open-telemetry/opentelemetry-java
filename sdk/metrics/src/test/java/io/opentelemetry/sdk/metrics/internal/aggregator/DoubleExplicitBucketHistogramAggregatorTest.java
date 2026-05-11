@@ -77,7 +77,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void createHandle(MemoryMode memoryMode) {
     init(memoryMode);
-    assertThat(aggregator.createHandle())
+    assertThat(aggregator.createHandle(0))
         .isInstanceOf(DoubleExplicitBucketHistogramAggregator.Handle.class);
   }
 
@@ -85,7 +85,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void testRecordings(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(20, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(5, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(150, Attributes.empty(), Context.current());
@@ -125,7 +125,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
     DoubleExplicitBucketHistogramAggregator aggregator =
         new DoubleExplicitBucketHistogramAggregator(
             boundaries, /* recordMinMax= */ true, reservoirFactory, memoryMode);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(
             aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true))
@@ -148,7 +148,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void aggregateThenMaybeReset(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle(0);
 
     aggregatorHandle.recordLong(100, Attributes.empty(), Context.current());
     assertThat(
@@ -187,7 +187,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void toMetricData(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(10, Attributes.empty(), Context.current());
 
     MetricData metricData =
@@ -257,7 +257,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @EnumSource(MemoryMode.class)
   void testHistogramCounts(MemoryMode memoryMode) {
     init(memoryMode);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordDouble(1.1, Attributes.empty(), Context.current());
     HistogramPointData point =
         aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ true);
@@ -268,7 +268,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
   @Test
   void testReusableDataMemoryMode() {
     init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(10, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(20, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(30, Attributes.empty(), Context.current());
@@ -297,7 +297,7 @@ class DoubleExplicitBucketHistogramAggregatorTest {
             /* recordMinMax= */ false,
             ExemplarReservoirFactory.noSamples(),
             memoryMode);
-    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<HistogramPointData> aggregatorHandle = aggregator.createHandle(0);
     aggregatorHandle.recordLong(20, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(5, Attributes.empty(), Context.current());
     aggregatorHandle.recordLong(150, Attributes.empty(), Context.current());

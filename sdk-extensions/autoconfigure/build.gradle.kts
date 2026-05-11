@@ -5,12 +5,14 @@ plugins {
 
 description = "OpenTelemetry SDK Auto-configuration"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.extension.incubator"))
 
 dependencies {
   api(project(":sdk:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":api:incubator"))
+  compileOnly(project(":sdk-extensions:declarative-config"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -60,6 +62,7 @@ testing {
         implementation(project(":sdk:trace-shaded-deps"))
         implementation(project(":sdk-extensions:jaeger-remote-sampler"))
         implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":sdk-extensions:declarative-config"))
 
         implementation("com.google.guava:guava")
         implementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -84,7 +87,7 @@ testing {
     }
     register<JvmTestSuite>("testIncubating") {
       dependencies {
-        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":sdk-extensions:declarative-config"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":sdk:testing"))
@@ -97,7 +100,7 @@ testing {
 
     register<JvmTestSuite>("testDeclarativeConfigSpi") {
       dependencies {
-        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":sdk-extensions:declarative-config"))
         implementation(project(":exporters:logging"))
         implementation(project(":sdk:testing"))
       }

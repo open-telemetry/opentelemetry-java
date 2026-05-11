@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.profiles.v1development.ResourceProfiles;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,7 @@ class OtlpGrpcProfileExporterTest
   @Override // whilst profile signal type is in development it uses a different error message
   @SuppressLogger(GrpcExporter.class)
   protected void testExport_Unimplemented() {
-    addGrpcError(GrpcStatusCode.UNIMPLEMENTED, "UNIMPLEMENTED");
+    addGrpcResponse(GrpcStatusCode.UNIMPLEMENTED, "UNIMPLEMENTED");
 
     TelemetryExporter<ProfileData> exporter = nonRetryingExporter();
 

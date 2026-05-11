@@ -23,8 +23,7 @@ class InstrumentBuilderTest {
       MeterProviderSharedState.create(
           TestClock.create(),
           Resource.getDefault(),
-          asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
-          0);
+          asExemplarFilterInternal(ExemplarFilter.alwaysOff()));
   static final InstrumentationScopeInfo SCOPE = InstrumentationScopeInfo.create("scope-name");
   public static final SdkMeter SDK_METER =
       new SdkMeter(

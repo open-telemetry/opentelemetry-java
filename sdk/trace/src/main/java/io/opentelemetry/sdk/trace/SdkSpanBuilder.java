@@ -37,9 +37,17 @@ import javax.annotation.Nullable;
 /** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
 class SdkSpanBuilder implements SpanBuilder {
 
+  private static final Span RANDOM_TRACE_ID_PRIMORDIAL_SPAN =
+      Span.wrap(
+          SpanContext.create(
+              TraceId.getInvalid(),
+              SpanId.getInvalid(),
+              TraceFlags.builder().setRandomTraceId(true).build(),
+              TraceState.getDefault()));
+
+  // Pre-built for the common case where parentContext is root (no extra context to preserve).
   private static final Context ROOT_CONTEXT_WITH_RANDOM_TRACE_ID_BIT =
-      preparePrimordialContext(
-          TraceFlags.builder().setRandomTraceId(true).build(), TraceState.getDefault());
+      Context.root().with(RANDOM_TRACE_ID_PRIMORDIAL_SPAN);
 
   private final String spanName;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -62,17 +70,6 @@ class SdkSpanBuilder implements SpanBuilder {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.tracerSharedState = tracerSharedState;
     this.spanLimits = spanLimits;
-  }
-
-  /*
-   * A primordial context can be passed as the parent context for a root span
-   * if a non-default TraceFlags or TraceState need to be passed to the sampler
-   */
-  private static Context preparePrimordialContext(TraceFlags traceFlags, TraceState traceState) {
-    SpanContext spanContext =
-        SpanContext.create(TraceId.getInvalid(), SpanId.getInvalid(), traceFlags, traceState);
-    Span span = Span.wrap(spanContext);
-    return span.storeInContext(Context.root());
   }
 
   @Override
@@ -197,8 +194,13 @@ class SdkSpanBuilder implements SpanBuilder {
       traceId = idGenerator.generateTraceId();
       if (idGenerator.generatesRandomTraceIds()) {
         isTraceIdRandom = true;
-        // Replace parentContext for sampling with one with RANDOM_TRACE_ID bit set
-        parentContextForSampler = ROOT_CONTEXT_WITH_RANDOM_TRACE_ID_BIT;
+        // Replace parentContext for sampling with one with RANDOM_TRACE_ID bit set.
+        // Use the pre-built singleton when parentContext is root to avoid an allocation;
+        // otherwise graft onto parentContext to preserve any extra context values.
+        parentContextForSampler =
+            parentContext == Context.root()
+                ? ROOT_CONTEXT_WITH_RANDOM_TRACE_ID_BIT
+                : parentContext.with(RANDOM_TRACE_ID_PRIMORDIAL_SPAN);
       } else {
         isTraceIdRandom = false;
       }
