@@ -1,5 +1,11 @@
 [tools]
-lychee = "0.23.0"
+
+# Linters
+"aqua:grafana/flint" = "0.22.2"
+lychee = "0.24.2"
+
+[env]
+FLINT_CONFIG_DIR = ".github/config"
 
 [settings]
 # Only install tools explicitly defined in the [tools] section above
@@ -11,7 +17,7 @@ windows_executable_extensions = ["sh"]
 windows_default_file_shell_args = "bash"
 use_file_shell_for_executable_tasks = true
 
-# Pick the tasks you need from flint (https://github.com/grafana/flint)
 [tasks."lint:links"]
 description = "Check for broken links in changed files + all local links"
-file = "https://raw.githubusercontent.com/grafana/flint/feab606ce514fbbf2722cc26aeafa39956383cf3/tasks/lint/links.sh" # v0.21.0
+raw_args = true
+run = "flint run"

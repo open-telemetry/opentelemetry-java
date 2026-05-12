@@ -76,6 +76,21 @@ public final class SdkMeterProviderUtil {
     return sdkMeterProviderBuilder;
   }
 
+  /** Reflectively set the max export batch size for the {@link SdkMeterProviderBuilder}. */
+  public static SdkMeterProviderBuilder setMaxExportBatchSize(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder, int maxExportBatchSize) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod("setMaxExportBatchSize", int.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, maxExportBatchSize);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setMaxExportBatchSize on SdkMeterProviderBuilder", e);
+    }
+    return sdkMeterProviderBuilder;
+  }
+
   /**
    * Reflectively add an {@link AttributesProcessor} to the {@link ViewBuilder} which appends
    * key-values from baggage to all measurements.

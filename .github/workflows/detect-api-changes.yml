@@ -28,12 +28,19 @@ jobs:
           GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           MARKER="<!-- api-change-detector -->"
 
-          # Get list of apidiff files changed in this PR
-          api_files=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate \
-            --jq '.[] | select(.filename | startswith("docs/apidiffs/current_vs_latest/")) | .filename')
+          # Get list of apidiff files changed in this PR.
+          # otelbot/* PRs (release version bumps, post-release updates) only change the version
+          # header in apidiff files — treat them as having no API changes so the cleanup path below runs.
+          if [[ "$HEAD_REF" == otelbot/* ]]; then
+            api_files=""
+          else
+            api_files=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate \
+              --jq '.[] | select(.filename | startswith("docs/apidiffs/current_vs_latest/")) | .filename')
+          fi
 
           # Find existing bot comment (if any)
           comment_id=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \

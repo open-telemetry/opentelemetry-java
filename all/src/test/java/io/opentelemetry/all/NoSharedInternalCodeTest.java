@@ -42,6 +42,7 @@ class NoSharedInternalCodeTest {
           "opentelemetry-sdk-common",
           "opentelemetry-sdk-logs",
           "opentelemetry-sdk-metrics",
+          "opentelemetry-sdk-profiles",
           "opentelemetry-sdk-testing",
           "opentelemetry-sdk-trace",
           "opentelemetry-sdk-extension-autoconfigure",
@@ -51,6 +52,7 @@ class NoSharedInternalCodeTest {
           "opentelemetry-sdk-extension-jaeger-remote-sampler",
           "opentelemetry-exporter-otlp",
           "opentelemetry-exporter-otlp-common",
+          "opentelemetry-exporter-otlp-profiles",
           "opentelemetry-exporter-sender-grpc-managed-channel",
           "opentelemetry-exporter-sender-jdk",
           "opentelemetry-exporter-sender-okhttp");
