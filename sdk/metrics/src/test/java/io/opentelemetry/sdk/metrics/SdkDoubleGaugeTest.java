@@ -19,6 +19,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
 import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.resources.Resource;
@@ -171,6 +172,65 @@ class SdkDoubleGaugeTest {
                                                         Attributes.builder()
                                                             .put("key", "value")
                                                             .build())))));
+  }
+
+  @Test
+  void observable_CollectMetrics_DefaultExemplarFilter_NoExemplars() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .setResource(RESOURCE)
+            .registerMetricReader(reader)
+            .build();
+
+    sdkMeterProvider
+        .get(getClass().getName())
+        .gaugeBuilder("testGauge")
+        .buildWithCallback(measurement -> measurement.record(12d, Attributes.empty()));
+
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("testGauge")
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point -> point.hasValue(12d).hasExemplars())));
+  }
+
+  @Test
+  void observable_CollectMetrics_AlwaysOnExemplarFilter_CollectsExemplars() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .setResource(RESOURCE)
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .registerMetricReader(reader)
+            .build();
+
+    sdkMeterProvider
+        .get(getClass().getName())
+        .gaugeBuilder("testGauge")
+        .buildWithCallback(measurement -> measurement.record(12d, Attributes.empty()));
+
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("testGauge")
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12d)
+                                        .hasExemplarsSatisfying(
+                                            exemplar -> exemplar.hasValue(12d)))));
   }
 
   @Test
