@@ -9,6 +9,9 @@ apply<io.opentelemetry.gradle.OtelVersionClassPlugin>()
 
 description = "OpenTelemetry Protocol (OTLP) Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator.config"))
+// io.grpc is not an OSGi bundle and has no package versioning; must use unversioned optional.
+otelJava.osgiUnversionedOptionalPackages.set(listOf("io.grpc"))
 base.archivesName.set("opentelemetry-exporter-otlp")
 
 dependencies {

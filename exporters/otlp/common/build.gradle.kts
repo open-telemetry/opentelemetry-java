@@ -10,6 +10,7 @@ plugins {
 
 description = "OpenTelemetry Protocol Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal.otlp")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
 val versions: Map<String, String> by project
 dependencies {
