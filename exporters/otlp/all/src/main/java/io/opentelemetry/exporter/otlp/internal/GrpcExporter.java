@@ -126,12 +126,7 @@ public final class GrpcExporter {
       Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
-        Level.SEVERE,
-        "Failed to export "
-            + type
-            + "s. The request could not be executed. Error message: "
-            + e.getMessage(),
-        e);
+        Level.SEVERE, "Failed to export " + type + "s. The request could not be executed.", e);
     if (logger.isLoggable(Level.FINEST)) {
       logger.log(Level.FINEST, "Failed to export " + type + "s. Details follow:", e);
     }

@@ -15,6 +15,8 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  compileOnly(project(":api:incubator"))
+
   // io.opentelemetry.sdk.extension.incubator.metric.viewconfig
   implementation(project(":sdk-extensions:autoconfigure-spi"))
   implementation("org.snakeyaml:snakeyaml-engine")

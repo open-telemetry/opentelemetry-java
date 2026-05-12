@@ -15,8 +15,8 @@ jobs:
     name: Benchmark SDK
     runs-on: oracle-bare-metal-64cpu-1024gb-x86-64-ubuntu-24
     container:
-      image: ubuntu:24.04@sha256:84e77dee7d1bc93fb029a45e3c6cb9d8aa4831ccfcc7103d36e876938d28895b
-    timeout-minutes: 20 # since there is only a single bare metal runner across all repos
+      image: ubuntu:26.04@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64
+    timeout-minutes: 120 # since there is only a single bare metal runner across all repos
     steps:
       - name: Install Git
         run: |
@@ -56,7 +56,7 @@ jobs:
         run: .github/scripts/use-cla-approved-bot.sh
 
       - name: Store benchmark results
-        uses: benchmark-action/github-action-benchmark@a60cea5bc7b49e15c1f58f411161f99e0df48372 # v1.22.0
+        uses: benchmark-action/github-action-benchmark@52576c92bccf6ac60c8223ec7eb2565637cae9ba # v1.22.1
         with:
           tool: 'jmh'
           output-file-path: sdk/all/build/jmh-result.json

@@ -15,6 +15,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -30,6 +31,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +48,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -55,8 +58,13 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PeriodicMetricReaderTest {
   private static final List<LongPointData> LONG_POINT_LIST =
-      Collections.singletonList(
-          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 1234567));
+      Arrays.asList(
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 1L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 2L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 3L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 4L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 5L),
+          ImmutableLongPointData.create(1000, 3000, Attributes.empty(), 6L));
 
   private static final MetricData METRIC_DATA =
       ImmutableMetricData.createLongSum(
@@ -70,6 +78,10 @@ class PeriodicMetricReaderTest {
 
   @Mock private CollectionRegistration collectionRegistration;
   @Mock private MetricExporter metricExporter;
+
+  @RegisterExtension
+  LogCapturer logCapturer =
+      LogCapturer.create().captureForLogger(PeriodicMetricReader.class.getName());
 
   @BeforeEach
   void setup() {
@@ -98,6 +110,19 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  void build_WithIllegalMaxExportSize() {
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setMaxExportBatchSize(0).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxExportBatchSize must be positive");
+
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setMaxExportBatchSize(-1).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxExportBatchSize must be positive");
+  }
+
+  @Test
   void periodicExport() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     PeriodicMetricReader reader =
@@ -113,6 +138,103 @@ class PeriodicMetricReaderTest {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
               Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void periodicExport_WithMaxExportBatchSize_PartiallyFilledBatch() throws Exception {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(waitingMetricExporter)
+            .setInterval(Duration.ofMillis(100))
+            .setMaxExportBatchSize(4)
+            .build();
+
+    reader.register(collectionRegistration);
+    MetricData expectedMetricDataBatch1 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(0, 4)));
+    MetricData expectedMetricDataBatch2 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(4, 6)));
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(2))
+          .containsExactly(
+              Collections.singletonList(expectedMetricDataBatch1),
+              Collections.singletonList(expectedMetricDataBatch2));
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void periodicExport_WithMaxExportBatchSize_CompletelyFilledBatch() throws Exception {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(waitingMetricExporter)
+            .setInterval(Duration.ofMillis(100))
+            .setMaxExportBatchSize(2)
+            .build();
+
+    reader.register(collectionRegistration);
+    MetricData expectedMetricDataBatch1 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(0, 2)));
+    MetricData expectedMetricDataBatch2 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(2, 4)));
+
+    MetricData expectedMetricDataBatch3 =
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("PeriodicMetricReaderTest"),
+            "my metric",
+            "my metric description",
+            "us",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                LONG_POINT_LIST.subList(4, 6)));
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(3))
+          .containsExactly(
+              Collections.singletonList(expectedMetricDataBatch1),
+              Collections.singletonList(expectedMetricDataBatch2),
+              Collections.singletonList(expectedMetricDataBatch3));
     } finally {
       reader.shutdown();
     }
@@ -297,7 +419,8 @@ class PeriodicMetricReaderTest {
     shutdownThread.start();
 
     // Give shutdown() time to reach the flushInProgress.join() wait.
-    // Even if this executes before shutdown enters the wait, the assertions below still
+    // Even if this executes before shutdown enters the wait, the assertions below
+    // still
     // validate correctness — they just won't exercise the concurrent case.
     Thread.sleep(200);
 
@@ -312,7 +435,8 @@ class PeriodicMetricReaderTest {
     assertThat(flushResult.isSuccess()).isTrue();
     // Final shutdown export also ran (in-flight + final = 2)
     assertThat(exportCount.get()).isEqualTo(2);
-    // Exporter.shutdown() was not called while the in-flight export was still pending
+    // Exporter.shutdown() was not called while the in-flight export was still
+    // pending
     assertThat(shutdownCalledWhileExportPending.get()).isFalse();
   }
 
@@ -336,17 +460,189 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  void periodicExport_SequentialBatches() throws Exception {
+    MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+    when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    CompletableResultCode batch1Result = new CompletableResultCode();
+    CompletableResultCode batch2Result = CompletableResultCode.ofSuccess();
+
+    // Configure mock to return pending for 1st call, success for 2nd
+    when(mockExporter.export(any())).thenReturn(batch1Result).thenReturn(batch2Result);
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(mockExporter)
+            .setInterval(
+                Duration.ofSeconds(Integer.MAX_VALUE)) // Long interval to prevent auto-trigger
+            .setMaxExportBatchSize(3)
+            .build();
+    // Setup metrics that will result in 2 batches (we have 6 points in
+    // LONG_POINT_LIST)
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
+    reader.register(collectionRegistration);
+
+    // Trigger manual flush
+    CompletableResultCode flushResult = reader.forceFlush();
+    // Verify that the first batch WAS exported
+    verify(mockExporter, times(1)).export(any());
+    // At this point, batch 1 is stuck waiting. Batch 2 should NOT be exported yet.
+    // We verify that export was only called once in total so far.
+    verify(mockExporter, times(1)).export(any());
+    // Now we complete the first batch
+    batch1Result.succeed();
+    // Verify that the second batch IS NOW exported
+    verify(mockExporter, times(2)).export(any());
+    // Ensure the flush operation completes successfully
+    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+    reader.shutdown();
+  }
+
+  @Test
+  @SuppressLogger(PeriodicMetricReader.class)
+  void periodicExport_SequentialBatches_PartialFailure() throws Exception {
+    MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+    when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    CompletableResultCode batch1Result = new CompletableResultCode();
+    CompletableResultCode batch2Result = new CompletableResultCode();
+    CompletableResultCode batch3Result = new CompletableResultCode();
+
+    when(mockExporter.export(any()))
+        .thenReturn(batch1Result)
+        .thenReturn(batch2Result)
+        .thenReturn(batch3Result);
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(mockExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(2) // 6 points / 2 = 3 batches
+            .build();
+
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flushResult = reader.forceFlush();
+
+    verify(mockExporter, times(1)).export(any());
+
+    batch1Result.succeed();
+    verify(mockExporter, times(2)).export(any());
+
+    batch2Result.fail();
+    verify(mockExporter, times(3)).export(any());
+
+    batch3Result.succeed();
+
+    // Failed export results are logged, but forceFlush preserves the prior
+    // partial-success
+    // behavior.
+    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+    logCapturer.assertContains("Exporter failed");
+
+    reader.shutdown();
+  }
+
+  @Test
+  void periodicExport_SequentialBatches_PurelySynchronous() throws Exception {
+    MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+    when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    when(mockExporter.export(any()))
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenReturn(CompletableResultCode.ofSuccess());
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(mockExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(2) // 6 points / 2 = 3 batches
+            .build();
+
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flushResult = reader.forceFlush();
+
+    // Verify that all 3 batches WERE exported immediately
+    verify(mockExporter, times(3)).export(any());
+
+    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+    reader.shutdown();
+  }
+
+  @Test
+  void periodicExport_SequentialBatches_PurelyAsynchronous() throws Exception {
+    MetricExporter mockExporter = mock(MetricExporter.class);
+    when(mockExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+    when(mockExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    CompletableResultCode batch1Result = new CompletableResultCode();
+    CompletableResultCode batch2Result = new CompletableResultCode();
+    CompletableResultCode batch3Result = new CompletableResultCode();
+
+    when(mockExporter.export(any()))
+        .thenReturn(batch1Result)
+        .thenReturn(batch2Result)
+        .thenReturn(batch3Result);
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(mockExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setMaxExportBatchSize(2) // 6 points / 2 = 3 batches
+            .build();
+
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
+    reader.register(collectionRegistration);
+
+    CompletableResultCode flushResult = reader.forceFlush();
+
+    verify(mockExporter, times(1)).export(any());
+
+    batch1Result.succeed();
+    verify(mockExporter, times(2)).export(any());
+
+    batch2Result.succeed();
+    verify(mockExporter, times(3)).export(any());
+
+    batch3Result.succeed();
+
+    assertThat(flushResult.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+    logCapturer.assertDoesNotContain("Exporter failed");
+
+    reader.shutdown();
+  }
+
+  @Test
   void stringRepresentation() {
     when(metricExporter.toString()).thenReturn("MockMetricExporter{}");
     assertThat(
             PeriodicMetricReader.builder(metricExporter)
                 .setInterval(Duration.ofSeconds(1))
+                .setMaxExportBatchSize(200)
                 .build()
                 .toString())
         .isEqualTo(
             "PeriodicMetricReader{"
                 + "exporter=MockMetricExporter{}, "
-                + "intervalNanos=1000000000"
+                + "intervalNanos=1000000000, "
+                + "maxExportBatchSize=200"
                 + "}");
   }
 

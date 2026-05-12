@@ -104,7 +104,7 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
         boundaries = bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
         ExplicitBucketHistogramUtils.validateBucketBoundaries(boundaries);
       } catch (IllegalArgumentException | NullPointerException e) {
-        logger.warning("Error setting explicit bucket boundaries advice: " + e.getMessage());
+        logger.log(Level.WARNING, "Error setting explicit bucket boundaries advice", e);
         return this;
       }
       builder.setExplicitBucketBoundaries(boundaries);

@@ -42,23 +42,6 @@ class SenderUtilTest {
             + "to the FQCN of the preferred provider.");
   }
 
-  // TODO: delete test after support for old spi is removed
-  @Test
-  @SetSystemProperty(
-      key = "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
-      value =
-          "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider")
-  @SuppressLogger(SenderUtil.class)
-  void resolveGrpcSenderProvider_configureUsingOldSpi() {
-    assertThat(SenderUtil.resolveGrpcSenderProvider(componentLoader))
-        .isInstanceOf(UpstreamGrpcSenderProvider.class);
-
-    logCapturer.assertContains(
-        "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider "
-            + "was used to set GrpcSenderProvider. Please use io.opentelemetry.sdk.common.export.GrpcSenderProvider "
-            + "instead.");
-  }
-
   @Test
   @SetSystemProperty(
       key = "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
@@ -103,22 +86,6 @@ class SenderUtilTest {
         "Multiple HttpSenderProvider found. Please include only one, "
             + "or specify preference setting io.opentelemetry.sdk.common.export.HttpSenderProvider "
             + "to the FQCN of the preferred provider.");
-  }
-
-  // TODO: delete test after support for old spi is removed
-  @Test
-  @SetSystemProperty(
-      key = "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
-      value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
-  @SuppressLogger(SenderUtil.class)
-  void build_configureUsingOldSpi() {
-    assertThat(SenderUtil.resolveHttpSenderProvider(componentLoader))
-        .isInstanceOf(JdkHttpSenderProvider.class);
-
-    logCapturer.assertContains(
-        "io.opentelemetry.exporter.internal.http.HttpSenderProvider "
-            + "was used to set HttpSenderProvider. Please use io.opentelemetry.sdk.common.export.HttpSenderProvider "
-            + "instead.");
   }
 
   @Test

@@ -8,11 +8,12 @@ package io.opentelemetry.api.incubator.trace;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.propagation.ExtendedContextPropagators;
-import io.opentelemetry.api.internal.ApiUsageLogger;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.util.Map;
@@ -63,7 +64,7 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
     @Override
     public NoopSpanBuilder setParent(Context context) {
       if (context == null) {
-        ApiUsageLogger.log("context is null");
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setParent", "context");
         return this;
       }
       spanContext = Span.fromContext(context).getSpanContext();
