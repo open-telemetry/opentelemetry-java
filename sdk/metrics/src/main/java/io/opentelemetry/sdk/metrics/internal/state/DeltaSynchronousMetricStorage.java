@@ -291,9 +291,11 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     }
 
     /** Locks new-series creation and waits for any in-flight new-series operations to complete. */
+    @SuppressWarnings("ThreadPriorityCheck")
     void lockForCollectAndAwait() {
       int s = newSeriesGate.addAndGet(1);
       while (s != 1) {
+        Thread.yield();
         s = newSeriesGate.get();
       }
     }
@@ -350,8 +352,11 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     }
 
     /** Waits for all in-flight recorders to finish, then clears the collection lock. */
+    @SuppressWarnings("ThreadPriorityCheck")
     void awaitRecordersAndUnlock() {
-      while (state.get() > 1) {}
+      while (state.get() > 1) {
+        Thread.yield();
+      }
       state.addAndGet(-1);
     }
   }
