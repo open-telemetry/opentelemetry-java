@@ -47,7 +47,7 @@ abstract class FilteredAttributes implements Attributes {
   /**
    * Create a {@link FilteredAttributes} instance.
    *
-   * @param source the source attributes, which SHOULD be based on the standard {@link
+   * @param source the source attributes, which should be based on the standard {@link
    *     ImmutableKeyValuePairs}. If not, the source will first be converted to the standard
    *     implementation.
    * @param includedKeys the set of attribute keys to include in the output.
