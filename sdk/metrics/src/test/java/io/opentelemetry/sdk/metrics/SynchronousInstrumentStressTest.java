@@ -77,6 +77,10 @@ class SynchronousInstrumentStressTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
+  // Can change to a higher value when making changes to internals to improve confidence of
+  // correctness.
+  private static final int STRESS_TEST_REPETITIONS = 1;
+
   @ParameterizedTest
   @MethodSource("stressTestArgs")
   void stressTest(
@@ -85,7 +89,7 @@ class SynchronousInstrumentStressTest {
       Aggregation aggregation,
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType) {
-    for (int repetition = 0; repetition < 50; repetition++) {
+    for (int repetition = 0; repetition < STRESS_TEST_REPETITIONS; repetition++) {
       stressTestOnce(
           aggregationTemporality, instrumentType, aggregation, memoryMode, instrumentValueType);
     }

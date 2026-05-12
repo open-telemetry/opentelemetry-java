@@ -85,7 +85,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   private DeltaAggregatorHandle<T> acquireHandleForRecord(Attributes attributes, Context context) {
     while (true) {
       DeltaAggregatorHandle<T> handle =
-          getDeltaAggregatorHandle(this.aggregatorHolder, attributes, context);
+          tryAcquireHandleForRecord(this.aggregatorHolder, attributes, context);
       if (handle != null) {
         return handle;
       }
@@ -95,7 +95,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   }
 
   @Nullable
-  DeltaAggregatorHandle<T> getDeltaAggregatorHandle(
+  DeltaAggregatorHandle<T> tryAcquireHandleForRecord(
       AggregatorHolder<T> holder, Attributes attributes, Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
