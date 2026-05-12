@@ -1,6 +1,4 @@
 import org.gradle.api.JavaVersion
-import org.gradle.api.tasks.testing.Test
-
 plugins {
   id("otel.java-conventions")
   id("org.graalvm.buildtools.native")
@@ -46,10 +44,4 @@ graalvmNative {
   metadataRepository {
     enabled.set(false)
   }
-}
-
-tasks.named<Test>("test") {
-  notCompatibleWithConfigurationCache(
-    "GraalVM native test agent options are not serializable for this task.",
-  )
 }
