@@ -33,6 +33,7 @@ import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
@@ -126,6 +127,11 @@ final class OpenTelemetryNoRecordEventsSpanImpl extends Span
 
   @Override
   public io.opentelemetry.api.trace.Span setAttribute(String key, boolean value) {
+    return this;
+  }
+
+  @Override
+  public io.opentelemetry.api.trace.Span setAttribute(String key, Value<?> value) {
     return this;
   }
 

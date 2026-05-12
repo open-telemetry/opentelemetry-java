@@ -77,6 +77,8 @@ public final class HistogramAssert extends AbstractAssert<HistogramAssert, Histo
    * Asserts that for each given assertion, at least one point in the histogram satisfies it. Extra
    * points that match none of the assertions are allowed, and a single point may satisfy multiple
    * assertions.
+   *
+   * @since 1.62.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -89,6 +91,8 @@ public final class HistogramAssert extends AbstractAssert<HistogramAssert, Histo
    * Asserts that for each given assertion, at least one point in the histogram satisfies it. Extra
    * points that match none of the assertions are allowed, and a single point may satisfy multiple
    * assertions.
+   *
+   * @since 1.62.0
    */
   public HistogramAssert containsPointsSatisfying(
       Iterable<? extends Consumer<HistogramPointAssert>> assertions) {

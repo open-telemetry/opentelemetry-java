@@ -197,6 +197,25 @@ public interface LogRecordBuilder {
   }
 
   /**
+   * Sets a {@link Value} attribute on the {@code LogRecord}. If the {@code LogRecord} previously
+   * contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * <p>Instrumentations should assume that backends do not index individual properties of complex
+   * attributes, that querying or aggregating on such properties is inefficient and complicated, and
+   * that reporting complex attributes carries higher performance overhead.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default LogRecordBuilder setAttribute(String key, Value<?> value) {
+    return setAttribute(AttributeKey.valueKey(key), value);
+  }
+
+  /**
    * Sets the event name, which identifies the class / type of the Event.
    *
    * <p>This name should uniquely identify the event structure (both attributes and body). A log

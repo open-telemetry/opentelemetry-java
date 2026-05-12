@@ -548,7 +548,7 @@ class SdkSpanTest {
     SdkSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
-      span.setAttribute("NullStringKey", null);
+      span.setAttribute("NullStringKey", (String) null);
       span.setAttribute("EmptyStringKey", "");
       span.setAttribute(stringKey("NullStringAttributeValue"), null);
       span.setAttribute(stringKey("EmptyStringAttributeValue"), "");
@@ -557,6 +557,7 @@ class SdkSpanTest {
       span.setAttribute(longKey("LongKey3"), 6L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
+      span.setAttribute("BytesValueKey", Value.of(new byte[] {1, 2, 3}));
       span.setAttribute(
           stringArrayKey("ArrayStringKey"), Arrays.asList("StringVal", null, "", "StringVal2"));
       span.setAttribute(longArrayKey("ArrayLongKey"), Arrays.asList(1L, 2L, 3L, 4L, 5L));
@@ -579,7 +580,7 @@ class SdkSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getAttributes().size()).isEqualTo(17);
+    assertThat(spanData.getAttributes().size()).isEqualTo(18);
     assertThat(spanData.getAttributes().get(stringKey("StringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringKey("EmptyStringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(stringKey("EmptyStringAttributeValue"))).isNotNull();
@@ -588,6 +589,8 @@ class SdkSpanTest {
     assertThat(spanData.getAttributes().get(longKey("LongKey3"))).isEqualTo(6L);
     assertThat(spanData.getAttributes().get(doubleKey("DoubleKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(booleanKey("BooleanKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(valueKey("BytesValueKey")))
+        .isEqualTo(Value.of(new byte[] {1, 2, 3}));
     assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(longArrayKey("ArrayLongKey"))).isNotNull();
     assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayDoubleKey"))).isNotNull();
@@ -630,7 +633,7 @@ class SdkSpanTest {
     span.setAttribute(null, Collections.emptyList());
     span.setAttribute(null, Collections.emptyList());
     span.setAttribute(null, Collections.emptyList());
-    span.setAttribute(null, Value.empty());
+    span.setAttribute((AttributeKey<Value<?>>) null, Value.empty());
     assertThat(span.toSpanData().getAttributes().size()).isZero();
   }
 
@@ -658,7 +661,7 @@ class SdkSpanTest {
   @Test
   void setAttribute_nullStringValue() {
     SdkSpan span = createTestRootSpan();
-    span.setAttribute("nullString", null);
+    span.setAttribute("nullString", (String) null);
     span.setAttribute("emptyString", "");
     span.setAttribute(stringKey("nullStringAttributeValue"), null);
     span.setAttribute(stringKey("emptyStringAttributeValue"), "");

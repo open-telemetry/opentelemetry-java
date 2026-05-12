@@ -107,6 +107,12 @@ jsonSchema2Pojo {
 
   // Append Model as suffix to the generated classes.
   classNameSuffix = "Model"
+
+  // Initialize collection fields to null rather than empty collections so that absent YAML
+  // properties deserialize as null (not present) rather than [] (explicitly empty). This lets
+  // factories distinguish between "user omitted the field" and "user provided an empty list",
+  // which is important for validations like IncludeExcludeFactory.
+  initializeCollections = false
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
