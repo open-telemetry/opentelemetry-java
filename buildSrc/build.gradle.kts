@@ -29,11 +29,23 @@ spotless {
 repositories {
   mavenCentral()
   gradlePluginPortal()
+  // TODO: delete bndtools repository once biz.aQute.bnd.gradle:7.3.0 is released
+  maven { url = uri("https://bndtools.jfrog.io/artifactory/libs-release/") }
   mavenLocal()
 }
 
+// TODO: delete version pinning once biz.aQute.bnd.gradle:7.3.0 is released
+configurations.all {
+  resolutionStrategy.eachDependency {
+    // biz.aQute.bnd.gradle 7.3.0-RC1 transitives are not all published at RC1; pin to latest stable
+    if (requested.group == "biz.aQute.bnd" && requested.name != "biz.aQute.bnd.gradle") {
+      useVersion("7.2.3")
+    }
+  }
+}
+
 dependencies {
-  implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:7.2.0")
+  implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:7.3.0-RC1")
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:6.2.0"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.1")
   // When updating, update above in plugins too
