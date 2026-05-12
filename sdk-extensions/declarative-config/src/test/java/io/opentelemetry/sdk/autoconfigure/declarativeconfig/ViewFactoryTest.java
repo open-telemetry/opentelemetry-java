@@ -8,11 +8,11 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExplicitBucketHistogramAggregationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamModel;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AggregationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExplicitBucketHistogramAggregationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.IncludeExcludeModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions;
 import io.opentelemetry.sdk.metrics.View;
