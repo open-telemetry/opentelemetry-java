@@ -9,6 +9,7 @@ plugins {
   eclipse
   idea
 
+  id("biz.aQute.bnd.builder")
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
   id("otel.spotless-conventions")
@@ -129,6 +130,38 @@ tasks {
 
       addBooleanOption("html5", true)
       addBooleanOption("Xdoclint:all,-missing", true)
+    }
+  }
+
+  afterEvaluate {
+    if (otelJava.osgiEnabled.get()) {
+      named<Jar>("jar") {
+        // Configure OSGi metadata
+        bundle {
+          // Compute import packages.
+          // Certain packages like javax.annotation.* are always optional.
+          // Modules may have additional optional packages, typically corresponding to compileOnly dependencies.
+          // Append wildcard "*" last to import any other referenced packages.
+          val optionalPackages = mutableListOf("javax.annotation")
+          optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
+          val importPackages = optionalPackages.joinToString(",") { "$it.*;resolution:=optional;version=\"\${@}\"" } + ",*"
+
+          // Packages not on the compile classpath (e.g. due to circular dependencies) cannot use
+          // version="${@}" since BND cannot resolve the version. Add them as optional imports without
+          // a version constraint; they are listed before the wildcard so BND uses our explicit
+          // instruction rather than auto-detecting them with a version.
+          val unversionedOptionalPackages = otelJava.osgiUnversionedOptionalPackages.get()
+          val unversionedImports = unversionedOptionalPackages.joinToString(",") { "$it.*;resolution:=optional" }
+          val fullImportPackages = if (unversionedImports.isNotEmpty()) "$unversionedImports,$importPackages" else importPackages
+
+          bnd(mapOf(
+            // Exclude shaded internal packages from exports; they are implementation details and
+            // should not be part of the OSGi bundle's public API surface.
+            "-exportcontents" to "!io.opentelemetry.internal.shaded.*,io.opentelemetry.*",
+            "Import-Package" to fullImportPackages
+          ))
+        }
+      }
     }
   }
 

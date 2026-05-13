@@ -5,6 +5,7 @@ plugins {
 
 description = "OpenTelemetry SDK Auto-configuration"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.extension.incubator"))
 
 dependencies {
   api(project(":sdk:all"))

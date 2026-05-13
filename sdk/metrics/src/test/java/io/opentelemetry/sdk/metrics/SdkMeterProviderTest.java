@@ -946,6 +946,37 @@ class SdkMeterProviderTest {
   }
 
   @Test
+  void collectAll_AsyncInstrumentAlwaysOnExemplars() {
+    InMemoryMetricReader collector = InMemoryMetricReader.create();
+    Meter meter =
+        sdkMeterProviderBuilder
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .registerMetricReader(collector)
+            .build()
+            .get("my-meter");
+
+    meter
+        .counterBuilder("async-counter")
+        .buildWithCallback(measurement -> measurement.record(1, Attributes.empty()));
+
+    assertThat(collector.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasName("async-counter")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(1)
+                                        .hasAttributes(Attributes.empty())
+                                        .hasExemplarsSatisfying(
+                                            exemplar -> exemplar.hasValue(1)))));
+  }
+
+  @Test
   void shutdown() {
     when(metricReader.getDefaultAggregation(any())).thenCallRealMethod();
     when(metricReader.shutdown()).thenReturn(CompletableResultCode.ofSuccess());

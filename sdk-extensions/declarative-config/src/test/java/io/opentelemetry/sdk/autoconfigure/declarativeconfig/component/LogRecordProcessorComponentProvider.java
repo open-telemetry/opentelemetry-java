@@ -36,12 +36,21 @@ public class LogRecordProcessorComponentProvider implements ComponentProvider {
       this.config = config;
     }
 
+    public static TestLogRecordProcessor create() {
+      return new TestLogRecordProcessor(null);
+    }
+
     @Override
     public void onEmit(Context context, ReadWriteLogRecord logRecord) {}
 
     @Override
     public CompletableResultCode shutdown() {
       return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public String toString() {
+      return "TestLogRecordProcessor{}";
     }
   }
 }

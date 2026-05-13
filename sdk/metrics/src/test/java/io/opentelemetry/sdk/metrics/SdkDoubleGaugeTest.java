@@ -174,6 +174,65 @@ class SdkDoubleGaugeTest {
   }
 
   @Test
+  void observable_CollectMetrics_DefaultExemplarFilter_NoExemplars() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .setResource(RESOURCE)
+            .registerMetricReader(reader)
+            .build();
+
+    sdkMeterProvider
+        .get(getClass().getName())
+        .gaugeBuilder("testGauge")
+        .buildWithCallback(measurement -> measurement.record(12d, Attributes.empty()));
+
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("testGauge")
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point -> point.hasValue(12d).hasExemplars())));
+  }
+
+  @Test
+  void observable_CollectMetrics_AlwaysOnExemplarFilter_CollectsExemplars() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .setResource(RESOURCE)
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .registerMetricReader(reader)
+            .build();
+
+    sdkMeterProvider
+        .get(getClass().getName())
+        .gaugeBuilder("testGauge")
+        .buildWithCallback(measurement -> measurement.record(12d, Attributes.empty()));
+
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("testGauge")
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12d)
+                                        .hasExemplarsSatisfying(
+                                            exemplar -> exemplar.hasValue(12d)))));
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleGauge doubleGauge = sdkMeter.gaugeBuilder("testGauge").build();
