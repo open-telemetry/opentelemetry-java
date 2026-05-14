@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import groovy.lang.GroovyClassLoader;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
@@ -136,6 +137,24 @@ class OpenTelemetrySdkTest {
         .isEqualTo(meterProvider);
     assertThat(openTelemetry.getSdkLoggerProvider()).isEqualTo(loggerProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
+  }
+
+  @Test
+  void builder_fromGroovyWithoutIncubator() throws Exception {
+    try (GroovyClassLoader groovyClassLoader =
+        new GroovyClassLoader(getClass().getClassLoader())) {
+      Class<?> groovyClass =
+          groovyClassLoader.parseClass(
+              "import io.opentelemetry.sdk.OpenTelemetrySdk\n"
+                  + "class GroovyBuilderCaller {\n"
+                  + "  static Object buildSdk() {\n"
+                  + "    OpenTelemetrySdk.builder().build()\n"
+                  + "  }\n"
+                  + "}\n");
+
+      assertThat(groovyClass.getMethod("buildSdk").invoke(null))
+          .isInstanceOf(OpenTelemetrySdk.class);
+    }
   }
 
   @Test

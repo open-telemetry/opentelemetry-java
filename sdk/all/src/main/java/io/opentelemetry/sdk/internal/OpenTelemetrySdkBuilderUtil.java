@@ -27,8 +27,7 @@ public final class OpenTelemetrySdkBuilderUtil {
       OpenTelemetrySdkBuilder builder, SdkConfigProvider configProvider) {
     try {
       Method method =
-          OpenTelemetrySdkBuilder.class.getDeclaredMethod(
-              "setConfigProvider", SdkConfigProvider.class);
+          OpenTelemetrySdkBuilder.class.getDeclaredMethod("setConfigProvider", Object.class);
       method.setAccessible(true);
       method.invoke(builder, configProvider);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
