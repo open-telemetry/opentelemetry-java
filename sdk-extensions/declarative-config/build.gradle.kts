@@ -148,7 +148,7 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
 }
 
 // Copies EnvironmentResource.java from the autoconfigure module into a generated source set so
-// that declarativeconfig can use the exact same source without taking a runtime dependency on
+// that declarative config can use the exact same source without taking a runtime dependency on
 // autoconfigure and without the risk of divergence from manual syncing.
 val generatedResourceConfigDir =
   layout.buildDirectory.dir("generated/sources/resource-configuration/java/main")
