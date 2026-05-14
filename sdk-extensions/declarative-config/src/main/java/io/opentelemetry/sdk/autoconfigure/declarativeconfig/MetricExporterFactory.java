@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 final class MetricExporterFactory implements Factory<PushMetricExporterModel, MetricExporter> {

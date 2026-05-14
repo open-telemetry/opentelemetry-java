@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
@@ -95,6 +96,7 @@ class DelegatingSpanTest {
         Arguments.of("setAttribute", new Class<?>[] {String.class, long.class}, times(1)),
         Arguments.of("setAttribute", new Class<?>[] {String.class, double.class}, times(1)),
         Arguments.of("setAttribute", new Class<?>[] {String.class, boolean.class}, times(1)),
+        Arguments.of("setAttribute", new Class<?>[] {String.class, Value.class}, times(1)),
         Arguments.of(
             "recordException", new Class<?>[] {Throwable.class, Attributes.class}, times(1)),
         Arguments.of("recordException", new Class<?>[] {Throwable.class}, times(1)),

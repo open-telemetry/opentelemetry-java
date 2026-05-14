@@ -38,6 +38,7 @@ import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -93,6 +94,7 @@ public class OpenTelemetryNoRecordEventsSpanImplTest {
     noRecordEventsSpan.setAttribute("OTelAttributeKeyLong", 123);
     noRecordEventsSpan.setAttribute("OTelAttributeKeyDouble", 123.45);
     noRecordEventsSpan.setAttribute("OTelAttributeKeyBoolean", true);
+    noRecordEventsSpan.setAttribute("OTelAttributeKeyValue", Value.empty());
     noRecordEventsSpan.addEvent("OTel event 1");
     noRecordEventsSpan.addEvent("OTel event 2", 29922310, TimeUnit.HOURS);
     noRecordEventsSpan.addEvent(

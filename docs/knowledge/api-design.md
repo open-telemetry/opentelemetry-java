@@ -80,7 +80,7 @@ unambiguously.
 ### Runtime / instrumentation-time boundaries (Span methods, metric recordings, log builders)
 
 Do **not** throw. Log the violation via
-[`ApiUsageLogger`](../../common/src/main/java/io/opentelemetry/common/ApiUsageLogger.java) —
+[`ApiUsageLogger`](../../common/src/main/java/io/opentelemetry/common/impl/ApiUsageLogger.java) —
 which logs at `FINEST` with a stack trace so the offending call site is visible — then degrade
 gracefully (return `this`, an empty/noop result, or substitute a safe default such as
 `Attributes.empty()` or `Context.current()`):

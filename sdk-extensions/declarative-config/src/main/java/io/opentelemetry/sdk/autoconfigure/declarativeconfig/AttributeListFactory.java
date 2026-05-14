@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
 import java.util.List;
 import javax.annotation.Nullable;
 

@@ -10,6 +10,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
@@ -146,6 +147,25 @@ public interface Span extends ImplicitContextKeyed {
    */
   default Span setAttribute(String key, boolean value) {
     return setAttribute(AttributeKey.booleanKey(key), value);
+  }
+
+  /**
+   * Sets a {@link Value} attribute on the {@code Span}. If the {@code Span} previously contained a
+   * mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * <p>Instrumentations should assume that backends do not index individual properties of complex
+   * attributes, that querying or aggregating on such properties is inefficient and complicated, and
+   * that reporting complex attributes carries higher performance overhead.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default Span setAttribute(String key, Value<?> value) {
+    return setAttribute(AttributeKey.valueKey(key), value);
   }
 
   /**

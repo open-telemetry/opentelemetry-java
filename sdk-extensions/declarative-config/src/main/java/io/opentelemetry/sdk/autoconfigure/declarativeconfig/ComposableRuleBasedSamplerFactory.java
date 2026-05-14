@@ -14,12 +14,12 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalSpanParent;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalSpanParent;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableRuleBasedSamplerBuilder;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.SamplingPredicate;
@@ -191,7 +191,7 @@ final class ComposableRuleBasedSamplerFactory
     }
 
     private static SpanKind toSpanKind(
-        io.opentelemetry.sdk.declarativeconfig.internal.model.SpanKind spanKind) {
+        io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKind spanKind) {
       switch (spanKind) {
         case INTERNAL:
           return SpanKind.INTERNAL;

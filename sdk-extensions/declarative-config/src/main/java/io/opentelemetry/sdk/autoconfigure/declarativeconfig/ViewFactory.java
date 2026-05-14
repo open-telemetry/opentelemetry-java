@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.IncludeExcludeModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewStreamModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
 

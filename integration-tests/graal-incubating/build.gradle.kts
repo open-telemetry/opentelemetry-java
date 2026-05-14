@@ -1,5 +1,4 @@
 import org.gradle.api.JavaVersion
-
 plugins {
   id("otel.java-conventions")
   id("org.graalvm.buildtools.native")

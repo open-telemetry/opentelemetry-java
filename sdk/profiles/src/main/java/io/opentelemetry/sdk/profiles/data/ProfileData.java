@@ -121,7 +121,7 @@ public interface ProfileData {
   /**
    * Returns the original payload, in a profiler-native format e.g. JFR. Optional. Default behavior
    * should be to not include the original payload. If the original payload is in pprof format, it
-   * SHOULD not be included in this field.
+   * should not be included in this field.
    */
   ByteBuffer getOriginalPayload();
 

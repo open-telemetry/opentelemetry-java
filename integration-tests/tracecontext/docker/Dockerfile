@@ -1,4 +1,4 @@
-FROM python:3.14.4@sha256:22a95beffd151cab2a878e049e111e65f64b31b34e58656576a3b12a933ca354 AS build
+FROM python:3.14.5@sha256:e2c5dca8cd88773108b84970af2b0976caf21504b503ff89ba7f995a25aaa9ea AS build
 
 # Main branch SHA as of April-1-2021
 ARG TRACECONTEXT_GIT_TAG="dcd3ad9b7d6ac36f70ff3739874b73c11b0302a1"
@@ -11,7 +11,7 @@ RUN unzip trace-context.zip
 RUN rm trace-context.zip
 RUN mv trace-context-${TRACECONTEXT_GIT_TAG}/test /tracecontext-testsuite
 
-FROM python:3.14.4-slim@sha256:c11aee3b3cae066f55d1e9318fc812673aa6557073b0db0d792b59491b262e0c
+FROM python:3.14.5-slim@sha256:af79f947dee1c929919b0488d20db7200d8737e00f68ee4abeef1fcf1fe05939
 
 RUN pip install aiohttp
 

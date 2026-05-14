@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MeterProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
