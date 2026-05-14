@@ -65,6 +65,28 @@ public interface ConfigProvider {
     return getInstrumentationConfig().get("general");
   }
 
+  /**
+   * Registers a {@link ConfigChangeListener} for changes to a specific declarative configuration
+   * path.
+   *
+   * <p>Example paths include {@code .instrumentation/development.general.http} and {@code
+   * .instrumentation/development.java.methods}.
+   *
+   * <p>When a watched path changes, {@link ConfigChangeListener#onChange(String,
+   * DeclarativeConfigProperties)} is invoked with the changed path and updated configuration for
+   * that path.
+   *
+   * <p>The default implementation performs no registration and returns a no-op handle.
+   *
+   * @param path the declarative configuration path to watch
+   * @param listener the listener to notify when the watched path changes
+   * @return a {@link ConfigChangeRegistration} that can be closed to unregister the listener
+   */
+  default ConfigChangeRegistration addConfigChangeListener(
+      String path, ConfigChangeListener listener) {
+    return () -> {};
+  }
+
   /** Returns a no-op {@link ConfigProvider}. */
   static ConfigProvider noop() {
     return DeclarativeConfigProperties::empty;
