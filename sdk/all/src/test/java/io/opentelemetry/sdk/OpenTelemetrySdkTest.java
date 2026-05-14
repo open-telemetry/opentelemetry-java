@@ -141,8 +141,7 @@ class OpenTelemetrySdkTest {
 
   @Test
   void builder_fromGroovyWithoutIncubator() throws Exception {
-    try (GroovyClassLoader groovyClassLoader =
-        new GroovyClassLoader(getClass().getClassLoader())) {
+    try (GroovyClassLoader groovyClassLoader = new GroovyClassLoader(getClass().getClassLoader())) {
       Class<?> groovyClass =
           groovyClassLoader.parseClass(
               "import io.opentelemetry.sdk.OpenTelemetrySdk\n"
