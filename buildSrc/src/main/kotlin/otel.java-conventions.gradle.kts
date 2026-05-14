@@ -155,9 +155,7 @@ tasks {
           val fullImportPackages = if (unversionedImports.isNotEmpty()) "$unversionedImports,$importPackages" else importPackages
 
           val bndInstructions = mutableMapOf(
-            // Exclude shaded internal packages from exports; they are implementation details and
-            // should not be part of the OSGi bundle's public API surface.
-            "-exportcontents" to "!io.opentelemetry.internal.shaded.*,io.opentelemetry.*",
+            "-exportcontents" to "io.opentelemetry.*",
             "Import-Package" to fullImportPackages
           )
 

@@ -8,8 +8,8 @@ plugins {
 description = "OpenTelemetry Exporter Common"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal")
 otelJava.osgiOptionalPackages.set(listOf("com.fasterxml.jackson.core", "com.google.common.io", "io.opentelemetry.api.incubator.config"))
-// io.grpc and org.jspecify are not OSGi bundles and have no package versioning; must use unversioned optional.
-otelJava.osgiUnversionedOptionalPackages.set(listOf("io.grpc", "org.jspecify.annotations"))
+// sun.misc, io.grpc, and org.jspecify are not OSGi bundles and have no package versioning; must use unversioned optional.
+otelJava.osgiUnversionedOptionalPackages.set(listOf("sun.misc", "io.grpc", "org.jspecify.annotations"))
 // This bundle's exporters load sender implementations via SPI.
 otelJava.osgiServiceLoaderRequires.set(listOf(
   "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
