@@ -166,10 +166,17 @@ public final class OpenTelemetrySdkBuilder {
 
   private static OpenTelemetrySdk createExtendedOpenTelemetrySdk(
       OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
+    return createExtendedOpenTelemetrySdk(
+        requireNonNull(CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD), openTelemetrySdk, configProvider);
+  }
+
+  static OpenTelemetrySdk createExtendedOpenTelemetrySdk(
+      Method createExtendedOpenTelemetrySdkMethod,
+      OpenTelemetrySdk openTelemetrySdk,
+      @Nullable Object configProvider) {
     try {
       return (OpenTelemetrySdk)
-          requireNonNull(CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD)
-              .invoke(null, openTelemetrySdk, configProvider);
+          createExtendedOpenTelemetrySdkMethod.invoke(null, openTelemetrySdk, configProvider);
     } catch (IllegalAccessException e) {
       throw new IllegalStateException(
           "IncubatingUtil.createExtendedOpenTelemetrySdk could not be invoked."
