@@ -14,6 +14,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import groovy.lang.GroovyClassLoader;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -39,7 +40,6 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import groovy.lang.GroovyClassLoader;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
@@ -140,7 +140,7 @@ class OpenTelemetrySdkTest {
   }
 
   @Test
-  void builder_fromGroovyWithoutIncubator() throws Exception {
+  void buildFromGroovyWithoutIncubator() throws Exception {
     try (GroovyClassLoader groovyClassLoader = new GroovyClassLoader(getClass().getClassLoader())) {
       Class<?> groovyClass =
           groovyClassLoader.parseClass(

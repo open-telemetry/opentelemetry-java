@@ -107,6 +107,9 @@ public final class OpenTelemetrySdkBuilder {
    * <p>This method is experimental so not public. You may reflectively call it using {@link
    * OpenTelemetrySdkBuilderUtil#setConfigProvider(OpenTelemetrySdkBuilder,
    * io.opentelemetry.sdk.internal.SdkConfigProvider)}.
+   *
+   * <p>The parameter type is {@link Object} to avoid introducing another direct incubator-linked
+   * method signature in the path Groovy eagerly inspects.
    */
   OpenTelemetrySdkBuilder setConfigProvider(Object configProvider) {
     this.configProvider = requireNonNull(configProvider);
@@ -172,8 +175,15 @@ public final class OpenTelemetrySdkBuilder {
           "IncubatingUtil.createExtendedOpenTelemetrySdk could not be invoked."
               + " This is a bug in OpenTelemetry.",
           e);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException(
+          "IncubatingUtil.createExtendedOpenTelemetrySdk could not be called with the expected"
+              + " arguments. This is a bug in OpenTelemetry.",
+          e);
     } catch (InvocationTargetException e) {
       Throwable cause = e.getTargetException();
+      // Preserve the original application behavior rather than wrapping runtime failures emitted
+      // by the incubator path in a reflective InvocationTargetException.
       if (cause instanceof RuntimeException) {
         throw (RuntimeException) cause;
       }
