@@ -17,6 +17,7 @@ import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -39,6 +40,9 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
 
   @Override
   public ExtendedSpanBuilder spanBuilder(String spanName) {
+    if (spanName == null) {
+      ApiUsageLogger.logNullParam(Tracer.class, "spanBuilder", "spanName");
+    }
     return NoopSpanBuilder.create();
   }
 
@@ -74,6 +78,14 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
     @Override
     public NoopSpanBuilder setParentFrom(
         ContextPropagators propagators, Map<String, String> carrier) {
+      if (propagators == null) {
+        ApiUsageLogger.logNullParam(ExtendedSpanBuilder.class, "setParentFrom", "propagators");
+        return this;
+      }
+      if (carrier == null) {
+        ApiUsageLogger.logNullParam(ExtendedSpanBuilder.class, "setParentFrom", "carrier");
+        return this;
+      }
       setParent(ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators));
       return this;
     }
@@ -86,73 +98,133 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
 
     @Override
     public NoopSpanBuilder addLink(SpanContext spanContext) {
+      if (spanContext == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "addLink", "spanContext");
+        return this;
+      }
       return this;
     }
 
     @Override
     public NoopSpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
+      if (spanContext == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "addLink", "spanContext");
+        return this;
+      }
+      if (attributes == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "addLink", "attributes");
+        return this;
+      }
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, @Nullable String value) {
+      if (key == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setAttribute", "key");
+        return this;
+      }
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, long value) {
+      if (key == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setAttribute", "key");
+        return this;
+      }
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, double value) {
+      if (key == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setAttribute", "key");
+        return this;
+      }
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, boolean value) {
+      if (key == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setAttribute", "key");
+        return this;
+      }
       return this;
     }
 
     @Override
     public <T> NoopSpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
+      if (key == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setAttribute", "key");
+        return this;
+      }
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAllAttributes(Attributes attributes) {
+      if (attributes == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setAllAttributes", "attributes");
+        return this;
+      }
       return this;
     }
 
     @Override
     public NoopSpanBuilder setSpanKind(SpanKind spanKind) {
+      if (spanKind == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setSpanKind", "spanKind");
+      }
       return this;
     }
 
     @Override
     public NoopSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(SpanBuilder.class, "setStartTimestamp", "unit");
+      }
       return this;
     }
 
     @Override
     public <T, E extends Throwable> T startAndCall(SpanCallable<T, E> spanCallable) throws E {
+      Objects.requireNonNull(spanCallable, "spanCallable");
       return spanCallable.callInSpan();
     }
 
     @Override
     public <T, E extends Throwable> T startAndCall(
         SpanCallable<T, E> spanCallable, BiConsumer<Span, Throwable> handleException) throws E {
+      Objects.requireNonNull(spanCallable, "spanCallable");
+      if (handleException == null) {
+        ApiUsageLogger.logNullParam(ExtendedSpanBuilder.class, "startAndCall", "handleException");
+      }
       return spanCallable.callInSpan();
     }
 
     @Override
     public <E extends Throwable> void startAndRun(SpanRunnable<E> runnable) throws E {
+      if (runnable == null) {
+        ApiUsageLogger.logNullParam(ExtendedSpanBuilder.class, "startAndRun", "runnable");
+        return;
+      }
       runnable.runInSpan();
     }
 
     @Override
     public <E extends Throwable> void startAndRun(
         SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E {
+      if (runnable == null) {
+        ApiUsageLogger.logNullParam(ExtendedSpanBuilder.class, "startAndRun", "runnable");
+        return;
+      }
+      if (handleException == null) {
+        ApiUsageLogger.logNullParam(ExtendedSpanBuilder.class, "startAndRun", "handleException");
+        runnable.runInSpan();
+        return;
+      }
       runnable.runInSpan();
     }
 

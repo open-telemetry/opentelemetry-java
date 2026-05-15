@@ -22,6 +22,7 @@
 
 package io.opentelemetry.context;
 
+import java.util.Objects;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
@@ -86,6 +87,7 @@ public interface ContextStorage {
    * main class.
    */
   static void addWrapper(Function<? super ContextStorage, ? extends ContextStorage> wrapper) {
+    Objects.requireNonNull(wrapper, "wrapper");
     ContextStorageWrappers.addWrapper(wrapper);
   }
 

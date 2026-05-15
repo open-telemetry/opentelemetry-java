@@ -202,7 +202,11 @@ public interface Span extends ImplicitContextKeyed {
    */
   @SuppressWarnings("unchecked")
   default Span setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAllAttributes", "attributes");
+      return this;
+    }
+    if (attributes.isEmpty()) {
       return this;
     }
     attributes.forEach(
@@ -253,6 +257,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   default Span addEvent(String name, Instant timestamp) {
     if (timestamp == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "timestamp");
       return addEvent(name);
     }
     return addEvent(
@@ -305,6 +310,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   default Span addEvent(String name, Attributes attributes, Instant timestamp) {
     if (timestamp == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "timestamp");
       return addEvent(name, attributes);
     }
     return addEvent(
@@ -421,6 +427,12 @@ public interface Span extends ImplicitContextKeyed {
    * @since 1.37.0
    */
   default Span addLink(SpanContext spanContext, Attributes attributes) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addLink", "spanContext");
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addLink", "attributes");
+    }
     return this;
   }
 
@@ -461,6 +473,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   default void end(Instant timestamp) {
     if (timestamp == null) {
+      ApiUsageLogger.logNullParam(Span.class, "end", "timestamp");
       end();
       return;
     }
@@ -484,6 +497,10 @@ public interface Span extends ImplicitContextKeyed {
 
   @Override
   default Context storeInContext(Context context) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Span.class, "storeInContext", "context");
+      return Context.root();
+    }
     return context.with(SpanContextKey.KEY, this);
   }
 }

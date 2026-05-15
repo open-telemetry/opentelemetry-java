@@ -77,13 +77,41 @@ public SdkTracerProviderBuilder setResource(Resource resource) {
 These APIs are called once during startup, so a hard failure surfaces the bug immediately and
 unambiguously.
 
+> **Grey area — Resource construction is used both by application code at
+> startup *and* by `ResourceProvider` implementations that detect environment information at
+> initialization time (similar to instrumentation). Treat `Resource` and `ResourceBuilder` as an
+> instrumentation-time boundary: use `ApiUsageLogger` and degrade gracefully rather than throwing.
+
 ### Runtime / instrumentation-time boundaries (Span methods, metric recordings, log builders)
 
 Do **not** throw. Log the violation via
 [`ApiUsageLogger`](../../common/src/main/java/io/opentelemetry/common/impl/ApiUsageLogger.java) —
 which logs at `FINEST` with a stack trace so the offending call site is visible — then degrade
 gracefully (return `this`, an empty/noop result, or substitute a safe default such as
-`Attributes.empty()` or `Context.current()`):
+`Attributes.empty()` or `Context.current()`).
+
+The preferred noop is a strict no-op (skip the operation entirely). However, if the method
+already degrades gracefully for a null argument — for example, substituting `Attributes.empty()`
+and continuing rather than returning early — preserve that existing behavior. The goal is to
+**always log** the misuse, **never change** existing graceful degradation that is already correct.
+
+**Exception — non-void functional interfaces**: methods that accept a `Callable<T>`,
+`Function<T,U>`, `Supplier<T>`, or similar non-void callback have no safe noop — a
+null-returning lambda would cause downstream NPEs. Use `Objects.requireNonNull` even at a
+runtime boundary. Void-producing types (`Runnable`, `Consumer`, `Executor`) are fine with a
+no-op lambda.
+
+```java
+// Existing graceful degradation — add the log, keep the substitution
+@Override
+public ReadWriteSpan addEvent(String name, Attributes attributes) {
+  if (attributes == null) {
+    ApiUsageLogger.logNullParam(SdkSpan.class, "addEvent", "attributes");
+    attributes = Attributes.empty(); // preserve existing fallback, do not return early
+  }
+  // ... normal implementation
+}
+```
 
 ```java
 @Override
@@ -97,11 +125,37 @@ public Span addEvent(String name) {
 ```
 
 The class and method arguments identify the problem immediately in the log message without
-requiring stack trace analysis. Use `ApiUsageLogger.log(...)` directly when the message is not
+requiring stack trace analysis. Use `ApiUsageLogger.logUsageIssue(...)` directly when the message is not
 simply "X is null" (e.g. `"spanIdBytes is null or too short"`). `FINEST` is silent by default, so there is no production noise.
 To investigate misuse, enable the logger named `io.opentelemetry.usage` at `FINEST` in
 development, or periodically in staging/production. Check each argument once, at the first
 public entry point — internal methods called by that entry point do not need to re-validate.
+
+When a public method with fewer arguments delegates immediately to an overload with more
+arguments, only the most-args overload needs the null guard — the shorter overload passes
+through without risk of NPE before the check fires:
+
+```java
+// 2-arg overload — no check needed, delegates immediately
+@Override
+public void add(long increment, Attributes attributes) {
+  add(increment, attributes, Context.current());
+}
+
+// 3-arg overload — check all new parameters here
+@Override
+public void add(long increment, Attributes attributes, Context context) {
+  if (attributes == null) {
+    ApiUsageLogger.logNullParam(LongCounter.class, "add", "attributes");
+    return;
+  }
+  if (context == null) {
+    ApiUsageLogger.logNullParam(LongCounter.class, "add", "context");
+    return;
+  }
+  // ... normal implementation
+}
+```
 
 ### SDK extension interfaces and SPIs
 
@@ -115,6 +169,14 @@ Because the SDK is NullAway-verified, a null argument here indicates a bug in th
 not misuse by an application developer. Use `Objects.requireNonNull` — a hard failure surfaces
 the bug immediately and unambiguously, which is preferable to silent degradation that would
 mask the underlying SDK defect.
+
+Static `create(...)` factory methods on SDK data interfaces (`LinkData`, `EventData`,
+`StatusData`, `ProfileData`, etc.) follow the same rule. User-written exporters and processors
+also call these factories and are not NullAway-verified; and there is no meaningful noop return
+value — returning a structurally-valid but semantically-empty object would silently corrupt the
+export pipeline rather than surface the bug. Note: if the factory delegates immediately to an
+AutoValue constructor (`new AutoValue_Immutable*`), the generated constructor already checks
+every non-`@Nullable` field — adding `requireNonNull` before the call is redundant.
 
 ### Where to implement guards
 

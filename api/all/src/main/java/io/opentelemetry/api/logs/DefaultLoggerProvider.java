@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.logs;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
+
 class DefaultLoggerProvider implements LoggerProvider {
 
   private static final LoggerProvider INSTANCE = new DefaultLoggerProvider();
@@ -18,6 +20,10 @@ class DefaultLoggerProvider implements LoggerProvider {
 
   @Override
   public LoggerBuilder loggerBuilder(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(
+          LoggerProvider.class, "loggerBuilder", "instrumentationScopeName");
+    }
     return NOOP_BUILDER;
   }
 
@@ -25,11 +31,18 @@ class DefaultLoggerProvider implements LoggerProvider {
 
     @Override
     public LoggerBuilder setSchemaUrl(String schemaUrl) {
+      if (schemaUrl == null) {
+        ApiUsageLogger.logNullParam(LoggerBuilder.class, "setSchemaUrl", "schemaUrl");
+      }
       return this;
     }
 
     @Override
     public LoggerBuilder setInstrumentationVersion(String instrumentationVersion) {
+      if (instrumentationVersion == null) {
+        ApiUsageLogger.logNullParam(
+            LoggerBuilder.class, "setInstrumentationVersion", "instrumentationVersion");
+      }
       return this;
     }
 

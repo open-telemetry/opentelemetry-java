@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -52,6 +53,10 @@ public interface TracerProvider {
    * @since 1.4.0
    */
   default TracerBuilder tracerBuilder(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(
+          TracerProvider.class, "tracerBuilder", "instrumentationScopeName");
+    }
     return DefaultTracerBuilder.getInstance();
   }
 }

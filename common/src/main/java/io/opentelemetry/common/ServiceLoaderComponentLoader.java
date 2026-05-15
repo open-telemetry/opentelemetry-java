@@ -5,6 +5,7 @@
 
 package io.opentelemetry.common;
 
+import java.util.Objects;
 import java.util.ServiceLoader;
 
 class ServiceLoaderComponentLoader implements ComponentLoader {
@@ -17,6 +18,7 @@ class ServiceLoaderComponentLoader implements ComponentLoader {
 
   @Override
   public <T> Iterable<T> load(Class<T> spiClass) {
+    Objects.requireNonNull(spiClass, "spiClass");
     return ServiceLoader.load(spiClass, classLoader);
   }
 

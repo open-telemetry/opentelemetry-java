@@ -147,9 +147,8 @@ class SdkTracerProviderTest {
 
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(tracerProvider.get("test")).isSameAs(tracerProvider.get("test"));
     assertThat(tracerProvider.get("test"))
-        .isSameAs(tracerProvider.get("test", null))
+        .isSameAs(tracerProvider.get("test"))
         .isSameAs(tracerProvider.tracerBuilder("test").build());
   }
 
@@ -269,10 +268,6 @@ class SdkTracerProviderTest {
   @Test
   void suppliesDefaultTracerForNullName() {
     SdkTracer tracer = (SdkTracer) tracerProvider.get(null);
-    assertThat(tracer.getInstrumentationScopeInfo().getName())
-        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
-
-    tracer = (SdkTracer) tracerProvider.get(null, null);
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
   }

@@ -7,6 +7,7 @@ package io.opentelemetry.api.incubator.trace;
 
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 
 final class ExtendedDefaultTracerBuilder implements TracerBuilder {
   private static final ExtendedDefaultTracerBuilder INSTANCE = new ExtendedDefaultTracerBuilder();
@@ -17,11 +18,20 @@ final class ExtendedDefaultTracerBuilder implements TracerBuilder {
 
   @Override
   public TracerBuilder setSchemaUrl(String schemaUrl) {
+    if (schemaUrl == null) {
+      ApiUsageLogger.logNullParam(ExtendedDefaultTracerBuilder.class, "setSchemaUrl", "schemaUrl");
+    }
     return this;
   }
 
   @Override
   public TracerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
+    if (instrumentationScopeVersion == null) {
+      ApiUsageLogger.logNullParam(
+          ExtendedDefaultTracerBuilder.class,
+          "setInstrumentationVersion",
+          "instrumentationScopeVersion");
+    }
     return this;
   }
 

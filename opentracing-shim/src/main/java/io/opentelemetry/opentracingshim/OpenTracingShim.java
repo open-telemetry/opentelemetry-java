@@ -9,6 +9,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentracing.Tracer;
+import java.util.Objects;
 
 /**
  * Factory for creating an OpenTracing {@link io.opentracing.Tracer} that is implemented using the
@@ -28,6 +29,7 @@ public final class OpenTracingShim {
    * @return a {@code io.opentracing.Tracer}.
    */
   public static Tracer createTracerShim(OpenTelemetry openTelemetry) {
+    Objects.requireNonNull(openTelemetry, "openTelemetry");
     TextMapPropagator propagator = openTelemetry.getPropagators().getTextMapPropagator();
     return createTracerShim(openTelemetry.getTracerProvider(), propagator, propagator);
   }
@@ -47,6 +49,9 @@ public final class OpenTracingShim {
       TracerProvider provider,
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {
+    Objects.requireNonNull(provider, "provider");
+    Objects.requireNonNull(textMapPropagator, "textMapPropagator");
+    Objects.requireNonNull(httpPropagator, "httpPropagator");
     return new TracerShim(provider, textMapPropagator, httpPropagator);
   }
 }

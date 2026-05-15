@@ -105,6 +105,8 @@ public final class JaegerRemoteSamplerBuilder {
    */
   public JaegerRemoteSamplerBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
+    requireNonNull(sslContext, "sslContext");
+    requireNonNull(trustManager, "trustManager");
     tlsConfigHelper.setSslContext(sslContext, trustManager);
     return this;
   }

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace.data;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -40,6 +41,7 @@ public interface StatusData {
    * description} is {@code null}, the returned {@link StatusData} does not have a description.
    */
   static StatusData create(StatusCode code, @Nullable String description) {
+    Objects.requireNonNull(code, "code");
     return ImmutableStatusData.create(code, description != null ? description : "");
   }
 

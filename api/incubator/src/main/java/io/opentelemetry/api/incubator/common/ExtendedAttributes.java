@@ -8,6 +8,7 @@ package io.opentelemetry.api.incubator.common;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -59,6 +60,7 @@ public interface ExtendedAttributes {
   @Nullable
   default <T> T get(AttributeKey<T> key) {
     if (key == null) {
+      ApiUsageLogger.logNullParam(ExtendedAttributes.class, "get", "key");
       return null;
     }
     return get(ExtendedAttributeKey.fromAttributeKey(key));

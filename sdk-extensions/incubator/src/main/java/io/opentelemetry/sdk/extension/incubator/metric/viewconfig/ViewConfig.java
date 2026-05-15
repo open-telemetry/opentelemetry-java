@@ -94,6 +94,8 @@ public final class ViewConfig {
    */
   public static void registerViews(
       SdkMeterProviderBuilder meterProviderBuilder, InputStream inputStream) {
+    requireNonNull(meterProviderBuilder, "meterProviderBuilder");
+    requireNonNull(inputStream, "inputStream");
     List<ViewConfigSpecification> viewConfigSpecs = loadViewConfig(inputStream);
 
     for (ViewConfigSpecification viewConfigSpec : viewConfigSpecs) {

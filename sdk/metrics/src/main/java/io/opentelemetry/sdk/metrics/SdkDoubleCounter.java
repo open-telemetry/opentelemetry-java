@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
@@ -40,6 +41,14 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
 
   @Override
   public void add(double increment, Attributes attributes, Context context) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(DoubleCounter.class, "add", "attributes");
+      return;
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(DoubleCounter.class, "add", "context");
+      return;
+    }
     if (increment < 0) {
       throttlingLogger.log(
           Level.WARNING,
@@ -63,6 +72,8 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
 
   static class SdkDoubleCounterBuilder implements DoubleCounterBuilder {
 
+    private static final ObservableDoubleCounter NOOP_OBSERVABLE_COUNTER =
+        new ObservableDoubleCounter() {};
     final InstrumentBuilder builder;
 
     SdkDoubleCounterBuilder(
@@ -98,6 +109,10 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(DoubleCounterBuilder.class, "buildWithCallback", "callback");
+        return NOOP_OBSERVABLE_COUNTER;
+      }
       return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 

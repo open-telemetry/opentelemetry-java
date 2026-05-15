@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.common.ValueType;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -57,6 +58,7 @@ final class ArrayBackedExtendedAttributes
   @Nullable
   public <T> T get(ExtendedAttributeKey<T> key) {
     if (key == null) {
+      ApiUsageLogger.logNullParam(ExtendedAttributes.class, "get", "key");
       return null;
     }
     if (key.getType() == ExtendedAttributeType.VALUE) {

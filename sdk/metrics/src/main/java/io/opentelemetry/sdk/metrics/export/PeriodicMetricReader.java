@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -59,11 +60,13 @@ public final class PeriodicMetricReader implements MetricReader {
    * minute.
    */
   public static PeriodicMetricReader create(MetricExporter exporter) {
+    Objects.requireNonNull(exporter, "exporter");
     return builder(exporter).build();
   }
 
   /** Returns a new {@link PeriodicMetricReaderBuilder}. */
   public static PeriodicMetricReaderBuilder builder(MetricExporter exporter) {
+    Objects.requireNonNull(exporter, "exporter");
     return new PeriodicMetricReaderBuilder(exporter);
   }
 
@@ -149,6 +152,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   @Override
   public void register(CollectionRegistration collectionRegistration) {
+    Objects.requireNonNull(collectionRegistration, "collectionRegistration");
     this.collectionRegistration = collectionRegistration;
     start();
   }

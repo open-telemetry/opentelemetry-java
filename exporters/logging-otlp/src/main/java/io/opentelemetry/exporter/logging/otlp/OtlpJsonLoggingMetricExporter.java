@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -41,6 +42,7 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
    * aggregationTemporality}.
    */
   public static MetricExporter create(AggregationTemporality aggregationTemporality) {
+    Objects.requireNonNull(aggregationTemporality, "aggregationTemporality");
     OtlpStdoutMetricExporter delegate =
         new OtlpStdoutMetricExporterBuilder(logger).setWrapperJsonObject(false).build();
     return new OtlpJsonLoggingMetricExporter(delegate, aggregationTemporality);
@@ -54,6 +56,7 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(Collection<MetricData> logs) {
+    Objects.requireNonNull(logs, "logs");
     return delegate.export(logs);
   }
 
@@ -79,6 +82,7 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    Objects.requireNonNull(instrumentType, "instrumentType");
     return aggregationTemporality;
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.context;
 
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -22,23 +23,27 @@ final class CurrentContextScheduledExecutorService extends CurrentContextExecuto
 
   @Override
   public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+    Objects.requireNonNull(command, "command");
     return delegate.schedule(Context.current().wrap(command), delay, unit);
   }
 
   @Override
   public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
+    Objects.requireNonNull(callable, "callable");
     return delegate.schedule(Context.current().wrap(callable), delay, unit);
   }
 
   @Override
   public ScheduledFuture<?> scheduleAtFixedRate(
       Runnable command, long initialDelay, long period, TimeUnit unit) {
+    Objects.requireNonNull(command, "command");
     return delegate.scheduleAtFixedRate(command, initialDelay, period, unit);
   }
 
   @Override
   public ScheduledFuture<?> scheduleWithFixedDelay(
       Runnable command, long initialDelay, long delay, TimeUnit unit) {
+    Objects.requireNonNull(command, "command");
     return delegate.scheduleWithFixedDelay(command, initialDelay, delay, unit);
   }
 }

@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,7 +89,8 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    // Do nothing.
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(span, "span");
   }
 
   @Override
@@ -98,7 +100,8 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (span != null && (exportUnsampledSpans || span.getSpanContext().isSampled())) {
+    Objects.requireNonNull(span, "span");
+    if (exportUnsampledSpans || span.getSpanContext().isSampled()) {
       try {
         List<SpanData> spans = Collections.singletonList(span.toSpanData());
         CompletableResultCode result;

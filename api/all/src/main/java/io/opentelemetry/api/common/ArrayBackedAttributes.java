@@ -6,6 +6,7 @@
 package io.opentelemetry.api.common;
 
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +49,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
   @Nullable
   public <T> T get(AttributeKey<T> key) {
     if (key == null) {
+      ApiUsageLogger.logNullParam(Attributes.class, "get", "key");
       return null;
     }
     if (key.getType() == AttributeType.VALUE) {

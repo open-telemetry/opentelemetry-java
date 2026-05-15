@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -83,6 +84,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spanDataList) {
+    Objects.requireNonNull(spanDataList, "spanDataList");
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }

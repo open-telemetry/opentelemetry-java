@@ -13,6 +13,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import java.util.Objects;
 
 /**
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
@@ -37,6 +38,7 @@ public interface OpenTelemetry {
    * otherwise.
    */
   static OpenTelemetry propagating(ContextPropagators propagators) {
+    Objects.requireNonNull(propagators, "propagators");
     return DefaultOpenTelemetry.getPropagating(propagators);
   }
 

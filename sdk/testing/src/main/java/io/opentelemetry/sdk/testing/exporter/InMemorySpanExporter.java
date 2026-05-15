@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -74,6 +75,7 @@ public final class InMemorySpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    Objects.requireNonNull(spans, "spans");
     if (isStopped) {
       return CompletableResultCode.ofFailure();
     }

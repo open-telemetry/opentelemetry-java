@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -35,11 +36,19 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
 
   @Override
   public void set(double value, Attributes attributes) {
-    storage.recordDouble(value, attributes, Context.current());
+    set(value, attributes, Context.current());
   }
 
   @Override
   public void set(double value, Attributes attributes, Context context) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(DoubleGauge.class, "set", "attributes");
+      return;
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(DoubleGauge.class, "set", "context");
+      return;
+    }
     storage.recordDouble(value, attributes, context);
   }
 
@@ -49,6 +58,9 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
   }
 
   static class SdkDoubleGaugeBuilder implements DoubleGaugeBuilder {
+
+    private static final ObservableDoubleGauge NOOP_OBSERVABLE_GAUGE =
+        new ObservableDoubleGauge() {};
     final InstrumentBuilder builder;
 
     SdkDoubleGaugeBuilder(SdkMeter sdkMeter, String name) {
@@ -80,6 +92,10 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
 
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(DoubleGaugeBuilder.class, "buildWithCallback", "callback");
+        return NOOP_OBSERVABLE_GAUGE;
+      }
       return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 

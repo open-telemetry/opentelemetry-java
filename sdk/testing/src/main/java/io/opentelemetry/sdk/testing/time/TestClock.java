@@ -9,6 +9,7 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -35,16 +36,19 @@ public final class TestClock implements Clock {
 
   /** Creates a clock with the given time. */
   public static TestClock create(Instant instant) {
+    Objects.requireNonNull(instant, "instant");
     return new TestClock(toNanos(instant));
   }
 
   /** Sets the current time. */
   public synchronized void setTime(Instant instant) {
+    Objects.requireNonNull(instant, "instant");
     currentEpochNanos = toNanos(instant);
   }
 
   /** Advances the time and mutates this instance. */
   public synchronized void advance(Duration duration) {
+    Objects.requireNonNull(duration, "duration");
     advance(duration.toNanos(), TimeUnit.NANOSECONDS);
   }
 

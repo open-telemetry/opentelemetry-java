@@ -5,6 +5,7 @@
 
 package io.opentelemetry.context;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -19,7 +20,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
   @Override
   public Scope attach(Context toAttach) {
     if (toAttach == null) {
-      // Null context not allowed so ignore it.
+      ApiUsageLogger.logNullParam(ContextStorage.class, "attach", "toAttach");
       return NoopScope.INSTANCE;
     }
 

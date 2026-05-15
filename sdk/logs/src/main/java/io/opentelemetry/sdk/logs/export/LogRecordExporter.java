@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,6 +44,7 @@ public interface LogRecordExporter extends Closeable {
    * {@link SimpleLogRecordProcessor} or a {@link BatchLogRecordProcessor}.
    */
   static LogRecordExporter composite(Iterable<LogRecordExporter> exporters) {
+    Objects.requireNonNull(exporters, "exporters");
     List<LogRecordExporter> exportersList = new ArrayList<>();
     for (LogRecordExporter exporter : exporters) {
       exportersList.add(exporter);

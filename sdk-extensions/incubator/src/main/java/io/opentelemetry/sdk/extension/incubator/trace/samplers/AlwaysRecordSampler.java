@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -41,6 +42,7 @@ public final class AlwaysRecordSampler implements Sampler {
   private final Sampler rootSampler;
 
   public static AlwaysRecordSampler create(Sampler rootSampler) {
+    Objects.requireNonNull(rootSampler, "rootSampler");
     return new AlwaysRecordSampler(rootSampler);
   }
 
@@ -56,6 +58,12 @@ public final class AlwaysRecordSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(traceId, "traceId");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(spanKind, "spanKind");
+    Objects.requireNonNull(attributes, "attributes");
+    Objects.requireNonNull(parentLinks, "parentLinks");
     SamplingResult result =
         rootSampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     if (result.getDecision() != SamplingDecision.DROP) {
@@ -89,6 +97,7 @@ public final class AlwaysRecordSampler implements Sampler {
 
     @Override
     public TraceState getUpdatedTraceState(TraceState parentTraceState) {
+      Objects.requireNonNull(parentTraceState, "parentTraceState");
       return delegate.getUpdatedTraceState(parentTraceState);
     }
   }

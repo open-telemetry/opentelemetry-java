@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -41,6 +42,14 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
   @Override
   public void add(long increment, Attributes attributes, Context context) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(LongCounter.class, "add", "attributes");
+      return;
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(LongCounter.class, "add", "context");
+      return;
+    }
     if (increment < 0) {
       throttlingLogger.log(
           Level.WARNING,
@@ -64,6 +73,8 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
   static class SdkLongCounterBuilder implements LongCounterBuilder {
 
+    private static final ObservableLongCounter NOOP_OBSERVABLE_COUNTER =
+        new ObservableLongCounter() {};
     final InstrumentBuilder builder;
 
     SdkLongCounterBuilder(SdkMeter sdkMeter, String name) {
@@ -95,6 +106,10 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
     @Override
     public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      if (callback == null) {
+        ApiUsageLogger.logNullParam(LongCounterBuilder.class, "buildWithCallback", "callback");
+        return NOOP_OBSERVABLE_COUNTER;
+      }
       return builder.buildLongAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 

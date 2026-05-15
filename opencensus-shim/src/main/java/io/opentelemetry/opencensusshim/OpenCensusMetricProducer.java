@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * {@link MetricProducer} for OpenCensus metrics, which allows {@link MetricReader}s to read from
@@ -39,6 +40,7 @@ public final class OpenCensusMetricProducer implements MetricProducer {
 
   @Override
   public Collection<MetricData> produce(Resource resource) {
+    Objects.requireNonNull(resource, "resource");
     List<MetricData> result = new ArrayList<>();
     openCensusMetricStorage
         .getAllMetricProducer()

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,6 +43,7 @@ public interface SpanExporter extends Closeable {
    * {@link SimpleSpanProcessor} or a {@link BatchSpanProcessor}.
    */
   static SpanExporter composite(Iterable<SpanExporter> exporters) {
+    Objects.requireNonNull(exporters, "exporters");
     List<SpanExporter> exportersList = new ArrayList<>();
     for (SpanExporter exporter : exporters) {
       exportersList.add(exporter);

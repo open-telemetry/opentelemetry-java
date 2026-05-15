@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.profiles.ProfileExporter;
 import io.opentelemetry.sdk.profiles.data.ProfileData;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -64,6 +65,7 @@ public class OtlpGrpcProfileExporter implements ProfileExporter {
    */
   @Override
   public CompletableResultCode export(Collection<ProfileData> profiles) {
+    Objects.requireNonNull(profiles, "profiles");
     ProfilesRequestMarshaler request = ProfilesRequestMarshaler.create(profiles);
     return delegate.export(request, profiles.size());
   }

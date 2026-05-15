@@ -6,11 +6,15 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.internal.IncubatingUtil;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 
 /** A {@link MeterProvider} that does nothing. */
 class DefaultMeterProvider implements MeterProvider {
   @Override
   public MeterBuilder meterBuilder(String instrumentationScopeName) {
+    if (instrumentationScopeName == null) {
+      ApiUsageLogger.logNullParam(MeterProvider.class, "meterBuilder", "instrumentationScopeName");
+    }
     return BUILDER_INSTANCE;
   }
 
@@ -30,11 +34,18 @@ class DefaultMeterProvider implements MeterProvider {
 
     @Override
     public MeterBuilder setSchemaUrl(String schemaUrl) {
+      if (schemaUrl == null) {
+        ApiUsageLogger.logNullParam(MeterBuilder.class, "setSchemaUrl", "schemaUrl");
+      }
       return this;
     }
 
     @Override
     public MeterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
+      if (instrumentationScopeVersion == null) {
+        ApiUsageLogger.logNullParam(
+            MeterBuilder.class, "setInstrumentationVersion", "instrumentationScopeVersion");
+      }
       return this;
     }
 

@@ -21,6 +21,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributeUtil;
@@ -75,6 +76,7 @@ class SdkSpanBuilder implements SpanBuilder {
   @Override
   public SpanBuilder setParent(Context context) {
     if (context == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setParent", "context");
       return this;
     }
     this.parent = context;
@@ -90,6 +92,7 @@ class SdkSpanBuilder implements SpanBuilder {
   @Override
   public SpanBuilder setSpanKind(SpanKind spanKind) {
     if (spanKind == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setSpanKind", "spanKind");
       return this;
     }
     this.spanKind = spanKind;
@@ -98,7 +101,11 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext) {
-    if (spanContext == null || !spanContext.isValid()) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "addLink", "spanContext");
+      return this;
+    }
+    if (!spanContext.isValid()) {
       return this;
     }
     addLink(LinkData.create(spanContext));
@@ -107,10 +114,15 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
-    if (spanContext == null || !spanContext.isValid()) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "addLink", "spanContext");
+      return this;
+    }
+    if (!spanContext.isValid()) {
       return this;
     }
     if (attributes == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "addLink", "attributes");
       attributes = Attributes.empty();
     }
     int totalAttributeCount = attributes.size();
@@ -141,27 +153,47 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder setAttribute(String key, @Nullable String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(stringKey(key), value);
   }
 
   @Override
   public SpanBuilder setAttribute(String key, long value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(longKey(key), value);
   }
 
   @Override
   public SpanBuilder setAttribute(String key, double value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(doubleKey(key), value);
   }
 
   @Override
   public SpanBuilder setAttribute(String key, boolean value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(booleanKey(key), value);
   }
 
   @Override
   public <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setAttribute", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     attributes().put(key, value);
@@ -170,7 +202,11 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
-    if (startTimestamp < 0 || unit == null) {
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(SdkSpanBuilder.class, "setStartTimestamp", "unit");
+      return this;
+    }
+    if (startTimestamp < 0) {
       return this;
     }
     startEpochNanos = unit.toNanos(startTimestamp);

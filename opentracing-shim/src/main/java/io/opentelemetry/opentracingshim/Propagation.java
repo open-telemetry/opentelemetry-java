@@ -14,6 +14,7 @@ import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 final class Propagation {
@@ -67,6 +68,8 @@ final class Propagation {
 
     @Override
     public void set(@Nullable TextMapInject carrier, String key, String value) {
+      Objects.requireNonNull(key, "key");
+      Objects.requireNonNull(value, "value");
       if (carrier != null) {
         carrier.put(key, value);
       }
@@ -81,12 +84,14 @@ final class Propagation {
 
     @Override
     public Iterable<String> keys(Map<String, String> carrier) {
+      Objects.requireNonNull(carrier, "carrier");
       return carrier.keySet();
     }
 
     @Override
     @Nullable
     public String get(@Nullable Map<String, String> carrier, String key) {
+      Objects.requireNonNull(key, "key");
       if (carrier == null) {
         return null;
       }

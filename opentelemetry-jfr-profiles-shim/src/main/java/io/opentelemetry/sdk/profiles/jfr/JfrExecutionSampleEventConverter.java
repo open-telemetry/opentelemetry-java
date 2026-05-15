@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.profiles.jfr;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.sdk.profiles.ProfilesDictionaryCompositor;
 import io.opentelemetry.sdk.profiles.SampleCompositionBuilder;
 import io.opentelemetry.sdk.profiles.SampleCompositionKey;
@@ -64,6 +65,11 @@ public class JfrExecutionSampleEventConverter {
    * @param recordedEvent the event to process.
    */
   public void accept(RecordedEvent recordedEvent) {
+    if (recordedEvent == null) {
+      ApiUsageLogger.logNullParam(
+          JfrExecutionSampleEventConverter.class, "accept", "recordedEvent");
+      return;
+    }
     if (!"jdk.ExecutionSample".equals(recordedEvent.getEventType().getName())) {
       return;
     }

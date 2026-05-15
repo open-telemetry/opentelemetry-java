@@ -34,6 +34,7 @@ public interface SamplingResult {
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
   static SamplingResult create(SamplingDecision decision) {
+    requireNonNull(decision, "decision");
     switch (decision) {
       case RECORD_AND_SAMPLE:
         return ImmutableSamplingResult.EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
@@ -61,6 +62,7 @@ public interface SamplingResult {
    *     provided {@code decision}.
    */
   static SamplingResult create(SamplingDecision decision, Attributes attributes) {
+    requireNonNull(decision, "decision");
     requireNonNull(attributes, "attributes");
     return attributes.isEmpty()
         ? create(decision)

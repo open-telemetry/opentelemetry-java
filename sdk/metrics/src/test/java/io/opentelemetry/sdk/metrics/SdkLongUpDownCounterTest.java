@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
@@ -39,9 +39,8 @@ class SdkLongUpDownCounterTest {
 
   @Test
   void add_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testCounter").build().add(1, null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("attributes");
+    assertThatCode(() -> sdkMeter.upDownCounterBuilder("testCounter").build().add(1, null))
+        .doesNotThrowAnyException();
   }
 
   @Test

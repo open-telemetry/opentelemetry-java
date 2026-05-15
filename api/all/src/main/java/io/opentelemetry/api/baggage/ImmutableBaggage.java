@@ -6,6 +6,7 @@
 package io.opentelemetry.api.baggage;
 
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +34,10 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
   @Nullable
   @Override
   public String getEntryValue(String entryKey) {
+    if (entryKey == null) {
+      ApiUsageLogger.logNullParam(Baggage.class, "getEntryValue", "entryKey");
+      return null;
+    }
     BaggageEntry entry = get(entryKey);
     return entry != null ? entry.getValue() : null;
   }
@@ -41,6 +46,10 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
   @Nullable
   @Override
   public BaggageEntry getEntry(String entryKey) {
+    if (entryKey == null) {
+      ApiUsageLogger.logNullParam(Baggage.class, "getEntry", "entryKey");
+      return null;
+    }
     return get(entryKey);
   }
 
@@ -69,7 +78,16 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
 
     @Override
     public BaggageBuilder put(String key, String value, BaggageEntryMetadata entryMetadata) {
-      if ((key == null) || (value == null) || (entryMetadata == null)) {
+      if (key == null) {
+        ApiUsageLogger.logNullParam(BaggageBuilder.class, "put", "key");
+        return this;
+      }
+      if (value == null) {
+        ApiUsageLogger.logNullParam(BaggageBuilder.class, "put", "value");
+        return this;
+      }
+      if (entryMetadata == null) {
+        ApiUsageLogger.logNullParam(BaggageBuilder.class, "put", "entryMetadata");
         return this;
       }
       data.add(key);
@@ -81,6 +99,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
     @Override
     public BaggageBuilder remove(String key) {
       if (key == null) {
+        ApiUsageLogger.logNullParam(BaggageBuilder.class, "remove", "key");
         return this;
       }
       data.add(key);

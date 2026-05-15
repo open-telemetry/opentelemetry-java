@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.trace.internal.JcTools;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -90,7 +91,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStart(Context parentContext, ReadWriteSpan span) {}
+  public void onStart(Context parentContext, ReadWriteSpan span) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(span, "span");
+  }
 
   @Override
   public boolean isStartRequired() {
@@ -99,7 +103,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (span != null && (exportUnsampledSpans || span.getSpanContext().isSampled())) {
+    Objects.requireNonNull(span, "span");
+    if (exportUnsampledSpans || span.getSpanContext().isSampled()) {
       worker.addSpan(span);
     }
   }

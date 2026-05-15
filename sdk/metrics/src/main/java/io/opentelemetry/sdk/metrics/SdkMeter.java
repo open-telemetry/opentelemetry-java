@@ -17,6 +17,7 @@ import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.ObservableMeasurement;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -78,6 +79,7 @@ final class SdkMeter implements Meter {
 
   private static final Meter NOOP_METER = MeterProvider.noop().get("noop");
   private static final String NOOP_INSTRUMENT_NAME = "noop";
+  private static final BatchCallback NOOP_BATCH_CALLBACK = new BatchCallback() {};
 
   private final Object collectLock = new Object();
   private final Object callbackLock = new Object();
@@ -210,6 +212,14 @@ final class SdkMeter implements Meter {
       Runnable callback,
       ObservableMeasurement observableMeasurement,
       ObservableMeasurement... additionalMeasurements) {
+    if (callback == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "callback");
+      return NOOP_BATCH_CALLBACK;
+    }
+    if (observableMeasurement == null) {
+      ApiUsageLogger.logNullParam(Meter.class, "batchCallback", "observableMeasurement");
+      return NOOP_BATCH_CALLBACK;
+    }
     Set<ObservableMeasurement> measurements = new HashSet<>();
     measurements.add(observableMeasurement);
     Collections.addAll(measurements, additionalMeasurements);
@@ -333,6 +343,9 @@ final class SdkMeter implements Meter {
   }
 
   /** Check if the instrument name is valid. If invalid, log a warning. */
+  // TODO: consider replacing with ApiUsageLogger for consistency with the null guard policy
+  // (see docs/knowledge/api-design.md). Current approach logs at WARNING per-call with the
+  // invalid name inline, but creates a separate observability channel from other API misuse.
   // Visible for testing
   static boolean checkValidInstrumentName(String name) {
     if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {

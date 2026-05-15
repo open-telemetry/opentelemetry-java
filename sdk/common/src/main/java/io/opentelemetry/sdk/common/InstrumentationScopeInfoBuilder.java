@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.common;
 
 import io.opentelemetry.api.common.Attributes;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -26,18 +27,21 @@ public final class InstrumentationScopeInfoBuilder {
 
   /** Set the version. */
   public InstrumentationScopeInfoBuilder setVersion(String version) {
+    Objects.requireNonNull(version, "version");
     this.version = version;
     return this;
   }
 
   /** Set the schema URL. */
   public InstrumentationScopeInfoBuilder setSchemaUrl(String schemaUrl) {
+    Objects.requireNonNull(schemaUrl, "schemaUrl");
     this.schemaUrl = schemaUrl;
     return this;
   }
 
   /** Set the attributes. */
   public InstrumentationScopeInfoBuilder setAttributes(Attributes attributes) {
+    Objects.requireNonNull(attributes, "attributes");
     this.attributes = attributes;
     return this;
   }

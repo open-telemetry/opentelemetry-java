@@ -54,6 +54,7 @@ public final class OpenTelemetrySdkBuilder {
    * @see SdkTracerProvider#builder()
    */
   public OpenTelemetrySdkBuilder setTracerProvider(SdkTracerProvider tracerProvider) {
+    requireNonNull(tracerProvider, "tracerProvider");
     this.tracerProvider = tracerProvider;
     return this;
   }
@@ -66,6 +67,7 @@ public final class OpenTelemetrySdkBuilder {
    * @see SdkMeterProvider#builder()
    */
   public OpenTelemetrySdkBuilder setMeterProvider(SdkMeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
     this.meterProvider = meterProvider;
     return this;
   }
@@ -78,6 +80,7 @@ public final class OpenTelemetrySdkBuilder {
    * @since 1.19.0
    */
   public OpenTelemetrySdkBuilder setLoggerProvider(SdkLoggerProvider loggerProvider) {
+    requireNonNull(loggerProvider, "loggerProvider");
     this.loggerProvider = loggerProvider;
     return this;
   }

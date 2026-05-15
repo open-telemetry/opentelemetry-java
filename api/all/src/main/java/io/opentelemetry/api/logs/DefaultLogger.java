@@ -7,6 +7,7 @@ package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +26,12 @@ class DefaultLogger implements Logger {
 
   @Override
   public boolean isEnabled(Severity severity, Context context) {
+    if (severity == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "severity");
+    }
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Logger.class, "isEnabled", "context");
+    }
     return false;
   }
 
@@ -39,51 +46,81 @@ class DefaultLogger implements Logger {
 
     @Override
     public LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setTimestamp", "unit");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setTimestamp(Instant instant) {
+      if (instant == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setTimestamp", "instant");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
+      if (unit == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setObservedTimestamp", "unit");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setObservedTimestamp(Instant instant) {
+      if (instant == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setObservedTimestamp", "instant");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setContext(Context context) {
+      if (context == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setContext", "context");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setSeverity(Severity severity) {
+      if (severity == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setSeverity", "severity");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setSeverityText(String severityText) {
+      if (severityText == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setSeverityText", "severityText");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setBody(String body) {
+      if (body == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setBody", "body");
+      }
       return this;
     }
 
     @Override
     public LogRecordBuilder setBody(Value<?> body) {
+      if (body == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setBody", "body");
+      }
       return this;
     }
 
     @Override
     public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
+      if (key == null) {
+        ApiUsageLogger.logNullParam(LogRecordBuilder.class, "setAttribute", "key");
+      }
       return this;
     }
 

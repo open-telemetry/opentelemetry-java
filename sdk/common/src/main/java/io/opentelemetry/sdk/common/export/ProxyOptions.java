@@ -13,6 +13,7 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Configuration for proxy settings.
@@ -28,6 +29,7 @@ public final class ProxyOptions {
 
   /** Create proxy options with the {@code proxySelector}. */
   public static ProxyOptions create(ProxySelector proxySelector) {
+    Objects.requireNonNull(proxySelector, "proxySelector");
     return new ProxyOptions(proxySelector);
   }
 
@@ -36,6 +38,7 @@ public final class ProxyOptions {
    * proxy with the {@code socketAddress}.
    */
   public static ProxyOptions create(InetSocketAddress socketAddress) {
+    Objects.requireNonNull(socketAddress, "socketAddress");
     return new ProxyOptions(new SimpleProxySelector(new Proxy(Proxy.Type.HTTP, socketAddress)));
   }
 

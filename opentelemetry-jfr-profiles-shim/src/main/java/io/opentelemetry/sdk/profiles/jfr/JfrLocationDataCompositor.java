@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.profiles.jfr;
 
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.sdk.profiles.ProfilesDictionaryCompositor;
 import io.opentelemetry.sdk.profiles.data.FunctionData;
 import io.opentelemetry.sdk.profiles.data.LineData;
@@ -12,6 +13,7 @@ import io.opentelemetry.sdk.profiles.data.LocationData;
 import io.opentelemetry.sdk.profiles.data.StackData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import jdk.jfr.consumer.RecordedFrame;
 
 /**
@@ -36,6 +38,7 @@ public class JfrLocationDataCompositor {
    */
   public static JfrLocationDataCompositor create(
       ProfilesDictionaryCompositor profilesDictionaryCompositor) {
+    Objects.requireNonNull(profilesDictionaryCompositor, "profilesDictionaryCompositor");
     return new JfrLocationDataCompositor(profilesDictionaryCompositor);
   }
 
@@ -56,6 +59,10 @@ public class JfrLocationDataCompositor {
    * @return the index of the added or existing StackData element.
    */
   public int putIfAbsent(List<RecordedFrame> frameList) {
+    if (frameList == null) {
+      ApiUsageLogger.logNullParam(JfrLocationDataCompositor.class, "putIfAbsent", "frameList");
+      return -1;
+    }
 
     List<Integer> locationIndices = frameList.stream().map(this::frameToLocation).toList();
 

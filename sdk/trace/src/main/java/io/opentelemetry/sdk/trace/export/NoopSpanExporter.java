@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace.export;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collection;
+import java.util.Objects;
 
 final class NoopSpanExporter implements SpanExporter {
 
@@ -19,6 +20,7 @@ final class NoopSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
+    Objects.requireNonNull(spans, "spans");
     return CompletableResultCode.ofSuccess();
   }
 

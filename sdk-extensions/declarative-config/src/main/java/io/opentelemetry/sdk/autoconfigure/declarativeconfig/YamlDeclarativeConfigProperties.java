@@ -76,6 +76,8 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   @SuppressWarnings("unchecked")
   public static YamlDeclarativeConfigProperties create(
       Map<String, Object> properties, ComponentLoader componentLoader) {
+    Objects.requireNonNull(properties, "properties");
+    Objects.requireNonNull(componentLoader, "componentLoader");
     Map<String, Object> simpleEntries = new LinkedHashMap<>();
     Map<String, List<YamlDeclarativeConfigProperties>> listEntries = new LinkedHashMap<>();
     Map<String, YamlDeclarativeConfigProperties> mapEntries = new LinkedHashMap<>();
@@ -202,6 +204,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
   @Override
   public <T> List<T> getScalarList(String name, Class<T> scalarType) {
     Objects.requireNonNull(name, "Null configuration property name");
+    Objects.requireNonNull(scalarType, "scalarType");
     if (!SUPPORTED_SCALAR_TYPES.contains(scalarType)) {
       throw new DeclarativeConfigException(
           "Unsupported scalar type "

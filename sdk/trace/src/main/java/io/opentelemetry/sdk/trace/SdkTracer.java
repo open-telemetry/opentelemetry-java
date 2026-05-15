@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 
@@ -65,7 +66,10 @@ class SdkTracer implements Tracer {
     if (!tracerEnabled) {
       return NOOP_TRACER.spanBuilder(spanName);
     }
-    if (spanName == null || spanName.trim().isEmpty()) {
+    if (spanName == null) {
+      ApiUsageLogger.logNullParam(SdkTracer.class, "spanBuilder", "spanName");
+      spanName = FALLBACK_SPAN_NAME;
+    } else if (spanName.trim().isEmpty()) {
       spanName = FALLBACK_SPAN_NAME;
     }
     if (sharedState.hasBeenShutdown()) {

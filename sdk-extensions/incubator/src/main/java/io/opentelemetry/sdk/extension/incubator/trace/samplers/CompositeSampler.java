@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A sampler that uses a {@link ComposableSampler} to make its sampling decisions while handlign
@@ -32,6 +33,7 @@ public final class CompositeSampler implements Sampler {
    * Returns a new composite {@link Sampler} that delegates to the given {@link ComposableSampler}.
    */
   public static Sampler wrap(ComposableSampler delegate) {
+    Objects.requireNonNull(delegate, "delegate");
     return new CompositeSampler(delegate);
   }
 
@@ -49,6 +51,12 @@ public final class CompositeSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
+    Objects.requireNonNull(parentContext, "parentContext");
+    Objects.requireNonNull(traceId, "traceId");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(spanKind, "spanKind");
+    Objects.requireNonNull(attributes, "attributes");
+    Objects.requireNonNull(parentLinks, "parentLinks");
     TraceState traceState = Span.fromContext(parentContext).getSpanContext().getTraceState();
     OtelTraceState otelTraceState = OtelTraceState.parse(traceState);
 
@@ -99,6 +107,7 @@ public final class CompositeSampler implements Sampler {
 
       @Override
       public TraceState getUpdatedTraceState(TraceState parentTraceState) {
+        Objects.requireNonNull(parentTraceState, "parentTraceState");
         TraceState newTraceState = intent.getTraceStateUpdater().apply(traceState);
         if (!serializedState.isEmpty()) {
           newTraceState =

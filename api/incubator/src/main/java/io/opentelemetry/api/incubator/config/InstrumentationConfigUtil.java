@@ -6,6 +6,7 @@
 package io.opentelemetry.api.incubator.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,11 @@ public class InstrumentationConfigUtil {
   @Deprecated
   @Nullable
   public static Map<String, String> peerServiceMapping(ConfigProvider configProvider) {
+    if (configProvider == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "peerServiceMapping", "configProvider");
+      return null;
+    }
     List<DeclarativeConfigProperties> serviceMappingList =
         getOrNull(
             configProvider,
@@ -59,6 +65,11 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static List<String> httpClientRequestCapturedHeaders(ConfigProvider configProvider) {
+    if (configProvider == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "httpClientRequestCapturedHeaders", "configProvider");
+      return null;
+    }
     return getOrNull(
         configProvider,
         config -> config.getScalarList("request_captured_headers", String.class),
@@ -75,6 +86,11 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static List<String> httpClientResponseCapturedHeaders(ConfigProvider configProvider) {
+    if (configProvider == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "httpClientResponseCapturedHeaders", "configProvider");
+      return null;
+    }
     return getOrNull(
         configProvider,
         config -> config.getScalarList("response_captured_headers", String.class),
@@ -91,6 +107,11 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static List<String> httpServerRequestCapturedHeaders(ConfigProvider configProvider) {
+    if (configProvider == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "httpServerRequestCapturedHeaders", "configProvider");
+      return null;
+    }
     return getOrNull(
         configProvider,
         config -> config.getScalarList("request_captured_headers", String.class),
@@ -107,6 +128,11 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static List<String> httpServerResponseCapturedHeaders(ConfigProvider configProvider) {
+    if (configProvider == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "httpServerResponseCapturedHeaders", "configProvider");
+      return null;
+    }
     return getOrNull(
         configProvider,
         config -> config.getScalarList("response_captured_headers", String.class),
@@ -123,6 +149,16 @@ public class InstrumentationConfigUtil {
   @Nullable
   public static DeclarativeConfigProperties javaInstrumentationConfig(
       ConfigProvider configProvider, String instrumentationName) {
+    if (configProvider == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "javaInstrumentationConfig", "configProvider");
+      return null;
+    }
+    if (instrumentationName == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "javaInstrumentationConfig", "instrumentationName");
+      return null;
+    }
     return getOrNull(configProvider, config -> config.getStructured(instrumentationName), "java");
   }
 
@@ -139,6 +175,18 @@ public class InstrumentationConfigUtil {
       ConfigProvider configProvider,
       Function<DeclarativeConfigProperties, T> accessor,
       String... segments) {
+    if (configProvider == null) {
+      ApiUsageLogger.logNullParam(InstrumentationConfigUtil.class, "getOrNull", "configProvider");
+      return null;
+    }
+    if (accessor == null) {
+      ApiUsageLogger.logNullParam(InstrumentationConfigUtil.class, "getOrNull", "accessor");
+      return null;
+    }
+    if (segments == null) {
+      ApiUsageLogger.logNullParam(InstrumentationConfigUtil.class, "getOrNull", "segments");
+      return null;
+    }
     DeclarativeConfigProperties config = configProvider.getInstrumentationConfig();
     for (String segment : segments) {
       config = config.getStructured(segment);
@@ -187,6 +235,26 @@ public class InstrumentationConfigUtil {
       String instrumentationName,
       ObjectMapper objectMapper,
       Class<T> modelType) {
+    if (configProvider == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "getInstrumentationConfigModel", "configProvider");
+      return null;
+    }
+    if (instrumentationName == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "getInstrumentationConfigModel", "instrumentationName");
+      return null;
+    }
+    if (objectMapper == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "getInstrumentationConfigModel", "objectMapper");
+      return null;
+    }
+    if (modelType == null) {
+      ApiUsageLogger.logNullParam(
+          InstrumentationConfigUtil.class, "getInstrumentationConfigModel", "modelType");
+      return null;
+    }
     DeclarativeConfigProperties properties =
         javaInstrumentationConfig(configProvider, instrumentationName);
     if (properties == null) {

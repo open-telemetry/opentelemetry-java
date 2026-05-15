@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * This data structure is effectively an indexed Set.
@@ -42,6 +43,7 @@ public class DictionaryTable<T> {
    * @return the index of the added or existing element.
    */
   public Integer putIfAbsent(T value) {
+    Objects.requireNonNull(value, "value");
     Integer index = map.computeIfAbsent(value, k -> map.size());
     if (map.size() != table.size()) {
       table.add(value);

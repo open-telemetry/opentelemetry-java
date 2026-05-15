@@ -13,6 +13,7 @@ import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ExtendedAttributesMap;
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
@@ -89,7 +90,11 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
 
   @Override
   public <T> ExtendedSdkReadWriteLogRecord setAttribute(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkReadWriteLogRecord.class, "setAttribute", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     return setAttribute(ExtendedAttributeKey.fromAttributeKey(key), value);
@@ -97,7 +102,11 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
 
   @Override
   public <T> ExtendedSdkReadWriteLogRecord setAttribute(ExtendedAttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(ExtendedSdkReadWriteLogRecord.class, "setAttribute", "key");
+      return this;
+    }
+    if (key.getKey().isEmpty() || value == null) {
       return this;
     }
     synchronized (lock) {

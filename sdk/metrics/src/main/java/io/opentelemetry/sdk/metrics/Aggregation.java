@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.view.ExplicitBucketHistogramAggrega
 import io.opentelemetry.sdk.metrics.internal.view.LastValueAggregation;
 import io.opentelemetry.sdk.metrics.internal.view.SumAggregation;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Configures how instrument measurements are combined into metrics.
@@ -80,6 +81,7 @@ public interface Aggregation {
    * @since 1.60.0
    */
   static Aggregation explicitBucketHistogram(ExplicitBucketHistogramOptions options) {
+    Objects.requireNonNull(options, "options");
     List<Double> boundaries = options.getBucketBoundaries();
     if (boundaries == null) {
       boundaries = ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES;
@@ -126,6 +128,7 @@ public interface Aggregation {
    * @since 1.60.0
    */
   static Aggregation base2ExponentialBucketHistogram(Base2ExponentialHistogramOptions options) {
+    Objects.requireNonNull(options, "options");
     return Base2ExponentialHistogramAggregation.create(
         options.getMaxBuckets(), options.getMaxScale(), options.getRecordMinMax());
   }
