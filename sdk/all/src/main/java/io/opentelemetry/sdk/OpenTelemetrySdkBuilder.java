@@ -167,13 +167,13 @@ public final class OpenTelemetrySdkBuilder {
   private static OpenTelemetrySdk createExtendedOpenTelemetrySdk(
       OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
     return createExtendedOpenTelemetrySdk(
-        requireNonNull(CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD), openTelemetrySdk, configProvider);
+        openTelemetrySdk, configProvider, requireNonNull(CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD));
   }
 
   static OpenTelemetrySdk createExtendedOpenTelemetrySdk(
-      Method createExtendedOpenTelemetrySdkMethod,
       OpenTelemetrySdk openTelemetrySdk,
-      @Nullable Object configProvider) {
+      @Nullable Object configProvider,
+      Method createExtendedOpenTelemetrySdkMethod) {
     try {
       return (OpenTelemetrySdk)
           createExtendedOpenTelemetrySdkMethod.invoke(null, openTelemetrySdk, configProvider);

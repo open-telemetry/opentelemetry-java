@@ -167,7 +167,7 @@ class OpenTelemetrySdkTest {
     assertThatThrownBy(
             () ->
                 OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
-                    method, OpenTelemetrySdk.builder().build(), null))
+                    OpenTelemetrySdk.builder().build(), null, method))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("runtime boom");
   }
@@ -181,7 +181,7 @@ class OpenTelemetrySdkTest {
     assertThatThrownBy(
             () ->
                 OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
-                    method, OpenTelemetrySdk.builder().build(), null))
+                    OpenTelemetrySdk.builder().build(), null, method))
         .isInstanceOf(AssertionError.class)
         .hasMessage("error boom");
   }
@@ -195,7 +195,7 @@ class OpenTelemetrySdkTest {
     assertThatThrownBy(
             () ->
                 OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
-                    method, OpenTelemetrySdk.builder().build(), null))
+                    OpenTelemetrySdk.builder().build(), null, method))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
             "IncubatingUtil.createExtendedOpenTelemetrySdk failed. This is a bug in OpenTelemetry.")
@@ -211,7 +211,7 @@ class OpenTelemetrySdkTest {
     assertThatThrownBy(
             () ->
                 OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
-                    method, OpenTelemetrySdk.builder().build(), null))
+                    OpenTelemetrySdk.builder().build(), null, method))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
             "IncubatingUtil.createExtendedOpenTelemetrySdk could not be called with the expected"
@@ -229,7 +229,7 @@ class OpenTelemetrySdkTest {
     assertThatThrownBy(
             () ->
                 OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
-                    method, OpenTelemetrySdk.builder().build(), null))
+                    OpenTelemetrySdk.builder().build(), null, method))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
             "IncubatingUtil.createExtendedOpenTelemetrySdk could not be invoked. This is a bug in OpenTelemetry.")
