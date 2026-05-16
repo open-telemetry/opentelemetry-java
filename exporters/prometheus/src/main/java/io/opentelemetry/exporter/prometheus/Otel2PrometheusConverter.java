@@ -470,7 +470,9 @@ final class Otel2PrometheusConverter {
   private static int labelSetLength(Labels labels) {
     int length = 0;
     for (int i = 0; i < labels.size(); i++) {
-      length += labels.getName(i).length() + labels.getValue(i).length();
+      length +=
+          labels.getName(i).codePointCount(0, labels.getName(i).length())
+              + labels.getValue(i).codePointCount(0, labels.getValue(i).length());
     }
     return length;
   }

@@ -561,18 +561,17 @@ class Otel2PrometheusConverterTest {
     assertThat(predicateCalledCount.get()).isEqualTo(2);
   }
 
-  @Test
-  void exemplarLabelsWithinLimit() {
-    SpanContext spanContext =
-        SpanContext.create(
-            "00000000000000000000000000000001",
-            "0000000000000001",
-            TraceFlags.getSampled(),
-            TraceState.getDefault());
+  @ParameterizedTest
+  @MethodSource("exemplarLabelLimitArgs")
+  void exemplarLabelLimit(
+      String testName,
+      SpanContext spanContext,
+      Attributes filteredAttributes,
+      String[] expectedPresentKeys,
+      String[] expectedAbsentKeys) {
     ImmutableDoubleExemplarData exemplar =
         (ImmutableDoubleExemplarData)
-            ImmutableDoubleExemplarData.create(
-                Attributes.of(stringKey("short"), "val"), 1000L, spanContext, 1.0);
+            ImmutableDoubleExemplarData.create(filteredAttributes, 1000L, spanContext, 1.0);
 
     MetricData metricData =
         ImmutableMetricData.createDoubleGauge(
@@ -588,108 +587,56 @@ class Otel2PrometheusConverterTest {
 
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
     assertThat(snapshots).isNotNull();
-    // Labels within limit — both trace/span and filtered attribute should be present
     GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
     Labels exemplarLabels = point.getExemplar().getLabels();
-    assertThat(exemplarLabels.get("trace_id")).isEqualTo(spanContext.getTraceId());
-    assertThat(exemplarLabels.get("span_id")).isEqualTo(spanContext.getSpanId());
-    assertThat(exemplarLabels.get("short")).isEqualTo("val");
+    for (String key : expectedPresentKeys) {
+      assertThat(exemplarLabels.get(key)).as("expected label '%s' to be present", key).isNotNull();
+    }
+    for (String key : expectedAbsentKeys) {
+      assertThat(exemplarLabels.get(key)).as("expected label '%s' to be absent", key).isNull();
+    }
   }
 
-  @Test
-  void exemplarLabelsExceedingLimitDropsFilteredAttributes() {
-    SpanContext spanContext =
+  private static Stream<Arguments> exemplarLabelLimitArgs() {
+    SpanContext validSpanContext =
         SpanContext.create(
             "00000000000000000000000000000001",
             "0000000000000001",
             TraceFlags.getSampled(),
             TraceState.getDefault());
-    // Build a filtered attribute whose name+value alone would push total over 128
+
     char[] chars = new char[100];
     Arrays.fill(chars, 'x');
-    String longValue = new String(chars);
-    ImmutableDoubleExemplarData exemplar =
-        (ImmutableDoubleExemplarData)
-            ImmutableDoubleExemplarData.create(
-                Attributes.of(stringKey("long_attr"), longValue), 1000L, spanContext, 1.0);
+    String longValue100 = new String(chars);
 
-    MetricData metricData =
-        ImmutableMetricData.createDoubleGauge(
-            Resource.getDefault(),
-            InstrumentationScopeInfo.create("test"),
-            "my.gauge",
-            "desc",
-            "unit",
-            ImmutableGaugeData.create(
-                Collections.singletonList(
-                    ImmutableDoublePointData.create(
-                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
-
-    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
-    assertThat(snapshots).isNotNull();
-    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
-    Labels exemplarLabels = point.getExemplar().getLabels();
-    // trace_id and span_id are preserved
-    assertThat(exemplarLabels.get("trace_id")).isEqualTo(spanContext.getTraceId());
-    assertThat(exemplarLabels.get("span_id")).isEqualTo(spanContext.getSpanId());
-    // filtered attribute is dropped to stay within limit
-    assertThat(exemplarLabels.get("long_attr")).isNull();
-  }
-
-  @Test
-  void exemplarWithoutSpanContextExceedingLimitDropsFilteredAttributes() {
-    char[] chars = new char[150];
+    chars = new char[150];
     Arrays.fill(chars, 'x');
-    String longValue = new String(chars);
-    ImmutableDoubleExemplarData exemplar =
-        (ImmutableDoubleExemplarData)
-            ImmutableDoubleExemplarData.create(
-                Attributes.of(stringKey("long_attr"), longValue),
-                1000L,
-                SpanContext.getInvalid(),
-                1.0);
+    String longValue150 = new String(chars);
 
-    MetricData metricData =
-        ImmutableMetricData.createDoubleGauge(
-            Resource.getDefault(),
-            InstrumentationScopeInfo.create("test"),
-            "my.gauge",
-            "desc",
-            "unit",
-            ImmutableGaugeData.create(
-                Collections.singletonList(
-                    ImmutableDoublePointData.create(
-                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
-
-    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
-    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
-    Labels exemplarLabels = point.getExemplar().getLabels();
-    // No span context means no trace_id/span_id, and oversized filtered attr is dropped
-    assertThat(exemplarLabels.size()).isZero();
-  }
-
-  @Test
-  void exemplarWithoutSpanContextWithinLimit() {
-    ImmutableDoubleExemplarData exemplar =
-        (ImmutableDoubleExemplarData)
-            ImmutableDoubleExemplarData.create(
-                Attributes.of(stringKey("short"), "val"), 1000L, SpanContext.getInvalid(), 1.0);
-
-    MetricData metricData =
-        ImmutableMetricData.createDoubleGauge(
-            Resource.getDefault(),
-            InstrumentationScopeInfo.create("test"),
-            "my.gauge",
-            "desc",
-            "unit",
-            ImmutableGaugeData.create(
-                Collections.singletonList(
-                    ImmutableDoublePointData.create(
-                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
-
-    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
-    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
-    Labels exemplarLabels = point.getExemplar().getLabels();
-    assertThat(exemplarLabels.get("short")).isEqualTo("val");
+    return Stream.of(
+        Arguments.of(
+            "withSpanContext_withinLimit",
+            validSpanContext,
+            Attributes.of(stringKey("short"), "val"),
+            new String[] {"trace_id", "span_id", "short"},
+            new String[] {}),
+        Arguments.of(
+            "withSpanContext_exceedingLimit",
+            validSpanContext,
+            Attributes.of(stringKey("long_attr"), longValue100),
+            new String[] {"trace_id", "span_id"},
+            new String[] {"long_attr"}),
+        Arguments.of(
+            "withoutSpanContext_exceedingLimit",
+            SpanContext.getInvalid(),
+            Attributes.of(stringKey("long_attr"), longValue150),
+            new String[] {},
+            new String[] {"long_attr"}),
+        Arguments.of(
+            "withoutSpanContext_withinLimit",
+            SpanContext.getInvalid(),
+            Attributes.of(stringKey("short"), "val"),
+            new String[] {"short"},
+            new String[] {}));
   }
 }
