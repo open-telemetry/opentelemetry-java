@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
 

@@ -7,16 +7,16 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.FileConfigUtil.requireNonNull;
 
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalMeterConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalMeterConfiguratorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalMeterMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricReaderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamModel;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalMeterConfigModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalMeterConfiguratorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalMeterMatcherAndConfigModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MeterProviderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MetricReaderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewSelectorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;

@@ -10,11 +10,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeNameValueModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalResourceDetectionModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalResourceDetectorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.IncludeExcludeModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ResourceModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalResourceDetectionModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;

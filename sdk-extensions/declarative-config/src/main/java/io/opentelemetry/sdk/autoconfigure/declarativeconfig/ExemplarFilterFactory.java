@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MeterProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
 
 final class ExemplarFilterFactory

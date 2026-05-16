@@ -26,17 +26,17 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.ComposableRuleBasedSamplerFactory.AttributeMatcher;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableAlwaysOffSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableAlwaysOnSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalSpanParent;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKind;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableAlwaysOffSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableAlwaysOnSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableProbabilitySamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalSpanParent;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanKind;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Arrays;
@@ -135,6 +135,33 @@ class ComposableRuleBasedSamplerFactoryTest {
         Arguments.of(
             new ExperimentalComposableRuleBasedSamplerModel(),
             ComposableSampler.ruleBasedBuilder().build()),
+        // attributePatterns with only included (no excluded) - analogous to
+        // https://github.com/open-telemetry/opentelemetry-java/issues/8337
+        Arguments.of(
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributePatterns(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                    .withKey("http.path")
+                                    .withIncluded(Collections.singletonList("/internal/*")))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            ComposableSampler.ruleBasedBuilder()
+                .add(
+                    new DeclarativeConfigSamplingPredicate(
+                        null,
+                        new AttributeMatcher(
+                            "http.path",
+                            IncludeExcludePredicate.createPatternMatching(
+                                Collections.singletonList("/internal/*"), null)),
+                        null,
+                        null),
+                    ComposableSampler.alwaysOn())
+                .build()),
         // Recreate example
         Arguments.of(
             new ExperimentalComposableRuleBasedSamplerModel()

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.resources.Resource;
 
 final class ResourceDetectorFactory

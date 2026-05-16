@@ -85,7 +85,7 @@ val unzipConfigurationSchema by tasks.registering(Sync::class) {
 jsonSchema2Pojo {
   sourceFiles = setOf(file("$buildDirectory/configuration/opentelemetry_configuration.json"))
   targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
-  targetPackage = "io.opentelemetry.sdk.declarativeconfig.internal.model"
+  targetPackage = "io.opentelemetry.sdk.autoconfigure.declarativeconfig.model"
 
   // Clear old source files to avoid contaminated source dir when updating
   removeOldOutput = true
@@ -107,6 +107,12 @@ jsonSchema2Pojo {
 
   // Append Model as suffix to the generated classes.
   classNameSuffix = "Model"
+
+  // Initialize collection fields to null rather than empty collections so that absent YAML
+  // properties deserialize as null (not present) rather than [] (explicitly empty). This lets
+  // factories distinguish between "user omitted the field" and "user provided an empty list",
+  // which is important for validations like IncludeExcludeFactory.
+  initializeCollections = false
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
@@ -142,7 +148,7 @@ val deleteJs2pTmp by tasks.registering(Delete::class) {
 }
 
 // Copies EnvironmentResource.java from the autoconfigure module into a generated source set so
-// that the incubator can use the exact same source without taking a runtime dependency on
+// that declarative config can use the exact same source without taking a runtime dependency on
 // autoconfigure and without the risk of divergence from manual syncing.
 val generatedResourceConfigDir =
   layout.buildDirectory.dir("generated/sources/resource-configuration/java/main")
@@ -174,10 +180,10 @@ val buildGraalVmReflectionJson = tasks.register("buildGraalVmReflectionJson") {
   val buildDir = buildDirectory
   val targetFile = File(
     buildDir,
-    "resources/main/META-INF/native-image/io.opentelemetry/io.opentelemetry.sdk.extension.incubator/reflect-config.json"
+    "resources/main/META-INF/native-image/io.opentelemetry/io.opentelemetry.sdk.autoconfigure.declarativeconfig/reflect-config.json"
   )
   val sourcePackage =
-    "io.opentelemetry.sdk.declarativeconfig.internal.model"
+    "io.opentelemetry.sdk.autoconfigure.declarativeconfig.model"
   val sourcePackagePath = sourcePackage.replace(".", "/")
   val classesDir =
     File(
@@ -235,7 +241,7 @@ tasks.getByName("compileTestJava").dependsOn(buildGraalVmReflectionJson)
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {
   dependsOn(buildGraalVmReflectionJson)
-  exclude("**/declarativeconfig/internal/model/**")
+  exclude("**/declarativeconfig/model/**")
 }
 
 tasks {

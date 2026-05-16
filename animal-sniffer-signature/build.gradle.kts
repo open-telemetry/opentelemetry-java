@@ -8,6 +8,7 @@ plugins {
 
 description = "Build tool to generate the Animal Sniffer Android signature"
 otelJava.moduleName.set("io.opentelemetry.internal.animalsniffer")
+otelJava.osgiEnabled.set(false)
 
 val signatureJar = configurations.create("signatureJar") {
   isCanBeConsumed = false

@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.BatchLogRecordProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LogRecordExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LogRecordProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SimpleLogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchLogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;

@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;

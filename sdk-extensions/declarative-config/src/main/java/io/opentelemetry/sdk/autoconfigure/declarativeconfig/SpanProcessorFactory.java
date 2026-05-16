@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.BatchSpanProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SimpleSpanProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchSpanProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleSpanProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
