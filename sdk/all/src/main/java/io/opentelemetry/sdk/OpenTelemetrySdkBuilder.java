@@ -167,7 +167,9 @@ public final class OpenTelemetrySdkBuilder {
   private static OpenTelemetrySdk createExtendedOpenTelemetrySdk(
       OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
     return createExtendedOpenTelemetrySdk(
-        openTelemetrySdk, configProvider, requireNonNull(CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD));
+        openTelemetrySdk,
+        configProvider,
+        requireNonNull(CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD));
   }
 
   static OpenTelemetrySdk createExtendedOpenTelemetrySdk(
