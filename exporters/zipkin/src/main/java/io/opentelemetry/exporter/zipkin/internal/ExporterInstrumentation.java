@@ -109,7 +109,7 @@ public class ExporterInstrumentation {
       delegate.finishFailed(errorType, buildRequestAttributes());
     }
 
-    private Attributes buildRequestAttributes() {
+    private static Attributes buildRequestAttributes() {
       return Attributes.empty();
     }
   }
