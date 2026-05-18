@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.http;
+package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.export.Compressor;

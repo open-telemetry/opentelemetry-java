@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.grpc;
+package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.exporter.internal.marshal.CodedInputStream;
 import java.io.IOException;

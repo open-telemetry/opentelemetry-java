@@ -22,12 +22,15 @@ dependencies {
 
   compileOnly(project(":api:incubator"))
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("io.grpc:grpc-stub")
+  testImplementation("com.google.api.grpc:proto-google-common-protos")
 
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":exporters:sender:grpc-managed-channel"))
@@ -156,6 +159,15 @@ testing {
               "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider"
             )
             enabled = !testJavaVersion.equals("8")
+          }
+        }
+      }
+    }
+    register<JvmTestSuite>("testNoSender") {
+      targets {
+        all {
+          testTask {
+            classpath = classpath.filter { !it.name.startsWith("opentelemetry-exporter-sender-okhttp") }
           }
         }
       }

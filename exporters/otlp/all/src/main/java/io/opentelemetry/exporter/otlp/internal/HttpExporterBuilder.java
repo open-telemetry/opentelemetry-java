@@ -3,21 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.grpc;
+package io.opentelemetry.exporter.otlp.internal;
 
-import static io.opentelemetry.exporter.internal.SenderUtil.resolveGrpcSenderProvider;
-
-import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.SenderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.Compressor;
-import io.opentelemetry.sdk.common.export.GrpcSender;
-import io.opentelemetry.sdk.common.export.GrpcSenderProvider;
+import io.opentelemetry.sdk.common.export.HttpSender;
+import io.opentelemetry.sdk.common.export.HttpSenderProvider;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
@@ -39,72 +37,65 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * A builder for {@link GrpcExporter}.
+ * A builder for {@link HttpExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@SuppressWarnings("JavadocMethod")
-public class GrpcExporterBuilder {
-
+@SuppressWarnings("checkstyle:JavadocMethod")
+public final class HttpExporterBuilder {
+  public static final long DEFAULT_TIMEOUT_SECS = 10;
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
 
-  private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
-  private final StandardComponentId.ExporterType exporterType;
-  private final String fullMethodName;
+  private StandardComponentId.ExporterType exporterType;
 
-  private Duration timeout;
-  private Duration connectTimeout = Duration.ofSeconds(DEFAULT_CONNECT_TIMEOUT_SECS);
   private URI endpoint;
+
+  private Duration timeout = Duration.ofSeconds(DEFAULT_TIMEOUT_SECS);
   @Nullable private Compressor compressor;
+  private Duration connectTimeout = Duration.ofSeconds(DEFAULT_CONNECT_TIMEOUT_SECS);
+  @Nullable private ProxyOptions proxyOptions;
+  private boolean exportAsJson = false;
   private final Map<String, String> constantHeaders = new HashMap<>();
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
+
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier =
       () -> GlobalOpenTelemetry.getOrNoop().getMeterProvider();
   private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
-
   private ComponentLoader componentLoader =
-      ComponentLoader.forClassLoader(GrpcExporterBuilder.class.getClassLoader());
+      ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
 
-  // Use Object type since gRPC may not be on the classpath.
-  @Nullable private Object grpcChannel;
+  public HttpExporterBuilder(
+      StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
+    this(exporterType, ExporterBuilderUtil.validateEndpoint(defaultEndpoint));
+  }
 
-  public GrpcExporterBuilder(
-      StandardComponentId.ExporterType exporterType,
-      Duration defaultTimeout,
-      URI defaultEndpoint,
-      String fullMethodName) {
+  HttpExporterBuilder(StandardComponentId.ExporterType exporterType, URI endpoint) {
     this.exporterType = exporterType;
-    this.fullMethodName = fullMethodName;
-    timeout = defaultTimeout;
-    endpoint = defaultEndpoint;
+    this.endpoint = endpoint;
   }
 
-  public GrpcExporterBuilder setChannel(ManagedChannel channel) {
-    this.grpcChannel = channel;
+  public HttpExporterBuilder setTimeout(Duration duration) {
+    timeout = duration.toNanos() == 0 ? Duration.ofNanos(Long.MAX_VALUE) : duration;
     return this;
   }
 
-  public GrpcExporterBuilder setTimeout(Duration timeout) {
-    this.timeout = timeout.toNanos() == 0 ? Duration.ofNanos(Long.MAX_VALUE) : timeout;
+  public HttpExporterBuilder setConnectTimeout(Duration duration) {
+    connectTimeout = duration.toNanos() == 0 ? Duration.ofNanos(Long.MAX_VALUE) : duration;
     return this;
   }
 
-  public GrpcExporterBuilder setConnectTimeout(Duration timeout) {
-    connectTimeout = timeout.toNanos() == 0 ? Duration.ofNanos(Long.MAX_VALUE) : timeout;
-    return this;
-  }
-
-  public GrpcExporterBuilder setEndpoint(String endpoint) {
+  public HttpExporterBuilder setEndpoint(String endpoint) {
     this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
     return this;
   }
 
-  public GrpcExporterBuilder setCompression(@Nullable Compressor compressor) {
+  public HttpExporterBuilder setCompression(@Nullable Compressor compressor) {
     this.compressor = compressor;
     return this;
   }
@@ -112,73 +103,96 @@ public class GrpcExporterBuilder {
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
    * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} SPI.
+   * methods is available by implementing {@link Compressor}.
    */
-  public GrpcExporterBuilder setCompression(String compressionMethod) {
+  public HttpExporterBuilder setCompression(String compressionMethod) {
     Compressor compressor =
         CompressorUtil.validateAndResolveCompressor(compressionMethod, componentLoader);
     return setCompression(compressor);
   }
 
-  public GrpcExporterBuilder setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
-    tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
-    return this;
-  }
-
-  public GrpcExporterBuilder setKeyManagerFromCerts(byte[] privateKeyPem, byte[] certificatePem) {
-    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
-    return this;
-  }
-
-  public GrpcExporterBuilder setSslContext(SSLContext sslContext, X509TrustManager trustManager) {
-    tlsConfigHelper.setSslContext(sslContext, trustManager);
-    return this;
-  }
-
-  public GrpcExporterBuilder addConstantHeader(String key, String value) {
+  public HttpExporterBuilder addConstantHeaders(String key, String value) {
     constantHeaders.put(key, value);
     return this;
   }
 
-  public GrpcExporterBuilder setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
+  public HttpExporterBuilder setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
     this.headerSupplier = headerSupplier;
     return this;
   }
 
-  public GrpcExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
-    this.retryPolicy = retryPolicy;
+  public HttpExporterBuilder setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
+    tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
-  public GrpcExporterBuilder setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
+  public HttpExporterBuilder setKeyManagerFromCerts(byte[] privateKeyPem, byte[] certificatePem) {
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  public HttpExporterBuilder setSslContext(SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
+    return this;
+  }
+
+  public HttpExporterBuilder setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
     this.meterProviderSupplier = meterProviderSupplier;
     return this;
   }
 
-  public GrpcExporterBuilder setInternalTelemetryVersion(
+  public HttpExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion internalTelemetryVersion) {
     this.internalTelemetryVersion = internalTelemetryVersion;
     return this;
   }
 
-  public GrpcExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
+  public HttpExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
+    this.retryPolicy = retryPolicy;
+    return this;
+  }
+
+  public HttpExporterBuilder setProxyOptions(ProxyOptions proxyOptions) {
+    this.proxyOptions = proxyOptions;
+    return this;
+  }
+
+  public HttpExporterBuilder setComponentLoader(ComponentLoader componentLoader) {
     this.componentLoader = componentLoader;
     return this;
   }
 
-  public GrpcExporterBuilder setExecutorService(ExecutorService executorService) {
+  public HttpExporterBuilder setExecutorService(ExecutorService executorService) {
     this.executorService = executorService;
     return this;
   }
 
-  @SuppressWarnings("BuilderReturnThis")
-  public GrpcExporterBuilder copy() {
-    GrpcExporterBuilder copy =
-        new GrpcExporterBuilder(exporterType, timeout, endpoint, fullMethodName);
+  public HttpExporterBuilder exportAsJson() {
+    this.exportAsJson = true;
+    exporterType = mapToJsonTypeIfPossible(exporterType);
+    return this;
+  }
 
+  private static StandardComponentId.ExporterType mapToJsonTypeIfPossible(
+      StandardComponentId.ExporterType componentType) {
+    switch (componentType) {
+      case OTLP_HTTP_SPAN_EXPORTER:
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_SPAN_EXPORTER;
+      case OTLP_HTTP_LOG_EXPORTER:
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_LOG_EXPORTER;
+      case OTLP_HTTP_METRIC_EXPORTER:
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_METRIC_EXPORTER;
+      default:
+        return componentType;
+    }
+  }
+
+  @SuppressWarnings("BuilderReturnThis")
+  public HttpExporterBuilder copy() {
+    HttpExporterBuilder copy = new HttpExporterBuilder(exporterType, endpoint);
     copy.timeout = timeout;
     copy.connectTimeout = connectTimeout;
-    copy.endpoint = endpoint;
+    copy.exportAsJson = exportAsJson;
     copy.compressor = compressor;
     copy.constantHeaders.putAll(constantHeaders);
     copy.headerSupplier = headerSupplier;
@@ -188,12 +202,12 @@ public class GrpcExporterBuilder {
     }
     copy.meterProviderSupplier = meterProviderSupplier;
     copy.internalTelemetryVersion = internalTelemetryVersion;
-    copy.grpcChannel = grpcChannel;
+    copy.proxyOptions = proxyOptions;
     copy.componentLoader = componentLoader;
     return copy;
   }
 
-  public GrpcExporter build() {
+  public HttpExporter build() {
     Supplier<Map<String, List<String>>> headerSupplier =
         () -> {
           Map<String, List<String>> result = new HashMap<>();
@@ -215,47 +229,49 @@ public class GrpcExporterBuilder {
           return result;
         };
 
-    boolean isPlainHttp = "http".equals(endpoint.getScheme());
-    GrpcSenderProvider grpcSenderProvider = resolveGrpcSenderProvider(componentLoader);
-    GrpcSender grpcSender =
-        grpcSenderProvider.createSender(
-            ImmutableGrpcSenderConfig.create(
+    boolean isPlainHttp = endpoint.getScheme().equals("http");
+    HttpSenderProvider httpSenderProvider = SenderUtil.resolveHttpSenderProvider(componentLoader);
+    HttpSender httpSender =
+        httpSenderProvider.createSender(
+            ImmutableHttpSenderConfig.create(
                 endpoint,
-                fullMethodName,
+                exportAsJson ? "application/json" : "application/x-protobuf",
                 compressor,
                 timeout,
                 connectTimeout,
                 headerSupplier,
+                proxyOptions,
                 retryPolicy,
                 isPlainHttp ? null : tlsConfigHelper.getSslContext(),
                 isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
                 executorService,
-                grpcChannel,
                 // 4mb to align with spec guidance - even though we don't do anything with the
                 // response today, we will so better to have future-looking memory profile
                 4 * 1024L * 1024L));
-    LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
+    LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
-    return new GrpcExporter(
-        grpcSender,
-        internalTelemetryVersion,
+    return new HttpExporter(
         ComponentId.generateLazy(exporterType),
+        httpSender,
         meterProviderSupplier,
-        endpoint);
+        internalTelemetryVersion,
+        endpoint,
+        exportAsJson);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
     StringJoiner joiner =
         includePrefixAndSuffix
-            ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
+            ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
-    joiner.add("endpoint=" + endpoint.toString());
-    joiner.add("fullMethodName=" + fullMethodName);
+    joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeout.toNanos());
-    joiner.add("connectTimeoutNanos=" + connectTimeout.toNanos());
+    joiner.add("proxyOptions=" + proxyOptions);
     joiner.add(
         "compressorEncoding="
             + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));
+    joiner.add("connectTimeoutNanos=" + connectTimeout.toNanos());
+    joiner.add("exportAsJson=" + exportAsJson);
     StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
     constantHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
     Map<String, String> headers = headerSupplier.get();
@@ -266,14 +282,11 @@ public class GrpcExporterBuilder {
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }
-    if (grpcChannel != null) {
-      joiner.add("grpcChannel=" + grpcChannel);
-    }
     joiner.add("componentLoader=" + componentLoader);
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
-    joiner.add("exporterType=" + exporterType.toString());
+    joiner.add("exporterType=" + exporterType);
     joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way

@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.http;
+package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
@@ -24,26 +23,11 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.IOException;
 import java.net.URI;
 import java.util.function.Consumer;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
 class HttpExporterTest {
-
-  @Test
-  void build_NoHttpSenderProvider() {
-    assertThatThrownBy(
-            () ->
-                new HttpExporterBuilder(
-                        StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
-                        "http://localhost")
-                    .build())
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage(
-            "No HttpSenderProvider found on classpath. Please add dependency on "
-                + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-jdk");
-  }
 
   @ParameterizedTest
   @EnumSource

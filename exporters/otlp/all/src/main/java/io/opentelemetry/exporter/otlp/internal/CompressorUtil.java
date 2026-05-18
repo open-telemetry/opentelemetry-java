@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.compression;
+package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.stream.Collectors.joining;
