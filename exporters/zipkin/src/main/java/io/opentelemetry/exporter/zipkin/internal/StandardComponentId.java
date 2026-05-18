@@ -21,23 +21,12 @@ public class StandardComponentId extends ComponentId.Lazy {
    * any time.
    */
   public enum ExporterType {
-    OTLP_GRPC_SPAN_EXPORTER("otlp_grpc_span_exporter", Signal.SPAN),
-    OTLP_HTTP_SPAN_EXPORTER("otlp_http_span_exporter", Signal.SPAN),
-    OTLP_HTTP_JSON_SPAN_EXPORTER("otlp_http_json_span_exporter", Signal.SPAN),
-    OTLP_GRPC_LOG_EXPORTER("otlp_grpc_log_exporter", Signal.LOG),
-    OTLP_HTTP_LOG_EXPORTER("otlp_http_log_exporter", Signal.LOG),
-    OTLP_HTTP_JSON_LOG_EXPORTER("otlp_http_json_log_exporter", Signal.LOG),
-    OTLP_GRPC_METRIC_EXPORTER("otlp_grpc_metric_exporter", Signal.METRIC),
-    OTLP_HTTP_METRIC_EXPORTER("otlp_http_metric_exporter", Signal.METRIC),
-    OTLP_HTTP_JSON_METRIC_EXPORTER("otlp_http_json_metric_exporter", Signal.METRIC),
     ZIPKIN_HTTP_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN),
     /**
      * Has the same semconv attribute value as ZIPKIN_HTTP_SPAN_EXPORTER, but we still use a
      * different enum value for now because they produce separate legacy metrics.
      */
-    ZIPKIN_HTTP_JSON_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN),
-
-    OTLP_GRPC_PROFILES_EXPORTER("TBD", Signal.PROFILE); // TODO: not yet standardized in semconv
+    ZIPKIN_HTTP_JSON_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN);
 
     final String value;
     private final Signal signal;

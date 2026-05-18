@@ -48,86 +48,23 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       Supplier<MeterProvider> meterProviderSupplier,
       StandardComponentId.ExporterType exporterType) {
     this.meterProviderSupplier = meterProviderSupplier;
-    this.exporterName = getExporterName(exporterType);
+    this.exporterName = "zipkin";
     this.transportName = getTransportName(exporterType);
-    this.seenAttrs =
-        Attributes.builder().put(ATTRIBUTE_KEY_TYPE, getTypeString(exporterType.signal())).build();
+    this.seenAttrs = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, "span").build();
     this.successAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, true).build();
     this.failedAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, false).build();
   }
 
-  public static boolean isSupportedType(StandardComponentId.ExporterType exporterType) {
-    switch (exporterType) {
-      case OTLP_GRPC_SPAN_EXPORTER:
-      case OTLP_HTTP_SPAN_EXPORTER:
-      case OTLP_HTTP_JSON_SPAN_EXPORTER:
-      case ZIPKIN_HTTP_SPAN_EXPORTER:
-      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
-      case OTLP_GRPC_LOG_EXPORTER:
-      case OTLP_HTTP_LOG_EXPORTER:
-      case OTLP_HTTP_JSON_LOG_EXPORTER:
-      case OTLP_GRPC_METRIC_EXPORTER:
-      case OTLP_HTTP_METRIC_EXPORTER:
-      case OTLP_HTTP_JSON_METRIC_EXPORTER:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  private static String getTypeString(Signal signal) {
-    switch (signal) {
-      case SPAN:
-        return "span";
-      case LOG:
-        return "log";
-      case METRIC:
-        return "metric";
-      case PROFILE:
-        throw new IllegalArgumentException("Profiles are not supported");
-    }
-    throw new IllegalArgumentException("Unhandled signal type: " + signal);
-  }
-
-  private static String getExporterName(StandardComponentId.ExporterType exporterType) {
-    switch (exporterType) {
-      case OTLP_GRPC_SPAN_EXPORTER:
-      case OTLP_HTTP_SPAN_EXPORTER:
-      case OTLP_HTTP_JSON_SPAN_EXPORTER:
-      case OTLP_GRPC_LOG_EXPORTER:
-      case OTLP_HTTP_LOG_EXPORTER:
-      case OTLP_HTTP_JSON_LOG_EXPORTER:
-      case OTLP_GRPC_METRIC_EXPORTER:
-      case OTLP_HTTP_METRIC_EXPORTER:
-      case OTLP_HTTP_JSON_METRIC_EXPORTER:
-        return "otlp";
-      case ZIPKIN_HTTP_SPAN_EXPORTER:
-      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
-        return "zipkin";
-      case OTLP_GRPC_PROFILES_EXPORTER:
-        throw new IllegalArgumentException("Profiles are not supported");
-    }
-    throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
+  public static boolean isSupportedType() {
+    return true;
   }
 
   private static String getTransportName(StandardComponentId.ExporterType exporterType) {
     switch (exporterType) {
-      case OTLP_GRPC_SPAN_EXPORTER:
-      case OTLP_GRPC_LOG_EXPORTER:
-      case OTLP_GRPC_METRIC_EXPORTER:
-        return "grpc";
-      case OTLP_HTTP_SPAN_EXPORTER:
-      case OTLP_HTTP_LOG_EXPORTER:
-      case OTLP_HTTP_METRIC_EXPORTER:
       case ZIPKIN_HTTP_SPAN_EXPORTER:
         return "http";
-      case OTLP_HTTP_JSON_SPAN_EXPORTER:
-      case OTLP_HTTP_JSON_LOG_EXPORTER:
-      case OTLP_HTTP_JSON_METRIC_EXPORTER:
       case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
         return "http-json";
-      case OTLP_GRPC_PROFILES_EXPORTER:
-        throw new IllegalArgumentException("Profiles are not supported");
     }
     throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
   }

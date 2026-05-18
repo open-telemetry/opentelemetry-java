@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporter.zipkin.internal;
 
-import java.util.Locale;
-
 /**
  * Copied from {@code io.opentelemetry.sdk.common.internal.Signal} to avoid shared internal code.
  *
@@ -14,10 +12,7 @@ import java.util.Locale;
  * at any time.
  */
 public enum Signal {
-  SPAN("otel.sdk.exporter.span", "span"),
-  METRIC("otel.sdk.exporter.metric_data_point", "data_point"),
-  LOG("otel.sdk.exporter.log", "log_record"),
-  PROFILE("TBD", "TBD");
+  SPAN("otel.sdk.exporter.span", "span");
 
   private final String exporterMetricNamespace;
   private final String metricUnit;
@@ -25,10 +20,6 @@ public enum Signal {
   Signal(String exporterMetricNamespace, String metricUnit) {
     this.exporterMetricNamespace = exporterMetricNamespace;
     this.metricUnit = metricUnit;
-  }
-
-  public String logFriendlyName() {
-    return name().toLowerCase(Locale.ENGLISH);
   }
 
   public String getExporterMetricNamespace() {

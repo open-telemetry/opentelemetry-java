@@ -40,30 +40,11 @@ public class ThrottlingLogger {
 
   /** Create a new logger which will enforce a max number of messages per minute. */
   public ThrottlingLogger(Logger delegate) {
-    this(delegate, Clock.getDefault());
-  }
-
-  /** Alternate way to create logger that allows setting custom intervals and units. * */
-  public ThrottlingLogger(
-      Logger delegate, double rateLimit, double throttledRateLimit, TimeUnit rateTimeUnit) {
-    this(delegate, Clock.getDefault(), rateLimit, throttledRateLimit, rateTimeUnit);
-  }
-
-  // visible for testing
-  ThrottlingLogger(Logger delegate, Clock clock) {
-    this(delegate, clock, DEFAULT_RATE_LIMIT, DEFAULT_THROTTLED_RATE_LIMIT, DEFAULT_RATE_TIME_UNIT);
-  }
-
-  ThrottlingLogger(
-      Logger delegate,
-      Clock clock,
-      double rateLimit,
-      double throttledRateLimit,
-      TimeUnit rateTimeUnit) {
+    Clock clock = Clock.getDefault();
     this.delegate = delegate;
-    this.rateLimit = rateLimit;
-    this.throttledRateLimit = throttledRateLimit;
-    this.rateTimeUnit = rateTimeUnit;
+    this.rateLimit = DEFAULT_RATE_LIMIT;
+    this.throttledRateLimit = DEFAULT_THROTTLED_RATE_LIMIT;
+    this.rateTimeUnit = DEFAULT_RATE_TIME_UNIT;
     this.fastRateLimiter =
         new RateLimiter(this.rateLimit / this.rateTimeUnit.toSeconds(1), this.rateLimit, clock);
     this.throttledRateLimiter =

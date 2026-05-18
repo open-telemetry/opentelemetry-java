@@ -61,10 +61,6 @@ public abstract class ComponentId {
     }
   }
 
-  public static ComponentId generateLazy(String componentType) {
-    return new Lazy(componentType);
-  }
-
   public static StandardComponentId generateLazy(StandardComponentId.ExporterType exporterType) {
     return new StandardComponentId(exporterType);
   }

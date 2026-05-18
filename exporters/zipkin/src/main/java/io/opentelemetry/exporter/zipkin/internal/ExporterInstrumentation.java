@@ -9,10 +9,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import java.net.URI;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 /**
  * Copied from {@code io.opentelemetry.exporter.internal.ExporterInstrumentation} to avoid shared
@@ -35,16 +33,14 @@ public class ExporterInstrumentation {
     switch (schema) {
       case LEGACY:
         implementation =
-            LegacyExporterMetrics.isSupportedType(componentId.getStandardType())
+            LegacyExporterMetrics.isSupportedType()
                 ? new LegacyExporterMetrics(meterProviderSupplier, componentId.getStandardType())
                 : NoopExporterMetrics.INSTANCE;
         break;
       case LATEST:
         implementation =
-            signal == Signal.PROFILE
-                ? NoopExporterMetrics.INSTANCE
-                : new SemConvExporterMetrics(
-                    meterProviderSupplier, signal, componentId, extractServerAttributes(endpoint));
+            new SemConvExporterMetrics(
+                meterProviderSupplier, signal, componentId, extractServerAttributes(endpoint));
         break;
       default:
         throw new IllegalStateException("Unhandled case: " + schema);
@@ -84,27 +80,9 @@ public class ExporterInstrumentation {
   public static class Recording {
 
     private final ExporterMetrics.Recording delegate;
-    @Nullable private Long httpStatusCode;
-    @Nullable private GrpcStatusCode grpcStatusCode;
 
     private Recording(ExporterMetrics.Recording delegate) {
       this.delegate = delegate;
-    }
-
-    public void setHttpStatusCode(long httpStatusCode) {
-      if (grpcStatusCode != null) {
-        throw new IllegalStateException(
-            "gRPC status code already set, can only set either gRPC or HTTP");
-      }
-      this.httpStatusCode = httpStatusCode;
-    }
-
-    public void setGrpcStatusCode(GrpcStatusCode grpcStatusCode) {
-      if (httpStatusCode != null) {
-        throw new IllegalStateException(
-            "HTTP status code already set, can only set either gRPC or HTTP");
-      }
-      this.grpcStatusCode = grpcStatusCode;
     }
 
     /** Callback to notify that the export was successful. */
@@ -132,12 +110,6 @@ public class ExporterInstrumentation {
     }
 
     private Attributes buildRequestAttributes() {
-      if (httpStatusCode != null) {
-        return Attributes.of(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, httpStatusCode);
-      }
-      if (grpcStatusCode != null) {
-        return Attributes.of(SemConvAttributes.RPC_RESPONSE_STATUS_CODE, grpcStatusCode.name());
-      }
       return Attributes.empty();
     }
   }
