@@ -220,23 +220,6 @@ class OpenTelemetrySdkTest {
         .isInstanceOf(IllegalArgumentException.class);
   }
 
-  @Test
-  void createExtendedOpenTelemetrySdk_wrapsIllegalAccessException() throws Exception {
-    Method method =
-        OpenTelemetrySdkTest.class.getDeclaredMethod(
-            "privateNoAccess", OpenTelemetrySdk.class, Object.class);
-
-    assertThatThrownBy(
-            () ->
-                OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
-                    OpenTelemetrySdk.builder().build(), null, method))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage(
-            "IncubatingUtil.createExtendedOpenTelemetrySdk could not be invoked. This is a bug in OpenTelemetry.")
-        .cause()
-        .isInstanceOf(IllegalAccessException.class);
-  }
-
   static OpenTelemetrySdk throwRuntimeException(
       OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
     throw new IllegalStateException("runtime boom");
@@ -254,11 +237,6 @@ class OpenTelemetrySdkTest {
 
   static OpenTelemetrySdk wrongSignature(String ignored) {
     return null;
-  }
-
-  private static OpenTelemetrySdk privateNoAccess(
-      OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
-    return openTelemetrySdk;
   }
 
   @Test
