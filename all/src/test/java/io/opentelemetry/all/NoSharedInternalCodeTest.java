@@ -36,7 +36,6 @@ class NoSharedInternalCodeTest {
           "opentelemetry-exporter-logging",
           "opentelemetry-exporter-logging-otlp",
           "opentelemetry-exporter-prometheus",
-          "opentelemetry-exporter-zipkin",
           "opentelemetry-extension-trace-propagators",
           "opentelemetry-opencensus-shim",
           "opentelemetry-sdk-common",

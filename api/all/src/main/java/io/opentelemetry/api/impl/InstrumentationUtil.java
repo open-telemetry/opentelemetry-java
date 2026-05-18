@@ -3,15 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.api.impl;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import java.util.Objects;
 
 /**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time.
+ * Utility for suppressing instrumentation cycles between exporters which leverage various client
+ * libraries in their implementations and the otel java agent which instruments those client
+ * libraries.
+ *
+ * <p>This class is not intended for use by application developers. Its API is stable and will not
+ * be changed or removed in a backwards-incompatible manner.
  */
 public final class InstrumentationUtil {
   private static final ContextKey<Boolean> SUPPRESS_INSTRUMENTATION_KEY =

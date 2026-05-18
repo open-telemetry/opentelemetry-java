@@ -11,8 +11,8 @@ import io.opentelemetry.context.Context;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  *
- * @deprecated use {@link io.opentelemetry.api.internal.InstrumentationUtil} instead. This class
- *     should be removed once instrumentation does not refer to it anymore.
+ * @deprecated use {@link io.opentelemetry.api.impl.InstrumentationUtil} instead. This class should
+ *     be removed once instrumentation does not refer to it anymore.
  */
 @Deprecated
 public final class InstrumentationUtil {
@@ -25,7 +25,7 @@ public final class InstrumentationUtil {
    * calls.
    */
   public static void suppressInstrumentation(Runnable runnable) {
-    io.opentelemetry.api.internal.InstrumentationUtil.suppressInstrumentation(runnable);
+    io.opentelemetry.api.impl.InstrumentationUtil.suppressInstrumentation(runnable);
   }
 
   /**
@@ -35,6 +35,6 @@ public final class InstrumentationUtil {
    *     instrumentation.
    */
   public static boolean shouldSuppressInstrumentation(Context context) {
-    return io.opentelemetry.api.internal.InstrumentationUtil.shouldSuppressInstrumentation(context);
+    return io.opentelemetry.api.impl.InstrumentationUtil.shouldSuppressInstrumentation(context);
   }
 }
