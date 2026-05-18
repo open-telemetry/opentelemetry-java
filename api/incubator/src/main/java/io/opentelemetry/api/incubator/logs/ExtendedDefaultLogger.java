@@ -7,7 +7,6 @@ package io.opentelemetry.api.incubator.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
@@ -15,7 +14,6 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-@SuppressWarnings("deprecation")
 class ExtendedDefaultLogger implements ExtendedLogger {
 
   private static final Logger INSTANCE = new ExtendedDefaultLogger();
@@ -49,11 +47,6 @@ class ExtendedDefaultLogger implements ExtendedLogger {
 
     @Override
     public ExtendedLogRecordBuilder setException(Throwable throwable) {
-      return this;
-    }
-
-    @Override
-    public <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
       return this;
     }
 
