@@ -1,0 +1,12 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: OpenTelemetry Java
+Upstream-Contact: opentelemetry-java@googlegroups.com
+Source: https://github.com/open-telemetry/opentelemetry-java
+
+Files: gradle/wrapper/gradle-wrapper.jar
+Copyright: Copyright Gradle, Inc.
+License: Apache-2.0
+
+Files: *
+Copyright: Copyright The OpenTelemetry Authors
+License: Apache-2.0

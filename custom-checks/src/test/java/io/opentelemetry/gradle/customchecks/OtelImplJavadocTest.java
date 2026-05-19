@@ -15,10 +15,12 @@ class OtelImplJavadocTest {
     CompilationTestHelper.newInstance(OtelImplJavadoc.class, OtelImplJavadocTest.class)
         .addSourceLines(
             "impl/ImplJavadocPositiveCases.java",
+            // REUSE-IgnoreStart
             "/*",
             " * Copyright The OpenTelemetry Authors",
             " * SPDX-License-Identifier: Apache-2.0",
             " */",
+            // REUSE-IgnoreEnd
             "package io.opentelemetry.gradle.customchecks.impl;",
             "// BUG: Diagnostic contains: missing the required javadoc disclaimer",
             "public class ImplJavadocPositiveCases {",
@@ -36,10 +38,12 @@ class OtelImplJavadocTest {
     CompilationTestHelper.newInstance(OtelImplJavadoc.class, OtelImplJavadocTest.class)
         .addSourceLines(
             "impl/ImplJavadocNegativeCases.java",
+            // REUSE-IgnoreStart
             "/*",
             " * Copyright The OpenTelemetry Authors",
             " * SPDX-License-Identifier: Apache-2.0",
             " */",
+            // REUSE-IgnoreEnd
             "package io.opentelemetry.gradle.customchecks.impl;",
             "/**",
             " * This class is not intended for use by application developers. Its API is stable and",
@@ -62,10 +66,12 @@ class OtelImplJavadocTest {
     CompilationTestHelper.newInstance(OtelImplJavadoc.class, OtelImplJavadocTest.class)
         .addSourceLines(
             "other/NonImplPackageCases.java",
+            // REUSE-IgnoreStart
             "/*",
             " * Copyright The OpenTelemetry Authors",
             " * SPDX-License-Identifier: Apache-2.0",
             " */",
+            // REUSE-IgnoreEnd
             "package io.opentelemetry.gradle.customchecks.other;",
             "public class NonImplPackageCases {",
             "  public static class One {}",

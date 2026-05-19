@@ -15,10 +15,12 @@ class OtelInternalJavadocTest {
     CompilationTestHelper.newInstance(OtelInternalJavadoc.class, OtelInternalJavadocTest.class)
         .addSourceLines(
             "internal/InternalJavadocPositiveCases.java",
+            // REUSE-IgnoreStart
             "/*",
             " * Copyright The OpenTelemetry Authors",
             " * SPDX-License-Identifier: Apache-2.0",
             " */",
+            // REUSE-IgnoreEnd
             "package io.opentelemetry.gradle.customchecks.internal;",
             "// BUG: Diagnostic contains: doesn't end with any of the applicable javadoc disclaimers",
             "public class InternalJavadocPositiveCases {",
@@ -36,10 +38,12 @@ class OtelInternalJavadocTest {
     CompilationTestHelper.newInstance(OtelInternalJavadoc.class, OtelInternalJavadocTest.class)
         .addSourceLines(
             "internal/InternalJavadocNegativeCases.java",
+            // REUSE-IgnoreStart
             "/*",
             " * Copyright The OpenTelemetry Authors",
             " * SPDX-License-Identifier: Apache-2.0",
             " */",
+            // REUSE-IgnoreEnd
             "package io.opentelemetry.gradle.customchecks.internal;",
             "/**",
             " * This class is internal and is hence not for public use. Its APIs are unstable and can change at",
