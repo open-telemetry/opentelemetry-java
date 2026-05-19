@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
@@ -1106,8 +1107,10 @@ class IdentityTest {
                 View.builder().setName("1invalid-name").build())
             .build();
 
-    meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
+    LongCounter counter = meterProvider.get("meter1").counterBuilder("counter1").build();
+    counter.add(10);
 
+    assertThat(counter.isEnabled()).isTrue();
     assertThat(reader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             metricData ->
@@ -1128,8 +1131,10 @@ class IdentityTest {
     // and a warning is logged. No metric data is produced.
     SdkMeterProvider meterProvider = builder.build();
 
-    meterProvider.get("meter1").counterBuilder("1invalid-name").build().add(10);
+    LongCounter counter = meterProvider.get("meter1").counterBuilder("1invalid-name").build();
+    counter.add(10);
 
+    assertThat(counter.isEnabled()).isFalse();
     assertThat(reader.collectAllMetrics()).isEmpty();
     assertThat(sdkMeterLogs.getEvents())
         .allSatisfy(
