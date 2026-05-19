@@ -19,7 +19,7 @@ tasks {
     minimize()
 
     exclude("META-INF/maven/**")
-    relocate("org.jctools", "io.opentelemetry.internal.shaded.jctools")
+    relocate("org.jctools", "io.opentelemetry.sdk.trace.internal.shaded.jctools")
   }
 
   register<Copy>("extractShadowJar") {
