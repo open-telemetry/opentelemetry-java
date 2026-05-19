@@ -40,6 +40,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressWarnings("deprecation") // testing deprecated shim API
 class TracerShimTest {
 
   static final io.opentelemetry.api.trace.Span INVALID_SPAN =
