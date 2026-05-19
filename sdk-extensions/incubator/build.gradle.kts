@@ -17,9 +17,7 @@ dependencies {
 
   compileOnly(project(":api:incubator"))
 
-  // io.opentelemetry.sdk.extension.incubator.metric.viewconfig
   implementation(project(":sdk-extensions:autoconfigure-spi"))
-  implementation("org.snakeyaml:snakeyaml-engine")
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))

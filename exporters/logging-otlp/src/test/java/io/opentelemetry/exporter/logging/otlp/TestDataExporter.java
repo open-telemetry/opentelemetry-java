@@ -30,7 +30,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.logs.internal.TestExtendedLogRecordData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -50,7 +50,7 @@ abstract class TestDataExporter<T> {
       Resource.create(Attributes.builder().put("key", "value").build());
 
   private static final LogRecordData LOG1 =
-      TestExtendedLogRecordData.builder()
+      TestLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
               InstrumentationScopeInfo.builder("instrumentation")
@@ -81,7 +81,7 @@ abstract class TestDataExporter<T> {
           .build();
 
   private static final LogRecordData LOG2 =
-      TestExtendedLogRecordData.builder()
+      TestLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
               InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build())

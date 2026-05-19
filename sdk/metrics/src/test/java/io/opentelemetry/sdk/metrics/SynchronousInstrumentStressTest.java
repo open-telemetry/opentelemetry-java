@@ -41,7 +41,6 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,7 +64,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 class SynchronousInstrumentStressTest {
 
   private static final String INSTRUMENT_NAME = "instrument";
-  private static final Duration ONE_MICROSECOND = Duration.ofNanos(1000);
   private static final List<Double> BUCKET_BOUNDARIES =
       ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES;
   private static final double[] BUCKET_BOUNDARIES_ARR =
@@ -79,9 +77,26 @@ class SynchronousInstrumentStressTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
+  // Can change to a higher value when making changes to internals to improve confidence of
+  // correctness.
+  private static final int STRESS_TEST_REPETITIONS = 1;
+
   @ParameterizedTest
   @MethodSource("stressTestArgs")
   void stressTest(
+      AggregationTemporality aggregationTemporality,
+      InstrumentType instrumentType,
+      Aggregation aggregation,
+      MemoryMode memoryMode,
+      InstrumentValueType instrumentValueType) {
+    for (int repetition = 0; repetition < STRESS_TEST_REPETITIONS; repetition++) {
+      stressTestOnce(
+          aggregationTemporality, instrumentType, aggregation, memoryMode, instrumentValueType);
+    }
+  }
+
+  @SuppressWarnings("ThreadPriorityCheck")
+  private void stressTestOnce(
       AggregationTemporality aggregationTemporality,
       InstrumentType instrumentType,
       Aggregation aggregation,
@@ -100,6 +115,8 @@ class SynchronousInstrumentStressTest {
         SdkMeterProvider.builder().registerMetricReader(reader).build();
     cleanup.addCloseable(meterProvider);
     Meter meter = meterProvider.get("test");
+    List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
+    Collections.shuffle(attributes);
     Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
 
     // Define list of measurements to record
@@ -116,17 +133,17 @@ class SynchronousInstrumentStressTest {
     int threadCount = 4;
     List<Thread> recordThreads = new ArrayList<>();
     CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch startSignal = new CountDownLatch(1);
     for (int i = 0; i < threadCount; i++) {
       recordThreads.add(
           new Thread(
               () -> {
-                List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
-                Collections.shuffle(attributes);
+                Uninterruptibles.awaitUninterruptibly(startSignal);
                 for (Long measurement : measurements) {
                   for (Attributes attr : attributes) {
                     instrument.record(measurement, attr);
                   }
-                  Uninterruptibles.sleepUninterruptibly(ONE_MICROSECOND);
+                  Thread.yield();
                 }
                 latch.countDown();
               }));
@@ -138,8 +155,9 @@ class SynchronousInstrumentStressTest {
     Thread collectThread =
         new Thread(
             () -> {
+              Uninterruptibles.awaitUninterruptibly(startSignal);
               while (latch.getCount() != 0) {
-                Uninterruptibles.sleepUninterruptibly(ONE_MICROSECOND);
+                Thread.yield();
                 collectedMetrics.addAll(
                     reader.collectAllMetrics().stream()
                         .map(SynchronousInstrumentStressTest::copy)
@@ -151,9 +169,10 @@ class SynchronousInstrumentStressTest {
                       .collect(toList()));
             });
 
-    // Start all the threads
+    // Start all the threads, then release the start signal so they begin simultaneously
     collectThread.start();
     recordThreads.forEach(Thread::start);
+    startSignal.countDown();
 
     // Wait for the collect thread to end, which collects until the record threads are done
     Uninterruptibles.joinUninterruptibly(collectThread);

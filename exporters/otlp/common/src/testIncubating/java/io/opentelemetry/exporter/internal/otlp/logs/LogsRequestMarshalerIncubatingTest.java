@@ -13,9 +13,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
-import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -29,7 +28,6 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
-import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.common.v1.KeyValueList;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
@@ -38,7 +36,6 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
-import io.opentelemetry.sdk.testing.logs.internal.TestExtendedLogRecordData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -51,7 +48,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-@SuppressWarnings("deprecation") // Testing deprecated EXTENDED_ATTRIBUTES until removed
 class LogsRequestMarshalerIncubatingTest {
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
@@ -82,7 +78,7 @@ class LogsRequestMarshalerIncubatingTest {
         parse(
             LogRecord.getDefaultInstance(),
             marshalerSource.create(
-                TestExtendedLogRecordData.builder()
+                TestLogRecordData.builder()
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
@@ -96,10 +92,9 @@ class LogsRequestMarshalerIncubatingTest {
                     .setTotalAttributeCount(11)
                     .setTimestamp(12345, TimeUnit.NANOSECONDS)
                     .setObservedTimestamp(6789, TimeUnit.NANOSECONDS)
-                    // Extended fields
                     .setEventName(EVENT_NAME)
-                    .setExtendedAttributes(
-                        ExtendedAttributes.builder()
+                    .setAttributes(
+                        Attributes.builder()
                             .put("str_key", "str_value")
                             .put("str_arr_key", "str_value1", "str_value2")
                             .put("bool_key", true)
@@ -109,33 +104,15 @@ class LogsRequestMarshalerIncubatingTest {
                             .put("int_key", 1)
                             .put("int_arr_key", 1, 2)
                             .put(
-                                "kv_list_key",
-                                ExtendedAttributes.builder()
-                                    .put("bool_key", true)
-                                    .put("double_key", 1.1)
-                                    .put("int_key", 1)
-                                    .put(
-                                        "kv_list_key",
-                                        ExtendedAttributes.builder()
-                                            .put("str_key", "str_value")
-                                            .build())
-                                    .put("str_key", "str_value")
-                                    .build())
-                            .put(
-                                ExtendedAttributeKey.valueKey("value_key"),
+                                "value_key",
                                 Value.of(
-                                    io.opentelemetry.api.common.KeyValue.of(
-                                        "bool_key", Value.of(true)),
-                                    io.opentelemetry.api.common.KeyValue.of(
-                                        "double_key", Value.of(1.1)),
-                                    io.opentelemetry.api.common.KeyValue.of("int_key", Value.of(1)),
-                                    io.opentelemetry.api.common.KeyValue.of(
+                                    KeyValue.of("bool_key", Value.of(true)),
+                                    KeyValue.of("double_key", Value.of(1.1)),
+                                    KeyValue.of("int_key", Value.of(1)),
+                                    KeyValue.of(
                                         "value_key",
-                                        Value.of(
-                                            io.opentelemetry.api.common.KeyValue.of(
-                                                "str_key", Value.of("str_value")))),
-                                    io.opentelemetry.api.common.KeyValue.of(
-                                        "str_key", Value.of("str_value"))))
+                                        Value.of(KeyValue.of("str_key", Value.of("str_value")))),
+                                    KeyValue.of("str_key", Value.of("str_value"))))
                             .build())
                     .build()));
 
@@ -144,7 +121,7 @@ class LogsRequestMarshalerIncubatingTest {
     assertThat(logRecord.getSeverityText()).isEqualTo("INFO");
 
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());
-    assertThat(logRecord.getDroppedAttributesCount()).isEqualTo(1);
+    assertThat(logRecord.getDroppedAttributesCount()).isEqualTo(2);
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
     assertThat(logRecord.getObservedTimeUnixNano()).isEqualTo(6789);
     assertThat(logRecord.getEventName()).isEqualTo(EVENT_NAME);
@@ -160,27 +137,6 @@ class LogsRequestMarshalerIncubatingTest {
             keyValue("double_arr_key", anyValue(Arrays.asList(anyValue(1.1), anyValue(2.2)))),
             keyValue("int_key", anyValue(1)),
             keyValue("int_arr_key", anyValue(Arrays.asList(anyValue(1), anyValue(2)))),
-            keyValue(
-                "kv_list_key",
-                AnyValue.newBuilder()
-                    .setKvlistValue(
-                        KeyValueList.newBuilder()
-                            .addValues(keyValue("bool_key", anyValue(true)))
-                            .addValues(keyValue("double_key", anyValue(1.1)))
-                            .addValues(keyValue("int_key", anyValue(1)))
-                            .addValues(
-                                keyValue(
-                                    "kv_list_key",
-                                    AnyValue.newBuilder()
-                                        .setKvlistValue(
-                                            KeyValueList.newBuilder()
-                                                .addValues(
-                                                    keyValue("str_key", anyValue("str_value")))
-                                                .build())
-                                        .build()))
-                            .addValues(keyValue("str_key", anyValue("str_value")))
-                            .build())
-                    .build()),
             keyValue(
                 "value_key",
                 AnyValue.newBuilder()
@@ -226,8 +182,11 @@ class LogsRequestMarshalerIncubatingTest {
         .build();
   }
 
-  private static KeyValue keyValue(String key, AnyValue anyValue) {
-    return KeyValue.newBuilder().setKey(key).setValue(anyValue).build();
+  private static io.opentelemetry.proto.common.v1.KeyValue keyValue(String key, AnyValue anyValue) {
+    return io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
+        .setKey(key)
+        .setValue(anyValue)
+        .build();
   }
 
   @SuppressWarnings("unchecked")

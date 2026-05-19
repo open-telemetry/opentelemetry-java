@@ -89,6 +89,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.19.4",
+  "org.apache.aries.spifly:org.apache.aries.spifly.dynamic.bundle:1.3.7",
   "org.apache.felix:org.apache.felix.framework:7.0.5",
   "org.awaitility:awaitility:4.3.0",
   "org.codehaus.mojo:animal-sniffer-annotations:1.27",
