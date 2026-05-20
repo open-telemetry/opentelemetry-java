@@ -13,11 +13,12 @@ val errorProneVersion = "2.49.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.17"
+val slf4jVersion = "2.0.18"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.5.1"
 val armeriaVersion = "1.39.0"
 val junitVersion = "5.14.4"
+val junitPlatformVersion = "1.14.4"
 val okhttpVersion = "5.3.2"
 
 val DEPENDENCY_BOMS = listOf(
@@ -28,7 +29,7 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.21.3",
   "com.google.guava:guava-bom:33.6.0-jre",
-  "com.google.protobuf:protobuf-bom:4.34.1",
+  "com.google.protobuf:protobuf-bom:4.35.0",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.81.0",
@@ -42,8 +43,11 @@ val DEPENDENCY_BOMS = listOf(
 )
 
 val DEPENDENCIES = listOf(
+  "org.junit.jupiter:junit-jupiter:${junitVersion}",
   "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
+  "org.junit.jupiter:junit-jupiter-engine:${junitVersion}",
   "org.junit.jupiter:junit-jupiter-params:${junitVersion}",
+  "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}",
   "com.linecorp.armeria:armeria:${armeriaVersion}",
   "com.linecorp.armeria:armeria-grpc:${armeriaVersion}",
   "com.linecorp.armeria:armeria-grpc-protocol:${armeriaVersion}",
@@ -82,7 +86,7 @@ val DEPENDENCIES = listOf(
   "io.github.crac:org-crac:0.1.3",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.56.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.57.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.41.1-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.10.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",

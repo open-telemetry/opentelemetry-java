@@ -73,9 +73,18 @@
         'com.diffplug.spotless:**',
       ],
     },
-
+    // Disable prometheus minor updates while working out translation strategy
+    // https://github.com/open-telemetry/opentelemetry-java/pull/8346
+    {
+      matchPackageNames: [
+        'io.prometheus:**',
+      ],
+      matchUpdateTypes: [
+        'minor',
+      ],
+      enabled: false,
+    },
     // ── Disabled updates (Java version compatibility) ──────────────────
-
     {
       // junit 6+ requires Java 17+
       matchPackageNames: [
