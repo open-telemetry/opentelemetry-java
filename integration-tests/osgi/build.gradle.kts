@@ -288,6 +288,9 @@ val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
     "opentelemetry-extension-trace-propagators",
     "opentelemetry-sdk-extension-declarative-config",
   ),
+  serviceLoaderProvides = listOf(
+    "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
+  ),
   minJavaVersion = 11,
 ) {
   implementation(project(":sdk:all"))

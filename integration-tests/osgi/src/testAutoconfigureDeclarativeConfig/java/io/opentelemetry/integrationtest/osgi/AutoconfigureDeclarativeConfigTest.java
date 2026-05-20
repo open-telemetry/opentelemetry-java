@@ -105,9 +105,13 @@ public class AutoconfigureDeclarativeConfigTest {
                             .setResource(resource)
                             .addSpanProcessor(
                                 SimpleSpanProcessor.create(
-                                    OtlpHttpSpanExporter.builder()
-                                        .setComponentLoader(autoConfigureLoader)
-                                        .build()))
+                                    // TestDeclarativeConfigurationCustomizerProvider wraps
+                                    // OtlpHttpSpanExporter — proves the SPI was invoked.
+                                    new TestDeclarativeConfigurationCustomizerProvider
+                                        .TestCustomizedSpanExporter(
+                                        OtlpHttpSpanExporter.builder()
+                                            .setComponentLoader(autoConfigureLoader)
+                                            .build())))
                             .build())
                     .setMeterProvider(
                         SdkMeterProvider.builder()
