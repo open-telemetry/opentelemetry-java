@@ -77,6 +77,19 @@
     // ── Disabled updates (Java version compatibility) ──────────────────
 
     {
+      // BND not compatible with JUnit 5.13+; pin until bnd 7.3.0 releases
+      // https://github.com/open-telemetry/opentelemetry-java/pull/8377#discussion_r3204444953
+      // https://github.com/bndtools/bnd/issues/7239
+      // https://github.com/bndtools/bnd/issues/6651
+      matchFileNames: ['integration-tests/osgi/build.gradle.kts'],
+      matchPackageNames: [
+        'org.junit:**',
+        'org.junit.jupiter:**',
+        'org.junit.platform:**',
+      ],
+      enabled: false,
+    },
+    {
       // junit 6+ requires Java 17+
       matchPackageNames: [
         'org.junit:**',
