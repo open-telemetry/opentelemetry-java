@@ -71,6 +71,10 @@ public final class ViewBuilder {
   /**
    * Sets a filter which retains attribute keys included in {@code keysToRetain}.
    *
+   * <p><b>Note:</b> Attributes dropped by this filter may still appear on recorded exemplars. If
+   * you need to remove sensitive data from exemplars, you must configure a custom {@link
+   * ExemplarFilter} or disable exemplars entirely.
+   *
    * @since 1.30.0
    */
   public ViewBuilder setAttributeFilter(Set<String> keysToRetain) {
@@ -88,6 +92,10 @@ public final class ViewBuilder {
    * Sets a filter for attributes keys.
    *
    * <p>Only attribute keys that pass the supplied {@link Predicate} will be included in the output.
+   *
+   * <p><b>Note:</b> Attributes dropped by this filter may still appear on recorded exemplars. If
+   * you need to remove sensitive data from exemplars, you must configure a custom {@link
+   * ExemplarFilter} or disable exemplars entirely.
    *
    * @param keyFilter filter for attribute keys to include.
    */

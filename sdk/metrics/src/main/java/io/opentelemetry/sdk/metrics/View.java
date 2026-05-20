@@ -17,6 +17,10 @@ import javax.annotation.concurrent.Immutable;
  * <p>Views are registered with the SDK {@link
  * SdkMeterProviderBuilder#registerView(InstrumentSelector, View)}.
  *
+ * <p><b>Note:</b> When a view filters out attributes, the dropped attributes may still appear on
+ * recorded exemplars. If you need to remove sensitive data from exemplars, you must configure a
+ * custom {@link ExemplarFilter} or disable exemplars entirely.
+ *
  * @since 1.14.0
  */
 @AutoValue
