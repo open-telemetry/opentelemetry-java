@@ -16,8 +16,8 @@ otelJava.moduleName.set("io.opentelemetry.integration.tests.osgi")
 configurations.all {
   resolutionStrategy {
     // BND not compatible with JUnit 5.13+; see https://github.com/bndtools/bnd/issues/6651
-    val junitVersion = "5.12.2"
-    val junitLauncherVersion = "1.12.1"
+    val junitVersion = "5.14.4"
+    val junitLauncherVersion = "1.14.4"
     force("org.junit.jupiter:junit-jupiter:$junitVersion")
     force("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     force("org.junit.jupiter:junit-jupiter-params:$junitVersion")
