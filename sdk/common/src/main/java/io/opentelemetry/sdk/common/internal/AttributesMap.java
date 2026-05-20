@@ -63,10 +63,27 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
       return null;
     }
     totalAddedValues++;
+    AttributeKey<?> existingKey = null;
+    for (AttributeKey<?> k : keySet()) {
+      if (k.getKey().equals(key.getKey())) {
+        existingKey = k;
+        break;
+      }
+    }
+    if (existingKey != null && !existingKey.equals(key)) {
+      super.remove(existingKey);
+    }
     if (size() >= capacity && !containsKey(key)) {
       return null;
     }
     return super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
+  }
+
+  @Override
+  public void putAll(Map<? extends AttributeKey<?>, ?> m) {
+    for (Map.Entry<? extends AttributeKey<?>, ?> entry : m.entrySet()) {
+      put(entry.getKey(), entry.getValue());
+    }
   }
 
   /** Generic overload of {@link #put(AttributeKey, Object)}. */

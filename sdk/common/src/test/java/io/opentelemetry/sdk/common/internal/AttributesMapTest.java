@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.common.internal;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -21,5 +23,14 @@ class AttributesMapTest {
 
     assertThat(attributesMap.asMap())
         .containsOnly(entry(longKey("one"), 1L), entry(longKey("two"), 2L));
+  }
+
+  @Test
+  void put_lastValueWins_differentTypes() {
+    AttributesMap attributesMap = AttributesMap.create(10, Integer.MAX_VALUE);
+    attributesMap.put(stringKey("key"), "value");
+    attributesMap.put(booleanKey("key"), false);
+
+    assertThat(attributesMap.asMap()).containsOnly(entry(booleanKey("key"), false));
   }
 }
