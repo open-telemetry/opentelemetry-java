@@ -13,7 +13,6 @@ dependencies {
 
   api("io.zipkin.reporter2:zipkin-reporter")
 
-  implementation(project(":exporters:common"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
   compileOnly(project(":api:incubator"))
 

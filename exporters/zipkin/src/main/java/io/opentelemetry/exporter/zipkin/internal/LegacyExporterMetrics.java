@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.metrics;
+package io.opentelemetry.exporter.zipkin.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
@@ -13,14 +13,15 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.common.internal.Signal;
-import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
  * Implements health metrics for exporters which were defined prior to the standardization in
  * semantic conventions.
+ *
+ * <p>Copied from {@code io.opentelemetry.exporter.internal.LegacyExporterMetrics} to avoid shared
+ * internal code.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -47,79 +48,23 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       Supplier<MeterProvider> meterProviderSupplier,
       StandardComponentId.ExporterType exporterType) {
     this.meterProviderSupplier = meterProviderSupplier;
-    this.exporterName = getExporterName(exporterType);
+    this.exporterName = "zipkin";
     this.transportName = getTransportName(exporterType);
-    this.seenAttrs =
-        Attributes.builder().put(ATTRIBUTE_KEY_TYPE, getTypeString(exporterType.signal())).build();
+    this.seenAttrs = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, "span").build();
     this.successAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, true).build();
     this.failedAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, false).build();
   }
 
-  public static boolean isSupportedType(StandardComponentId.ExporterType exporterType) {
-    switch (exporterType) {
-      case OTLP_GRPC_SPAN_EXPORTER:
-      case OTLP_HTTP_SPAN_EXPORTER:
-      case OTLP_HTTP_JSON_SPAN_EXPORTER:
-      case OTLP_GRPC_LOG_EXPORTER:
-      case OTLP_HTTP_LOG_EXPORTER:
-      case OTLP_HTTP_JSON_LOG_EXPORTER:
-      case OTLP_GRPC_METRIC_EXPORTER:
-      case OTLP_HTTP_METRIC_EXPORTER:
-      case OTLP_HTTP_JSON_METRIC_EXPORTER:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  private static String getTypeString(Signal signal) {
-    switch (signal) {
-      case SPAN:
-        return "span";
-      case LOG:
-        return "log";
-      case METRIC:
-        return "metric";
-      case PROFILE:
-        throw new IllegalArgumentException("Profiles are not supported");
-    }
-    throw new IllegalArgumentException("Unhandled signal type: " + signal);
-  }
-
-  private static String getExporterName(StandardComponentId.ExporterType exporterType) {
-    switch (exporterType) {
-      case OTLP_GRPC_SPAN_EXPORTER:
-      case OTLP_HTTP_SPAN_EXPORTER:
-      case OTLP_HTTP_JSON_SPAN_EXPORTER:
-      case OTLP_GRPC_LOG_EXPORTER:
-      case OTLP_HTTP_LOG_EXPORTER:
-      case OTLP_HTTP_JSON_LOG_EXPORTER:
-      case OTLP_GRPC_METRIC_EXPORTER:
-      case OTLP_HTTP_METRIC_EXPORTER:
-      case OTLP_HTTP_JSON_METRIC_EXPORTER:
-        return "otlp";
-      case OTLP_GRPC_PROFILES_EXPORTER:
-        throw new IllegalArgumentException("Profiles are not supported");
-    }
-    throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
+  public static boolean isSupportedType() {
+    return true;
   }
 
   private static String getTransportName(StandardComponentId.ExporterType exporterType) {
     switch (exporterType) {
-      case OTLP_GRPC_SPAN_EXPORTER:
-      case OTLP_GRPC_LOG_EXPORTER:
-      case OTLP_GRPC_METRIC_EXPORTER:
-        return "grpc";
-      case OTLP_HTTP_SPAN_EXPORTER:
-      case OTLP_HTTP_LOG_EXPORTER:
-      case OTLP_HTTP_METRIC_EXPORTER:
+      case ZIPKIN_HTTP_SPAN_EXPORTER:
         return "http";
-      case OTLP_HTTP_JSON_SPAN_EXPORTER:
-      case OTLP_HTTP_JSON_LOG_EXPORTER:
-      case OTLP_HTTP_JSON_METRIC_EXPORTER:
+      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
         return "http-json";
-      case OTLP_GRPC_PROFILES_EXPORTER:
-        throw new IllegalArgumentException("Profiles are not supported");
     }
     throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
   }
