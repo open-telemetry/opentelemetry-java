@@ -13,19 +13,6 @@ otelJava.moduleName.set("io.opentelemetry.integration.tests.osgi")
 // https://github.com/micrometer-metrics/micrometer/tree/main/micrometer-osgi-test
 // https://github.com/eclipse-osgi-technology/osgi-test/tree/main/examples/osgi-test-example-gradle
 
-configurations.all {
-  resolutionStrategy {
-    // BND not compatible with JUnit 5.13+; see https://github.com/bndtools/bnd/issues/6651
-    val junitVersion = "5.12.2"
-    val junitLauncherVersion = "1.12.1"
-    force("org.junit.jupiter:junit-jupiter:$junitVersion")
-    force("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    force("org.junit.jupiter:junit-jupiter-params:$junitVersion")
-    force("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    force("org.junit.platform:junit-platform-launcher:$junitLauncherVersion")
-  }
-}
-
 // OSGi test infrastructure shared across all suites.
 // Each suite's source set automatically inherits these via registerOsgiSuite().
 val osgiInfraImplementation: Configuration = configurations.create("osgiInfraImplementation") {
