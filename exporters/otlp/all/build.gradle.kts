@@ -12,6 +12,12 @@ otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator.config"))
 // io.grpc and org.jspecify.annotations are not OSGi bundles; must use unversioned optional.
 otelJava.osgiUnversionedOptionalPackages.set(listOf("io.grpc", "org.jspecify.annotations"))
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+))
 base.archivesName.set("opentelemetry-exporter-otlp")
 
 dependencies {
