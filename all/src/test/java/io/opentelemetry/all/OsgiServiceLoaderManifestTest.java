@@ -93,8 +93,8 @@ class OsgiServiceLoaderManifestTest {
     if (provideCapability == null || provideCapability.isEmpty()) {
       return result;
     }
-    // The header may be line-folded (continuation lines start with a space) — already unfolded
-    // by JarFile. Split on commas that are not inside quotes.
+    // JarFile already unfolds line-folded headers. Split into individual capability clauses
+    // on commas immediately followed by an OSGi namespace (osgi.*).
     String[] clauses = provideCapability.split(",(?=\\s*osgi\\.)");
     for (String clause : clauses) {
       clause = clause.trim();

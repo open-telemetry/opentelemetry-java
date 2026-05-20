@@ -78,8 +78,13 @@ public class AutoconfigureDeclarativeConfigTest {
     // System.setProperty is required: addPropertiesSupplier because property suppliers are not
     // resolved until after otel.config.file check
     System.setProperty("otel.config.file", configFile.toString());
-    AutoConfiguredOpenTelemetrySdk autoConfigured =
-        AutoConfiguredOpenTelemetrySdk.builder().build();
+    AutoConfiguredOpenTelemetrySdk autoConfigured;
+    try {
+      autoConfigured = AutoConfiguredOpenTelemetrySdk.builder().build();
+    } catch (RuntimeException e) {
+      System.clearProperty("otel.config.file");
+      throw e;
+    }
 
     ComponentLoader delegateLoader =
         ComponentLoader.forClassLoader(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
