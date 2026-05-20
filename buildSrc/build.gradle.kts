@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "8.4.0"
+  id("com.diffplug.spotless") version "8.5.1"
 }
 
 spotless {
@@ -37,7 +37,7 @@ dependencies {
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:6.3.0"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.1")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.4.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.5.1")
   implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.4.1")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
