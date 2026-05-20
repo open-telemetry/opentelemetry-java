@@ -252,23 +252,10 @@ val otlpGrpcOkHttpSuiteTask = registerOsgiSuite(
   implementation(project(":exporters:otlp:all"))
 }
 
-// Autoconfigure suites. Use real exporter modules so both the consumer side
-// (autoconfigure Require-Capability) and the provider side (exporter Provide-Capability) are
-// validated by the BND resolver.
-
-// Noop SPI implementations provided by the autoconfigure testing bundles. These cover SPI types
-// that autoconfigure loads but whose only real implementations (jaeger-remote-sampler, prometheus)
-// are too heavyweight to include in a basic OSGi smoke test.
-val autoconfigureNoopProvides = listOf(
-  "io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider",
-  "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider",
-  "io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider",
-)
+// Autoconfigure suites.
 
 // Suite: autoconfigure with OTLP + JDK sender. Exercises the full SPI loading chain across all
-// relevant SPI types: ConfigurableSpanExporterProvider / ConfigurableMetricExporterProvider /
-// ConfigurableLogRecordExporterProvider (otlp:all), ConfigurablePropagatorProvider
-// (trace-propagators), ResourceProvider (autoconfigure itself), plus noops for the rest.
+// SPI types.
 val autoconfigureSuiteTask = registerOsgiSuite(
   "autoconfigure",
   extraRunrequires = listOf(
@@ -276,7 +263,12 @@ val autoconfigureSuiteTask = registerOsgiSuite(
     "opentelemetry-exporter-otlp",
     "opentelemetry-extension-trace-propagators",
   ),
-  serviceLoaderProvides = autoconfigureNoopProvides,
+  // Some SPIs have implementations in project modules. Others do not. To verify the ones without implementation, we provide noop implementations here.
+  serviceLoaderProvides = listOf(
+    "io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider",
+    "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider",
+    "io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider",
+  ),
   minJavaVersion = 11,
 ) {
   implementation(project(":sdk:all"))
@@ -296,7 +288,6 @@ val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
     "opentelemetry-extension-trace-propagators",
     "opentelemetry-sdk-extension-declarative-config",
   ),
-  serviceLoaderProvides = autoconfigureNoopProvides,
   minJavaVersion = 11,
 ) {
   implementation(project(":sdk:all"))

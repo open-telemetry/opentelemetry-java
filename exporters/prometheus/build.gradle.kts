@@ -5,6 +5,10 @@ plugins {
 
 description = "OpenTelemetry Prometheus Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.prometheus")
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+))
 
 dependencies {
   api(project(":sdk:metrics"))

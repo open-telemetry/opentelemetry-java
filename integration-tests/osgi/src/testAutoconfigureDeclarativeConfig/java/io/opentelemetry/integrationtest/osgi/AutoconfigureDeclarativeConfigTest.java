@@ -8,7 +8,6 @@ package io.opentelemetry.integrationtest.osgi;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.common.ComponentLoader;
@@ -20,6 +19,7 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.ServiceResourceDetector;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -44,14 +44,15 @@ public class AutoconfigureDeclarativeConfigTest {
 
   @Test
   void declarativeConfigSdkInitializes(@TempDir Path tempDir) throws IOException {
-    // No explicit endpoint — exporters use their defaults (e.g. http://localhost:4318/v1/traces).
-    // This avoids coupling the expected SDK to endpoint URL formatting details in the YAML parser.
     String yaml =
         "file_format: \"1.0\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
             + "      value: test-osgi-declarative\n"
+            + "  detection/development:\n"
+            + "    detectors:\n"
+            + "      - service: {}\n"
             + "propagator:\n"
             + "  composite:\n"
             + "    - tracecontext:\n"
@@ -86,12 +87,16 @@ public class AutoconfigureDeclarativeConfigTest {
         componentLoaderWithToString(
             delegateLoader, "DeclarativeConfigContext{componentLoader=" + delegateLoader + "}");
 
+    // ServiceResourceDetector.RANDOM_SERVICE_INSTANCE_ID is a static field — same value within
+    // a JVM run, so the expected and actual resources match deterministically.
+    Resource detectedResource =
+        new ServiceResourceDetector().create(DeclarativeConfigProperties.empty());
     Resource resource =
-        Resource.getDefault()
-            .merge(
-                Resource.create(
-                    Attributes.of(
-                        AttributeKey.stringKey("service.name"), "test-osgi-declarative")));
+        Resource.getDefault().toBuilder()
+            .putAll(detectedResource.getAttributes())
+            .put(AttributeKey.stringKey("service.name"), "test-osgi-declarative")
+            .build();
+
     OpenTelemetrySdk expected =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder()

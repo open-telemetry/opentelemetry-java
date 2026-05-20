@@ -7,6 +7,9 @@ plugins {
 
 description = "OpenTelemetry - Zipkin Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.zipkin")
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider",
+))
 
 dependencies {
   api(project(":sdk:all"))

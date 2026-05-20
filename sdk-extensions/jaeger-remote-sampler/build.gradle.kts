@@ -9,6 +9,10 @@ plugins {
 
 description = "OpenTelemetry - Jaeger Remote sampler"
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.jaeger")
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+))
 
 dependencies {
   api(project(":sdk:all"))
