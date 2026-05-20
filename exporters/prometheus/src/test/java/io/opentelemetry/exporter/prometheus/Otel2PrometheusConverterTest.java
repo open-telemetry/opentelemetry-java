@@ -20,10 +20,14 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
@@ -39,6 +43,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
+import io.prometheus.metrics.model.snapshots.GaugeSnapshot.GaugeDataPointSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
@@ -554,5 +559,84 @@ class Otel2PrometheusConverterTest {
     // but if the cache was cleared, it used the predicate for each resource, since it as if
     // it never saw those resources before.
     assertThat(predicateCalledCount.get()).isEqualTo(2);
+  }
+
+  @ParameterizedTest
+  @MethodSource("exemplarLabelLimitArgs")
+  void exemplarLabelLimit(
+      String testName,
+      SpanContext spanContext,
+      Attributes filteredAttributes,
+      String[] expectedPresentKeys,
+      String[] expectedAbsentKeys) {
+    ImmutableDoubleExemplarData exemplar =
+        (ImmutableDoubleExemplarData)
+            ImmutableDoubleExemplarData.create(filteredAttributes, 1000L, spanContext, 1.0);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleGauge(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.create("test"),
+            "my.gauge",
+            "desc",
+            "unit",
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    assertThat(snapshots).isNotNull();
+    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
+    Labels exemplarLabels = point.getExemplar().getLabels();
+    for (String key : expectedPresentKeys) {
+      assertThat(exemplarLabels.get(key)).as("expected label '%s' to be present", key).isNotNull();
+    }
+    for (String key : expectedAbsentKeys) {
+      assertThat(exemplarLabels.get(key)).as("expected label '%s' to be absent", key).isNull();
+    }
+  }
+
+  private static Stream<Arguments> exemplarLabelLimitArgs() {
+    SpanContext validSpanContext =
+        SpanContext.create(
+            "00000000000000000000000000000001",
+            "0000000000000001",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+
+    char[] chars = new char[100];
+    Arrays.fill(chars, 'x');
+    String longValue100 = new String(chars);
+
+    chars = new char[150];
+    Arrays.fill(chars, 'x');
+    String longValue150 = new String(chars);
+
+    return Stream.of(
+        Arguments.of(
+            "withSpanContext_withinLimit",
+            validSpanContext,
+            Attributes.of(stringKey("short"), "val"),
+            new String[] {"trace_id", "span_id", "short"},
+            new String[] {}),
+        Arguments.of(
+            "withSpanContext_exceedingLimit",
+            validSpanContext,
+            Attributes.of(stringKey("long_attr"), longValue100),
+            new String[] {"trace_id", "span_id"},
+            new String[] {"long_attr"}),
+        Arguments.of(
+            "withoutSpanContext_exceedingLimit",
+            SpanContext.getInvalid(),
+            Attributes.of(stringKey("long_attr"), longValue150),
+            new String[] {},
+            new String[] {"long_attr"}),
+        Arguments.of(
+            "withoutSpanContext_withinLimit",
+            SpanContext.getInvalid(),
+            Attributes.of(stringKey("short"), "val"),
+            new String[] {"short"},
+            new String[] {}));
   }
 }
