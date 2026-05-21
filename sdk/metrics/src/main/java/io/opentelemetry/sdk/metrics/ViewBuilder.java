@@ -72,8 +72,10 @@ public final class ViewBuilder {
    * Sets a filter which retains attribute keys included in {@code keysToRetain}.
    *
    * <p>Note: Attributes dropped by this filter may still appear on recorded exemplars. If you need
-   * to remove sensitive data from exemplars, you must configure a custom {@link ExemplarFilter} or
-   * disable exemplars entirely.
+   * to remove sensitive data from exemplars, you must disable exemplars entirely (e.g., using
+   * {@link SdkMeterProviderBuilder#setExemplarFilter(ExemplarFilter)} with {@link
+   * ExemplarFilter#alwaysOff()}), filter them using a delegating exporter, or filter them in the
+   * OpenTelemetry Collector.
    *
    * @since 1.30.0
    */
@@ -94,8 +96,10 @@ public final class ViewBuilder {
    * <p>Only attribute keys that pass the supplied {@link Predicate} will be included in the output.
    *
    * <p>Note: Attributes dropped by this filter may still appear on recorded exemplars. If you need
-   * to remove sensitive data from exemplars, you must configure a custom {@link ExemplarFilter} or
-   * disable exemplars entirely.
+   * to remove sensitive data from exemplars, you must disable exemplars entirely (e.g., using
+   * {@link SdkMeterProviderBuilder#setExemplarFilter(ExemplarFilter)} with {@link
+   * ExemplarFilter#alwaysOff()}), filter them using a delegating exporter, or filter them in the
+   * OpenTelemetry Collector.
    *
    * @param keyFilter filter for attribute keys to include.
    */
