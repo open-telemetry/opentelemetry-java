@@ -52,7 +52,7 @@ public class AutoconfigureDeclarativeConfigTest {
             + "      value: test-osgi-declarative\n"
             + "  detection/development:\n"
             + "    detectors:\n"
-            + "      - service: {}\n"
+            + "      - service:\n"
             + "propagator:\n"
             + "  composite:\n"
             + "    - tracecontext:\n"
@@ -61,17 +61,17 @@ public class AutoconfigureDeclarativeConfigTest {
             + "  processors:\n"
             + "    - simple:\n"
             + "        exporter:\n"
-            + "          otlp_http: {}\n"
+            + "          otlp_http:\n"
             + "meter_provider:\n"
             + "  readers:\n"
             + "    - periodic:\n"
             + "        exporter:\n"
-            + "          otlp_http: {}\n"
+            + "          otlp_http:\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - simple:\n"
             + "        exporter:\n"
-            + "          otlp_http: {}\n";
+            + "          otlp_http:\n";
     Path configFile = tempDir.resolve("otel-config.yaml");
     Files.write(configFile, yaml.getBytes(StandardCharsets.UTF_8));
 
