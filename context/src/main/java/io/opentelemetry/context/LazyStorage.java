@@ -118,6 +118,19 @@ final class LazyStorage {
     }
 
     if (providers.isEmpty()) {
+      if (isScopedValueAvailable()) {
+        try {
+          ContextStorageProvider provider =
+              (ContextStorageProvider)
+                  Class.forName(
+                          "io.opentelemetry.context.ScopedValueContextStorageProvider")
+                      .getDeclaredConstructor()
+                      .newInstance();
+          return provider.get();
+        } catch (ReflectiveOperationException ignored) {
+          // Not available, fall through to default
+        }
+      }
       return ContextStorage.defaultStorage();
     }
 
@@ -152,6 +165,18 @@ final class LazyStorage {
                 + " but found providers: "
                 + providers));
     return ContextStorage.defaultStorage();
+  }
+
+  private static boolean isScopedValueAvailable() {
+    String specVersion = System.getProperty("java.specification.version");
+    if (specVersion != null) {
+      try {
+        return Double.parseDouble(specVersion) >= 25;
+      } catch (NumberFormatException ignored) {
+        // ignore
+      }
+    }
+    return false;
   }
 
   private LazyStorage() {}
