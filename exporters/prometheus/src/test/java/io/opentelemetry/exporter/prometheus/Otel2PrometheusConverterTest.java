@@ -61,6 +61,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -564,7 +565,6 @@ class Otel2PrometheusConverterTest {
   @ParameterizedTest
   @MethodSource("exemplarLabelLimitArgs")
   void exemplarLabelLimit(
-      String testName,
       SpanContext spanContext,
       Attributes filteredAttributes,
       String[] expectedPresentKeys,
@@ -615,28 +615,24 @@ class Otel2PrometheusConverterTest {
 
     return Stream.of(
         Arguments.of(
-            "withSpanContext_withinLimit",
-            validSpanContext,
-            Attributes.of(stringKey("short"), "val"),
-            new String[] {"trace_id", "span_id", "short"},
+            Named.of("withSpanContext_withinLimit", validSpanContext),
+            Attributes.of(stringKey("short_attr"), "val"),
+            new String[] {"trace_id", "span_id", "short_attr"},
             new String[] {}),
         Arguments.of(
-            "withSpanContext_exceedingLimit",
-            validSpanContext,
+            Named.of("withSpanContext_exceedingLimit", validSpanContext),
             Attributes.of(stringKey("long_attr"), longValue100),
             new String[] {"trace_id", "span_id"},
             new String[] {"long_attr"}),
         Arguments.of(
-            "withoutSpanContext_exceedingLimit",
-            SpanContext.getInvalid(),
+            Named.of("withoutSpanContext_exceedingLimit", SpanContext.getInvalid()),
             Attributes.of(stringKey("long_attr"), longValue150),
             new String[] {},
             new String[] {"long_attr"}),
         Arguments.of(
-            "withoutSpanContext_withinLimit",
-            SpanContext.getInvalid(),
-            Attributes.of(stringKey("short"), "val"),
-            new String[] {"short"},
+            Named.of("withoutSpanContext_withinLimit", SpanContext.getInvalid()),
+            Attributes.of(stringKey("short_attr"), "val"),
+            new String[] {"short_attr"},
             new String[] {}));
   }
 }
