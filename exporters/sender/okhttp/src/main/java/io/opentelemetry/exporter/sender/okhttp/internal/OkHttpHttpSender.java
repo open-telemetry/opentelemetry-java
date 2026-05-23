@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -86,7 +87,7 @@ public final class OkHttpHttpSender implements HttpSender {
       dispatcher = OkHttpUtil.newDispatcher();
       this.managedExecutor = true;
     } else {
-      dispatcher = new Dispatcher(executorService);
+      dispatcher = OkHttpUtil.newDispatcher(executorService);
       this.managedExecutor = false;
     }
 
@@ -138,22 +139,26 @@ public final class OkHttpHttpSender implements HttpSender {
     requestBuilder.addHeader("Accept-Encoding", "gzip, identity");
     requestBuilder.post(new RequestBodyImpl(messageWriter, compressor, mediaType));
 
-    InstrumentationUtil.suppressInstrumentation(
-        () ->
-            client
-                .newCall(requestBuilder.build())
-                .enqueue(
-                    new Callback() {
-                      @Override
-                      public void onFailure(Call call, IOException e) {
-                        onError.accept(e);
-                      }
+    try {
+      InstrumentationUtil.suppressInstrumentation(
+          () ->
+              client
+                  .newCall(requestBuilder.build())
+                  .enqueue(
+                      new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                          onError.accept(e);
+                        }
 
-                      @Override
-                      public void onResponse(Call call, Response response) {
-                        handleResponse(response, onResponse, onError);
-                      }
-                    }));
+                        @Override
+                        public void onResponse(Call call, Response response) {
+                          handleResponse(response, onResponse, onError);
+                        }
+                      }));
+    } catch (RejectedExecutionException e) {
+      onError.accept(e);
+    }
   }
 
   private void handleResponse(
