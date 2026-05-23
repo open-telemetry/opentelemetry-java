@@ -15,7 +15,11 @@ import io.opentracing.Tracer;
  * OpenTelemetry APIs.
  *
  * @since 1.26.0
+ * @deprecated OpenTracing is deprecated in the OpenTelemetry specification. This shim is deprecated
+ *     accordingly and is expected to stop being published sometime in 2027 per spec guidance.
+ *     Prefer migrating to the OpenTelemetry API directly.
  */
+@Deprecated
 public final class OpenTracingShim {
   private OpenTracingShim() {}
 
@@ -26,7 +30,9 @@ public final class OpenTracingShim {
    *
    * @param openTelemetry the {@code OpenTelemetry} instance used to create this shim.
    * @return a {@code io.opentracing.Tracer}.
+   * @deprecated OpenTracing is deprecated. Prefer migrating to the OpenTelemetry API directly.
    */
+  @Deprecated
   public static Tracer createTracerShim(OpenTelemetry openTelemetry) {
     TextMapPropagator propagator = openTelemetry.getPropagators().getTextMapPropagator();
     return createTracerShim(openTelemetry.getTracerProvider(), propagator, propagator);
@@ -42,7 +48,9 @@ public final class OpenTracingShim {
    * @param httpPropagator the propagator used for {@link
    *     io.opentracing.propagation.Format.Builtin#HTTP_HEADERS} format.
    * @return a {@code io.opentracing.Tracer}.
+   * @deprecated OpenTracing is deprecated. Prefer migrating to the OpenTelemetry API directly.
    */
+  @Deprecated
   public static Tracer createTracerShim(
       TracerProvider provider,
       TextMapPropagator textMapPropagator,

@@ -168,7 +168,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         packageExcludes.addAll(
           "*.internal",
           "*.internal.*",
-          "io.opentelemetry.internal.shaded.jctools.*",
+          "io.opentelemetry.sdk.trace.internal.shaded.jctools.*",
           // Temporarily suppress warnings from public generated classes from :sdk-extensions:jaeger-remote-sampler
           "io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2"
         )
