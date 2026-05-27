@@ -17,6 +17,40 @@ Breaking changes are allowed in alpha modules but should still be approached car
 Breaking changes are not allowed in stable modules outside of a major version bump. The build
 enforces this via japicmp — see [japicmp](#japicmp) below.
 
+## Configuration
+
+### Use judgment
+
+Not every capability needs a new environment variable or system property. Prefer smaller,
+composable configuration surfaces over adding one-off toggles.
+
+### Adding environment variables and system properties
+
+Be judicious about adding new environment variables or system properties.
+
+- Prefer existing configuration when it can already express the behavior.
+- Include a clear justification for any new config key, including why existing configuration is not
+  sufficient.
+- Treat new config keys as a long-term compatibility and maintenance commitment.
+
+### Declarative config parity
+
+Declarative config should remain a strict superset of environment variable and system property
+configuration.
+
+If a change adds a new environment variable or system property, it **must** also add equivalent
+declarative config support. Equivalent does not require identical naming, but it must allow users
+to express the same capability through declarative config.
+
+### PR expectations for configuration changes
+
+PRs that introduce new configuration options should include:
+
+- The motivation for introducing new configuration.
+- The environment variable and system property names.
+- The equivalent declarative config form.
+- Tests and documentation updates covering the new configuration path.
+
 ## Deprecating API
 
 Applies to both stable and alpha modules. Use plain `@Deprecated` — do **not** use
