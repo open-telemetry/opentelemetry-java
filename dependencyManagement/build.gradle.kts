@@ -91,6 +91,10 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:1.10.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
+  // zipkin-reporter-bom depends on zipkin v2.x for java 6 compatibility
+  // we only need java 8 compatibility. upgrade to 3.x to avoid problematic shaded gson dependency version
+  // See: https://github.com/open-telemetry/opentelemetry-java/issues/8427
+  "io.zipkin.zipkin2:zipkin:3.6.1",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.19.4",
   "org.apache.aries.spifly:org.apache.aries.spifly.dynamic.bundle:1.3.7",
