@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -21,7 +20,6 @@ import okhttp3.Dispatcher;
  * at any time.
  */
 public final class OkHttpUtil {
-  private static final int DEFAULT_MAX_REQUESTS = 64;
   private static final int DEFAULT_MAX_REQUESTS_PER_HOST = 5;
 
   @SuppressWarnings("NonFinalStaticField")
@@ -34,19 +32,17 @@ public final class OkHttpUtil {
 
   /** Returns a {@link Dispatcher} using daemon threads, otherwise matching the OkHttp default. */
   public static Dispatcher newDispatcher() {
-    return newDispatcher(
-        new ThreadPoolExecutor(
-            0,
-            DEFAULT_MAX_REQUESTS,
-            60,
-            TimeUnit.SECONDS,
-            new SynchronousQueue<>(),
-            createThreadFactory("okhttp-dispatch")));
-  }
-
-  public static Dispatcher newDispatcher(ExecutorService executorService) {
-    Dispatcher dispatcher = new Dispatcher(executorService);
-    dispatcher.setMaxRequests(DEFAULT_MAX_REQUESTS);
+    int maxRequests = Math.max(Runtime.getRuntime().availableProcessors(), 5);
+    Dispatcher dispatcher =
+        new Dispatcher(
+            new ThreadPoolExecutor(
+                0,
+                maxRequests,
+                60,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                createThreadFactory("okhttp-dispatch")));
+    dispatcher.setMaxRequests(maxRequests);
     dispatcher.setMaxRequestsPerHost(DEFAULT_MAX_REQUESTS_PER_HOST);
     return dispatcher;
   }
