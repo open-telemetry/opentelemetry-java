@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -155,22 +156,26 @@ public final class OkHttpGrpcSender implements GrpcSender {
     RequestBody requestBody = new GrpcRequestBody(messageWriter, compressor);
     requestBuilder.post(requestBody);
 
-    InstrumentationUtil.suppressInstrumentation(
-        () ->
-            client
-                .newCall(requestBuilder.build())
-                .enqueue(
-                    new Callback() {
-                      @Override
-                      public void onFailure(Call call, IOException e) {
-                        onError.accept(e);
-                      }
+    try {
+      InstrumentationUtil.suppressInstrumentation(
+          () ->
+              client
+                  .newCall(requestBuilder.build())
+                  .enqueue(
+                      new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                          onError.accept(e);
+                        }
 
-                      @Override
-                      public void onResponse(Call call, Response response) {
-                        handleResponse(response, onResponse);
-                      }
-                    }));
+                        @Override
+                        public void onResponse(Call call, Response response) {
+                          handleResponse(response, onResponse);
+                        }
+                      }));
+    } catch (RejectedExecutionException e) {
+      onError.accept(e);
+    }
   }
 
   private void handleResponse(Response response, Consumer<GrpcResponse> onResponse) {
