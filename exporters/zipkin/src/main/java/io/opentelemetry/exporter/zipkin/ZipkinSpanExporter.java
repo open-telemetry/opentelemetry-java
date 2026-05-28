@@ -5,14 +5,14 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import io.opentelemetry.api.internal.InstrumentationUtil;
+import io.opentelemetry.api.impl.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
+import io.opentelemetry.exporter.zipkin.internal.ComponentId;
+import io.opentelemetry.exporter.zipkin.internal.ExporterInstrumentation;
+import io.opentelemetry.exporter.zipkin.internal.StandardComponentId;
+import io.opentelemetry.exporter.zipkin.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.StandardComponentId;
-import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
