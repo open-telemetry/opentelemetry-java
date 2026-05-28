@@ -17,7 +17,9 @@ import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -48,9 +50,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -285,7 +290,64 @@ class Otel2PrometheusConverterTest {
             "my_metric_units",
             "cluster=\"mycluster\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
+    arguments.add(
+        Arguments.of(
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.empty(),
+                Resource.create(
+                    createMapAttributes("foo_bar", "b", "foo-bar", "c", "foo.bar", "a"))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("foo"),
+            "my_metric_units",
+            "foo_bar=\"c;a;b\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
+    arguments.add(
+        Arguments.of(
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                createMapAttributes("foo-bar", "metric"),
+                Resource.create(createMapAttributes("foo.bar", "resource"))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("foo"),
+            "my_metric_units",
+            "foo_bar=\"metric\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
     return arguments.stream();
+  }
+
+  @ParameterizedTest
+  @MethodSource("metricAttributeCollisionArgs")
+  void metricAttributeCollisionsAreMergedAndSorted(
+      Attributes attributes, String expectedLabelName, String expectedLabelValue) {
+    MetricData metricData =
+        createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
+
+    Labels labels = extractCounterLabels(metricData);
+    assertThat(extractLabelNames(labels))
+        .containsExactly(
+            expectedLabelName,
+            "otel_scope_foo",
+            "otel_scope_name",
+            "otel_scope_schema_url",
+            "otel_scope_version");
+    assertThat(labels.getName(0)).isEqualTo(expectedLabelName);
+    assertThat(labels.get(expectedLabelName)).isEqualTo(expectedLabelValue);
+  }
+
+  private static Stream<Arguments> metricAttributeCollisionArgs() {
+    return Stream.of(
+        Arguments.of(
+            createMapAttributes("foo_bar", "b", "foo-bar", "c", "foo.bar", "a"),
+            "foo_bar",
+            "c;a;b"),
+        Arguments.of(createMapAttributes("foo.bar", "a;b", "foo-bar", "c"), "foo_bar", "c;a;b"),
+        Arguments.of(
+            createMapAttributes("a.b", "1", "a-b", "2", "a_b", "3", "a/b", "4", "a@b", "5"),
+            "a_b",
+            "2;1;4;5;3"));
   }
 
   @Test
@@ -554,5 +616,71 @@ class Otel2PrometheusConverterTest {
     // but if the cache was cleared, it used the predicate for each resource, since it as if
     // it never saw those resources before.
     assertThat(predicateCalledCount.get()).isEqualTo(2);
+  }
+
+  private static Attributes createMapAttributes(String... keyValues) {
+    Map<AttributeKey<?>, Object> map = new LinkedHashMap<>();
+    for (int i = 0; i < keyValues.length; i += 2) {
+      map.put(stringKey(keyValues[i]), keyValues[i + 1]);
+    }
+    return new MapAttributes(map);
+  }
+
+  private Labels extractCounterLabels(MetricData metricData) {
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    Optional<MetricSnapshot> metricSnapshot =
+        snapshots.stream().filter(snapshot -> snapshot instanceof CounterSnapshot).findFirst();
+    assertThat(metricSnapshot).isPresent();
+    return metricSnapshot.get().getDataPoints().get(0).getLabels();
+  }
+
+  private static List<String> extractLabelNames(Labels labels) {
+    List<String> names = new ArrayList<>();
+    for (int i = 0; i < labels.size(); i++) {
+      names.add(labels.getName(i));
+    }
+    return names;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static final class MapAttributes implements Attributes {
+
+    private final LinkedHashMap<AttributeKey<?>, Object> map;
+
+    private MapAttributes(Map<AttributeKey<?>, Object> map) {
+      this.map = new LinkedHashMap<>(map);
+    }
+
+    @Nullable
+    @Override
+    public <T> T get(AttributeKey<T> key) {
+      return (T) map.get(key);
+    }
+
+    @Override
+    public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
+      map.forEach(consumer);
+    }
+
+    @Override
+    public int size() {
+      return map.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return map.isEmpty();
+    }
+
+    @Override
+    public Map<AttributeKey<?>, Object> asMap() {
+      return map;
+    }
+
+    @Override
+    public AttributesBuilder toBuilder() {
+      throw new UnsupportedOperationException("not supported");
+    }
   }
 }
