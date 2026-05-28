@@ -7,6 +7,7 @@ permissions:
 
 jobs:
   release:
+    environment: protected
     permissions:
       contents: write # for creating the release
     runs-on: ubuntu-24.04
