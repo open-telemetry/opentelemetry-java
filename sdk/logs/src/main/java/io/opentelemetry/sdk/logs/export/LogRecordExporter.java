@@ -57,6 +57,13 @@ public interface LogRecordExporter extends Closeable {
   }
 
   /**
+   * Returns a {@link LogRecordExporter} that does nothing. All exported LogRecordData are ignored.
+   */
+  static LogRecordExporter noop(){
+    return NoopLogRecordExporter.getInstance();
+  }
+
+  /**
    * Exports the collections of given {@link LogRecordData}.
    *
    * @param logs the collection of {@link LogRecordData} to be exported
