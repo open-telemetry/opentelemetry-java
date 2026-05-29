@@ -77,7 +77,7 @@ final class Otel2PrometheusConverter {
   private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
   // Prometheus limits the total UTF-8 character count across all exemplar label names and values
   // to 128. See https://github.com/open-telemetry/opentelemetry-java/issues/6770
-  static final int EXEMPLAR_MAX_LABEL_SET_LENGTH = 128;
+  private static final int EXEMPLAR_MAX_LABEL_SET_LENGTH = 128;
   private static final String OTEL_SCOPE_NAME = "otel_scope_name";
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
   private static final String OTEL_SCOPE_SCHEMA_URL = "otel_scope_schema_url";
