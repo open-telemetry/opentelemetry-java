@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.FailedExportException;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
