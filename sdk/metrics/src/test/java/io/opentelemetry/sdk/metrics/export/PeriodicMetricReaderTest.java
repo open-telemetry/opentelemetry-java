@@ -441,6 +441,128 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  @Timeout(10)
+  void forceFlush_whileExportInFlight_waitsAndExportsLatest() throws Exception {
+    // Regression test for #8433: a forceFlush() that races with an in-progress export must wait for
+    // it and then export the latest metrics, instead of logging "Exporter busy. Dropping metrics."
+    // and silently failing.
+    CompletableResultCode inflightExportResult = new CompletableResultCode();
+    CountDownLatch firstExportStarted = new CountDownLatch(1);
+    AtomicInteger exportCount = new AtomicInteger();
+
+    MetricExporter blockingExporter =
+        new MetricExporter() {
+          @Override
+          public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+            return AggregationTemporality.CUMULATIVE;
+          }
+
+          @Override
+          public CompletableResultCode export(Collection<MetricData> metrics) {
+            if (exportCount.incrementAndGet() == 1) {
+              firstExportStarted.countDown();
+              return inflightExportResult;
+            }
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode shutdown() {
+            return CompletableResultCode.ofSuccess();
+          }
+        };
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(blockingExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .build();
+    reader.register(collectionRegistration);
+
+    try {
+      // First forceFlush triggers an export that blocks.
+      CompletableResultCode firstFlush = reader.forceFlush();
+      assertThat(firstExportStarted.await(5, TimeUnit.SECONDS)).isTrue();
+
+      // Second forceFlush collides with the in-flight export. It must NOT complete or fail yet -
+      // it should be waiting for the in-flight export to finish.
+      CompletableResultCode secondFlush = reader.forceFlush();
+      assertThat(secondFlush.isDone()).isFalse();
+
+      // Release the in-flight export. Both flushes should now succeed, and the second one should
+      // have performed its own export (latest metrics) rather than dropping them.
+      inflightExportResult.succeed();
+
+      assertThat(firstFlush.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(secondFlush.join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
+      // 1 in-flight export + 1 retried export from the second forceFlush.
+      assertThat(exportCount.get()).isEqualTo(2);
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  @Timeout(10)
+  @SuppressLogger(PeriodicMetricReader.class)
+  void periodicExport_whileExportInFlight_dropsAndLogs() throws Exception {
+    // Covers doRun()'s drop-and-fail branch: when a periodic collection runs while an export is
+    // already in progress, it drops the metrics and logs, rather than queuing another export.
+    CompletableResultCode inflightExportResult = new CompletableResultCode();
+    CountDownLatch firstExportStarted = new CountDownLatch(1);
+    AtomicInteger exportCount = new AtomicInteger();
+
+    MetricExporter blockingExporter =
+        new MetricExporter() {
+          @Override
+          public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+            return AggregationTemporality.CUMULATIVE;
+          }
+
+          @Override
+          public CompletableResultCode export(Collection<MetricData> metrics) {
+            if (exportCount.incrementAndGet() == 1) {
+              firstExportStarted.countDown();
+              return inflightExportResult;
+            }
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode shutdown() {
+            return CompletableResultCode.ofSuccess();
+          }
+        };
+
+    // Short interval so periodic ticks fire repeatedly while the first export is blocked.
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(blockingExporter).setInterval(Duration.ofMillis(10)).build();
+    reader.register(collectionRegistration);
+
+    try {
+      // Wait until the first (periodic) export has started and is blocking.
+      assertThat(firstExportStarted.await(5, TimeUnit.SECONDS)).isTrue();
+      // Let many more periodic ticks fire (interval is 10ms) while the first export is in flight.
+      // Each collides with the in-flight export and is dropped rather than queuing a new export.
+      Thread.sleep(200);
+      assertThat(exportCount.get()).isEqualTo(1);
+    } finally {
+      // Releasing the in-flight export frees the slot; a later tick may export again.
+      inflightExportResult.succeed();
+      reader.shutdown();
+    }
+  }
+
+  @Test
   @SuppressWarnings("PreferJavaTimeOverload") // Testing the overload
   void invalidConfig() {
     assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setInterval(1, null))

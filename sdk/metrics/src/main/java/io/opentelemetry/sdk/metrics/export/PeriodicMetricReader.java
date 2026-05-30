@@ -97,7 +97,26 @@ public final class PeriodicMetricReader implements MetricReader {
   @Override
   public CompletableResultCode forceFlush() {
     CompletableResultCode result = new CompletableResultCode();
-    CompletableResultCode doRunResult = scheduled.doRun();
+    forceFlush(result);
+    return result;
+  }
+
+  /**
+   * Performs a collect + export cycle on behalf of {@link #forceFlush()}, retrying if an export is
+   * already in progress.
+   *
+   * <p>If a force flush races with the periodic export (or a previous force flush), the in-progress
+   * export holds {@code exportAvailable}, so a naive {@code doRun()} would log "Exporter busy" and
+   * drop the metrics. Instead, wait for the in-flight export to finish and retry, so the force
+   * flush reflects the latest metrics rather than silently failing.
+   */
+  private void forceFlush(CompletableResultCode result) {
+    CompletableResultCode doRunResult = scheduled.tryDoRun();
+    if (doRunResult == null) {
+      // An export is already in progress. Wait for it to complete, then retry.
+      scheduled.flushInProgress.whenComplete(() -> forceFlush(result));
+      return;
+    }
     doRunResult.whenComplete(
         () -> {
           CompletableResultCode flushResult = exporter.flush();
@@ -110,7 +129,6 @@ public final class PeriodicMetricReader implements MetricReader {
                 }
               });
         });
-    return result;
   }
 
   @Override
@@ -248,8 +266,21 @@ public final class PeriodicMetricReader implements MetricReader {
       doRun();
     }
 
-    // Runs a collect + export cycle.
+    // Runs a collect + export cycle. If an export is already in progress, the metrics are dropped
+    // and a failed result is returned (used by the periodic schedule, which will retry next tick).
     CompletableResultCode doRun() {
+      CompletableResultCode flushResult = tryDoRun();
+      if (flushResult != null) {
+        return flushResult;
+      }
+      logger.log(Level.FINE, "Exporter busy. Dropping metrics.");
+      return CompletableResultCode.ofFailure();
+    }
+
+    // Like doRun(), but returns null instead of dropping when an export is already in progress, so
+    // callers (forceFlush) can wait for the in-flight export and retry rather than losing metrics.
+    @Nullable
+    CompletableResultCode tryDoRun() {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         flushInProgress = flushResult;
@@ -284,8 +315,8 @@ public final class PeriodicMetricReader implements MetricReader {
           flushResult.fail();
         }
       } else {
-        logger.log(Level.FINE, "Exporter busy. Dropping metrics.");
-        flushResult.fail();
+        // An export is already in progress; signal the caller so it can wait and retry.
+        return null;
       }
       return flushResult;
     }
