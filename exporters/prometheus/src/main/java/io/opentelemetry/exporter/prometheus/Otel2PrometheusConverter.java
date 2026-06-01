@@ -75,6 +75,9 @@ final class Otel2PrometheusConverter {
 
   private static final Logger LOGGER = Logger.getLogger(Otel2PrometheusConverter.class.getName());
   private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
+  // Prometheus limits the total UTF-8 character count across all exemplar label names and values
+  // to 128. See https://github.com/open-telemetry/opentelemetry-java/issues/6770
+  private static final int EXEMPLAR_MAX_LABEL_SET_LENGTH = 128;
   private static final String OTEL_SCOPE_NAME = "otel_scope_name";
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
   private static final String OTEL_SCOPE_SCHEMA_URL = "otel_scope_schema_url";
@@ -418,8 +421,7 @@ final class Otel2PrometheusConverter {
   private Exemplar convertExemplar(double value, ExemplarData exemplar) {
     SpanContext spanContext = exemplar.getSpanContext();
     if (spanContext.isValid()) {
-      return new Exemplar(
-          value,
+      Labels labels =
           convertAttributes(
               null, // resource attributes are only copied for point's attributes
               null, // scope attributes are only needed for point's attributes
@@ -427,17 +429,52 @@ final class Otel2PrometheusConverter {
               "trace_id",
               spanContext.getTraceId(),
               "span_id",
-              spanContext.getSpanId()),
-          exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
+              spanContext.getSpanId());
+      if (labelSetLength(labels) > EXEMPLAR_MAX_LABEL_SET_LENGTH) {
+        // Drop filtered attributes to stay within Prometheus 128-char exemplar label limit,
+        // keeping trace_id and span_id which are the most valuable for correlation.
+        THROTTLING_LOGGER.log(
+            Level.WARNING,
+            "Exemplar attributes exceeded Prometheus limit of "
+                + EXEMPLAR_MAX_LABEL_SET_LENGTH
+                + " UTF-8 characters; dropping filtered attributes.");
+        labels =
+            convertAttributes(
+                null, // resource attributes are only copied for point's attributes
+                null, // scope attributes are only needed for point's attributes
+                Attributes.empty(),
+                "trace_id",
+                spanContext.getTraceId(),
+                "span_id",
+                spanContext.getSpanId());
+      }
+      return new Exemplar(value, labels, exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
     } else {
-      return new Exemplar(
-          value,
+      Labels labels =
           convertAttributes(
               null, // resource attributes are only copied for point's attributes
               null, // scope attributes are only needed for point's attributes
-              exemplar.getFilteredAttributes()),
-          exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
+              exemplar.getFilteredAttributes());
+      if (labelSetLength(labels) > EXEMPLAR_MAX_LABEL_SET_LENGTH) {
+        THROTTLING_LOGGER.log(
+            Level.WARNING,
+            "Exemplar attributes exceeded Prometheus limit of "
+                + EXEMPLAR_MAX_LABEL_SET_LENGTH
+                + " UTF-8 characters; dropping filtered attributes.");
+        labels = Labels.EMPTY;
+      }
+      return new Exemplar(value, labels, exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
     }
+  }
+
+  private static int labelSetLength(Labels labels) {
+    int length = 0;
+    for (int i = 0; i < labels.size(); i++) {
+      length +=
+          labels.getName(i).codePointCount(0, labels.getName(i).length())
+              + labels.getValue(i).codePointCount(0, labels.getValue(i).length());
+    }
+    return length;
   }
 
   private InfoSnapshot makeTargetInfo(Resource resource) {
