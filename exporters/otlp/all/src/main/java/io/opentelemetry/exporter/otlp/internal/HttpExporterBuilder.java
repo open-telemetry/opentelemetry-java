@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.otlp.internal;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.EndpointUtil;
 import io.opentelemetry.exporter.internal.SenderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -72,7 +72,7 @@ public final class HttpExporterBuilder {
 
   public HttpExporterBuilder(
       StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
-    this(exporterType, ExporterBuilderUtil.validateEndpoint(defaultEndpoint));
+    this(exporterType, EndpointUtil.validateEndpoint(defaultEndpoint));
   }
 
   HttpExporterBuilder(StandardComponentId.ExporterType exporterType, URI endpoint) {
@@ -91,7 +91,7 @@ public final class HttpExporterBuilder {
   }
 
   public HttpExporterBuilder setEndpoint(String endpoint) {
-    this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
+    this.endpoint = EndpointUtil.validateEndpoint(endpoint);
     return this;
   }
 

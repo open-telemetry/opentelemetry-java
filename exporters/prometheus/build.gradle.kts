@@ -5,6 +5,7 @@ plugins {
 
 description = "OpenTelemetry Prometheus Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.prometheus")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator", "io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider",
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
@@ -15,7 +16,7 @@ dependencies {
 
   compileOnly(project(":api:incubator"))
   implementation(project(":exporters:common"))
-  implementation(project(":sdk-extensions:autoconfigure-spi"))
+  compileOnly(project(":sdk-extensions:autoconfigure-spi"))
   implementation("io.prometheus:prometheus-metrics-exporter-httpserver") {
     exclude(group = "io.prometheus", module = "prometheus-metrics-exposition-formats")
   }
@@ -27,6 +28,7 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk-extensions:autoconfigure-spi"))
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("com.sun.net.httpserver:http")
   testImplementation("com.google.guava:guava")

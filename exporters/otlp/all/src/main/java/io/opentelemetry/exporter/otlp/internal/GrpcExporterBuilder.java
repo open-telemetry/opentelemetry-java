@@ -11,7 +11,7 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.EndpointUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.Compressor;
@@ -99,7 +99,7 @@ public class GrpcExporterBuilder {
   }
 
   public GrpcExporterBuilder setEndpoint(String endpoint) {
-    this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
+    this.endpoint = EndpointUtil.validateEndpoint(endpoint);
     return this;
   }
 

@@ -9,6 +9,7 @@ plugins {
 
 description = "OpenTelemetry SDK Incubator"
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.incubator")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator", "io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider",
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
@@ -21,7 +22,7 @@ dependencies {
 
   compileOnly(project(":api:incubator"))
 
-  implementation(project(":sdk-extensions:autoconfigure-spi"))
+  compileOnly(project(":sdk-extensions:autoconfigure-spi"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))

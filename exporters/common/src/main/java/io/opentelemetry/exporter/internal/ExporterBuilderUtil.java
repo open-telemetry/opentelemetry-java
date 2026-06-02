@@ -16,8 +16,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.function.Consumer;
 
@@ -28,23 +26,6 @@ import java.util.function.Consumer;
  * at any time.
  */
 public final class ExporterBuilderUtil {
-
-  /** Validate OTLP endpoint. */
-  public static URI validateEndpoint(String endpoint) {
-    URI uri;
-    try {
-      uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
-    }
-
-    if (uri.getScheme() == null
-        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
-      throw new IllegalArgumentException(
-          "Invalid endpoint, must start with http:// or https://: " + uri);
-    }
-    return uri;
-  }
 
   /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
   public static void configureExporterMemoryMode(
