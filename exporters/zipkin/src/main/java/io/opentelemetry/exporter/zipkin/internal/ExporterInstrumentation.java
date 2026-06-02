@@ -1,0 +1,116 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.exporter.zipkin.internal;
+
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import java.net.URI;
+import java.util.function.Supplier;
+
+/**
+ * Copied from {@code io.opentelemetry.exporter.internal.ExporterInstrumentation} to avoid shared
+ * internal code.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public class ExporterInstrumentation {
+
+  private final ExporterMetrics implementation;
+
+  public ExporterInstrumentation(
+      InternalTelemetryVersion schema,
+      Supplier<MeterProvider> meterProviderSupplier,
+      StandardComponentId componentId,
+      URI endpoint) {
+
+    Signal signal = componentId.getStandardType().signal();
+    switch (schema) {
+      case LEGACY:
+        implementation =
+            LegacyExporterMetrics.isSupportedType()
+                ? new LegacyExporterMetrics(meterProviderSupplier, componentId.getStandardType())
+                : NoopExporterMetrics.INSTANCE;
+        break;
+      case LATEST:
+        implementation =
+            new SemConvExporterMetrics(
+                meterProviderSupplier, signal, componentId, extractServerAttributes(endpoint));
+        break;
+      default:
+        throw new IllegalStateException("Unhandled case: " + schema);
+    }
+  }
+
+  // visible for testing
+  static Attributes extractServerAttributes(URI httpEndpoint) {
+    AttributesBuilder builder = Attributes.builder();
+    String host = httpEndpoint.getHost();
+    if (host != null) {
+      builder.put(SemConvAttributes.SERVER_ADDRESS, host);
+    }
+    int port = httpEndpoint.getPort();
+    if (port == -1) {
+      String scheme = httpEndpoint.getScheme();
+      if ("https".equals(scheme)) {
+        port = 443;
+      } else if ("http".equals(scheme)) {
+        port = 80;
+      }
+    }
+    if (port != -1) {
+      builder.put(SemConvAttributes.SERVER_PORT, port);
+    }
+    return builder.build();
+  }
+
+  public Recording startRecordingExport(int itemCount) {
+    return new Recording(implementation.startRecordingExport(itemCount));
+  }
+
+  /**
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
+   */
+  public static class Recording {
+
+    private final ExporterMetrics.Recording delegate;
+
+    private Recording(ExporterMetrics.Recording delegate) {
+      this.delegate = delegate;
+    }
+
+    /** Callback to notify that the export was successful. */
+    public void finishSuccessful() {
+      delegate.finishSuccessful(buildRequestAttributes());
+    }
+
+    /**
+     * Callback to notify that the export has failed with the given {@link Throwable} as failure
+     * cause.
+     *
+     * @param failureCause the cause of the failure
+     */
+    public void finishFailed(Throwable failureCause) {
+      finishFailed(failureCause.getClass().getName());
+    }
+
+    /**
+     * Callback to notify that the export has failed.
+     *
+     * @param errorType a failure reason suitable for the error.type attribute
+     */
+    public void finishFailed(String errorType) {
+      delegate.finishFailed(errorType, buildRequestAttributes());
+    }
+
+    private static Attributes buildRequestAttributes() {
+      return Attributes.empty();
+    }
+  }
+}

@@ -152,6 +152,12 @@
       matchUpdateTypes: ['major'],
       enabled: false,
     },
+    {
+      // mockserver-netty 6+ requires Java 11+
+      matchPackageNames: ['org.mock-server:mockserver-netty'],
+      matchUpdateTypes: ['major'],
+      enabled: false,
+    },
   ],
   customManagers: [
     {

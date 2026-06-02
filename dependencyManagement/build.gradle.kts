@@ -33,7 +33,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.81.0",
-  "io.netty:netty-bom:4.2.13.Final",
+  "io.netty:netty-bom:4.2.14.Final",
   "io.zipkin.brave:brave-bom:6.3.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.3",
   "org.assertj:assertj-bom:3.27.7",
@@ -91,6 +91,10 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:1.10.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
+  // zipkin-reporter-bom depends on zipkin v2.x for java 6 compatibility
+  // we only need java 8 compatibility. upgrade to 3.x to avoid problematic shaded gson dependency version
+  // See: https://github.com/open-telemetry/opentelemetry-java/issues/8427
+  "io.zipkin.zipkin2:zipkin:3.6.1",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.19.4",
   "org.apache.aries.spifly:org.apache.aries.spifly.dynamic.bundle:1.3.7",
