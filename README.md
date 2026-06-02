@@ -278,6 +278,7 @@ For more information about the maintainer role, see the [community repository](h
 
 - [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
+- [Jay DeLuca](https://github.com/jaydeluca), Grafana Labs
 - [Lauri Tulmin](https://github.com/laurit), Splunk
 - [Pranav Sharma](https://github.com/psx95), Google
 - [Trask Stalnaker](https://github.com/trask), Microsoft
