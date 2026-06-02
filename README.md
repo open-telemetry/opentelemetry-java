@@ -279,6 +279,7 @@ For more information about the maintainer role, see the [community repository](h
 - [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Lauri Tulmin](https://github.com/laurit), Splunk
+- [Pranav Sharma](https://github.com/psx95), Google
 - [Trask Stalnaker](https://github.com/trask), Microsoft
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
