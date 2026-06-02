@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.common.ComponentLoader;
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.EndpointUtil;
 import io.opentelemetry.exporter.internal.SenderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.sdk.common.export.GrpcSender;
@@ -74,7 +74,7 @@ public final class JaegerRemoteSamplerBuilder {
    */
   public JaegerRemoteSamplerBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
-    this.endpoint = ExporterBuilderUtil.validateEndpoint(endpoint);
+    this.endpoint = EndpointUtil.validateEndpoint(endpoint);
     return this;
   }
 

@@ -12,11 +12,19 @@ plugins {
 
 description = "OpenTelemetry SDK Declarative Config"
 otelJava.moduleName.set("io.opentelemetry.sdk.declarativeconfig")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+))
+// declarative-config discovers customizer providers at runtime via ServiceLoader
+otelJava.osgiServiceLoaderRequires.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
+))
 
 dependencies {
   api(project(":sdk:all"))
   api(project(":api:incubator"))
-  implementation(project(":sdk-extensions:autoconfigure-spi"))
+  compileOnly(project(":sdk-extensions:autoconfigure-spi"))
   // Needed for composable samplers
   implementation(project(":sdk-extensions:incubator"))
 
@@ -27,6 +35,7 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-databind")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk-extensions:autoconfigure-spi"))
   testImplementation(project(":exporters:logging"))
   testImplementation(project(":exporters:logging-otlp"))
   testImplementation(project(":exporters:otlp:all"))

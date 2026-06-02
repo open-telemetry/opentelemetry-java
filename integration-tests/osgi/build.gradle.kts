@@ -55,6 +55,9 @@ fun registerOsgiSuite(
   suiteName: String,
   extraRunrequires: List<String> = emptyList(),
   extraRunsystempackages: List<String> = emptyList(),
+  // SPI types that the testing bundle provides via META-INF/services (noop test implementations).
+  // Generates Provide-Capability + Require-Capability registrar so SPI Fly picks them up.
+  serviceLoaderProvides: List<String> = emptyList(),
   minJavaVersion: Int? = null,
   configureDependencies: OsgiSuiteDependencies.() -> Unit = {}
 ): TaskProvider<TestOSGi> {
@@ -84,10 +87,15 @@ fun registerOsgiSuite(
       // @Testable annotation to populate Test-Cases). Without this, testImplementation dependencies
       // like junit-jupiter are invisible to BND, causing Test-Cases to be empty and 0 tests to run.
       classpath(sourceSet.runtimeClasspath)
-      bnd(
+      val bndArgs = mutableListOf(
         "Bundle-SymbolicName: $bsn",
         "Test-Cases: \${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}"
       )
+      if (serviceLoaderProvides.isNotEmpty()) {
+        bndArgs.add("Provide-Capability: ${serviceLoaderProvides.joinToString(",") { "osgi.serviceloader;osgi.serviceloader=\"$it\"" }}")
+        bndArgs.add("Require-Capability: osgi.extender;filter:=\"(osgi.extender=osgi.serviceloader.registrar)\"")
+      }
+      bnd(*bndArgs.toTypedArray())
     }
   }
 
@@ -204,10 +212,6 @@ fun registerOsgiSuite(
 // bundle which includes those, then mask the fact that OSGi fails when using a bundle without those
 // until opentelemetry-api OSGi configuration is updated to indicate that they are optional.
 
-// TODO (jack-berg): Add additional test bundles with dependency combinations reflecting popular use cases:
-// - with autoconfigure
-// - with file configuration
-
 // Suite: sdk — exercises core SDK OSGi metadata in isolation
 val sdkSuiteTask = registerOsgiSuite("sdk") {
   implementation(project(":sdk:all"))
@@ -248,6 +252,55 @@ val otlpGrpcOkHttpSuiteTask = registerOsgiSuite(
   implementation(project(":exporters:otlp:all"))
 }
 
+// Autoconfigure suites.
+
+// Suite: autoconfigure with OTLP + JDK sender. Exercises the full SPI loading chain across all
+// SPI types.
+val autoconfigureSuiteTask = registerOsgiSuite(
+  "autoconfigure",
+  extraRunrequires = listOf(
+    "opentelemetry-exporter-sender-jdk",
+    "opentelemetry-exporter-otlp",
+    "opentelemetry-extension-trace-propagators",
+  ),
+  // Some SPIs have implementations in project modules. Others do not. To verify the ones without implementation, we provide noop implementations here.
+  serviceLoaderProvides = listOf(
+    "io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider",
+    "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider",
+    "io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider",
+  ),
+  minJavaVersion = 11,
+) {
+  implementation(project(":sdk:all"))
+  implementation(project(":sdk-extensions:autoconfigure"))
+  implementation(project(":exporters:otlp:all"))
+  implementation(project(":extensions:trace-propagators"))
+  runtimeOnly(project(":exporters:sender:jdk"))
+}
+
+// Suite: autoconfigure + declarative-config. Same as above but with declarative-config on the
+// classpath, additionally exercising declarative-config bundle OSGi metadata.
+val autoconfigureDeclarativeConfigSuiteTask = registerOsgiSuite(
+  "autoconfigureDeclarativeConfig",
+  extraRunrequires = listOf(
+    "opentelemetry-exporter-sender-jdk",
+    "opentelemetry-exporter-otlp",
+    "opentelemetry-extension-trace-propagators",
+    "opentelemetry-sdk-extension-declarative-config",
+  ),
+  serviceLoaderProvides = listOf(
+    "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfigurationCustomizerProvider",
+  ),
+  minJavaVersion = 11,
+) {
+  implementation(project(":sdk:all"))
+  implementation(project(":sdk-extensions:autoconfigure"))
+  implementation(project(":sdk-extensions:declarative-config"))
+  implementation(project(":exporters:otlp:all"))
+  implementation(project(":extensions:trace-propagators"))
+  runtimeOnly(project(":exporters:sender:jdk"))
+}
+
 tasks {
   jar {
     enabled = false
@@ -256,7 +309,14 @@ tasks {
     // We need to replace junit testing with the testOSGi tasks, so we clear test actions and add
     // dependencies on all suite tasks. As a result, running :test runs all OSGi suites.
     actions.clear()
-    dependsOn(sdkSuiteTask, otlpHttpJdkSuiteTask, otlpHttpOkHttpSuiteTask, otlpGrpcOkHttpSuiteTask)
+    dependsOn(
+      sdkSuiteTask,
+      otlpHttpJdkSuiteTask,
+      otlpHttpOkHttpSuiteTask,
+      otlpGrpcOkHttpSuiteTask,
+      autoconfigureSuiteTask,
+      autoconfigureDeclarativeConfigSuiteTask
+    )
   }
 }
 
