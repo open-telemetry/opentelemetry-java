@@ -594,7 +594,7 @@ presence of the wrapper and invoke it automatically.
 
 ### Spring Sleuth
 
-[Spring Sleuth](https://spring.io/projects/spring-cloud-sleuth) (or any similar observability-aware server framework such as
+Spring Sleuth (or any similar observability-aware server framework such as
 [curio-server-framework](https://github.com/curioswitch/curiostack/blob/master/common/server/framework/src/main/java/org/curioswitch/common/server/framework/monitoring/MonitoringModule.java)
 or internal frameworks developed by devops teams at companies) is also a mechanism for automatically
 configuring the SDK. In general, we would expect Sleuth users to not be using the java agent.
