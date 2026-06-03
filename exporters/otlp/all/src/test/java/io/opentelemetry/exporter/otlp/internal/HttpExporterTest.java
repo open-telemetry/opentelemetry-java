@@ -8,11 +8,13 @@ package io.opentelemetry.exporter.otlp.internal;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.internal.ComponentId;
@@ -21,7 +23,9 @@ import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -195,6 +199,44 @@ class HttpExporterTest {
                                                   .build())
                                           .hasBucketCounts(1))));
     }
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_requestBodyTooLargeFailsBeforeSend() {
+    HttpSender mockSender = Mockito.mock(HttpSender.class);
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockSender,
+            SdkMeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://testing:1234"),
+            true,
+            1);
+
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    MessageWriter messageWriter =
+        new MessageWriter() {
+          @Override
+          public void writeMessage(OutputStream output) throws IOException {
+            output.write(new byte[] {1, 2});
+          }
+
+          @Override
+          public int getContentLength() {
+            return -1;
+          }
+        };
+    Mockito.when(mockMarshaller.toJsonMessageWriter()).thenReturn(messageWriter);
+
+    io.opentelemetry.sdk.common.CompletableResultCode result = exporter.export(mockMarshaller, 1);
+
+    org.assertj.core.api.Assertions.assertThat(result.join(10, TimeUnit.SECONDS).isSuccess())
+        .isFalse();
+    org.assertj.core.api.Assertions.assertThat(result.getFailureThrowable())
+        .hasMessageContaining("OTLP HTTP request body size 2 exceeded limit of 1 bytes");
+    verifyNoInteractions(mockSender);
   }
 
   private static class FakeHttpResponse implements HttpResponse {

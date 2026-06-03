@@ -14,8 +14,11 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -42,6 +45,7 @@ public final class GrpcExporter {
   private final String type;
   private final GrpcSender grpcSender;
   private final ExporterInstrumentation exporterMetrics;
+  private final long maxRequestMessageSize;
 
   public GrpcExporter(
       GrpcSender grpcSender,
@@ -49,11 +53,28 @@ public final class GrpcExporter {
       StandardComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
       URI endpoint) {
+    this(
+        grpcSender,
+        internalTelemetryVersion,
+        componentId,
+        meterProviderSupplier,
+        endpoint,
+        Long.MAX_VALUE);
+  }
+
+  public GrpcExporter(
+      GrpcSender grpcSender,
+      InternalTelemetryVersion internalTelemetryVersion,
+      StandardComponentId componentId,
+      Supplier<MeterProvider> meterProviderSupplier,
+      URI endpoint,
+      long maxRequestMessageSize) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
     this.grpcSender = grpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
+    this.maxRequestMessageSize = maxRequestMessageSize;
   }
 
   public CompletableResultCode export(Marshaler exportRequest, int numItems) {
@@ -65,13 +86,68 @@ public final class GrpcExporter {
         exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
+    MessageWriter messageWriter = exportRequest.toBinaryMessageWriter();
+
+    long requestMessageSize = getRequestMessageSize(messageWriter);
+    if (requestMessageSize > maxRequestMessageSize) {
+      return failRequestTooLarge(result, metricRecording, requestMessageSize);
+    }
 
     grpcSender.send(
-        exportRequest.toBinaryMessageWriter(),
+        messageWriter,
         grpcResponse -> onResponse(result, metricRecording, grpcResponse),
         throwable -> onError(result, metricRecording, throwable));
 
     return result;
+  }
+
+  private CompletableResultCode failRequestTooLarge(
+      CompletableResultCode result,
+      ExporterInstrumentation.Recording metricRecording,
+      long requestMessageSize) {
+    IOException exception =
+        new IOException(
+            "OTLP gRPC request message size "
+                + requestMessageSize
+                + " exceeded limit of "
+                + maxRequestMessageSize
+                + " bytes");
+    metricRecording.finishFailed(exception);
+    logger.log(Level.WARNING, exception.getMessage());
+    result.failExceptionally(FailedExportException.grpcFailedExceptionally(exception));
+    return result;
+  }
+
+  private static long getRequestMessageSize(MessageWriter messageWriter) {
+    int contentLength = messageWriter.getContentLength();
+    if (contentLength >= 0) {
+      return contentLength;
+    }
+    try {
+      CountingOutputStream countingOutputStream = new CountingOutputStream();
+      messageWriter.writeMessage(countingOutputStream);
+      return countingOutputStream.getCount();
+    } catch (IOException e) {
+      return Long.MAX_VALUE;
+    }
+  }
+
+  private static final class CountingOutputStream extends OutputStream {
+    private long count;
+
+    @Override
+    public void write(int b) {
+      count++;
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) {
+      count += len;
+    }
+
+    private long getCount() {
+      return count;
+    }
   }
 
   private void onResponse(

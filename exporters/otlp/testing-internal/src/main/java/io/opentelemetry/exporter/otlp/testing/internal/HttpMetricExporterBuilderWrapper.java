@@ -60,6 +60,12 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
+  public TelemetryExporterBuilder<MetricData> setMaxRequestBodySize(long maxRequestBodySize) {
+    builder.setMaxRequestBodySize(maxRequestBodySize);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<MetricData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;

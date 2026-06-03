@@ -104,6 +104,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setMaxRequestMessageSize(long maxRequestMessageSize) {
+    delegate.setMaxRequestMessageSize(maxRequestMessageSize);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setCompression(String compression) {
     delegate.setCompression(compression);
     return this;

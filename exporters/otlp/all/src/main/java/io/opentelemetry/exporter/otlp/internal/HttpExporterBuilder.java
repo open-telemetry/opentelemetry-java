@@ -46,6 +46,7 @@ import javax.net.ssl.X509TrustManager;
 public final class HttpExporterBuilder {
   public static final long DEFAULT_TIMEOUT_SECS = 10;
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
+  public static final long DEFAULT_MAX_REQUEST_BODY_SIZE = Long.MAX_VALUE;
 
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
@@ -69,6 +70,7 @@ public final class HttpExporterBuilder {
   private ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
+  private long maxRequestBodySize = DEFAULT_MAX_REQUEST_BODY_SIZE;
 
   public HttpExporterBuilder(
       StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
@@ -167,6 +169,11 @@ public final class HttpExporterBuilder {
     return this;
   }
 
+  public HttpExporterBuilder setMaxRequestBodySize(long maxRequestBodySize) {
+    this.maxRequestBodySize = maxRequestBodySize;
+    return this;
+  }
+
   public HttpExporterBuilder exportAsJson() {
     this.exportAsJson = true;
     exporterType = mapToJsonTypeIfPossible(exporterType);
@@ -204,6 +211,7 @@ public final class HttpExporterBuilder {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
     copy.componentLoader = componentLoader;
+    copy.maxRequestBodySize = maxRequestBodySize;
     return copy;
   }
 
@@ -256,7 +264,8 @@ public final class HttpExporterBuilder {
         meterProviderSupplier,
         internalTelemetryVersion,
         endpoint,
-        exportAsJson);
+        exportAsJson,
+        maxRequestBodySize);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -286,6 +295,7 @@ public final class HttpExporterBuilder {
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
+    joiner.add("maxRequestBodySize=" + maxRequestBodySize);
     joiner.add("exporterType=" + exporterType);
     joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way

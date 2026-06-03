@@ -60,6 +60,12 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   }
 
   @Override
+  public TelemetryExporterBuilder<LogRecordData> setMaxRequestMessageSize(long maxRequestMessageSize) {
+    builder.setMaxRequestMessageSize(maxRequestMessageSize);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<LogRecordData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;
