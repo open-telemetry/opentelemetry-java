@@ -37,6 +37,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
+  private static final long DEFAULT_MAX_REQUEST_BODY_SIZE = 64 * 1024L * 1024L;
 
   private final HttpExporterBuilder delegate;
   private MemoryMode memoryMode;
@@ -44,6 +45,7 @@ public final class OtlpHttpSpanExporterBuilder {
   OtlpHttpSpanExporterBuilder(HttpExporterBuilder delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
+    this.delegate.setMaxRequestBodySize(DEFAULT_MAX_REQUEST_BODY_SIZE);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
@@ -95,6 +97,15 @@ public final class OtlpHttpSpanExporterBuilder {
   public OtlpHttpSpanExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     delegate.setConnectTimeout(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum OTLP HTTP request body size in bytes. If unset, defaults to 64 MiB.
+   */
+  public OtlpHttpSpanExporterBuilder setMaxRequestBodySize(long maxRequestBodySize) {
+    checkArgument(maxRequestBodySize >= 0, "maxRequestBodySize must be non-negative");
+    delegate.setMaxRequestBodySize(maxRequestBodySize);
     return this;
   }
 

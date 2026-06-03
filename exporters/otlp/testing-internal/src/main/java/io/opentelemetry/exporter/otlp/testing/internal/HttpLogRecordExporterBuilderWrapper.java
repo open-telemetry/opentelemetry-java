@@ -61,6 +61,12 @@ public class HttpLogRecordExporterBuilderWrapper
   }
 
   @Override
+  public TelemetryExporterBuilder<LogRecordData> setMaxRequestBodySize(long maxRequestBodySize) {
+    builder.setMaxRequestBodySize(maxRequestBodySize);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<LogRecordData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;

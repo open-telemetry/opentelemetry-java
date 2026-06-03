@@ -1056,6 +1056,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestMessageSize(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestMessageSize(1)))
+        .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4317"))
         .doesNotThrowAnyException();
@@ -1167,6 +1171,26 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestMessageSize(-1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxRequestMessageSize must be non-negative");
+  }
+
+  @Test
+  void requestMessageSizeLimit() {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri().toString())
+            .setMaxRequestMessageSize(1)
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+      Assertions.assertThat(result.getFailureThrowable())
+          .hasMessageContaining("OTLP gRPC request message size")
+          .hasMessageContaining("exceeded limit of 1 bytes");
+    }
   }
 
   @Test

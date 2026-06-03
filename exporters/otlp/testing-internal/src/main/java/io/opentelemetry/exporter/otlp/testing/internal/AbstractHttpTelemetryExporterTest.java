@@ -833,6 +833,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestBodySize(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestBodySize(1)))
+        .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4318"))
         .doesNotThrowAnyException();
@@ -913,6 +917,23 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestBodySize(-1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxRequestBodySize must be non-negative");
+  }
+
+  @Test
+  void requestBodySizeLimit() {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).setMaxRequestBodySize(1).build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+      Assertions.assertThat(result.getFailureThrowable())
+          .hasMessageContaining("OTLP HTTP request body size")
+          .hasMessageContaining("exceeded limit of 1 bytes");
+    }
   }
 
   @Test

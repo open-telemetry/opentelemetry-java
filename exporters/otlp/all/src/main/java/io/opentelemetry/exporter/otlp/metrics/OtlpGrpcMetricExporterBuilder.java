@@ -51,6 +51,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
+  private static final long DEFAULT_MAX_REQUEST_MESSAGE_SIZE = 64 * 1024L * 1024L;
 
   // Visible for testing
   final GrpcExporterBuilder delegate;
@@ -68,6 +69,7 @@ public final class OtlpGrpcMetricExporterBuilder {
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
     this.memoryMode = memoryMode;
+    this.delegate.setMaxRequestMessageSize(DEFAULT_MAX_REQUEST_MESSAGE_SIZE);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
@@ -143,6 +145,15 @@ public final class OtlpGrpcMetricExporterBuilder {
   public OtlpGrpcMetricExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     delegate.setConnectTimeout(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB.
+   */
+  public OtlpGrpcMetricExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSize) {
+    checkArgument(maxRequestMessageSize >= 0, "maxRequestMessageSize must be non-negative");
+    delegate.setMaxRequestMessageSize(maxRequestMessageSize);
     return this;
   }
 
