@@ -254,7 +254,6 @@ class ComposableRuleBasedSamplerFactoryTest {
                       IdGenerator.random().generateSpanId(),
                       TraceFlags.getDefault(),
                       TraceState.getDefault())));
-  private static final String tid = IdGenerator.random().generateTraceId();
   private static final String sn = "name";
   private static final io.opentelemetry.api.trace.SpanKind sk = CLIENT;
   private static final AttributeKey<String> HTTP_ROUTE = AttributeKey.stringKey("http.route");
@@ -268,7 +267,7 @@ class ComposableRuleBasedSamplerFactoryTest {
       io.opentelemetry.api.trace.SpanKind spanKind,
       Attributes attributes,
       boolean expectedResult) {
-    assertThat(predicate.matches(context, tid, sn, spanKind, attributes, emptyList()))
+    assertThat(predicate.matches(context, sn, spanKind, attributes, emptyList()))
         .isEqualTo(expectedResult);
   }
 

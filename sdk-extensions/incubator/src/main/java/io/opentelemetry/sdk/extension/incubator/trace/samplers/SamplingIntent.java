@@ -15,11 +15,11 @@ public interface SamplingIntent {
   /** Returns a {@link SamplingIntent} with the given data. */
   static SamplingIntent create(
       long threshold,
-      boolean thresholdReliable,
+      boolean adjustedCountReliable,
       Attributes attributes,
       Function<TraceState, TraceState> traceStateUpdater) {
     return ImmutableSamplingIntent.create(
-        threshold, thresholdReliable, attributes, traceStateUpdater);
+        threshold, adjustedCountReliable, attributes, traceStateUpdater);
   }
 
   /**
@@ -27,8 +27,15 @@ public interface SamplingIntent {
    */
   long getThreshold();
 
-  /** Returns whether the threshold can be reliably used for Span-to-Metrics estimation. */
-  boolean isThresholdReliable();
+  /**
+   * The threshold provided by the SamplingIntent can always be used to determine the sampling
+   * decision. However, in certain situations it cannot be used to calculate the adjusted count
+   * (reciprocal of sampling probability, used by Span-to-Metrics estimation) reliably, because a
+   * non-consistent-probability sampling decision might have affected the threshold value.
+   *
+   * @return true iff the threshold can be reliably used for adjusted count calculation
+   */
+  boolean isAdjustedCountReliable();
 
   /** Returns any attributes to add to the span to record the sampling result. */
   Attributes getAttributes();
