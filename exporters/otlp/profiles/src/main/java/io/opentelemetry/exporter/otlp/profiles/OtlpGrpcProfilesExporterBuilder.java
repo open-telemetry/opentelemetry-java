@@ -35,7 +35,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
-  private static final long DEFAULT_MAX_REQUEST_MESSAGE_SIZE = 64 * 1024L * 1024L;
+  private static final long DEFAULT_MAX_REQUEST_MESSAGE_SIZE_BYTES = 64 * 1024L * 1024L;
 
   // TODO maybe make more efficient by adding support for MEMORY_MODE
 
@@ -45,7 +45,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   OtlpGrpcProfilesExporterBuilder(GrpcExporterBuilder delegate) {
     this.delegate = delegate;
     delegate.setMeterProvider(MeterProvider::noop);
-    this.delegate.setMaxRequestMessageSize(DEFAULT_MAX_REQUEST_MESSAGE_SIZE);
+    this.delegate.setMaxRequestMessageSize(DEFAULT_MAX_REQUEST_MESSAGE_SIZE_BYTES);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
@@ -120,9 +120,10 @@ public final class OtlpGrpcProfilesExporterBuilder {
   /**
    * Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB.
    */
-  public OtlpGrpcProfilesExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSize) {
-    checkArgument(maxRequestMessageSize >= 0, "maxRequestMessageSize must be non-negative");
-    delegate.setMaxRequestMessageSize(maxRequestMessageSize);
+  public OtlpGrpcProfilesExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSizeBytes) {
+    checkArgument(
+        maxRequestMessageSizeBytes >= 0, "maxRequestMessageSizeBytes must be non-negative");
+    delegate.setMaxRequestMessageSize(maxRequestMessageSizeBytes);
     return this;
   }
 

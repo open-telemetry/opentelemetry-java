@@ -105,15 +105,15 @@ public final class GrpcExporter {
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
       long requestMessageSize) {
-    IOException exception =
-        new IOException(
-            "OTLP gRPC request message size "
-                + requestMessageSize
-                + " exceeded limit of "
-                + maxRequestMessageSize
-                + " bytes");
+    String errorMessage =
+        "OTLP gRPC request message size "
+            + requestMessageSize
+            + " exceeded limit of "
+            + maxRequestMessageSize
+            + " bytes";
+    IOException exception = new IOException(errorMessage);
     metricRecording.finishFailed(exception);
-    logger.log(Level.WARNING, exception.getMessage());
+    logger.log(Level.WARNING, errorMessage);
     result.failExceptionally(FailedExportException.grpcFailedExceptionally(exception));
     return result;
   }
