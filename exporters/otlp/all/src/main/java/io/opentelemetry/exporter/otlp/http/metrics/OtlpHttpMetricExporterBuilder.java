@@ -120,9 +120,7 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the maximum OTLP HTTP request body size in bytes. If unset, defaults to 64 MiB.
-   */
+  /** Sets the maximum OTLP HTTP request body size in bytes. If unset, defaults to 64 MiB. */
   public OtlpHttpMetricExporterBuilder setMaxRequestBodySize(long maxRequestBodySizeBytes) {
     checkArgument(maxRequestBodySizeBytes >= 0, "maxRequestBodySizeBytes must be non-negative");
     delegate.setMaxRequestBodySize(maxRequestBodySizeBytes);
