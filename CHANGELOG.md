@@ -27,6 +27,8 @@
 
 #### Exporters
 
+* Add `noop()` factory method to `SpanExporter` and `LogRecordExporter`
+  ([#8435](https://github.com/open-telemetry/opentelemetry-java/pull/8435))
 * **BREAKING** OTLP: Remove support for deprecated `GrpcSenderProvider` and `HttpSenderProvider` SPI
   property names (use `io.opentelemetry.sdk.common.export.GrpcSenderProvider` /
   `io.opentelemetry.sdk.common.export.HttpSenderProvider` instead)
