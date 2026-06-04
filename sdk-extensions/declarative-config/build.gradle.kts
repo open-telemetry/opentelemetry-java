@@ -11,7 +11,8 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Declarative Config"
-otelJava.moduleName.set("io.opentelemetry.sdk.declarativeconfig")
+// TODO: fix module name
+otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig")
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
@@ -58,8 +59,8 @@ dependencies {
 // 6. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-val configurationTag = "1.0.0"
-val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
+val configurationTag = "1.1.0"
+val configurationRef = "174580319b811e7e24cfcc24364130a14cd7fa10" // "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 

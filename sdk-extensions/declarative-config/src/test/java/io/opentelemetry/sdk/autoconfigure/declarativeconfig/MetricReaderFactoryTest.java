@@ -192,12 +192,12 @@ class MetricReaderFactoryTest {
                                         new ExperimentalPrometheusMetricExporterModel()
                                             .withHost("localhost")
                                             .withPort(port)
-                                            .withWithResourceConstantLabels(
+                                            .withResourceConstantLabels(
                                                 new IncludeExcludeModel()
                                                     .withIncluded(singletonList("foo"))
                                                     .withExcluded(singletonList("bar")))
-                                            .withWithoutScopeInfo(false)
-                                            .withWithoutTargetInfoDevelopment(false)
+                                            .withScopeInfoEnabled(false)
+                                            .withTargetInfoEnabledDevelopment(false)
                                             .withTranslationStrategy(
                                                 ExperimentalPrometheusMetricExporterModel
                                                     .ExperimentalPrometheusTranslationStrategy
