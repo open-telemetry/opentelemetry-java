@@ -15,7 +15,7 @@ val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
-val prometheusServerVersion = "1.6.1"
+val prometheusServerVersion = "1.7.0"
 val armeriaVersion = "1.38.0"
 val junitVersion = "5.14.4"
 val okhttpVersion = "5.3.2"
@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.21.2",
   "com.google.guava:guava-bom:33.6.0-jre",
-  "com.google.protobuf:protobuf-bom:4.34.1",
+  "com.google.protobuf:protobuf-bom:4.35.0",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.80.0",
