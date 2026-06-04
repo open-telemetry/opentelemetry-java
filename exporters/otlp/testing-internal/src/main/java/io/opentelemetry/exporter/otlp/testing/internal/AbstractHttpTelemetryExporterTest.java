@@ -919,7 +919,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
             "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestBodySize(-1))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxRequestBodySize must be non-negative");
+        .hasMessage("maxRequestBodySizeBytes must be non-negative");
   }
 
   @Test

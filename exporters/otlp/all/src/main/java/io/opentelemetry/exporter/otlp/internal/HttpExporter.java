@@ -111,15 +111,15 @@ public final class HttpExporter {
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
       long requestBodySize) {
-    IOException exception =
-        new IOException(
-            "OTLP HTTP request body size "
-                + requestBodySize
-                + " exceeded limit of "
-                + maxRequestBodySize
-                + " bytes");
+    String errorMessage =
+        "OTLP HTTP request body size "
+            + requestBodySize
+            + " exceeded limit of "
+            + maxRequestBodySize
+            + " bytes";
+    IOException exception = new IOException(errorMessage);
     metricRecording.finishFailed(exception);
-    logger.log(Level.WARNING, exception.getMessage());
+    logger.log(Level.WARNING, errorMessage);
     result.failExceptionally(FailedExportException.httpFailedExceptionally(exception));
     return result;
   }

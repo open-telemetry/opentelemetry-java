@@ -1173,7 +1173,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
             "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestMessageSize(-1))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxRequestMessageSize must be non-negative");
+        .hasMessage("maxRequestMessageSizeBytes must be non-negative");
   }
 
   @Test
