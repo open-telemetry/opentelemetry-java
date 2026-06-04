@@ -148,9 +148,7 @@ public final class OtlpGrpcMetricExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB.
-   */
+  /** Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB. */
   public OtlpGrpcMetricExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSizeBytes) {
     checkArgument(
         maxRequestMessageSizeBytes >= 0, "maxRequestMessageSizeBytes must be non-negative");
