@@ -238,6 +238,81 @@ class HttpExporterTest {
     logs.assertDoesNotContain("Unable to parse response body");
   }
 
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_nullErrorBodyUsesMissingBodyMessage() {
+    HttpSender mockSender = Mockito.mock(HttpSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockSender,
+            MeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://testing:1234"),
+            false);
+
+    doAnswer(
+            invoc -> {
+              Consumer<HttpResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(
+                  new HttpResponse() {
+                    @Override
+                    public int getStatusCode() {
+                      return 500;
+                    }
+
+                    @Override
+                    public String getStatusMessage() {
+                      return "Internal Server Error";
+                    }
+
+                    @Override
+                    public byte[] getResponseBody() {
+                      return null;
+                    }
+                  });
+              return null;
+            })
+        .when(mockSender)
+        .send(any(), any(), any());
+
+    assertThat(exporter.export(mockMarshaller, 1).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+
+    logs.assertContains("Response body missing, HTTP status message: Internal Server Error");
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_whitespaceErrorBodyFallsBackToStatusMessage() {
+    HttpSender mockSender = Mockito.mock(HttpSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockSender,
+            MeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://testing:1234"),
+            false);
+
+    doAnswer(
+            invoc -> {
+              Consumer<HttpResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(
+                  new FakeHttpResponse(
+                      500, "Internal Server Error", "   ".getBytes(StandardCharsets.UTF_8)));
+              return null;
+            })
+        .when(mockSender)
+        .send(any(), any(), any());
+
+    assertThat(exporter.export(mockMarshaller, 1).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+
+    logs.assertContains("HTTP status message: Internal Server Error");
+    logs.assertDoesNotContain("Response body:");
+  }
+
   private static class FakeHttpResponse implements HttpResponse {
 
     final int statusCode;
