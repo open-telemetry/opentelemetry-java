@@ -11,7 +11,6 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Declarative Config"
-// TODO: fix module name
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig")
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
