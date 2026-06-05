@@ -50,6 +50,8 @@
   ([#8394](https://github.com/open-telemetry/opentelemetry-java/pull/8394))
 * Declarative config: Fix model package
   ([#8403](https://github.com/open-telemetry/opentelemetry-java/pull/8403))
+* Declarative config: Fix Java module name to `io.opentelemetry.sdk.autoconfigure.declarativeconfig`
+  ([#8452](https://github.com/open-telemetry/opentelemetry-java/pull/8452))
 
 ### Shims
 
