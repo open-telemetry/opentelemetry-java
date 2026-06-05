@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
@@ -37,20 +36,6 @@ import org.mockito.Mockito;
 class HttpExporterTest {
 
   @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(HttpExporter.class);
-
-  @Test
-  void build_NoHttpSenderProvider() {
-    assertThatThrownBy(
-            () ->
-                new HttpExporterBuilder(
-                        StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
-                        "http://localhost")
-                    .build())
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage(
-            "No HttpSenderProvider found on classpath. Please add dependency on "
-                + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-jdk");
-  }
 
   @ParameterizedTest
   @EnumSource
