@@ -163,6 +163,7 @@ public interface Span extends ImplicitContextKeyed {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
+   * @since 1.63.0
    */
   default Span setAttribute(String key, Value<?> value) {
     return setAttribute(AttributeKey.valueKey(key), value);

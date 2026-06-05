@@ -55,7 +55,11 @@ public interface SpanExporter extends Closeable {
     return MultiSpanExporter.create(exportersList);
   }
 
-  /** Returns a {@link SpanExporter} that does nothing. All exported Spans are ignored. */
+  /**
+   * Returns a {@link SpanExporter} that does nothing. All exported Spans are ignored.
+   *
+   * @since 1.63.0
+   */
   static SpanExporter noop() {
     return NoopSpanExporter.getInstance();
   }
