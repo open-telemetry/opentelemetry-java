@@ -66,6 +66,11 @@ final class TracerProviderFactory
                   SpanProcessorFactory.getInstance().create(processor, context)));
     }
 
+    if (tracerProviderModel.getIdGenerator() != null) {
+      builder.setIdGenerator(
+          IdGeneratorFactory.getInstance().create(tracerProviderModel.getIdGenerator(), context));
+    }
+
     ExperimentalTracerConfiguratorModel tracerConfiguratorModel =
         tracerProviderModel.getTracerConfiguratorDevelopment();
     if (tracerConfiguratorModel != null) {

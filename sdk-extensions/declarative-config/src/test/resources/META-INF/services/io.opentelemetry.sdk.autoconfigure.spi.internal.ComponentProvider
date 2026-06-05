@@ -12,3 +12,4 @@ io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ContainerResource
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.HostResourceProvider
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.OsResourceProvider
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ProcessResourceProvider
+io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.IdGeneratorComponentProvider

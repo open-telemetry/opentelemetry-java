@@ -113,7 +113,7 @@ class OpenTelemetryConfigurationFactoryTest {
               () -> OpenTelemetryConfigurationFactory.getInstance().create(model, context))
           .isInstanceOf(DeclarativeConfigException.class)
           .hasMessageMatching(
-              "Unsupported file format '.+'\\. Supported formats include 0\\.4, 1\\.0\\*");
+              "Unsupported file format '.+'\\. Supported formats include 0\\.4, 1\\.\\*");
     }
   }
 
@@ -129,15 +129,21 @@ class OpenTelemetryConfigurationFactoryTest {
         Arguments.of("1.0.0", false),
         Arguments.of("1.0.3", false),
         Arguments.of("1.0.0-rc.3", false),
+        Arguments.of("1.1.0", false),
+        Arguments.of("1.a", false),
         // Valid file formats
         Arguments.of("0.4", true),
         Arguments.of("1.0-rc.1", true),
         Arguments.of("1.0-rc.2", true),
         Arguments.of("1.0-rc.3", true),
-        Arguments.of("1.0", true));
+        Arguments.of("1.0", true),
+        Arguments.of("1.2", true),
+        Arguments.of("1.12", true),
+        Arguments.of("1.1", true));
   }
 
   @Test
+  @SuppressLogger(OpenTelemetryConfigurationFactory.class)
   void create_FileFormatVersionMismatch_LogsWarning() {
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
@@ -147,13 +153,13 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(sdk);
 
     logCapturer.assertContains(
-        "Configuration file_format '1.0-rc.3' does not exactly match expected version '1.0'");
+        "Configuration file_format '1.0-rc.3' does not exactly match expected version '1.1'");
   }
 
   @Test
   void create_FileFormatExactMatch_NoWarning() {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0");
+        new OpenTelemetryConfigurationModel().withFileFormat("1.1");
 
     ExtendedOpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
@@ -166,7 +172,7 @@ class OpenTelemetryConfigurationFactoryTest {
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0");
+        new OpenTelemetryConfigurationModel().withFileFormat("1.1");
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder(),
@@ -187,7 +193,7 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .withFileFormat("1.0")
+            .withFileFormat("1.1")
             .withDisabled(true)
             // Logger provider configuration should be ignored since SDK is disabled
             .withLoggerProvider(
@@ -230,7 +236,7 @@ class OpenTelemetryConfigurationFactoryTest {
 
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .withFileFormat("1.0")
+            .withFileFormat("1.1")
             .withPropagator(
                 new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3"))
             .withResource(
