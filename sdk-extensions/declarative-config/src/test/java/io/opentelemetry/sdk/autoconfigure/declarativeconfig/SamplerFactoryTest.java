@@ -196,27 +196,13 @@ class SamplerFactoryTest {
                     new ExperimentalComposableSamplerModel()
                         .withParentThreshold(
                             new ExperimentalComposableParentThresholdSamplerModel())),
-            "parent threshold sampler root is required but is null"));
-  }
-
-  @Test
-  void create_SpiExporter_Unknown() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    assertThatThrownBy(
-            () ->
-                SamplerFactory.getInstance()
-                    .create(
-                        new SamplerModel()
-                            .withAdditionalProperty(
-                                "unknown_key",
-                                new SamplerPropertyModel()
-                                    .withAdditionalProperty("key1", "value1")),
-                        context))
-        .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage(
-            "No component provider detected for io.opentelemetry.sdk.trace.samplers.Sampler with name \"unknown_key\".");
-    cleanup.addCloseables(closeables);
+            "parent threshold sampler root is required but is null"),
+        Arguments.of(
+            new SamplerModel()
+                .withAdditionalProperty(
+                    "unknown_key",
+                    new SamplerPropertyModel().withAdditionalProperty("key1", "value1")),
+            "No component provider detected for io.opentelemetry.sdk.trace.samplers.Sampler with name \"unknown_key\"."));
   }
 
   @Test
