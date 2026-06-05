@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.63.0 (2026-06-05)
+
 ### API
 
 * Add missing `setAttribute` shortcuts to `Span` and `LogRecordBuilder`
