@@ -48,7 +48,8 @@ and future configuration enhancements. By default, new non-programmatic configur
 should target declarative configuration. This means:
 
 - We are judicious about extending the env var / system property configuration interface with new
-  options. Additions are at maintainers' discretion.
+  options. Additions are at maintainers' discretion. When proposing such an addition, also open a
+  corresponding issue or discussion post describing the use-case and justification.
 - Declarative configuration must be a strict superset of env var / system property configuration.
   In the event new env var / system properties are added, there must be equivalent capabilities in
   declarative config, with the caveat that naming and structure do not need to be identical.
