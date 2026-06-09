@@ -29,6 +29,11 @@ public final class TelemetrySdkEntityDetector implements EntityDetector {
       AttributeKey.stringKey("telemetry.sdk.version");
 
   @Override
+  public String getName() {
+    return "telemetry.sdk";
+  }
+
+  @Override
   public Collection<Entity> detect(ConfigProperties config) {
     return Collections.singletonList(
         Entity.builder(ENTITY_TYPE)

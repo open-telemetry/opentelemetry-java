@@ -26,6 +26,22 @@ import java.util.function.BiFunction;
  */
 public final class ResourceConfiguration {
 
+  private static final boolean ENTITY_INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName(
+          "io.opentelemetry.sdk.extension.incubator.resources.EntityDetector",
+          false,
+          ResourceConfiguration.class.getClassLoader());
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    ENTITY_INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
+
   // Visible for testing
   static final String DISABLED_ATTRIBUTE_KEYS = "otel.resource.disabled.keys";
   static final String ENABLED_RESOURCE_PROVIDERS = "otel.java.enabled.resource.providers";
@@ -66,23 +82,35 @@ public final class ResourceConfiguration {
     Set<String> enabledProviders = new HashSet<>(config.getList(ENABLED_RESOURCE_PROVIDERS));
     Set<String> disabledProviders = new HashSet<>(config.getList(DISABLED_RESOURCE_PROVIDERS));
 
-    for (ResourceProvider resourceProvider : spiHelper.loadOrdered(ResourceProvider.class)) {
-      if (!enabledProviders.isEmpty()
-          && !enabledProviders.contains(resourceProvider.getClass().getName())) {
-        continue;
+    // If Entity experiment is enabled, we use a new flow to instantiate resources.
+    boolean entitiesEnabled = config.getBoolean("otel.experimental.entities.enabled", false);
+    if (entitiesEnabled && ENTITY_INCUBATOR_AVAILABLE) {
+      Resource entityResource =
+          IncubatingEntityUtil.configureEntityResource(
+              config, spiHelper, enabledProviders, disabledProviders);
+      if (entityResource != null) {
+        result = entityResource;
       }
-      if (disabledProviders.contains(resourceProvider.getClass().getName())) {
-        continue;
+    } else {
+
+      for (ResourceProvider resourceProvider : spiHelper.loadOrdered(ResourceProvider.class)) {
+        if (!enabledProviders.isEmpty()
+            && !enabledProviders.contains(resourceProvider.getClass().getName())) {
+          continue;
+        }
+        if (disabledProviders.contains(resourceProvider.getClass().getName())) {
+          continue;
+        }
+        if (resourceProvider instanceof ConditionalResourceProvider
+            && !((ConditionalResourceProvider) resourceProvider).shouldApply(config, result)) {
+          continue;
+        }
+        result = result.merge(resourceProvider.createResource(config));
       }
-      if (resourceProvider instanceof ConditionalResourceProvider
-          && !((ConditionalResourceProvider) resourceProvider).shouldApply(config, result)) {
-        continue;
-      }
-      result = result.merge(resourceProvider.createResource(config));
+
+      // TODO(jsuereth): Should filter attributes be used with entities?
+      result = filterAttributes(result, config);
     }
-
-    result = filterAttributes(result, config);
-
     return resourceCustomizer.apply(result, config);
   }
 

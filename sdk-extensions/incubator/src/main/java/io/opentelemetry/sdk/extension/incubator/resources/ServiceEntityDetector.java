@@ -27,6 +27,11 @@ public class ServiceEntityDetector implements EntityDetector {
   private static final String RANDOM = UUID.randomUUID().toString();
 
   @Override
+  public String getName() {
+    return "service";
+  }
+
+  @Override
   public Collection<Entity> detect(ConfigProperties config) {
     String serviceName = config.getString("otel.service.name");
 

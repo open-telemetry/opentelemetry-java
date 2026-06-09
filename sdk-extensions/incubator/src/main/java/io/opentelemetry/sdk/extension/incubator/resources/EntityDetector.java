@@ -21,4 +21,12 @@ public interface EntityDetector extends Ordered {
    * @param config the configuration to use for detection
    */
   Collection<Entity> detect(ConfigProperties config);
+
+  /**
+   * Returns the name of the detector (e.g., "service", "env") or the fully qualified class name.
+   * Used for configuration filtering by-name.
+   */
+  default String getName() {
+    return getClass().getName();
+  }
 }

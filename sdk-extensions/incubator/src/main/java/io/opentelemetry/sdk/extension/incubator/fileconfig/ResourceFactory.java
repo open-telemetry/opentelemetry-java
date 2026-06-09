@@ -15,8 +15,11 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Experi
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
+import io.opentelemetry.sdk.extension.incubator.resources.EntityDetector;
+import io.opentelemetry.sdk.extension.incubator.resources.internal.ExtendedEntityUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -37,27 +40,54 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
 
     ExperimentalResourceDetectionModel detectionModel = model.getDetectionDevelopment();
     if (detectionModel != null) {
-      ResourceBuilder detectedResourceBuilder = Resource.builder();
+      if (context.isEntitiesEnabled()) {
+        List<ExperimentalResourceDetectorModel> detectorModels = detectionModel.getDetectors();
+        if (detectorModels != null) {
+          List<EntityDetector> detectors = new ArrayList<>();
+          for (ExperimentalResourceDetectorModel detectorModel : detectorModels) {
+            ConfigKeyValue detectorKeyValue =
+                FileConfigUtil.validateSingleKeyValue(context, detectorModel, "resource detector");
+            String detectorName = detectorKeyValue.getKey();
 
-      List<ExperimentalResourceDetectorModel> detectorModels = detectionModel.getDetectors();
-      if (detectorModels != null) {
-        for (ExperimentalResourceDetectorModel detectorModel : detectorModels) {
-          detectedResourceBuilder.putAll(
-              ResourceDetectorFactory.getInstance().create(detectorModel, context));
+            for (EntityDetector detector : context.load(EntityDetector.class)) {
+              if (detector.getName().equals(detectorName)
+                  || detector.getClass().getName().equals(detectorName)) {
+                detectors.add(detector);
+              }
+            }
+          }
+          if (!detectors.isEmpty()) {
+            Resource detectedEntityResource =
+                ExtendedEntityUtil.runDetection(
+                    detectors, DefaultConfigProperties.createFromMap(Collections.emptyMap()));
+            builder = detectedEntityResource.toBuilder();
+          }
         }
+      } else {
+        ResourceBuilder detectedResourceBuilder = Resource.builder();
+
+        List<ExperimentalResourceDetectorModel> detectorModels = detectionModel.getDetectors();
+        if (detectorModels != null) {
+          for (ExperimentalResourceDetectorModel detectorModel : detectorModels) {
+            detectedResourceBuilder.putAll(
+                ResourceDetectorFactory.getInstance().create(detectorModel, context));
+          }
+        }
+
+        IncludeExcludeModel attributesIncludeExcludeModel = detectionModel.getAttributes();
+        Predicate<String> detectorAttributeFilter =
+            attributesIncludeExcludeModel == null
+                ? ResourceFactory::matchAll
+                : IncludeExcludeFactory.getInstance()
+                    .create(attributesIncludeExcludeModel, context);
+
+        Attributes filteredDetectedAttributes =
+            detectedResourceBuilder.build().getAttributes().toBuilder()
+                .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
+                .build();
+
+        builder.putAll(filteredDetectedAttributes);
       }
-
-      IncludeExcludeModel attributesIncludeExcludeModel = detectionModel.getAttributes();
-      Predicate<String> detectorAttributeFilter =
-          attributesIncludeExcludeModel == null
-              ? ResourceFactory::matchAll
-              : IncludeExcludeFactory.getInstance().create(attributesIncludeExcludeModel, context);
-      Attributes filteredDetectedAttributes =
-          detectedResourceBuilder.build().getAttributes().toBuilder()
-              .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
-              .build();
-
-      builder.putAll(filteredDetectedAttributes);
     }
 
     String attributeList = model.getAttributesList();

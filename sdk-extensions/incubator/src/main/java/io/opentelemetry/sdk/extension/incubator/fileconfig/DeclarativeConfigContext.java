@@ -131,6 +131,18 @@ class DeclarativeConfigContext implements ComponentLoader {
     }
   }
 
+  boolean isEntitiesEnabled() {
+    if (configProvider == null) {
+      return false;
+    }
+    // TODO - Check with Jack if this is the right thing to do for config flags,
+    // of if we want to put this in the experimental resource config space.
+    return Boolean.TRUE.equals(
+        configProvider
+            .getInstrumentationConfig("otel_sdk")
+            .getBoolean("experimental_entities_enabled"));
+  }
+
   /**
    * Find a registered {@link ComponentProvider} with {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link

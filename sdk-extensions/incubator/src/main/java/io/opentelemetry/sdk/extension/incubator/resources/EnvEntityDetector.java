@@ -22,10 +22,15 @@ import javax.annotation.Nullable;
  * See https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/entities/entity-propagation.md
  * for more information about the OTEL_ENTITIES environment variable.
  */
-class EnvEntityDetector implements EntityDetector {
+public class EnvEntityDetector implements EntityDetector {
 
   private static final Logger logger = Logger.getLogger(EnvEntityDetector.class.getName());
   private static final String PROPERTY_KEY = "otel.entities";
+
+  @Override
+  public String getName() {
+    return "env";
+  }
 
   @Override
   public Collection<Entity> detect(ConfigProperties config) {
