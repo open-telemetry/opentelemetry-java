@@ -612,12 +612,16 @@ class W3CBaggagePropagatorTest {
 
   static Stream<Arguments> extract_limit_maxEntries() {
     return Stream.of(
-        // Exactly at the limit — all 64 entries extracted
-        Arguments.of(ImmutableList.of(baggageHeader(0, 64)), baggageWithEntries(0, 64)),
-        // One over the limit — only the first 64 extracted
-        Arguments.of(ImmutableList.of(baggageHeader(0, 65)), baggageWithEntries(0, 64)),
-        // Split across two headers — only the first 64 total extracted
-        Arguments.of(
+        Arguments.argumentSet(
+            "exactly at limit, all 64 extracted",
+            ImmutableList.of(baggageHeader(0, 64)),
+            baggageWithEntries(0, 64)),
+        Arguments.argumentSet(
+            "one over limit, only first 64 extracted",
+            ImmutableList.of(baggageHeader(0, 65)),
+            baggageWithEntries(0, 64)),
+        Arguments.argumentSet(
+            "split across two headers, first 64 total extracted",
             ImmutableList.of(baggageHeader(0, 32), baggageHeader(32, 33)),
             baggageWithEntries(0, 64)));
   }

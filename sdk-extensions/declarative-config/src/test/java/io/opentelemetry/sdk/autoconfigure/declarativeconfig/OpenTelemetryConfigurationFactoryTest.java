@@ -119,22 +119,20 @@ class OpenTelemetryConfigurationFactoryTest {
 
   private static Stream<Arguments> fileFormatArgs() {
     return Stream.of(
-        // Invalid file formats
-        Arguments.of(null, false),
-        Arguments.of("0.3", false),
-        Arguments.of("a0.4", false),
-        Arguments.of("0.4a", false),
-        Arguments.of("foo", false),
-        Arguments.of("1.0-rc.a", false),
-        Arguments.of("1.0.0", false),
-        Arguments.of("1.0.3", false),
-        Arguments.of("1.0.0-rc.3", false),
-        // Valid file formats
-        Arguments.of("0.4", true),
-        Arguments.of("1.0-rc.1", true),
-        Arguments.of("1.0-rc.2", true),
-        Arguments.of("1.0-rc.3", true),
-        Arguments.of("1.0", true));
+        Arguments.argumentSet("null invalid", null, false),
+        Arguments.argumentSet("0.3 invalid", "0.3", false),
+        Arguments.argumentSet("a0.4 invalid", "a0.4", false),
+        Arguments.argumentSet("0.4a invalid", "0.4a", false),
+        Arguments.argumentSet("foo invalid", "foo", false),
+        Arguments.argumentSet("1.0-rc.a invalid", "1.0-rc.a", false),
+        Arguments.argumentSet("1.0.0 invalid", "1.0.0", false),
+        Arguments.argumentSet("1.0.3 invalid", "1.0.3", false),
+        Arguments.argumentSet("1.0.0-rc.3 invalid", "1.0.0-rc.3", false),
+        Arguments.argumentSet("0.4 valid", "0.4", true),
+        Arguments.argumentSet("1.0-rc.1 valid", "1.0-rc.1", true),
+        Arguments.argumentSet("1.0-rc.2 valid", "1.0-rc.2", true),
+        Arguments.argumentSet("1.0-rc.3 valid", "1.0-rc.3", true),
+        Arguments.argumentSet("1.0 valid", "1.0", true));
   }
 
   @Test

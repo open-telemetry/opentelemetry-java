@@ -299,7 +299,14 @@ class SynchronousInstrumentStressTest {
         for (MemoryMode memoryMode : MemoryMode.values()) {
           for (InstrumentValueType instrumentValueType : InstrumentValueType.values()) {
             argumentsList.add(
-                Arguments.of(
+                Arguments.argumentSet(
+                    aggregationTemporality
+                        + " "
+                        + instrumentTypeAndAggregation.instrumentType
+                        + " "
+                        + memoryMode
+                        + " "
+                        + instrumentValueType,
                     aggregationTemporality,
                     instrumentTypeAndAggregation.instrumentType,
                     instrumentTypeAndAggregation.aggregation,

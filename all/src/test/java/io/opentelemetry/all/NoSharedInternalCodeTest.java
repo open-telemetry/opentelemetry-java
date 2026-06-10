@@ -114,7 +114,7 @@ class NoSharedInternalCodeTest {
         .map(
             line -> {
               String[] parts = line.split(":", 2);
-              return Arguments.of(parts[0], parts[1]);
+              return Arguments.argumentSet(parts[0], parts[0], parts[1]);
             });
   }
 }

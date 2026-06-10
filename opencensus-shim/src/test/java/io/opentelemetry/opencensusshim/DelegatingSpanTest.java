@@ -87,46 +87,110 @@ class DelegatingSpanTest {
 
   static Stream<Arguments> delegateMethodsProvider() {
     return Stream.of(
-        Arguments.of("end", new Class<?>[] {}, times(1)),
-        Arguments.of("end", new Class<?>[] {long.class, TimeUnit.class}, times(1)),
-        Arguments.of("end", new Class<?>[] {Instant.class}, times(1)),
-        Arguments.of("setAttribute", new Class<?>[] {String.class, String.class}, times(1)),
-        Arguments.of("setAttribute", new Class<?>[] {AttributeKey.class, int.class}, times(1)),
-        Arguments.of("setAttribute", new Class<?>[] {AttributeKey.class, Object.class}, times(1)),
-        Arguments.of("setAttribute", new Class<?>[] {String.class, long.class}, times(1)),
-        Arguments.of("setAttribute", new Class<?>[] {String.class, double.class}, times(1)),
-        Arguments.of("setAttribute", new Class<?>[] {String.class, boolean.class}, times(1)),
-        Arguments.of("setAttribute", new Class<?>[] {String.class, Value.class}, times(1)),
-        Arguments.of(
-            "recordException", new Class<?>[] {Throwable.class, Attributes.class}, times(1)),
-        Arguments.of("recordException", new Class<?>[] {Throwable.class}, times(1)),
-        Arguments.of("setAllAttributes", new Class<?>[] {Attributes.class}, times(1)),
-        Arguments.of("updateName", new Class<?>[] {String.class}, times(1)),
-        Arguments.of("storeInContext", new Class<?>[] {Context.class}, times(1)),
-        Arguments.of("addEvent", new Class<?>[] {String.class, Instant.class}, times(1)),
-        Arguments.of(
-            "addEvent", new Class<?>[] {String.class, long.class, TimeUnit.class}, times(1)),
-        Arguments.of(
-            "addEvent", new Class<?>[] {String.class, Attributes.class, Instant.class}, times(1)),
-        Arguments.of("addEvent", new Class<?>[] {String.class}, times(1)),
-        Arguments.of(
+        Arguments.argumentSet("end no-args", "end", new Class<?>[] {}, times(1)),
+        Arguments.argumentSet(
+            "end long TimeUnit", "end", new Class<?>[] {long.class, TimeUnit.class}, times(1)),
+        Arguments.argumentSet("end Instant", "end", new Class<?>[] {Instant.class}, times(1)),
+        Arguments.argumentSet(
+            "setAttribute String String",
+            "setAttribute",
+            new Class<?>[] {String.class, String.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setAttribute AttributeKey int",
+            "setAttribute",
+            new Class<?>[] {AttributeKey.class, int.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setAttribute AttributeKey Object",
+            "setAttribute",
+            new Class<?>[] {AttributeKey.class, Object.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setAttribute String long",
+            "setAttribute",
+            new Class<?>[] {String.class, long.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setAttribute String double",
+            "setAttribute",
+            new Class<?>[] {String.class, double.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setAttribute String boolean",
+            "setAttribute",
+            new Class<?>[] {String.class, boolean.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setAttribute String Value",
+            "setAttribute",
+            new Class<?>[] {String.class, Value.class},
+            times(1)),
+        Arguments.argumentSet(
+            "recordException with Attributes",
+            "recordException",
+            new Class<?>[] {Throwable.class, Attributes.class},
+            times(1)),
+        Arguments.argumentSet(
+            "recordException no Attributes",
+            "recordException",
+            new Class<?>[] {Throwable.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setAllAttributes", "setAllAttributes", new Class<?>[] {Attributes.class}, times(1)),
+        Arguments.argumentSet("updateName", "updateName", new Class<?>[] {String.class}, times(1)),
+        Arguments.argumentSet(
+            "storeInContext", "storeInContext", new Class<?>[] {Context.class}, times(1)),
+        Arguments.argumentSet(
+            "addEvent String Instant",
+            "addEvent",
+            new Class<?>[] {String.class, Instant.class},
+            times(1)),
+        Arguments.argumentSet(
+            "addEvent String long TimeUnit",
+            "addEvent",
+            new Class<?>[] {String.class, long.class, TimeUnit.class},
+            times(1)),
+        Arguments.argumentSet(
+            "addEvent String Attributes Instant",
+            "addEvent",
+            new Class<?>[] {String.class, Attributes.class, Instant.class},
+            times(1)),
+        Arguments.argumentSet(
+            "addEvent String", "addEvent", new Class<?>[] {String.class}, times(1)),
+        Arguments.argumentSet(
+            "addEvent String Attributes long TimeUnit",
             "addEvent",
             new Class<?>[] {String.class, Attributes.class, long.class, TimeUnit.class},
             times(1)),
-        Arguments.of("addEvent", new Class<?>[] {String.class, Attributes.class}, times(1)),
-        Arguments.of("setStatus", new Class<?>[] {StatusCode.class, String.class}, times(1)),
-        Arguments.of("setStatus", new Class<?>[] {StatusCode.class}, times(1)),
+        Arguments.argumentSet(
+            "addEvent String Attributes",
+            "addEvent",
+            new Class<?>[] {String.class, Attributes.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setStatus StatusCode String",
+            "setStatus",
+            new Class<?>[] {StatusCode.class, String.class},
+            times(1)),
+        Arguments.argumentSet(
+            "setStatus StatusCode", "setStatus", new Class<?>[] {StatusCode.class}, times(1)),
         //
         // special cases
         //
         // called never -- it's shared between OC and Otel Span types and is always true, so returns
         // `true`
-        Arguments.of("isRecording", new Class<?>[] {}, times(0)),
+        Arguments.argumentSet("isRecording", "isRecording", new Class<?>[] {}, times(0)),
         // called twice: once in constructor, then once during delegation
-        Arguments.of("getSpanContext", new Class<?>[] {}, times(2)),
+        Arguments.argumentSet("getSpanContext", "getSpanContext", new Class<?>[] {}, times(2)),
         // addLink is never called
-        Arguments.of("addLink", new Class<?>[] {SpanContext.class}, times(0)),
-        Arguments.of("addLink", new Class<?>[] {SpanContext.class, Attributes.class}, times(0)));
+        Arguments.argumentSet(
+            "addLink SpanContext", "addLink", new Class<?>[] {SpanContext.class}, times(0)),
+        Arguments.argumentSet(
+            "addLink SpanContext Attributes",
+            "addLink",
+            new Class<?>[] {SpanContext.class, Attributes.class},
+            times(0)));
   }
 
   // gets default values for all cases, as mockito can't mock wrappers or primitives, including

@@ -27,8 +27,13 @@ class ExemplarFilterFactoryTest {
 
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(MeterProviderModel.ExemplarFilter.ALWAYS_ON, ExemplarFilter.alwaysOn()),
-        Arguments.of(MeterProviderModel.ExemplarFilter.ALWAYS_OFF, ExemplarFilter.alwaysOff()),
-        Arguments.of(MeterProviderModel.ExemplarFilter.TRACE_BASED, ExemplarFilter.traceBased()));
+        Arguments.argumentSet(
+            "always_on", MeterProviderModel.ExemplarFilter.ALWAYS_ON, ExemplarFilter.alwaysOn()),
+        Arguments.argumentSet(
+            "always_off", MeterProviderModel.ExemplarFilter.ALWAYS_OFF, ExemplarFilter.alwaysOff()),
+        Arguments.argumentSet(
+            "trace_based",
+            MeterProviderModel.ExemplarFilter.TRACE_BASED,
+            ExemplarFilter.traceBased()));
   }
 }

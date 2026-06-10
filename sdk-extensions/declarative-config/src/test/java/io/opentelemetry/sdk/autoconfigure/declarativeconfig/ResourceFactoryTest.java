@@ -38,7 +38,8 @@ class ResourceFactoryTest {
 
   private static Stream<Arguments> createArgs() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "with attributes",
             new ResourceModel()
                 .withAttributes(
                     Arrays.asList(
@@ -52,10 +53,12 @@ class ResourceFactoryTest {
                 .put("service.name", "my-service")
                 .put("key", "val")
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "with schema url",
             new ResourceModel().withSchemaUrl("http://foo"),
             Resource.getDefault().toBuilder().setSchemaUrl("http://foo").build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "with attributes list",
             new ResourceModel().withAttributesList("key1=val1,key2=val2"),
             Resource.getDefault().toBuilder().put("key1", "val1").put("key2", "val2").build()));
   }
@@ -84,7 +87,8 @@ class ResourceFactoryTest {
 
   private static Stream<Arguments> createWithDetectorsArgs() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "no filters",
             null,
             null,
             Resource.getDefault().toBuilder()
@@ -92,60 +96,72 @@ class ResourceFactoryTest {
                 .put("shape", "square")
                 .put("order", "second")
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "include color",
             Collections.singletonList("color"),
             null,
             Resource.getDefault().toBuilder().put("color", "red").build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "include color shape",
             Arrays.asList("color", "shape"),
             null,
             Resource.getDefault().toBuilder().put("color", "red").put("shape", "square").build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "exclude color",
             null,
             Collections.singletonList("color"),
             Resource.getDefault().toBuilder()
                 .put("shape", "square")
                 .put("order", "second")
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "exclude color shape",
             null,
             Arrays.asList("color", "shape"),
             Resource.getDefault().toBuilder().put("order", "second").build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "include and exclude same",
             Collections.singletonList("color"),
             Collections.singletonList("color"),
             Resource.getDefault().toBuilder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "include color shape exclude color",
             Arrays.asList("color", "shape"),
             Collections.singletonList("color"),
             Resource.getDefault().toBuilder().put("shape", "square").build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "include c* glob",
             Collections.singletonList("c*"),
             null,
             Resource.getDefault().toBuilder().put("color", "red").build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "include c?lor glob",
             Collections.singletonList("c?lor"),
             null,
             Resource.getDefault().toBuilder().put("color", "red").build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "exclude c* glob",
             null,
             Collections.singletonList("c*"),
             Resource.getDefault().toBuilder()
                 .put("shape", "square")
                 .put("order", "second")
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "exclude c?lor glob",
             null,
             Collections.singletonList("c?lor"),
             Resource.getDefault().toBuilder()
                 .put("shape", "square")
                 .put("order", "second")
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "include *o* exclude order",
             Collections.singletonList("*o*"),
             Collections.singletonList("order"),
             Resource.getDefault().toBuilder().put("color", "red").build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "exclude order",
             null,
             Collections.singletonList("order"),
             Resource.getDefault().toBuilder().put("color", "red").put("shape", "square").build()));
@@ -161,7 +177,8 @@ class ResourceFactoryTest {
 
   private static Stream<Arguments> createInvalidDetectorsArgs() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "unknown detector",
             new ResourceModel()
                 .withDetectionDevelopment(
                     new ExperimentalResourceDetectionModel()
@@ -170,7 +187,8 @@ class ResourceFactoryTest {
                                 new ExperimentalResourceDetectorModel()
                                     .withAdditionalProperty("foo", null)))),
             "No component provider detected for io.opentelemetry.sdk.resources.Resource with name \"foo\"."),
-        Arguments.of(
+        Arguments.argumentSet(
+            "detector multiple entries",
             new ResourceModel()
                 .withDetectionDevelopment(
                     new ExperimentalResourceDetectionModel()
@@ -180,14 +198,16 @@ class ResourceFactoryTest {
                                     .withAdditionalProperty("foo", null)
                                     .withAdditionalProperty("bar", null)))),
             "resource detector must have exactly one entry but has 2: [foo,bar]"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "detector no entries",
             new ResourceModel()
                 .withDetectionDevelopment(
                     new ExperimentalResourceDetectionModel()
                         .withDetectors(
                             Collections.singletonList(new ExperimentalResourceDetectorModel()))),
             "resource detector must have exactly one entry but has 0"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "included empty list",
             new ResourceModel()
                 .withDetectionDevelopment(
                     new ExperimentalResourceDetectionModel()
@@ -196,7 +216,8 @@ class ResourceFactoryTest {
                                 .withIncluded(Collections.emptyList())
                                 .withExcluded(null))),
             "included must not be empty"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "excluded empty list",
             new ResourceModel()
                 .withDetectionDevelopment(
                     new ExperimentalResourceDetectionModel()
