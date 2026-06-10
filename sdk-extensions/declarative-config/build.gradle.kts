@@ -131,6 +131,14 @@ generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
 val syncPojoModelsToSrc by tasks.registering(Copy::class) {
   dependsOn(generateJsonSchema2Pojo)
   finalizedBy("spotlessApply")
+  val modelDir = File(projectDir, "src/main/java/io/opentelemetry/sdk/autoconfigure/declarativeconfig/model")
+  doFirst {
+    require(JavaVersion.current() == JavaVersion.VERSION_21) {
+      "syncPojoModelsToSrc requires Java 21 (current: ${JavaVersion.current()}). jsonschema2pojo output is JVM-version-sensitive; using the wrong version produces spurious diffs."
+    }
+    // Copy won't remove files that no longer exist in the source. Delete first so schema type removals don't leave stale classes.
+    modelDir.deleteRecursively()
+  }
 
   from("$buildDirectory/generated/sources/js2p/java/main")
   into("$projectDir/src/main/java")
