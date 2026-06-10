@@ -31,6 +31,8 @@ class Element {
   }
 
   private final BitSet excluded;
+  private boolean allowEmpty;
+  private boolean seenWhitespace;
 
   private boolean leadingSpace;
   private boolean readingValue;
@@ -44,7 +46,9 @@ class Element {
   }
 
   static Element createValueElement() {
-    return new Element(EXCLUDED_VALUE_CHARS);
+    Element element = new Element(EXCLUDED_VALUE_CHARS);
+    element.allowEmpty = true;
+    return element;
   }
 
   /**
@@ -54,6 +58,7 @@ class Element {
    */
   private Element(BitSet excluded) {
     this.excluded = excluded;
+    this.allowEmpty = false;
     reset(0);
   }
 
@@ -68,6 +73,7 @@ class Element {
     readingValue = false;
     trailingSpace = false;
     value = null;
+    seenWhitespace = false;
   }
 
   boolean tryTerminating(int index, String header) {
@@ -76,6 +82,9 @@ class Element {
     }
     if (this.trailingSpace) {
       setValue(header);
+      return true;
+    } else if (allowEmpty && !seenWhitespace) {
+      this.value = "";
       return true;
     } else {
       // leading spaces - no content, invalid
@@ -110,6 +119,8 @@ class Element {
   private boolean tryNextWhitespace(int index) {
     if (readingValue) {
       markEnd(index);
+    } else {
+      seenWhitespace = true;
     }
     return true;
   }
