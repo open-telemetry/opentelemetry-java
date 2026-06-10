@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@SuppressWarnings("FutureReturnValueIgnored")
+@SuppressWarnings({"FutureReturnValueIgnored", "deprecation"})
 class ActiveSpanReplacementTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();

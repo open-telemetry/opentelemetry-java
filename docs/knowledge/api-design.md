@@ -17,6 +17,47 @@ Breaking changes are allowed in alpha modules but should still be approached car
 Breaking changes are not allowed in stable modules outside of a major version bump. The build
 enforces this via japicmp — see [japicmp](#japicmp) below.
 
+## Configuration
+
+There are [3 configuration interfaces](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/configuration#configuration-interfaces):
+
+- Programmatic configuration: invoke Java APIs to build components. This is the base of all other
+  configuration interfaces.
+- Env var / system property configuration: set flat env vars / system properties, which are
+  interpreted to equivalent calls to the programmatic configuration interface.
+- Declarative configuration: structured, YAML-based configuration, which is interpreted to
+  equivalent calls to the programmatic configuration interface.
+
+As a general rule, all configuration interfaces are bound by the spec. However, we make certain
+exceptions with Java-specific additions in places where the lack of such features is detrimental to
+the OpenTelemetry Java ecosystem. For example:
+
+- The OTLP exporters have programmatic proxy configuration options. Despite not being part of the
+  spec, this is a common enough use case that not supporting it would be a glaring oversight.
+- Env var / system property configuration has an `otel.java.metrics.cardinality.limit` property for
+  configuring a global cardinality limit. This is not part of the spec, but it is an important and
+  common enough use case that we added a Java-specific property for it.
+
+Configuration options outside the spec are added at maintainers' discretion. If proposing an
+option outside the spec, start with programmatic configuration, which we are much more likely to
+accept.
+
+Declarative configuration is stable at the spec level and was designed to solve the expressiveness
+shortcomings of env var / system property configuration. It is the priority interface for current
+and future configuration enhancements. By default, new non-programmatic configuration options
+should target declarative configuration. This means:
+
+- We are judicious about extending the env var / system property configuration interface with new
+  options. Additions are at maintainers' discretion. When proposing such an addition, also open a
+  corresponding issue or discussion post describing the use-case and justification.
+- Declarative configuration must be a strict superset of env var / system property configuration.
+  In the event new env var / system properties are added, there must be equivalent capabilities in
+  declarative config, with the caveat that naming and structure do not need to be identical.
+
+Configuration is part of our public API surface area, subject to our
+[versioning policy](../../VERSIONING.md) unless explicitly marked unstable (for example,
+`*.experimental.*` for env vars / system properties and `*/development` for declarative config).
+
 ## Deprecating API
 
 Applies to both stable and alpha modules. Use plain `@Deprecated` — do **not** use

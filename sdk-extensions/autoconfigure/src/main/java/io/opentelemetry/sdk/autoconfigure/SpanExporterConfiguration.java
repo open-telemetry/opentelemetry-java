@@ -36,6 +36,7 @@ final class SpanExporterConfiguration {
   }
 
   // Visible for testing
+  @SuppressWarnings("ReferenceEquality")
   static Map<String, SpanExporter> configureSpanExporters(
       ConfigProperties config,
       SpiHelper spiHelper,

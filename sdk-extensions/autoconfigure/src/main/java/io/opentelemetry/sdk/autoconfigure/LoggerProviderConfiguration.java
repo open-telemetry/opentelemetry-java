@@ -34,6 +34,7 @@ final class LoggerProviderConfiguration {
   private static final List<String> simpleProcessorExporterNames =
       Arrays.asList("console", "logging");
 
+  @SuppressWarnings("ReferenceEquality")
   static void configureLoggerProvider(
       SdkLoggerProviderBuilder loggerProviderBuilder,
       ConfigProperties config,

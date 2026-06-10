@@ -44,7 +44,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "13.4.2"
+  toolVersion = "13.5.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -154,12 +154,43 @@ tasks {
           val unversionedImports = unversionedOptionalPackages.joinToString(",") { "$it.*;resolution:=optional" }
           val fullImportPackages = if (unversionedImports.isNotEmpty()) "$unversionedImports,$importPackages" else importPackages
 
-          bnd(mapOf(
-            // Exclude shaded internal packages from exports; they are implementation details and
-            // should not be part of the OSGi bundle's public API surface.
-            "-exportcontents" to "!io.opentelemetry.internal.shaded.*,io.opentelemetry.*",
+          val bndInstructions = mutableMapOf(
+            "-exportcontents" to "io.opentelemetry.*",
             "Import-Package" to fullImportPackages
-          ))
+          )
+
+          // OSGi ServiceLoader Mediator capabilities.
+          // Providers declare what SPI implementations they register via META-INF/services.
+          // Consumers declare what SPI interfaces they discover at runtime via ServiceLoader.
+          // Both require the corresponding extender from a ServiceLoader mediator (e.g. SPI Fly).
+          val slProvides = otelJava.osgiServiceLoaderProvides.get()
+          val slRequires = otelJava.osgiServiceLoaderRequires.get()
+          val requireClauses = mutableListOf<String>()
+
+          if (slProvides.isNotEmpty()) {
+            bndInstructions["Provide-Capability"] = slProvides.joinToString(",") {
+              "osgi.serviceloader;osgi.serviceloader=\"$it\""
+            }
+            requireClauses.add("osgi.extender;filter:=\"(osgi.extender=osgi.serviceloader.registrar)\"")
+          }
+          if (slRequires.isNotEmpty()) {
+            slRequires.forEach {
+              // resolution:=optional: hints the BND resolver to include provider bundles.
+              // Does not add the processor extender — use osgiServiceLoaderProcessor for that.
+              requireClauses.add("osgi.serviceloader;filter:=\"(osgi.serviceloader=$it)\";cardinality:=multiple;resolution:=optional")
+            }
+          }
+          if (otelJava.osgiServiceLoaderProcessor.get()) {
+            // Mandatory: actively pulls a ServiceLoader processor (e.g. SPI Fly) into the resolved
+            // bundle set so that ServiceLoader.load() calls are routed via the OSGi service registry.
+            // Set on whichever bundle contains the ServiceLoader.load() call site.
+            requireClauses.add("osgi.extender;filter:=\"(osgi.extender=osgi.serviceloader.processor)\"")
+          }
+          if (requireClauses.isNotEmpty()) {
+            bndInstructions["Require-Capability"] = requireClauses.joinToString(",")
+          }
+
+          bnd(bndInstructions)
         }
       }
     }

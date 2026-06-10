@@ -7,6 +7,14 @@ plugins {
 
 description = "OpenTelemetry Exporter Common"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal")
+otelJava.osgiOptionalPackages.set(listOf("com.fasterxml.jackson.core", "com.google.common.io", "io.opentelemetry.api.incubator.config", "io.opentelemetry.sdk.autoconfigure.spi"))
+// sun.misc, io.grpc, and org.jspecify are not OSGi bundles and have no package versioning; must use unversioned optional.
+otelJava.osgiUnversionedOptionalPackages.set(listOf("sun.misc", "io.grpc", "org.jspecify.annotations"))
+// This bundle's exporters load sender implementations via SPI.
+otelJava.osgiServiceLoaderRequires.set(listOf(
+  "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
+  "io.opentelemetry.sdk.common.export.HttpSenderProvider"
+))
 
 java {
   sourceSets {
@@ -51,7 +59,7 @@ if (javaVersion >= JavaVersion.VERSION_1_9) {
 val versions: Map<String, String> by project
 dependencies {
   api(project(":api:all"))
-  api(project(":sdk-extensions:autoconfigure-spi"))
+  compileOnly(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk:common"))
@@ -88,6 +96,7 @@ testing {
         implementation(project(":exporters:sender:jdk"))
         implementation(project(":exporters:sender:okhttp"))
         implementation(project(":exporters:sender:grpc-managed-channel"))
+        implementation(project(":sdk:common"))
       }
       targets {
         all {

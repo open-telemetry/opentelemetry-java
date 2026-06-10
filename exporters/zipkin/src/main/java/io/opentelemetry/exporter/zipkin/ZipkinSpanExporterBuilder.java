@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -151,9 +150,10 @@ public final class ZipkinSpanExporterBuilder {
    */
   public ZipkinSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    checkArgument(
-        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
-        "Unsupported compression method. Supported compression methods include: gzip, none.");
+    if (!compressionMethod.equals("gzip") && !compressionMethod.equals("none")) {
+      throw new IllegalArgumentException(
+          "Unsupported compression method. Supported compression methods include: gzip, none.");
+    }
     this.compressionEnabled = compressionMethod.equals("gzip");
     return this;
   }
@@ -166,7 +166,9 @@ public final class ZipkinSpanExporterBuilder {
    */
   public ZipkinSpanExporterBuilder setReadTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
-    checkArgument(timeout >= 0, "timeout must be non-negative");
+    if (timeout < 0) {
+      throw new IllegalArgumentException("timeout must be non-negative");
+    }
     long timeoutMillis = timeout == 0 ? Long.MAX_VALUE : unit.toMillis(timeout);
     this.readTimeoutMillis = (int) Math.min(timeoutMillis, Integer.MAX_VALUE);
     return this;
