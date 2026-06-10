@@ -1429,41 +1429,48 @@ class SdkSpanTest {
 
   private static Stream<Arguments> setStatusArgs() {
     return Stream.of(
-        // Default status is UNSET
-        Arguments.of(spanConsumer(span -> {}), StatusData.unset()),
-        // Simple cases
-        Arguments.of(spanConsumer(span -> span.setStatus(StatusCode.OK)), StatusData.ok()),
-        Arguments.of(spanConsumer(span -> span.setStatus(StatusCode.ERROR)), StatusData.error()),
-        // UNSET is ignored
-        Arguments.of(
+        Arguments.argumentSet("default UNSET", spanConsumer(span -> {}), StatusData.unset()),
+        Arguments.argumentSet(
+            "setStatus OK", spanConsumer(span -> span.setStatus(StatusCode.OK)), StatusData.ok()),
+        Arguments.argumentSet(
+            "setStatus ERROR",
+            spanConsumer(span -> span.setStatus(StatusCode.ERROR)),
+            StatusData.error()),
+        Arguments.argumentSet(
+            "OK then UNSET ignored",
             spanConsumer(span -> span.setStatus(StatusCode.OK).setStatus(StatusCode.UNSET)),
             StatusData.ok()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "ERROR then UNSET ignored",
             spanConsumer(span -> span.setStatus(StatusCode.ERROR).setStatus(StatusCode.UNSET)),
             StatusData.error()),
-        // Description is ignored unless status is ERROR
-        Arguments.of(
+        Arguments.argumentSet(
+            "UNSET description ignored",
             spanConsumer(span -> span.setStatus(StatusCode.UNSET, "description")),
             StatusData.unset()),
-        Arguments.of(
-            spanConsumer(span -> span.setStatus(StatusCode.OK, "description")), StatusData.ok()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "OK description ignored",
+            spanConsumer(span -> span.setStatus(StatusCode.OK, "description")),
+            StatusData.ok()),
+        Arguments.argumentSet(
+            "ERROR with description",
             spanConsumer(span -> span.setStatus(StatusCode.ERROR, "description")),
             StatusData.create(StatusCode.ERROR, "description")),
-        // ERROR is ignored if status is OK
-        Arguments.of(
+        Arguments.argumentSet(
+            "ERROR ignored after OK",
             spanConsumer(
                 span -> span.setStatus(StatusCode.OK).setStatus(StatusCode.ERROR, "description")),
             StatusData.ok()),
-        // setStatus ignored after span is ended
-        Arguments.of(
+        Arguments.argumentSet(
+            "setStatus OK after end ignored",
             spanConsumer(
                 span -> {
                   span.end();
                   span.setStatus(StatusCode.OK);
                 }),
             StatusData.unset()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "setStatus ERROR after end ignored",
             spanConsumer(
                 span -> {
                   span.end();

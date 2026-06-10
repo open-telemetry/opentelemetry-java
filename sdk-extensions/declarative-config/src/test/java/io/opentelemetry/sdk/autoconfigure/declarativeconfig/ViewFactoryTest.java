@@ -34,11 +34,11 @@ class ViewFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        // defaults
-        Arguments.of(new ViewStreamModel().withAttributeKeys(null), View.builder().build()),
-        // attribute_keys with only included (no excluded) - reproduces
+        Arguments.argumentSet(
+            "defaults", new ViewStreamModel().withAttributeKeys(null), View.builder().build()),
         // https://github.com/open-telemetry/opentelemetry-java/issues/8337
-        Arguments.of(
+        Arguments.argumentSet(
+            "included only no excluded",
             new ViewStreamModel()
                 .withAttributeKeys(
                     new IncludeExcludeModel()
@@ -52,8 +52,8 @@ class ViewFactoryTest {
                             "url.full", "http.request.method", "http.response.status_code"),
                         null))
                 .build()),
-        // full configuration
-        Arguments.of(
+        Arguments.argumentSet(
+            "full configuration",
             new ViewStreamModel()
                 .withName("name")
                 .withDescription("description")

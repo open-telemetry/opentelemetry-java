@@ -135,26 +135,23 @@ class TracerConfigTest {
             .build();
 
     return Stream.of(
-        // default
-        Arguments.of(defaultConfigurator, scopeCat, defaultConfig()),
-        Arguments.of(defaultConfigurator, scopeDog, defaultConfig()),
-        Arguments.of(defaultConfigurator, scopeDuck, defaultConfig()),
-        // default enabled, disable cat
-        Arguments.of(disableCat, scopeCat, disabled()),
-        Arguments.of(disableCat, scopeDog, enabled()),
-        Arguments.of(disableCat, scopeDuck, enabled()),
-        // default enabled, disable pattern
-        Arguments.of(disableStartsWithD, scopeCat, enabled()),
-        Arguments.of(disableStartsWithD, scopeDog, disabled()),
-        Arguments.of(disableStartsWithD, scopeDuck, disabled()),
-        // default disabled, enable cat
-        Arguments.of(enableCat, scopeCat, enabled()),
-        Arguments.of(enableCat, scopeDog, disabled()),
-        Arguments.of(enableCat, scopeDuck, disabled()),
-        // default disabled, enable pattern
-        Arguments.of(enableStartsWithD, scopeCat, disabled()),
-        Arguments.of(enableStartsWithD, scopeDog, enabled()),
-        Arguments.of(enableStartsWithD, scopeDuck, enabled()));
+        Arguments.argumentSet("default cat", defaultConfigurator, scopeCat, defaultConfig()),
+        Arguments.argumentSet("default dog", defaultConfigurator, scopeDog, defaultConfig()),
+        Arguments.argumentSet("default duck", defaultConfigurator, scopeDuck, defaultConfig()),
+        Arguments.argumentSet("disable cat - cat disabled", disableCat, scopeCat, disabled()),
+        Arguments.argumentSet("disable cat - dog enabled", disableCat, scopeDog, enabled()),
+        Arguments.argumentSet("disable cat - duck enabled", disableCat, scopeDuck, enabled()),
+        Arguments.argumentSet("disable d* - cat enabled", disableStartsWithD, scopeCat, enabled()),
+        Arguments.argumentSet(
+            "disable d* - dog disabled", disableStartsWithD, scopeDog, disabled()),
+        Arguments.argumentSet(
+            "disable d* - duck disabled", disableStartsWithD, scopeDuck, disabled()),
+        Arguments.argumentSet("enable cat - cat enabled", enableCat, scopeCat, enabled()),
+        Arguments.argumentSet("enable cat - dog disabled", enableCat, scopeDog, disabled()),
+        Arguments.argumentSet("enable cat - duck disabled", enableCat, scopeDuck, disabled()),
+        Arguments.argumentSet("enable d* - cat disabled", enableStartsWithD, scopeCat, disabled()),
+        Arguments.argumentSet("enable d* - dog enabled", enableStartsWithD, scopeDog, enabled()),
+        Arguments.argumentSet("enable d* - duck enabled", enableStartsWithD, scopeDuck, enabled()));
   }
 
   @Test

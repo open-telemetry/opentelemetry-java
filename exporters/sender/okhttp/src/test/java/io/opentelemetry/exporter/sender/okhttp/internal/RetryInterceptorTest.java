@@ -254,24 +254,36 @@ class RetryInterceptorTest {
 
   private static Stream<Arguments> isRetryableExceptionArgs() {
     return Stream.of(
-        // Should retry on SocketTimeoutExceptions
-        Arguments.of(new SocketTimeoutException("Connect timed out"), true),
-        Arguments.of(new SocketTimeoutException("connect timed out"), true),
-        Arguments.of(new SocketTimeoutException("timeout"), true),
-        Arguments.of(new SocketTimeoutException("Read timed out"), true),
-        Arguments.of(new SocketTimeoutException(), true),
-        // Should retry on UnknownHostExceptions
-        Arguments.of(new UnknownHostException("host"), true),
-        // Should retry on SocketException
-        Arguments.of(new SocketException("closed"), true),
-        // Should retry on ConnectException
-        Arguments.of(
-            new ConnectException("Failed to connect to localhost/[0:0:0:0:0:0:0:1]:62611"), true),
-        // Shouldn't retry other IOException
-        Arguments.of(new IOException("error"), false),
+        Arguments.argumentSet(
+            "SocketTimeoutException Connect timed out",
+            new SocketTimeoutException("Connect timed out"),
+            true),
+        Arguments.argumentSet(
+            "SocketTimeoutException connect timed out",
+            new SocketTimeoutException("connect timed out"),
+            true),
+        Arguments.argumentSet(
+            "SocketTimeoutException timeout", new SocketTimeoutException("timeout"), true),
+        Arguments.argumentSet(
+            "SocketTimeoutException Read timed out",
+            new SocketTimeoutException("Read timed out"),
+            true),
+        Arguments.argumentSet(
+            "SocketTimeoutException no message", new SocketTimeoutException(), true),
+        Arguments.argumentSet("UnknownHostException", new UnknownHostException("host"), true),
+        Arguments.argumentSet("SocketException closed", new SocketException("closed"), true),
+        Arguments.argumentSet(
+            "ConnectException localhost",
+            new ConnectException("Failed to connect to localhost/[0:0:0:0:0:0:0:1]:62611"),
+            true),
+        Arguments.argumentSet("IOException not retryable", new IOException("error"), false),
         // Testing configured predicate
-        Arguments.of(new HttpRetryException("error", 400), false),
-        Arguments.of(new HttpRetryException("timeout retry", 400), true));
+        Arguments.argumentSet(
+            "HttpRetryException not retryable", new HttpRetryException("error", 400), false),
+        Arguments.argumentSet(
+            "HttpRetryException timeout retry",
+            new HttpRetryException("timeout retry", 400),
+            true));
   }
 
   @Test

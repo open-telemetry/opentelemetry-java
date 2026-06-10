@@ -69,8 +69,10 @@ class MeterProviderFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(new MeterProviderModel(), SdkMeterProvider.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "defaults", new MeterProviderModel(), SdkMeterProvider.builder().build()),
+        Arguments.argumentSet(
+            "with reader view and meter configurator",
             new MeterProviderModel()
                 .withReaders(
                     Collections.singletonList(

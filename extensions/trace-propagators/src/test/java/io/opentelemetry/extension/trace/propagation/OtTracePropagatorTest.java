@@ -463,10 +463,9 @@ class OtTracePropagatorTest {
     Map<String, String> bigValueCarrier = carrierWithSpanContext();
     bigValueCarrier.put(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "k", fillChars('v', 8192));
     return Stream.of(
-        // 65 ot-baggage- keys — only first 64 extracted
-        Arguments.of(manyEntriesCarrier, baggageWithEntries(0, 64)),
-        // single entry whose value exceeds the byte limit — not extracted
-        Arguments.of(bigValueCarrier, Baggage.empty()));
+        Arguments.argumentSet(
+            "65 baggage keys truncated to 64", manyEntriesCarrier, baggageWithEntries(0, 64)),
+        Arguments.argumentSet("large value exceeds byte limit", bigValueCarrier, Baggage.empty()));
   }
 
   /**

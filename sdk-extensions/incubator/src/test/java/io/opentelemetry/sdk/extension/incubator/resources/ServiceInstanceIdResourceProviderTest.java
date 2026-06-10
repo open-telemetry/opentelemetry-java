@@ -15,57 +15,38 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class ServiceInstanceIdResourceProviderTest {
 
-  private static class TestCase {
-    private final String name;
-    final String expectedValue;
-    final Map<String, String> attributes;
+  @ParameterizedTest
+  @MethodSource("createResourceTestCases")
+  void createResource(String expectedValue, Map<String, String> attributes) {
+    ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
+    DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
+    AttributesBuilder builder = Attributes.builder();
+    attributes.forEach(builder::put);
+    Resource existing = Resource.create(builder.build());
+    Resource resource =
+        provider.shouldApply(config, existing) ? provider.createResource(config) : Resource.empty();
 
-    TestCase(String name, String expectedValue, Map<String, String> attributes) {
-      this.name = name;
-      this.expectedValue = expectedValue;
-      this.attributes = attributes;
+    String actual =
+        resource.getAttributes().get(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID);
+    if ("random".equals(expectedValue)) {
+      assertThat(actual).isNotNull();
+    } else {
+      assertThat(actual).isEqualTo(expectedValue);
     }
   }
 
-  @TestFactory
-  Stream<DynamicTest> createResource() {
+  static Stream<Arguments> createResourceTestCases() {
     return Stream.of(
-            new TestCase(
-                "user provided service.instance.id",
-                null,
-                ImmutableMap.of("service.instance.id", "custom")),
-            new TestCase("random value", "random", Collections.emptyMap()))
-        .map(
-            testCase ->
-                DynamicTest.dynamicTest(
-                    testCase.name,
-                    () -> {
-                      ServiceInstanceIdResourceProvider provider =
-                          new ServiceInstanceIdResourceProvider();
-                      DefaultConfigProperties config =
-                          DefaultConfigProperties.createFromMap(Collections.emptyMap());
-                      AttributesBuilder builder = Attributes.builder();
-                      testCase.attributes.forEach(builder::put);
-                      Resource existing = Resource.create(builder.build());
-                      Resource resource =
-                          provider.shouldApply(config, existing)
-                              ? provider.createResource(config)
-                              : Resource.empty();
-
-                      String actual =
-                          resource
-                              .getAttributes()
-                              .get(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID);
-                      if ("random".equals(testCase.expectedValue)) {
-                        assertThat(actual).isNotNull();
-                      } else {
-                        assertThat(actual).isEqualTo(testCase.expectedValue);
-                      }
-                    }));
+        Arguments.argumentSet(
+            "user provided service.instance.id",
+            null,
+            ImmutableMap.of("service.instance.id", "custom")),
+        Arguments.argumentSet("random value", "random", Collections.emptyMap()));
   }
 }

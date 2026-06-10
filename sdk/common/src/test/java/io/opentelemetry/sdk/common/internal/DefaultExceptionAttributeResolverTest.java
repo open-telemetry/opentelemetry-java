@@ -52,16 +52,16 @@ class DefaultExceptionAttributeResolverTest {
 
   private static Stream<Arguments> setExceptionAttributesArgs() {
     return Stream.of(
-        // When jvmStacktraceEnabled=true, limit is ignored
-        Arguments.of(
+        Arguments.argumentSet(
+            "jvm stacktrace enabled limit ignored",
             true,
             new Exception("error"),
             10,
             "error",
             "java.lang.Exception",
             predicate(stacktrace -> stacktrace.length() > 10)),
-        // When jvmStacktraceEnabled=false, limit is adhered
-        Arguments.of(
+        Arguments.argumentSet(
+            "jvm stacktrace disabled limit adhered",
             false,
             new Exception("error"),
             10,

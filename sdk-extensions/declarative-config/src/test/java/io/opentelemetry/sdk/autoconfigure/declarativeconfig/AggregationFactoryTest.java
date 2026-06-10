@@ -35,19 +35,25 @@ class AggregationFactoryTest {
 
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(new AggregationModel(), Aggregation.defaultAggregation()),
-        Arguments.of(
-            new AggregationModel().withDrop(new DropAggregationModel()), Aggregation.drop()),
-        Arguments.of(new AggregationModel().withSum(new SumAggregationModel()), Aggregation.sum()),
-        Arguments.of(
+        Arguments.argumentSet("default", new AggregationModel(), Aggregation.defaultAggregation()),
+        Arguments.argumentSet(
+            "drop",
+            new AggregationModel().withDrop(new DropAggregationModel()),
+            Aggregation.drop()),
+        Arguments.argumentSet(
+            "sum", new AggregationModel().withSum(new SumAggregationModel()), Aggregation.sum()),
+        Arguments.argumentSet(
+            "last_Value",
             new AggregationModel().withLastValue(new LastValueAggregationModel()),
             Aggregation.lastValue()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "base2_exponential_bucket_histogram defaults",
             new AggregationModel()
                 .withBase2ExponentialBucketHistogram(
                     new Base2ExponentialBucketHistogramAggregationModel()),
             Aggregation.base2ExponentialBucketHistogram()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "base2_exponential_bucket_histogram with options",
             new AggregationModel()
                 .withBase2ExponentialBucketHistogram(
                     new Base2ExponentialBucketHistogramAggregationModel()
@@ -58,12 +64,14 @@ class AggregationFactoryTest {
                     .setMaxBuckets(2)
                     .setMaxScale(2)
                     .build())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "explicit_bucket_histogram null boundaries",
             new AggregationModel()
                 .withExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel().withBoundaries(null)),
             Aggregation.explicitBucketHistogram()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "explicit_bucket_histogram with boundaries",
             new AggregationModel()
                 .withExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
@@ -72,8 +80,8 @@ class AggregationFactoryTest {
                 ExplicitBucketHistogramOptions.builder()
                     .setBucketBoundaries(Arrays.asList(1.0, 2.0))
                     .build())),
-        // Test recordMinMax parameter for explicit bucket histogram
-        Arguments.of(
+        Arguments.argumentSet(
+            "explicit_bucket_histogram record_min_max true",
             new AggregationModel()
                 .withExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
@@ -84,7 +92,8 @@ class AggregationFactoryTest {
                     .setBucketBoundaries(Arrays.asList(1.0, 2.0))
                     .setRecordMinMax(true)
                     .build())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "explicit_bucket_histogram record_min_max false",
             new AggregationModel()
                 .withExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
@@ -95,7 +104,8 @@ class AggregationFactoryTest {
                     .setBucketBoundaries(Arrays.asList(1.0, 2.0))
                     .setRecordMinMax(false)
                     .build())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "explicit_bucket_histogram null boundaries record_min_max false",
             new AggregationModel()
                 .withExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
@@ -103,8 +113,8 @@ class AggregationFactoryTest {
                         .withRecordMinMax(false)),
             Aggregation.explicitBucketHistogram(
                 ExplicitBucketHistogramOptions.builder().setRecordMinMax(false).build())),
-        // Test recordMinMax parameter for exponential bucket histogram
-        Arguments.of(
+        Arguments.argumentSet(
+            "base2_exponential_bucket_histogram record_min_max true",
             new AggregationModel()
                 .withBase2ExponentialBucketHistogram(
                     new Base2ExponentialBucketHistogramAggregationModel()
@@ -117,7 +127,8 @@ class AggregationFactoryTest {
                     .setMaxScale(2)
                     .setRecordMinMax(true)
                     .build())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "base2_exponential_bucket_histogram record_min_max false",
             new AggregationModel()
                 .withBase2ExponentialBucketHistogram(
                     new Base2ExponentialBucketHistogramAggregationModel()
