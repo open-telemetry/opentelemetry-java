@@ -67,6 +67,33 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
   }
 
   /**
+   * Determine if a key is a valid normalized environment variable name.
+   *
+   * <ul>
+   *   <li>ASCII letters are converted to uppercase
+   *   <li>Any character that is not an ASCII letter, digit, or underscore is replaced with an
+   *       underscore (including {@code .}, {@code -}, whitespace, and control characters)
+   *   <li>Does not start with a digit
+   * </ul>
+   */
+  static boolean isNormalizedKey(String key) {
+    if (key.isEmpty()) {
+      return false;
+    }
+    char first = key.charAt(0);
+    if (first >= '0' && first <= '9') {
+      return false;
+    }
+    for (int i = 0; i < key.length(); i++) {
+      char ch = key.charAt(i);
+      if (!((ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_')) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Normalizes a key to be a valid environment variable name.
    *
    * <ul>
@@ -77,6 +104,9 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
    * </ul>
    */
   static String normalizeKey(String key) {
+    if (isNormalizedKey(key)) {
+      return key;
+    }
     StringBuilder sb = new StringBuilder(key.length() + 1);
     for (int i = 0; i < key.length(); i++) {
       char ch = key.charAt(i);
