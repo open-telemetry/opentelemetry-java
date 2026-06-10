@@ -55,7 +55,8 @@ class SpanProcessorFactoryTest {
 
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "batch default",
             new SpanProcessorModel()
                 .withBatch(
                     new BatchSpanProcessorModel()
@@ -64,7 +65,8 @@ class SpanProcessorFactoryTest {
             BatchSpanProcessor.builder(
                     OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "batch with options",
             new SpanProcessorModel()
                 .withBatch(
                     new BatchSpanProcessorModel()
@@ -79,7 +81,8 @@ class SpanProcessorFactoryTest {
                 .setMaxExportBatchSize(2)
                 .setExporterTimeout(Duration.ofMillis(3))
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "simple",
             new SpanProcessorModel()
                 .withSimple(
                     new SimpleSpanProcessorModel()
@@ -99,13 +102,16 @@ class SpanProcessorFactoryTest {
 
   private static Stream<Arguments> createInvalidTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "batch missing exporter",
             new SpanProcessorModel().withBatch(new BatchSpanProcessorModel()),
             "batch span processor exporter is required but is null"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "simple missing exporter",
             new SpanProcessorModel().withSimple(new SimpleSpanProcessorModel()),
             "simple span processor exporter is required but is null"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "unknown component provider",
             new SpanProcessorModel()
                 .withAdditionalProperty(
                     "unknown_key",

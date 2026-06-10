@@ -92,10 +92,12 @@ class LogRecordExporterFactoryTest {
 
   Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_http default",
             new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
             OtlpHttpLogRecordExporter.getDefault().toBuilder().setComponentLoader(context).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_http with options",
             new LogRecordExporterModel()
                 .withOtlpHttp(
                     new OtlpHttpExporterModel()
@@ -121,10 +123,12 @@ class LogRecordExporterFactoryTest {
                 .setCompression("gzip")
                 .setComponentLoader(context)
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_grpc default",
             new LogRecordExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()),
             OtlpGrpcLogRecordExporter.getDefault().toBuilder().setComponentLoader(context).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_grpc with options",
             new LogRecordExporterModel()
                 .withOtlpGrpc(
                     new OtlpGrpcExporterModel()
@@ -150,7 +154,8 @@ class LogRecordExporterFactoryTest {
                 .setCompression("gzip")
                 .setComponentLoader(context)
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_file/development",
             new LogRecordExporterModel()
                 .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
             OtlpStdoutLogRecordExporter.builder().build()));
@@ -166,7 +171,8 @@ class LogRecordExporterFactoryTest {
 
   Stream<Arguments> createInvalidTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "unknown component provider",
             new LogRecordExporterModel()
                 .withAdditionalProperty(
                     "unknown_key",

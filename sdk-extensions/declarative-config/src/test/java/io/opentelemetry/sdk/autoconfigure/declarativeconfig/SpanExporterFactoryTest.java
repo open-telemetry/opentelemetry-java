@@ -92,10 +92,12 @@ class SpanExporterFactoryTest {
 
   Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_http default",
             new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
             OtlpHttpSpanExporter.getDefault().toBuilder().setComponentLoader(context).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_http with options",
             new SpanExporterModel()
                 .withOtlpHttp(
                     new OtlpHttpExporterModel()
@@ -121,10 +123,12 @@ class SpanExporterFactoryTest {
                 .setCompression("gzip")
                 .setComponentLoader(context)
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_grpc default",
             new SpanExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()),
             OtlpGrpcSpanExporter.getDefault().toBuilder().setComponentLoader(context).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_grpc with options",
             new SpanExporterModel()
                 .withOtlpGrpc(
                     new OtlpGrpcExporterModel()
@@ -150,10 +154,12 @@ class SpanExporterFactoryTest {
                 .setCompression("gzip")
                 .setComponentLoader(context)
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "console",
             new SpanExporterModel().withConsole(new ConsoleExporterModel()),
             LoggingSpanExporter.create()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_file/development",
             new SpanExporterModel()
                 .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
             OtlpStdoutSpanExporter.builder().build()));
@@ -169,7 +175,8 @@ class SpanExporterFactoryTest {
 
   Stream<Arguments> createInvalidTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "unknown component provider",
             new SpanExporterModel()
                 .withAdditionalProperty(
                     "unknown_key",

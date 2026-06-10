@@ -96,10 +96,12 @@ class MetricExporterFactoryTest {
 
   Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_http default",
             new PushMetricExporterModel().withOtlpHttp(new OtlpHttpMetricExporterModel()),
             OtlpHttpMetricExporter.getDefault().toBuilder().setComponentLoader(context).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_http with options",
             new PushMetricExporterModel()
                 .withOtlpHttp(
                     new OtlpHttpMetricExporterModel()
@@ -136,10 +138,12 @@ class MetricExporterFactoryTest {
                             Aggregation.base2ExponentialBucketHistogram()))
                 .setComponentLoader(context)
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_grpc default",
             new PushMetricExporterModel().withOtlpGrpc(new OtlpGrpcMetricExporterModel()),
             OtlpGrpcMetricExporter.getDefault().toBuilder().setComponentLoader(context).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_grpc with options",
             new PushMetricExporterModel()
                 .withOtlpGrpc(
                     new OtlpGrpcMetricExporterModel()
@@ -176,10 +180,12 @@ class MetricExporterFactoryTest {
                             Aggregation.base2ExponentialBucketHistogram()))
                 .setComponentLoader(context)
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "console",
             new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
             LoggingMetricExporter.create()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "otlp_file/development",
             new PushMetricExporterModel()
                 .withOtlpFileDevelopment(new ExperimentalOtlpFileMetricExporterModel()),
             OtlpStdoutMetricExporter.builder().build()));
@@ -195,7 +201,8 @@ class MetricExporterFactoryTest {
 
   Stream<Arguments> createInvalidTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "unknown component provider",
             new PushMetricExporterModel()
                 .withAdditionalProperty(
                     "unknown_key",
