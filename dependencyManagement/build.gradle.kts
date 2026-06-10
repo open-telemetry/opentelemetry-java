@@ -10,6 +10,7 @@ rootProject.extra["versions"] = dependencyVersions
 
 val autoValueVersion = "1.11.1"
 val errorProneVersion = "2.48.0"
+val groovyVersion = "4.0.25"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -88,6 +89,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.19.4",
+  "org.apache.groovy:groovy:${groovyVersion}",
   "org.awaitility:awaitility:4.3.0",
   "org.codehaus.mojo:animal-sniffer-annotations:1.27",
   "org.jctools:jctools-core:4.0.6",

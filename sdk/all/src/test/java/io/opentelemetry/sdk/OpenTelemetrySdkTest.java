@@ -14,6 +14,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import groovy.lang.GroovyClassLoader;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -136,6 +137,23 @@ class OpenTelemetrySdkTest {
         .isEqualTo(meterProvider);
     assertThat(openTelemetry.getSdkLoggerProvider()).isEqualTo(loggerProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
+  }
+
+  @Test
+  void builder_fromGroovyWithoutIncubator() throws Exception {
+    try (GroovyClassLoader groovyClassLoader = new GroovyClassLoader(getClass().getClassLoader())) {
+      Class<?> groovyClass =
+          groovyClassLoader.parseClass(
+              "import io.opentelemetry.sdk.OpenTelemetrySdk\n"
+                  + "class GroovyBuilderCaller {\n"
+                  + "  static Object buildSdk() {\n"
+                  + "    OpenTelemetrySdk.builder().build()\n"
+                  + "  }\n"
+                  + "}\n");
+
+      assertThat(groovyClass.getMethod("buildSdk").invoke(null))
+          .isInstanceOf(OpenTelemetrySdk.class);
+    }
   }
 
   @Test
