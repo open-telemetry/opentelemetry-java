@@ -55,11 +55,11 @@ class ValueAsStringTest {
 
   private static Stream<Arguments> longValueProvider() {
     return Stream.of(
-        Arguments.argumentSet("42L", 42L, "42"),
-        Arguments.argumentSet("-123L", -123L, "-123"),
-        Arguments.argumentSet("0L", 0L, "0"),
-        Arguments.argumentSet("Long.MAX_VALUE", Long.MAX_VALUE, "9223372036854775807"),
-        Arguments.argumentSet("Long.MIN_VALUE", Long.MIN_VALUE, "-9223372036854775808"));
+        Arguments.argumentSet("Positive value", 42L, "42"),
+        Arguments.argumentSet("Negative value", -123L, "-123"),
+        Arguments.argumentSet("Zero case", 0L, "0"),
+        Arguments.argumentSet("Maximum possible", Long.MAX_VALUE, "9223372036854775807"),
+        Arguments.argumentSet("Minimum possible", Long.MIN_VALUE, "-9223372036854775808"));
   }
 
   @ParameterizedTest
@@ -70,15 +70,15 @@ class ValueAsStringTest {
 
   private static Stream<Arguments> doubleValueProvider() {
     return Stream.of(
-        Arguments.argumentSet("3.14", 3.14, "3.14"),
-        Arguments.argumentSet("-2.5", -2.5, "-2.5"),
-        Arguments.argumentSet("0.0", 0.0, "0.0"),
-        Arguments.argumentSet("-0.0", -0.0, "-0.0"),
+        Arguments.argumentSet("Positive value", 3.14, "3.14"),
+        Arguments.argumentSet("Negative value", -2.5, "-2.5"),
+        Arguments.argumentSet("Zero", 0.0, "0.0"),
+        Arguments.argumentSet("Negative zero", -0.0, "-0.0"),
         Arguments.argumentSet("NaN", Double.NaN, "NaN"),
-        Arguments.argumentSet("Infinity", Double.POSITIVE_INFINITY, "Infinity"),
-        Arguments.argumentSet("-Infinity", Double.NEGATIVE_INFINITY, "-Infinity"),
-        Arguments.argumentSet("1.23e10", 1.23e10, "1.23E10"),
-        Arguments.argumentSet("1.23e-10", 1.23e-10, "1.23E-10"));
+        Arguments.argumentSet("Positive infinity", Double.POSITIVE_INFINITY, "Infinity"),
+        Arguments.argumentSet("Negative infinity", Double.NEGATIVE_INFINITY, "-Infinity"),
+        Arguments.argumentSet("Scientific notation positive exponent", 1.23e10, "1.23E10"),
+        Arguments.argumentSet("Scientific notation negative exponent", 1.23e-10, "1.23E-10"));
   }
 
   @ParameterizedTest

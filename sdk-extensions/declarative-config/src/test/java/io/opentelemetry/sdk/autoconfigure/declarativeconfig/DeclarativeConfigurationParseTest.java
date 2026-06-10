@@ -171,10 +171,10 @@ class DeclarativeConfigurationParseTest {
   @SuppressWarnings("unchecked")
   private static Stream<Arguments> coreSchemaValuesArgs() {
     return Stream.of(
-        Arguments.argumentSet("octal 0o123", "key1: 0o123\n", mapOf(entry("key1", 83))),
-        Arguments.argumentSet("octal 0123", "key1: 0123\n", mapOf(entry("key1", 123))),
+        Arguments.argumentSet("octal with o", "key1: 0o123\n", mapOf(entry("key1", 83))),
+        Arguments.argumentSet("octal without o", "key1: 0123\n", mapOf(entry("key1", 123))),
         Arguments.argumentSet(
-            "hex 0xdeadbeef", "key1: 0xdeadbeef\n", mapOf(entry("key1", 3735928559L))),
+            "unquoted hex string", "key1: 0xdeadbeef\n", mapOf(entry("key1", 3735928559L))),
         Arguments.argumentSet(
             "quoted hex string", "key1: \"0xdeadbeef\"\n", mapOf(entry("key1", "0xdeadbeef"))));
   }
