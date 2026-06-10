@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   analysis:
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     runs-on: ubuntu-latest
     permissions:
       # Needed for Code scanning upload

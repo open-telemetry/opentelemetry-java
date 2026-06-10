@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   sdk-benchmark:
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     permissions:
       contents: write # for git push to benchmarks branch
     name: Benchmark SDK
