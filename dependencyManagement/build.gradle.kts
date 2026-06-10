@@ -18,7 +18,7 @@ val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.5.1"
 val armeriaVersion = "1.39.1"
 val junitVersion = "5.14.4"
-val junitPlatformVersion = "1.14.4"
+val junitPlatformVersion = "6.1.0"
 val okhttpVersion = "5.4.0"
 
 val DEPENDENCY_BOMS = listOf(
