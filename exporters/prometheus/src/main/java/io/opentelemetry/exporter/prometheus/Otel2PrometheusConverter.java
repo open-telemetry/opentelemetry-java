@@ -470,7 +470,7 @@ final class Otel2PrometheusConverter {
 
   private InfoSnapshot makeTargetInfo(Resource resource) {
     return new InfoSnapshot(
-        new MetricMetadata("target"),
+        MetricMetadata.builder().name("target").build(),
         Collections.singletonList(
             new InfoDataPointSnapshot(
                 convertAttributes(
@@ -701,7 +701,13 @@ final class Otel2PrometheusConverter {
       name = name + "_" + unit;
     }
     validateNormalizedMetricName(originalName, name);
-    return new MetricMetadata(name, name, name, help, unit);
+    return MetricMetadata.builder()
+        .name(name)
+        .expositionBaseName(name)
+        .originalName(name)
+        .help(help)
+        .unit(unit)
+        .build();
   }
 
   private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
@@ -709,13 +715,17 @@ final class Otel2PrometheusConverter {
     String name = stripReservedMetricSuffixes(rawName);
     validateNormalizedMetricName(metricData.getName(), rawName);
     validateNormalizedMetricName(metricData.getName(), name);
-    return new MetricMetadata(name, rawName, rawName, metricData.getDescription(), null);
+    return MetricMetadata.builder()
+        .name(name)
+        .expositionBaseName(rawName)
+        .originalName(rawName)
+        .help(metricData.getDescription())
+        .build();
   }
 
   private static MetricMetadata convertMetadataUtf8WithSuffixes(
       MetricData metricData, boolean isCounter) {
     String name = metricData.getName();
-    String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
@@ -724,13 +734,24 @@ final class Otel2PrometheusConverter {
     if (isCounter && !expositionBaseName.endsWith("_total")) {
       expositionBaseName = expositionBaseName + "_total";
     }
-    return new MetricMetadata(stripReservedMetricSuffixes(name), expositionBaseName, help, unit);
+    return MetricMetadata.builder()
+        .name(stripReservedMetricSuffixes(name))
+        .originalName(expositionBaseName)
+        .help(metricData.getDescription())
+        .unit(unit)
+        .counterSuffix(isCounter)
+        .build();
   }
 
   private static MetricMetadata convertMetadataNoTranslation(MetricData metricData) {
     String rawName = metricData.getName();
     String name = stripReservedMetricSuffixes(rawName);
-    return new MetricMetadata(name, rawName, rawName, metricData.getDescription(), null);
+    return MetricMetadata.builder()
+        .name(name)
+        .expositionBaseName(rawName)
+        .originalName(rawName)
+        .help(metricData.getDescription())
+        .build();
   }
 
   private static String stripReservedMetricSuffixes(String name) {
@@ -859,7 +880,7 @@ final class Otel2PrometheusConverter {
               + ".");
       return null;
     }
-    return new MetricMetadata(name, help, unit);
+    return MetricMetadata.builder().name(name).help(help).unit(unit).build();
   }
 
   private static String typeString(MetricSnapshot snapshot) {
