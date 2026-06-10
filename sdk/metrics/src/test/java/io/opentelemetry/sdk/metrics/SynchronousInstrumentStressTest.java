@@ -95,7 +95,7 @@ class SynchronousInstrumentStressTest {
     }
   }
 
-  @SuppressWarnings("ThreadPriorityCheck")
+  @SuppressWarnings({"ThreadPriorityCheck", "ReferenceEquality"})
   private void stressTestOnce(
       AggregationTemporality aggregationTemporality,
       InstrumentType instrumentType,

@@ -54,6 +54,7 @@ final class Propagation {
   }
 
   // Visible for testing
+  @SuppressWarnings("ReferenceEquality")
   <C> TextMapPropagator getPropagator(Format<C> format) {
     if (format == Format.Builtin.HTTP_HEADERS) {
       return httpPropagator;
