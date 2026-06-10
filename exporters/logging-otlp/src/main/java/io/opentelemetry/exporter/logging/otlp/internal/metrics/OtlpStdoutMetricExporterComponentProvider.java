@@ -36,6 +36,10 @@ public final class OtlpStdoutMetricExporterComponentProvider implements Componen
         config, builder::setAggregationTemporalitySelector);
     IncubatingExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
         config, builder::setDefaultAggregationSelector);
+    Boolean prettyPrint = config.getBoolean("pretty_print");
+    if (prettyPrint != null) {
+      builder.setPrettyPrint(prettyPrint);
+    }
     return builder.build();
   }
 }

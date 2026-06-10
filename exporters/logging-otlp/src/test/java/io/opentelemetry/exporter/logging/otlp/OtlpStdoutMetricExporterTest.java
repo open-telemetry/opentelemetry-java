@@ -47,11 +47,15 @@ class OtlpStdoutMetricExporterTest
 
   @Override
   protected OtlpStdoutMetricExporter createExporter(
-      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject) {
+      @Nullable OutputStream outputStream,
+      MemoryMode memoryMode,
+      boolean wrapperJsonObject,
+      boolean prettyPrint) {
     OtlpStdoutMetricExporterBuilder builder =
         OtlpStdoutMetricExporter.builder()
             .setMemoryMode(memoryMode)
-            .setWrapperJsonObject(wrapperJsonObject);
+            .setWrapperJsonObject(wrapperJsonObject)
+            .setPrettyPrint(prettyPrint);
     if (outputStream != null) {
       builder.setOutput(outputStream);
     } else {

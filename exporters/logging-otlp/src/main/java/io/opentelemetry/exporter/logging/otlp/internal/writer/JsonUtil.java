@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -21,6 +22,14 @@ public final class JsonUtil {
   public static JsonGenerator create(SegmentedStringWriter stringWriter) {
     try {
       return JSON_FACTORY.createGenerator(stringWriter);
+    } catch (IOException e) {
+      throw new IllegalStateException("Unable to create in-memory JsonGenerator, can't happen.", e);
+    }
+  }
+
+  public static JsonGenerator create(OutputStream os) {
+    try {
+      return JSON_FACTORY.createGenerator(os);
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create in-memory JsonGenerator, can't happen.", e);
     }
