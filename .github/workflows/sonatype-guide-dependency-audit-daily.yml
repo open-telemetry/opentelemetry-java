@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   analyze:
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     environment: protected
     runs-on: ubuntu-latest
     steps:
@@ -46,7 +47,7 @@ jobs:
       issues: write
     needs:
       - analyze
-    if: always()
+    if: always() && github.repository == 'open-telemetry/opentelemetry-java'
     uses: ./.github/workflows/reusable-workflow-notification.yml
     with:
       success: ${{ needs.analyze.result == 'success' }}

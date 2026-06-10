@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   update-dashboard:
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     permissions:
       issues: write
     environment: protected

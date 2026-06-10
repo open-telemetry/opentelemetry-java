@@ -11,9 +11,11 @@ permissions:
 
 jobs:
   link-check:
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     uses: ./.github/workflows/reusable-link-check.yml
 
   publish-snapshots:
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     environment: protected
     runs-on: ubuntu-24.04
     steps:
@@ -45,7 +47,7 @@ jobs:
     needs:
       - link-check
       - publish-snapshots
-    if: always()
+    if: always() && github.repository == 'open-telemetry/opentelemetry-java'
     uses: ./.github/workflows/reusable-workflow-notification.yml
     with:
       success: >-
