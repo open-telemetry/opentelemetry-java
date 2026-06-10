@@ -41,6 +41,7 @@
       // fails on them, which blocks unrelated patch updates
       matchDepNames: [
         'org.jetbrains.kotlin.jvm',
+        'org.jetbrains.kotlin:kotlin-gradle-plugin',
       ],
       schedule: [
         '* 0-7 * * 2', // weekly, before 8am on Tuesday
