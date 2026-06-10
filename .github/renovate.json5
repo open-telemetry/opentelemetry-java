@@ -91,6 +91,7 @@
       matchPackageNames: [
         'org.junit:**',
         'org.junit.jupiter:**',
+        'org.junit.platform:**',
       ],
       matchUpdateTypes: [
         'major',
