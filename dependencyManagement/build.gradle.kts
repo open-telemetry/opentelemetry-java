@@ -9,17 +9,17 @@ rootProject.extra["versions"] = dependencyVersions
 
 
 val autoValueVersion = "1.11.1"
-val errorProneVersion = "2.49.0"
+val errorProneVersion = "2.50.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.18"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.5.1"
-val armeriaVersion = "1.39.0"
+val armeriaVersion = "1.39.1"
 val junitVersion = "5.14.4"
 val junitPlatformVersion = "1.14.4"
-val okhttpVersion = "5.3.2"
+val okhttpVersion = "5.4.0"
 
 val DEPENDENCY_BOMS = listOf(
   // for some reason boms show up as runtime dependencies in license and vulnerability scans
@@ -27,13 +27,13 @@ val DEPENDENCY_BOMS = listOf(
   // (which is EPL licensed) or armeria bom (which is Apache licensed but is getting flagged
   // by FOSSA for containing EPL-licensed)
 
-  "com.fasterxml.jackson:jackson-bom:2.21.3",
+  "com.fasterxml.jackson:jackson-bom:2.22.0",
   "com.google.guava:guava-bom:33.6.0-jre",
   "com.google.protobuf:protobuf-bom:4.35.0",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.81.0",
-  "io.netty:netty-bom:4.2.14.Final",
+  "io.grpc:grpc-bom:1.82.0",
+  "io.netty:netty-bom:4.2.15.Final",
   "io.zipkin.brave:brave-bom:6.3.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.3",
   "org.assertj:assertj-bom:3.27.7",
@@ -74,13 +74,13 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.71.0",
+  "com.google.api.grpc:proto-google-common-protos:2.72.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.4.2",
-  "com.uber.nullaway:nullaway:0.13.4",
+  "com.uber.nullaway:nullaway:0.13.6",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.11",
   "io.github.crac:org-crac:0.1.3",
