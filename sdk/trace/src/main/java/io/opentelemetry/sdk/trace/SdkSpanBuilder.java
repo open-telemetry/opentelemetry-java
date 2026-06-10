@@ -178,7 +178,7 @@ class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"rawtypes", "ReferenceEquality"})
   public Span startSpan() {
     Context parentContext = parent == null ? Context.current() : parent;
     Span parentSpan = Span.fromContext(parentContext);

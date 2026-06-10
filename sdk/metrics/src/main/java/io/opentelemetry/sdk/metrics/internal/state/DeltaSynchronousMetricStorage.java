@@ -95,7 +95,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   }
 
   @Nullable
-  DeltaAggregatorHandle<T> tryAcquireHandleForRecord(
+  private DeltaAggregatorHandle<T> tryAcquireHandleForRecord(
       AggregatorHolder<T> holder, Attributes attributes, Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);

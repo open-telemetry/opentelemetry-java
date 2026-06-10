@@ -60,7 +60,7 @@ public class StreamJsonWriter implements JsonWriter {
     }
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings({"SystemOut", "ReferenceEquality"})
   @Override
   public CompletableResultCode close() {
     if (outputStream == System.out || outputStream == System.err) {
@@ -81,7 +81,7 @@ public class StreamJsonWriter implements JsonWriter {
     return "StreamJsonWriter{" + "outputStream=" + getName(outputStream) + '}';
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings({"SystemOut", "ReferenceEquality"})
   private static String getName(OutputStream outputStream) {
     if (outputStream == System.out) {
       return "stdout";

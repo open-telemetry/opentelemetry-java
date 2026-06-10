@@ -87,13 +87,14 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
     private final Class<? extends T> exporterType;
     private final BiFunction<T, DeclarativeConfigProperties, T> customizer;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ReferenceEquality"})
     <E extends T> Customizer(
         Class<E> exporterType, BiFunction<E, DeclarativeConfigProperties, E> customizer) {
       this.exporterType = exporterType;
       this.customizer = (BiFunction<T, DeclarativeConfigProperties, T>) customizer;
     }
 
+    @SuppressWarnings("ReferenceEquality")
     T maybeCustomize(T exporter, String name, DeclarativeConfigProperties properties) {
       if (!exporterType.isInstance(exporter)) {
         return exporter;

@@ -47,6 +47,7 @@ public final class ProfilesRequestMarshaler extends MarshalerWithSize {
    * Returns a {@link ProfilesRequestMarshaler} that can be used to convert the provided {@link
    * ProfileData} into a serialized OTLP ExportProfilesServiceRequest.
    */
+  @SuppressWarnings("ReferenceEquality")
   public static ProfilesRequestMarshaler create(Collection<ProfileData> profileList) {
     // Verify all profiles in batch have identical dictionary
     ProfilesDictionaryData profilesDictionaryData = null;
