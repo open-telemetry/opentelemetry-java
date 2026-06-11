@@ -46,7 +46,6 @@ public final class OtlpHttpMetricExporterBuilder {
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
-  private static final long DEFAULT_MAX_REQUEST_BODY_SIZE_BYTES = 64 * 1024L * 1024L;
 
   private final HttpExporterBuilder delegate;
 
@@ -63,7 +62,6 @@ public final class OtlpHttpMetricExporterBuilder {
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
     this.memoryMode = memoryMode;
-    this.delegate.setMaxRequestBodySize(DEFAULT_MAX_REQUEST_BODY_SIZE_BYTES);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
@@ -122,7 +120,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   /** Sets the maximum OTLP HTTP request body size in bytes. If unset, defaults to 64 MiB. */
   public OtlpHttpMetricExporterBuilder setMaxRequestBodySize(long maxRequestBodySizeBytes) {
-    checkArgument(maxRequestBodySizeBytes >= 0, "maxRequestBodySizeBytes must be non-negative");
+    checkArgument(maxRequestBodySizeBytes > 0, "maxRequestBodySizeBytes must be positive");
     delegate.setMaxRequestBodySize(maxRequestBodySizeBytes);
     return this;
   }

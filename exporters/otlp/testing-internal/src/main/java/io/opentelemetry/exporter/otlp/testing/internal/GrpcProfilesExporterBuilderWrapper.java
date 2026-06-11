@@ -60,7 +60,13 @@ final class GrpcProfilesExporterBuilderWrapper implements TelemetryExporterBuild
   }
 
   @Override
-  public TelemetryExporterBuilder<ProfileData> setMaxRequestMessageSize(long maxRequestMessageSize) {
+  public TelemetryExporterBuilder<ProfileData> setMaxRequestBodySize(long maxRequestBodySize) {
+    throw new UnsupportedOperationException("Request body size is not supported for gRPC");
+  }
+
+  @Override
+  public TelemetryExporterBuilder<ProfileData> setMaxRequestMessageSize(
+      long maxRequestMessageSize) {
     builder.setMaxRequestMessageSize(maxRequestMessageSize);
     return this;
   }

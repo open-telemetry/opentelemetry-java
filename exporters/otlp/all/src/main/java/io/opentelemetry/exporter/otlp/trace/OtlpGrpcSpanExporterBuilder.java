@@ -40,7 +40,6 @@ public final class OtlpGrpcSpanExporterBuilder {
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
-  private static final long DEFAULT_MAX_REQUEST_MESSAGE_SIZE_BYTES = 64 * 1024L * 1024L;
 
   // Visible for testing
   final GrpcExporterBuilder delegate;
@@ -49,7 +48,6 @@ public final class OtlpGrpcSpanExporterBuilder {
   OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
-    this.delegate.setMaxRequestMessageSize(DEFAULT_MAX_REQUEST_MESSAGE_SIZE_BYTES);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
@@ -129,7 +127,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   /** Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB. */
   public OtlpGrpcSpanExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSizeBytes) {
     checkArgument(
-        maxRequestMessageSizeBytes >= 0, "maxRequestMessageSizeBytes must be non-negative");
+        maxRequestMessageSizeBytes > 0, "maxRequestMessageSizeBytes must be positive");
     delegate.setMaxRequestMessageSize(maxRequestMessageSizeBytes);
     return this;
   }

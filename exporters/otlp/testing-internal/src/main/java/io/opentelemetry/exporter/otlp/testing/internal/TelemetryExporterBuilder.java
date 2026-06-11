@@ -55,13 +55,9 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setConnectTimeout(Duration timeout);
 
-  default TelemetryExporterBuilder<T> setMaxRequestBodySize(long maxRequestBodySize) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
+  TelemetryExporterBuilder<T> setMaxRequestBodySize(long maxRequestBodySize);
 
-  default TelemetryExporterBuilder<T> setMaxRequestMessageSize(long maxRequestMessageSize) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
+  TelemetryExporterBuilder<T> setMaxRequestMessageSize(long maxRequestMessageSize);
 
   TelemetryExporterBuilder<T> setCompression(String compression);
 

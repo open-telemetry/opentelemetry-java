@@ -67,6 +67,12 @@ public class HttpLogRecordExporterBuilderWrapper
   }
 
   @Override
+  public TelemetryExporterBuilder<LogRecordData> setMaxRequestMessageSize(
+      long maxRequestMessageSize) {
+    throw new UnsupportedOperationException("Request message size is not supported for HTTP");
+  }
+
+  @Override
   public TelemetryExporterBuilder<LogRecordData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;

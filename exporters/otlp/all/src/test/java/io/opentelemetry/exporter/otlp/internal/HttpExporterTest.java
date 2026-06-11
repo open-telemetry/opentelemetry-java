@@ -11,6 +11,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -83,7 +84,8 @@ class HttpExporterTest {
               () -> meterProvider,
               InternalTelemetryVersion.LATEST,
               URI.create("http://testing:1234"),
-              false);
+              false,
+              HttpExporterBuilder.DEFAULT_MAX_REQUEST_BODY_SIZE);
 
       doAnswer(
               invoc -> {
@@ -210,10 +212,10 @@ class HttpExporterTest {
         new HttpExporter(
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
             mockSender,
-            SdkMeterProvider::noop,
+            MeterProvider::noop,
             InternalTelemetryVersion.LATEST,
             URI.create("http://testing:1234"),
-            true,
+            false,
             1);
 
     Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
@@ -226,17 +228,18 @@ class HttpExporterTest {
 
           @Override
           public int getContentLength() {
-            return -1;
+            return 2;
           }
         };
-    Mockito.when(mockMarshaller.toJsonMessageWriter()).thenReturn(messageWriter);
+    Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(messageWriter);
 
     io.opentelemetry.sdk.common.CompletableResultCode result = exporter.export(mockMarshaller, 1);
 
     org.assertj.core.api.Assertions.assertThat(result.join(10, TimeUnit.SECONDS).isSuccess())
         .isFalse();
     org.assertj.core.api.Assertions.assertThat(result.getFailureThrowable())
-        .hasMessageContaining("OTLP HTTP request body size 2 exceeded limit of 1 bytes");
+        .hasMessageContaining(
+            "Failed to export spans. Request body size 2 exceeded limit of 1 bytes");
     verifyNoInteractions(mockSender);
   }
 
