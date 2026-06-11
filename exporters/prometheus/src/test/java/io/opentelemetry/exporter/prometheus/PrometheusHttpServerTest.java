@@ -688,7 +688,7 @@ class PrometheusHttpServerTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                        ImmutableDoublePointData.create(
+                    ImmutableDoublePointData.create(
                         123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
   }
 
