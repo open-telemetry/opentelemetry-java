@@ -236,7 +236,7 @@ class Otel2PrometheusConverterTest {
             TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES,
             "sample.name_bytes",
             "sample.name_bytes_total",
-            "sample.name_bytes_total"),
+            "sample.name_bytes"),
         Arguments.of(
             TranslationStrategy.NO_TRANSLATION, "sample.name", "sample.name", "sample.name"));
   }

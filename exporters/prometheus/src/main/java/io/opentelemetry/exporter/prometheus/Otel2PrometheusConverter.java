@@ -700,53 +700,28 @@ final class Otel2PrometheusConverter {
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    String expositionBaseName = name;
-    String originalPrometheusName = name;
     validateNormalizedMetricName(originalName, name);
-    return MetricMetadata.builder()
-        .name(name)
-        .expositionBaseName(expositionBaseName)
-        .originalName(originalPrometheusName)
-        .help(help)
-        .unit(unit)
-        .build();
+    return MetricMetadata.builder().name(name).help(help).unit(unit).build();
   }
 
   private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
     String originalName = metricData.getName();
-    String expositionBaseName = convertLegacyMetricName(originalName);
-    String name = stripReservedMetricSuffixes(expositionBaseName);
-    String originalPrometheusName = expositionBaseName;
+    String name = stripReservedMetricSuffixes(convertLegacyMetricName(originalName));
     String help = metricData.getDescription();
-    Unit unit = null;
-    validateNormalizedMetricName(originalName, expositionBaseName);
-    validateNormalizedMetricName(metricData.getName(), name);
-    return MetricMetadata.builder()
-        .name(name)
-        .expositionBaseName(expositionBaseName)
-        .originalName(originalPrometheusName)
-        .help(help)
-        .unit(unit)
-        .build();
+    validateNormalizedMetricName(originalName, name);
+    return MetricMetadata.builder().name(name).help(help).build();
   }
 
   private static MetricMetadata convertMetadataUtf8WithSuffixes(
       MetricData metricData, boolean isCounter) {
-    String originalName = metricData.getName();
-    String name = originalName;
+    String name = metricData.getName();
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    String expositionBaseName = name;
-    if (isCounter && !expositionBaseName.endsWith("_total")) {
-      expositionBaseName = expositionBaseName + "_total";
-    }
-    String originalPrometheusName = expositionBaseName;
     return MetricMetadata.builder()
         .name(stripReservedMetricSuffixes(name))
-        .originalName(originalPrometheusName)
         .help(help)
         .unit(unit)
         .counterSuffix(isCounter)
@@ -754,19 +729,9 @@ final class Otel2PrometheusConverter {
   }
 
   private static MetricMetadata convertMetadataNoTranslation(MetricData metricData) {
-    String originalName = metricData.getName();
-    String expositionBaseName = originalName;
-    String name = stripReservedMetricSuffixes(expositionBaseName);
-    String originalPrometheusName = originalName;
+    String name = stripReservedMetricSuffixes(metricData.getName());
     String help = metricData.getDescription();
-    Unit unit = null;
-    return MetricMetadata.builder()
-        .name(name)
-        .expositionBaseName(expositionBaseName)
-        .originalName(originalPrometheusName)
-        .help(help)
-        .unit(unit)
-        .build();
+    return MetricMetadata.builder().name(name).help(help).build();
   }
 
   private static String stripReservedMetricSuffixes(String name) {

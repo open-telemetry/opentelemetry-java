@@ -330,6 +330,47 @@ class PrometheusHttpServerTest {
     }
   }
 
+  @Test
+  void fetchOpenMetrics_noTranslationPreservesRawInputNameWithUnit() {
+    metricData.set(generateContentNegotiationTestDataWithUnit());
+    try (PrometheusHttpServer prometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setTranslationStrategy(TranslationStrategy.NO_TRANSLATION)
+            .build()) {
+      prometheusServer.register(
+          new CollectionRegistration() {
+            @Override
+            public Collection<MetricData> collectAllMetrics() {
+              return metricData.get();
+            }
+          });
+      WebClient client =
+          WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              .build();
+
+      AggregatedHttpResponse response =
+          client
+              .execute(
+                  RequestHeaders.of(
+                      HttpMethod.GET,
+                      "/metrics",
+                      HttpHeaderNames.ACCEPT,
+                      "application/openmetrics-text; version=1.0.0; escaping=allow-utf-8"))
+              .aggregate()
+              .join();
+
+      assertThat(response.status()).isEqualTo(HttpStatus.OK);
+      assertThat(response.contentUtf8())
+          .contains("{\"metric.name\",otel_scope_name=\"scope\"} 1.0")
+          .doesNotContain("metric.name_bytes")
+          .doesNotContain("metric.name_total")
+          .doesNotContain("metric_name");
+    }
+  }
+
   private static Stream<Arguments> translationStrategyContentNegotiationArgs() {
     return Stream.of(
         Arguments.of(
@@ -659,6 +700,21 @@ class PrometheusHttpServerTest {
             "metric.name",
             "description",
             "",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableLongPointData.create(123, 456, Attributes.empty(), 1)))));
+  }
+
+  private static List<MetricData> generateContentNegotiationTestDataWithUnit() {
+    return Collections.singletonList(
+        ImmutableMetricData.createLongSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.create("scope"),
+            "metric.name",
+            "description",
+            "By",
             ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
