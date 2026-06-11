@@ -20,10 +20,14 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
@@ -39,6 +43,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
+import io.prometheus.metrics.model.snapshots.GaugeSnapshot.GaugeDataPointSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
 import io.prometheus.metrics.model.snapshots.MetricMetadata;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
@@ -102,93 +107,100 @@ class Otel2PrometheusConverterTest {
 
   private static Stream<Arguments> metricMetadataArgs() {
     return Stream.of(
-        // the unity unit "1" is unitless - no suffix added
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge unitless 1",
             createSampleMetricData("sample", "1", MetricDataType.LONG_GAUGE),
             "sample gauge",
             "sample description",
             "sample"),
-        // unit is appended to metric name
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge with unit",
             createSampleMetricData("sample", "unit", MetricDataType.LONG_GAUGE),
             "sample_unit gauge",
             "sample_unit description",
             "sample_unit"),
-        // units in curly braces are dropped, "1" is unitless
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge curly braces dropped",
             createSampleMetricData("sample", "1{dropped}", MetricDataType.LONG_GAUGE),
             "sample gauge",
             "sample description",
             "sample"),
-        // monotonic sums always include _total suffix
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum with unit total suffix",
             createSampleMetricData("sample", "unit", MetricDataType.LONG_SUM),
             "sample_unit_total counter",
             "sample_unit_total description",
             "sample_unit_total"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum unitless 1 total suffix",
             createSampleMetricData("sample", "1", MetricDataType.LONG_SUM),
             "sample_total counter",
             "sample_total description",
             "sample_total"),
-        // units expressed as numbers other than 1 are retained
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum numeric unit 2",
             createSampleMetricData("sample", "2", MetricDataType.LONG_SUM),
             "sample_2_total counter",
             "sample_2_total description",
             "sample_2_total"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary numeric unit 2",
             createSampleMetricData("metric_name", "2", MetricDataType.SUMMARY),
             "metric_name_2 summary",
             "metric_name_2 description",
             "metric_name_2_count"),
         // unsupported characters are translated to "_", repeated "_" are dropped
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary special chars translated",
             createSampleMetricData("s%%ple", "%/min", MetricDataType.SUMMARY),
             "s_ple_percent_per_minute summary",
             "s_ple_percent_per_minute description",
             "s_ple_percent_per_minute_count"),
-        // metric unit is not appended if the name already contains the unit
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum name contains unit",
             createSampleMetricData("metric_name_total", "total", MetricDataType.LONG_SUM),
             "metric_name_total counter",
             "metric_name_total description",
             "metric_name_total"),
         // total suffix is stripped because total is a reserved suffixed for monotonic sums
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary total suffix stripped",
             createSampleMetricData("metric_name_total", "total", MetricDataType.SUMMARY),
             "metric_name summary",
             "metric_name description",
             "metric_name_count"),
-        // if metric name ends with unit the unit is omitted
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge name ends with ratio unit omitted",
             createSampleMetricData("metric_name_ratio", "1", MetricDataType.LONG_GAUGE),
             "metric_name_ratio gauge",
             "metric_name_ratio description",
             "metric_name_ratio"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary name ends with ratio unit omitted",
             createSampleMetricData("metric_name_ratio", "1", MetricDataType.SUMMARY),
             "metric_name_ratio summary",
             "metric_name_ratio description",
             "metric_name_ratio_count"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge name ends with hertz unit omitted",
             createSampleMetricData("metric_hertz", "hertz", MetricDataType.LONG_GAUGE),
             "metric_hertz gauge",
             "metric_hertz description",
             "metric_hertz"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum name ends with hertz unit omitted",
             createSampleMetricData("metric_hertz", "hertz", MetricDataType.LONG_SUM),
             "metric_hertz_total counter",
             "metric_hertz_total description",
             "metric_hertz_total"),
-        // if metric name ends with unit the unit is omitted - order matters
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum name total hertz order matters",
             createSampleMetricData("metric_total_hertz", "hertz_total", MetricDataType.LONG_SUM),
             "metric_total_hertz_total counter",
             "metric_total_hertz_total description",
             "metric_total_hertz_total"),
-        // metric name cannot start with a number
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary name starts with number",
             createSampleMetricData("2_metric_name", "By", MetricDataType.SUMMARY),
             "_metric_name_bytes summary",
             "_metric_name_bytes description",
@@ -406,7 +418,8 @@ class Otel2PrometheusConverterTest {
     for (MetricDataType metricDataType : MetricDataType.values()) {
       // Check that resource attributes are added as labels, according to allowed pattern
       arguments.add(
-          Arguments.of(
+          Arguments.argumentSet(
+              "resource attribute added " + metricDataType,
               createSampleMetricData(
                   "my.metric",
                   "units",
@@ -428,7 +441,8 @@ class Otel2PrometheusConverterTest {
 
     // Resource attributes which also exists in the metric labels are not added twice
     arguments.add(
-        Arguments.of(
+        Arguments.argumentSet(
+            "resource attribute not duplicated",
             createSampleMetricData(
                 "my.metric",
                 "units",
@@ -446,7 +460,8 @@ class Otel2PrometheusConverterTest {
 
     // Empty attributes
     arguments.add(
-        Arguments.of(
+        Arguments.argumentSet(
+            "empty metric attributes",
             createSampleMetricData(
                 "my.metric",
                 "units",
@@ -509,31 +524,41 @@ class Otel2PrometheusConverterTest {
 
   private static Stream<Arguments> labelValueSerializationArgs() {
     return Stream.of(
-        Arguments.of(Attributes.of(stringKey("key"), "stringValue"), "stringValue"),
-        Arguments.of(Attributes.of(booleanKey("key"), true), "true"),
-        Arguments.of(Attributes.of(longKey("key"), Long.MAX_VALUE), "9223372036854775807"),
-        Arguments.of(Attributes.of(doubleKey("key"), 0.12345), "0.12345"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "string value", Attributes.of(stringKey("key"), "stringValue"), "stringValue"),
+        Arguments.argumentSet("boolean value", Attributes.of(booleanKey("key"), true), "true"),
+        Arguments.argumentSet(
+            "long value", Attributes.of(longKey("key"), Long.MAX_VALUE), "9223372036854775807"),
+        Arguments.argumentSet("double value", Attributes.of(doubleKey("key"), 0.12345), "0.12345"),
+        Arguments.argumentSet(
+            "string array value",
             Attributes.of(
                 stringArrayKey("key"),
                 Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0)),
             "[\"stringValue1\",\"\\\"+\\\\\\\\\\\\+\\b+\\f+\\n+\\r+\\t+\\u0000\"]"),
-        Arguments.of(
-            Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false)), "[true,false]"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "boolean array value",
+            Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false)),
+            "[true,false]"),
+        Arguments.argumentSet(
+            "long array value",
             Attributes.of(longArrayKey("key"), Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE)),
             "[-9223372036854775808,9223372036854775807]"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "double array value",
             Attributes.of(doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE)),
             "[4.9E-324,1.7976931348623157E308]"),
-        Arguments.of(Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})), "AQID"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "bytes value", Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})), "AQID"),
+        Arguments.argumentSet(
+            "nested key-value value",
             Attributes.of(valueKey("key"), Value.of(KeyValue.of("nested", Value.of("value")))),
             "{\"nested\":\"value\"}"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "list value",
             Attributes.of(valueKey("key"), Value.of(Value.of("string"), Value.of(123L))),
             "[\"string\",123]"),
-        Arguments.of(Attributes.of(valueKey("key"), Value.empty()), ""));
+        Arguments.argumentSet("empty value", Attributes.of(valueKey("key"), Value.empty()), ""));
   }
 
   static MetricData createSampleMetricData(
@@ -729,5 +754,83 @@ class Otel2PrometheusConverterTest {
     // but if the cache was cleared, it used the predicate for each resource, since it as if
     // it never saw those resources before.
     assertThat(predicateCalledCount.get()).isEqualTo(2);
+  }
+
+  @ParameterizedTest
+  @MethodSource("exemplarLabelLimitArgs")
+  void exemplarLabelLimit(
+      SpanContext spanContext,
+      Attributes filteredAttributes,
+      String[] expectedPresentKeys,
+      String[] expectedAbsentKeys) {
+    ImmutableDoubleExemplarData exemplar =
+        (ImmutableDoubleExemplarData)
+            ImmutableDoubleExemplarData.create(filteredAttributes, 1000L, spanContext, 1.0);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleGauge(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.create("test"),
+            "my.gauge",
+            "desc",
+            "unit",
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    assertThat(snapshots).isNotNull();
+    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
+    Labels exemplarLabels = point.getExemplar().getLabels();
+    for (String key : expectedPresentKeys) {
+      assertThat(exemplarLabels.get(key)).as("expected label '%s' to be present", key).isNotNull();
+    }
+    for (String key : expectedAbsentKeys) {
+      assertThat(exemplarLabels.get(key)).as("expected label '%s' to be absent", key).isNull();
+    }
+  }
+
+  private static Stream<Arguments> exemplarLabelLimitArgs() {
+    SpanContext validSpanContext =
+        SpanContext.create(
+            "00000000000000000000000000000001",
+            "0000000000000001",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+
+    char[] chars = new char[100];
+    Arrays.fill(chars, 'x');
+    String longValue100 = new String(chars);
+
+    chars = new char[150];
+    Arrays.fill(chars, 'x');
+    String longValue150 = new String(chars);
+
+    return Stream.of(
+        Arguments.argumentSet(
+            "withSpanContext withinLimit",
+            validSpanContext,
+            Attributes.of(stringKey("short_attr"), "val"),
+            new String[] {"trace_id", "span_id", "short_attr"},
+            new String[] {}),
+        Arguments.argumentSet(
+            "withSpanContext exceedingLimit",
+            validSpanContext,
+            Attributes.of(stringKey("long_attr"), longValue100),
+            new String[] {"trace_id", "span_id"},
+            new String[] {"long_attr"}),
+        Arguments.argumentSet(
+            "withoutSpanContext exceedingLimit",
+            SpanContext.getInvalid(),
+            Attributes.of(stringKey("long_attr"), longValue150),
+            new String[] {},
+            new String[] {"long_attr"}),
+        Arguments.argumentSet(
+            "withoutSpanContext withinLimit",
+            SpanContext.getInvalid(),
+            Attributes.of(stringKey("short_attr"), "val"),
+            new String[] {"short_attr"},
+            new String[] {}));
   }
 }

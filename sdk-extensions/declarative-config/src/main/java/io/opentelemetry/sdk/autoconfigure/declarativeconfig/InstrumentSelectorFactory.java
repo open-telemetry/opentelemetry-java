@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewSelectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentType;

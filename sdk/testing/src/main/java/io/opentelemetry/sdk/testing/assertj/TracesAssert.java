@@ -28,7 +28,7 @@ public final class TracesAssert
 
   /** Compare spans by start time, placing parents before their children as a tiebreaker. */
   static final Comparator<SpanData> SPAN_DATA_COMPARATOR =
-      Comparator.comparing(SpanData::getStartEpochNanos)
+      Comparator.comparingLong(SpanData::getStartEpochNanos)
           .thenComparing(
               (span1, span2) -> {
                 SpanContext parent1 = span1.getParentSpanContext();

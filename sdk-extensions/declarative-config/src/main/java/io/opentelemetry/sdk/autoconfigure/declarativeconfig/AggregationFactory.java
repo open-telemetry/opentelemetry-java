@@ -6,9 +6,9 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AggregationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.Base2ExponentialBucketHistogramAggregationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExplicitBucketHistogramAggregationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.Base2ExponentialBucketHistogramAggregationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions;
 import io.opentelemetry.sdk.metrics.ExplicitBucketHistogramOptions;

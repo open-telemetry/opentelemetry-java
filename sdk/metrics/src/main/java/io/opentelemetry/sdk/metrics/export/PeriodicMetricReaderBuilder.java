@@ -30,6 +30,8 @@ public final class PeriodicMetricReaderBuilder {
 
   @Nullable private ScheduledExecutorService executor;
 
+  private int maxExportBatchSize;
+
   PeriodicMetricReaderBuilder(MetricExporter metricExporter) {
     this.metricExporter = metricExporter;
   }
@@ -59,6 +61,20 @@ public final class PeriodicMetricReaderBuilder {
     return this;
   }
 
+  /**
+   * Sets the maximum number of data points to include in a single export batch. If unset, no
+   * batching will be performed. The maximum number of data points is considered across MetricData
+   * objects scheduled for export.
+   *
+   * @param maxExportBatchSize The maximum number of data points to include in a single export
+   *     batch.
+   */
+  PeriodicMetricReaderBuilder setMaxExportBatchSize(int maxExportBatchSize) {
+    checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive");
+    this.maxExportBatchSize = maxExportBatchSize;
+    return this;
+  }
+
   /** Build a {@link PeriodicMetricReader} with the configuration of this builder. */
   public PeriodicMetricReader build() {
     ScheduledExecutorService executor = this.executor;
@@ -66,6 +82,6 @@ public final class PeriodicMetricReaderBuilder {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReader(metricExporter, intervalNanos, executor);
+    return new PeriodicMetricReader(metricExporter, intervalNanos, executor, maxExportBatchSize);
   }
 }

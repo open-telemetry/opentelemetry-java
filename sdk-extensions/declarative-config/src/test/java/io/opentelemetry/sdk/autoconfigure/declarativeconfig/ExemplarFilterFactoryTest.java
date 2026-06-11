@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MeterProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,8 +27,13 @@ class ExemplarFilterFactoryTest {
 
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(MeterProviderModel.ExemplarFilter.ALWAYS_ON, ExemplarFilter.alwaysOn()),
-        Arguments.of(MeterProviderModel.ExemplarFilter.ALWAYS_OFF, ExemplarFilter.alwaysOff()),
-        Arguments.of(MeterProviderModel.ExemplarFilter.TRACE_BASED, ExemplarFilter.traceBased()));
+        Arguments.argumentSet(
+            "always_on", MeterProviderModel.ExemplarFilter.ALWAYS_ON, ExemplarFilter.alwaysOn()),
+        Arguments.argumentSet(
+            "always_off", MeterProviderModel.ExemplarFilter.ALWAYS_OFF, ExemplarFilter.alwaysOff()),
+        Arguments.argumentSet(
+            "trace_based",
+            MeterProviderModel.ExemplarFilter.TRACE_BASED,
+            ExemplarFilter.traceBased()));
   }
 }

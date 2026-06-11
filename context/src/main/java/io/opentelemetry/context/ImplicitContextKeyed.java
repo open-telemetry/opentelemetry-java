@@ -23,7 +23,7 @@ public interface ImplicitContextKeyed {
    * <p>This method is equivalent to {@code Context.current().with(value).makeCurrent()}.
    *
    * <p>The default implementation of this method will store the {@link ImplicitContextKeyed} in a
-   * {@link ThreadLocal}. Kotlin coroutine users SHOULD NOT use this method as the {@link
+   * {@link ThreadLocal}. Kotlin coroutine users should not use this method as the {@link
    * ThreadLocal} will not be properly synced across coroutine suspension and resumption. Instead,
    * use {@code withContext(value.asContextElement())} provided by the {@code
    * opentelemetry-extension-kotlin} library.

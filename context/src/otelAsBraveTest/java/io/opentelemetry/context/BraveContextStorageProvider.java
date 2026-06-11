@@ -63,6 +63,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
       this.values = values;
     }
 
+    @SuppressWarnings("ReferenceEquality")
     Object getValue(Object key) {
       for (int i = 0; i < values.length; i += 2) {
         if (values[i] == key) {
@@ -72,6 +73,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
       return null;
     }
 
+    @SuppressWarnings("ReferenceEquality")
     BraveContextValues with(Object key, Object value) {
       Object[] copy;
       for (int i = 0; i < values.length; i += 2) {

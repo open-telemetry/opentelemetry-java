@@ -47,6 +47,7 @@ public abstract class AttributesProcessor {
   public abstract boolean usesContext();
 
   /** Joins this attribute processor with another that operates after this one. */
+  @SuppressWarnings("ReferenceEquality")
   public AttributesProcessor then(AttributesProcessor other) {
     if (other == NOOP) {
       return this;

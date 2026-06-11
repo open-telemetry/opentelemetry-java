@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressWarnings("deprecation") // testing deprecated shim API
 class OpenTelemetryInteroperabilityTest {
 
   @RegisterExtension

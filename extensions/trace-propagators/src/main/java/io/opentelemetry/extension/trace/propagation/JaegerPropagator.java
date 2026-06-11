@@ -72,6 +72,11 @@ public final class JaegerPropagator implements TextMapPropagator {
       PARENT_SPAN_ID_OFFSET + PARENT_SPAN_ID_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
   private static final int PROPAGATION_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
+  // No limits are defined by the Jaeger format; borrow the W3C Baggage spec limits as a
+  // defense-in-depth measure (https://www.w3.org/TR/baggage/#limits).
+  private static final int MAX_BAGGAGE_ENTRIES = 64;
+  private static final int MAX_BAGGAGE_BYTES = 8192;
+
   private static final Collection<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
   private static final JaegerPropagator INSTANCE = new JaegerPropagator();
 
@@ -126,8 +131,21 @@ public final class JaegerPropagator implements TextMapPropagator {
 
   private static <C> void injectBaggage(
       Baggage baggage, @Nullable C carrier, TextMapSetter<C> setter) {
+    int[] entriesEmitted = {0};
+    int[] bytesEmitted = {0};
     baggage.forEach(
-        (key, baggageEntry) -> setter.set(carrier, BAGGAGE_PREFIX + key, baggageEntry.getValue()));
+        (key, baggageEntry) -> {
+          if (entriesEmitted[0] >= MAX_BAGGAGE_ENTRIES) {
+            return;
+          }
+          String value = baggageEntry.getValue();
+          if (bytesEmitted[0] + key.length() + value.length() > MAX_BAGGAGE_BYTES) {
+            return;
+          }
+          setter.set(carrier, BAGGAGE_PREFIX + key, value);
+          entriesEmitted[0]++;
+          bytesEmitted[0] += key.length() + value.length();
+        });
   }
 
   @Override
@@ -228,22 +246,31 @@ public final class JaegerPropagator implements TextMapPropagator {
   @Nullable
   private static <C> Baggage getBaggageFromHeader(@Nullable C carrier, TextMapGetter<C> getter) {
     BaggageBuilder builder = null;
+    int entriesAdded = 0;
+    int bytesAdded = 0;
 
     Iterable<String> keys = carrier != null ? getter.keys(carrier) : Collections.emptyList();
 
     for (String key : keys) {
+      if (entriesAdded >= MAX_BAGGAGE_ENTRIES || bytesAdded > MAX_BAGGAGE_BYTES) {
+        break;
+      }
       if (key.startsWith(BAGGAGE_PREFIX)) {
         if (key.length() == BAGGAGE_PREFIX.length()) {
           continue;
         }
-
-        if (builder == null) {
-          builder = Baggage.builder();
-        }
-
         String value = getter.get(carrier, key);
         if (value != null) {
-          builder.put(key.substring(BAGGAGE_PREFIX.length()), value);
+          String baggageKey = key.substring(BAGGAGE_PREFIX.length());
+          if (bytesAdded + baggageKey.length() + value.length() > MAX_BAGGAGE_BYTES) {
+            break;
+          }
+          if (builder == null) {
+            builder = Baggage.builder();
+          }
+          builder.put(baggageKey, value);
+          entriesAdded++;
+          bytesAdded += baggageKey.length() + value.length();
         }
       } else if (key.equals(BAGGAGE_HEADER)) {
         String value = getter.get(carrier, key);
@@ -251,23 +278,42 @@ public final class JaegerPropagator implements TextMapPropagator {
           if (builder == null) {
             builder = Baggage.builder();
           }
-          builder = parseBaggageHeader(value, builder);
+          int[] counts =
+              parseBaggageHeader(
+                  value,
+                  builder,
+                  MAX_BAGGAGE_ENTRIES - entriesAdded,
+                  MAX_BAGGAGE_BYTES - bytesAdded);
+          entriesAdded += counts[0];
+          bytesAdded += counts[1];
         }
       }
     }
     return builder == null ? null : builder.build();
   }
 
-  private static BaggageBuilder parseBaggageHeader(String header, BaggageBuilder builder) {
+  /** Returns a two-element array of {@code [entriesAdded, bytesAdded]}. */
+  private static int[] parseBaggageHeader(
+      String header, BaggageBuilder builder, int maxEntries, int maxBytes) {
+    int entriesAdded = 0;
+    int bytesAdded = 0;
     for (String part : header.split("\\s*,\\s*")) {
+      if (entriesAdded >= maxEntries || bytesAdded > maxBytes) {
+        break;
+      }
       String[] kv = part.split("\\s*=\\s*");
       if (kv.length == 2) {
+        if (bytesAdded + kv[0].length() + kv[1].length() > maxBytes) {
+          break;
+        }
         builder.put(kv[0], kv[1]);
+        entriesAdded++;
+        bytesAdded += kv[0].length() + kv[1].length();
       } else {
         logger.fine("malformed token in " + BAGGAGE_HEADER + " header: " + part);
       }
     }
-    return builder;
+    return new int[] {entriesAdded, bytesAdded};
   }
 
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {

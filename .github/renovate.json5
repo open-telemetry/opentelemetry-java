@@ -15,9 +15,10 @@
 
     {
       // group all patch updates into a single weekly PR
-      groupName: 'all patch versions',
+      groupName: 'all patch and minor versions',
       matchUpdateTypes: [
         'patch',
+        'minor',
       ],
       schedule: [
         '* 0-7 * * 2', // weekly, before 8am on Tuesday
@@ -40,6 +41,7 @@
       // fails on them, which blocks unrelated patch updates
       matchDepNames: [
         'org.jetbrains.kotlin.jvm',
+        'org.jetbrains.kotlin:kotlin-gradle-plugin',
       ],
       schedule: [
         '* 0-7 * * 2', // weekly, before 8am on Tuesday
@@ -72,14 +74,24 @@
         'com.diffplug.spotless:**',
       ],
     },
-
+    // Disable prometheus minor updates while working out translation strategy
+    // https://github.com/open-telemetry/opentelemetry-java/pull/8346
+    {
+      matchPackageNames: [
+        'io.prometheus:**',
+      ],
+      matchUpdateTypes: [
+        'minor',
+      ],
+      enabled: false,
+    },
     // ── Disabled updates (Java version compatibility) ──────────────────
-
     {
       // junit 6+ requires Java 17+
       matchPackageNames: [
         'org.junit:**',
         'org.junit.jupiter:**',
+        'org.junit.platform:**',
       ],
       matchUpdateTypes: [
         'major',
@@ -142,6 +154,12 @@
       matchUpdateTypes: ['major'],
       enabled: false,
     },
+    {
+      // mockserver-netty 6+ requires Java 11+
+      matchPackageNames: ['org.mock-server:mockserver-netty'],
+      matchUpdateTypes: ['major'],
+      enabled: false,
+    },
   ],
   customManagers: [
     {
@@ -157,15 +175,15 @@
     },
     {
       customType: 'regex',
-      datasourceTemplate: 'java-version',
+      datasourceTemplate: 'docker',
       managerFilePatterns: [
         '.github/workflows/**',
       ],
       matchStrings: [
         '(?<currentValue>\\d+) # renovate\\(java-version\\)',
       ],
-      depNameTemplate: 'java',
-      extractVersionTemplate: '^(?<version>\\d+)',
+      // using zulu because new releases get published quickly
+      depNameTemplate: 'azul/zulu-openjdk',
     },
     {
       customType: 'regex',

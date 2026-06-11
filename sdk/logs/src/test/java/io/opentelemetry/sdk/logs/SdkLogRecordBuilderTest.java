@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
@@ -160,6 +161,7 @@ class SdkLogRecordBuilderTest {
         .setAttribute("dk", 12.123)
         .setAttribute("bk", true)
         .setAttribute("ik", 13)
+        .setAttribute("vk", Value.of(new byte[] {1, 2, 3}))
         .emit();
     assertThat(emittedLog.get().toLogRecordData())
         .hasAttributesSatisfyingExactly(
@@ -167,7 +169,8 @@ class SdkLogRecordBuilderTest {
             equalTo(longKey("lk"), 12L),
             equalTo(doubleKey("dk"), 12.123),
             equalTo(booleanKey("bk"), true),
-            equalTo(longKey("ik"), 13L));
+            equalTo(longKey("ik"), 13L),
+            equalTo(valueKey("vk"), Value.of(new byte[] {1, 2, 3})));
   }
 
   @Test

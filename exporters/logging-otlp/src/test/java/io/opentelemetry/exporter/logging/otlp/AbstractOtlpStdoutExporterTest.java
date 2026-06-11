@@ -133,30 +133,6 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     FILE_AND_BUFFERED_WRITER
   }
 
-  public static class TestCase {
-    private final MemoryMode memoryMode;
-    private final boolean wrapperJsonObject;
-    private final OutputType outputType;
-
-    public TestCase(OutputType outputType, MemoryMode memoryMode, boolean wrapperJsonObject) {
-      this.outputType = outputType;
-      this.memoryMode = memoryMode;
-      this.wrapperJsonObject = wrapperJsonObject;
-    }
-
-    public OutputType getOutputType() {
-      return outputType;
-    }
-
-    public boolean isWrapperJsonObject() {
-      return wrapperJsonObject;
-    }
-
-    public MemoryMode getMemoryMode() {
-      return memoryMode;
-    }
-  }
-
   static Stream<Arguments> exportTestCases() {
     return ImmutableList.of(
         testCase(OutputType.SYSTEM_OUT, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ true),
@@ -192,23 +168,24 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   private static Arguments testCase(
       OutputType type, MemoryMode memoryMode, boolean wrapperJsonObject) {
-    return Arguments.of(
+    String name =
         "output="
             + type
             + ", wrapperJsonObject="
             + wrapperJsonObject
             + ", memoryMode="
-            + memoryMode,
-        new TestCase(type, memoryMode, wrapperJsonObject));
+            + memoryMode;
+    return Arguments.argumentSet(name, type, memoryMode, wrapperJsonObject);
   }
 
   @SuppressWarnings("SystemOut")
-  @ParameterizedTest(name = "{0}")
+  @ParameterizedTest
   @MethodSource("exportTestCases")
-  void exportWithProgrammaticConfig(String name, TestCase testCase) throws Exception {
+  void exportWithProgrammaticConfig(
+      OutputType outputType, MemoryMode memoryMode, boolean wrapperJsonObject) throws Exception {
     OutputStream outputStream;
     Path file = null;
-    switch (testCase.getOutputType()) {
+    switch (outputType) {
       case LOGGER:
         outputStream = null;
         break;
@@ -224,14 +201,12 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
         outputStream = new BufferedOutputStream(Files.newOutputStream(file));
         break;
       default:
-        throw new IllegalStateException("Unexpected value: " + testCase.getOutputType());
+        throw new IllegalStateException("Unexpected value: " + outputType);
     }
 
-    Supplier<T> exporter =
-        () ->
-            createExporter(outputStream, testCase.getMemoryMode(), testCase.isWrapperJsonObject());
+    Supplier<T> exporter = () -> createExporter(outputStream, memoryMode, wrapperJsonObject);
 
-    if (testCase.getMemoryMode() == MemoryMode.REUSABLE_DATA && !testCase.isWrapperJsonObject()) {
+    if (memoryMode == MemoryMode.REUSABLE_DATA && !wrapperJsonObject) {
       assertThatExceptionOfType(IllegalArgumentException.class)
           .isThrownBy(exporter::get)
           .withMessage("Reusable data mode is not supported without wrapperJsonObject");
@@ -241,10 +216,10 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     testDataExporter.export(exporter.get());
 
     String output = output(outputStream, file);
-    String expectedJson = testDataExporter.getExpectedJson(testCase.isWrapperJsonObject());
+    String expectedJson = testDataExporter.getExpectedJson(wrapperJsonObject);
     JSONAssert.assertEquals("Got \n" + output, expectedJson, output, false);
 
-    if (testCase.isWrapperJsonObject()) {
+    if (wrapperJsonObject) {
       assertThat(output).doesNotContain("\n");
     }
 

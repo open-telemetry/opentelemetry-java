@@ -15,9 +15,10 @@ permissions: {}
 jobs:
   detect-api-changes:
     name: Detect API surface area changes
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: otelbot-token
         with:
           app-id: ${{ vars.OTELBOT_APP_ID }}
@@ -28,12 +29,19 @@ jobs:
           GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           MARKER="<!-- api-change-detector -->"
 
-          # Get list of apidiff files changed in this PR
-          api_files=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate \
-            --jq '.[] | select(.filename | startswith("docs/apidiffs/current_vs_latest/")) | .filename')
+          # Get list of apidiff files changed in this PR.
+          # otelbot/* PRs (release version bumps, post-release updates) only change the version
+          # header in apidiff files — treat them as having no API changes so the cleanup path below runs.
+          if [[ "$HEAD_REF" == otelbot/* ]]; then
+            api_files=""
+          else
+            api_files=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate \
+              --jq '.[] | select(.filename | startswith("docs/apidiffs/current_vs_latest/")) | .filename')
+          fi
 
           # Find existing bot comment (if any)
           comment_id=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \

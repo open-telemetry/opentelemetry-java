@@ -17,12 +17,12 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.TextMapPropagatorComponentProvider;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.B3MultiPropagatorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.B3PropagatorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.BaggagePropagatorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.PropagatorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.TextMapPropagatorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.TraceContextPropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.B3MultiPropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.B3PropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BaggagePropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TextMapPropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TraceContextPropagatorModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -46,8 +46,8 @@ class PropagatorFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        // structured list
-        Arguments.of(
+        Arguments.argumentSet(
+            "structured list",
             new PropagatorModel()
                 .withComposite(
                     Arrays.asList(
@@ -62,8 +62,8 @@ class PropagatorFactoryTest {
                     W3CBaggagePropagator.getInstance(),
                     B3Propagator.injectingMultiHeaders(),
                     B3Propagator.injectingSingleHeader()))),
-        // string list
-        Arguments.of(
+        Arguments.argumentSet(
+            "string list",
             new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3 ,none"),
             ContextPropagators.create(
                 TextMapPropagator.composite(
@@ -71,8 +71,8 @@ class PropagatorFactoryTest {
                     W3CBaggagePropagator.getInstance(),
                     B3Propagator.injectingMultiHeaders(),
                     B3Propagator.injectingSingleHeader()))),
-        // structured list and string list
-        Arguments.of(
+        Arguments.argumentSet(
+            "structured list and string list",
             new PropagatorModel()
                 .withComposite(
                     Arrays.asList(
@@ -86,8 +86,8 @@ class PropagatorFactoryTest {
                     W3CBaggagePropagator.getInstance(),
                     B3Propagator.injectingMultiHeaders(),
                     B3Propagator.injectingSingleHeader()))),
-        // structured list and string list with overlap
-        Arguments.of(
+        Arguments.argumentSet(
+            "structured list and string list with overlap",
             new PropagatorModel()
                 .withComposite(
                     Arrays.asList(
@@ -101,8 +101,8 @@ class PropagatorFactoryTest {
                     W3CBaggagePropagator.getInstance(),
                     B3Propagator.injectingMultiHeaders(),
                     B3Propagator.injectingSingleHeader()))),
-        // spi
-        Arguments.of(
+        Arguments.argumentSet(
+            "spi structured list",
             new PropagatorModel()
                 .withComposite(
                     Collections.singletonList(
@@ -111,7 +111,8 @@ class PropagatorFactoryTest {
                 TextMapPropagator.composite(
                     new TextMapPropagatorComponentProvider.TestTextMapPropagator(
                         DeclarativeConfigProperties.empty())))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "spi string list",
             new PropagatorModel().withCompositeList("test"),
             ContextPropagators.create(
                 TextMapPropagator.composite(

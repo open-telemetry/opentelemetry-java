@@ -18,6 +18,7 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
     INSTANCE;
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public Scope attach(Context toAttach) {
       io.grpc.Context grpcContext = io.grpc.Context.current();
       Context current = OTEL_CONTEXT.get(grpcContext);
@@ -71,6 +72,7 @@ public class GrpcContextStorageProvider implements ContextStorageProvider {
       return new GrpcContextWrapper(grpcContext, OTEL_CONTEXT.get(grpcContext));
     }
 
+    @SuppressWarnings("ReferenceEquality")
     private io.grpc.Context toGrpcContext() {
       if (OTEL_CONTEXT.get(baseGrpcContext) == context) {
         // No changes to the wrapper

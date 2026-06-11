@@ -1,0 +1,44 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.profiles.data;
+
+import javax.annotation.concurrent.Immutable;
+
+/**
+ * Describes a function.
+ *
+ * @see "profiles.proto::Function"
+ */
+@Immutable
+public interface FunctionData {
+
+  /**
+   * Returns a new FunctionData describing the given function characteristics.
+   *
+   * @return a new FunctionData describing the given function characteristics.
+   */
+  @SuppressWarnings("AutoValueSubclassLeaked")
+  static FunctionData create(
+      int nameStringIndex, int systemNameStringIndex, int filenameStringIndex, long startLine) {
+    return new AutoValue_ImmutableFunctionData(
+        nameStringIndex, systemNameStringIndex, filenameStringIndex, startLine);
+  }
+
+  /** Name of the function, in human-readable form if available. Index into string table. */
+  int getNameStringIndex();
+
+  /**
+   * Name of the function, as identified by the system. For instance, it can be a C++ mangled name.
+   * Index into string table.
+   */
+  int getSystemNameStringIndex();
+
+  /** Source file containing the function. Index into string table. */
+  int getFilenameStringIndex();
+
+  /** Line number in source file. */
+  long getStartLine();
+}

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, LogRecordExporter> {
