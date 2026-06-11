@@ -52,21 +52,6 @@ public final class GrpcExporter {
       InternalTelemetryVersion internalTelemetryVersion,
       StandardComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
-      URI endpoint) {
-    this(
-        grpcSender,
-        internalTelemetryVersion,
-        componentId,
-        meterProviderSupplier,
-        endpoint,
-        Long.MAX_VALUE);
-  }
-
-  public GrpcExporter(
-      GrpcSender grpcSender,
-      InternalTelemetryVersion internalTelemetryVersion,
-      StandardComponentId componentId,
-      Supplier<MeterProvider> meterProviderSupplier,
       URI endpoint,
       long maxRequestMessageSize) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
@@ -85,13 +70,14 @@ public final class GrpcExporter {
     ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
-    CompletableResultCode result = new CompletableResultCode();
     MessageWriter messageWriter = exportRequest.toBinaryMessageWriter();
 
     long requestMessageSize = getRequestMessageSize(messageWriter);
     if (requestMessageSize > maxRequestMessageSize) {
-      return failRequestTooLarge(result, metricRecording, requestMessageSize);
+      return failRequestTooLarge(metricRecording, requestMessageSize);
     }
+
+    CompletableResultCode result = new CompletableResultCode();
 
     grpcSender.send(
         messageWriter,
@@ -102,11 +88,11 @@ public final class GrpcExporter {
   }
 
   private CompletableResultCode failRequestTooLarge(
-      CompletableResultCode result,
-      ExporterInstrumentation.Recording metricRecording,
-      long requestMessageSize) {
+      ExporterInstrumentation.Recording metricRecording, long requestMessageSize) {
     String errorMessage =
-        "OTLP gRPC request message size "
+        "Failed to export "
+            + type
+            + "s. Request message size "
             + requestMessageSize
             + " exceeded limit of "
             + maxRequestMessageSize
@@ -114,6 +100,7 @@ public final class GrpcExporter {
     IOException exception = new IOException(errorMessage);
     metricRecording.finishFailed(exception);
     logger.log(Level.WARNING, errorMessage);
+    CompletableResultCode result = new CompletableResultCode();
     result.failExceptionally(FailedExportException.grpcFailedExceptionally(exception));
     return result;
   }

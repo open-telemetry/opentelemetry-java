@@ -82,6 +82,18 @@ class HttpExporterTest {
 
       HttpSender mockSender = Mockito.mock(HttpSender.class);
       Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+      MessageWriter emptyMessageWriter =
+          new MessageWriter() {
+            @Override
+            public void writeMessage(OutputStream output) {}
+
+            @Override
+            public int getContentLength() {
+              return 0;
+            }
+          };
+      Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(emptyMessageWriter);
+      Mockito.when(mockMarshaller.toJsonMessageWriter()).thenReturn(emptyMessageWriter);
 
       HttpExporter exporter =
           new HttpExporter(
@@ -90,7 +102,8 @@ class HttpExporterTest {
               () -> meterProvider,
               InternalTelemetryVersion.LATEST,
               URI.create("http://testing:1234"),
-              false);
+              false,
+              HttpExporterBuilder.DEFAULT_MAX_REQUEST_BODY_SIZE);
 
       doAnswer(
               invoc -> {
@@ -214,6 +227,17 @@ class HttpExporterTest {
   void export_httpJsonErrorBodyUsesBodyTextWithoutGrpcParseWarning() {
     HttpSender mockSender = Mockito.mock(HttpSender.class);
     Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    MessageWriter emptyMessageWriter =
+        new MessageWriter() {
+          @Override
+          public void writeMessage(OutputStream output) {}
+
+          @Override
+          public int getContentLength() {
+            return 0;
+          }
+        };
+    Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(emptyMessageWriter);
 
     HttpExporter exporter =
         new HttpExporter(
@@ -222,7 +246,8 @@ class HttpExporterTest {
             MeterProvider::noop,
             InternalTelemetryVersion.LATEST,
             URI.create("http://testing:1234"),
-            false);
+            false,
+            HttpExporterBuilder.DEFAULT_MAX_REQUEST_BODY_SIZE);
 
     doAnswer(
             invoc -> {
@@ -277,7 +302,7 @@ class HttpExporterTest {
     org.assertj.core.api.Assertions.assertThat(result.join(10, TimeUnit.SECONDS).isSuccess())
         .isFalse();
     org.assertj.core.api.Assertions.assertThat(result.getFailureThrowable())
-        .hasMessageContaining("OTLP HTTP request body size 2 exceeded limit of 1 bytes");
+        .hasMessageContaining("Failed to export spans. Request body size 2 exceeded limit of 1 bytes");
     verifyNoInteractions(mockSender);
   }
 
@@ -286,6 +311,17 @@ class HttpExporterTest {
   void export_nullErrorBodyUsesMissingBodyMessage() {
     HttpSender mockSender = Mockito.mock(HttpSender.class);
     Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    MessageWriter emptyMessageWriter =
+        new MessageWriter() {
+          @Override
+          public void writeMessage(OutputStream output) {}
+
+          @Override
+          public int getContentLength() {
+            return 0;
+          }
+        };
+    Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(emptyMessageWriter);
     HttpExporter exporter =
         new HttpExporter(
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
@@ -293,7 +329,8 @@ class HttpExporterTest {
             MeterProvider::noop,
             InternalTelemetryVersion.LATEST,
             URI.create("http://testing:1234"),
-            false);
+            false,
+            HttpExporterBuilder.DEFAULT_MAX_REQUEST_BODY_SIZE);
 
     doAnswer(
             invoc -> {
@@ -314,6 +351,17 @@ class HttpExporterTest {
   void export_whitespaceErrorBodyFallsBackToStatusMessage() {
     HttpSender mockSender = Mockito.mock(HttpSender.class);
     Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    MessageWriter emptyMessageWriter =
+        new MessageWriter() {
+          @Override
+          public void writeMessage(OutputStream output) {}
+
+          @Override
+          public int getContentLength() {
+            return 0;
+          }
+        };
+    Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(emptyMessageWriter);
     HttpExporter exporter =
         new HttpExporter(
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
@@ -321,7 +369,8 @@ class HttpExporterTest {
             MeterProvider::noop,
             InternalTelemetryVersion.LATEST,
             URI.create("http://testing:1234"),
-            false);
+            false,
+            HttpExporterBuilder.DEFAULT_MAX_REQUEST_BODY_SIZE);
 
     doAnswer(
             invoc -> {
@@ -348,7 +397,7 @@ class HttpExporterTest {
         new HttpExporter(
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
             mockSender,
-            SdkMeterProvider::noop,
+            MeterProvider::noop,
             InternalTelemetryVersion.LATEST,
             URI.create("http://testing:1234"),
             true,
@@ -374,7 +423,7 @@ class HttpExporterTest {
     org.assertj.core.api.Assertions.assertThat(result.join(10, TimeUnit.SECONDS).isSuccess())
         .isFalse();
     org.assertj.core.api.Assertions.assertThat(result.getFailureThrowable())
-        .hasMessageContaining("OTLP HTTP request body size 2 exceeded limit of 1 bytes");
+        .hasMessageContaining("Failed to export spans. Request body size 2 exceeded limit of 1 bytes");
     verifyNoInteractions(mockSender);
   }
 

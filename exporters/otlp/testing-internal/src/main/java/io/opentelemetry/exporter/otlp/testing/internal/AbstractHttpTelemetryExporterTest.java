@@ -35,6 +35,7 @@ import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.HttpExporter;
+import io.opentelemetry.exporter.otlp.internal.HttpExporterBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
@@ -833,8 +834,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestBodySize(0)))
-        .doesNotThrowAnyException();
     assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestBodySize(1)))
         .doesNotThrowAnyException();
 
@@ -916,10 +915,14 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of:"
+                + " [base64,gzip]");
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestBodySize(0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxRequestBodySizeBytes must be positive");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestBodySize(-1))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxRequestBodySizeBytes must be non-negative");
+        .hasMessage("maxRequestBodySizeBytes must be positive");
   }
 
   @Test
@@ -930,8 +933,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
 
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
-      Assertions.assertThat(result.getFailureThrowable())
-          .hasMessageContaining("OTLP HTTP request body size")
+      assertThat(result.getFailureThrowable())
+          .hasMessageContaining("Failed to export")
+          .hasMessageContaining("Request body size")
           .hasMessageContaining("exceeded limit of 1 bytes");
     }
   }
@@ -1042,6 +1046,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
+                  + ".*maxRequestBodySize="
+                  + HttpExporterBuilder.DEFAULT_MAX_REQUEST_BODY_SIZE
                   + ".*" // Maybe additional signal specific fields
                   + "\\}");
     }
@@ -1079,7 +1085,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
-                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, "
+                  + "maxBackoff=PT3S, backoffMultiplier=1\\.3, "
+                  + "retryExceptionPredicate=null\\}"
+                  + ".*maxRequestBodySize="
+                  + HttpExporterBuilder.DEFAULT_MAX_REQUEST_BODY_SIZE
                   + ".*" // Maybe additional signal specific fields
                   + "\\}");
     }

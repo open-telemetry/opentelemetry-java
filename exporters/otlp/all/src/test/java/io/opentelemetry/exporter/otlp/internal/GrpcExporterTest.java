@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -86,7 +87,8 @@ class GrpcExporterTest {
               InternalTelemetryVersion.LATEST,
               id,
               () -> meterProvider,
-              URI.create("http://testing:1234"));
+              URI.create("http://testing:1234"),
+              GrpcExporterBuilder.DEFAULT_MAX_REQUEST_MESSAGE_SIZE);
 
       doAnswer(
               invoc -> {
@@ -220,7 +222,7 @@ class GrpcExporterTest {
             mockSender,
             InternalTelemetryVersion.LATEST,
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
-            SdkMeterProvider::noop,
+            MeterProvider::noop,
             URI.create("http://testing:1234"),
             1);
 
@@ -241,7 +243,8 @@ class GrpcExporterTest {
 
     assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
     assertThat(result.getFailureThrowable())
-        .hasMessageContaining("OTLP gRPC request message size 2 exceeded limit of 1 bytes");
+        .hasMessageContaining(
+            "Failed to export spans. Request message size 2 exceeded limit of 1 bytes");
     verifyNoInteractions(mockSender);
   }
 

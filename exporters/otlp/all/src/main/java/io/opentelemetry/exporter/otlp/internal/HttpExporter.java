@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,23 +53,6 @@ public final class HttpExporter {
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetryVersion internalTelemetryVersion,
       URI endpoint,
-      boolean exportAsJson) {
-    this(
-        componentId,
-        httpSender,
-        meterProviderSupplier,
-        internalTelemetryVersion,
-        endpoint,
-        exportAsJson,
-        Long.MAX_VALUE);
-  }
-
-  public HttpExporter(
-      StandardComponentId componentId,
-      HttpSender httpSender,
-      Supplier<MeterProvider> meterProviderSupplier,
-      InternalTelemetryVersion internalTelemetryVersion,
-      URI endpoint,
       boolean exportAsJson,
       long maxRequestBodySize) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
@@ -90,14 +72,15 @@ public final class HttpExporter {
     ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
-    CompletableResultCode result = new CompletableResultCode();
     MessageWriter messageWriter =
         exportAsJson ? exportRequest.toJsonMessageWriter() : exportRequest.toBinaryMessageWriter();
 
-    long requestBodySize = getRequestBodySize(messageWriter);
+    int requestBodySize = messageWriter.getContentLength();
     if (requestBodySize > maxRequestBodySize) {
-      return failRequestTooLarge(result, metricRecording, requestBodySize);
+      return failRequestTooLarge(metricRecording, requestBodySize);
     }
+
+    CompletableResultCode result = new CompletableResultCode();
 
     httpSender.send(
         messageWriter,
@@ -108,11 +91,11 @@ public final class HttpExporter {
   }
 
   private CompletableResultCode failRequestTooLarge(
-      CompletableResultCode result,
-      ExporterInstrumentation.Recording metricRecording,
-      long requestBodySize) {
+      ExporterInstrumentation.Recording metricRecording, long requestBodySize) {
     String errorMessage =
-        "OTLP HTTP request body size "
+        "Failed to export "
+            + type
+            + "s. Request body size "
             + requestBodySize
             + " exceeded limit of "
             + maxRequestBodySize
@@ -120,40 +103,9 @@ public final class HttpExporter {
     IOException exception = new IOException(errorMessage);
     metricRecording.finishFailed(exception);
     logger.log(Level.WARNING, errorMessage);
+    CompletableResultCode result = new CompletableResultCode();
     result.failExceptionally(FailedExportException.httpFailedExceptionally(exception));
     return result;
-  }
-
-  private static long getRequestBodySize(MessageWriter messageWriter) {
-    int contentLength = messageWriter.getContentLength();
-    if (contentLength >= 0) {
-      return contentLength;
-    }
-    try {
-      CountingOutputStream countingOutputStream = new CountingOutputStream();
-      messageWriter.writeMessage(countingOutputStream);
-      return countingOutputStream.getCount();
-    } catch (IOException e) {
-      return Long.MAX_VALUE;
-    }
-  }
-
-  private static final class CountingOutputStream extends OutputStream {
-    private long count;
-
-    @Override
-    public void write(int b) {
-      count++;
-    }
-
-    @Override
-    public void write(byte[] b, int off, int len) {
-      count += len;
-    }
-
-    private long getCount() {
-      return count;
-    }
   }
 
   private void onResponse(

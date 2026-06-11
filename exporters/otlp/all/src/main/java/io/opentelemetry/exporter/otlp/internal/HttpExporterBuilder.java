@@ -46,7 +46,7 @@ import javax.net.ssl.X509TrustManager;
 public final class HttpExporterBuilder {
   public static final long DEFAULT_TIMEOUT_SECS = 10;
   public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
-  public static final long DEFAULT_MAX_REQUEST_BODY_SIZE = Long.MAX_VALUE;
+  public static final long DEFAULT_MAX_REQUEST_BODY_SIZE = 64 * 1024L * 1024L;
 
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
