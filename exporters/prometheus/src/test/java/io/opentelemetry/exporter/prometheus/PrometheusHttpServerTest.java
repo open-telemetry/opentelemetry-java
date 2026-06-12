@@ -373,17 +373,20 @@ class PrometheusHttpServerTest {
 
   private static Stream<Arguments> translationStrategyContentNegotiationArgs() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "no translation + underscores escaping",
             TranslationStrategy.NO_TRANSLATION,
             "application/openmetrics-text; version=1.0.0; escaping=underscores",
             "metric_name{otel_scope_name=\"scope\"} 1.0",
             "{\"metric.name\",otel_scope_name=\"scope\"} 1.0"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "no translation + allow-utf-8 escaping",
             TranslationStrategy.NO_TRANSLATION,
             "application/openmetrics-text; version=1.0.0; escaping=allow-utf-8",
             "{\"metric.name\",otel_scope_name=\"scope\"} 1.0",
             "metric_name{otel_scope_name=\"scope\"} 1.0"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "underscore escaping + allow-utf-8 accept",
             TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             "application/openmetrics-text; version=1.0.0; escaping=allow-utf-8",
             "metric_name_total{otel_scope_name=\"scope\"} 1.0",

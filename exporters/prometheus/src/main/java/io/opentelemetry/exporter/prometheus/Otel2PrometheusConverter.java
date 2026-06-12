@@ -688,16 +688,9 @@ final class Otel2PrometheusConverter {
     boolean previousWasUnderscore = false;
     for (int i = 0; i < name.length(); ) {
       int codePoint = name.codePointAt(i);
-      if (isValidLegacyMetricChar(codePoint, i)) {
-        if (codePoint == '_') {
-          if (!previousWasUnderscore) {
-            result.append('_');
-            previousWasUnderscore = true;
-          }
-        } else {
-          result.appendCodePoint(codePoint);
-          previousWasUnderscore = false;
-        }
+      if (isValidLegacyMetricChar(codePoint, i) && codePoint != '_') {
+        result.appendCodePoint(codePoint);
+        previousWasUnderscore = false;
       } else if (!previousWasUnderscore) {
         result.append('_');
         previousWasUnderscore = true;

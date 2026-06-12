@@ -234,23 +234,30 @@ class Otel2PrometheusConverterTest {
 
   private static Stream<Arguments> translationStrategyArgs() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "underscore escaping with suffixes",
             TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             "sample_name_bytes",
             "sample_name_bytes",
             "sample_name_bytes"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "underscore escaping without suffixes",
             TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
             "sample_name",
             "sample_name",
             "sample_name"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "no utf8 escaping with suffixes",
             TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES,
             "sample.name_bytes",
             "sample.name_bytes_total",
             "sample.name_bytes"),
-        Arguments.of(
-            TranslationStrategy.NO_TRANSLATION, "sample.name", "sample.name", "sample.name"));
+        Arguments.argumentSet(
+            "no translation",
+            TranslationStrategy.NO_TRANSLATION,
+            "sample.name",
+            "sample.name",
+            "sample.name"));
   }
 
   @Test
@@ -284,19 +291,36 @@ class Otel2PrometheusConverterTest {
 
   private static Stream<Arguments> legacyLabelNameTranslationArgs() {
     return Stream.of(
-        Arguments.of("label:with:colons", "label_with_colons"),
-        Arguments.of("LabelWithCapitalLetters", "LabelWithCapitalLetters"),
-        Arguments.of("label!with&special$chars)", "label_with_special_chars_"),
-        Arguments.of("label_with_foreign_characters_字符", "label_with_foreign_characters_"),
-        Arguments.of("label.with.dots", "label_with_dots"),
-        Arguments.of("123label", "key_123label"),
-        Arguments.of("_label_starting_with_underscore", "_label_starting_with_underscore"),
-        Arguments.of("__label_starting_with_2underscores", "_label_starting_with_2underscores"),
-        Arguments.of("label__with__double__underscores", "label_with_double_underscores"),
-        Arguments.of("label.name__with&&special##chars", "label_name_with_special_chars"),
+        Arguments.argumentSet("colons", "label:with:colons", "label_with_colons"),
+        Arguments.argumentSet(
+            "capital letters", "LabelWithCapitalLetters", "LabelWithCapitalLetters"),
+        Arguments.argumentSet(
+            "special chars", "label!with&special$chars)", "label_with_special_chars_"),
+        Arguments.argumentSet(
+            "foreign characters",
+            "label_with_foreign_characters_字符",
+            "label_with_foreign_characters_"),
+        Arguments.argumentSet("dots", "label.with.dots", "label_with_dots"),
+        Arguments.argumentSet("leading digit", "123label", "key_123label"),
+        Arguments.argumentSet(
+            "leading underscore",
+            "_label_starting_with_underscore",
+            "_label_starting_with_underscore"),
+        Arguments.argumentSet(
+            "leading double underscore",
+            "__label_starting_with_2underscores",
+            "_label_starting_with_2underscores"),
+        Arguments.argumentSet(
+            "double underscores",
+            "label__with__double__underscores",
+            "label_with_double_underscores"),
+        Arguments.argumentSet(
+            "mixed special", "label.name__with&&special##chars", "label_name_with_special_chars"),
         // Prometheus Java rejects user labels starting with "__".
-        Arguments.of("__reserved__label__name__", "_reserved_label_name_"),
-        Arguments.of("trailing_underscores___", "trailing_underscores_"));
+        Arguments.argumentSet(
+            "reserved name", "__reserved__label__name__", "_reserved_label_name_"),
+        Arguments.argumentSet(
+            "trailing underscores", "trailing_underscores___", "trailing_underscores_"));
   }
 
   @Test
@@ -351,8 +375,9 @@ class Otel2PrometheusConverterTest {
 
   private static Stream<Arguments> nonEscapingTranslationStrategyArgs() {
     return Stream.of(
-        Arguments.of(TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES),
-        Arguments.of(TranslationStrategy.NO_TRANSLATION));
+        Arguments.argumentSet(
+            "no utf8 escaping with suffixes", TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES),
+        Arguments.argumentSet("no translation", TranslationStrategy.NO_TRANSLATION));
   }
 
   private static Labels convertAttributeLabels(
