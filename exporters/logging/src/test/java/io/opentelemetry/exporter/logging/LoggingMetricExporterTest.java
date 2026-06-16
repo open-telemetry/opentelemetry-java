@@ -89,16 +89,39 @@ class LoggingMetricExporterTest {
   @Test
   void flush() {
     AtomicBoolean flushed = new AtomicBoolean(false);
-    Logger.getLogger(LoggingMetricExporter.class.getName())
-        .addHandler(
-            new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {
-              @Override
-              public synchronized void flush() {
-                flushed.set(true);
-              }
-            });
-    exporter.flush();
-    assertThat(flushed.get()).isTrue();
+    Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
+    StreamHandler handler =
+        new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {
+          @Override
+          public synchronized void flush() {
+            flushed.set(true);
+          }
+        };
+    logger.addHandler(handler);
+    try {
+      exporter.flush();
+      assertThat(flushed.get()).isTrue();
+    } finally {
+      logger.removeHandler(handler);
+    }
+  }
+
+  @Test
+  void flushFailure() {
+    Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
+    StreamHandler failingHandler =
+        new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {
+          @Override
+          public synchronized void flush() {
+            throw new RuntimeException("Flush failed");
+          }
+        };
+    logger.addHandler(failingHandler);
+    try {
+      assertThat(exporter.flush().isSuccess()).isFalse();
+    } finally {
+      logger.removeHandler(failingHandler);
+    }
   }
 
   @Test

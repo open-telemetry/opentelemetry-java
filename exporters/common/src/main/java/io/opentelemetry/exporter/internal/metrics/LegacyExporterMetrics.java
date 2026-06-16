@@ -60,8 +60,6 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       case OTLP_GRPC_SPAN_EXPORTER:
       case OTLP_HTTP_SPAN_EXPORTER:
       case OTLP_HTTP_JSON_SPAN_EXPORTER:
-      case ZIPKIN_HTTP_SPAN_EXPORTER:
-      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
       case OTLP_GRPC_LOG_EXPORTER:
       case OTLP_HTTP_LOG_EXPORTER:
       case OTLP_HTTP_JSON_LOG_EXPORTER:
@@ -100,9 +98,6 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       case OTLP_HTTP_METRIC_EXPORTER:
       case OTLP_HTTP_JSON_METRIC_EXPORTER:
         return "otlp";
-      case ZIPKIN_HTTP_SPAN_EXPORTER:
-      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
-        return "zipkin";
       case OTLP_GRPC_PROFILES_EXPORTER:
         throw new IllegalArgumentException("Profiles are not supported");
     }
@@ -118,12 +113,10 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       case OTLP_HTTP_SPAN_EXPORTER:
       case OTLP_HTTP_LOG_EXPORTER:
       case OTLP_HTTP_METRIC_EXPORTER:
-      case ZIPKIN_HTTP_SPAN_EXPORTER:
         return "http";
       case OTLP_HTTP_JSON_SPAN_EXPORTER:
       case OTLP_HTTP_JSON_LOG_EXPORTER:
       case OTLP_HTTP_JSON_METRIC_EXPORTER:
-      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
         return "http-json";
       case OTLP_GRPC_PROFILES_EXPORTER:
         throw new IllegalArgumentException("Profiles are not supported");

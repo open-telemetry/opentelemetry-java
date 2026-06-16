@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExporter> {

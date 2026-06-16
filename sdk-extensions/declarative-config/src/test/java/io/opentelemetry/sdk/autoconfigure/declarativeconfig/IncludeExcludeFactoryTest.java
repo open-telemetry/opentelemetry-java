@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.IncludeExcludeModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.Predicate;
@@ -34,22 +34,22 @@ class IncludeExcludeFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        // included null, excluded null
-        Arguments.of(
+        Arguments.argumentSet(
+            "both null",
             new IncludeExcludeModel().withIncluded(null).withExcluded(null),
             IncludeExcludePredicate.createPatternMatching(null, null)),
-        // included present, excluded null
-        Arguments.of(
+        Arguments.argumentSet(
+            "included present excluded null",
             new IncludeExcludeModel().withIncluded(Arrays.asList("foo", "bar")).withExcluded(null),
             IncludeExcludePredicate.createPatternMatching(Arrays.asList("foo", "bar"), null)),
-        // included null, excluded present
-        Arguments.of(
+        Arguments.argumentSet(
+            "included null excluded present",
             new IncludeExcludeModel()
                 .withIncluded(null)
                 .withExcluded(Collections.singletonList("baz")),
             IncludeExcludePredicate.createPatternMatching(null, Collections.singletonList("baz"))),
-        // both included and excluded present
-        Arguments.of(
+        Arguments.argumentSet(
+            "both present",
             new IncludeExcludeModel()
                 .withIncluded(Arrays.asList("foo", "bar"))
                 .withExcluded(Collections.singletonList("baz")),
@@ -67,10 +67,12 @@ class IncludeExcludeFactoryTest {
 
   private static Stream<Arguments> createInvalidArguments() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "included empty",
             new IncludeExcludeModel().withIncluded(Collections.emptyList()).withExcluded(null),
             "included must not be empty"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "excluded empty",
             new IncludeExcludeModel().withIncluded(null).withExcluded(Collections.emptyList()),
             "excluded must not be empty"));
   }

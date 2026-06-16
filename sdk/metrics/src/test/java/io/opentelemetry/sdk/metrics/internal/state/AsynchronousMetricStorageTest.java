@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
+import static io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal.asExemplarFilterInternal;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,6 +17,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
@@ -76,10 +78,15 @@ class AsynchronousMetricStorageTest {
 
   // Not using @BeforeEach since many methods require executing them for each MemoryMode
   void setup(MemoryMode memoryMode) {
-    setup(memoryMode, AggregationTemporality.CUMULATIVE);
+    setup(memoryMode, AggregationTemporality.CUMULATIVE, ExemplarFilter.alwaysOff());
   }
 
   void setup(MemoryMode memoryMode, AggregationTemporality temporality) {
+    setup(memoryMode, temporality, ExemplarFilter.alwaysOff());
+  }
+
+  void setup(
+      MemoryMode memoryMode, AggregationTemporality temporality, ExemplarFilter exemplarFilter) {
     when(reader.getAggregationTemporality(any())).thenReturn(temporality);
     when(reader.getMemoryMode()).thenReturn(memoryMode);
     registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
@@ -96,6 +103,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
+            asExemplarFilterInternal(exemplarFilter),
             /* enabled= */ true);
     doubleCounterStorage =
         AsynchronousMetricStorage.create(
@@ -109,6 +117,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE,
                 Advice.empty()),
+            asExemplarFilterInternal(exemplarFilter),
             /* enabled= */ true);
   }
 
@@ -186,6 +195,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
+            asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
             /* enabled= */ true);
 
     storage.record(Attributes.builder().put("key1", "a").put("key2", "b").build(), 1);
@@ -421,6 +431,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
+            asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
             /* enabled= */ true);
 
     // Record measurement and collect at time 10
@@ -480,6 +491,24 @@ class AsynchronousMetricStorageTest {
                                 .hasEpochNanos(35)
                                 .hasValue(5)
                                 .hasAttributes(Attributes.builder().put("key", "value2").build())));
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void recordLong_AlwaysOnCollectsExemplars(MemoryMode memoryMode) {
+    setup(memoryMode, AggregationTemporality.CUMULATIVE, ExemplarFilter.alwaysOn());
+
+    longCounterStorage.record(Attributes.empty(), 3);
+
+    assertThat(longCounterStorage.collect(resource, scope, testClock.now()))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.hasPointsSatisfying(
+                    point ->
+                        point
+                            .hasValue(3)
+                            .hasAttributes(Attributes.empty())
+                            .hasExemplarsSatisfying(exemplar -> exemplar.hasValue(3))));
   }
 
   @Test

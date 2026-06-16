@@ -17,6 +17,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
   private static final ThreadLocal<Context> THREAD_LOCAL_STORAGE = new ThreadLocal<>();
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public Scope attach(Context toAttach) {
     if (toAttach == null) {
       // Null context not allowed so ignore it.
@@ -44,6 +45,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
     }
 
     @Override
+    @SuppressWarnings("ReferenceEquality")
     public void close() {
       if (!closed && current() == toAttach) {
         closed = true;

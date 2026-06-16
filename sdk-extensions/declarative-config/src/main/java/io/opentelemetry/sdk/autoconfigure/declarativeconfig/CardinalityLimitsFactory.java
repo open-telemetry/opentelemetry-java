@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.CardinalityLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import javax.annotation.Nullable;

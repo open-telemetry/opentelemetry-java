@@ -9,6 +9,15 @@ apply<io.opentelemetry.gradle.OtelVersionClassPlugin>()
 
 description = "OpenTelemetry Protocol (OTLP) Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator.config", "io.opentelemetry.sdk.autoconfigure.spi"))
+// io.grpc and org.jspecify.annotations are not OSGi bundles; must use unversioned optional.
+otelJava.osgiUnversionedOptionalPackages.set(listOf("io.grpc", "org.jspecify.annotations"))
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+))
 base.archivesName.set("opentelemetry-exporter-otlp")
 
 dependencies {
@@ -18,16 +27,20 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
   implementation(project(":exporters:sender:okhttp"))
-  implementation(project(":sdk-extensions:autoconfigure-spi"))
+  compileOnly(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":api:incubator"))
+
+  annotationProcessor("com.google.auto.value:auto-value")
 
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
+  testImplementation(project(":sdk-extensions:autoconfigure-spi"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("io.grpc:grpc-stub")
+  testImplementation("com.google.api.grpc:proto-google-common-protos")
 
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":exporters:sender:grpc-managed-channel"))
@@ -156,6 +169,15 @@ testing {
               "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider"
             )
             enabled = !testJavaVersion.equals("8")
+          }
+        }
+      }
+    }
+    register<JvmTestSuite>("testNoSender") {
+      targets {
+        all {
+          testTask {
+            classpath = classpath.filter { !it.name.startsWith("opentelemetry-exporter-sender-okhttp") }
           }
         }
       }

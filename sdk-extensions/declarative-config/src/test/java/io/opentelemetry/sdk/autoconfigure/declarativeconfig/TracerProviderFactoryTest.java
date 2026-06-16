@@ -11,20 +11,20 @@ import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysOnSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchSpanProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalTracerConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalTracerConfiguratorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalTracerMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AlwaysOnSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.BatchSpanProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalTracerConfigModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalTracerConfiguratorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalTracerMatcherAndConfigModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.OtlpHttpExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -70,14 +70,17 @@ class TracerProviderFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "null limits",
             TracerProviderAndAttributeLimits.create(null, null),
             SdkTracerProvider.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "empty models",
             TracerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(), new TracerProviderModel()),
             SdkTracerProvider.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "full configuration",
             TracerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
                 new TracerProviderModel()

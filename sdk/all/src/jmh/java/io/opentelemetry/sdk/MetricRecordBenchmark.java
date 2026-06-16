@@ -123,7 +123,7 @@ public class MetricRecordBenchmark {
     boolean exemplars = false;
 
     OpenTelemetrySdk openTelemetry;
-    Instrument instrument;
+    private Instrument instrument;
     List<Long> measurements;
     List<Attributes> attributesList;
     Span span;

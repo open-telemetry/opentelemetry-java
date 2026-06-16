@@ -76,14 +76,14 @@ class ResourceConfigurationTest {
 
   private static Stream<Arguments> configureResourceArgs() {
     return Stream.of(
-        // default
-        Arguments.of(
+        Arguments.argumentSet(
+            "default",
             null,
             null,
             attributeConsumer(
                 attr -> attr.containsEntry("service.name", "test").containsEntry("cat", "meow"))),
-        // only enabled
-        Arguments.of(
+        Arguments.argumentSet(
+            "only enabled animal provider",
             "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
             null,
             attributeConsumer(
@@ -92,8 +92,8 @@ class ResourceConfigurationTest {
                         .doesNotContainKey("cat")
                         .containsEntry("animal", "cat")
                         .doesNotContainKey("color"))),
-        // only disabled
-        Arguments.of(
+        Arguments.argumentSet(
+            "only disabled color provider",
             null,
             "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider",
             attributeConsumer(
@@ -102,8 +102,8 @@ class ResourceConfigurationTest {
                         .containsEntry("cat", "meow")
                         .containsEntry("animal", "cat")
                         .doesNotContainKey("color"))),
-        // enabled and disabled
-        Arguments.of(
+        Arguments.argumentSet(
+            "enabled animal disabled color",
             "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
             "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider",
             attributeConsumer(
@@ -112,7 +112,8 @@ class ResourceConfigurationTest {
                         .doesNotContainKey("cat")
                         .containsEntry("animal", "cat")
                         .doesNotContainKey("color"))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "enabled animal disabled color and animal",
             "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
             "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider,io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider",
             attributeConsumer(
@@ -121,8 +122,8 @@ class ResourceConfigurationTest {
                         .doesNotContainKey("cat")
                         .doesNotContainKey("animal")
                         .doesNotContainKey("color"))),
-        // environment resource provider
-        Arguments.of(
+        Arguments.argumentSet(
+            "only environment provider enabled",
             "io.opentelemetry.sdk.autoconfigure.EnvironmentResourceProvider",
             null,
             attributeConsumer(
@@ -131,7 +132,8 @@ class ResourceConfigurationTest {
                         .containsEntry("cat", "meow")
                         .doesNotContainKey("animal")
                         .doesNotContainKey("color"))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "environment provider disabled",
             null,
             "io.opentelemetry.sdk.autoconfigure.EnvironmentResourceProvider",
             attributeConsumer(

@@ -50,6 +50,11 @@ public final class OtTracePropagator implements TextMapPropagator {
   private static final Collection<String> FIELDS =
       Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
 
+  // No limits are defined by the OT trace format; borrow the W3C Baggage spec limits as a
+  // defense-in-depth measure (https://www.w3.org/TR/baggage/#limits).
+  private static final int MAX_BAGGAGE_ENTRIES = 64;
+  private static final int MAX_BAGGAGE_BYTES = 8192;
+
   private static final OtTracePropagator INSTANCE = new OtTracePropagator();
 
   private OtTracePropagator() {
@@ -85,9 +90,21 @@ public final class OtTracePropagator implements TextMapPropagator {
     Baggage baggage = Baggage.fromContext(context);
     if (!baggage.isEmpty()) {
       // Metadata is not supported by OpenTracing
+      int[] entriesEmitted = {0};
+      int[] bytesEmitted = {0};
       baggage.forEach(
-          (key, baggageEntry) ->
-              setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, baggageEntry.getValue()));
+          (key, baggageEntry) -> {
+            if (entriesEmitted[0] >= MAX_BAGGAGE_ENTRIES) {
+              return;
+            }
+            String value = baggageEntry.getValue();
+            if (bytesEmitted[0] + key.length() + value.length() > MAX_BAGGAGE_BYTES) {
+              return;
+            }
+            setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, value);
+            entriesEmitted[0]++;
+            bytesEmitted[0] += key.length() + value.length();
+          });
     }
   }
 
@@ -122,7 +139,12 @@ public final class OtTracePropagator implements TextMapPropagator {
     // Baggage is only extracted if there is a valid SpanContext
     if (carrier != null) {
       BaggageBuilder baggageBuilder = Baggage.builder();
+      int entriesAdded = 0;
+      int bytesAdded = 0;
       for (String key : getter.keys(carrier)) {
+        if (entriesAdded >= MAX_BAGGAGE_ENTRIES || bytesAdded > MAX_BAGGAGE_BYTES) {
+          break;
+        }
         String lowercaseKey = key.toLowerCase(Locale.ROOT);
         if (!lowercaseKey.startsWith(PREFIX_BAGGAGE_HEADER)) {
           continue;
@@ -133,7 +155,12 @@ public final class OtTracePropagator implements TextMapPropagator {
         }
         String baggageKey =
             lowercaseKey.substring(OtTracePropagator.PREFIX_BAGGAGE_HEADER.length());
+        if (bytesAdded + baggageKey.length() + value.length() > MAX_BAGGAGE_BYTES) {
+          break;
+        }
         baggageBuilder.put(baggageKey, value);
+        entriesAdded++;
+        bytesAdded += baggageKey.length() + value.length();
       }
       Baggage baggage = baggageBuilder.build();
       if (!baggage.isEmpty()) {

@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LogRecordLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.logs.LogLimits;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,20 +27,25 @@ class LogLimitsFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(
-            LogRecordLimitsAndAttributeLimits.create(null, null), LogLimits.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "null limits",
+            LogRecordLimitsAndAttributeLimits.create(null, null),
+            LogLimits.builder().build()),
+        Arguments.argumentSet(
+            "empty models",
             LogRecordLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel(), new LogRecordLimitsModel()),
             LogLimits.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "attribute limits only",
             LogRecordLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
                     .withAttributeValueLengthLimit(1)
                     .withAttributeCountLimit(2),
                 new LogRecordLimitsModel()),
             LogLimits.builder().setMaxAttributeValueLength(1).setMaxNumberOfAttributes(2).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "log record limits override attribute limits",
             LogRecordLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
                     .withAttributeValueLengthLimit(1)

@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.IncludeExcludeModel;
 import java.util.List;
 import java.util.function.Predicate;
 

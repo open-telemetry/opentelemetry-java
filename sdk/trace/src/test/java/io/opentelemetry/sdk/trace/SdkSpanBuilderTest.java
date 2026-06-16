@@ -393,7 +393,7 @@ class SdkSpanBuilderTest {
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
     span.end();
-    span.setAttribute("emptyString", null);
+    span.setAttribute("emptyString", (String) null);
     span.setAttribute(stringKey("emptyStringAttributeValue"), null);
     span.setAttribute(longKey("longAttribute"), null);
     span.setAttribute(booleanKey("boolAttribute"), null);
@@ -976,6 +976,47 @@ class SdkSpanBuilderTest {
     Context samplerContext = contextCaptor.getValue();
     assertThat(samplerContext.get(propagatorKey)).isEqualTo("test-value");
     assertThat(Span.fromContext(samplerContext).getSpanContext().getTraceFlags().isTraceIdRandom())
+        .isTrue();
+  }
+
+  @Test
+  void samplerReceivesRootContextWithRandomTraceIdWhenNoExtraContext() {
+    Sampler mockSampler = Mockito.mock(Sampler.class);
+    Mockito.when(
+            mockSampler.shouldSample(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.anyString(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.anyList()))
+        .thenReturn(SamplingResult.recordAndSample());
+
+    SdkTracerProvider provider = SdkTracerProvider.builder().setSampler(mockSampler).build();
+
+    // setNoParent() explicitly sets parentContext to Context.root(), exercising the singleton path.
+    // Start two spans and assert the sampler received the exact same Context instance both times,
+    // proving the pre-built singleton is reused rather than a new object allocated each call.
+    provider.get("test").spanBuilder(SPAN_NAME).setNoParent().startSpan().end();
+    provider.get("test").spanBuilder(SPAN_NAME).setNoParent().startSpan().end();
+
+    ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+    Mockito.verify(mockSampler, Mockito.times(2))
+        .shouldSample(
+            contextCaptor.capture(),
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.anyList());
+
+    List<Context> samplerContexts = contextCaptor.getAllValues();
+    assertThat(samplerContexts.get(0)).isSameAs(samplerContexts.get(1));
+    assertThat(
+            Span.fromContext(samplerContexts.get(0))
+                .getSpanContext()
+                .getTraceFlags()
+                .isTraceIdRandom())
         .isTrue();
   }
 

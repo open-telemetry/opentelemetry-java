@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.exporter.internal.otlp.ResourceMarshaler;
 import io.opentelemetry.proto.profiles.v1development.internal.ResourceProfiles;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.util.Collection;

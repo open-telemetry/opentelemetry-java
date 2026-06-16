@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeNameValueModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ResourceModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import java.util.ArrayList;
 import java.util.List;
 

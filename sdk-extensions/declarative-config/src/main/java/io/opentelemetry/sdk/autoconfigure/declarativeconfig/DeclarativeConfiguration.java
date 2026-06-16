@@ -13,11 +13,11 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -284,8 +284,7 @@ public final class DeclarativeConfiguration {
           logger.fine("Closing " + closeable.getClass().getName());
           closeable.close();
         } catch (IOException ex) {
-          logger.warning(
-              "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
+          logger.log(Level.WARNING, "Error closing " + closeable.getClass().getName(), ex);
         }
       }
       if (e instanceof DeclarativeConfigException) {

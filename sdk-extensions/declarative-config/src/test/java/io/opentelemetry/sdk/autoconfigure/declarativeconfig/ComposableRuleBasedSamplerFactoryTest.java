@@ -26,17 +26,17 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.ComposableRuleBasedSamplerFactory.AttributeMatcher;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableAlwaysOffSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableAlwaysOnSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalSpanParent;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKind;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableAlwaysOffSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableAlwaysOnSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableProbabilitySamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableRuleBasedSamplerRuleModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalComposableSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalSpanParent;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanKind;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Arrays;
@@ -70,7 +70,8 @@ class ComposableRuleBasedSamplerFactoryTest {
 
   private static Stream<Arguments> createInvalidTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "attribute_patterns included empty",
             new ExperimentalComposableRuleBasedSamplerModel()
                 .withRules(
                     Collections.singletonList(
@@ -85,7 +86,8 @@ class ComposableRuleBasedSamplerFactoryTest {
                                     .withAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
             "included must not be empty"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "attribute_patterns excluded empty",
             new ExperimentalComposableRuleBasedSamplerModel()
                 .withRules(
                     Collections.singletonList(
@@ -100,7 +102,8 @@ class ComposableRuleBasedSamplerFactoryTest {
                                     .withAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
             "excluded must not be empty"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "attribute_values null values",
             new ExperimentalComposableRuleBasedSamplerModel()
                 .withRules(
                     Collections.singletonList(
@@ -114,7 +117,8 @@ class ComposableRuleBasedSamplerFactoryTest {
                                     .withAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
             ".values is required and must be non-empty"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "attribute_values empty values",
             new ExperimentalComposableRuleBasedSamplerModel()
                 .withRules(
                     Collections.singletonList(
@@ -132,11 +136,39 @@ class ComposableRuleBasedSamplerFactoryTest {
 
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "empty model",
             new ExperimentalComposableRuleBasedSamplerModel(),
             ComposableSampler.ruleBasedBuilder().build()),
-        // Recreate example
-        Arguments.of(
+        // https://github.com/open-telemetry/opentelemetry-java/issues/8337
+        Arguments.argumentSet(
+            "attribute_patterns included only",
+            new ExperimentalComposableRuleBasedSamplerModel()
+                .withRules(
+                    Collections.singletonList(
+                        new ExperimentalComposableRuleBasedSamplerRuleModel()
+                            .withAttributePatterns(
+                                new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
+                                    .withKey("http.path")
+                                    .withIncluded(Collections.singletonList("/internal/*")))
+                            .withSampler(
+                                new ExperimentalComposableSamplerModel()
+                                    .withAlwaysOn(
+                                        new ExperimentalComposableAlwaysOnSamplerModel())))),
+            ComposableSampler.ruleBasedBuilder()
+                .add(
+                    new DeclarativeConfigSamplingPredicate(
+                        null,
+                        new AttributeMatcher(
+                            "http.path",
+                            IncludeExcludePredicate.createPatternMatching(
+                                Collections.singletonList("/internal/*"), null)),
+                        null,
+                        null),
+                    ComposableSampler.alwaysOn())
+                .build()),
+        Arguments.argumentSet(
+            "full example",
             new ExperimentalComposableRuleBasedSamplerModel()
                 .withRules(
                     Arrays.asList(
@@ -288,66 +320,153 @@ class ComposableRuleBasedSamplerFactoryTest {
             Collections.singleton(CLIENT));
 
     return Stream.of(
-        // match all
-        Arguments.of(matchAll, noParent, sk, Attributes.empty(), true),
-        Arguments.of(matchAll, noParent, sk, Attributes.of(HTTP_ROUTE, "/healthz"), true),
-        Arguments.of(
-            matchAll, noParent, sk, Attributes.of(HTTP_PATH, "/internal/admin/users"), true),
-        Arguments.of(matchAll, noParent, SERVER, Attributes.empty(), true),
-        Arguments.of(matchAll, remoteParent, sk, Attributes.empty(), true),
-        // value matcher
-        Arguments.of(valuesMatcher, noParent, sk, Attributes.of(HTTP_ROUTE, "/healthz"), true),
-        Arguments.of(valuesMatcher, noParent, sk, Attributes.of(HTTP_ROUTE, "/livez"), true),
-        Arguments.of(valuesMatcher, noParent, sk, Attributes.of(HTTP_ROUTE, "/foo"), false),
-        Arguments.of(valuesMatcher, noParent, sk, Attributes.empty(), false),
-        // pattern matcher
-        Arguments.of(
-            patternsMatcher, noParent, sk, Attributes.of(HTTP_PATH, "/internal/admin/users"), true),
-        Arguments.of(
+        Arguments.argumentSet(
+            "matchAll no parent empty", matchAll, noParent, sk, Attributes.empty(), true),
+        Arguments.argumentSet(
+            "matchAll no parent route",
+            matchAll,
+            noParent,
+            sk,
+            Attributes.of(HTTP_ROUTE, "/healthz"),
+            true),
+        Arguments.argumentSet(
+            "matchAll no parent path",
+            matchAll,
+            noParent,
+            sk,
+            Attributes.of(HTTP_PATH, "/internal/admin/users"),
+            true),
+        Arguments.argumentSet(
+            "matchAll no parent server kind", matchAll, noParent, SERVER, Attributes.empty(), true),
+        Arguments.argumentSet(
+            "matchAll remote parent", matchAll, remoteParent, sk, Attributes.empty(), true),
+        Arguments.argumentSet(
+            "valuesMatcher healthz",
+            valuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(HTTP_ROUTE, "/healthz"),
+            true),
+        Arguments.argumentSet(
+            "valuesMatcher livez",
+            valuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(HTTP_ROUTE, "/livez"),
+            true),
+        Arguments.argumentSet(
+            "valuesMatcher foo no match",
+            valuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(HTTP_ROUTE, "/foo"),
+            false),
+        Arguments.argumentSet(
+            "valuesMatcher empty no match", valuesMatcher, noParent, sk, Attributes.empty(), false),
+        Arguments.argumentSet(
+            "patternsMatcher internal admin",
+            patternsMatcher,
+            noParent,
+            sk,
+            Attributes.of(HTTP_PATH, "/internal/admin/users"),
+            true),
+        Arguments.argumentSet(
+            "patternsMatcher internal management",
             patternsMatcher,
             noParent,
             sk,
             Attributes.of(HTTP_PATH, "/internal/management/config"),
             true),
-        Arguments.of(
-            patternsMatcher, noParent, sk, Attributes.of(HTTP_PATH, "/users/profile/123"), false),
-        Arguments.of(
+        Arguments.argumentSet(
+            "patternsMatcher users no match",
+            patternsMatcher,
+            noParent,
+            sk,
+            Attributes.of(HTTP_PATH, "/users/profile/123"),
+            false),
+        Arguments.argumentSet(
+            "patternsMatcher internal special excluded",
             patternsMatcher,
             noParent,
             sk,
             Attributes.of(HTTP_PATH, "/internal/special/foo"),
             false),
-        // parent matcher
-        Arguments.of(parentMatcher, noParent, sk, Attributes.empty(), true),
-        Arguments.of(parentMatcher, localParent, sk, Attributes.empty(), false),
-        Arguments.of(parentMatcher, remoteParent, sk, Attributes.empty(), false),
-        // span kind matcher
-        Arguments.of(spanKindMatcher, noParent, CLIENT, Attributes.empty(), true),
-        Arguments.of(spanKindMatcher, noParent, SERVER, Attributes.empty(), false),
-        Arguments.of(spanKindMatcher, noParent, INTERNAL, Attributes.empty(), false),
-        Arguments.of(spanKindMatcher, noParent, PRODUCER, Attributes.empty(), false),
-        Arguments.of(spanKindMatcher, noParent, CONSUMER, Attributes.empty(), false),
-        // multi matcher
-        Arguments.of(
+        Arguments.argumentSet(
+            "parentMatcher no parent", parentMatcher, noParent, sk, Attributes.empty(), true),
+        Arguments.argumentSet(
+            "parentMatcher local parent no match",
+            parentMatcher,
+            localParent,
+            sk,
+            Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "parentMatcher remote parent no match",
+            parentMatcher,
+            remoteParent,
+            sk,
+            Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "spanKindMatcher CLIENT", spanKindMatcher, noParent, CLIENT, Attributes.empty(), true),
+        Arguments.argumentSet(
+            "spanKindMatcher SERVER no match",
+            spanKindMatcher,
+            noParent,
+            SERVER,
+            Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "spanKindMatcher INTERNAL no match",
+            spanKindMatcher,
+            noParent,
+            INTERNAL,
+            Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "spanKindMatcher PRODUCER no match",
+            spanKindMatcher,
+            noParent,
+            PRODUCER,
+            Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "spanKindMatcher CONSUMER no match",
+            spanKindMatcher,
+            noParent,
+            CONSUMER,
+            Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "multiMatcher all conditions match",
             multiMatcher,
             noParent,
             CLIENT,
             Attributes.of(HTTP_ROUTE, "/livez", HTTP_PATH, "/internal/admin/users"),
             true),
-        Arguments.of(multiMatcher, noParent, CLIENT, Attributes.of(HTTP_ROUTE, "/livez"), false),
-        Arguments.of(
+        Arguments.argumentSet(
+            "multiMatcher missing path no match",
+            multiMatcher,
+            noParent,
+            CLIENT,
+            Attributes.of(HTTP_ROUTE, "/livez"),
+            false),
+        Arguments.argumentSet(
+            "multiMatcher missing route no match",
             multiMatcher,
             noParent,
             CLIENT,
             Attributes.of(HTTP_PATH, "/internal/admin/users"),
             false),
-        Arguments.of(
+        Arguments.argumentSet(
+            "multiMatcher wrong kind no match",
             multiMatcher,
             noParent,
             SERVER,
             Attributes.of(HTTP_ROUTE, "/livez", HTTP_PATH, "/internal/admin/users"),
             false),
-        Arguments.of(
+        Arguments.argumentSet(
+            "multiMatcher local parent no match",
             multiMatcher,
             localParent,
             CLIENT,

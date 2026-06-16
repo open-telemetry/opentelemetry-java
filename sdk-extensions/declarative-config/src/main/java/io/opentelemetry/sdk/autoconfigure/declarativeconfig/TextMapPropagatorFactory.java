@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.TextMapPropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TextMapPropagatorModel;
 
 final class TextMapPropagatorFactory
     implements Factory<TextMapPropagatorModel, TextMapPropagatorAndName> {

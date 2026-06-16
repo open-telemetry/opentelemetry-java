@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,21 +36,25 @@ class AttributeListFactoryTest {
 
   private static Stream<Arguments> invalidAttributes() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "null value",
             Collections.singletonList(new AttributeNameValueModel().withName("key")),
             "attribute value is required but is null"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "wrong type string",
             Collections.singletonList(
                 new AttributeNameValueModel().withName("key").withValue(new Object())),
             "Error processing attribute with name \"key\": value did not match type STRING"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "wrong type int list",
             Collections.singletonList(
                 new AttributeNameValueModel()
                     .withName("key")
                     .withType(AttributeNameValueModel.AttributeType.INT)
                     .withValue(Arrays.asList(1L, 1))),
             "Error processing attribute with name \"key\": value did not match type INT"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "wrong type int boolean",
             Collections.singletonList(
                 new AttributeNameValueModel()
                     .withName("key")

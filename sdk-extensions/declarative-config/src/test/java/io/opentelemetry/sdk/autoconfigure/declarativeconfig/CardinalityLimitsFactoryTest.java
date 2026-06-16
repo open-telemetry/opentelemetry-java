@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.CardinalityLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import java.util.stream.Stream;
@@ -33,10 +33,12 @@ class CardinalityLimitsFactoryTest {
 
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "defaults",
             new CardinalityLimitsModel(),
             CardinalityLimitSelector.defaultCardinalityLimitSelector()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "default and counter",
             new CardinalityLimitsModel().withDefault(10).withCounter(1),
             (CardinalityLimitSelector)
                 instrumentType -> {
@@ -45,7 +47,8 @@ class CardinalityLimitsFactoryTest {
                   }
                   return 10;
                 }),
-        Arguments.of(
+        Arguments.argumentSet(
+            "all instrument types",
             new CardinalityLimitsModel()
                 .withCounter(1)
                 .withUpDownCounter(2)
