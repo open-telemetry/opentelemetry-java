@@ -68,14 +68,17 @@ class LoggerProviderFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "null limits",
             LoggerProviderAndAttributeLimits.create(null, null),
             SdkLoggerProvider.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "empty models",
             LoggerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(), new LoggerProviderModel()),
             SdkLoggerProvider.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "full configuration",
             LoggerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
                 new LoggerProviderModel()
@@ -137,29 +140,29 @@ class LoggerProviderFactoryTest {
 
   private static Stream<Arguments> severityNumberArguments() {
     return Stream.of(
-        Arguments.of(SeverityNumber.TRACE, Severity.TRACE),
-        Arguments.of(SeverityNumber.TRACE_2, Severity.TRACE2),
-        Arguments.of(SeverityNumber.TRACE_3, Severity.TRACE3),
-        Arguments.of(SeverityNumber.TRACE_4, Severity.TRACE4),
-        Arguments.of(SeverityNumber.DEBUG, Severity.DEBUG),
-        Arguments.of(SeverityNumber.DEBUG_2, Severity.DEBUG2),
-        Arguments.of(SeverityNumber.DEBUG_3, Severity.DEBUG3),
-        Arguments.of(SeverityNumber.DEBUG_4, Severity.DEBUG4),
-        Arguments.of(SeverityNumber.INFO, Severity.INFO),
-        Arguments.of(SeverityNumber.INFO_2, Severity.INFO2),
-        Arguments.of(SeverityNumber.INFO_3, Severity.INFO3),
-        Arguments.of(SeverityNumber.INFO_4, Severity.INFO4),
-        Arguments.of(SeverityNumber.WARN, Severity.WARN),
-        Arguments.of(SeverityNumber.WARN_2, Severity.WARN2),
-        Arguments.of(SeverityNumber.WARN_3, Severity.WARN3),
-        Arguments.of(SeverityNumber.WARN_4, Severity.WARN4),
-        Arguments.of(SeverityNumber.ERROR, Severity.ERROR),
-        Arguments.of(SeverityNumber.ERROR_2, Severity.ERROR2),
-        Arguments.of(SeverityNumber.ERROR_3, Severity.ERROR3),
-        Arguments.of(SeverityNumber.ERROR_4, Severity.ERROR4),
-        Arguments.of(SeverityNumber.FATAL, Severity.FATAL),
-        Arguments.of(SeverityNumber.FATAL_2, Severity.FATAL2),
-        Arguments.of(SeverityNumber.FATAL_3, Severity.FATAL3),
-        Arguments.of(SeverityNumber.FATAL_4, Severity.FATAL4));
+        Arguments.argumentSet("TRACE", SeverityNumber.TRACE, Severity.TRACE),
+        Arguments.argumentSet("TRACE_2", SeverityNumber.TRACE_2, Severity.TRACE2),
+        Arguments.argumentSet("TRACE_3", SeverityNumber.TRACE_3, Severity.TRACE3),
+        Arguments.argumentSet("TRACE_4", SeverityNumber.TRACE_4, Severity.TRACE4),
+        Arguments.argumentSet("DEBUG", SeverityNumber.DEBUG, Severity.DEBUG),
+        Arguments.argumentSet("DEBUG_2", SeverityNumber.DEBUG_2, Severity.DEBUG2),
+        Arguments.argumentSet("DEBUG_3", SeverityNumber.DEBUG_3, Severity.DEBUG3),
+        Arguments.argumentSet("DEBUG_4", SeverityNumber.DEBUG_4, Severity.DEBUG4),
+        Arguments.argumentSet("INFO", SeverityNumber.INFO, Severity.INFO),
+        Arguments.argumentSet("INFO_2", SeverityNumber.INFO_2, Severity.INFO2),
+        Arguments.argumentSet("INFO_3", SeverityNumber.INFO_3, Severity.INFO3),
+        Arguments.argumentSet("INFO_4", SeverityNumber.INFO_4, Severity.INFO4),
+        Arguments.argumentSet("WARN", SeverityNumber.WARN, Severity.WARN),
+        Arguments.argumentSet("WARN_2", SeverityNumber.WARN_2, Severity.WARN2),
+        Arguments.argumentSet("WARN_3", SeverityNumber.WARN_3, Severity.WARN3),
+        Arguments.argumentSet("WARN_4", SeverityNumber.WARN_4, Severity.WARN4),
+        Arguments.argumentSet("ERROR", SeverityNumber.ERROR, Severity.ERROR),
+        Arguments.argumentSet("ERROR_2", SeverityNumber.ERROR_2, Severity.ERROR2),
+        Arguments.argumentSet("ERROR_3", SeverityNumber.ERROR_3, Severity.ERROR3),
+        Arguments.argumentSet("ERROR_4", SeverityNumber.ERROR_4, Severity.ERROR4),
+        Arguments.argumentSet("FATAL", SeverityNumber.FATAL, Severity.FATAL),
+        Arguments.argumentSet("FATAL_2", SeverityNumber.FATAL_2, Severity.FATAL2),
+        Arguments.argumentSet("FATAL_3", SeverityNumber.FATAL_3, Severity.FATAL3),
+        Arguments.argumentSet("FATAL_4", SeverityNumber.FATAL_4, Severity.FATAL4));
   }
 }

@@ -95,7 +95,7 @@ class SynchronousInstrumentStressTest {
     }
   }
 
-  @SuppressWarnings("ThreadPriorityCheck")
+  @SuppressWarnings({"ThreadPriorityCheck", "ReferenceEquality"})
   private void stressTestOnce(
       AggregationTemporality aggregationTemporality,
       InstrumentType instrumentType,
@@ -299,7 +299,14 @@ class SynchronousInstrumentStressTest {
         for (MemoryMode memoryMode : MemoryMode.values()) {
           for (InstrumentValueType instrumentValueType : InstrumentValueType.values()) {
             argumentsList.add(
-                Arguments.of(
+                Arguments.argumentSet(
+                    aggregationTemporality
+                        + " "
+                        + instrumentTypeAndAggregation.instrumentType
+                        + " "
+                        + memoryMode
+                        + " "
+                        + instrumentValueType,
                     aggregationTemporality,
                     instrumentTypeAndAggregation.instrumentType,
                     instrumentTypeAndAggregation.aggregation,

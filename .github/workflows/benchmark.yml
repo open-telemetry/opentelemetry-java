@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   sdk-benchmark:
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     permissions:
       contents: write # for git push to benchmarks branch
     name: Benchmark SDK
@@ -26,7 +27,7 @@ jobs:
       - name: Configure Git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - id: setup-java
         name: Set up Java for build

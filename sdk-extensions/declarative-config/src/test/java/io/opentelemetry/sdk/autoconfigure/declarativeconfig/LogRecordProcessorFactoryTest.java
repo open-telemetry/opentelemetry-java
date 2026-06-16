@@ -56,7 +56,8 @@ class LogRecordProcessorFactoryTest {
 
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "batch otlp_http defaults",
             new LogRecordProcessorModel()
                 .withBatch(
                     new BatchLogRecordProcessorModel()
@@ -66,7 +67,8 @@ class LogRecordProcessorFactoryTest {
             BatchLogRecordProcessor.builder(
                     OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "batch otlp_http with options",
             new LogRecordProcessorModel()
                 .withBatch(
                     new BatchLogRecordProcessorModel()
@@ -81,7 +83,8 @@ class LogRecordProcessorFactoryTest {
                 .setMaxExportBatchSize(2)
                 .setExporterTimeout(Duration.ofMillis(3))
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "simple otlp_http",
             new LogRecordProcessorModel()
                 .withSimple(
                     new SimpleLogRecordProcessorModel()
@@ -90,12 +93,14 @@ class LogRecordProcessorFactoryTest {
                                 .withOtlpHttp(new OtlpHttpExporterModel()))),
             SimpleLogRecordProcessor.create(
                 OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "event_to_span_event_bridge/development",
             new LogRecordProcessorModel()
                 .withEventToSpanEventBridgeDevelopment(
                     new ExperimentalEventToSpanEventBridgeLogRecordProcessorModel()),
             EventToSpanEventBridge.create()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "spi test processor",
             new LogRecordProcessorModel()
                 .withAdditionalProperty("test", new LogRecordProcessorPropertyModel()),
             LogRecordProcessorComponentProvider.TestLogRecordProcessor.create()));
@@ -111,13 +116,16 @@ class LogRecordProcessorFactoryTest {
 
   private static Stream<Arguments> createInvalidTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "batch missing exporter",
             new LogRecordProcessorModel().withBatch(new BatchLogRecordProcessorModel()),
             "batch log record processor exporter is required but is null"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "simple missing exporter",
             new LogRecordProcessorModel().withSimple(new SimpleLogRecordProcessorModel()),
             "simple log record processor exporter is required but is null"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "unknown component provider",
             new LogRecordProcessorModel()
                 .withAdditionalProperty(
                     "unknown_key",

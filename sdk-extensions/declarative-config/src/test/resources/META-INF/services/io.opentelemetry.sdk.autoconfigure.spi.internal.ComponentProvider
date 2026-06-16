@@ -8,8 +8,4 @@ io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.LogRecordProcesso
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ResourceComponentProvider
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ResourceFirstComponentProvider
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ResourceSecondComponentProvider
-io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ContainerResourceProvider
-io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.HostResourceProvider
-io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.OsResourceProvider
-io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.ProcessResourceProvider
 io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.IdGeneratorComponentProvider

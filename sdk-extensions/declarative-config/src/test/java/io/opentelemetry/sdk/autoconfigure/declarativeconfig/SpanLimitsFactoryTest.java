@@ -27,18 +27,24 @@ class SpanLimitsFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(SpanLimitsAndAttributeLimits.create(null, null), SpanLimits.getDefault()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "null limits",
+            SpanLimitsAndAttributeLimits.create(null, null),
+            SpanLimits.getDefault()),
+        Arguments.argumentSet(
+            "empty models",
             SpanLimitsAndAttributeLimits.create(new AttributeLimitsModel(), new SpanLimitsModel()),
             SpanLimits.getDefault()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "attribute limits only",
             SpanLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
                     .withAttributeCountLimit(1)
                     .withAttributeValueLengthLimit(2),
                 new SpanLimitsModel()),
             SpanLimits.builder().setMaxNumberOfAttributes(1).setMaxAttributeValueLength(2).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "span limits override attribute limits",
             SpanLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
                     .withAttributeCountLimit(1)

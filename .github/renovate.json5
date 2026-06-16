@@ -41,6 +41,7 @@
       // fails on them, which blocks unrelated patch updates
       matchDepNames: [
         'org.jetbrains.kotlin.jvm',
+        'org.jetbrains.kotlin:kotlin-gradle-plugin',
       ],
       schedule: [
         '* 0-7 * * 2', // weekly, before 8am on Tuesday
@@ -90,6 +91,7 @@
       matchPackageNames: [
         'org.junit:**',
         'org.junit.jupiter:**',
+        'org.junit.platform:**',
       ],
       matchUpdateTypes: [
         'major',
@@ -173,15 +175,15 @@
     },
     {
       customType: 'regex',
-      datasourceTemplate: 'java-version',
+      datasourceTemplate: 'docker',
       managerFilePatterns: [
         '.github/workflows/**',
       ],
       matchStrings: [
         '(?<currentValue>\\d+) # renovate\\(java-version\\)',
       ],
-      depNameTemplate: 'java',
-      extractVersionTemplate: '^(?<version>\\d+)',
+      // using zulu because new releases get published quickly
+      depNameTemplate: 'azul/zulu-openjdk',
     },
     {
       customType: 'regex',

@@ -512,12 +512,11 @@ class JaegerPropagatorTest {
     Map<String, String> bigValueCarrier = new LinkedHashMap<>();
     bigValueCarrier.put(BAGGAGE_PREFIX + "k", fillChars('v', 8192));
     return Stream.of(
-        // 65 uberctx- prefix keys — only first 64 extracted
-        Arguments.of(prefixCarrier, baggageWithEntries(0, 64)),
-        // 65 entries in jaeger-baggage header — only first 64 extracted
-        Arguments.of(headerCarrier, baggageWithEntries(0, 64)),
-        // single entry whose value exceeds the byte limit — not extracted
-        Arguments.of(bigValueCarrier, Baggage.empty()));
+        Arguments.argumentSet(
+            "65 prefix keys truncated to 64", prefixCarrier, baggageWithEntries(0, 64)),
+        Arguments.argumentSet(
+            "65 header entries truncated to 64", headerCarrier, baggageWithEntries(0, 64)),
+        Arguments.argumentSet("large value exceeds byte limit", bigValueCarrier, Baggage.empty()));
   }
 
   /**

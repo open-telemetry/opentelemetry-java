@@ -72,21 +72,29 @@ class SamplerFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(
-            new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()), Sampler.alwaysOn()),
-        Arguments.of(
-            new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel()), Sampler.alwaysOff()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "always_on",
+            new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()),
+            Sampler.alwaysOn()),
+        Arguments.argumentSet(
+            "always_off",
+            new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel()),
+            Sampler.alwaysOff()),
+        Arguments.argumentSet(
+            "trace_id_ratio_based default",
             new SamplerModel().withTraceIdRatioBased(new TraceIdRatioBasedSamplerModel()),
             Sampler.traceIdRatioBased(1.0d)),
-        Arguments.of(
+        Arguments.argumentSet(
+            "trace_id_ratio_based with ratio",
             new SamplerModel()
                 .withTraceIdRatioBased(new TraceIdRatioBasedSamplerModel().withRatio(0.5d)),
             Sampler.traceIdRatioBased(0.5)),
-        Arguments.of(
+        Arguments.argumentSet(
+            "parent_based default",
             new SamplerModel().withParentBased(new ParentBasedSamplerModel()),
             Sampler.parentBased(Sampler.alwaysOn())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "parent_based with options",
             new SamplerModel()
                 .withParentBased(
                     new ParentBasedSamplerModel()
@@ -116,7 +124,8 @@ class SamplerFactoryTest {
                 .setLocalParentSampled(Sampler.traceIdRatioBased(0.4d))
                 .setLocalParentNotSampled(Sampler.traceIdRatioBased(0.5d))
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "jaeger_remote",
             new SamplerModel()
                 .withJaegerRemoteDevelopment(
                     new ExperimentalJaegerRemoteSamplerModel()
@@ -129,32 +138,37 @@ class SamplerFactoryTest {
                 .setPollingInterval(Duration.ofSeconds(10))
                 .setInitialSampler(Sampler.alwaysOff())
                 .build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "composite/development always_on",
             new SamplerModel()
                 .withCompositeDevelopment(
                     new ExperimentalComposableSamplerModel()
                         .withAlwaysOn(new ExperimentalComposableAlwaysOnSamplerModel())),
             CompositeSampler.wrap(ComposableSampler.alwaysOn())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "composite/development always_off",
             new SamplerModel()
                 .withCompositeDevelopment(
                     new ExperimentalComposableSamplerModel()
                         .withAlwaysOff(new ExperimentalComposableAlwaysOffSamplerModel())),
             CompositeSampler.wrap(ComposableSampler.alwaysOff())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "composite/development probability",
             new SamplerModel()
                 .withCompositeDevelopment(
                     new ExperimentalComposableSamplerModel()
                         .withProbability(
                             new ExperimentalComposableProbabilitySamplerModel().withRatio(0.5))),
             CompositeSampler.wrap(ComposableSampler.probability(0.5))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "composite/development rule_based",
             new SamplerModel()
                 .withCompositeDevelopment(
                     new ExperimentalComposableSamplerModel()
                         .withRuleBased(new ExperimentalComposableRuleBasedSamplerModel())),
             CompositeSampler.wrap(ComposableSampler.ruleBasedBuilder().build())),
-        Arguments.of(
+        Arguments.argumentSet(
+            "composite/development parent_threshold",
             new SamplerModel()
                 .withCompositeDevelopment(
                     new ExperimentalComposableSamplerModel()
@@ -180,43 +194,33 @@ class SamplerFactoryTest {
 
   private static Stream<Arguments> createInvalidArguments() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "jaeger_remote missing endpoint",
             new SamplerModel()
                 .withJaegerRemoteDevelopment(new ExperimentalJaegerRemoteSamplerModel()),
             "jaeger remote sampler endpoint is required"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "jaeger_remote missing initialSampler",
             new SamplerModel()
                 .withJaegerRemoteDevelopment(
                     new ExperimentalJaegerRemoteSamplerModel()
                         .withEndpoint("http://jaeger-remote-endpoint")),
             "jaeger remote sampler initial_sampler is required"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "parent_threshold missing root",
             new SamplerModel()
                 .withCompositeDevelopment(
                     new ExperimentalComposableSamplerModel()
                         .withParentThreshold(
                             new ExperimentalComposableParentThresholdSamplerModel())),
-            "parent threshold sampler root is required but is null"));
-  }
-
-  @Test
-  void create_SpiExporter_Unknown() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    assertThatThrownBy(
-            () ->
-                SamplerFactory.getInstance()
-                    .create(
-                        new SamplerModel()
-                            .withAdditionalProperty(
-                                "unknown_key",
-                                new SamplerPropertyModel()
-                                    .withAdditionalProperty("key1", "value1")),
-                        context))
-        .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage(
-            "No component provider detected for io.opentelemetry.sdk.trace.samplers.Sampler with name \"unknown_key\".");
-    cleanup.addCloseables(closeables);
+            "parent threshold sampler root is required but is null"),
+        Arguments.argumentSet(
+            "unknown component provider",
+            new SamplerModel()
+                .withAdditionalProperty(
+                    "unknown_key",
+                    new SamplerPropertyModel().withAdditionalProperty("key1", "value1")),
+            "No component provider detected for io.opentelemetry.sdk.trace.samplers.Sampler with name \"unknown_key\"."));
   }
 
   @Test

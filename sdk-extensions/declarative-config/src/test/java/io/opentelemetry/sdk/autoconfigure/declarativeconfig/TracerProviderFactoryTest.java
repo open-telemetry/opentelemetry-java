@@ -70,14 +70,17 @@ class TracerProviderFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "null limits",
             TracerProviderAndAttributeLimits.create(null, null),
             SdkTracerProvider.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "empty models",
             TracerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(), new TracerProviderModel()),
             SdkTracerProvider.builder().build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "full configuration",
             TracerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
                 new TracerProviderModel()

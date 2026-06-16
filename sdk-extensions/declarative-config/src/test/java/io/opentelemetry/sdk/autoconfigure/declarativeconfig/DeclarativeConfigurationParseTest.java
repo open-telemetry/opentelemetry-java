@@ -171,10 +171,12 @@ class DeclarativeConfigurationParseTest {
   @SuppressWarnings("unchecked")
   private static Stream<Arguments> coreSchemaValuesArgs() {
     return Stream.of(
-        Arguments.of("key1: 0o123\n", mapOf(entry("key1", 83))),
-        Arguments.of("key1: 0123\n", mapOf(entry("key1", 123))),
-        Arguments.of("key1: 0xdeadbeef\n", mapOf(entry("key1", 3735928559L))),
-        Arguments.of("key1: \"0xdeadbeef\"\n", mapOf(entry("key1", "0xdeadbeef"))));
+        Arguments.argumentSet("octal with o", "key1: 0o123\n", mapOf(entry("key1", 83))),
+        Arguments.argumentSet("octal without o", "key1: 0123\n", mapOf(entry("key1", 123))),
+        Arguments.argumentSet(
+            "unquoted hex string", "key1: 0xdeadbeef\n", mapOf(entry("key1", 3735928559L))),
+        Arguments.argumentSet(
+            "quoted hex string", "key1: \"0xdeadbeef\"\n", mapOf(entry("key1", "0xdeadbeef"))));
   }
 
   @ParameterizedTest
@@ -202,86 +204,149 @@ class DeclarativeConfigurationParseTest {
   @SuppressWarnings("unchecked")
   private static Stream<Arguments> envVarSubstitutionArgs() {
     return Stream.of(
-        // Simple cases
-        Arguments.of("key1: ${STR_1}\n", mapOf(entry("key1", "value1"))),
-        Arguments.of("key1: ${BOOL}\n", mapOf(entry("key1", true))),
-        Arguments.of("key1: ${INT}\n", mapOf(entry("key1", 1))),
-        Arguments.of("key1: ${FLOAT}\n", mapOf(entry("key1", 1.1))),
-        Arguments.of("key1: ${HEX}\n", mapOf(entry("key1", 3735928559L))),
-        Arguments.of(
+        Arguments.argumentSet("STR_1 string", "key1: ${STR_1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.argumentSet("BOOL boolean", "key1: ${BOOL}\n", mapOf(entry("key1", true))),
+        Arguments.argumentSet("INT integer", "key1: ${INT}\n", mapOf(entry("key1", 1))),
+        Arguments.argumentSet("FLOAT float", "key1: ${FLOAT}\n", mapOf(entry("key1", 1.1))),
+        Arguments.argumentSet("HEX hex", "key1: ${HEX}\n", mapOf(entry("key1", 3735928559L))),
+        Arguments.argumentSet(
+            "STR_1 with literal key2",
             "key1: ${STR_1}\n" + "key2: value2\n",
             mapOf(entry("key1", "value1"), entry("key2", "value2"))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "STR_1 concatenated with literal",
             "key1: ${STR_1} value1\n" + "key2: value2\n",
             mapOf(entry("key1", "value1 value1"), entry("key2", "value2"))),
-        // Default cases
-        Arguments.of("key1: ${NOT_SET:-value1}\n", mapOf(entry("key1", "value1"))),
-        Arguments.of("key1: ${NOT_SET:-true}\n", mapOf(entry("key1", true))),
-        Arguments.of("key1: ${NOT_SET:-1}\n", mapOf(entry("key1", 1))),
-        Arguments.of("key1: ${NOT_SET:-1.1}\n", mapOf(entry("key1", 1.1))),
-        Arguments.of("key1: ${NOT_SET:-0xdeadbeef}\n", mapOf(entry("key1", 3735928559L))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "default string", "key1: ${NOT_SET:-value1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.argumentSet(
+            "default boolean", "key1: ${NOT_SET:-true}\n", mapOf(entry("key1", true))),
+        Arguments.argumentSet("default integer", "key1: ${NOT_SET:-1}\n", mapOf(entry("key1", 1))),
+        Arguments.argumentSet(
+            "default float", "key1: ${NOT_SET:-1.1}\n", mapOf(entry("key1", 1.1))),
+        Arguments.argumentSet(
+            "default hex", "key1: ${NOT_SET:-0xdeadbeef}\n", mapOf(entry("key1", 3735928559L))),
+        Arguments.argumentSet(
+            "default concatenated with literal",
             "key1: ${NOT_SET:-value1} value2\n" + "key2: value2\n",
             mapOf(entry("key1", "value1 value2"), entry("key2", "value2"))),
-        // Multiple environment variables referenced
-        Arguments.of("key1: ${STR_1}${STR_2}\n", mapOf(entry("key1", "value1value2"))),
-        Arguments.of("key1: ${STR_1} ${STR_2}\n", mapOf(entry("key1", "value1 value2"))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "two vars concatenated",
+            "key1: ${STR_1}${STR_2}\n",
+            mapOf(entry("key1", "value1value2"))),
+        Arguments.argumentSet(
+            "two vars with space",
+            "key1: ${STR_1} ${STR_2}\n",
+            mapOf(entry("key1", "value1 value2"))),
+        Arguments.argumentSet(
+            "two vars with default",
             "key1: ${STR_1} ${NOT_SET:-default} ${STR_2}\n",
             mapOf(entry("key1", "value1 default value2"))),
-        // Undefined / empty environment variable
-        Arguments.of("key1: ${EMPTY_STR}\n", mapOf(entry("key1", null))),
-        Arguments.of("key1: ${STR_3}\n", mapOf(entry("key1", null))),
-        Arguments.of("key1: ${STR_1} ${STR_3}\n", mapOf(entry("key1", "value1 "))),
+        Arguments.argumentSet("empty var null", "key1: ${EMPTY_STR}\n", mapOf(entry("key1", null))),
+        Arguments.argumentSet("undefined var null", "key1: ${STR_3}\n", mapOf(entry("key1", null))),
+        Arguments.argumentSet(
+            "set and undefined vars", "key1: ${STR_1} ${STR_3}\n", mapOf(entry("key1", "value1 "))),
         // Environment variable keys must match pattern: [a-zA-Z_]+[a-zA-Z0-9_]*
-        Arguments.of("key1: ${VAR&}\n", mapOf(entry("key1", "${VAR&}"))),
+        Arguments.argumentSet(
+            "invalid var syntax literal", "key1: ${VAR&}\n", mapOf(entry("key1", "${VAR&}"))),
         // Environment variable substitution only takes place in scalar values of maps
-        Arguments.of("${STR_1}: value1\n", mapOf(entry("${STR_1}", "value1"))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "var in map key not substituted",
+            "${STR_1}: value1\n",
+            mapOf(entry("${STR_1}", "value1"))),
+        Arguments.argumentSet(
+            "var in nested map key not substituted",
             "key1:\n  ${STR_1}: value1\n",
             mapOf(entry("key1", mapOf(entry("${STR_1}", "value1"))))),
-        Arguments.of(
-            "key1:\n - ${STR_1}\n", mapOf(entry("key1", Collections.singletonList("${STR_1}")))),
-        // Double-quoted environment variables
-        Arguments.of("key1: \"${HEX}\"\n", mapOf(entry("key1", "0xdeadbeef"))),
-        Arguments.of("key1: \"${STR_1}\"\n", mapOf(entry("key1", "value1"))),
-        Arguments.of("key1: \"${EMPTY_STR}\"\n", mapOf(entry("key1", ""))),
-        Arguments.of("key1: \"${BOOL}\"\n", mapOf(entry("key1", "true"))),
-        Arguments.of("key1: \"${INT}\"\n", mapOf(entry("key1", "1"))),
-        Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))),
-        Arguments.of(
-            "key1: \"${HEX} ${BOOL} ${INT}\"\n", mapOf(entry("key1", "0xdeadbeef true 1"))),
-        // Single-quoted environment variables
-        Arguments.of("key1: '${HEX}'\n", mapOf(entry("key1", "0xdeadbeef"))),
-        Arguments.of("key1: '${STR_1}'\n", mapOf(entry("key1", "value1"))),
-        Arguments.of("key1: '${EMPTY_STR}'\n", mapOf(entry("key1", ""))),
-        Arguments.of("key1: '${BOOL}'\n", mapOf(entry("key1", "true"))),
-        Arguments.of("key1: '${INT}'\n", mapOf(entry("key1", "1"))),
-        Arguments.of("key1: '${FLOAT}'\n", mapOf(entry("key1", "1.1"))),
-        Arguments.of("key1: '${HEX} ${BOOL} ${INT}'\n", mapOf(entry("key1", "0xdeadbeef true 1"))),
-        // Escaped
-        Arguments.of("key1: ${FOO}\n", mapOf(entry("key1", "BAR"))),
-        Arguments.of("key1: $${FOO}\n", mapOf(entry("key1", "${FOO}"))),
-        Arguments.of("key1: $$${FOO}\n", mapOf(entry("key1", "$BAR"))),
-        Arguments.of("key1: $$$${FOO}\n", mapOf(entry("key1", "$${FOO}"))),
-        Arguments.of("key1: a $$ b\n", mapOf(entry("key1", "a $ b"))),
-        Arguments.of("key1: $$ b\n", mapOf(entry("key1", "$ b"))),
-        Arguments.of("key1: a $$\n", mapOf(entry("key1", "a $"))),
-        Arguments.of("key1: a $ b\n", mapOf(entry("key1", "a $ b"))),
-        Arguments.of("key1: $${STR_1}\n", mapOf(entry("key1", "${STR_1}"))),
-        Arguments.of("key1: $${STR_1}$${STR_1}\n", mapOf(entry("key1", "${STR_1}${STR_1}"))),
-        Arguments.of("key1: $${STR_1}$$\n", mapOf(entry("key1", "${STR_1}$"))),
-        Arguments.of("key1: $$${STR_1}\n", mapOf(entry("key1", "$value1"))),
-        Arguments.of("key1: \"$${STR_1}\"\n", mapOf(entry("key1", "${STR_1}"))),
-        Arguments.of("key1: $${STR_1} ${STR_2}\n", mapOf(entry("key1", "${STR_1} value2"))),
-        Arguments.of("key1: $${STR_1} $${STR_2}\n", mapOf(entry("key1", "${STR_1} ${STR_2}"))),
-        Arguments.of("key1: $${NOT_SET:-value1}\n", mapOf(entry("key1", "${NOT_SET:-value1}"))),
-        Arguments.of("key1: $${STR_1:-fallback}\n", mapOf(entry("key1", "${STR_1:-fallback}"))),
-        Arguments.of("key1: $${STR_1:-${STR_1}}\n", mapOf(entry("key1", "${STR_1:-value1}"))),
-        Arguments.of("key1: ${NOT_SET:-${FALLBACK}}\n", mapOf(entry("key1", "${FALLBACK}"))),
-        Arguments.of(
-            "key1: ${NOT_SET:-$${FALLBACK}}\n", mapOf(entry("key1", "${NOT_SET:-${FALLBACK}}"))),
-        Arguments.of("key1: ${VALUE_WITH_ESCAPE}\n", mapOf(entry("key1", "value$$"))));
+        Arguments.argumentSet(
+            "var in list not substituted",
+            "key1:\n - ${STR_1}\n",
+            mapOf(entry("key1", Collections.singletonList("${STR_1}")))),
+        Arguments.argumentSet(
+            "double-quoted hex string", "key1: \"${HEX}\"\n", mapOf(entry("key1", "0xdeadbeef"))),
+        Arguments.argumentSet(
+            "double-quoted string", "key1: \"${STR_1}\"\n", mapOf(entry("key1", "value1"))),
+        Arguments.argumentSet(
+            "double-quoted empty string", "key1: \"${EMPTY_STR}\"\n", mapOf(entry("key1", ""))),
+        Arguments.argumentSet(
+            "double-quoted boolean string", "key1: \"${BOOL}\"\n", mapOf(entry("key1", "true"))),
+        Arguments.argumentSet(
+            "double-quoted integer string", "key1: \"${INT}\"\n", mapOf(entry("key1", "1"))),
+        Arguments.argumentSet(
+            "double-quoted float string", "key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))),
+        Arguments.argumentSet(
+            "double-quoted multiple vars",
+            "key1: \"${HEX} ${BOOL} ${INT}\"\n",
+            mapOf(entry("key1", "0xdeadbeef true 1"))),
+        Arguments.argumentSet(
+            "single-quoted hex string", "key1: '${HEX}'\n", mapOf(entry("key1", "0xdeadbeef"))),
+        Arguments.argumentSet(
+            "single-quoted string", "key1: '${STR_1}'\n", mapOf(entry("key1", "value1"))),
+        Arguments.argumentSet(
+            "single-quoted empty string", "key1: '${EMPTY_STR}'\n", mapOf(entry("key1", ""))),
+        Arguments.argumentSet(
+            "single-quoted boolean string", "key1: '${BOOL}'\n", mapOf(entry("key1", "true"))),
+        Arguments.argumentSet(
+            "single-quoted integer string", "key1: '${INT}'\n", mapOf(entry("key1", "1"))),
+        Arguments.argumentSet(
+            "single-quoted float string", "key1: '${FLOAT}'\n", mapOf(entry("key1", "1.1"))),
+        Arguments.argumentSet(
+            "single-quoted multiple vars",
+            "key1: '${HEX} ${BOOL} ${INT}'\n",
+            mapOf(entry("key1", "0xdeadbeef true 1"))),
+        Arguments.argumentSet("FOO var", "key1: ${FOO}\n", mapOf(entry("key1", "BAR"))),
+        Arguments.argumentSet(
+            "double-dollar escape", "key1: $${FOO}\n", mapOf(entry("key1", "${FOO}"))),
+        Arguments.argumentSet("triple-dollar", "key1: $$${FOO}\n", mapOf(entry("key1", "$BAR"))),
+        Arguments.argumentSet(
+            "quad-dollar escape", "key1: $$$${FOO}\n", mapOf(entry("key1", "$${FOO}"))),
+        Arguments.argumentSet(
+            "double-dollar in middle", "key1: a $$ b\n", mapOf(entry("key1", "a $ b"))),
+        Arguments.argumentSet("double-dollar prefix", "key1: $$ b\n", mapOf(entry("key1", "$ b"))),
+        Arguments.argumentSet("double-dollar suffix", "key1: a $$\n", mapOf(entry("key1", "a $"))),
+        Arguments.argumentSet(
+            "single dollar literal", "key1: a $ b\n", mapOf(entry("key1", "a $ b"))),
+        Arguments.argumentSet("escape var", "key1: $${STR_1}\n", mapOf(entry("key1", "${STR_1}"))),
+        Arguments.argumentSet(
+            "escape two vars",
+            "key1: $${STR_1}$${STR_1}\n",
+            mapOf(entry("key1", "${STR_1}${STR_1}"))),
+        Arguments.argumentSet(
+            "escape var with dollar", "key1: $${STR_1}$$\n", mapOf(entry("key1", "${STR_1}$"))),
+        Arguments.argumentSet(
+            "triple-dollar var", "key1: $$${STR_1}\n", mapOf(entry("key1", "$value1"))),
+        Arguments.argumentSet(
+            "double-quoted escape var", "key1: \"$${STR_1}\"\n", mapOf(entry("key1", "${STR_1}"))),
+        Arguments.argumentSet(
+            "escape var then real var",
+            "key1: $${STR_1} ${STR_2}\n",
+            mapOf(entry("key1", "${STR_1} value2"))),
+        Arguments.argumentSet(
+            "two escape vars",
+            "key1: $${STR_1} $${STR_2}\n",
+            mapOf(entry("key1", "${STR_1} ${STR_2}"))),
+        Arguments.argumentSet(
+            "escape default",
+            "key1: $${NOT_SET:-value1}\n",
+            mapOf(entry("key1", "${NOT_SET:-value1}"))),
+        Arguments.argumentSet(
+            "escape var with fallback",
+            "key1: $${STR_1:-fallback}\n",
+            mapOf(entry("key1", "${STR_1:-fallback}"))),
+        Arguments.argumentSet(
+            "escape var with nested default",
+            "key1: $${STR_1:-${STR_1}}\n",
+            mapOf(entry("key1", "${STR_1:-value1}"))),
+        Arguments.argumentSet(
+            "nested var in default",
+            "key1: ${NOT_SET:-${FALLBACK}}\n",
+            mapOf(entry("key1", "${FALLBACK}"))),
+        Arguments.argumentSet(
+            "escape in default",
+            "key1: ${NOT_SET:-$${FALLBACK}}\n",
+            mapOf(entry("key1", "${NOT_SET:-${FALLBACK}}"))),
+        Arguments.argumentSet(
+            "value with escape", "key1: ${VALUE_WITH_ESCAPE}\n", mapOf(entry("key1", "value$$"))));
   }
 
   private static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {
@@ -322,37 +387,65 @@ class DeclarativeConfigurationParseTest {
   @SuppressWarnings("unchecked")
   private static Stream<Arguments> sysPropertySubstitutionArgs() {
     return Stream.of(
-        // Simple cases with sys: prefix
-        Arguments.of("key1: ${sys:str.1}\n", mapOf(entry("key1", "value1"))),
-        Arguments.of("key1: ${sys:bool.prop}\n", mapOf(entry("key1", true))),
-        Arguments.of("key1: ${sys:int.prop}\n", mapOf(entry("key1", 1))),
-        Arguments.of("key1: ${sys:float.prop}\n", mapOf(entry("key1", 1.1))),
-        Arguments.of("key1: ${sys:hex.prop}\n", mapOf(entry("key1", 3735928559L))),
-        // Default values
-        Arguments.of("key1: ${sys:not.set:-value1}\n", mapOf(entry("key1", "value1"))),
-        Arguments.of("key1: ${sys:not.set:-true}\n", mapOf(entry("key1", true))),
-        Arguments.of("key1: ${sys:not.set:-1}\n", mapOf(entry("key1", 1))),
-        // Multiple property references
-        Arguments.of("key1: ${sys:str.1}${sys:str.2}\n", mapOf(entry("key1", "value1value2"))),
-        Arguments.of("key1: ${sys:str.1} ${sys:str.2}\n", mapOf(entry("key1", "value1 value2"))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "sys str.1 string", "key1: ${sys:str.1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.argumentSet(
+            "sys bool.prop boolean", "key1: ${sys:bool.prop}\n", mapOf(entry("key1", true))),
+        Arguments.argumentSet(
+            "sys int.prop integer", "key1: ${sys:int.prop}\n", mapOf(entry("key1", 1))),
+        Arguments.argumentSet(
+            "sys float.prop float", "key1: ${sys:float.prop}\n", mapOf(entry("key1", 1.1))),
+        Arguments.argumentSet(
+            "sys hex.prop hex", "key1: ${sys:hex.prop}\n", mapOf(entry("key1", 3735928559L))),
+        Arguments.argumentSet(
+            "sys default string", "key1: ${sys:not.set:-value1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.argumentSet(
+            "sys default boolean", "key1: ${sys:not.set:-true}\n", mapOf(entry("key1", true))),
+        Arguments.argumentSet(
+            "sys default integer", "key1: ${sys:not.set:-1}\n", mapOf(entry("key1", 1))),
+        Arguments.argumentSet(
+            "sys two props concatenated",
+            "key1: ${sys:str.1}${sys:str.2}\n",
+            mapOf(entry("key1", "value1value2"))),
+        Arguments.argumentSet(
+            "sys two props with space",
+            "key1: ${sys:str.1} ${sys:str.2}\n",
+            mapOf(entry("key1", "value1 value2"))),
+        Arguments.argumentSet(
+            "sys two props with default",
             "key1: ${sys:str.1} ${sys:not.set:-default} ${sys:str.2}\n",
             mapOf(entry("key1", "value1 default value2"))),
-        // Undefined / empty system property
-        Arguments.of("key1: ${sys:empty.str}\n", mapOf(entry("key1", null))),
-        Arguments.of("key1: ${sys:str.3}\n", mapOf(entry("key1", null))),
-        Arguments.of("key1: ${sys:str.1} ${sys:str.3}\n", mapOf(entry("key1", "value1 "))),
-        // Quoted system properties
-        Arguments.of("key1: \"${sys:hex.prop}\"\n", mapOf(entry("key1", "0xdeadbeef"))),
-        Arguments.of("key1: \"${sys:str.1}\"\n", mapOf(entry("key1", "value1"))),
-        Arguments.of("key1: '${sys:str.1}'\n", mapOf(entry("key1", "value1"))),
-        // Escaped
-        Arguments.of("key1: ${sys:foo.bar}\n", mapOf(entry("key1", "BAR"))),
-        Arguments.of("key1: $${sys:foo.bar}\n", mapOf(entry("key1", "${sys:foo.bar}"))),
-        Arguments.of("key1: $$${sys:foo.bar}\n", mapOf(entry("key1", "$BAR"))),
-        Arguments.of("key1: $$$${sys:foo.bar}\n", mapOf(entry("key1", "$${sys:foo.bar}"))),
-        // Mixed env and sys
-        Arguments.of("key1: ${sys:value.with.escape}\n", mapOf(entry("key1", "value$$"))));
+        Arguments.argumentSet(
+            "sys empty.str null", "key1: ${sys:empty.str}\n", mapOf(entry("key1", null))),
+        Arguments.argumentSet(
+            "sys undefined null", "key1: ${sys:str.3}\n", mapOf(entry("key1", null))),
+        Arguments.argumentSet(
+            "sys set and undefined",
+            "key1: ${sys:str.1} ${sys:str.3}\n",
+            mapOf(entry("key1", "value1 "))),
+        Arguments.argumentSet(
+            "sys double-quoted hex string",
+            "key1: \"${sys:hex.prop}\"\n",
+            mapOf(entry("key1", "0xdeadbeef"))),
+        Arguments.argumentSet(
+            "sys double-quoted string", "key1: \"${sys:str.1}\"\n", mapOf(entry("key1", "value1"))),
+        Arguments.argumentSet(
+            "sys single-quoted string", "key1: '${sys:str.1}'\n", mapOf(entry("key1", "value1"))),
+        Arguments.argumentSet("sys foo.bar", "key1: ${sys:foo.bar}\n", mapOf(entry("key1", "BAR"))),
+        Arguments.argumentSet(
+            "sys double-dollar escape",
+            "key1: $${sys:foo.bar}\n",
+            mapOf(entry("key1", "${sys:foo.bar}"))),
+        Arguments.argumentSet(
+            "sys triple-dollar", "key1: $$${sys:foo.bar}\n", mapOf(entry("key1", "$BAR"))),
+        Arguments.argumentSet(
+            "sys quad-dollar escape",
+            "key1: $$$${sys:foo.bar}\n",
+            mapOf(entry("key1", "$${sys:foo.bar}"))),
+        Arguments.argumentSet(
+            "sys value with escape",
+            "key1: ${sys:value.with.escape}\n",
+            mapOf(entry("key1", "value$$"))));
   }
 
   @Test

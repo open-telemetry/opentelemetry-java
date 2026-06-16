@@ -15,6 +15,7 @@ permissions: {}
 jobs:
   detect-api-changes:
     name: Detect API surface area changes
+    if: github.repository == 'open-telemetry/opentelemetry-java'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
