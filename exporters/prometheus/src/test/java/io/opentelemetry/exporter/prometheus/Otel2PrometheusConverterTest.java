@@ -396,6 +396,66 @@ class Otel2PrometheusConverterTest {
         Arguments.argumentSet("no translation", TranslationStrategy.NO_TRANSLATION));
   }
 
+  @Test
+  void convertReturnsEmptySnapshotsForNullOrEmptyInput() {
+    assertThat(converter.convert(null)).isEmpty();
+    assertThat(converter.convert(Collections.emptyList())).isEmpty();
+  }
+
+  @Test
+  void convertDoesNotAddTargetInfoWhenAllMetricsAreDropped() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData(
+                    "sample",
+                    "1",
+                    MetricDataType.LONG_SUM,
+                    Attributes.of(stringKey("ようこそ"), "value"),
+                    Resource.empty())));
+
+    assertThat(snapshots).isEmpty();
+  }
+
+  @ParameterizedTest
+  @MethodSource("deltaMetricDataArgs")
+  void convertDropsDeltaMetrics(MetricData metricData) {
+    assertThat(converter.convert(Collections.singletonList(metricData))).isEmpty();
+  }
+
+  private static Stream<Arguments> deltaMetricDataArgs() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "delta long sum", createDeltaMetricData("sample", "1", MetricDataType.LONG_SUM)),
+        Arguments.argumentSet(
+            "delta double sum", createDeltaMetricData("sample", "1", MetricDataType.DOUBLE_SUM)),
+        Arguments.argumentSet(
+            "delta histogram", createDeltaMetricData("sample", "1", MetricDataType.HISTOGRAM)),
+        Arguments.argumentSet(
+            "delta exponential histogram",
+            createDeltaMetricData("sample", "1", MetricDataType.EXPONENTIAL_HISTOGRAM)));
+  }
+
+  @Test
+  void nonMonotonicDoubleSumConvertsToGauge() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createMetricDataWithTemporality(
+                    "sample",
+                    "1",
+                    MetricDataType.DOUBLE_SUM,
+                    null,
+                    null,
+                    /* cumulative= */ true,
+                    /* monotonic= */ false)));
+
+    assertThat(snapshots).hasSize(2);
+    assertThat(snapshots.stream().map(snapshot -> snapshot.getMetadata().getName()))
+        .contains("sample", "target")
+        .doesNotContain("sample_total");
+  }
+
   private static Labels convertAttributeLabels(
       String labelName, TranslationStrategy translationStrategy) {
     Otel2PrometheusConverter converter =
@@ -619,8 +679,40 @@ class Otel2PrometheusConverterTest {
       MetricDataType metricDataType,
       @Nullable Attributes attributes,
       @Nullable Resource resource) {
+    return createMetricDataWithTemporality(
+        metricName,
+        metricUnit,
+        metricDataType,
+        attributes,
+        resource,
+        /* cumulative= */ true,
+        /* monotonic= */ true);
+  }
+
+  private static MetricData createDeltaMetricData(
+      String metricName, String metricUnit, MetricDataType metricDataType) {
+    return createMetricDataWithTemporality(
+        metricName,
+        metricUnit,
+        metricDataType,
+        null,
+        null,
+        /* cumulative= */ false,
+        /* monotonic= */ true);
+  }
+
+  private static MetricData createMetricDataWithTemporality(
+      String metricName,
+      String metricUnit,
+      MetricDataType metricDataType,
+      @Nullable Attributes attributes,
+      @Nullable Resource resource,
+      boolean cumulative,
+      boolean monotonic) {
     Attributes attributesToUse = attributes == null ? Attributes.empty() : attributes;
     Resource resourceToUse = resource == null ? Resource.getDefault() : resource;
+    AggregationTemporality aggregationTemporality =
+        cumulative ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA;
 
     InstrumentationScopeInfo scope =
         InstrumentationScopeInfo.builder("scope")
@@ -648,8 +740,8 @@ class Otel2PrometheusConverterTest {
             "description",
             metricUnit,
             ImmutableSumData.create(
-                true,
-                AggregationTemporality.CUMULATIVE,
+                monotonic,
+                aggregationTemporality,
                 Collections.singletonList(
                     ImmutableLongPointData.create(0, 1, attributesToUse, 1L))));
       case DOUBLE_SUM:
@@ -660,8 +752,8 @@ class Otel2PrometheusConverterTest {
             "description",
             metricUnit,
             ImmutableSumData.create(
-                true,
-                AggregationTemporality.CUMULATIVE,
+                monotonic,
+                aggregationTemporality,
                 Collections.singletonList(
                     ImmutableDoublePointData.create(0, 1, attributesToUse, 1.0))));
       case LONG_GAUGE:
@@ -692,7 +784,7 @@ class Otel2PrometheusConverterTest {
             "description",
             metricUnit,
             ImmutableHistogramData.create(
-                AggregationTemporality.CUMULATIVE,
+                aggregationTemporality,
                 Collections.singletonList(
                     ImmutableHistogramPointData.create(
                         0,
@@ -713,7 +805,7 @@ class Otel2PrometheusConverterTest {
             "description",
             metricUnit,
             ImmutableExponentialHistogramData.create(
-                AggregationTemporality.CUMULATIVE,
+                aggregationTemporality,
                 Collections.singletonList(
                     ImmutableExponentialHistogramPointData.create(
                         0,

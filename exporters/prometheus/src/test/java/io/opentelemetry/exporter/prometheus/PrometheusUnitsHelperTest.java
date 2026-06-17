@@ -41,11 +41,16 @@ class PrometheusUnitsHelperTest {
   private static Stream<Arguments> reservedSuffixUnitArgs() {
     return Stream.of(
         Arguments.argumentSet("reserved suffix only", "total", null),
+        Arguments.argumentSet("reserved created suffix only", "created", null),
+        Arguments.argumentSet("reserved bucket suffix only", "bucket", null),
+        Arguments.argumentSet("reserved info suffix only", "info", null),
         Arguments.argumentSet("reserved suffix stripped", "widgets_total", "widgets"),
         Arguments.argumentSet(
             "repeated reserved suffixes stripped", "widgets_total_info", "widgets"),
         Arguments.argumentSet(
-            "leading and trailing punctuation trimmed", "._widgets_.", "widgets"));
+            "trailing punctuation removed after suffix stripping", "widgets_total_", "widgets"),
+        Arguments.argumentSet("leading and trailing punctuation trimmed", "._widgets_.", "widgets"),
+        Arguments.argumentSet("only punctuation becomes null", "._", null));
   }
 
   private static Stream<Arguments> providePrometheusOTelUnitEquivalentPairs() {
