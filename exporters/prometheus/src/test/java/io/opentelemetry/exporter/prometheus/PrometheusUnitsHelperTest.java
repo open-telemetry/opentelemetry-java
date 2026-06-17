@@ -27,6 +27,27 @@ class PrometheusUnitsHelperTest {
     }
   }
 
+  @ParameterizedTest
+  @MethodSource("reservedSuffixUnitArgs")
+  void convertUnit_reservedSuffixHandling(String otlpUnit, String expectedPrometheusUnit) {
+    Unit actualPrometheusUnit = PrometheusUnitsHelper.convertUnit(otlpUnit);
+    if (expectedPrometheusUnit == null) {
+      assertNull(actualPrometheusUnit);
+    } else {
+      assertEquals(expectedPrometheusUnit, actualPrometheusUnit.toString());
+    }
+  }
+
+  private static Stream<Arguments> reservedSuffixUnitArgs() {
+    return Stream.of(
+        Arguments.argumentSet("reserved suffix only", "total", null),
+        Arguments.argumentSet("reserved suffix stripped", "widgets_total", "widgets"),
+        Arguments.argumentSet(
+            "repeated reserved suffixes stripped", "widgets_total_info", "widgets"),
+        Arguments.argumentSet(
+            "leading and trailing punctuation trimmed", "._widgets_.", "widgets"));
+  }
+
   private static Stream<Arguments> providePrometheusOTelUnitEquivalentPairs() {
     return Stream.of(
         Arguments.argumentSet("bytes", "By", "bytes"),

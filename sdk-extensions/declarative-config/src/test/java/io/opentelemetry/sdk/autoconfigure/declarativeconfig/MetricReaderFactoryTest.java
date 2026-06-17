@@ -19,6 +19,7 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.TranslationStrategy;
+import io.opentelemetry.exporter.prometheus.internal.PrometheusComponentProvider;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalPrometheusMetricExporterModel;
@@ -38,7 +39,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -220,6 +223,29 @@ class MetricReaderFactoryTest {
   }
 
   @Test
+  void create_PullPrometheusProviderSupportsAdditionalTranslationStrategies() throws IOException {
+    assertPrometheusComponentProviderTranslationStrategy(
+        "no_utf8_escaping_with_suffixes/development",
+        TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES);
+    assertPrometheusComponentProviderTranslationStrategy(
+        "no_translation/development", TranslationStrategy.NO_TRANSLATION);
+  }
+
+  @Test
+  void create_PullPrometheusProviderRejectsInvalidTranslationStrategy() {
+    Map<String, Object> config = new LinkedHashMap<>();
+    config.put("host", "localhost");
+    config.put("translation_strategy", "not-a-strategy");
+
+    assertThatThrownBy(
+            () ->
+                new PrometheusComponentProvider()
+                    .create(DeclarativeConfiguration.toConfigProperties(config)))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage("Unsupported translation_strategy: not-a-strategy");
+  }
+
+  @Test
   void create_InvalidPullReader() {
     assertThatThrownBy(
             () ->
@@ -239,6 +265,31 @@ class MetricReaderFactoryTest {
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("metric reader must have exactly one entry but has 0");
+  }
+
+  private void assertPrometheusComponentProviderTranslationStrategy(
+      String configValue, TranslationStrategy expectedStrategy) throws IOException {
+    int port = randomAvailablePort();
+
+    PrometheusHttpServer expectedReader =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(port)
+            .setTranslationStrategy(expectedStrategy)
+            .build();
+    expectedReader.close();
+
+    Map<String, Object> config = new LinkedHashMap<>();
+    config.put("host", "localhost");
+    config.put("port", port);
+    config.put("translation_strategy", configValue);
+
+    MetricReader reader =
+        new PrometheusComponentProvider()
+            .create(DeclarativeConfiguration.toConfigProperties(config));
+    cleanup.addCloseable(reader);
+
+    assertThat(reader.toString()).isEqualTo(expectedReader.toString());
   }
 
   /**
