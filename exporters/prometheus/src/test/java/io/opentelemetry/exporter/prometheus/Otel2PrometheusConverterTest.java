@@ -362,6 +362,22 @@ class Otel2PrometheusConverterTest {
     assertThat(snapshots).isEmpty();
   }
 
+  @Test
+  void metricNameTranslation_legacyDropsMetricWithEmptyName() {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(createSampleMetricData("", "1", MetricDataType.LONG_SUM)));
+
+    assertThat(snapshots).isEmpty();
+  }
+
   @ParameterizedTest
   @MethodSource("nonEscapingTranslationStrategyArgs")
   void labelNameTranslation_nonEscapingStrategiesPreserveLabels(

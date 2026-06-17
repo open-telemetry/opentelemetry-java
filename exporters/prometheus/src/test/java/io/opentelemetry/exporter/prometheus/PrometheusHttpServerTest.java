@@ -390,6 +390,12 @@ class PrometheusHttpServerTest {
             TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             "application/openmetrics-text; version=1.0.0; escaping=allow-utf-8",
             "metric_name_total{otel_scope_name=\"scope\"} 1.0",
+            "{\"metric.name\",otel_scope_name=\"scope\"} 1.0"),
+        Arguments.argumentSet(
+            "underscore escaping without suffixes + allow-utf-8 accept",
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
+            "application/openmetrics-text; version=1.0.0; escaping=allow-utf-8",
+            "metric_name{otel_scope_name=\"scope\"} 1.0",
             "{\"metric.name\",otel_scope_name=\"scope\"} 1.0"));
   }
 

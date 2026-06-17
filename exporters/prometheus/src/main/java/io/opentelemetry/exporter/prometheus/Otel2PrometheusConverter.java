@@ -681,7 +681,7 @@ final class Otel2PrometheusConverter {
 
   private static String convertLegacyMetricName(String name) {
     if (name.isEmpty()) {
-      return name;
+      throw new IllegalArgumentException("metric name is empty");
     }
 
     StringBuilder result = new StringBuilder(name.length());
