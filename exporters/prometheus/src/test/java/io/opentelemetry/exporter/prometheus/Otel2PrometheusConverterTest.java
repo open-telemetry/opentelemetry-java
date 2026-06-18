@@ -16,6 +16,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
@@ -25,6 +26,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
@@ -47,13 +49,18 @@ import io.prometheus.metrics.model.snapshots.CounterSnapshot;
 import io.prometheus.metrics.model.snapshots.GaugeSnapshot;
 import io.prometheus.metrics.model.snapshots.GaugeSnapshot.GaugeDataPointSnapshot;
 import io.prometheus.metrics.model.snapshots.HistogramSnapshot;
+import io.prometheus.metrics.model.snapshots.InfoSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
 import io.prometheus.metrics.model.snapshots.MetricMetadata;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
+import io.prometheus.metrics.model.snapshots.NativeHistogramBuckets;
 import io.prometheus.metrics.model.snapshots.SummarySnapshot;
+import io.prometheus.metrics.model.snapshots.Unit;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1051,6 +1058,95 @@ class Otel2PrometheusConverterTest {
     assertThat(predicateCalledCount.get()).isEqualTo(2);
   }
 
+  @Test
+  void mergeInfoSnapshotsWithSameName() throws Exception {
+    InfoSnapshot merged =
+        (InfoSnapshot)
+            invokePrivateStatic(
+                "merge",
+                new Class<?>[] {MetricSnapshot.class, MetricSnapshot.class},
+                makeInfoSnapshot("a"),
+                makeInfoSnapshot("b"));
+
+    assertThat(merged.getDataPoints()).hasSize(2);
+  }
+
+  @Test
+  void mergeConflictingTypesReturnsNull() throws Exception {
+    Object merged =
+        invokePrivateStatic(
+            "merge",
+            new Class<?>[] {MetricSnapshot.class, MetricSnapshot.class},
+            makeInfoSnapshot("a"),
+            new GaugeSnapshot(
+                MetricMetadata.builder().name("target").build(),
+                Collections.singletonList(new GaugeDataPointSnapshot(1.0, Labels.EMPTY, null))));
+
+    assertThat(merged).isNull();
+  }
+
+  @Test
+  void mergeMetadataReturnsNullForDifferentUnits() throws Exception {
+    Object merged =
+        invokePrivateStatic(
+            "mergeMetadata",
+            new Class<?>[] {MetricMetadata.class, MetricMetadata.class},
+            MetricMetadata.builder().name("sample").unit(new Unit("seconds")).build(),
+            MetricMetadata.builder().name("sample").unit(new Unit("milliseconds")).build());
+
+    assertThat(merged).isNull();
+  }
+
+  @Test
+  void convertLegacyLabelNameRejectsEmptyName() {
+    assertThatThrownBy(
+            () -> invokePrivateStatic("convertLegacyLabelName", new Class<?>[] {String.class}, ""))
+        .hasCauseInstanceOf(IllegalArgumentException.class)
+        .hasRootCauseMessage("label name is empty");
+  }
+
+  @Test
+  void stripReservedMetricSuffixesHandlesReservedNameOnly() throws Exception {
+    assertThat(
+            invokePrivateStatic(
+                "stripReservedMetricSuffixes", new Class<?>[] {String.class}, "_total"))
+        .isEqualTo("total");
+  }
+
+  @Test
+  void validateNormalizedMetricNameRejectsEmptyName() {
+    assertThatThrownBy(
+            () ->
+                invokePrivateStatic(
+                    "validateNormalizedMetricName",
+                    new Class<?>[] {String.class, String.class},
+                    "orig",
+                    ""))
+        .hasCauseInstanceOf(IllegalArgumentException.class)
+        .hasRootCauseMessage("normalization for metric \"orig\" resulted in empty name");
+  }
+
+  @Test
+  void convertExponentialHistogramBucketsReturnsEmptyForNoBuckets() throws Exception {
+    NativeHistogramBuckets buckets =
+        (NativeHistogramBuckets)
+            invokePrivateStatic(
+                "convertExponentialHistogramBuckets",
+                new Class<?>[] {ExponentialHistogramBuckets.class, int.class},
+                ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
+                0);
+
+    assertThat(buckets).isSameAs(NativeHistogramBuckets.EMPTY);
+  }
+
+  @Test
+  void typeStringUsesLowerCaseClassName() throws Exception {
+    assertThat(
+            invokePrivateStatic(
+                "typeString", new Class<?>[] {MetricSnapshot.class}, makeInfoSnapshot("a")))
+        .isEqualTo("info");
+  }
+
   @ParameterizedTest
   @MethodSource("exemplarLabelLimitArgs")
   void exemplarLabelLimit(
@@ -1127,5 +1223,24 @@ class Otel2PrometheusConverterTest {
             Attributes.of(stringKey("short_attr"), "val"),
             new String[] {"short_attr"},
             new String[] {}));
+  }
+
+  private static InfoSnapshot makeInfoSnapshot(String id) {
+    return new InfoSnapshot(
+        MetricMetadata.builder().name("target").build(),
+        Collections.singletonList(
+            new InfoSnapshot.InfoDataPointSnapshot(
+                Labels.of(new String[] {"id"}, new String[] {id}))));
+  }
+
+  private static Object invokePrivateStatic(
+      String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
+    Method method = Otel2PrometheusConverter.class.getDeclaredMethod(methodName, parameterTypes);
+    method.setAccessible(true);
+    try {
+      return method.invoke(null, args);
+    } catch (InvocationTargetException e) {
+      throw e;
+    }
   }
 }
