@@ -40,14 +40,18 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
+import io.prometheus.metrics.model.snapshots.GaugeSnapshot;
 import io.prometheus.metrics.model.snapshots.GaugeSnapshot.GaugeDataPointSnapshot;
+import io.prometheus.metrics.model.snapshots.HistogramSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
 import io.prometheus.metrics.model.snapshots.MetricMetadata;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
+import io.prometheus.metrics.model.snapshots.SummarySnapshot;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -456,6 +460,101 @@ class Otel2PrometheusConverterTest {
         .doesNotContain("sample_total");
   }
 
+  @Test
+  void convertDropsExponentialHistogramWithUnsupportedScale() {
+    MetricData metricData = createExponentialHistogramMetricData(-5);
+
+    assertThat(converter.convert(Collections.singletonList(metricData))).isEmpty();
+  }
+
+  @Test
+  void summaryExportsConfiguredQuantiles() {
+    MetricData metricData = createSummaryMetricDataWithQuantiles("summary");
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    SummarySnapshot snapshot =
+        (SummarySnapshot)
+            snapshots.stream()
+                .filter(SummarySnapshot.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+    assertThat(snapshot.getDataPoints().get(0).getQuantiles()).hasSize(2);
+  }
+
+  @Test
+  void mergeSummaryMetricsWithSameName() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Arrays.asList(
+                createSummaryMetricDataWithQuantiles(
+                    "summary", Attributes.of(stringKey("id"), "a")),
+                createSummaryMetricDataWithQuantiles(
+                    "summary", Attributes.of(stringKey("id"), "b"))));
+
+    SummarySnapshot snapshot =
+        (SummarySnapshot)
+            snapshots.stream()
+                .filter(SummarySnapshot.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+    assertThat(snapshot.getDataPoints()).hasSize(2);
+  }
+
+  @Test
+  void mergeHistogramMetricsWithSameName() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Arrays.asList(
+                createSampleMetricData(
+                    "histogram",
+                    "1",
+                    MetricDataType.HISTOGRAM,
+                    Attributes.of(stringKey("id"), "a"),
+                    null),
+                createSampleMetricData(
+                    "histogram",
+                    "1",
+                    MetricDataType.HISTOGRAM,
+                    Attributes.of(stringKey("id"), "b"),
+                    null)));
+
+    HistogramSnapshot snapshot =
+        (HistogramSnapshot)
+            snapshots.stream()
+                .filter(HistogramSnapshot.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+    assertThat(snapshot.getDataPoints()).hasSize(2);
+  }
+
+  @Test
+  void mergeGaugeMetricsWithSameName() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Arrays.asList(
+                createSampleMetricData(
+                    "gauge",
+                    "1",
+                    MetricDataType.LONG_GAUGE,
+                    Attributes.of(stringKey("id"), "a"),
+                    null),
+                createSampleMetricData(
+                    "gauge",
+                    "1",
+                    MetricDataType.LONG_GAUGE,
+                    Attributes.of(stringKey("id"), "b"),
+                    null)));
+
+    GaugeSnapshot snapshot =
+        (GaugeSnapshot)
+            snapshots.stream()
+                .filter(GaugeSnapshot.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+    assertThat(snapshot.getDataPoints()).hasSize(2);
+  }
+
   private static Labels convertAttributeLabels(
       String labelName, TranslationStrategy translationStrategy) {
     Otel2PrometheusConverter converter =
@@ -699,6 +798,69 @@ class Otel2PrometheusConverterTest {
         null,
         /* cumulative= */ false,
         /* monotonic= */ true);
+  }
+
+  private static MetricData createSummaryMetricDataWithQuantiles(String metricName) {
+    return createSummaryMetricDataWithQuantiles(metricName, Attributes.empty());
+  }
+
+  private static MetricData createSummaryMetricDataWithQuantiles(
+      String metricName, Attributes attributes) {
+    InstrumentationScopeInfo scope =
+        InstrumentationScopeInfo.builder("scope")
+            .setVersion("version")
+            .setSchemaUrl("schemaUrl")
+            .setAttributes(Attributes.of(stringKey("foo"), "bar"))
+            .build();
+    return ImmutableMetricData.createDoubleSummary(
+        Resource.getDefault(),
+        scope,
+        metricName,
+        "description",
+        "1",
+        ImmutableSummaryData.create(
+            Collections.singletonList(
+                ImmutableSummaryPointData.create(
+                    0,
+                    1,
+                    attributes,
+                    2,
+                    3,
+                    Arrays.asList(
+                        ImmutableValueAtQuantile.create(0.5, 1.5),
+                        ImmutableValueAtQuantile.create(0.9, 2.5))))));
+  }
+
+  private static MetricData createExponentialHistogramMetricData(int scale) {
+    InstrumentationScopeInfo scope =
+        InstrumentationScopeInfo.builder("scope")
+            .setVersion("version")
+            .setSchemaUrl("schemaUrl")
+            .setAttributes(Attributes.of(stringKey("foo"), "bar"))
+            .build();
+    return ImmutableMetricData.createExponentialHistogram(
+        Resource.getDefault(),
+        scope,
+        "histogram",
+        "description",
+        "1",
+        ImmutableExponentialHistogramData.create(
+            AggregationTemporality.CUMULATIVE,
+            Collections.singletonList(
+                ImmutableExponentialHistogramPointData.create(
+                    0,
+                    1,
+                    scale,
+                    false,
+                    1,
+                    false,
+                    1,
+                    ImmutableExponentialHistogramBuckets.create(2, 5, Arrays.asList(1L, 2L)),
+                    ImmutableExponentialHistogramBuckets.create(2, 5, Arrays.asList(1L, 2L)),
+                    0,
+                    10,
+                    Attributes.empty(),
+                    Collections.emptyList()))));
   }
 
   private static MetricData createMetricDataWithTemporality(
