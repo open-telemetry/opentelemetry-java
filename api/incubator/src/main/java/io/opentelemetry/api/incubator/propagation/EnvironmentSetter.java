@@ -69,8 +69,8 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
 
   /**
    * Determine if a key is a valid normalized environment variable name. Returns {@code true} if
-    * {@code key} is non-empty, contains only uppercase ASCII letters, digits, and underscores, and
-    * does not start with a digit.
+   * {@code key} is non-empty, contains only uppercase ASCII letters, digits, and underscores, and
+   * does not start with a digit.
    */
   static boolean isNormalizedKey(String key) {
     if (key.isEmpty()) {

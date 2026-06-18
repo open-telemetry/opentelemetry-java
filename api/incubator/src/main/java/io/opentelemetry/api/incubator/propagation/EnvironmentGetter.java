@@ -32,8 +32,7 @@ import javax.annotation.Nullable;
  *
  * <ul>
  *   <li>Replaces an empty key with a single underscore ({@code _})
- *   <li>Converts ASCII letters to uppercase (e.g., {@code traceparent} becomes {@code
- *       TRACEPARENT})
+ *   <li>Converts ASCII letters to uppercase (e.g., {@code traceparent} becomes {@code TRACEPARENT})
  *   <li>Replaces every character that is not an ASCII letter, digit, or underscore with an
  *       underscore
  *   <li>Prepends an underscore if the result would otherwise start with an ASCII digit
