@@ -458,6 +458,23 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extract_baggageOnly_capitalizedHeaders() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    // Some TextMapGetters return header keys in their original case (e.g. undertow 1.7), so baggage
+    // matching must be case insensitive.
+    carrier.put("Uberctx-some-key", "value");
+    carrier.put("Jaeger-Baggage", "nometa=nometa-value,meta=meta-value");
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            Baggage.builder()
+                .put("some-key", "value")
+                .put("nometa", "nometa-value")
+                .put("meta", "meta-value")
+                .build());
+  }
+
+  @Test
   void extract_nullContext() {
     assertThat(jaegerPropagator.extract(null, Collections.emptyMap(), getter))
         .isSameAs(Context.root());

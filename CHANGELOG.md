@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### API
+
+#### Extensions
+
+* Trace propagators: Match Jaeger baggage header keys case insensitively
+
 ## Version 1.63.0 (2026-06-05)
 
 ### API
