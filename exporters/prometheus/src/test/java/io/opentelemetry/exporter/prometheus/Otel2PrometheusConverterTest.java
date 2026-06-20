@@ -681,7 +681,54 @@ class Otel2PrometheusConverterTest {
             "my_metric_units",
             "cluster=\"mycluster\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
+    // Array-valued resource attribute is serialized as a JSON string, matching the point attribute
+    // path
+    arguments.add(
+        Arguments.argumentSet(
+            "array-valued resource attribute serialized as json",
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.empty(),
+                Resource.create(
+                    Attributes.of(stringArrayKey("clusters"), Arrays.asList("a", "b")))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
+            "my_metric_units",
+            "clusters=\"[\\\"a\\\",\\\"b\\\"]\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
     return arguments.stream();
+  }
+
+  @Test
+  void arrayValuedScopeAttributeSerializedAsJson() {
+    // Array-valued scope attribute is serialized as a JSON string, matching the point attribute
+    // path
+    InstrumentationScopeInfo scope =
+        InstrumentationScopeInfo.builder("scope")
+            .setAttributes(Attributes.of(stringArrayKey("foo"), Arrays.asList("a", "b")))
+            .build();
+    MetricData metricData =
+        ImmutableMetricData.createLongSum(
+            Resource.getDefault(),
+            scope,
+            "sample",
+            "description",
+            "1",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableLongPointData.create(0, 1, Attributes.empty(), 1L))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    Optional<MetricSnapshot> metricSnapshot =
+        snapshots.stream().filter(snapshot -> snapshot instanceof CounterSnapshot).findFirst();
+    assertThat(metricSnapshot).isPresent();
+
+    Labels labels = metricSnapshot.get().getDataPoints().get(0).getLabels();
+    assertThat(labels.get("otel_scope_foo")).isEqualTo("[\"a\",\"b\"]");
   }
 
   @Test

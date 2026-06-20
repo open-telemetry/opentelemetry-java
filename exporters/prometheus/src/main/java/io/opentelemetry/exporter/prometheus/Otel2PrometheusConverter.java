@@ -561,7 +561,8 @@ final class Otel2PrometheusConverter {
           .forEach(
               (key, value) ->
                   labelNameToValue.putIfAbsent(
-                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(), value.toString()));
+                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(),
+                      toLabelValue(key.getType(), value)));
     }
 
     if (resource != null) {
@@ -570,7 +571,8 @@ final class Otel2PrometheusConverter {
         Object attributeValue = resourceAttributes.get(attributeKey);
         if (attributeValue != null) {
           labelNameToValue.putIfAbsent(
-              convertLabelName(attributeKey.getKey()), attributeValue.toString());
+              convertLabelName(attributeKey.getKey()),
+              toLabelValue(attributeKey.getType(), attributeValue));
         }
       }
     }

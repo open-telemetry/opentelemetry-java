@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### SDK
+
+#### Exporters
+
+* Prometheus: Fix serialization of array-valued scope and resource attributes to JSON strings
+  ([#XXXX](https://github.com/open-telemetry/opentelemetry-java/pull/XXXX))
+
 ## Version 1.63.0 (2026-06-05)
 
 ### API
