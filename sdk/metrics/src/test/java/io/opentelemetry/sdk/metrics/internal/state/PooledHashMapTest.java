@@ -73,4 +73,24 @@ class PooledHashMapTest {
 
     assertThat(actualMap).containsOnlyKeys("One", "Two").containsValues(1, 2);
   }
+
+  @Test
+  void forEachAllowsRemovalOfCurrentEntry() {
+    // 1 and 17 land in the same bucket, like collection removing a stale series mid-iteration.
+    PooledHashMap<Integer, Integer> collidingMap = new PooledHashMap<>();
+    collidingMap.put(1, 1);
+    collidingMap.put(17, 17);
+
+    Map<Integer, Integer> visited = new HashMap<>();
+    collidingMap.forEach(
+        (key, value) -> {
+          visited.put(key, value);
+          if (visited.size() == 1) {
+            collidingMap.remove(key); // drop the first one we see
+          }
+        });
+
+    assertThat(visited).containsOnlyKeys(1, 17).containsValues(1, 17);
+    assertThat(collidingMap.size()).isEqualTo(1);
+  }
 }

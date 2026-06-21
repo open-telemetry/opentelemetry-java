@@ -39,6 +39,9 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -411,6 +414,41 @@ class AsynchronousMetricStorageTest {
                                 .hasStartEpochNanos(collectTime2)
                                 .hasAttributes(attrB)
                                 .hasValue(7)));
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void collect_CumulativeRetainsLiveSeriesWhenStaleSeriesAreRemoved(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    // Enough series to share buckets, but under the cardinality limit so there's no overflow series.
+    int seriesCount = 20;
+
+    // First collection reports everything.
+    testClock.advance(Duration.ofSeconds(10));
+    for (int i = 0; i < seriesCount; i++) {
+      longCounterStorage.record(Attributes.builder().put("key", "v" + i).build(), 1);
+    }
+    longCounterStorage.collect(resource, scope, testClock.now());
+    registeredReader.setLastCollectEpochNanos(testClock.now());
+
+    // Next time only the even series report; the odd ones go stale and get removed while iterating.
+    // None of the live series should be skipped.
+    testClock.advance(Duration.ofSeconds(10));
+    Set<Attributes> expected = new LinkedHashSet<>();
+    for (int i = 0; i < seriesCount; i += 2) {
+      Attributes attributes = Attributes.builder().put("key", "v" + i).build();
+      longCounterStorage.record(attributes, 2);
+      expected.add(attributes);
+    }
+
+    MetricData metricData = longCounterStorage.collect(resource, scope, testClock.now());
+    Set<Attributes> collected =
+        metricData.getLongSumData().getPoints().stream()
+            .map(PointData::getAttributes)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+    assertThat(collected).isEqualTo(expected);
   }
 
   @ParameterizedTest
