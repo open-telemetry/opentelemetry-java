@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Shims
+
+* OpenCensus: Preserve status description when converting a span status to OpenTelemetry
+
 ## Version 1.63.0 (2026-06-05)
 
 ### API
