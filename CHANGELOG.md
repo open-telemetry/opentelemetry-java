@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### SDK
+
+#### Testing
+
+* Fix `LongExemplarAssert.hasFilteredAttributesSatisfyingExactly` to reject extra filtered
+  attributes, matching `DoubleExemplarAssert`
+  ([#8518](https://github.com/open-telemetry/opentelemetry-java/pull/8518))
+
 ## Version 1.63.0 (2026-06-05)
 
 ### API

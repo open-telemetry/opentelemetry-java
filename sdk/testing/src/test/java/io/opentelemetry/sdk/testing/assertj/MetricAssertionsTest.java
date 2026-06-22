@@ -962,6 +962,26 @@ class MetricAssertionsTest {
                                                     LENGTH,
                                                     val -> val.isCloseTo(1, offset(0.3))))))))
         .isInstanceOf(AssertionError.class);
+    // hasFilteredAttributesSatisfyingExactly must reject extra filtered attributes. The exemplar
+    // has nine filtered attributes but only one is asserted, so the exact assertion must fail.
+    assertThatThrownBy(
+            () ->
+                assertThat(LONG_GAUGE_METRIC)
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(Long.MAX_VALUE)
+                                        .hasExemplarsSatisfying(
+                                            exemplar -> exemplar.hasValue(2),
+                                            exemplar ->
+                                                exemplar
+                                                    .hasValue(1)
+                                                    .hasFilteredAttributesSatisfyingExactly(
+                                                        equalTo(BEAR, "mya"))),
+                                point -> point.hasValue(1))))
+        .isInstanceOf(AssertionError.class);
   }
 
   @Test
