@@ -45,9 +45,12 @@ class IdGeneratorFactoryTest {
 
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
-        Arguments.of(
-            new IdGeneratorModel().withRandom(new RandomIdGeneratorModel()), IdGenerator.random()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "random id generator",
+            new IdGeneratorModel().withRandom(new RandomIdGeneratorModel()),
+            IdGenerator.random()),
+        Arguments.argumentSet(
+            "SPI id generator",
             new IdGeneratorModel().withAdditionalProperty("test", new IdGeneratorPropertyModel()),
             IdGeneratorComponentProvider.TestIdGenerator.create()));
   }
@@ -62,7 +65,8 @@ class IdGeneratorFactoryTest {
 
   private static Stream<Arguments> createInvalidTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "unknown SPI id generator",
             new IdGeneratorModel()
                 .withAdditionalProperty(
                     "unknown_key",
