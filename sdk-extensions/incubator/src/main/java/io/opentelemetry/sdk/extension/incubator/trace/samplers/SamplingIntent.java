@@ -33,7 +33,7 @@ public interface SamplingIntent {
    * (reciprocal of sampling probability, used by Span-to-Metrics estimation) reliably, because a
    * non-consistent-probability sampling decision might have affected the threshold value.
    *
-   * @return true iff the threshold can be reliably used for adjusted count calculation
+   * @return true if and only if the threshold can be reliably used for adjusted count calculation
    */
   boolean isAdjustedCountReliable();
 
