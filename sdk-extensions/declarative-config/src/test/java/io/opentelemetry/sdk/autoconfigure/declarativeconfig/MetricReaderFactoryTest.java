@@ -18,6 +18,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
+import io.opentelemetry.exporter.prometheus.TranslationStrategy;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalPrometheusMetricExporterModel;
@@ -36,6 +37,9 @@ import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -92,56 +96,52 @@ class MetricReaderFactoryTest {
    * since there's no prometheus there blocking the well-known port.
    */
   static Stream<Arguments> createTestCases() throws IOException {
-    int prometheusDefaultPort = randomAvailablePort();
-    PrometheusHttpServer prometheusDefaultExpected =
-        PrometheusHttpServer.builder().setPort(prometheusDefaultPort).build();
-    // Close immediately to release the port before MetricReaderFactory creates a server on it
-    prometheusDefaultExpected.close();
-
-    int prometheusConfiguredPort = randomAvailablePort();
-    PrometheusHttpServer prometheusConfiguredExpected =
-        PrometheusHttpServer.builder()
-            .setHost("localhost")
-            .setPort(prometheusConfiguredPort)
-            .setAllowedResourceAttributesFilter(
-                IncludeExcludePredicate.createPatternMatching(
-                    singletonList("foo"), singletonList("bar")))
-            .build();
-    // Close immediately to release the port before MetricReaderFactory creates a server on it
-    prometheusConfiguredExpected.close();
-
-    return Stream.of(
-        Arguments.of(
-            new MetricReaderModel()
-                .withPeriodic(
-                    new PeriodicMetricReaderModel()
-                        .withExporter(
-                            new PushMetricExporterModel()
-                                .withOtlpHttp(new OtlpHttpMetricExporterModel()))),
-            PeriodicMetricReader.builder(
-                    OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
-                .build(),
-            null,
-            false),
-        Arguments.of(
-            new MetricReaderModel()
-                .withPeriodic(
-                    new PeriodicMetricReaderModel()
-                        .withExporter(
-                            new PushMetricExporterModel()
-                                .withOtlpHttp(new OtlpHttpMetricExporterModel()))
-                        .withInterval(1)
-                        .withCardinalityLimits(new CardinalityLimitsModel().withDefault(100))
-                        .withMaxExportBatchSizeDevelopment(200)),
-            SdkMeterProviderUtil.setMaxExportBatchSize(
+    List<Arguments> testCases =
+        new ArrayList<>(
+            Arrays.asList(
+                Arguments.argumentSet(
+                    "periodic defaults",
+                    new MetricReaderModel()
+                        .withPeriodic(
+                            new PeriodicMetricReaderModel()
+                                .withExporter(
+                                    new PushMetricExporterModel()
+                                        .withOtlpHttp(new OtlpHttpMetricExporterModel()))),
                     PeriodicMetricReader.builder(
                             OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
-                        .setInterval(Duration.ofMillis(1)),
-                    200)
-                .build(),
-            100,
-            false),
-        Arguments.of(
+                        .build(),
+                    null,
+                    false),
+                Arguments.argumentSet(
+                    "periodic configured",
+                    new MetricReaderModel()
+                        .withPeriodic(
+                            new PeriodicMetricReaderModel()
+                                .withExporter(
+                                    new PushMetricExporterModel()
+                                        .withOtlpHttp(new OtlpHttpMetricExporterModel()))
+                                .withInterval(1)
+                                .withCardinalityLimits(
+                                    new CardinalityLimitsModel().withDefault(100))
+                                .withMaxExportBatchSizeDevelopment(200)),
+                    SdkMeterProviderUtil.setMaxExportBatchSize(
+                            PeriodicMetricReader.builder(
+                                    OtlpHttpMetricExporter.builder()
+                                        .setComponentLoader(context)
+                                        .build())
+                                .setInterval(Duration.ofMillis(1)),
+                            200)
+                        .build(),
+                    100,
+                    false)));
+
+    int prom1Port = randomAvailablePort();
+    PrometheusHttpServer prom1Expected = PrometheusHttpServer.builder().setPort(prom1Port).build();
+    // Close immediately to release the port before MetricReaderFactory creates a server on it
+    prom1Expected.close();
+    testCases.add(
+        Arguments.argumentSet(
+            "pull prometheus defaults",
             new MetricReaderModel()
                 .withPull(
                     new PullMetricReaderModel()
@@ -149,11 +149,26 @@ class MetricReaderFactoryTest {
                             new PullMetricExporterModel()
                                 .withPrometheusDevelopment(
                                     new ExperimentalPrometheusMetricExporterModel()
-                                        .withPort(prometheusDefaultPort)))),
-            prometheusDefaultExpected,
+                                        .withPort(prom1Port)))),
+            prom1Expected,
             null,
-            true),
-        Arguments.of(
+            true));
+
+    int prom2Port = randomAvailablePort();
+    PrometheusHttpServer prom2Expected =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(prom2Port)
+            .setTranslationStrategy(TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES)
+            .setAllowedResourceAttributesFilter(
+                IncludeExcludePredicate.createPatternMatching(
+                    singletonList("foo"), singletonList("bar")))
+            .build();
+    prom2Expected.close();
+    // Close immediately to release the port before MetricReaderFactory creates a server on it
+    testCases.add(
+        Arguments.argumentSet(
+            "pull prometheus configured",
             new MetricReaderModel()
                 .withPull(
                     new PullMetricReaderModel()
@@ -163,7 +178,7 @@ class MetricReaderFactoryTest {
                                 .withPrometheusDevelopment(
                                     new ExperimentalPrometheusMetricExporterModel()
                                         .withHost("localhost")
-                                        .withPort(prometheusConfiguredPort)
+                                        .withPort(prom2Port)
                                         .withResourceConstantLabels(
                                             new IncludeExcludeModel()
                                                 .withIncluded(singletonList("foo"))
@@ -174,9 +189,39 @@ class MetricReaderFactoryTest {
                                             ExperimentalPrometheusMetricExporterModel
                                                 .ExperimentalPrometheusTranslationStrategy
                                                 .UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES_DEVELOPMENT)))),
-            prometheusConfiguredExpected,
+            prom2Expected,
             100,
             true));
+
+    int prom3Port = randomAvailablePort();
+    PrometheusHttpServer prom3Expected =
+        PrometheusHttpServer.builder()
+            .setPort(prom3Port)
+            .setTranslationStrategy(TranslationStrategy.NO_TRANSLATION)
+            .build();
+    prom3Expected.close();
+    // Close immediately to release the port before MetricReaderFactory creates a server on it
+    testCases.add(
+        Arguments.argumentSet(
+            "pull prometheus no translation",
+            new MetricReaderModel()
+                .withPull(
+                    new PullMetricReaderModel()
+                        .withExporter(
+                            new PullMetricExporterModel()
+                                .withPrometheusDevelopment(
+                                    new ExperimentalPrometheusMetricExporterModel()
+                                        .withHost("localhost")
+                                        .withPort(prom3Port)
+                                        .withTranslationStrategy(
+                                            ExperimentalPrometheusMetricExporterModel
+                                                .ExperimentalPrometheusTranslationStrategy
+                                                .NO_TRANSLATION_DEVELOPMENT)))),
+            prom3Expected,
+            null,
+            true));
+
+    return testCases.stream();
   }
 
   @ParameterizedTest
@@ -189,13 +234,16 @@ class MetricReaderFactoryTest {
 
   static Stream<Arguments> createInvalidTestCases() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "null periodic reader exporter",
             new MetricReaderModel().withPeriodic(new PeriodicMetricReaderModel()),
             "periodic metric reader exporter is required but is null"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "null pull reader",
             new MetricReaderModel().withPull(new PullMetricReaderModel()),
             "pull metric reader exporter is required but is null"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "null pull reader exporter",
             new MetricReaderModel()
                 .withPull(new PullMetricReaderModel().withExporter(new PullMetricExporterModel())),
             "metric reader must have exactly one entry but has 0"));

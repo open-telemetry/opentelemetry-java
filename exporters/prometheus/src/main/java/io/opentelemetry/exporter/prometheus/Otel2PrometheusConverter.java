@@ -5,9 +5,6 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLabelName;
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -87,6 +84,7 @@ final class Otel2PrometheusConverter {
 
   private final boolean otelScopeLabelsEnabled;
   private final boolean targetInfoMetricEnabled;
+  private final TranslationStrategy translationStrategy;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -107,9 +105,11 @@ final class Otel2PrometheusConverter {
   Otel2PrometheusConverter(
       boolean otelScopeLabelsEnabled,
       boolean targetInfoMetricEnabled,
+      TranslationStrategy translationStrategy,
       @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
     this.targetInfoMetricEnabled = targetInfoMetricEnabled;
+    this.translationStrategy = translationStrategy;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
@@ -123,6 +123,10 @@ final class Otel2PrometheusConverter {
 
   boolean isTargetInfoMetricEnabled() {
     return targetInfoMetricEnabled;
+  }
+
+  TranslationStrategy getTranslationStrategy() {
+    return translationStrategy;
   }
 
   @Nullable
@@ -154,11 +158,24 @@ final class Otel2PrometheusConverter {
 
   @Nullable
   private MetricSnapshot convert(MetricData metricData) {
+    try {
+      return doConvert(metricData);
+    } catch (IllegalArgumentException e) {
+      THROTTLING_LOGGER.log(
+          Level.WARNING,
+          "Failed to convert metric " + metricData.getName() + ". Dropping metric.",
+          e);
+      return null;
+    }
+  }
 
+  @Nullable
+  private MetricSnapshot doConvert(MetricData metricData) {
     // Note that AggregationTemporality.DELTA should never happen
     // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
 
-    MetricMetadata metadata = convertMetadata(metricData);
+    boolean isCounter = isMonotonicSum(metricData);
+    MetricMetadata metadata = convertMetadata(metricData, isCounter);
     InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
     switch (metricData.getType()) {
       case LONG_GAUGE:
@@ -211,6 +228,17 @@ final class Otel2PrometheusConverter {
             metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
     }
     return null;
+  }
+
+  private static boolean isMonotonicSum(MetricData metricData) {
+    switch (metricData.getType()) {
+      case LONG_SUM:
+        return metricData.getLongSumData().isMonotonic();
+      case DOUBLE_SUM:
+        return metricData.getDoubleSumData().isMonotonic();
+      default:
+        return false;
+    }
   }
 
   private GaugeSnapshot convertLongGauge(
@@ -479,7 +507,7 @@ final class Otel2PrometheusConverter {
 
   private InfoSnapshot makeTargetInfo(Resource resource) {
     return new InfoSnapshot(
-        new MetricMetadata("target"),
+        MetricMetadata.builder().name("target").build(),
         Collections.singletonList(
             new InfoDataPointSnapshot(
                 convertAttributes(
@@ -582,34 +610,181 @@ final class Otel2PrometheusConverter {
     return allowedAttributeKeys;
   }
 
-  /**
-   * Convert an attribute key to a legacy Prometheus label name. {@code prometheusName} converts
-   * non-standard characters (dots, dashes, etc.) to underscores, and {@code sanitizeLabelName}
-   * strips invalid leading prefixes.
-   */
-  private static String convertLabelName(String key) {
-    return sanitizeLabelName(prometheusName(key));
+  private String convertLabelName(String key) {
+    if (shouldEscape(translationStrategy)) {
+      return convertLegacyLabelName(key);
+    }
+    return key;
   }
 
-  private static MetricMetadata convertMetadata(MetricData metricData) {
-    String name = sanitizeMetricName(prometheusName(metricData.getName()));
+  /**
+   * Normalize an attribute name to the legacy Prometheus label scheme.
+   *
+   * <p>This mirrors {@code prometheus/otlptranslator}'s invalid-character collapsing rules, but we
+   * intentionally do not preserve {@code __...__} names because Prometheus Java rejects user label
+   * names that begin with {@code __}.
+   */
+  private static String convertLegacyLabelName(String key) {
+    if (key.isEmpty()) {
+      throw new IllegalArgumentException("label name is empty");
+    }
+
+    // OTel owns OTLP-to-Prometheus translation. Prometheus Java validates and serializes names,
+    // but no longer owns this naming mangling. The OTel compatibility spec requires invalid
+    // attribute-name characters and repeated underscores to collapse to a single "_". Prometheus
+    // label names beginning with "__" are reserved for internal labels like "__name__" and
+    // scrape/relabel labels, and Prometheus Java rejects them as user labels, so do not preserve
+    // "__...__" reserved-looking names here.
+    StringBuilder result = new StringBuilder(key.length());
+    boolean previousWasUnderscore = false;
+    for (int i = 0; i < key.length(); ) {
+      int codePoint = key.codePointAt(i);
+      if (isValidLegacyLabelChar(codePoint)) {
+        result.appendCodePoint(codePoint);
+        previousWasUnderscore = false;
+      } else if (!previousWasUnderscore) {
+        result.append('_');
+        previousWasUnderscore = true;
+      }
+      i += Character.charCount(codePoint);
+    }
+
+    String normalized = result.toString();
+    if (Character.isDigit(normalized.charAt(0))) {
+      normalized = "key_" + normalized;
+    }
+    if (containsOnlyUnderscores(normalized)) {
+      throw new IllegalArgumentException(
+          "normalization for label name \""
+              + key
+              + "\" resulted in invalid name \""
+              + normalized
+              + "\"");
+    }
+    return normalized;
+  }
+
+  private static boolean isValidLegacyLabelChar(int codePoint) {
+    return (codePoint >= 'a' && codePoint <= 'z')
+        || (codePoint >= 'A' && codePoint <= 'Z')
+        || (codePoint >= '0' && codePoint <= '9');
+  }
+
+  private static boolean containsOnlyUnderscores(String value) {
+    for (int i = 0; i < value.length(); i++) {
+      if (value.charAt(i) != '_') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static String convertLegacyMetricName(String name) {
+    if (name.isEmpty()) {
+      throw new IllegalArgumentException("metric name is empty");
+    }
+
+    StringBuilder result = new StringBuilder(name.length());
+    boolean previousWasUnderscore = false;
+    for (int i = 0; i < name.length(); ) {
+      int codePoint = name.codePointAt(i);
+      if (isValidLegacyMetricChar(codePoint, i) && codePoint != '_') {
+        result.appendCodePoint(codePoint);
+        previousWasUnderscore = false;
+      } else if (!previousWasUnderscore) {
+        result.append('_');
+        previousWasUnderscore = true;
+      }
+      i += Character.charCount(codePoint);
+    }
+    return result.toString();
+  }
+
+  private static boolean isValidLegacyMetricChar(int codePoint, int index) {
+    return (codePoint >= 'a' && codePoint <= 'z')
+        || (codePoint >= 'A' && codePoint <= 'Z')
+        || codePoint == '_'
+        || codePoint == ':'
+        || (codePoint >= '0' && codePoint <= '9' && index > 0);
+  }
+
+  private MetricMetadata convertMetadata(MetricData metricData, boolean isCounter) {
+    switch (translationStrategy) {
+      case UNDERSCORE_ESCAPING_WITH_SUFFIXES:
+        return convertMetadataEscapedWithSuffixes(metricData);
+      case UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES:
+        return convertMetadataEscapedWithoutSuffixes(metricData);
+      case NO_UTF8_ESCAPING_WITH_SUFFIXES:
+        return convertMetadataUtf8WithSuffixes(metricData, isCounter);
+      case NO_TRANSLATION:
+        return convertMetadataNoTranslation(metricData);
+    }
+    throw new IllegalStateException("Unknown strategy: " + translationStrategy);
+  }
+
+  private static MetricMetadata convertMetadataEscapedWithSuffixes(MetricData metricData) {
+    String originalName = metricData.getName();
+    String name = stripReservedMetricSuffixes(convertLegacyMetricName(originalName));
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    // Repeated __ are discouraged according to spec, although this is allowed in prometheus, see
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1
-    while (name.contains("__")) {
-      name = name.replace("__", "_");
-    }
-
-    return new MetricMetadata(name, help, unit);
+    validateNormalizedMetricName(originalName, name);
+    return MetricMetadata.builder().name(name).help(help).unit(unit).build();
   }
 
-  private static void putOrMerge(
-      Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
-    String name = snapshot.getMetadata().getPrometheusName();
+  private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
+    String originalName = metricData.getName();
+    String name = stripReservedMetricSuffixes(convertLegacyMetricName(originalName));
+    String help = metricData.getDescription();
+    validateNormalizedMetricName(originalName, name);
+    return MetricMetadata.builder().name(name).help(help).build();
+  }
+
+  private static MetricMetadata convertMetadataUtf8WithSuffixes(
+      MetricData metricData, boolean isCounter) {
+    String name = metricData.getName();
+    String help = metricData.getDescription();
+    Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
+    if (unit != null && !name.endsWith(unit.toString())) {
+      name = name + "_" + unit;
+    }
+    return MetricMetadata.builder()
+        .name(stripReservedMetricSuffixes(name))
+        .help(help)
+        .unit(unit)
+        .counterSuffix(isCounter)
+        .build();
+  }
+
+  private static MetricMetadata convertMetadataNoTranslation(MetricData metricData) {
+    String name = stripReservedMetricSuffixes(metricData.getName());
+    String help = metricData.getDescription();
+    return MetricMetadata.builder().name(name).help(help).build();
+  }
+
+  private static String stripReservedMetricSuffixes(String name) {
+    boolean modified = true;
+    while (modified) {
+      modified = false;
+      for (String suffix : PrometheusUnitsHelper.RESERVED_SUFFIXES) {
+        if (name.equals(suffix)) {
+          return name.substring(1);
+        }
+        if (name.endsWith(suffix)) {
+          name = name.substring(0, name.length() - suffix.length());
+          modified = true;
+        }
+      }
+    }
+    return name;
+  }
+
+  private void putOrMerge(Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
+    MetricMetadata metadata = snapshot.getMetadata();
+    String name =
+        shouldEscape(translationStrategy) ? metadata.getPrometheusName() : metadata.getName();
     if (snapshotsByName.containsKey(name)) {
       MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {
@@ -617,6 +792,26 @@ final class Otel2PrometheusConverter {
       }
     } else {
       snapshotsByName.put(name, snapshot);
+    }
+  }
+
+  private static boolean shouldEscape(TranslationStrategy translationStrategy) {
+    return translationStrategy == TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES
+        || translationStrategy == TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES;
+  }
+
+  private static void validateNormalizedMetricName(String originalName, String normalizedName) {
+    if (normalizedName.isEmpty()) {
+      throw new IllegalArgumentException(
+          "normalization for metric \"" + originalName + "\" resulted in empty name");
+    }
+    if (containsOnlyUnderscores(normalizedName)) {
+      throw new IllegalArgumentException(
+          "normalization for metric \""
+              + originalName
+              + "\" resulted in invalid name \""
+              + normalizedName
+              + "\"");
     }
   }
 
@@ -695,7 +890,7 @@ final class Otel2PrometheusConverter {
               + ".");
       return null;
     }
-    return new MetricMetadata(name, help, unit);
+    return MetricMetadata.builder().name(name).help(help).unit(unit).build();
   }
 
   private static String typeString(MetricSnapshot snapshot) {
