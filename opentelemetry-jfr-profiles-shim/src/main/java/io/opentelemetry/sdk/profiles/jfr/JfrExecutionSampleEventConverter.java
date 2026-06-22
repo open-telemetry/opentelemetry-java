@@ -71,6 +71,12 @@ public class JfrExecutionSampleEventConverter {
     }
 
     RecordedThread recordedThread = recordedEvent.getValue("sampledThread");
+    if (recordedThread == null) {
+      // just skip these - it would be spec valid, but practically without Thread metadata
+      // the receiving backend likely won't group and render properly them anyhow.
+      return;
+    }
+
     String threadName = recordedThread.getJavaName();
     int threadNameIndex = profilesDictionaryCompositor.putIfAbsent("thread.name");
     KeyValueAndUnitData threadNameData =
