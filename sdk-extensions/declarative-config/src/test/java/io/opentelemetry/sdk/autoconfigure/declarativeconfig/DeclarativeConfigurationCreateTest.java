@@ -95,7 +95,10 @@ class DeclarativeConfigurationCreateTest {
                 "cert_file: .*\n",
                 "cert_file: "
                     + clientCertificatePath.replace("\\", "\\\\")
-                    + System.lineSeparator());
+                    + System.lineSeparator())
+            // A snippet references a custom id generator named my_custom_id_generator. Replace with
+            // one named test, which we provide via SPI
+            .replace("my_custom_id_generator", "test");
     InputStream is =
         new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 

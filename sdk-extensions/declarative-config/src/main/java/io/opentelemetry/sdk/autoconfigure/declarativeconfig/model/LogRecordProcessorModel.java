@@ -17,7 +17,7 @@ import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"batch", "simple"})
+@JsonPropertyOrder({"batch", "simple", "event_to_span_event_bridge/development"})
 @Generated("jsonschema2pojo")
 @SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class LogRecordProcessorModel {
@@ -29,6 +29,12 @@ public class LogRecordProcessorModel {
   @Nullable
   @JsonProperty("simple")
   private SimpleLogRecordProcessorModel simple;
+
+  /** (Can be null) */
+  @Nullable
+  @JsonProperty("event_to_span_event_bridge/development")
+  private ExperimentalEventToSpanEventBridgeLogRecordProcessorModel
+      eventToSpanEventBridgeDevelopment;
 
   @JsonIgnore
   private Map<String, LogRecordProcessorPropertyModel> additionalProperties =
@@ -53,6 +59,19 @@ public class LogRecordProcessorModel {
 
   public LogRecordProcessorModel withSimple(SimpleLogRecordProcessorModel simple) {
     this.simple = simple;
+    return this;
+  }
+
+  @JsonProperty("event_to_span_event_bridge/development")
+  @Nullable
+  public ExperimentalEventToSpanEventBridgeLogRecordProcessorModel
+      getEventToSpanEventBridgeDevelopment() {
+    return eventToSpanEventBridgeDevelopment;
+  }
+
+  public LogRecordProcessorModel withEventToSpanEventBridgeDevelopment(
+      ExperimentalEventToSpanEventBridgeLogRecordProcessorModel eventToSpanEventBridgeDevelopment) {
+    this.eventToSpanEventBridgeDevelopment = eventToSpanEventBridgeDevelopment;
     return this;
   }
 
@@ -87,6 +106,13 @@ public class LogRecordProcessorModel {
     sb.append('=');
     sb.append(((this.simple == null) ? "<null>" : this.simple));
     sb.append(',');
+    sb.append("eventToSpanEventBridgeDevelopment");
+    sb.append('=');
+    sb.append(
+        ((this.eventToSpanEventBridgeDevelopment == null)
+            ? "<null>"
+            : this.eventToSpanEventBridgeDevelopment));
+    sb.append(',');
     sb.append("additionalProperties");
     sb.append('=');
     sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
@@ -107,6 +133,11 @@ public class LogRecordProcessorModel {
     result =
         ((result * 31)
             + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
+    result =
+        ((result * 31)
+            + ((this.eventToSpanEventBridgeDevelopment == null)
+                ? 0
+                : this.eventToSpanEventBridgeDevelopment.hashCode()));
     return result;
   }
 
@@ -119,11 +150,15 @@ public class LogRecordProcessorModel {
       return false;
     }
     LogRecordProcessorModel rhs = ((LogRecordProcessorModel) other);
-    return ((((this.batch == rhs.batch) || ((this.batch != null) && this.batch.equals(rhs.batch)))
-            && ((this.simple == rhs.simple)
-                || ((this.simple != null) && this.simple.equals(rhs.simple))))
-        && ((this.additionalProperties == rhs.additionalProperties)
-            || ((this.additionalProperties != null)
-                && this.additionalProperties.equals(rhs.additionalProperties))));
+    return (((((this.batch == rhs.batch) || ((this.batch != null) && this.batch.equals(rhs.batch)))
+                && ((this.simple == rhs.simple)
+                    || ((this.simple != null) && this.simple.equals(rhs.simple))))
+            && ((this.additionalProperties == rhs.additionalProperties)
+                || ((this.additionalProperties != null)
+                    && this.additionalProperties.equals(rhs.additionalProperties))))
+        && ((this.eventToSpanEventBridgeDevelopment == rhs.eventToSpanEventBridgeDevelopment)
+            || ((this.eventToSpanEventBridgeDevelopment != null)
+                && this.eventToSpanEventBridgeDevelopment.equals(
+                    rhs.eventToSpanEventBridgeDevelopment))));
   }
 }

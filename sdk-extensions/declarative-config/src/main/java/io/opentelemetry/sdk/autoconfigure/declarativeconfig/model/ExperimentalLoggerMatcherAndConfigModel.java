@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 public class ExperimentalLoggerMatcherAndConfigModel {
 
   /**
-   * Configure logger names to match, evaluated as follows:
+   * Configure logger names to match. Matching is case-sensitive, evaluated as follows:
    *
    * <p>* If the logger name exactly matches. * If the logger name matches the wildcard pattern,
    * where '?' matches any single character and '*' matches any number of characters including none.
@@ -30,7 +30,7 @@ public class ExperimentalLoggerMatcherAndConfigModel {
    */
   @JsonProperty("name")
   @JsonPropertyDescription(
-      "Configure logger names to match, evaluated as follows:\n\n * If the logger name exactly matches.\n * If the logger name matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nProperty is required and must be non-null.\n")
+      "Configure logger names to match. Matching is case-sensitive, evaluated as follows:\n\n * If the logger name exactly matches.\n * If the logger name matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nProperty is required and must be non-null.\n")
   @Nonnull
   private String name;
 
@@ -40,7 +40,7 @@ public class ExperimentalLoggerMatcherAndConfigModel {
   private ExperimentalLoggerConfigModel config;
 
   /**
-   * Configure logger names to match, evaluated as follows:
+   * Configure logger names to match. Matching is case-sensitive, evaluated as follows:
    *
    * <p>* If the logger name exactly matches. * If the logger name matches the wildcard pattern,
    * where '?' matches any single character and '*' matches any number of characters including none.

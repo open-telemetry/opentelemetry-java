@@ -20,9 +20,9 @@ import javax.annotation.Nullable;
 @JsonPropertyOrder({
   "host",
   "port",
-  "without_scope_info",
-  "without_target_info/development",
-  "with_resource_constant_labels",
+  "scope_info_enabled",
+  "target_info_enabled/development",
+  "resource_constant_labels",
   "translation_strategy"
 })
 @Generated("jsonschema2pojo")
@@ -50,33 +50,33 @@ public class ExperimentalPrometheusMetricExporterModel {
   private Integer port;
 
   /**
-   * Configure Prometheus Exporter to produce metrics without scope labels. If omitted or null,
-   * false is used.
+   * Configure Prometheus Exporter to produce metrics with scope labels. If omitted or null, true is
+   * used.
    *
    * <p>(Can be null)
    */
   @Nullable
-  @JsonProperty("without_scope_info")
+  @JsonProperty("scope_info_enabled")
   @JsonPropertyDescription(
-      "Configure Prometheus Exporter to produce metrics without scope labels.\nIf omitted or null, false is used.\n")
-  private Boolean withoutScopeInfo;
+      "Configure Prometheus Exporter to produce metrics with scope labels.\nIf omitted or null, true is used.\n")
+  private Boolean scopeInfoEnabled;
 
   /**
-   * Configure Prometheus Exporter to produce metrics without a target info metric for the resource.
-   * If omitted or null, false is used.
+   * Configure Prometheus Exporter to produce metrics with a target info metric for the resource. If
+   * omitted or null, true is used.
    *
    * <p>(Can be null)
    */
   @Nullable
-  @JsonProperty("without_target_info/development")
+  @JsonProperty("target_info_enabled/development")
   @JsonPropertyDescription(
-      "Configure Prometheus Exporter to produce metrics without a target info metric for the resource.\nIf omitted or null, false is used.\n")
-  private Boolean withoutTargetInfoDevelopment;
+      "Configure Prometheus Exporter to produce metrics with a target info metric for the resource.\nIf omitted or null, true is used.\n")
+  private Boolean targetInfoEnabledDevelopment;
 
   /** (Can be null) */
   @Nullable
-  @JsonProperty("with_resource_constant_labels")
-  private IncludeExcludeModel withResourceConstantLabels;
+  @JsonProperty("resource_constant_labels")
+  private IncludeExcludeModel resourceConstantLabels;
 
   /** (Can be null) */
   @Nullable
@@ -109,45 +109,45 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   /**
-   * Configure Prometheus Exporter to produce metrics without scope labels. If omitted or null,
-   * false is used.
+   * Configure Prometheus Exporter to produce metrics with scope labels. If omitted or null, true is
+   * used.
    */
-  @JsonProperty("without_scope_info")
+  @JsonProperty("scope_info_enabled")
   @Nullable
-  public Boolean getWithoutScopeInfo() {
-    return withoutScopeInfo;
+  public Boolean getScopeInfoEnabled() {
+    return scopeInfoEnabled;
   }
 
-  public ExperimentalPrometheusMetricExporterModel withWithoutScopeInfo(Boolean withoutScopeInfo) {
-    this.withoutScopeInfo = withoutScopeInfo;
+  public ExperimentalPrometheusMetricExporterModel withScopeInfoEnabled(Boolean scopeInfoEnabled) {
+    this.scopeInfoEnabled = scopeInfoEnabled;
     return this;
   }
 
   /**
-   * Configure Prometheus Exporter to produce metrics without a target info metric for the resource.
-   * If omitted or null, false is used.
+   * Configure Prometheus Exporter to produce metrics with a target info metric for the resource. If
+   * omitted or null, true is used.
    */
-  @JsonProperty("without_target_info/development")
+  @JsonProperty("target_info_enabled/development")
   @Nullable
-  public Boolean getWithoutTargetInfoDevelopment() {
-    return withoutTargetInfoDevelopment;
+  public Boolean getTargetInfoEnabledDevelopment() {
+    return targetInfoEnabledDevelopment;
   }
 
-  public ExperimentalPrometheusMetricExporterModel withWithoutTargetInfoDevelopment(
-      Boolean withoutTargetInfoDevelopment) {
-    this.withoutTargetInfoDevelopment = withoutTargetInfoDevelopment;
+  public ExperimentalPrometheusMetricExporterModel withTargetInfoEnabledDevelopment(
+      Boolean targetInfoEnabledDevelopment) {
+    this.targetInfoEnabledDevelopment = targetInfoEnabledDevelopment;
     return this;
   }
 
-  @JsonProperty("with_resource_constant_labels")
+  @JsonProperty("resource_constant_labels")
   @Nullable
-  public IncludeExcludeModel getWithResourceConstantLabels() {
-    return withResourceConstantLabels;
+  public IncludeExcludeModel getResourceConstantLabels() {
+    return resourceConstantLabels;
   }
 
-  public ExperimentalPrometheusMetricExporterModel withWithResourceConstantLabels(
-      IncludeExcludeModel withResourceConstantLabels) {
-    this.withResourceConstantLabels = withResourceConstantLabels;
+  public ExperimentalPrometheusMetricExporterModel withResourceConstantLabels(
+      IncludeExcludeModel resourceConstantLabels) {
+    this.resourceConstantLabels = resourceConstantLabels;
     return this;
   }
 
@@ -180,21 +180,20 @@ public class ExperimentalPrometheusMetricExporterModel {
     sb.append('=');
     sb.append(((this.port == null) ? "<null>" : this.port));
     sb.append(',');
-    sb.append("withoutScopeInfo");
+    sb.append("scopeInfoEnabled");
     sb.append('=');
-    sb.append(((this.withoutScopeInfo == null) ? "<null>" : this.withoutScopeInfo));
+    sb.append(((this.scopeInfoEnabled == null) ? "<null>" : this.scopeInfoEnabled));
     sb.append(',');
-    sb.append("withoutTargetInfoDevelopment");
+    sb.append("targetInfoEnabledDevelopment");
     sb.append('=');
     sb.append(
-        ((this.withoutTargetInfoDevelopment == null)
+        ((this.targetInfoEnabledDevelopment == null)
             ? "<null>"
-            : this.withoutTargetInfoDevelopment));
+            : this.targetInfoEnabledDevelopment));
     sb.append(',');
-    sb.append("withResourceConstantLabels");
+    sb.append("resourceConstantLabels");
     sb.append('=');
-    sb.append(
-        ((this.withResourceConstantLabels == null) ? "<null>" : this.withResourceConstantLabels));
+    sb.append(((this.resourceConstantLabels == null) ? "<null>" : this.resourceConstantLabels));
     sb.append(',');
     sb.append("translationStrategy");
     sb.append('=');
@@ -213,21 +212,19 @@ public class ExperimentalPrometheusMetricExporterModel {
     int result = 1;
     result = ((result * 31) + ((this.host == null) ? 0 : this.host.hashCode()));
     result =
-        ((result * 31) + ((this.withoutScopeInfo == null) ? 0 : this.withoutScopeInfo.hashCode()));
+        ((result * 31)
+            + ((this.targetInfoEnabledDevelopment == null)
+                ? 0
+                : this.targetInfoEnabledDevelopment.hashCode()));
+    result =
+        ((result * 31)
+            + ((this.resourceConstantLabels == null) ? 0 : this.resourceConstantLabels.hashCode()));
     result = ((result * 31) + ((this.port == null) ? 0 : this.port.hashCode()));
     result =
         ((result * 31)
-            + ((this.withoutTargetInfoDevelopment == null)
-                ? 0
-                : this.withoutTargetInfoDevelopment.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.withResourceConstantLabels == null)
-                ? 0
-                : this.withResourceConstantLabels.hashCode()));
-    result =
-        ((result * 31)
             + ((this.translationStrategy == null) ? 0 : this.translationStrategy.hashCode()));
+    result =
+        ((result * 31) + ((this.scopeInfoEnabled == null) ? 0 : this.scopeInfoEnabled.hashCode()));
     return result;
   }
 
@@ -242,21 +239,20 @@ public class ExperimentalPrometheusMetricExporterModel {
     ExperimentalPrometheusMetricExporterModel rhs =
         ((ExperimentalPrometheusMetricExporterModel) other);
     return (((((((this.host == rhs.host) || ((this.host != null) && this.host.equals(rhs.host)))
-                        && ((this.withoutScopeInfo == rhs.withoutScopeInfo)
-                            || ((this.withoutScopeInfo != null)
-                                && this.withoutScopeInfo.equals(rhs.withoutScopeInfo))))
-                    && ((this.port == rhs.port)
-                        || ((this.port != null) && this.port.equals(rhs.port))))
-                && ((this.withoutTargetInfoDevelopment == rhs.withoutTargetInfoDevelopment)
-                    || ((this.withoutTargetInfoDevelopment != null)
-                        && this.withoutTargetInfoDevelopment.equals(
-                            rhs.withoutTargetInfoDevelopment))))
-            && ((this.withResourceConstantLabels == rhs.withResourceConstantLabels)
-                || ((this.withResourceConstantLabels != null)
-                    && this.withResourceConstantLabels.equals(rhs.withResourceConstantLabels))))
-        && ((this.translationStrategy == rhs.translationStrategy)
-            || ((this.translationStrategy != null)
-                && this.translationStrategy.equals(rhs.translationStrategy))));
+                        && ((this.targetInfoEnabledDevelopment == rhs.targetInfoEnabledDevelopment)
+                            || ((this.targetInfoEnabledDevelopment != null)
+                                && this.targetInfoEnabledDevelopment.equals(
+                                    rhs.targetInfoEnabledDevelopment))))
+                    && ((this.resourceConstantLabels == rhs.resourceConstantLabels)
+                        || ((this.resourceConstantLabels != null)
+                            && this.resourceConstantLabels.equals(rhs.resourceConstantLabels))))
+                && ((this.port == rhs.port) || ((this.port != null) && this.port.equals(rhs.port))))
+            && ((this.translationStrategy == rhs.translationStrategy)
+                || ((this.translationStrategy != null)
+                    && this.translationStrategy.equals(rhs.translationStrategy))))
+        && ((this.scopeInfoEnabled == rhs.scopeInfoEnabled)
+            || ((this.scopeInfoEnabled != null)
+                && this.scopeInfoEnabled.equals(rhs.scopeInfoEnabled))));
   }
 
   @Generated("jsonschema2pojo")

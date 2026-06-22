@@ -15,7 +15,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"processors", "limits", "sampler", "tracer_configurator/development"})
+@JsonPropertyOrder({
+  "processors",
+  "limits",
+  "sampler",
+  "id_generator",
+  "tracer_configurator/development"
+})
 @Generated("jsonschema2pojo")
 @SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class TracerProviderModel {
@@ -40,6 +46,11 @@ public class TracerProviderModel {
   @Nullable
   @JsonProperty("sampler")
   private SamplerModel sampler;
+
+  /** (Can be null) */
+  @Nullable
+  @JsonProperty("id_generator")
+  private IdGeneratorModel idGenerator;
 
   /** (Can be null) */
   @Nullable
@@ -84,6 +95,17 @@ public class TracerProviderModel {
     return this;
   }
 
+  @JsonProperty("id_generator")
+  @Nullable
+  public IdGeneratorModel getIdGenerator() {
+    return idGenerator;
+  }
+
+  public TracerProviderModel withIdGenerator(IdGeneratorModel idGenerator) {
+    this.idGenerator = idGenerator;
+    return this;
+  }
+
   @JsonProperty("tracer_configurator/development")
   @Nullable
   public ExperimentalTracerConfiguratorModel getTracerConfiguratorDevelopment() {
@@ -115,6 +137,10 @@ public class TracerProviderModel {
     sb.append('=');
     sb.append(((this.sampler == null) ? "<null>" : this.sampler));
     sb.append(',');
+    sb.append("idGenerator");
+    sb.append('=');
+    sb.append(((this.idGenerator == null) ? "<null>" : this.idGenerator));
+    sb.append(',');
     sb.append("tracerConfiguratorDevelopment");
     sb.append('=');
     sb.append(
@@ -133,6 +159,7 @@ public class TracerProviderModel {
   @Override
   public int hashCode() {
     int result = 1;
+    result = ((result * 31) + ((this.idGenerator == null) ? 0 : this.idGenerator.hashCode()));
     result =
         ((result * 31)
             + ((this.tracerConfiguratorDevelopment == null)
@@ -153,10 +180,12 @@ public class TracerProviderModel {
       return false;
     }
     TracerProviderModel rhs = ((TracerProviderModel) other);
-    return (((((this.tracerConfiguratorDevelopment == rhs.tracerConfiguratorDevelopment)
-                    || ((this.tracerConfiguratorDevelopment != null)
-                        && this.tracerConfiguratorDevelopment.equals(
-                            rhs.tracerConfiguratorDevelopment)))
+    return ((((((this.idGenerator == rhs.idGenerator)
+                        || ((this.idGenerator != null) && this.idGenerator.equals(rhs.idGenerator)))
+                    && ((this.tracerConfiguratorDevelopment == rhs.tracerConfiguratorDevelopment)
+                        || ((this.tracerConfiguratorDevelopment != null)
+                            && this.tracerConfiguratorDevelopment.equals(
+                                rhs.tracerConfiguratorDevelopment))))
                 && ((this.processors == rhs.processors)
                     || ((this.processors != null) && this.processors.equals(rhs.processors))))
             && ((this.limits == rhs.limits)

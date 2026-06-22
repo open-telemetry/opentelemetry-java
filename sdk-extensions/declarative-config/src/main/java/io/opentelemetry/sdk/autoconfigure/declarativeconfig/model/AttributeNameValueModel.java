@@ -34,14 +34,14 @@ public class AttributeNameValueModel {
   private String name;
 
   /**
-   * The attribute value. The type of value must match .type. Property is required and must be
-   * non-null.
+   * The attribute value. The type of value must match .type. Property must be present, but if null
+   * the entry is ignored.
    *
    * <p>(Required)
    */
   @JsonProperty("value")
   @JsonPropertyDescription(
-      "The attribute value.\nThe type of value must match .type.\nProperty is required and must be non-null.\n")
+      "The attribute value.\nThe type of value must match .type.\nProperty must be present, but if null the entry is ignored.\n")
   @Nonnull
   private Object value;
 
@@ -67,8 +67,8 @@ public class AttributeNameValueModel {
   }
 
   /**
-   * The attribute value. The type of value must match .type. Property is required and must be
-   * non-null.
+   * The attribute value. The type of value must match .type. Property must be present, but if null
+   * the entry is ignored.
    *
    * <p>(Required)
    */

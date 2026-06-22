@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 public class ExperimentalTracerMatcherAndConfigModel {
 
   /**
-   * Configure tracer names to match, evaluated as follows:
+   * Configure tracer names to match. Matching is case-sensitive, evaluated as follows:
    *
    * <p>* If the tracer name exactly matches. * If the tracer name matches the wildcard pattern,
    * where '?' matches any single character and '*' matches any number of characters including none.
@@ -30,7 +30,7 @@ public class ExperimentalTracerMatcherAndConfigModel {
    */
   @JsonProperty("name")
   @JsonPropertyDescription(
-      "Configure tracer names to match, evaluated as follows:\n\n * If the tracer name exactly matches.\n * If the tracer name matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nProperty is required and must be non-null.\n")
+      "Configure tracer names to match. Matching is case-sensitive, evaluated as follows:\n\n * If the tracer name exactly matches.\n * If the tracer name matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nProperty is required and must be non-null.\n")
   @Nonnull
   private String name;
 
@@ -40,7 +40,7 @@ public class ExperimentalTracerMatcherAndConfigModel {
   private ExperimentalTracerConfigModel config;
 
   /**
-   * Configure tracer names to match, evaluated as follows:
+   * Configure tracer names to match. Matching is case-sensitive, evaluated as follows:
    *
    * <p>* If the tracer name exactly matches. * If the tracer name matches the wildcard pattern,
    * where '?' matches any single character and '*' matches any number of characters including none.

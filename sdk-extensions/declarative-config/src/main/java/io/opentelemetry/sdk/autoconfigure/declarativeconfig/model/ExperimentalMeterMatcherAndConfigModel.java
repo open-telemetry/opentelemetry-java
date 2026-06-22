@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 public class ExperimentalMeterMatcherAndConfigModel {
 
   /**
-   * Configure meter names to match, evaluated as follows:
+   * Configure meter names to match. Matching is case-sensitive, evaluated as follows:
    *
    * <p>* If the meter name exactly matches. * If the meter name matches the wildcard pattern, where
    * '?' matches any single character and '*' matches any number of characters including none.
@@ -30,7 +30,7 @@ public class ExperimentalMeterMatcherAndConfigModel {
    */
   @JsonProperty("name")
   @JsonPropertyDescription(
-      "Configure meter names to match, evaluated as follows:\n\n * If the meter name exactly matches.\n * If the meter name matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nProperty is required and must be non-null.\n")
+      "Configure meter names to match. Matching is case-sensitive, evaluated as follows:\n\n * If the meter name exactly matches.\n * If the meter name matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nProperty is required and must be non-null.\n")
   @Nonnull
   private String name;
 
@@ -40,7 +40,7 @@ public class ExperimentalMeterMatcherAndConfigModel {
   private ExperimentalMeterConfigModel config;
 
   /**
-   * Configure meter names to match, evaluated as follows:
+   * Configure meter names to match. Matching is case-sensitive, evaluated as follows:
    *
    * <p>* If the meter name exactly matches. * If the meter name matches the wildcard pattern, where
    * '?' matches any single character and '*' matches any number of characters including none.

@@ -32,32 +32,32 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
   private String key;
 
   /**
-   * Configure list of value patterns to include. Values are evaluated to match as follows: * If the
-   * value exactly matches. * If the value matches the wildcard pattern, where '?' matches any
-   * single character and '*' matches any number of characters including none. If omitted, all
-   * values are included.
+   * Configure list of value patterns to include. Matching is case-sensitive. Values are evaluated
+   * to match as follows: * If the value exactly matches. * If the value matches the wildcard
+   * pattern, where '?' matches any single character and '*' matches any number of characters
+   * including none. If omitted, all values are included.
    *
    * <p>(Can be null)
    */
   @Nullable
   @JsonProperty("included")
   @JsonPropertyDescription(
-      "Configure list of value patterns to include.\nValues are evaluated to match as follows:\n * If the value exactly matches.\n * If the value matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nIf omitted, all values are included.\n")
+      "Configure list of value patterns to include.\nMatching is case-sensitive. Values are evaluated to match as follows:\n * If the value exactly matches.\n * If the value matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nIf omitted, all values are included.\n")
   private List<String> included;
 
   /**
    * Configure list of value patterns to exclude. Applies after .included (i.e. excluded has higher
-   * priority than included). Values are evaluated to match as follows: * If the value exactly
-   * matches. * If the value matches the wildcard pattern, where '?' matches any single character
-   * and '*' matches any number of characters including none. If omitted, .included attributes are
-   * included.
+   * priority than included). Matching is case-sensitive. Values are evaluated to match as follows:
+   * * If the value exactly matches. * If the value matches the wildcard pattern, where '?' matches
+   * any single character and '*' matches any number of characters including none. If omitted,
+   * .included attributes are included.
    *
    * <p>(Can be null)
    */
   @Nullable
   @JsonProperty("excluded")
   @JsonPropertyDescription(
-      "Configure list of value patterns to exclude. Applies after .included (i.e. excluded has higher priority than included).\nValues are evaluated to match as follows:\n * If the value exactly matches.\n * If the value matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nIf omitted, .included attributes are included.\n")
+      "Configure list of value patterns to exclude. Applies after .included (i.e. excluded has higher priority than included).\nMatching is case-sensitive. Values are evaluated to match as follows:\n * If the value exactly matches.\n * If the value matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nIf omitted, .included attributes are included.\n")
   private List<String> excluded;
 
   /**
@@ -77,10 +77,10 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
   }
 
   /**
-   * Configure list of value patterns to include. Values are evaluated to match as follows: * If the
-   * value exactly matches. * If the value matches the wildcard pattern, where '?' matches any
-   * single character and '*' matches any number of characters including none. If omitted, all
-   * values are included.
+   * Configure list of value patterns to include. Matching is case-sensitive. Values are evaluated
+   * to match as follows: * If the value exactly matches. * If the value matches the wildcard
+   * pattern, where '?' matches any single character and '*' matches any number of characters
+   * including none. If omitted, all values are included.
    */
   @JsonProperty("included")
   @Nullable
@@ -96,10 +96,10 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
 
   /**
    * Configure list of value patterns to exclude. Applies after .included (i.e. excluded has higher
-   * priority than included). Values are evaluated to match as follows: * If the value exactly
-   * matches. * If the value matches the wildcard pattern, where '?' matches any single character
-   * and '*' matches any number of characters including none. If omitted, .included attributes are
-   * included.
+   * priority than included). Matching is case-sensitive. Values are evaluated to match as follows:
+   * * If the value exactly matches. * If the value matches the wildcard pattern, where '?' matches
+   * any single character and '*' matches any number of characters including none. If omitted,
+   * .included attributes are included.
    */
   @JsonProperty("excluded")
   @Nullable

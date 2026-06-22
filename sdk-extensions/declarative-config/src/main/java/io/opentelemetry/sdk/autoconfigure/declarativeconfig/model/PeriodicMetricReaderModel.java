@@ -15,7 +15,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"interval", "timeout", "exporter", "producers", "cardinality_limits"})
+@JsonPropertyOrder({
+  "interval",
+  "timeout",
+  "max_export_batch_size/development",
+  "exporter",
+  "producers",
+  "cardinality_limits"
+})
 @Generated("jsonschema2pojo")
 @SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class PeriodicMetricReaderModel {
@@ -43,6 +50,17 @@ public class PeriodicMetricReaderModel {
   @JsonPropertyDescription(
       "Configure maximum allowed time (in milliseconds) to export data. \nValue must be non-negative. A value of 0 indicates no limit (infinity).\nIf omitted or null, 30000 is used.\n")
   private Integer timeout;
+
+  /**
+   * Configure maximum export batch size. If omitted or null, no limit is used.
+   *
+   * <p>(Can be null)
+   */
+  @Nullable
+  @JsonProperty("max_export_batch_size/development")
+  @JsonPropertyDescription(
+      "Configure maximum export batch size.\nIf omitted or null, no limit is used.\n")
+  private Integer maxExportBatchSizeDevelopment;
 
   /** (Required) */
   @JsonProperty("exporter")
@@ -92,6 +110,19 @@ public class PeriodicMetricReaderModel {
 
   public PeriodicMetricReaderModel withTimeout(Integer timeout) {
     this.timeout = timeout;
+    return this;
+  }
+
+  /** Configure maximum export batch size. If omitted or null, no limit is used. */
+  @JsonProperty("max_export_batch_size/development")
+  @Nullable
+  public Integer getMaxExportBatchSizeDevelopment() {
+    return maxExportBatchSizeDevelopment;
+  }
+
+  public PeriodicMetricReaderModel withMaxExportBatchSizeDevelopment(
+      Integer maxExportBatchSizeDevelopment) {
+    this.maxExportBatchSizeDevelopment = maxExportBatchSizeDevelopment;
     return this;
   }
 
@@ -145,6 +176,13 @@ public class PeriodicMetricReaderModel {
     sb.append('=');
     sb.append(((this.timeout == null) ? "<null>" : this.timeout));
     sb.append(',');
+    sb.append("maxExportBatchSizeDevelopment");
+    sb.append('=');
+    sb.append(
+        ((this.maxExportBatchSizeDevelopment == null)
+            ? "<null>"
+            : this.maxExportBatchSizeDevelopment));
+    sb.append(',');
     sb.append("exporter");
     sb.append('=');
     sb.append(((this.exporter == null) ? "<null>" : this.exporter));
@@ -174,6 +212,11 @@ public class PeriodicMetricReaderModel {
         ((result * 31)
             + ((this.cardinalityLimits == null) ? 0 : this.cardinalityLimits.hashCode()));
     result = ((result * 31) + ((this.timeout == null) ? 0 : this.timeout.hashCode()));
+    result =
+        ((result * 31)
+            + ((this.maxExportBatchSizeDevelopment == null)
+                ? 0
+                : this.maxExportBatchSizeDevelopment.hashCode()));
     result = ((result * 31) + ((this.producers == null) ? 0 : this.producers.hashCode()));
     return result;
   }
@@ -187,15 +230,19 @@ public class PeriodicMetricReaderModel {
       return false;
     }
     PeriodicMetricReaderModel rhs = ((PeriodicMetricReaderModel) other);
-    return ((((((this.interval == rhs.interval)
-                        || ((this.interval != null) && this.interval.equals(rhs.interval)))
-                    && ((this.exporter == rhs.exporter)
-                        || ((this.exporter != null) && this.exporter.equals(rhs.exporter))))
-                && ((this.cardinalityLimits == rhs.cardinalityLimits)
-                    || ((this.cardinalityLimits != null)
-                        && this.cardinalityLimits.equals(rhs.cardinalityLimits))))
-            && ((this.timeout == rhs.timeout)
-                || ((this.timeout != null) && this.timeout.equals(rhs.timeout))))
+    return (((((((this.interval == rhs.interval)
+                            || ((this.interval != null) && this.interval.equals(rhs.interval)))
+                        && ((this.exporter == rhs.exporter)
+                            || ((this.exporter != null) && this.exporter.equals(rhs.exporter))))
+                    && ((this.cardinalityLimits == rhs.cardinalityLimits)
+                        || ((this.cardinalityLimits != null)
+                            && this.cardinalityLimits.equals(rhs.cardinalityLimits))))
+                && ((this.timeout == rhs.timeout)
+                    || ((this.timeout != null) && this.timeout.equals(rhs.timeout))))
+            && ((this.maxExportBatchSizeDevelopment == rhs.maxExportBatchSizeDevelopment)
+                || ((this.maxExportBatchSizeDevelopment != null)
+                    && this.maxExportBatchSizeDevelopment.equals(
+                        rhs.maxExportBatchSizeDevelopment))))
         && ((this.producers == rhs.producers)
             || ((this.producers != null) && this.producers.equals(rhs.producers))));
   }
