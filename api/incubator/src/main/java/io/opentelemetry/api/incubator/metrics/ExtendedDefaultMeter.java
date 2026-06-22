@@ -107,7 +107,21 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void add(long value) {}
+
+    @Override
+    public BoundLongCounter bind(Attributes attributes) {
+      return NOOP_BOUND_LONG_COUNTER;
+    }
   }
+
+  private static final BoundLongCounter NOOP_BOUND_LONG_COUNTER =
+      new BoundLongCounter() {
+        @Override
+        public void add(long value) {}
+
+        @Override
+        public void add(long value, Context context) {}
+      };
 
   private static class NoopDoubleCounter implements ExtendedDoubleCounter {
     @Override
