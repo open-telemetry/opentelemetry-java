@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class EndpointUtilTest {
 
@@ -32,16 +31,18 @@ class EndpointUtilTest {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      strings = {
-        "http:localhost:4317", // opaque, no host
-        "https:/foo", // single slash, no host
-        "localhost", // no scheme
-        "gopher://localhost" // wrong scheme
-      })
+  @MethodSource("invalidEndpoints")
   void validateEndpoint_invalid(String endpoint) {
     assertThatThrownBy(() -> EndpointUtil.validateEndpoint(endpoint))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("must start with http:// or https://");
+  }
+
+  private static Stream<Arguments> invalidEndpoints() {
+    return Stream.of(
+        Arguments.argumentSet("opaque, no host", "http:localhost:4317"),
+        Arguments.argumentSet("single slash, no host", "https:/foo"),
+        Arguments.argumentSet("no scheme", "localhost"),
+        Arguments.argumentSet("wrong scheme", "gopher://localhost"));
   }
 }
