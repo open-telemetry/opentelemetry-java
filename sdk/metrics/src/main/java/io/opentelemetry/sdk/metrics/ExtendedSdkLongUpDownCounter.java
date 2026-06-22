@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounterBuilder;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounterBuilder;
@@ -19,6 +21,13 @@ final class ExtendedSdkLongUpDownCounter extends SdkLongUpDownCounter
   private ExtendedSdkLongUpDownCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor, sdkMeter, storage);
+  }
+
+  @Override
+  public BoundLongUpDownCounter bind(Attributes attributes) {
+    // TODO(bound-instruments): implement against WriteableMetricStorage in the implementation phase
+    // (includes fresh-eyes work on DeltaSynchronousMetricStorage).
+    throw new UnsupportedOperationException("bind is not yet implemented");
   }
 
   static final class ExtendedSdkLongUpDownCounterBuilder extends SdkLongUpDownCounterBuilder

@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.BoundDoubleUpDownCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounterBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
@@ -19,6 +21,13 @@ final class ExtendedSdkDoubleUpDownCounter extends SdkDoubleUpDownCounter
   private ExtendedSdkDoubleUpDownCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor, sdkMeter, storage);
+  }
+
+  @Override
+  public BoundDoubleUpDownCounter bind(Attributes attributes) {
+    // TODO(bound-instruments): implement against WriteableMetricStorage in the implementation phase
+    // (includes fresh-eyes work on DeltaSynchronousMetricStorage).
+    throw new UnsupportedOperationException("bind is not yet implemented");
   }
 
   static final class ExtendedSdkDoubleUpDownCounterBuilder extends SdkDoubleUpDownCounterBuilder

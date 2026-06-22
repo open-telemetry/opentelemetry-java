@@ -21,4 +21,6 @@ public interface ExtendedLongCounter extends LongCounter {
    * of attribute combinations is known ahead of time and the same series is recorded to repeatedly.
    */
   BoundLongCounter bind(Attributes attributes);
+
+  // keep this class even if it is empty, since experimental methods may be added in the future.
 }

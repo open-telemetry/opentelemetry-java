@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.BoundDoubleHistogram;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogram;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogramBuilder;
@@ -19,6 +21,13 @@ final class ExtendedSdkDoubleHistogram extends SdkDoubleHistogram
   ExtendedSdkDoubleHistogram(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor, sdkMeter, storage);
+  }
+
+  @Override
+  public BoundDoubleHistogram bind(Attributes attributes) {
+    // TODO(bound-instruments): implement against WriteableMetricStorage in the implementation phase
+    // (includes fresh-eyes work on DeltaSynchronousMetricStorage).
+    throw new UnsupportedOperationException("bind is not yet implemented");
   }
 
   static final class ExtendedSdkDoubleHistogramBuilder extends SdkDoubleHistogramBuilder

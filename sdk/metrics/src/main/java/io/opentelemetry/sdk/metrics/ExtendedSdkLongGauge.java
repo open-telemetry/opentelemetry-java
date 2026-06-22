@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.BoundLongGauge;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongGauge;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongGaugeBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
@@ -18,6 +20,13 @@ final class ExtendedSdkLongGauge extends SdkLongGauge implements ExtendedLongGau
   private ExtendedSdkLongGauge(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor, sdkMeter, storage);
+  }
+
+  @Override
+  public BoundLongGauge bind(Attributes attributes) {
+    // TODO(bound-instruments): implement against WriteableMetricStorage in the implementation phase
+    // (includes fresh-eyes work on DeltaSynchronousMetricStorage).
+    throw new UnsupportedOperationException("bind is not yet implemented");
   }
 
   static final class ExtendedSdkLongGaugeBuilder extends SdkLongGaugeBuilder
