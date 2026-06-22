@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
@@ -374,6 +375,15 @@ final class SdkMeter implements Meter {
     }
 
     @Override
+    public BoundStorageHandle bind(Attributes attributes) {
+      List<BoundStorageHandle> handles = new ArrayList<>(storages.size());
+      for (WriteableMetricStorage storage : storages) {
+        handles.add(storage.bind(attributes));
+      }
+      return new MultiBoundStorageHandle(handles);
+    }
+
+    @Override
     public boolean isEnabled() {
       for (WriteableMetricStorage storage : storages) {
         if (storage.isEnabled()) {
@@ -381,6 +391,28 @@ final class SdkMeter implements Meter {
         }
       }
       return false;
+    }
+  }
+
+  private static class MultiBoundStorageHandle implements BoundStorageHandle {
+    private final List<BoundStorageHandle> handles;
+
+    private MultiBoundStorageHandle(List<BoundStorageHandle> handles) {
+      this.handles = handles;
+    }
+
+    @Override
+    public void recordLong(long value, Context context) {
+      for (BoundStorageHandle handle : handles) {
+        handle.recordLong(value, context);
+      }
+    }
+
+    @Override
+    public void recordDouble(double value, Context context) {
+      for (BoundStorageHandle handle : handles) {
+        handle.recordDouble(value, context);
+      }
     }
   }
 }

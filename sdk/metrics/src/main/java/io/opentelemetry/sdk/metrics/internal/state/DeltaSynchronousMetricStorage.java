@@ -162,24 +162,119 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   }
 
   @Override
+  public BoundStorageHandle bind(Attributes attributes) {
+    // Resolve (or create) the wrapper for these attributes once and flag it bound. The bound
+    // instrument records straight onto the wrapper from then on, skipping attribute processing and
+    // the map lookup. The bound wrapper is carried across holder swaps and rotated (rather than
+    // pooled / reset-in-place) by collect(), so this reference stays valid for the instrument's
+    // lifetime.
+    Attributes processed = attributesProcessor.process(attributes, Context.current());
+    DeltaAggregatorHandle<T> wrapper = bindHandle(processed);
+    return new DeltaBoundHandle(wrapper, attributes);
+  }
+
+  @SuppressWarnings("ThreadPriorityCheck")
+  private DeltaAggregatorHandle<T> bindHandle(Attributes attributes) {
+    while (true) {
+      AggregatorHolder<T> holder = this.aggregatorHolder;
+      // Always coordinate through the holder gate, even for an existing series: this serializes the
+      // bound flag write with collect()'s bound-handle scan (which runs while the gate is locked),
+      // guaranteeing the handle is carried into the new holder rather than abandoned/pooled.
+      if (!holder.tryAcquireForNewSeries()) {
+        // Holder is locked for collection. Retry; once the collector installs the new holder this
+        // loop re-reads it and succeeds.
+        Thread.yield();
+        continue;
+      }
+      try {
+        ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles =
+            holder.aggregatorHandles;
+        DeltaAggregatorHandle<T> handle = aggregatorHandles.get(attributes);
+        if (handle == null && aggregatorHandles.size() >= maxCardinality) {
+          logger.log(
+              Level.WARNING,
+              "Instrument "
+                  + metricDescriptor.getSourceInstrument().getName()
+                  + " has exceeded the maximum allowed cardinality ("
+                  + maxCardinality
+                  + ").");
+          attributes = MetricStorage.CARDINALITY_OVERFLOW;
+          handle = aggregatorHandles.get(attributes);
+        }
+        if (handle == null) {
+          DeltaAggregatorHandle<T> newDeltaHandle = aggregatorHandlePool.poll();
+          if (newDeltaHandle == null) {
+            newDeltaHandle = new DeltaAggregatorHandle<>(aggregator.createHandle(clock.now()));
+          }
+          DeltaAggregatorHandle<T> existing =
+              aggregatorHandles.putIfAbsent(attributes, newDeltaHandle);
+          handle = existing != null ? existing : newDeltaHandle;
+        }
+        handle.bound = true;
+        return handle;
+      } finally {
+        holder.releaseNewSeries();
+      }
+    }
+  }
+
+  @Override
   public MetricData collect(
       Resource resource, InstrumentationScopeInfo instrumentationScopeInfo, long epochNanos) {
-    ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles;
     AggregatorHolder<T> holder = this.aggregatorHolder;
-    this.aggregatorHolder =
-        (memoryMode == REUSABLE_DATA)
-            ? new AggregatorHolder<>(previousCollectionAggregatorHandles)
-            : new AggregatorHolder<>();
 
-    // Lock out new series creation in the old holder and wait for any in-flight new-series
-    // operations to complete. This guarantees the per-handle lock pass below sees every handle
-    // that will ever be inserted into holder.aggregatorHandles.
+    // Lock out new series creation (and bind()) in the old holder and wait for any in-flight
+    // operations to complete. Done before scanning for bound handles and before installing the new
+    // holder, so the bound-handle scan below sees a stable set and no bind() can land in the holder
+    // we are about to stop recording into.
     holder.lockForCollectAndAwait();
 
-    // Lock each handle and wait for any in-flight recorders against it to finish.
-    holder.aggregatorHandles.values().forEach(DeltaAggregatorHandle::lockForCollect);
-    holder.aggregatorHandles.values().forEach(DeltaAggregatorHandle::awaitRecordersAndUnlock);
-    aggregatorHandles = holder.aggregatorHandles;
+    // Seed the new holder with the bound handles, so that (a) the bound wrappers survive the swap
+    // (their bound instruments hold direct references), (b) a series recorded both bound and
+    // unbound continues to share one wrapper, and (c) bound series are collected every interval.
+    ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> newHolderHandles;
+    if (memoryMode == REUSABLE_DATA) {
+      // Ping-pong between two maps. Copy bound wrappers into the next map so they appear every
+      // interval rather than every other interval.
+      holder.aggregatorHandles.forEach(
+          (attributes, handle) -> {
+            if (handle.bound) {
+              previousCollectionAggregatorHandles.put(attributes, handle);
+            }
+          });
+      newHolderHandles = previousCollectionAggregatorHandles;
+    } else {
+      // IMMUTABLE_DATA: unbound series start fresh each interval (the old map is abandoned), so
+      // seed
+      // the new holder with only the bound wrappers.
+      newHolderHandles = new ConcurrentHashMap<>();
+      holder.aggregatorHandles.forEach(
+          (attributes, handle) -> {
+            if (handle.bound) {
+              newHolderHandles.put(attributes, handle);
+            }
+          });
+    }
+    this.aggregatorHolder = new AggregatorHolder<>(newHolderHandles);
+
+    ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles =
+        holder.aggregatorHandles;
+
+    // Lock and drain unbound handles (unchanged from the unbound-only path). Bound handles are
+    // handled separately below with a tight per-handle lock window so that recording to a bound
+    // series never blocks for the duration of the whole collection.
+    aggregatorHandles.forEach(
+        (attributes, handle) -> {
+          if (!handle.bound) {
+            handle.lockForCollect();
+          }
+        });
+    aggregatorHandles.forEach(
+        (attributes, handle) -> {
+          if (!handle.bound) {
+            handle.awaitRecordersAndUnlock();
+          }
+        });
 
     List<T> points;
     if (memoryMode == REUSABLE_DATA) {
@@ -202,11 +297,12 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // aggregator handles, so on next recording cycle using this map, there will be room for newly
     // recorded Attributes. This comes at the expanse of memory allocations. This can be avoided
     // if the user chooses to increase the maxCardinality.
+    // Bound handles are kept unconditionally since their bound instruments hold direct references.
     if (memoryMode == REUSABLE_DATA) {
       if (aggregatorHandles.size() >= maxCardinality) {
         aggregatorHandles.forEach(
             (attribute, handle) -> {
-              if (!handle.handle.hasRecordedValues()) {
+              if (!handle.bound && !handle.handle.hasRecordedValues()) {
                 aggregatorHandles.remove(attribute);
               }
             });
@@ -221,6 +317,10 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // Grab aggregated points.
     aggregatorHandles.forEach(
         (attributes, handle) -> {
+          if (handle.bound) {
+            collectBound(handle, attributes, startEpochNanos, epochNanos, points);
+            return;
+          }
           if (!handle.handle.hasRecordedValues()) {
             return;
           }
@@ -250,6 +350,72 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
     return aggregator.toMetricData(
         resource, instrumentationScopeInfo, metricDescriptor, points, DELTA);
+  }
+
+  /**
+   * Collects a bound handle by rotation: drain in-flight recorders, swap in a fresh (already-zero)
+   * accumulator while locked, unlock so recorders resume on the fresh accumulator, then aggregate
+   * the drained accumulator off the lock (no recorders reference it anymore). The two accumulators
+   * are ping-ponged via {@link DeltaAggregatorHandle#spare} so steady-state collection allocates
+   * nothing.
+   */
+  private void collectBound(
+      DeltaAggregatorHandle<T> handle,
+      Attributes attributes,
+      long startEpochNanos,
+      long epochNanos,
+      List<T> points) {
+    handle.lockForCollect();
+    handle.awaitRecorders();
+    if (!handle.handle.hasRecordedValues()) {
+      // Nothing recorded this interval; no rotation needed.
+      handle.unlockAfterCollect();
+      return;
+    }
+    AggregatorHandle<T> collected = handle.handle;
+    AggregatorHandle<T> next = handle.spare;
+    if (next == null) {
+      next = aggregator.createHandle(clock.now());
+    }
+    handle.handle = next; // volatile: recorders resuming after unlock see the zero accumulator
+    handle.spare = collected;
+    handle.unlockAfterCollect();
+    // Aggregate (and reset) the drained accumulator off the lock; it becomes the spare for the next
+    // rotation.
+    T point =
+        collected.aggregateThenMaybeReset(
+            startEpochNanos, epochNanos, attributes, /* reset= */ true);
+    if (point != null) {
+      points.add(point);
+    }
+  }
+
+  private final class DeltaBoundHandle implements BoundStorageHandle {
+    private final DeltaAggregatorHandle<T> wrapper;
+    // Original (unprocessed) attributes, passed to the handle for exemplar sampling, matching the
+    // unbound record path.
+    private final Attributes attributes;
+
+    DeltaBoundHandle(DeltaAggregatorHandle<T> wrapper, Attributes attributes) {
+      this.wrapper = wrapper;
+      this.attributes = attributes;
+    }
+
+    @Override
+    public void recordLong(long value, Context context) {
+      if (!recordingEnabled()) {
+        return;
+      }
+      wrapper.recordLong(value, attributes, context);
+    }
+
+    @Override
+    public void recordDouble(double value, Context context) {
+      if (!shouldRecordDouble(value, attributes)) {
+        return;
+      }
+      wrapper.recordDouble(value, attributes, context);
+    }
   }
 
   private static class AggregatorHolder<T extends PointData> {
@@ -302,7 +468,21 @@ class DeltaSynchronousMetricStorage<T extends PointData>
   }
 
   private static final class DeltaAggregatorHandle<T extends PointData> {
-    final AggregatorHandle<T> handle;
+    // Volatile and non-final: bound series rotate this accumulator each collect (a fresh,
+    // already-zero handle is swapped in while recorders are drained), so a bound instrument's
+    // stable reference to this wrapper keeps recording into the current interval without blocking
+    // on aggregation. For unbound series it never changes after construction. Recorders must read
+    // this only after acquiring the per-handle gate, which establishes the happens-before with the
+    // collector's swap.
+    volatile AggregatorHandle<T> handle;
+    // The off-duty accumulator used for bound rotation, ping-ponged with {@link #handle} each
+    // collect. Touched only by the (serialized) collector; volatile to publish across collect
+    // cycles. Always null for unbound handles.
+    @Nullable private volatile AggregatorHandle<T> spare;
+    // True once this series has been bound. Bound wrappers are carried across holder swaps (never
+    // pooled) and rotated rather than reset in place. Written under the holder gate by bind(), read
+    // by the collector.
+    private volatile boolean bound;
     // Guards per-handle recording using the same even/odd protocol as
     // AggregatorHolder.newSeriesGate,
     // but scoped to a single series:
@@ -315,6 +495,36 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
     DeltaAggregatorHandle(AggregatorHandle<T> handle) {
       this.handle = handle;
+    }
+
+    /**
+     * Records onto the current accumulator via the per-handle gate. Used by bound instruments,
+     * which reference this wrapper directly — no map lookup and no holder coordination, since the
+     * wrapper already exists and is carried across holders. Spins if the collector currently holds
+     * the lock.
+     */
+    @SuppressWarnings("ThreadPriorityCheck")
+    void recordLong(long value, Attributes attributes, Context context) {
+      while (!tryAcquireForRecord()) {
+        Thread.yield();
+      }
+      try {
+        handle.recordLong(value, attributes, context);
+      } finally {
+        releaseRecord();
+      }
+    }
+
+    @SuppressWarnings("ThreadPriorityCheck")
+    void recordDouble(double value, Attributes attributes, Context context) {
+      while (!tryAcquireForRecord()) {
+        Thread.yield();
+      }
+      try {
+        handle.recordDouble(value, attributes, context);
+      } finally {
+        releaseRecord();
+      }
     }
 
     /**
@@ -357,6 +567,23 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       while (state.get() > 1) {
         Thread.yield();
       }
+      state.addAndGet(-1);
+    }
+
+    /**
+     * Waits for all in-flight recorders to finish but leaves the handle locked. Used by the bound
+     * rotation path, which swaps the accumulator before unlocking via {@link
+     * #unlockAfterCollect()}.
+     */
+    @SuppressWarnings("ThreadPriorityCheck")
+    void awaitRecorders() {
+      while (state.get() > 1) {
+        Thread.yield();
+      }
+    }
+
+    /** Clears the collection lock set by {@link #lockForCollect()}. */
+    void unlockAfterCollect() {
       state.addAndGet(-1);
     }
   }

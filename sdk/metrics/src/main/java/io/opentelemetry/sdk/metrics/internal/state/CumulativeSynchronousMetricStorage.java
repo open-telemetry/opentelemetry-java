@@ -57,6 +57,42 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
     getAggregatorHandle(attributes, context).recordDouble(value, attributes, context);
   }
 
+  @Override
+  public BoundStorageHandle bind(Attributes attributes) {
+    // Cumulative handles are stable for the instrument's lifetime (the map is never swapped and
+    // handles are never reset/pooled), so resolve the handle once here and record straight onto it.
+    AggregatorHandle<T> handle = getAggregatorHandle(attributes, Context.current());
+    return new CumulativeBoundHandle(handle, attributes);
+  }
+
+  private final class CumulativeBoundHandle implements BoundStorageHandle {
+    private final AggregatorHandle<T> handle;
+    // Original (unprocessed) attributes, passed to the handle for exemplar sampling, matching the
+    // unbound record path.
+    private final Attributes attributes;
+
+    CumulativeBoundHandle(AggregatorHandle<T> handle, Attributes attributes) {
+      this.handle = handle;
+      this.attributes = attributes;
+    }
+
+    @Override
+    public void recordLong(long value, Context context) {
+      if (!recordingEnabled()) {
+        return;
+      }
+      handle.recordLong(value, attributes, context);
+    }
+
+    @Override
+    public void recordDouble(double value, Context context) {
+      if (!shouldRecordDouble(value, attributes)) {
+        return;
+      }
+      handle.recordDouble(value, attributes, context);
+    }
+  }
+
   private AggregatorHandle<T> getAggregatorHandle(Attributes attributes, Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);

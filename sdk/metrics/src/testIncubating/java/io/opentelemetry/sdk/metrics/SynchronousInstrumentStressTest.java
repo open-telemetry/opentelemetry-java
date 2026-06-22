@@ -18,14 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.BoundDoubleCounter;
-import io.opentelemetry.api.incubator.metrics.BoundDoubleGauge;
-import io.opentelemetry.api.incubator.metrics.BoundDoubleHistogram;
-import io.opentelemetry.api.incubator.metrics.BoundDoubleUpDownCounter;
-import io.opentelemetry.api.incubator.metrics.BoundLongCounter;
-import io.opentelemetry.api.incubator.metrics.BoundLongGauge;
-import io.opentelemetry.api.incubator.metrics.BoundLongHistogram;
-import io.opentelemetry.api.incubator.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogram;
@@ -60,9 +52,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.LongStream;
@@ -101,7 +91,7 @@ class SynchronousInstrumentStressTest {
 
   // Can change to a higher value when making changes to internals to improve confidence of
   // correctness.
-  private static final int STRESS_TEST_REPETITIONS = 1;
+  private static final int STRESS_TEST_REPETITIONS = 10;
 
   @ParameterizedTest
   @MethodSource("stressTestArgs")
@@ -146,8 +136,16 @@ class SynchronousInstrumentStressTest {
     Meter meter = meterProvider.get("test");
     List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
     Collections.shuffle(attributes);
-    Instrument instrument =
-        getInstrument(meter, instrumentType, instrumentValueType, bound, attributes);
+    // When unbound, record through `instrument`, looking up the series by attributes on each call.
+    // When bound, bind one instrument per series up front and record straight to those (no
+    // per-record attribute lookup) — the record loop below forks accordingly.
+    Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
+    List<BoundInstrument> boundInstruments = new ArrayList<>();
+    if (bound) {
+      for (Attributes attr : attributes) {
+        boundInstruments.add(getBoundInstrument(meter, instrumentType, instrumentValueType, attr));
+      }
+    }
 
     // Define list of measurements to record
     // Later, we'll assert that the data collected matches these measurements, with no lost writes,
@@ -169,11 +167,20 @@ class SynchronousInstrumentStressTest {
           new Thread(
               () -> {
                 Uninterruptibles.awaitUninterruptibly(startSignal);
-                for (Long measurement : measurements) {
-                  for (Attributes attr : attributes) {
-                    instrument.record(measurement, attr);
+                if (bound) {
+                  for (Long measurement : measurements) {
+                    for (BoundInstrument boundInstrument : boundInstruments) {
+                      boundInstrument.record(measurement);
+                    }
+                    Thread.yield();
                   }
-                  Thread.yield();
+                } else {
+                  for (Long measurement : measurements) {
+                    for (Attributes attr : attributes) {
+                      instrument.record(measurement, attr);
+                    }
+                    Thread.yield();
+                  }
                 }
                 latch.countDown();
               }));
@@ -354,19 +361,7 @@ class SynchronousInstrumentStressTest {
   }
 
   private static Instrument getInstrument(
-      Meter meter,
-      InstrumentType instrumentType,
-      InstrumentValueType instrumentValueType,
-      boolean bound,
-      List<Attributes> attributesList) {
-    if (bound) {
-      // Bind one bound instrument per attribute set up front, then dispatch records by attributes.
-      // The bound record path is the one under test; the per-record map lookup here is just test
-      // plumbing to reuse the unbound recording loop.
-      Map<Attributes, BoundInstrument> boundInstruments =
-          bindInstruments(meter, instrumentType, instrumentValueType, attributesList);
-      return (value, attributes) -> boundInstruments.get(attributes).record(value);
-    }
+      Meter meter, InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
     switch (instrumentType) {
       case COUNTER:
         return instrumentValueType == InstrumentValueType.DOUBLE
@@ -401,95 +396,57 @@ class SynchronousInstrumentStressTest {
   }
 
   /**
-   * Builds the instrument for the given type / value type, then binds one {@link BoundInstrument}
-   * per attribute set in {@code attributesList}.
+   * Builds the instrument for the given type / value type and binds it to {@code attributes},
+   * returning a {@link BoundInstrument} that records straight to that series. Mirrors {@link
+   * #getInstrument} but for the bound API.
    */
-  private static Map<Attributes, BoundInstrument> bindInstruments(
+  private static BoundInstrument getBoundInstrument(
       Meter meter,
       InstrumentType instrumentType,
       InstrumentValueType instrumentValueType,
-      List<Attributes> attributesList) {
-    Map<Attributes, BoundInstrument> result = new HashMap<>();
+      Attributes attributes) {
     boolean isDouble = instrumentValueType == InstrumentValueType.DOUBLE;
     switch (instrumentType) {
       case COUNTER:
-        if (isDouble) {
-          ExtendedDoubleCounter instrument =
-              (ExtendedDoubleCounter) meter.counterBuilder(INSTRUMENT_NAME).ofDoubles().build();
-          for (Attributes attributes : attributesList) {
-            BoundDoubleCounter bound = instrument.bind(attributes);
-            result.put(attributes, bound::add);
-          }
-        } else {
-          ExtendedLongCounter instrument =
-              (ExtendedLongCounter) meter.counterBuilder(INSTRUMENT_NAME).build();
-          for (Attributes attributes : attributesList) {
-            BoundLongCounter bound = instrument.bind(attributes);
-            result.put(attributes, bound::add);
-          }
-        }
-        return result;
+        return isDouble
+            ? ((ExtendedDoubleCounter) meter.counterBuilder(INSTRUMENT_NAME).ofDoubles().build())
+                    .bind(attributes)
+                ::add
+            : ((ExtendedLongCounter) meter.counterBuilder(INSTRUMENT_NAME).build()).bind(attributes)
+                ::add;
       case UP_DOWN_COUNTER:
-        if (isDouble) {
-          ExtendedDoubleUpDownCounter instrument =
-              (ExtendedDoubleUpDownCounter)
-                  meter.upDownCounterBuilder(INSTRUMENT_NAME).ofDoubles().build();
-          for (Attributes attributes : attributesList) {
-            BoundDoubleUpDownCounter bound = instrument.bind(attributes);
-            result.put(attributes, bound::add);
-          }
-        } else {
-          ExtendedLongUpDownCounter instrument =
-              (ExtendedLongUpDownCounter) meter.upDownCounterBuilder(INSTRUMENT_NAME).build();
-          for (Attributes attributes : attributesList) {
-            BoundLongUpDownCounter bound = instrument.bind(attributes);
-            result.put(attributes, bound::add);
-          }
-        }
-        return result;
+        return isDouble
+            ? ((ExtendedDoubleUpDownCounter)
+                        meter.upDownCounterBuilder(INSTRUMENT_NAME).ofDoubles().build())
+                    .bind(attributes)
+                ::add
+            : ((ExtendedLongUpDownCounter) meter.upDownCounterBuilder(INSTRUMENT_NAME).build())
+                    .bind(attributes)
+                ::add;
       case HISTOGRAM:
-        if (isDouble) {
-          ExtendedDoubleHistogram instrument =
-              (ExtendedDoubleHistogram)
-                  meter
-                      .histogramBuilder(INSTRUMENT_NAME)
-                      .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
-                      .build();
-          for (Attributes attributes : attributesList) {
-            BoundDoubleHistogram bound = instrument.bind(attributes);
-            result.put(attributes, bound::record);
-          }
-        } else {
-          ExtendedLongHistogram instrument =
-              (ExtendedLongHistogram)
-                  meter
-                      .histogramBuilder(INSTRUMENT_NAME)
-                      .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
-                      .ofLongs()
-                      .build();
-          for (Attributes attributes : attributesList) {
-            BoundLongHistogram bound = instrument.bind(attributes);
-            result.put(attributes, bound::record);
-          }
-        }
-        return result;
+        return isDouble
+            ? ((ExtendedDoubleHistogram)
+                        meter
+                            .histogramBuilder(INSTRUMENT_NAME)
+                            .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                            .build())
+                    .bind(attributes)
+                ::record
+            : ((ExtendedLongHistogram)
+                        meter
+                            .histogramBuilder(INSTRUMENT_NAME)
+                            .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                            .ofLongs()
+                            .build())
+                    .bind(attributes)
+                ::record;
       case GAUGE:
-        if (isDouble) {
-          ExtendedDoubleGauge instrument =
-              (ExtendedDoubleGauge) meter.gaugeBuilder(INSTRUMENT_NAME).build();
-          for (Attributes attributes : attributesList) {
-            BoundDoubleGauge bound = instrument.bind(attributes);
-            result.put(attributes, bound::set);
-          }
-        } else {
-          ExtendedLongGauge instrument =
-              (ExtendedLongGauge) meter.gaugeBuilder(INSTRUMENT_NAME).ofLongs().build();
-          for (Attributes attributes : attributesList) {
-            BoundLongGauge bound = instrument.bind(attributes);
-            result.put(attributes, bound::set);
-          }
-        }
-        return result;
+        return isDouble
+            ? ((ExtendedDoubleGauge) meter.gaugeBuilder(INSTRUMENT_NAME).build()).bind(attributes)
+                ::set
+            : ((ExtendedLongGauge) meter.gaugeBuilder(INSTRUMENT_NAME).ofLongs().build())
+                    .bind(attributes)
+                ::set;
       case OBSERVABLE_COUNTER:
       case OBSERVABLE_UP_DOWN_COUNTER:
       case OBSERVABLE_GAUGE:
