@@ -112,7 +112,7 @@ jobs:
       matrix:
         test-graal-version:
           - 21
-          - 25 # renovate(java-version)
+          - 26 # renovate(java-version)
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: graalvm/setup-graalvm@809afe62741147990fbf405045cd15e61bffedfe # v1.5.5
