@@ -94,11 +94,13 @@ public final class PeriodicMetricReader implements MetricReader {
     return exporter.getMemoryMode();
   }
 
-  * Forces a flush of all metrics.
-  *
-  * <p>If an export is already in progress, the flush will be skipped and the returned result will
-  * be completed exceptionally with an {@link IllegalStateException}. Callers can inspect the cause
-  * via {@link CompletableResultCode#getFailureThrowable()}.
+   /**
+   * Forces a flush of all metrics.
+   *
+   * <p>If an export is already in progress, the flush will be skipped and the returned result will
+   * be completed exceptionally with an {@link IllegalStateException}. Callers can inspect the cause
+   * via {@link CompletableResultCode#getFailureThrowable()}.
+   */
   @Override
   public CompletableResultCode forceFlush() {
     CompletableResultCode result = new CompletableResultCode();
