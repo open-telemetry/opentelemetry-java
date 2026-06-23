@@ -93,8 +93,8 @@ public final class PeriodicMetricReader implements MetricReader {
   public MemoryMode getMemoryMode() {
     return exporter.getMemoryMode();
   }
-  
-   /**
+
+  /**
    * Forces a flush of all metrics.
    *
    * <p>If an export is already in progress, the flush will be skipped and the returned result will
@@ -159,6 +159,7 @@ public final class PeriodicMetricReader implements MetricReader {
     this.collectionRegistration = collectionRegistration;
     start();
   }
+
   /**
    * Sets the {@link MeterProvider} to export metrics about this {@link PeriodicMetricReader} to.
    * Automatically called by the meter provider the reader is registered to.
@@ -167,6 +168,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private void setMeterProvider(MeterProvider meterProvider) {
     this.scheduled.setMeterProvider(meterProvider);
   }
+
   @Override
   public String toString() {
     return "PeriodicMetricReader{"
@@ -295,6 +297,7 @@ public final class PeriodicMetricReader implements MetricReader {
       }
       return flushResult;
     }
+
     CompletableResultCode shutdown() {
       return exporter.shutdown();
     }
