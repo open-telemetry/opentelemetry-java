@@ -114,7 +114,7 @@ public final class PeriodicMetricReader implements MetricReader {
                   result.succeed();
                 } else {
                   result.failExceptionally(new IllegalStateException("forceFlush failed"));
-}
+                }
               });
         });
     return result;
