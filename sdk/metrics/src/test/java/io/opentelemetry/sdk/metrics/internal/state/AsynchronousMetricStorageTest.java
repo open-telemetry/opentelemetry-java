@@ -421,7 +421,8 @@ class AsynchronousMetricStorageTest {
   void collect_CumulativeRetainsLiveSeriesWhenStaleSeriesAreRemoved(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    // Enough series to share buckets, but under the cardinality limit so there's no overflow series.
+    // Enough series to share buckets, but under the cardinality limit so there's no overflow
+    // series.
     int seriesCount = 20;
 
     // First collection reports everything.

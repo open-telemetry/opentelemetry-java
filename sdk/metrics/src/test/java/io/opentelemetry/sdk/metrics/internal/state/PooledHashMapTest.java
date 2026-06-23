@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -76,12 +77,15 @@ class PooledHashMapTest {
 
   @Test
   void forEachAllowsRemovalOfCurrentEntry() {
-    // 1 and 17 land in the same bucket, like collection removing a stale series mid-iteration.
-    PooledHashMap<Integer, Integer> collidingMap = new PooledHashMap<>();
-    collidingMap.put(1, 1);
-    collidingMap.put(17, 17);
+    // Keys with the same hashcode always share a bucket (independent of capacity), mirroring
+    // collection removing a stale series while iterating the others.
+    PooledHashMap<SameBucketKey, Integer> collidingMap = new PooledHashMap<>();
+    SameBucketKey first = new SameBucketKey("first");
+    SameBucketKey second = new SameBucketKey("second");
+    collidingMap.put(first, 1);
+    collidingMap.put(second, 2);
 
-    Map<Integer, Integer> visited = new HashMap<>();
+    Map<SameBucketKey, Integer> visited = new HashMap<>();
     collidingMap.forEach(
         (key, value) -> {
           visited.put(key, value);
@@ -90,7 +94,26 @@ class PooledHashMapTest {
           }
         });
 
-    assertThat(visited).containsOnlyKeys(1, 17).containsValues(1, 17);
+    assertThat(visited).containsOnlyKeys(first, second).containsValues(1, 2);
     assertThat(collidingMap.size()).isEqualTo(1);
+  }
+
+  /** Key whose hashcode is constant, so all instances fall in the same bucket. */
+  private static final class SameBucketKey {
+    private final String name;
+
+    SameBucketKey(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public int hashCode() {
+      return 1;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      return o instanceof SameBucketKey && name.equals(((SameBucketKey) o).name);
+    }
   }
 }
