@@ -16,22 +16,16 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"default_config", "tracers"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalTracerConfiguratorModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("default_config")
+  @Nullable
   private ExperimentalTracerConfigModel defaultConfig;
 
-  /**
-   * Configure tracers. If omitted, all tracers use .default_config.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure tracers. If omitted, all tracers use .default_config. */
   @JsonProperty("tracers")
   @JsonPropertyDescription("Configure tracers.\nIf omitted, all tracers use .default_config.\n")
+  @Nullable
   private List<ExperimentalTracerMatcherAndConfigModel> tracers;
 
   @JsonProperty("default_config")
@@ -61,47 +55,36 @@ public class ExperimentalTracerConfiguratorModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalTracerConfiguratorModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("defaultConfig");
-    sb.append('=');
-    sb.append(((this.defaultConfig == null) ? "<null>" : this.defaultConfig));
-    sb.append(',');
-    sb.append("tracers");
-    sb.append('=');
-    sb.append(((this.tracers == null) ? "<null>" : this.tracers));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalTracerConfiguratorModel{"
+        + "defaultConfig="
+        + defaultConfig
+        + ", tracers="
+        + tracers
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.tracers == null) ? 0 : this.tracers.hashCode()));
-    result = ((result * 31) + ((this.defaultConfig == null) ? 0 : this.defaultConfig.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.defaultConfig == null) ? 0 : this.defaultConfig.hashCode();
+    h *= 1000003;
+    h ^= (this.tracers == null) ? 0 : this.tracers.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalTracerConfiguratorModel) == false) {
-      return false;
+    if (o instanceof ExperimentalTracerConfiguratorModel) {
+      ExperimentalTracerConfiguratorModel that = (ExperimentalTracerConfiguratorModel) o;
+      return (this.defaultConfig == null
+              ? that.defaultConfig == null
+              : this.defaultConfig.equals(that.defaultConfig))
+          && (this.tracers == null ? that.tracers == null : this.tracers.equals(that.tracers));
     }
-    ExperimentalTracerConfiguratorModel rhs = ((ExperimentalTracerConfiguratorModel) other);
-    return (((this.tracers == rhs.tracers)
-            || ((this.tracers != null) && this.tracers.equals(rhs.tracers)))
-        && ((this.defaultConfig == rhs.defaultConfig)
-            || ((this.defaultConfig != null) && this.defaultConfig.equals(rhs.defaultConfig))));
+    return false;
   }
 }

@@ -15,17 +15,12 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"ratio"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalProbabilitySamplerModel {
 
-  /**
-   * Configure ratio. If omitted or null, 1.0 is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure ratio. If omitted or null, 1.0 is used. */
   @JsonProperty("ratio")
   @JsonPropertyDescription("Configure ratio.\nIf omitted or null, 1.0 is used.\n")
+  @Nullable
   private Double ratio;
 
   /** Configure ratio. If omitted or null, 1.0 is used. */
@@ -42,39 +37,26 @@ public class ExperimentalProbabilitySamplerModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalProbabilitySamplerModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("ratio");
-    sb.append('=');
-    sb.append(((this.ratio == null) ? "<null>" : this.ratio));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalProbabilitySamplerModel{" + "ratio=" + ratio + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.ratio == null) ? 0 : this.ratio.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.ratio == null) ? 0 : this.ratio.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalProbabilitySamplerModel) == false) {
-      return false;
+    if (o instanceof ExperimentalProbabilitySamplerModel) {
+      ExperimentalProbabilitySamplerModel that = (ExperimentalProbabilitySamplerModel) o;
+      return (this.ratio == null ? that.ratio == null : this.ratio.equals(that.ratio));
     }
-    ExperimentalProbabilitySamplerModel rhs = ((ExperimentalProbabilitySamplerModel) other);
-    return ((this.ratio == rhs.ratio) || ((this.ratio != null) && this.ratio.equals(rhs.ratio)));
+    return false;
   }
 }

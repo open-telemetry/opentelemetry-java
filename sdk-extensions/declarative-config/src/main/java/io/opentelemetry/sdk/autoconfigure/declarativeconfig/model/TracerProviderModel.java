@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -23,7 +22,6 @@ import javax.annotation.Nullable;
   "tracer_configurator/development"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class TracerProviderModel {
 
   /**
@@ -34,27 +32,23 @@ public class TracerProviderModel {
   @JsonProperty("processors")
   @JsonPropertyDescription(
       "Configure span processors.\nProperty is required and must be non-null.\n")
-  @Nonnull
+  @Nullable
   private List<SpanProcessorModel> processors;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("limits")
+  @Nullable
   private SpanLimitsModel limits;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("sampler")
+  @Nullable
   private SamplerModel sampler;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("id_generator")
+  @Nullable
   private IdGeneratorModel idGenerator;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("tracer_configurator/development")
+  @Nullable
   private ExperimentalTracerConfiguratorModel tracerConfiguratorDevelopment;
 
   /**
@@ -120,77 +114,58 @@ public class TracerProviderModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(TracerProviderModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("processors");
-    sb.append('=');
-    sb.append(((this.processors == null) ? "<null>" : this.processors));
-    sb.append(',');
-    sb.append("limits");
-    sb.append('=');
-    sb.append(((this.limits == null) ? "<null>" : this.limits));
-    sb.append(',');
-    sb.append("sampler");
-    sb.append('=');
-    sb.append(((this.sampler == null) ? "<null>" : this.sampler));
-    sb.append(',');
-    sb.append("idGenerator");
-    sb.append('=');
-    sb.append(((this.idGenerator == null) ? "<null>" : this.idGenerator));
-    sb.append(',');
-    sb.append("tracerConfiguratorDevelopment");
-    sb.append('=');
-    sb.append(
-        ((this.tracerConfiguratorDevelopment == null)
-            ? "<null>"
-            : this.tracerConfiguratorDevelopment));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "TracerProviderModel{"
+        + "processors="
+        + processors
+        + ", limits="
+        + limits
+        + ", sampler="
+        + sampler
+        + ", idGenerator="
+        + idGenerator
+        + ", tracerConfiguratorDevelopment="
+        + tracerConfiguratorDevelopment
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.idGenerator == null) ? 0 : this.idGenerator.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.tracerConfiguratorDevelopment == null)
-                ? 0
-                : this.tracerConfiguratorDevelopment.hashCode()));
-    result = ((result * 31) + ((this.processors == null) ? 0 : this.processors.hashCode()));
-    result = ((result * 31) + ((this.limits == null) ? 0 : this.limits.hashCode()));
-    result = ((result * 31) + ((this.sampler == null) ? 0 : this.sampler.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.processors == null) ? 0 : this.processors.hashCode();
+    h *= 1000003;
+    h ^= (this.limits == null) ? 0 : this.limits.hashCode();
+    h *= 1000003;
+    h ^= (this.sampler == null) ? 0 : this.sampler.hashCode();
+    h *= 1000003;
+    h ^= (this.idGenerator == null) ? 0 : this.idGenerator.hashCode();
+    h *= 1000003;
+    h ^=
+        (this.tracerConfiguratorDevelopment == null)
+            ? 0
+            : this.tracerConfiguratorDevelopment.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof TracerProviderModel) == false) {
-      return false;
+    if (o instanceof TracerProviderModel) {
+      TracerProviderModel that = (TracerProviderModel) o;
+      return (this.processors == null
+              ? that.processors == null
+              : this.processors.equals(that.processors))
+          && (this.limits == null ? that.limits == null : this.limits.equals(that.limits))
+          && (this.sampler == null ? that.sampler == null : this.sampler.equals(that.sampler))
+          && (this.idGenerator == null
+              ? that.idGenerator == null
+              : this.idGenerator.equals(that.idGenerator))
+          && (this.tracerConfiguratorDevelopment == null
+              ? that.tracerConfiguratorDevelopment == null
+              : this.tracerConfiguratorDevelopment.equals(that.tracerConfiguratorDevelopment));
     }
-    TracerProviderModel rhs = ((TracerProviderModel) other);
-    return ((((((this.idGenerator == rhs.idGenerator)
-                        || ((this.idGenerator != null) && this.idGenerator.equals(rhs.idGenerator)))
-                    && ((this.tracerConfiguratorDevelopment == rhs.tracerConfiguratorDevelopment)
-                        || ((this.tracerConfiguratorDevelopment != null)
-                            && this.tracerConfiguratorDevelopment.equals(
-                                rhs.tracerConfiguratorDevelopment))))
-                && ((this.processors == rhs.processors)
-                    || ((this.processors != null) && this.processors.equals(rhs.processors))))
-            && ((this.limits == rhs.limits)
-                || ((this.limits != null) && this.limits.equals(rhs.limits))))
-        && ((this.sampler == rhs.sampler)
-            || ((this.sampler != null) && this.sampler.equals(rhs.sampler))));
+    return false;
   }
 }

@@ -9,18 +9,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"root"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalComposableParentThresholdSamplerModel {
 
   /** (Required) */
   @JsonProperty("root")
-  @Nonnull
+  @Nullable
   private ExperimentalComposableSamplerModel root;
 
   /** (Required) */
@@ -38,40 +36,27 @@ public class ExperimentalComposableParentThresholdSamplerModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalComposableParentThresholdSamplerModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("root");
-    sb.append('=');
-    sb.append(((this.root == null) ? "<null>" : this.root));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalComposableParentThresholdSamplerModel{" + "root=" + root + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.root == null) ? 0 : this.root.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.root == null) ? 0 : this.root.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalComposableParentThresholdSamplerModel) == false) {
-      return false;
+    if (o instanceof ExperimentalComposableParentThresholdSamplerModel) {
+      ExperimentalComposableParentThresholdSamplerModel that =
+          (ExperimentalComposableParentThresholdSamplerModel) o;
+      return (this.root == null ? that.root == null : this.root.equals(that.root));
     }
-    ExperimentalComposableParentThresholdSamplerModel rhs =
-        ((ExperimentalComposableParentThresholdSamplerModel) other);
-    return ((this.root == rhs.root) || ((this.root != null) && this.root.equals(rhs.root)));
+    return false;
   }
 }

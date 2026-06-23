@@ -26,61 +26,46 @@ import javax.annotation.Nullable;
   "translation_strategy"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalPrometheusMetricExporterModel {
 
-  /**
-   * Configure host. If omitted or null, localhost is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure host. If omitted or null, localhost is used. */
   @JsonProperty("host")
   @JsonPropertyDescription("Configure host.\nIf omitted or null, localhost is used.\n")
+  @Nullable
   private String host;
 
-  /**
-   * Configure port. If omitted or null, 9464 is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure port. If omitted or null, 9464 is used. */
   @JsonProperty("port")
   @JsonPropertyDescription("Configure port.\nIf omitted or null, 9464 is used.\n")
+  @Nullable
   private Integer port;
 
   /**
    * Configure Prometheus Exporter to produce metrics with scope labels. If omitted or null, true is
    * used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("scope_info_enabled")
   @JsonPropertyDescription(
       "Configure Prometheus Exporter to produce metrics with scope labels.\nIf omitted or null, true is used.\n")
+  @Nullable
   private Boolean scopeInfoEnabled;
 
   /**
    * Configure Prometheus Exporter to produce metrics with a target info metric for the resource. If
    * omitted or null, true is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("target_info_enabled/development")
   @JsonPropertyDescription(
       "Configure Prometheus Exporter to produce metrics with a target info metric for the resource.\nIf omitted or null, true is used.\n")
+  @Nullable
   private Boolean targetInfoEnabledDevelopment;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("resource_constant_labels")
+  @Nullable
   private IncludeExcludeModel resourceConstantLabels;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("translation_strategy")
+  @Nullable
   private ExperimentalPrometheusMetricExporterModel.ExperimentalPrometheusTranslationStrategy
       translationStrategy;
 
@@ -167,96 +152,70 @@ public class ExperimentalPrometheusMetricExporterModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalPrometheusMetricExporterModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("host");
-    sb.append('=');
-    sb.append(((this.host == null) ? "<null>" : this.host));
-    sb.append(',');
-    sb.append("port");
-    sb.append('=');
-    sb.append(((this.port == null) ? "<null>" : this.port));
-    sb.append(',');
-    sb.append("scopeInfoEnabled");
-    sb.append('=');
-    sb.append(((this.scopeInfoEnabled == null) ? "<null>" : this.scopeInfoEnabled));
-    sb.append(',');
-    sb.append("targetInfoEnabledDevelopment");
-    sb.append('=');
-    sb.append(
-        ((this.targetInfoEnabledDevelopment == null)
-            ? "<null>"
-            : this.targetInfoEnabledDevelopment));
-    sb.append(',');
-    sb.append("resourceConstantLabels");
-    sb.append('=');
-    sb.append(((this.resourceConstantLabels == null) ? "<null>" : this.resourceConstantLabels));
-    sb.append(',');
-    sb.append("translationStrategy");
-    sb.append('=');
-    sb.append(((this.translationStrategy == null) ? "<null>" : this.translationStrategy));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalPrometheusMetricExporterModel{"
+        + "host="
+        + host
+        + ", port="
+        + port
+        + ", scopeInfoEnabled="
+        + scopeInfoEnabled
+        + ", targetInfoEnabledDevelopment="
+        + targetInfoEnabledDevelopment
+        + ", resourceConstantLabels="
+        + resourceConstantLabels
+        + ", translationStrategy="
+        + translationStrategy
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.host == null) ? 0 : this.host.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.targetInfoEnabledDevelopment == null)
-                ? 0
-                : this.targetInfoEnabledDevelopment.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.resourceConstantLabels == null) ? 0 : this.resourceConstantLabels.hashCode()));
-    result = ((result * 31) + ((this.port == null) ? 0 : this.port.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.translationStrategy == null) ? 0 : this.translationStrategy.hashCode()));
-    result =
-        ((result * 31) + ((this.scopeInfoEnabled == null) ? 0 : this.scopeInfoEnabled.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.host == null) ? 0 : this.host.hashCode();
+    h *= 1000003;
+    h ^= (this.port == null) ? 0 : this.port.hashCode();
+    h *= 1000003;
+    h ^= (this.scopeInfoEnabled == null) ? 0 : this.scopeInfoEnabled.hashCode();
+    h *= 1000003;
+    h ^=
+        (this.targetInfoEnabledDevelopment == null)
+            ? 0
+            : this.targetInfoEnabledDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.resourceConstantLabels == null) ? 0 : this.resourceConstantLabels.hashCode();
+    h *= 1000003;
+    h ^= (this.translationStrategy == null) ? 0 : this.translationStrategy.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalPrometheusMetricExporterModel) == false) {
-      return false;
+    if (o instanceof ExperimentalPrometheusMetricExporterModel) {
+      ExperimentalPrometheusMetricExporterModel that =
+          (ExperimentalPrometheusMetricExporterModel) o;
+      return (this.host == null ? that.host == null : this.host.equals(that.host))
+          && (this.port == null ? that.port == null : this.port.equals(that.port))
+          && (this.scopeInfoEnabled == null
+              ? that.scopeInfoEnabled == null
+              : this.scopeInfoEnabled.equals(that.scopeInfoEnabled))
+          && (this.targetInfoEnabledDevelopment == null
+              ? that.targetInfoEnabledDevelopment == null
+              : this.targetInfoEnabledDevelopment.equals(that.targetInfoEnabledDevelopment))
+          && (this.resourceConstantLabels == null
+              ? that.resourceConstantLabels == null
+              : this.resourceConstantLabels.equals(that.resourceConstantLabels))
+          && (this.translationStrategy == null
+              ? that.translationStrategy == null
+              : this.translationStrategy.equals(that.translationStrategy));
     }
-    ExperimentalPrometheusMetricExporterModel rhs =
-        ((ExperimentalPrometheusMetricExporterModel) other);
-    return (((((((this.host == rhs.host) || ((this.host != null) && this.host.equals(rhs.host)))
-                        && ((this.targetInfoEnabledDevelopment == rhs.targetInfoEnabledDevelopment)
-                            || ((this.targetInfoEnabledDevelopment != null)
-                                && this.targetInfoEnabledDevelopment.equals(
-                                    rhs.targetInfoEnabledDevelopment))))
-                    && ((this.resourceConstantLabels == rhs.resourceConstantLabels)
-                        || ((this.resourceConstantLabels != null)
-                            && this.resourceConstantLabels.equals(rhs.resourceConstantLabels))))
-                && ((this.port == rhs.port) || ((this.port != null) && this.port.equals(rhs.port))))
-            && ((this.translationStrategy == rhs.translationStrategy)
-                || ((this.translationStrategy != null)
-                    && this.translationStrategy.equals(rhs.translationStrategy))))
-        && ((this.scopeInfoEnabled == rhs.scopeInfoEnabled)
-            || ((this.scopeInfoEnabled != null)
-                && this.scopeInfoEnabled.equals(rhs.scopeInfoEnabled))));
+    return false;
   }
 
   @Generated("jsonschema2pojo")
-  @SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
   public enum ExperimentalPrometheusTranslationStrategy {
     UNDERSCORE_ESCAPING_WITH_SUFFIXES("underscore_escaping_with_suffixes"),
     UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES_DEVELOPMENT(

@@ -19,27 +19,22 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"container", "host", "process", "service"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalResourceDetectorModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("container")
+  @Nullable
   private ExperimentalContainerResourceDetectorModel container;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("host")
+  @Nullable
   private ExperimentalHostResourceDetectorModel host;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("process")
+  @Nullable
   private ExperimentalProcessResourceDetectorModel process;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("service")
+  @Nullable
   private ExperimentalServiceResourceDetectorModel service;
 
   @JsonIgnore
@@ -111,71 +106,53 @@ public class ExperimentalResourceDetectorModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalResourceDetectorModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("container");
-    sb.append('=');
-    sb.append(((this.container == null) ? "<null>" : this.container));
-    sb.append(',');
-    sb.append("host");
-    sb.append('=');
-    sb.append(((this.host == null) ? "<null>" : this.host));
-    sb.append(',');
-    sb.append("process");
-    sb.append('=');
-    sb.append(((this.process == null) ? "<null>" : this.process));
-    sb.append(',');
-    sb.append("service");
-    sb.append('=');
-    sb.append(((this.service == null) ? "<null>" : this.service));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalResourceDetectorModel{"
+        + "container="
+        + container
+        + ", host="
+        + host
+        + ", process="
+        + process
+        + ", service="
+        + service
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.container == null) ? 0 : this.container.hashCode()));
-    result = ((result * 31) + ((this.host == null) ? 0 : this.host.hashCode()));
-    result = ((result * 31) + ((this.process == null) ? 0 : this.process.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    result = ((result * 31) + ((this.service == null) ? 0 : this.service.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.container == null) ? 0 : this.container.hashCode();
+    h *= 1000003;
+    h ^= (this.host == null) ? 0 : this.host.hashCode();
+    h *= 1000003;
+    h ^= (this.process == null) ? 0 : this.process.hashCode();
+    h *= 1000003;
+    h ^= (this.service == null) ? 0 : this.service.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalResourceDetectorModel) == false) {
-      return false;
+    if (o instanceof ExperimentalResourceDetectorModel) {
+      ExperimentalResourceDetectorModel that = (ExperimentalResourceDetectorModel) o;
+      return (this.container == null
+              ? that.container == null
+              : this.container.equals(that.container))
+          && (this.host == null ? that.host == null : this.host.equals(that.host))
+          && (this.process == null ? that.process == null : this.process.equals(that.process))
+          && (this.service == null ? that.service == null : this.service.equals(that.service))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    ExperimentalResourceDetectorModel rhs = ((ExperimentalResourceDetectorModel) other);
-    return ((((((this.container == rhs.container)
-                        || ((this.container != null) && this.container.equals(rhs.container)))
-                    && ((this.host == rhs.host)
-                        || ((this.host != null) && this.host.equals(rhs.host))))
-                && ((this.process == rhs.process)
-                    || ((this.process != null) && this.process.equals(rhs.process))))
-            && ((this.additionalProperties == rhs.additionalProperties)
-                || ((this.additionalProperties != null)
-                    && this.additionalProperties.equals(rhs.additionalProperties))))
-        && ((this.service == rhs.service)
-            || ((this.service != null) && this.service.equals(rhs.service))));
+    return false;
   }
 }

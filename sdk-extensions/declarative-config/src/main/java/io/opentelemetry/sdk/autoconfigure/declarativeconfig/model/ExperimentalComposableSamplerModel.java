@@ -19,31 +19,26 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"always_off", "always_on", "parent_threshold", "probability", "rule_based"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalComposableSamplerModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("always_off")
+  @Nullable
   private ExperimentalComposableAlwaysOffSamplerModel alwaysOff;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("always_on")
+  @Nullable
   private ExperimentalComposableAlwaysOnSamplerModel alwaysOn;
 
-  @Nullable
   @JsonProperty("parent_threshold")
+  @Nullable
   private ExperimentalComposableParentThresholdSamplerModel parentThreshold;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("probability")
+  @Nullable
   private ExperimentalComposableProbabilitySamplerModel probability;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("rule_based")
+  @Nullable
   private ExperimentalComposableRuleBasedSamplerModel ruleBased;
 
   @JsonIgnore
@@ -128,80 +123,64 @@ public class ExperimentalComposableSamplerModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalComposableSamplerModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("alwaysOff");
-    sb.append('=');
-    sb.append(((this.alwaysOff == null) ? "<null>" : this.alwaysOff));
-    sb.append(',');
-    sb.append("alwaysOn");
-    sb.append('=');
-    sb.append(((this.alwaysOn == null) ? "<null>" : this.alwaysOn));
-    sb.append(',');
-    sb.append("parentThreshold");
-    sb.append('=');
-    sb.append(((this.parentThreshold == null) ? "<null>" : this.parentThreshold));
-    sb.append(',');
-    sb.append("probability");
-    sb.append('=');
-    sb.append(((this.probability == null) ? "<null>" : this.probability));
-    sb.append(',');
-    sb.append("ruleBased");
-    sb.append('=');
-    sb.append(((this.ruleBased == null) ? "<null>" : this.ruleBased));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalComposableSamplerModel{"
+        + "alwaysOff="
+        + alwaysOff
+        + ", alwaysOn="
+        + alwaysOn
+        + ", parentThreshold="
+        + parentThreshold
+        + ", probability="
+        + probability
+        + ", ruleBased="
+        + ruleBased
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.ruleBased == null) ? 0 : this.ruleBased.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    result = ((result * 31) + ((this.alwaysOn == null) ? 0 : this.alwaysOn.hashCode()));
-    result =
-        ((result * 31) + ((this.parentThreshold == null) ? 0 : this.parentThreshold.hashCode()));
-    result = ((result * 31) + ((this.probability == null) ? 0 : this.probability.hashCode()));
-    result = ((result * 31) + ((this.alwaysOff == null) ? 0 : this.alwaysOff.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.alwaysOff == null) ? 0 : this.alwaysOff.hashCode();
+    h *= 1000003;
+    h ^= (this.alwaysOn == null) ? 0 : this.alwaysOn.hashCode();
+    h *= 1000003;
+    h ^= (this.parentThreshold == null) ? 0 : this.parentThreshold.hashCode();
+    h *= 1000003;
+    h ^= (this.probability == null) ? 0 : this.probability.hashCode();
+    h *= 1000003;
+    h ^= (this.ruleBased == null) ? 0 : this.ruleBased.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalComposableSamplerModel) == false) {
-      return false;
+    if (o instanceof ExperimentalComposableSamplerModel) {
+      ExperimentalComposableSamplerModel that = (ExperimentalComposableSamplerModel) o;
+      return (this.alwaysOff == null
+              ? that.alwaysOff == null
+              : this.alwaysOff.equals(that.alwaysOff))
+          && (this.alwaysOn == null ? that.alwaysOn == null : this.alwaysOn.equals(that.alwaysOn))
+          && (this.parentThreshold == null
+              ? that.parentThreshold == null
+              : this.parentThreshold.equals(that.parentThreshold))
+          && (this.probability == null
+              ? that.probability == null
+              : this.probability.equals(that.probability))
+          && (this.ruleBased == null
+              ? that.ruleBased == null
+              : this.ruleBased.equals(that.ruleBased))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    ExperimentalComposableSamplerModel rhs = ((ExperimentalComposableSamplerModel) other);
-    return (((((((this.ruleBased == rhs.ruleBased)
-                            || ((this.ruleBased != null) && this.ruleBased.equals(rhs.ruleBased)))
-                        && ((this.additionalProperties == rhs.additionalProperties)
-                            || ((this.additionalProperties != null)
-                                && this.additionalProperties.equals(rhs.additionalProperties))))
-                    && ((this.alwaysOn == rhs.alwaysOn)
-                        || ((this.alwaysOn != null) && this.alwaysOn.equals(rhs.alwaysOn))))
-                && ((this.parentThreshold == rhs.parentThreshold)
-                    || ((this.parentThreshold != null)
-                        && this.parentThreshold.equals(rhs.parentThreshold))))
-            && ((this.probability == rhs.probability)
-                || ((this.probability != null) && this.probability.equals(rhs.probability))))
-        && ((this.alwaysOff == rhs.alwaysOff)
-            || ((this.alwaysOff != null) && this.alwaysOff.equals(rhs.alwaysOff))));
+    return false;
   }
 }

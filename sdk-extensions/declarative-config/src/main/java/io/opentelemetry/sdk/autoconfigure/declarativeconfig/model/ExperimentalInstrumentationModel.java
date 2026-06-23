@@ -16,67 +16,54 @@ import javax.annotation.Nullable;
   "general", "cpp", "dotnet", "erlang", "go", "java", "js", "php", "python", "ruby", "rust", "swift"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalInstrumentationModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("general")
+  @Nullable
   private ExperimentalGeneralInstrumentationModel general;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("cpp")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel cpp;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("dotnet")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel dotnet;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("erlang")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel erlang;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("go")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel go;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("java")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel java;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("js")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel js;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("php")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel php;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("python")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel python;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("ruby")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel ruby;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("rust")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel rust;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("swift")
+  @Nullable
   private ExperimentalLanguageSpecificInstrumentationModel swift;
 
   @JsonProperty("general")
@@ -225,118 +212,84 @@ public class ExperimentalInstrumentationModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalInstrumentationModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("general");
-    sb.append('=');
-    sb.append(((this.general == null) ? "<null>" : this.general));
-    sb.append(',');
-    sb.append("cpp");
-    sb.append('=');
-    sb.append(((this.cpp == null) ? "<null>" : this.cpp));
-    sb.append(',');
-    sb.append("dotnet");
-    sb.append('=');
-    sb.append(((this.dotnet == null) ? "<null>" : this.dotnet));
-    sb.append(',');
-    sb.append("erlang");
-    sb.append('=');
-    sb.append(((this.erlang == null) ? "<null>" : this.erlang));
-    sb.append(',');
-    sb.append("go");
-    sb.append('=');
-    sb.append(((this.go == null) ? "<null>" : this.go));
-    sb.append(',');
-    sb.append("java");
-    sb.append('=');
-    sb.append(((this.java == null) ? "<null>" : this.java));
-    sb.append(',');
-    sb.append("js");
-    sb.append('=');
-    sb.append(((this.js == null) ? "<null>" : this.js));
-    sb.append(',');
-    sb.append("php");
-    sb.append('=');
-    sb.append(((this.php == null) ? "<null>" : this.php));
-    sb.append(',');
-    sb.append("python");
-    sb.append('=');
-    sb.append(((this.python == null) ? "<null>" : this.python));
-    sb.append(',');
-    sb.append("ruby");
-    sb.append('=');
-    sb.append(((this.ruby == null) ? "<null>" : this.ruby));
-    sb.append(',');
-    sb.append("rust");
-    sb.append('=');
-    sb.append(((this.rust == null) ? "<null>" : this.rust));
-    sb.append(',');
-    sb.append("swift");
-    sb.append('=');
-    sb.append(((this.swift == null) ? "<null>" : this.swift));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalInstrumentationModel{"
+        + "general="
+        + general
+        + ", cpp="
+        + cpp
+        + ", dotnet="
+        + dotnet
+        + ", erlang="
+        + erlang
+        + ", go="
+        + go
+        + ", java="
+        + java
+        + ", js="
+        + js
+        + ", php="
+        + php
+        + ", python="
+        + python
+        + ", ruby="
+        + ruby
+        + ", rust="
+        + rust
+        + ", swift="
+        + swift
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.general == null) ? 0 : this.general.hashCode()));
-    result = ((result * 31) + ((this.rust == null) ? 0 : this.rust.hashCode()));
-    result = ((result * 31) + ((this.cpp == null) ? 0 : this.cpp.hashCode()));
-    result = ((result * 31) + ((this.python == null) ? 0 : this.python.hashCode()));
-    result = ((result * 31) + ((this.dotnet == null) ? 0 : this.dotnet.hashCode()));
-    result = ((result * 31) + ((this.java == null) ? 0 : this.java.hashCode()));
-    result = ((result * 31) + ((this.go == null) ? 0 : this.go.hashCode()));
-    result = ((result * 31) + ((this.erlang == null) ? 0 : this.erlang.hashCode()));
-    result = ((result * 31) + ((this.js == null) ? 0 : this.js.hashCode()));
-    result = ((result * 31) + ((this.php == null) ? 0 : this.php.hashCode()));
-    result = ((result * 31) + ((this.ruby == null) ? 0 : this.ruby.hashCode()));
-    result = ((result * 31) + ((this.swift == null) ? 0 : this.swift.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.general == null) ? 0 : this.general.hashCode();
+    h *= 1000003;
+    h ^= (this.cpp == null) ? 0 : this.cpp.hashCode();
+    h *= 1000003;
+    h ^= (this.dotnet == null) ? 0 : this.dotnet.hashCode();
+    h *= 1000003;
+    h ^= (this.erlang == null) ? 0 : this.erlang.hashCode();
+    h *= 1000003;
+    h ^= (this.go == null) ? 0 : this.go.hashCode();
+    h *= 1000003;
+    h ^= (this.java == null) ? 0 : this.java.hashCode();
+    h *= 1000003;
+    h ^= (this.js == null) ? 0 : this.js.hashCode();
+    h *= 1000003;
+    h ^= (this.php == null) ? 0 : this.php.hashCode();
+    h *= 1000003;
+    h ^= (this.python == null) ? 0 : this.python.hashCode();
+    h *= 1000003;
+    h ^= (this.ruby == null) ? 0 : this.ruby.hashCode();
+    h *= 1000003;
+    h ^= (this.rust == null) ? 0 : this.rust.hashCode();
+    h *= 1000003;
+    h ^= (this.swift == null) ? 0 : this.swift.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalInstrumentationModel) == false) {
-      return false;
+    if (o instanceof ExperimentalInstrumentationModel) {
+      ExperimentalInstrumentationModel that = (ExperimentalInstrumentationModel) o;
+      return (this.general == null ? that.general == null : this.general.equals(that.general))
+          && (this.cpp == null ? that.cpp == null : this.cpp.equals(that.cpp))
+          && (this.dotnet == null ? that.dotnet == null : this.dotnet.equals(that.dotnet))
+          && (this.erlang == null ? that.erlang == null : this.erlang.equals(that.erlang))
+          && (this.go == null ? that.go == null : this.go.equals(that.go))
+          && (this.java == null ? that.java == null : this.java.equals(that.java))
+          && (this.js == null ? that.js == null : this.js.equals(that.js))
+          && (this.php == null ? that.php == null : this.php.equals(that.php))
+          && (this.python == null ? that.python == null : this.python.equals(that.python))
+          && (this.ruby == null ? that.ruby == null : this.ruby.equals(that.ruby))
+          && (this.rust == null ? that.rust == null : this.rust.equals(that.rust))
+          && (this.swift == null ? that.swift == null : this.swift.equals(that.swift));
     }
-    ExperimentalInstrumentationModel rhs = ((ExperimentalInstrumentationModel) other);
-    return (((((((((((((this.general == rhs.general)
-                                                    || ((this.general != null)
-                                                        && this.general.equals(rhs.general)))
-                                                && ((this.rust == rhs.rust)
-                                                    || ((this.rust != null)
-                                                        && this.rust.equals(rhs.rust))))
-                                            && ((this.cpp == rhs.cpp)
-                                                || ((this.cpp != null)
-                                                    && this.cpp.equals(rhs.cpp))))
-                                        && ((this.python == rhs.python)
-                                            || ((this.python != null)
-                                                && this.python.equals(rhs.python))))
-                                    && ((this.dotnet == rhs.dotnet)
-                                        || ((this.dotnet != null)
-                                            && this.dotnet.equals(rhs.dotnet))))
-                                && ((this.java == rhs.java)
-                                    || ((this.java != null) && this.java.equals(rhs.java))))
-                            && ((this.go == rhs.go)
-                                || ((this.go != null) && this.go.equals(rhs.go))))
-                        && ((this.erlang == rhs.erlang)
-                            || ((this.erlang != null) && this.erlang.equals(rhs.erlang))))
-                    && ((this.js == rhs.js) || ((this.js != null) && this.js.equals(rhs.js))))
-                && ((this.php == rhs.php) || ((this.php != null) && this.php.equals(rhs.php))))
-            && ((this.ruby == rhs.ruby) || ((this.ruby != null) && this.ruby.equals(rhs.ruby))))
-        && ((this.swift == rhs.swift) || ((this.swift != null) && this.swift.equals(rhs.swift))));
+    return false;
   }
 }

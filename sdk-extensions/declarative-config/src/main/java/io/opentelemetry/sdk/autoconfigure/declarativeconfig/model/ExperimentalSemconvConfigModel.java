@@ -15,32 +15,27 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"version", "experimental", "dual_emit"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalSemconvConfigModel {
 
   /**
    * The target semantic convention version for this domain (e.g., 1). If omitted or null, the
    * latest stable version is used, or if no stable version is available and .experimental is true
    * then the latest experimental version is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("version")
   @JsonPropertyDescription(
       "The target semantic convention version for this domain (e.g., 1).\nIf omitted or null, the latest stable version is used, or if no stable version is available and .experimental is true then the latest experimental version is used.\n")
+  @Nullable
   private Integer version;
 
   /**
    * Use latest experimental semantic conventions (before stable is available or to enable
    * experimental features on top of stable conventions). If omitted or null, false is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("experimental")
   @JsonPropertyDescription(
       "Use latest experimental semantic conventions (before stable is available or to enable experimental features on top of stable conventions).\nIf omitted or null, false is used.\n")
+  @Nullable
   private Boolean experimental;
 
   /**
@@ -50,13 +45,11 @@ public class ExperimentalSemconvConfigModel {
    * previous version is the prior stable major version (e.g., version=2, dual_emit=true emits both
    * v2 and v1). Enables dual-emit for phased migration between versions. If omitted or null, false
    * is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("dual_emit")
   @JsonPropertyDescription(
       "When true, also emit the previous major version alongside the target version.\nFor version=1, the previous version refers to the pre-stable conventions that the instrumentation emitted before the first stable semantic convention version was defined.\nFor version=2 and above, the previous version is the prior stable major version (e.g., version=2, dual_emit=true emits both v2 and v1).\nEnables dual-emit for phased migration between versions.\nIf omitted or null, false is used.\n")
+  @Nullable
   private Boolean dualEmit;
 
   /**
@@ -111,54 +104,41 @@ public class ExperimentalSemconvConfigModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalSemconvConfigModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("version");
-    sb.append('=');
-    sb.append(((this.version == null) ? "<null>" : this.version));
-    sb.append(',');
-    sb.append("experimental");
-    sb.append('=');
-    sb.append(((this.experimental == null) ? "<null>" : this.experimental));
-    sb.append(',');
-    sb.append("dualEmit");
-    sb.append('=');
-    sb.append(((this.dualEmit == null) ? "<null>" : this.dualEmit));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalSemconvConfigModel{"
+        + "version="
+        + version
+        + ", experimental="
+        + experimental
+        + ", dualEmit="
+        + dualEmit
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.dualEmit == null) ? 0 : this.dualEmit.hashCode()));
-    result = ((result * 31) + ((this.version == null) ? 0 : this.version.hashCode()));
-    result = ((result * 31) + ((this.experimental == null) ? 0 : this.experimental.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.version == null) ? 0 : this.version.hashCode();
+    h *= 1000003;
+    h ^= (this.experimental == null) ? 0 : this.experimental.hashCode();
+    h *= 1000003;
+    h ^= (this.dualEmit == null) ? 0 : this.dualEmit.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalSemconvConfigModel) == false) {
-      return false;
+    if (o instanceof ExperimentalSemconvConfigModel) {
+      ExperimentalSemconvConfigModel that = (ExperimentalSemconvConfigModel) o;
+      return (this.version == null ? that.version == null : this.version.equals(that.version))
+          && (this.experimental == null
+              ? that.experimental == null
+              : this.experimental.equals(that.experimental))
+          && (this.dualEmit == null ? that.dualEmit == null : this.dualEmit.equals(that.dualEmit));
     }
-    ExperimentalSemconvConfigModel rhs = ((ExperimentalSemconvConfigModel) other);
-    return ((((this.dualEmit == rhs.dualEmit)
-                || ((this.dualEmit != null) && this.dualEmit.equals(rhs.dualEmit)))
-            && ((this.version == rhs.version)
-                || ((this.version != null) && this.version.equals(rhs.version))))
-        && ((this.experimental == rhs.experimental)
-            || ((this.experimental != null) && this.experimental.equals(rhs.experimental))));
+    return false;
   }
 }

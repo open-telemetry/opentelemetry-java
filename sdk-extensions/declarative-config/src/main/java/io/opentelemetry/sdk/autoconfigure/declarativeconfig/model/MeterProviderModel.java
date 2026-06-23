@@ -15,13 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"readers", "views", "exemplar_filter", "meter_configurator/development"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class MeterProviderModel {
 
   /**
@@ -32,29 +30,25 @@ public class MeterProviderModel {
   @JsonProperty("readers")
   @JsonPropertyDescription(
       "Configure metric readers.\nProperty is required and must be non-null.\n")
-  @Nonnull
+  @Nullable
   private List<MetricReaderModel> readers;
 
   /**
    * Configure views. Each view has a selector which determines the instrument(s) it applies to, and
    * a configuration for the resulting stream(s). If omitted, no views are registered.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("views")
   @JsonPropertyDescription(
       "Configure views. \nEach view has a selector which determines the instrument(s) it applies to, and a configuration for the resulting stream(s).\nIf omitted, no views are registered.\n")
+  @Nullable
   private List<ViewModel> views;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("exemplar_filter")
+  @Nullable
   private MeterProviderModel.ExemplarFilter exemplarFilter;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("meter_configurator/development")
+  @Nullable
   private ExperimentalMeterConfiguratorModel meterConfiguratorDevelopment;
 
   /**
@@ -113,75 +107,55 @@ public class MeterProviderModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(MeterProviderModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("readers");
-    sb.append('=');
-    sb.append(((this.readers == null) ? "<null>" : this.readers));
-    sb.append(',');
-    sb.append("views");
-    sb.append('=');
-    sb.append(((this.views == null) ? "<null>" : this.views));
-    sb.append(',');
-    sb.append("exemplarFilter");
-    sb.append('=');
-    sb.append(((this.exemplarFilter == null) ? "<null>" : this.exemplarFilter));
-    sb.append(',');
-    sb.append("meterConfiguratorDevelopment");
-    sb.append('=');
-    sb.append(
-        ((this.meterConfiguratorDevelopment == null)
-            ? "<null>"
-            : this.meterConfiguratorDevelopment));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "MeterProviderModel{"
+        + "readers="
+        + readers
+        + ", views="
+        + views
+        + ", exemplarFilter="
+        + exemplarFilter
+        + ", meterConfiguratorDevelopment="
+        + meterConfiguratorDevelopment
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.exemplarFilter == null) ? 0 : this.exemplarFilter.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.meterConfiguratorDevelopment == null)
-                ? 0
-                : this.meterConfiguratorDevelopment.hashCode()));
-    result = ((result * 31) + ((this.readers == null) ? 0 : this.readers.hashCode()));
-    result = ((result * 31) + ((this.views == null) ? 0 : this.views.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.readers == null) ? 0 : this.readers.hashCode();
+    h *= 1000003;
+    h ^= (this.views == null) ? 0 : this.views.hashCode();
+    h *= 1000003;
+    h ^= (this.exemplarFilter == null) ? 0 : this.exemplarFilter.hashCode();
+    h *= 1000003;
+    h ^=
+        (this.meterConfiguratorDevelopment == null)
+            ? 0
+            : this.meterConfiguratorDevelopment.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof MeterProviderModel) == false) {
-      return false;
+    if (o instanceof MeterProviderModel) {
+      MeterProviderModel that = (MeterProviderModel) o;
+      return (this.readers == null ? that.readers == null : this.readers.equals(that.readers))
+          && (this.views == null ? that.views == null : this.views.equals(that.views))
+          && (this.exemplarFilter == null
+              ? that.exemplarFilter == null
+              : this.exemplarFilter.equals(that.exemplarFilter))
+          && (this.meterConfiguratorDevelopment == null
+              ? that.meterConfiguratorDevelopment == null
+              : this.meterConfiguratorDevelopment.equals(that.meterConfiguratorDevelopment));
     }
-    MeterProviderModel rhs = ((MeterProviderModel) other);
-    return (((((this.exemplarFilter == rhs.exemplarFilter)
-                    || ((this.exemplarFilter != null)
-                        && this.exemplarFilter.equals(rhs.exemplarFilter)))
-                && ((this.meterConfiguratorDevelopment == rhs.meterConfiguratorDevelopment)
-                    || ((this.meterConfiguratorDevelopment != null)
-                        && this.meterConfiguratorDevelopment.equals(
-                            rhs.meterConfiguratorDevelopment))))
-            && ((this.readers == rhs.readers)
-                || ((this.readers != null) && this.readers.equals(rhs.readers))))
-        && ((this.views == rhs.views) || ((this.views != null) && this.views.equals(rhs.views))));
+    return false;
   }
 
   @Generated("jsonschema2pojo")
-  @SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
   public enum ExemplarFilter {
     ALWAYS_ON("always_on"),
     ALWAYS_OFF("always_off"),
