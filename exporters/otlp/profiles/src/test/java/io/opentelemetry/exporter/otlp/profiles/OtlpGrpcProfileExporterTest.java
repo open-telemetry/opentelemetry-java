@@ -40,6 +40,13 @@ class OtlpGrpcProfileExporterTest
   }
 
   @Test
+  void stringRepresentationClassName() {
+    try (OtlpGrpcProfileExporter exporter = OtlpGrpcProfileExporter.builder().build()) {
+      assertThat(exporter.toString()).startsWith("OtlpGrpcProfileExporter{");
+    }
+  }
+
+  @Test
   @Override // whilst profile signal type is in development it uses a different error message
   @SuppressLogger(GrpcExporter.class)
   protected void testExport_Unimplemented() {

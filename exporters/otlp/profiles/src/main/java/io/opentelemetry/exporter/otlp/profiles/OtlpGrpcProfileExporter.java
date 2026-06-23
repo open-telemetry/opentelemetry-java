@@ -89,7 +89,7 @@ public class OtlpGrpcProfileExporter implements ProfileExporter {
 
   @Override
   public String toString() {
-    StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcProfilesExporter{", "}");
+    StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcProfileExporter{", "}");
     joiner.add(builder.toString(false));
     return joiner.toString();
   }
