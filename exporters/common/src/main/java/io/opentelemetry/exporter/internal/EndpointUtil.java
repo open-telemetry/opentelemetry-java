@@ -30,6 +30,10 @@ public final class EndpointUtil {
       throw new IllegalArgumentException(
           "Invalid endpoint, must start with http:// or https://: " + uri);
     }
+    if (uri.getHost() == null) {
+      throw new IllegalArgumentException(
+          "Invalid endpoint, must start with http:// or https://: " + uri);
+    }
     return uri;
   }
 
