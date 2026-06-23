@@ -232,29 +232,20 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // Seed the new holder with the bound handles, so that (a) the bound wrappers survive the swap
     // (their bound instruments hold direct references), (b) a series recorded both bound and
     // unbound continues to share one wrapper, and (c) bound series are collected every interval.
-    ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> newHolderHandles;
-    if (memoryMode == REUSABLE_DATA) {
-      // Ping-pong between two maps. Copy bound wrappers into the next map so they appear every
-      // interval rather than every other interval.
-      holder.aggregatorHandles.forEach(
-          (attributes, handle) -> {
-            if (handle.bound) {
-              previousCollectionAggregatorHandles.put(attributes, handle);
-            }
-          });
-      newHolderHandles = previousCollectionAggregatorHandles;
-    } else {
-      // IMMUTABLE_DATA: unbound series start fresh each interval (the old map is abandoned), so
-      // seed
-      // the new holder with only the bound wrappers.
-      newHolderHandles = new ConcurrentHashMap<>();
-      holder.aggregatorHandles.forEach(
-          (attributes, handle) -> {
-            if (handle.bound) {
-              newHolderHandles.put(attributes, handle);
-            }
-          });
-    }
+    // In REUSABLE_DATA we ping-pong between two maps, so the bound wrappers are copied into the
+    // next
+    // map; in IMMUTABLE_DATA the old map is abandoned and the new map starts with only the bound
+    // wrappers.
+    ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> newHolderHandles =
+        (memoryMode == REUSABLE_DATA)
+            ? previousCollectionAggregatorHandles
+            : new ConcurrentHashMap<>();
+    holder.aggregatorHandles.forEach(
+        (attributes, handle) -> {
+          if (handle.bound) {
+            newHolderHandles.put(attributes, handle);
+          }
+        });
     this.aggregatorHolder = new AggregatorHolder<>(newHolderHandles);
 
     ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles =
@@ -403,7 +394,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
     @Override
     public void recordLong(long value, Context context) {
-      if (!recordingEnabled()) {
+      if (!isEnabled()) {
         return;
       }
       wrapper.recordLong(value, attributes, context);

@@ -101,11 +101,6 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
     doRecordDouble(value, attributes, context);
   }
 
-  /** Returns whether recording is currently enabled. Used by bound record paths. */
-  final boolean recordingEnabled() {
-    return enabled;
-  }
-
   /**
    * Returns true if a double {@code value} should be recorded. Returns false (dropping the
    * measurement) when recording is disabled, or when {@code value} is NaN, logging in the latter

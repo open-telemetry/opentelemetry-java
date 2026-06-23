@@ -78,7 +78,7 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
 
     @Override
     public void recordLong(long value, Context context) {
-      if (!recordingEnabled()) {
+      if (!isEnabled()) {
         return;
       }
       handle.recordLong(value, attributes, context);
