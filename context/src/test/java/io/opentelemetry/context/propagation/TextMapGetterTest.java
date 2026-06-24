@@ -46,6 +46,15 @@ class TextMapGetterTest {
       };
 
   @Test
+  @SuppressWarnings("deprecation") // Verifies the default behavior of deprecated keys().
+  void canBeImplementedAsLambda() {
+    TextMapGetter<Void> getter = (carrier, key) -> "value";
+
+    assertThat(getter.get(null, "key")).isEqualTo("value");
+    assertThat(getter.keys(null)).isEqualTo(Collections.emptyList());
+  }
+
+  @Test
   void extendedTextMapGetterdefaultMethod_returnsEmpty() {
     Iterator<String> result = nullGet.getAll(null, "key");
     assertThat(result).isNotNull();
