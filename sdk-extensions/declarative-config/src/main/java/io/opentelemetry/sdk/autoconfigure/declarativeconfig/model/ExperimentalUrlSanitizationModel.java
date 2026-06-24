@@ -16,7 +16,6 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"sensitive_query_parameters"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalUrlSanitizationModel {
 
   /**
@@ -27,13 +26,11 @@ public class ExperimentalUrlSanitizationModel {
    * url semantic conventions
    * (https://github.com/open-telemetry/semantic-conventions/blob/main/docs/registry/attributes/url.md)
    * is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("sensitive_query_parameters")
   @JsonPropertyDescription(
       "List of query parameter names whose values should be redacted from URLs.\nQuery parameter names are case-sensitive.\nThis is a full override of the default sensitive query parameter keys, it is not a list of keys in addition to the defaults.\nSet to an empty array to disable query parameter redaction.\nIf omitted, the default sensitive query parameter list as defined by the url semantic conventions (https://github.com/open-telemetry/semantic-conventions/blob/main/docs/registry/attributes/url.md) is used.\n")
+  @Nullable
   private List<String> sensitiveQueryParameters;
 
   /**
@@ -59,45 +56,31 @@ public class ExperimentalUrlSanitizationModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalUrlSanitizationModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("sensitiveQueryParameters");
-    sb.append('=');
-    sb.append(((this.sensitiveQueryParameters == null) ? "<null>" : this.sensitiveQueryParameters));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalUrlSanitizationModel{"
+        + "sensitiveQueryParameters="
+        + sensitiveQueryParameters
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result =
-        ((result * 31)
-            + ((this.sensitiveQueryParameters == null)
-                ? 0
-                : this.sensitiveQueryParameters.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.sensitiveQueryParameters == null) ? 0 : this.sensitiveQueryParameters.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalUrlSanitizationModel) == false) {
-      return false;
+    if (o instanceof ExperimentalUrlSanitizationModel) {
+      ExperimentalUrlSanitizationModel that = (ExperimentalUrlSanitizationModel) o;
+      return (this.sensitiveQueryParameters == null
+          ? that.sensitiveQueryParameters == null
+          : this.sensitiveQueryParameters.equals(that.sensitiveQueryParameters));
     }
-    ExperimentalUrlSanitizationModel rhs = ((ExperimentalUrlSanitizationModel) other);
-    return ((this.sensitiveQueryParameters == rhs.sensitiveQueryParameters)
-        || ((this.sensitiveQueryParameters != null)
-            && this.sensitiveQueryParameters.equals(rhs.sensitiveQueryParameters)));
+    return false;
   }
 }

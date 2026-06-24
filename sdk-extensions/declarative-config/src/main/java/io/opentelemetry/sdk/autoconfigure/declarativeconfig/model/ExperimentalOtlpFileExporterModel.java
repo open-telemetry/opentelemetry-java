@@ -15,19 +15,16 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"output_stream"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalOtlpFileExporterModel {
 
   /**
    * Configure output stream. Values include stdout, or scheme+destination. For example:
    * file:///path/to/file.jsonl. If omitted or null, stdout is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("output_stream")
   @JsonPropertyDescription(
       "Configure output stream. \nValues include stdout, or scheme+destination. For example: file:///path/to/file.jsonl.\nIf omitted or null, stdout is used.\n")
+  @Nullable
   private String outputStream;
 
   /**
@@ -47,40 +44,28 @@ public class ExperimentalOtlpFileExporterModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalOtlpFileExporterModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("outputStream");
-    sb.append('=');
-    sb.append(((this.outputStream == null) ? "<null>" : this.outputStream));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalOtlpFileExporterModel{" + "outputStream=" + outputStream + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.outputStream == null) ? 0 : this.outputStream.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.outputStream == null) ? 0 : this.outputStream.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalOtlpFileExporterModel) == false) {
-      return false;
+    if (o instanceof ExperimentalOtlpFileExporterModel) {
+      ExperimentalOtlpFileExporterModel that = (ExperimentalOtlpFileExporterModel) o;
+      return (this.outputStream == null
+          ? that.outputStream == null
+          : this.outputStream.equals(that.outputStream));
     }
-    ExperimentalOtlpFileExporterModel rhs = ((ExperimentalOtlpFileExporterModel) other);
-    return ((this.outputStream == rhs.outputStream)
-        || ((this.outputStream != null) && this.outputStream.equals(rhs.outputStream)));
+    return false;
   }
 }

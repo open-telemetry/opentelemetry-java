@@ -12,7 +12,6 @@ import java.util.Map;
 import javax.annotation.Generated;
 
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public enum SpanKind {
   INTERNAL("internal"),
   SERVER("server"),

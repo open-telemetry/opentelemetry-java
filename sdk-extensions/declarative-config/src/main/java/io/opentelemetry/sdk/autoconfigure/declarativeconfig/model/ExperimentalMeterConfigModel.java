@@ -15,17 +15,12 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"enabled"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalMeterConfigModel {
 
-  /**
-   * Configure if the meter is enabled or not. If omitted, true is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure if the meter is enabled or not. If omitted, true is used. */
   @JsonProperty("enabled")
   @JsonPropertyDescription("Configure if the meter is enabled or not.\nIf omitted, true is used.\n")
+  @Nullable
   private Boolean enabled;
 
   /** Configure if the meter is enabled or not. If omitted, true is used. */
@@ -42,40 +37,26 @@ public class ExperimentalMeterConfigModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalMeterConfigModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("enabled");
-    sb.append('=');
-    sb.append(((this.enabled == null) ? "<null>" : this.enabled));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalMeterConfigModel{" + "enabled=" + enabled + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.enabled == null) ? 0 : this.enabled.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.enabled == null) ? 0 : this.enabled.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalMeterConfigModel) == false) {
-      return false;
+    if (o instanceof ExperimentalMeterConfigModel) {
+      ExperimentalMeterConfigModel that = (ExperimentalMeterConfigModel) o;
+      return (this.enabled == null ? that.enabled == null : this.enabled.equals(that.enabled));
     }
-    ExperimentalMeterConfigModel rhs = ((ExperimentalMeterConfigModel) other);
-    return ((this.enabled == rhs.enabled)
-        || ((this.enabled != null) && this.enabled.equals(rhs.enabled)));
+    return false;
   }
 }

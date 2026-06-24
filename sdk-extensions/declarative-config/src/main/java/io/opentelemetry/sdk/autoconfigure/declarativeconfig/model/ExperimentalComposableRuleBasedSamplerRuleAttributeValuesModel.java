@@ -11,13 +11,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"key", "values"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
 
   /**
@@ -28,7 +26,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
   @JsonProperty("key")
   @JsonPropertyDescription(
       "The attribute key to match against.\nProperty is required and must be non-null.\n")
-  @Nonnull
+  @Nullable
   private String key;
 
   /**
@@ -40,7 +38,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
   @JsonProperty("values")
   @JsonPropertyDescription(
       "The attribute values to match against. If the attribute's value matches any of these, it matches.\nProperty is required and must be non-null.\n")
-  @Nonnull
+  @Nullable
   private List<String> values;
 
   /**
@@ -79,48 +77,35 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("key");
-    sb.append('=');
-    sb.append(((this.key == null) ? "<null>" : this.key));
-    sb.append(',');
-    sb.append("values");
-    sb.append('=');
-    sb.append(((this.values == null) ? "<null>" : this.values));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel{"
+        + "key="
+        + key
+        + ", values="
+        + values
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.key == null) ? 0 : this.key.hashCode()));
-    result = ((result * 31) + ((this.values == null) ? 0 : this.values.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.key == null) ? 0 : this.key.hashCode();
+    h *= 1000003;
+    h ^= (this.values == null) ? 0 : this.values.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel)
-        == false) {
-      return false;
+    if (o instanceof ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel) {
+      ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel that =
+          (ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel) o;
+      return (this.key == null ? that.key == null : this.key.equals(that.key))
+          && (this.values == null ? that.values == null : this.values.equals(that.values));
     }
-    ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel rhs =
-        ((ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel) other);
-    return (((this.key == rhs.key) || ((this.key != null) && this.key.equals(rhs.key)))
-        && ((this.values == rhs.values)
-            || ((this.values != null) && this.values.equals(rhs.values))));
+    return false;
   }
 }

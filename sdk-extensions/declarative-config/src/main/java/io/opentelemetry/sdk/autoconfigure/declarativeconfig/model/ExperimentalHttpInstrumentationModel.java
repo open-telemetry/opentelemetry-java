@@ -14,22 +14,18 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"semconv", "client", "server"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalHttpInstrumentationModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("semconv")
+  @Nullable
   private ExperimentalSemconvConfigModel semconv;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("client")
+  @Nullable
   private ExperimentalHttpClientInstrumentationModel client;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("server")
+  @Nullable
   private ExperimentalHttpServerInstrumentationModel server;
 
   @JsonProperty("semconv")
@@ -69,54 +65,39 @@ public class ExperimentalHttpInstrumentationModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalHttpInstrumentationModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("semconv");
-    sb.append('=');
-    sb.append(((this.semconv == null) ? "<null>" : this.semconv));
-    sb.append(',');
-    sb.append("client");
-    sb.append('=');
-    sb.append(((this.client == null) ? "<null>" : this.client));
-    sb.append(',');
-    sb.append("server");
-    sb.append('=');
-    sb.append(((this.server == null) ? "<null>" : this.server));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalHttpInstrumentationModel{"
+        + "semconv="
+        + semconv
+        + ", client="
+        + client
+        + ", server="
+        + server
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.client == null) ? 0 : this.client.hashCode()));
-    result = ((result * 31) + ((this.server == null) ? 0 : this.server.hashCode()));
-    result = ((result * 31) + ((this.semconv == null) ? 0 : this.semconv.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.semconv == null) ? 0 : this.semconv.hashCode();
+    h *= 1000003;
+    h ^= (this.client == null) ? 0 : this.client.hashCode();
+    h *= 1000003;
+    h ^= (this.server == null) ? 0 : this.server.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalHttpInstrumentationModel) == false) {
-      return false;
+    if (o instanceof ExperimentalHttpInstrumentationModel) {
+      ExperimentalHttpInstrumentationModel that = (ExperimentalHttpInstrumentationModel) o;
+      return (this.semconv == null ? that.semconv == null : this.semconv.equals(that.semconv))
+          && (this.client == null ? that.client == null : this.client.equals(that.client))
+          && (this.server == null ? that.server == null : this.server.equals(that.server));
     }
-    ExperimentalHttpInstrumentationModel rhs = ((ExperimentalHttpInstrumentationModel) other);
-    return ((((this.client == rhs.client)
-                || ((this.client != null) && this.client.equals(rhs.client)))
-            && ((this.server == rhs.server)
-                || ((this.server != null) && this.server.equals(rhs.server))))
-        && ((this.semconv == rhs.semconv)
-            || ((this.semconv != null) && this.semconv.equals(rhs.semconv))));
+    return false;
   }
 }

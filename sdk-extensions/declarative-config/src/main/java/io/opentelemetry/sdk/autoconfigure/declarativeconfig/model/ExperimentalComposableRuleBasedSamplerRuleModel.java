@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -22,15 +21,14 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"attribute_values", "attribute_patterns", "span_kinds", "parent", "sampler"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalComposableRuleBasedSamplerRuleModel {
 
-  @Nullable
   @JsonProperty("attribute_values")
+  @Nullable
   private ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues;
 
-  @Nullable
   @JsonProperty("attribute_patterns")
+  @Nullable
   private ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns;
 
   /**
@@ -38,30 +36,26 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
    * client: client, a client span. * consumer: consumer, a consumer span. * internal: internal, an
    * internal span. * producer: producer, a producer span. * server: server, a server span. If
    * omitted, ignore.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("span_kinds")
   @JsonPropertyDescription(
       "The span kinds to match. If the span's kind matches any of these, it matches.\nValues include:\n* client: client, a client span.\n* consumer: consumer, a consumer span.\n* internal: internal, an internal span.\n* producer: producer, a producer span.\n* server: server, a server span.\nIf omitted, ignore.\n")
+  @Nullable
   private List<SpanKind> spanKinds;
 
   /**
    * The parent span types to match. Values include: * local: local, a local parent. * none: none,
    * no parent, i.e., the trace root. * remote: remote, a remote parent. If omitted, ignore.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("parent")
   @JsonPropertyDescription(
       "The parent span types to match.\nValues include:\n* local: local, a local parent.\n* none: none, no parent, i.e., the trace root.\n* remote: remote, a remote parent.\nIf omitted, ignore.\n")
+  @Nullable
   private List<ExperimentalSpanParent> parent;
 
   /** (Required) */
   @JsonProperty("sampler")
-  @Nonnull
+  @Nullable
   private ExperimentalComposableSamplerModel sampler;
 
   @JsonProperty("attribute_values")
@@ -136,74 +130,56 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalComposableRuleBasedSamplerRuleModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("attributeValues");
-    sb.append('=');
-    sb.append(((this.attributeValues == null) ? "<null>" : this.attributeValues));
-    sb.append(',');
-    sb.append("attributePatterns");
-    sb.append('=');
-    sb.append(((this.attributePatterns == null) ? "<null>" : this.attributePatterns));
-    sb.append(',');
-    sb.append("spanKinds");
-    sb.append('=');
-    sb.append(((this.spanKinds == null) ? "<null>" : this.spanKinds));
-    sb.append(',');
-    sb.append("parent");
-    sb.append('=');
-    sb.append(((this.parent == null) ? "<null>" : this.parent));
-    sb.append(',');
-    sb.append("sampler");
-    sb.append('=');
-    sb.append(((this.sampler == null) ? "<null>" : this.sampler));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalComposableRuleBasedSamplerRuleModel{"
+        + "attributeValues="
+        + attributeValues
+        + ", attributePatterns="
+        + attributePatterns
+        + ", spanKinds="
+        + spanKinds
+        + ", parent="
+        + parent
+        + ", sampler="
+        + sampler
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result =
-        ((result * 31) + ((this.attributeValues == null) ? 0 : this.attributeValues.hashCode()));
-    result = ((result * 31) + ((this.spanKinds == null) ? 0 : this.spanKinds.hashCode()));
-    result = ((result * 31) + ((this.parent == null) ? 0 : this.parent.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.attributePatterns == null) ? 0 : this.attributePatterns.hashCode()));
-    result = ((result * 31) + ((this.sampler == null) ? 0 : this.sampler.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.attributeValues == null) ? 0 : this.attributeValues.hashCode();
+    h *= 1000003;
+    h ^= (this.attributePatterns == null) ? 0 : this.attributePatterns.hashCode();
+    h *= 1000003;
+    h ^= (this.spanKinds == null) ? 0 : this.spanKinds.hashCode();
+    h *= 1000003;
+    h ^= (this.parent == null) ? 0 : this.parent.hashCode();
+    h *= 1000003;
+    h ^= (this.sampler == null) ? 0 : this.sampler.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalComposableRuleBasedSamplerRuleModel) == false) {
-      return false;
+    if (o instanceof ExperimentalComposableRuleBasedSamplerRuleModel) {
+      ExperimentalComposableRuleBasedSamplerRuleModel that =
+          (ExperimentalComposableRuleBasedSamplerRuleModel) o;
+      return (this.attributeValues == null
+              ? that.attributeValues == null
+              : this.attributeValues.equals(that.attributeValues))
+          && (this.attributePatterns == null
+              ? that.attributePatterns == null
+              : this.attributePatterns.equals(that.attributePatterns))
+          && (this.spanKinds == null
+              ? that.spanKinds == null
+              : this.spanKinds.equals(that.spanKinds))
+          && (this.parent == null ? that.parent == null : this.parent.equals(that.parent))
+          && (this.sampler == null ? that.sampler == null : this.sampler.equals(that.sampler));
     }
-    ExperimentalComposableRuleBasedSamplerRuleModel rhs =
-        ((ExperimentalComposableRuleBasedSamplerRuleModel) other);
-    return ((((((this.attributeValues == rhs.attributeValues)
-                        || ((this.attributeValues != null)
-                            && this.attributeValues.equals(rhs.attributeValues)))
-                    && ((this.spanKinds == rhs.spanKinds)
-                        || ((this.spanKinds != null) && this.spanKinds.equals(rhs.spanKinds))))
-                && ((this.parent == rhs.parent)
-                    || ((this.parent != null) && this.parent.equals(rhs.parent))))
-            && ((this.attributePatterns == rhs.attributePatterns)
-                || ((this.attributePatterns != null)
-                    && this.attributePatterns.equals(rhs.attributePatterns))))
-        && ((this.sampler == rhs.sampler)
-            || ((this.sampler != null) && this.sampler.equals(rhs.sampler))));
+    return false;
   }
 }

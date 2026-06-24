@@ -14,12 +14,10 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"url"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalSanitizationModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("url")
+  @Nullable
   private ExperimentalUrlSanitizationModel url;
 
   @JsonProperty("url")
@@ -35,39 +33,26 @@ public class ExperimentalSanitizationModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalSanitizationModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("url");
-    sb.append('=');
-    sb.append(((this.url == null) ? "<null>" : this.url));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalSanitizationModel{" + "url=" + url + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.url == null) ? 0 : this.url.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.url == null) ? 0 : this.url.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalSanitizationModel) == false) {
-      return false;
+    if (o instanceof ExperimentalSanitizationModel) {
+      ExperimentalSanitizationModel that = (ExperimentalSanitizationModel) o;
+      return (this.url == null ? that.url == null : this.url.equals(that.url));
     }
-    ExperimentalSanitizationModel rhs = ((ExperimentalSanitizationModel) other);
-    return ((this.url == rhs.url) || ((this.url != null) && this.url.equals(rhs.url)));
+    return false;
   }
 }

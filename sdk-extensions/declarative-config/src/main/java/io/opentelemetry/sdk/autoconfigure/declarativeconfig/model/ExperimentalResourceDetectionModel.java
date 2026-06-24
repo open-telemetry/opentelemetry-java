@@ -16,25 +16,21 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"attributes", "detectors"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalResourceDetectionModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("attributes")
+  @Nullable
   private IncludeExcludeModel attributes;
 
   /**
    * Configure resource detectors. Resource detector names are dependent on the SDK language
    * ecosystem. Please consult documentation for each respective language. If omitted, no resource
    * detectors are enabled.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("detectors")
   @JsonPropertyDescription(
       "Configure resource detectors.\nResource detector names are dependent on the SDK language ecosystem. Please consult documentation for each respective language. \nIf omitted, no resource detectors are enabled.\n")
+  @Nullable
   private List<ExperimentalResourceDetectorModel> detectors;
 
   @JsonProperty("attributes")
@@ -67,47 +63,38 @@ public class ExperimentalResourceDetectionModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalResourceDetectionModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("attributes");
-    sb.append('=');
-    sb.append(((this.attributes == null) ? "<null>" : this.attributes));
-    sb.append(',');
-    sb.append("detectors");
-    sb.append('=');
-    sb.append(((this.detectors == null) ? "<null>" : this.detectors));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalResourceDetectionModel{"
+        + "attributes="
+        + attributes
+        + ", detectors="
+        + detectors
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.attributes == null) ? 0 : this.attributes.hashCode()));
-    result = ((result * 31) + ((this.detectors == null) ? 0 : this.detectors.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.attributes == null) ? 0 : this.attributes.hashCode();
+    h *= 1000003;
+    h ^= (this.detectors == null) ? 0 : this.detectors.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalResourceDetectionModel) == false) {
-      return false;
+    if (o instanceof ExperimentalResourceDetectionModel) {
+      ExperimentalResourceDetectionModel that = (ExperimentalResourceDetectionModel) o;
+      return (this.attributes == null
+              ? that.attributes == null
+              : this.attributes.equals(that.attributes))
+          && (this.detectors == null
+              ? that.detectors == null
+              : this.detectors.equals(that.detectors));
     }
-    ExperimentalResourceDetectionModel rhs = ((ExperimentalResourceDetectionModel) other);
-    return (((this.attributes == rhs.attributes)
-            || ((this.attributes != null) && this.attributes.equals(rhs.attributes)))
-        && ((this.detectors == rhs.detectors)
-            || ((this.detectors != null) && this.detectors.equals(rhs.detectors))));
+    return false;
   }
 }

@@ -16,35 +16,27 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"attributes", "detection/development", "schema_url", "attributes_list"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ResourceModel {
 
   /**
    * Configure resource attributes. Entries have higher priority than entries from
    * .resource.attributes_list. If omitted, no resource attributes are added.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("attributes")
   @JsonPropertyDescription(
       "Configure resource attributes. Entries have higher priority than entries from .resource.attributes_list.\nIf omitted, no resource attributes are added.\n")
+  @Nullable
   private List<AttributeNameValueModel> attributes;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("detection/development")
+  @Nullable
   private ExperimentalResourceDetectionModel detectionDevelopment;
 
-  /**
-   * Configure resource schema URL. If omitted or null, no schema URL is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure resource schema URL. If omitted or null, no schema URL is used. */
   @JsonProperty("schema_url")
   @JsonPropertyDescription(
       "Configure resource schema URL.\nIf omitted or null, no schema URL is used.\n")
+  @Nullable
   private String schemaUrl;
 
   /**
@@ -53,13 +45,11 @@ public class ResourceModel {
    * format of OTEL_RESOURCE_ATTRIBUTES. See
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#general-sdk-configuration
    * for details. If omitted or null, no resource attributes are added.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("attributes_list")
   @JsonPropertyDescription(
       "Configure resource attributes. Entries have lower priority than entries from .resource.attributes.\nThe value is a list of comma separated key-value pairs matching the format of OTEL_RESOURCE_ATTRIBUTES. See https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#general-sdk-configuration for details.\nIf omitted or null, no resource attributes are added.\n")
+  @Nullable
   private String attributesList;
 
   /**
@@ -121,65 +111,52 @@ public class ResourceModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ResourceModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("attributes");
-    sb.append('=');
-    sb.append(((this.attributes == null) ? "<null>" : this.attributes));
-    sb.append(',');
-    sb.append("detectionDevelopment");
-    sb.append('=');
-    sb.append(((this.detectionDevelopment == null) ? "<null>" : this.detectionDevelopment));
-    sb.append(',');
-    sb.append("schemaUrl");
-    sb.append('=');
-    sb.append(((this.schemaUrl == null) ? "<null>" : this.schemaUrl));
-    sb.append(',');
-    sb.append("attributesList");
-    sb.append('=');
-    sb.append(((this.attributesList == null) ? "<null>" : this.attributesList));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ResourceModel{"
+        + "attributes="
+        + attributes
+        + ", detectionDevelopment="
+        + detectionDevelopment
+        + ", schemaUrl="
+        + schemaUrl
+        + ", attributesList="
+        + attributesList
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.attributes == null) ? 0 : this.attributes.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.detectionDevelopment == null) ? 0 : this.detectionDevelopment.hashCode()));
-    result = ((result * 31) + ((this.attributesList == null) ? 0 : this.attributesList.hashCode()));
-    result = ((result * 31) + ((this.schemaUrl == null) ? 0 : this.schemaUrl.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.attributes == null) ? 0 : this.attributes.hashCode();
+    h *= 1000003;
+    h ^= (this.detectionDevelopment == null) ? 0 : this.detectionDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.schemaUrl == null) ? 0 : this.schemaUrl.hashCode();
+    h *= 1000003;
+    h ^= (this.attributesList == null) ? 0 : this.attributesList.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ResourceModel) == false) {
-      return false;
+    if (o instanceof ResourceModel) {
+      ResourceModel that = (ResourceModel) o;
+      return (this.attributes == null
+              ? that.attributes == null
+              : this.attributes.equals(that.attributes))
+          && (this.detectionDevelopment == null
+              ? that.detectionDevelopment == null
+              : this.detectionDevelopment.equals(that.detectionDevelopment))
+          && (this.schemaUrl == null
+              ? that.schemaUrl == null
+              : this.schemaUrl.equals(that.schemaUrl))
+          && (this.attributesList == null
+              ? that.attributesList == null
+              : this.attributesList.equals(that.attributesList));
     }
-    ResourceModel rhs = ((ResourceModel) other);
-    return (((((this.attributes == rhs.attributes)
-                    || ((this.attributes != null) && this.attributes.equals(rhs.attributes)))
-                && ((this.detectionDevelopment == rhs.detectionDevelopment)
-                    || ((this.detectionDevelopment != null)
-                        && this.detectionDevelopment.equals(rhs.detectionDevelopment))))
-            && ((this.attributesList == rhs.attributesList)
-                || ((this.attributesList != null)
-                    && this.attributesList.equals(rhs.attributesList))))
-        && ((this.schemaUrl == rhs.schemaUrl)
-            || ((this.schemaUrl != null) && this.schemaUrl.equals(rhs.schemaUrl))));
+    return false;
   }
 }

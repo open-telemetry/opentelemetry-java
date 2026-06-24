@@ -14,12 +14,10 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"semconv"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalDbInstrumentationModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("semconv")
+  @Nullable
   private ExperimentalSemconvConfigModel semconv;
 
   @JsonProperty("semconv")
@@ -35,40 +33,26 @@ public class ExperimentalDbInstrumentationModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalDbInstrumentationModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("semconv");
-    sb.append('=');
-    sb.append(((this.semconv == null) ? "<null>" : this.semconv));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalDbInstrumentationModel{" + "semconv=" + semconv + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.semconv == null) ? 0 : this.semconv.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.semconv == null) ? 0 : this.semconv.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalDbInstrumentationModel) == false) {
-      return false;
+    if (o instanceof ExperimentalDbInstrumentationModel) {
+      ExperimentalDbInstrumentationModel that = (ExperimentalDbInstrumentationModel) o;
+      return (this.semconv == null ? that.semconv == null : this.semconv.equals(that.semconv));
     }
-    ExperimentalDbInstrumentationModel rhs = ((ExperimentalDbInstrumentationModel) other);
-    return ((this.semconv == rhs.semconv)
-        || ((this.semconv != null) && this.semconv.equals(rhs.semconv)));
+    return false;
   }
 }

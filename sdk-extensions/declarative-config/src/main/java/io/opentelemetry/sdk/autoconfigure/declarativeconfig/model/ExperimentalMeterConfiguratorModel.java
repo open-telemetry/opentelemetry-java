@@ -16,22 +16,16 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"default_config", "meters"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ExperimentalMeterConfiguratorModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("default_config")
+  @Nullable
   private ExperimentalMeterConfigModel defaultConfig;
 
-  /**
-   * Configure meters. If omitted, all meters used .default_config.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure meters. If omitted, all meters used .default_config. */
   @JsonProperty("meters")
   @JsonPropertyDescription("Configure meters.\nIf omitted, all meters used .default_config.\n")
+  @Nullable
   private List<ExperimentalMeterMatcherAndConfigModel> meters;
 
   @JsonProperty("default_config")
@@ -61,47 +55,36 @@ public class ExperimentalMeterConfiguratorModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ExperimentalMeterConfiguratorModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("defaultConfig");
-    sb.append('=');
-    sb.append(((this.defaultConfig == null) ? "<null>" : this.defaultConfig));
-    sb.append(',');
-    sb.append("meters");
-    sb.append('=');
-    sb.append(((this.meters == null) ? "<null>" : this.meters));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ExperimentalMeterConfiguratorModel{"
+        + "defaultConfig="
+        + defaultConfig
+        + ", meters="
+        + meters
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.defaultConfig == null) ? 0 : this.defaultConfig.hashCode()));
-    result = ((result * 31) + ((this.meters == null) ? 0 : this.meters.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.defaultConfig == null) ? 0 : this.defaultConfig.hashCode();
+    h *= 1000003;
+    h ^= (this.meters == null) ? 0 : this.meters.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ExperimentalMeterConfiguratorModel) == false) {
-      return false;
+    if (o instanceof ExperimentalMeterConfiguratorModel) {
+      ExperimentalMeterConfiguratorModel that = (ExperimentalMeterConfiguratorModel) o;
+      return (this.defaultConfig == null
+              ? that.defaultConfig == null
+              : this.defaultConfig.equals(that.defaultConfig))
+          && (this.meters == null ? that.meters == null : this.meters.equals(that.meters));
     }
-    ExperimentalMeterConfiguratorModel rhs = ((ExperimentalMeterConfiguratorModel) other);
-    return (((this.defaultConfig == rhs.defaultConfig)
-            || ((this.defaultConfig != null) && this.defaultConfig.equals(rhs.defaultConfig)))
-        && ((this.meters == rhs.meters)
-            || ((this.meters != null) && this.meters.equals(rhs.meters))));
+    return false;
   }
 }

@@ -19,27 +19,22 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"tracecontext", "baggage", "b3", "b3multi"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class TextMapPropagatorModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("tracecontext")
+  @Nullable
   private TraceContextPropagatorModel tracecontext;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("baggage")
+  @Nullable
   private BaggagePropagatorModel baggage;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("b3")
+  @Nullable
   private B3PropagatorModel b3;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("b3multi")
+  @Nullable
   private B3MultiPropagatorModel b3multi;
 
   @JsonIgnore
@@ -108,70 +103,53 @@ public class TextMapPropagatorModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(TextMapPropagatorModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("tracecontext");
-    sb.append('=');
-    sb.append(((this.tracecontext == null) ? "<null>" : this.tracecontext));
-    sb.append(',');
-    sb.append("baggage");
-    sb.append('=');
-    sb.append(((this.baggage == null) ? "<null>" : this.baggage));
-    sb.append(',');
-    sb.append("b3");
-    sb.append('=');
-    sb.append(((this.b3 == null) ? "<null>" : this.b3));
-    sb.append(',');
-    sb.append("b3multi");
-    sb.append('=');
-    sb.append(((this.b3multi == null) ? "<null>" : this.b3multi));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "TextMapPropagatorModel{"
+        + "tracecontext="
+        + tracecontext
+        + ", baggage="
+        + baggage
+        + ", b3="
+        + b3
+        + ", b3multi="
+        + b3multi
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.b3multi == null) ? 0 : this.b3multi.hashCode()));
-    result = ((result * 31) + ((this.b3 == null) ? 0 : this.b3.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    result = ((result * 31) + ((this.baggage == null) ? 0 : this.baggage.hashCode()));
-    result = ((result * 31) + ((this.tracecontext == null) ? 0 : this.tracecontext.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.tracecontext == null) ? 0 : this.tracecontext.hashCode();
+    h *= 1000003;
+    h ^= (this.baggage == null) ? 0 : this.baggage.hashCode();
+    h *= 1000003;
+    h ^= (this.b3 == null) ? 0 : this.b3.hashCode();
+    h *= 1000003;
+    h ^= (this.b3multi == null) ? 0 : this.b3multi.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof TextMapPropagatorModel) == false) {
-      return false;
+    if (o instanceof TextMapPropagatorModel) {
+      TextMapPropagatorModel that = (TextMapPropagatorModel) o;
+      return (this.tracecontext == null
+              ? that.tracecontext == null
+              : this.tracecontext.equals(that.tracecontext))
+          && (this.baggage == null ? that.baggage == null : this.baggage.equals(that.baggage))
+          && (this.b3 == null ? that.b3 == null : this.b3.equals(that.b3))
+          && (this.b3multi == null ? that.b3multi == null : this.b3multi.equals(that.b3multi))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    TextMapPropagatorModel rhs = ((TextMapPropagatorModel) other);
-    return ((((((this.b3multi == rhs.b3multi)
-                        || ((this.b3multi != null) && this.b3multi.equals(rhs.b3multi)))
-                    && ((this.b3 == rhs.b3) || ((this.b3 != null) && this.b3.equals(rhs.b3))))
-                && ((this.additionalProperties == rhs.additionalProperties)
-                    || ((this.additionalProperties != null)
-                        && this.additionalProperties.equals(rhs.additionalProperties))))
-            && ((this.baggage == rhs.baggage)
-                || ((this.baggage != null) && this.baggage.equals(rhs.baggage))))
-        && ((this.tracecontext == rhs.tracecontext)
-            || ((this.tracecontext != null) && this.tracecontext.equals(rhs.tracecontext))));
+    return false;
   }
 }

@@ -19,15 +19,14 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"batch", "simple"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class SpanProcessorModel {
 
-  @Nullable
   @JsonProperty("batch")
+  @Nullable
   private BatchSpanProcessorModel batch;
 
-  @Nullable
   @JsonProperty("simple")
+  @Nullable
   private SimpleSpanProcessorModel simple;
 
   @JsonIgnore
@@ -73,56 +72,41 @@ public class SpanProcessorModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(SpanProcessorModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("batch");
-    sb.append('=');
-    sb.append(((this.batch == null) ? "<null>" : this.batch));
-    sb.append(',');
-    sb.append("simple");
-    sb.append('=');
-    sb.append(((this.simple == null) ? "<null>" : this.simple));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "SpanProcessorModel{"
+        + "batch="
+        + batch
+        + ", simple="
+        + simple
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.batch == null) ? 0 : this.batch.hashCode()));
-    result = ((result * 31) + ((this.simple == null) ? 0 : this.simple.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.batch == null) ? 0 : this.batch.hashCode();
+    h *= 1000003;
+    h ^= (this.simple == null) ? 0 : this.simple.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof SpanProcessorModel) == false) {
-      return false;
+    if (o instanceof SpanProcessorModel) {
+      SpanProcessorModel that = (SpanProcessorModel) o;
+      return (this.batch == null ? that.batch == null : this.batch.equals(that.batch))
+          && (this.simple == null ? that.simple == null : this.simple.equals(that.simple))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    SpanProcessorModel rhs = ((SpanProcessorModel) other);
-    return ((((this.batch == rhs.batch) || ((this.batch != null) && this.batch.equals(rhs.batch)))
-            && ((this.simple == rhs.simple)
-                || ((this.simple != null) && this.simple.equals(rhs.simple))))
-        && ((this.additionalProperties == rhs.additionalProperties)
-            || ((this.additionalProperties != null)
-                && this.additionalProperties.equals(rhs.additionalProperties))));
+    return false;
   }
 }

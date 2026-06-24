@@ -22,77 +22,62 @@ import javax.annotation.Nullable;
   "link_attribute_count_limit"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class SpanLimitsModel {
 
   /**
    * Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit.
    * Value must be non-negative. If omitted or null, there is no limit.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("attribute_value_length_limit")
   @JsonPropertyDescription(
       "Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit. \nValue must be non-negative.\nIf omitted or null, there is no limit.\n")
+  @Nullable
   private Integer attributeValueLengthLimit;
 
   /**
    * Configure max attribute count. Overrides .attribute_limits.attribute_count_limit. Value must be
    * non-negative. If omitted or null, 128 is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("attribute_count_limit")
   @JsonPropertyDescription(
       "Configure max attribute count. Overrides .attribute_limits.attribute_count_limit. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
+  @Nullable
   private Integer attributeCountLimit;
 
   /**
    * Configure max span event count. Value must be non-negative. If omitted or null, 128 is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("event_count_limit")
   @JsonPropertyDescription(
       "Configure max span event count. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
+  @Nullable
   private Integer eventCountLimit;
 
-  /**
-   * Configure max span link count. Value must be non-negative. If omitted or null, 128 is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure max span link count. Value must be non-negative. If omitted or null, 128 is used. */
   @JsonProperty("link_count_limit")
   @JsonPropertyDescription(
       "Configure max span link count. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
+  @Nullable
   private Integer linkCountLimit;
 
   /**
    * Configure max attributes per span event. Value must be non-negative. If omitted or null, 128 is
    * used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("event_attribute_count_limit")
   @JsonPropertyDescription(
       "Configure max attributes per span event. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
+  @Nullable
   private Integer eventAttributeCountLimit;
 
   /**
    * Configure max attributes per span link. Value must be non-negative. If omitted or null, 128 is
    * used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("link_attribute_count_limit")
   @JsonPropertyDescription(
       "Configure max attributes per span link. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
+  @Nullable
   private Integer linkAttributeCountLimit;
 
   /**
@@ -183,100 +168,66 @@ public class SpanLimitsModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(SpanLimitsModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("attributeValueLengthLimit");
-    sb.append('=');
-    sb.append(
-        ((this.attributeValueLengthLimit == null) ? "<null>" : this.attributeValueLengthLimit));
-    sb.append(',');
-    sb.append("attributeCountLimit");
-    sb.append('=');
-    sb.append(((this.attributeCountLimit == null) ? "<null>" : this.attributeCountLimit));
-    sb.append(',');
-    sb.append("eventCountLimit");
-    sb.append('=');
-    sb.append(((this.eventCountLimit == null) ? "<null>" : this.eventCountLimit));
-    sb.append(',');
-    sb.append("linkCountLimit");
-    sb.append('=');
-    sb.append(((this.linkCountLimit == null) ? "<null>" : this.linkCountLimit));
-    sb.append(',');
-    sb.append("eventAttributeCountLimit");
-    sb.append('=');
-    sb.append(((this.eventAttributeCountLimit == null) ? "<null>" : this.eventAttributeCountLimit));
-    sb.append(',');
-    sb.append("linkAttributeCountLimit");
-    sb.append('=');
-    sb.append(((this.linkAttributeCountLimit == null) ? "<null>" : this.linkAttributeCountLimit));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "SpanLimitsModel{"
+        + "attributeValueLengthLimit="
+        + attributeValueLengthLimit
+        + ", attributeCountLimit="
+        + attributeCountLimit
+        + ", eventCountLimit="
+        + eventCountLimit
+        + ", linkCountLimit="
+        + linkCountLimit
+        + ", eventAttributeCountLimit="
+        + eventAttributeCountLimit
+        + ", linkAttributeCountLimit="
+        + linkAttributeCountLimit
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result =
-        ((result * 31)
-            + ((this.linkAttributeCountLimit == null)
-                ? 0
-                : this.linkAttributeCountLimit.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.eventAttributeCountLimit == null)
-                ? 0
-                : this.eventAttributeCountLimit.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.attributeValueLengthLimit == null)
-                ? 0
-                : this.attributeValueLengthLimit.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.attributeCountLimit == null) ? 0 : this.attributeCountLimit.hashCode()));
-    result = ((result * 31) + ((this.linkCountLimit == null) ? 0 : this.linkCountLimit.hashCode()));
-    result =
-        ((result * 31) + ((this.eventCountLimit == null) ? 0 : this.eventCountLimit.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.attributeValueLengthLimit == null) ? 0 : this.attributeValueLengthLimit.hashCode();
+    h *= 1000003;
+    h ^= (this.attributeCountLimit == null) ? 0 : this.attributeCountLimit.hashCode();
+    h *= 1000003;
+    h ^= (this.eventCountLimit == null) ? 0 : this.eventCountLimit.hashCode();
+    h *= 1000003;
+    h ^= (this.linkCountLimit == null) ? 0 : this.linkCountLimit.hashCode();
+    h *= 1000003;
+    h ^= (this.eventAttributeCountLimit == null) ? 0 : this.eventAttributeCountLimit.hashCode();
+    h *= 1000003;
+    h ^= (this.linkAttributeCountLimit == null) ? 0 : this.linkAttributeCountLimit.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof SpanLimitsModel) == false) {
-      return false;
+    if (o instanceof SpanLimitsModel) {
+      SpanLimitsModel that = (SpanLimitsModel) o;
+      return (this.attributeValueLengthLimit == null
+              ? that.attributeValueLengthLimit == null
+              : this.attributeValueLengthLimit.equals(that.attributeValueLengthLimit))
+          && (this.attributeCountLimit == null
+              ? that.attributeCountLimit == null
+              : this.attributeCountLimit.equals(that.attributeCountLimit))
+          && (this.eventCountLimit == null
+              ? that.eventCountLimit == null
+              : this.eventCountLimit.equals(that.eventCountLimit))
+          && (this.linkCountLimit == null
+              ? that.linkCountLimit == null
+              : this.linkCountLimit.equals(that.linkCountLimit))
+          && (this.eventAttributeCountLimit == null
+              ? that.eventAttributeCountLimit == null
+              : this.eventAttributeCountLimit.equals(that.eventAttributeCountLimit))
+          && (this.linkAttributeCountLimit == null
+              ? that.linkAttributeCountLimit == null
+              : this.linkAttributeCountLimit.equals(that.linkAttributeCountLimit));
     }
-    SpanLimitsModel rhs = ((SpanLimitsModel) other);
-    return (((((((this.linkAttributeCountLimit == rhs.linkAttributeCountLimit)
-                            || ((this.linkAttributeCountLimit != null)
-                                && this.linkAttributeCountLimit.equals(
-                                    rhs.linkAttributeCountLimit)))
-                        && ((this.eventAttributeCountLimit == rhs.eventAttributeCountLimit)
-                            || ((this.eventAttributeCountLimit != null)
-                                && this.eventAttributeCountLimit.equals(
-                                    rhs.eventAttributeCountLimit))))
-                    && ((this.attributeValueLengthLimit == rhs.attributeValueLengthLimit)
-                        || ((this.attributeValueLengthLimit != null)
-                            && this.attributeValueLengthLimit.equals(
-                                rhs.attributeValueLengthLimit))))
-                && ((this.attributeCountLimit == rhs.attributeCountLimit)
-                    || ((this.attributeCountLimit != null)
-                        && this.attributeCountLimit.equals(rhs.attributeCountLimit))))
-            && ((this.linkCountLimit == rhs.linkCountLimit)
-                || ((this.linkCountLimit != null)
-                    && this.linkCountLimit.equals(rhs.linkCountLimit))))
-        && ((this.eventCountLimit == rhs.eventCountLimit)
-            || ((this.eventCountLimit != null)
-                && this.eventCountLimit.equals(rhs.eventCountLimit))));
+    return false;
   }
 }
