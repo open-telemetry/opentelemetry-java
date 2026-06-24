@@ -21,7 +21,6 @@ import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.TranslationStrategy;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricReaderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel;
@@ -29,6 +28,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PeriodicMetric
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
