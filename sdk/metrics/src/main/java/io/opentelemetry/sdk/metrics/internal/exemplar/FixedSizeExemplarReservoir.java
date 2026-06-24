@@ -89,13 +89,14 @@ class FixedSizeExemplarReservoir implements DoubleExemplarReservoir, LongExempla
 
   public <T extends ExemplarData> List<T> doCollectAndReset(
       Attributes pointAttributes, BiFunction<ReservoirCell, Attributes, T> mapAndResetCell) {
+    ReservoirCell[] storage = this.storage;
     if (!hasMeasurements || storage == null) {
       return Collections.emptyList();
     }
     // Note: we are collecting exemplars from buckets piecemeal, but we
     // could still be sampling exemplars during this process.
     List<T> results = new ArrayList<>();
-    for (ReservoirCell reservoirCell : this.storage) {
+    for (ReservoirCell reservoirCell : storage) {
       T result = mapAndResetCell.apply(reservoirCell, pointAttributes);
       if (result != null) {
         results.add(result);
