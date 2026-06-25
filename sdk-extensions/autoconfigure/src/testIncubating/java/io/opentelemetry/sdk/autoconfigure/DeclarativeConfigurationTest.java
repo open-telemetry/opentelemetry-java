@@ -18,7 +18,6 @@ import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.incubator.ExtendedOpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
@@ -35,8 +34,6 @@ import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.internal.Entity;
-import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
@@ -44,10 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -248,54 +242,5 @@ class DeclarativeConfigurationTest {
                 .get("client")
                 .getScalarList("request_captured_headers", String.class))
         .isEqualTo(Arrays.asList("Content-Type", "Accept"));
-  }
-
-  @Test
-  void entitiesEnabled() {
-    ConfigProperties config =
-        DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.experimental.entities.enabled", "true"));
-
-    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
-        AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build();
-    OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
-    cleanup.addCloseable(openTelemetrySdk);
-
-    Resource resource = autoConfiguredOpenTelemetrySdk.getResource();
-
-    Collection<Entity> entities = EntityUtil.getEntities(resource);
-    assertThat(entities)
-        .anyMatch(
-            e ->
-                e.getType().equals("telemetry.sdk")
-                    && "opentelemetry"
-                        .equals(e.getId().get(AttributeKey.stringKey("telemetry.sdk.name")))
-                    && "java"
-                        .equals(e.getId().get(AttributeKey.stringKey("telemetry.sdk.language"))));
-  }
-
-  @Test
-  void entitiesEnabled_WithEnabledProviders() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.entities.enabled", "true");
-    props.put("otel.service.name", "my-filtered-service");
-    props.put("otel.java.enabled.resource.providers", "service");
-    ConfigProperties config = DefaultConfigProperties.createFromMap(props);
-
-    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
-        AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build();
-    OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
-    cleanup.addCloseable(openTelemetrySdk);
-
-    Resource resource = autoConfiguredOpenTelemetrySdk.getResource();
-
-    Collection<Entity> entities = EntityUtil.getEntities(resource);
-    assertThat(entities)
-        .anyMatch(
-            e ->
-                e.getType().equals("service")
-                    && "my-filtered-service"
-                        .equals(e.getId().get(AttributeKey.stringKey("service.name"))));
-    assertThat(entities).noneMatch(e -> e.getType().equals("telemetry.sdk"));
   }
 }

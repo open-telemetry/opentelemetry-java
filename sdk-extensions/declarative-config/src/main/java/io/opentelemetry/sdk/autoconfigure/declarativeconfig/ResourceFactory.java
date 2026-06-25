@@ -15,12 +15,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalRe
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.resources.EntityDetector;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
-import io.opentelemetry.sdk.resources.internal.Entity;
-import io.opentelemetry.sdk.resources.internal.EntityUtil;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -41,52 +37,27 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
 
     ExperimentalResourceDetectionModel detectionModel = model.getDetectionDevelopment();
     if (detectionModel != null) {
-      if (context.isEntitiesEnabled()) {
-        List<ExperimentalResourceDetectorModel> detectorModels = detectionModel.getDetectors();
-        if (detectorModels != null) {
-          List<EntityDetector> detectors = new ArrayList<>();
-          for (ExperimentalResourceDetectorModel detectorModel : detectorModels) {
-            ConfigKeyValue detectorKeyValue =
-                FileConfigUtil.validateSingleKeyValue(context, detectorModel, "resource detector");
-            String detectorName = detectorKeyValue.getKey();
+      ResourceBuilder detectedResourceBuilder = Resource.builder();
 
-            for (EntityDetector detector : context.load(EntityDetector.class)) {
-              if (detector.getName().equals(detectorName)
-                  || detector.getClass().getName().equals(detectorName)) {
-                detectors.add(detector);
-              }
-            }
-          }
-          if (!detectors.isEmpty()) {
-            Resource detectedEntityResource = detectEntityResource(detectors);
-            builder = detectedEntityResource.toBuilder();
-          }
+      List<ExperimentalResourceDetectorModel> detectorModels = detectionModel.getDetectors();
+      if (detectorModels != null) {
+        for (ExperimentalResourceDetectorModel detectorModel : detectorModels) {
+          detectedResourceBuilder.putAll(
+              ResourceDetectorFactory.getInstance().create(detectorModel, context));
         }
-      } else {
-        ResourceBuilder detectedResourceBuilder = Resource.builder();
-
-        List<ExperimentalResourceDetectorModel> detectorModels = detectionModel.getDetectors();
-        if (detectorModels != null) {
-          for (ExperimentalResourceDetectorModel detectorModel : detectorModels) {
-            detectedResourceBuilder.putAll(
-                ResourceDetectorFactory.getInstance().create(detectorModel, context));
-          }
-        }
-
-        IncludeExcludeModel attributesIncludeExcludeModel = detectionModel.getAttributes();
-        Predicate<String> detectorAttributeFilter =
-            attributesIncludeExcludeModel == null
-                ? ResourceFactory::matchAll
-                : IncludeExcludeFactory.getInstance()
-                    .create(attributesIncludeExcludeModel, context);
-
-        Attributes filteredDetectedAttributes =
-            detectedResourceBuilder.build().getAttributes().toBuilder()
-                .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
-                .build();
-
-        builder.putAll(filteredDetectedAttributes);
       }
+
+      IncludeExcludeModel attributesIncludeExcludeModel = detectionModel.getAttributes();
+      Predicate<String> detectorAttributeFilter =
+          attributesIncludeExcludeModel == null
+              ? ResourceFactory::matchAll
+              : IncludeExcludeFactory.getInstance().create(attributesIncludeExcludeModel, context);
+      Attributes filteredDetectedAttributes =
+          detectedResourceBuilder.build().getAttributes().toBuilder()
+              .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
+              .build();
+
+      builder.putAll(filteredDetectedAttributes);
     }
 
     String attributeList = model.getAttributesList();
@@ -108,19 +79,6 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
       builder.setSchemaUrl(model.getSchemaUrl());
     }
 
-    return builder.build();
-  }
-
-  private static Resource detectEntityResource(List<EntityDetector> detectors) {
-    ResourceBuilder builder = Resource.builder();
-    for (EntityDetector detector : detectors) {
-      for (Entity entity :
-          detector.detect(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
-        if (entity != null) {
-          EntityUtil.addEntity(builder, entity);
-        }
-      }
-    }
     return builder.build();
   }
 
