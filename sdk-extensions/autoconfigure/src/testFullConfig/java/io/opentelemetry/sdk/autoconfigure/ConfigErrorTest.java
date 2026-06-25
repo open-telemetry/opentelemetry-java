@@ -23,6 +23,7 @@ import org.slf4j.event.LoggingEvent;
 
 // All tests fail due to config errors so never register a global. We can test everything here
 // without separating test sets.
+@SuppressLogger(loggerName = "io.opentelemetry.sdk.metrics.export.PeriodicMetricReader")
 class ConfigErrorTest {
 
   @RegisterExtension

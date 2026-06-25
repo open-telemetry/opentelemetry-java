@@ -18,6 +18,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.Base2ExponentialHistogramOptions;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -1073,6 +1074,7 @@ class PrometheusMetricReaderTest {
     // when otelScopeLabelsEnabled=true (which is also the default for the builder)
     assertThat(new PrometheusMetricReader(/* otelScopeEnabled= */ false, null))
         .usingRecursiveComparison()
+        .ignoringFieldsOfTypes(ThrottlingLogger.class)
         .isEqualTo(new PrometheusMetricReader(null));
     // The 4-arg constructor should behave the same as the 2-arg deprecated constructor
     assertThat(
@@ -1082,6 +1084,7 @@ class PrometheusMetricReaderTest {
                 /* targetInfoMetricEnabled */ true,
                 TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES))
         .usingRecursiveComparison()
+        .ignoringFieldsOfTypes(ThrottlingLogger.class)
         .isEqualTo(new PrometheusMetricReader(null));
   }
 

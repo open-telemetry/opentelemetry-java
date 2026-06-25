@@ -332,6 +332,8 @@ testing {
       all {
         testTask.configure {
           systemProperty("java.util.logging.config.class", "io.opentelemetry.internal.testing.slf4j.JulBridgeInitializer")
+          systemProperty("org.slf4j.simpleLogger.log.io.micrometer.core.instrument.MeterRegistry", "error")
+          systemProperty("org.slf4j.simpleLogger.log.tc", "error")
 
           // Starting in java 21, dynamically attaching agents triggers warnings. Mockito depends on
           // agents to redefine classes. Hence, on java 21+ we get warnings of the form:
