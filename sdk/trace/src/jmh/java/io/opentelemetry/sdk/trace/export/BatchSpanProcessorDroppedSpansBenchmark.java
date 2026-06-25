@@ -24,6 +24,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.BenchmarkParams;
 
 public class BatchSpanProcessorDroppedSpansBenchmark {
 
@@ -37,7 +38,8 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     private int numThreads;
 
     @Setup(Level.Iteration)
-    public final void setup() {
+    public final void setup(BenchmarkParams params) {
+      numThreads = params.getThreads();
       metricReader = InMemoryMetricReader.create();
       MeterProvider meterProvider =
           SdkMeterProvider.builder().registerMetricReader(metricReader).build();
@@ -89,7 +91,6 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
   @BenchmarkMode(Mode.Throughput)
   public void export(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 5;
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }
