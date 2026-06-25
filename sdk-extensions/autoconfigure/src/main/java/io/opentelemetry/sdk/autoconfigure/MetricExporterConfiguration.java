@@ -39,6 +39,7 @@ final class MetricExporterConfiguration {
     READER_ARTIFACT_ID_BY_NAME.put("prometheus", "opentelemetry-exporter-prometheus");
   }
 
+  @SuppressWarnings("ReferenceEquality")
   static MetricReader configureReader(
       String name,
       ConfigProperties config,

@@ -60,6 +60,13 @@ class AssertUtilTest {
   }
 
   @Test
+  void assertAttributesShouldNotThrowIfEqualToNullAndAttributeNotSet() {
+    List<AttributeAssertion> assertions = Arrays.asList(equalTo(WARM, null));
+
+    AssertUtil.assertAttributes(Attributes.empty(), assertions);
+  }
+
+  @Test
   void assertAttributesExactlyShouldThrowIfNoAttributeMatch() {
     List<AttributeAssertion> assertions = Arrays.asList(equalTo(WARM, false));
 

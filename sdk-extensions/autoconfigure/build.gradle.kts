@@ -5,6 +5,26 @@ plugins {
 
 description = "OpenTelemetry SDK Auto-configuration"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
+otelJava.osgiOptionalPackages.set(listOf(
+  "io.opentelemetry.sdk.extension.incubator",
+  "io.opentelemetry.api.incubator",
+  "io.opentelemetry.sdk.autoconfigure.declarativeconfig",
+))
+// autoconfigure discovers these SPI types at runtime via ServiceLoader
+otelJava.osgiServiceLoaderRequires.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider",
+))
+// autoconfigure provides EnvironmentResourceProvider via META-INF/services
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider",
+))
 
 dependencies {
   api(project(":sdk:all"))
@@ -12,6 +32,7 @@ dependencies {
 
   compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk-extensions:incubator"))
+  compileOnly(project(":sdk-extensions:declarative-config"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -61,6 +82,7 @@ testing {
         implementation(project(":sdk:trace-shaded-deps"))
         implementation(project(":sdk-extensions:jaeger-remote-sampler"))
         implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":sdk-extensions:declarative-config"))
 
         implementation("com.google.guava:guava")
         implementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -85,6 +107,7 @@ testing {
     }
     register<JvmTestSuite>("testIncubating") {
       dependencies {
+        implementation(project(":sdk-extensions:declarative-config"))
         implementation(project(":sdk-extensions:incubator"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
@@ -98,7 +121,7 @@ testing {
 
     register<JvmTestSuite>("testDeclarativeConfigSpi") {
       dependencies {
-        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":sdk-extensions:declarative-config"))
         implementation(project(":exporters:logging"))
         implementation(project(":sdk:testing"))
       }

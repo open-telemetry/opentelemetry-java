@@ -293,7 +293,7 @@ public final class EntityUtil {
    * @return the newly merged {@code Resource}.
    */
   public static Resource merge(Resource base, @Nullable Resource next) {
-    if (next == null || next == Resource.empty()) {
+    if (next == null || next.equals(Resource.empty())) {
       return base;
     }
     // Merge Algorithm from

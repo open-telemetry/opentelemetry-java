@@ -7,8 +7,8 @@ package io.opentelemetry.exporter.otlp.profiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.GrpcExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.profiles.v1development.ResourceProfiles;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.profiles.data.ProfileData;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,13 @@ class OtlpGrpcProfileExporterTest
   void usingOkHttp() throws Exception {
     try (Closeable exporter = OtlpGrpcProfileExporter.builder().build()) {
       assertThat(exporter).extracting("delegate.grpcSender").isInstanceOf(OkHttpGrpcSender.class);
+    }
+  }
+
+  @Test
+  void stringRepresentationClassName() {
+    try (OtlpGrpcProfileExporter exporter = OtlpGrpcProfileExporter.builder().build()) {
+      assertThat(exporter.toString()).startsWith("OtlpGrpcProfileExporter{");
     }
   }
 

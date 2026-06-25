@@ -99,7 +99,7 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
         Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
         ExplicitBucketHistogramUtils.validateBucketBoundaries(bucketBoundaries);
       } catch (IllegalArgumentException | NullPointerException e) {
-        logger.warning("Error setting explicit bucket boundaries advice: " + e.getMessage());
+        logger.log(Level.WARNING, "Error setting explicit bucket boundaries advice", e);
         return this;
       }
       builder.setExplicitBucketBoundaries(bucketBoundaries);

@@ -9,16 +9,23 @@ plugins {
 
 description = "OpenTelemetry - Jaeger Remote sampler"
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.jaeger")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.declarativeconfig", "io.opentelemetry.sdk.autoconfigure.spi"))
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider",
+  "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
+))
 
 dependencies {
   api(project(":sdk:all"))
   compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk-extensions:autoconfigure"))
-  compileOnly(project(":sdk-extensions:incubator"))
+  compileOnly(project(":sdk-extensions:declarative-config"))
 
   implementation(project(":sdk:all"))
   implementation(project(":exporters:common"))
   implementation(project(":exporters:sender:okhttp"))
+
+  annotationProcessor("com.google.auto.value:auto-value")
 
   compileOnly("io.grpc:grpc-api")
   compileOnly("io.grpc:grpc-protobuf")

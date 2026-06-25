@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
+import static io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal.asExemplarFilterInternal;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,6 +17,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
@@ -37,6 +39,9 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -76,10 +81,15 @@ class AsynchronousMetricStorageTest {
 
   // Not using @BeforeEach since many methods require executing them for each MemoryMode
   void setup(MemoryMode memoryMode) {
-    setup(memoryMode, AggregationTemporality.CUMULATIVE);
+    setup(memoryMode, AggregationTemporality.CUMULATIVE, ExemplarFilter.alwaysOff());
   }
 
   void setup(MemoryMode memoryMode, AggregationTemporality temporality) {
+    setup(memoryMode, temporality, ExemplarFilter.alwaysOff());
+  }
+
+  void setup(
+      MemoryMode memoryMode, AggregationTemporality temporality, ExemplarFilter exemplarFilter) {
     when(reader.getAggregationTemporality(any())).thenReturn(temporality);
     when(reader.getMemoryMode()).thenReturn(memoryMode);
     registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
@@ -96,6 +106,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
+            asExemplarFilterInternal(exemplarFilter),
             /* enabled= */ true);
     doubleCounterStorage =
         AsynchronousMetricStorage.create(
@@ -109,6 +120,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE,
                 Advice.empty()),
+            asExemplarFilterInternal(exemplarFilter),
             /* enabled= */ true);
   }
 
@@ -186,6 +198,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
+            asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
             /* enabled= */ true);
 
     storage.record(Attributes.builder().put("key1", "a").put("key2", "b").build(), 1);
@@ -405,6 +418,42 @@ class AsynchronousMetricStorageTest {
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
+  void collect_CumulativeRetainsLiveSeriesWhenStaleSeriesAreRemoved(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    // Enough series to share buckets, but under the cardinality limit so there's no overflow
+    // series.
+    int seriesCount = 20;
+
+    // First collection reports everything.
+    testClock.advance(Duration.ofSeconds(10));
+    for (int i = 0; i < seriesCount; i++) {
+      longCounterStorage.record(Attributes.builder().put("key", "v" + i).build(), 1);
+    }
+    longCounterStorage.collect(resource, scope, testClock.now());
+    registeredReader.setLastCollectEpochNanos(testClock.now());
+
+    // Next time only the even series report; the odd ones go stale and get removed while iterating.
+    // None of the live series should be skipped.
+    testClock.advance(Duration.ofSeconds(10));
+    Set<Attributes> expected = new LinkedHashSet<>();
+    for (int i = 0; i < seriesCount; i += 2) {
+      Attributes attributes = Attributes.builder().put("key", "v" + i).build();
+      longCounterStorage.record(attributes, 2);
+      expected.add(attributes);
+    }
+
+    MetricData metricData = longCounterStorage.collect(resource, scope, testClock.now());
+    Set<Attributes> collected =
+        metricData.getLongSumData().getPoints().stream()
+            .map(PointData::getAttributes)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+    assertThat(collected).isEqualTo(expected);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
   void collect_DeltaComputesDiff(MemoryMode memoryMode) {
     setup(memoryMode);
 
@@ -421,6 +470,7 @@ class AsynchronousMetricStorageTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.LONG,
                 Advice.empty()),
+            asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
             /* enabled= */ true);
 
     // Record measurement and collect at time 10
@@ -480,6 +530,24 @@ class AsynchronousMetricStorageTest {
                                 .hasEpochNanos(35)
                                 .hasValue(5)
                                 .hasAttributes(Attributes.builder().put("key", "value2").build())));
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void recordLong_AlwaysOnCollectsExemplars(MemoryMode memoryMode) {
+    setup(memoryMode, AggregationTemporality.CUMULATIVE, ExemplarFilter.alwaysOn());
+
+    longCounterStorage.record(Attributes.empty(), 3);
+
+    assertThat(longCounterStorage.collect(resource, scope, testClock.now()))
+        .hasLongSumSatisfying(
+            sum ->
+                sum.hasPointsSatisfying(
+                    point ->
+                        point
+                            .hasValue(3)
+                            .hasAttributes(Attributes.empty())
+                            .hasExemplarsSatisfying(exemplar -> exemplar.hasValue(3))));
   }
 
   @Test

@@ -240,7 +240,8 @@ class B3PropagationIntegrationTest {
     public Stream<? extends Arguments> provideArguments(
         ParameterDeclarations parameters, ExtensionContext context) {
       return Stream.of(
-          Arguments.of("b3multi", b3MultiClient), Arguments.of("b3single", b3SingleClient));
+          Arguments.argumentSet("b3multi", "b3multi", b3MultiClient),
+          Arguments.argumentSet("b3single", "b3single", b3SingleClient));
     }
   }
 }

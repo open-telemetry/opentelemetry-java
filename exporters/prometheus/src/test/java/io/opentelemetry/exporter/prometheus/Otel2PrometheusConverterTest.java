@@ -16,14 +16,20 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
@@ -36,14 +42,25 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
+import io.prometheus.metrics.model.snapshots.GaugeSnapshot;
+import io.prometheus.metrics.model.snapshots.GaugeSnapshot.GaugeDataPointSnapshot;
+import io.prometheus.metrics.model.snapshots.HistogramSnapshot;
+import io.prometheus.metrics.model.snapshots.InfoSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
+import io.prometheus.metrics.model.snapshots.MetricMetadata;
 import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
+import io.prometheus.metrics.model.snapshots.NativeHistogramBuckets;
+import io.prometheus.metrics.model.snapshots.SummarySnapshot;
+import io.prometheus.metrics.model.snapshots.Unit;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,6 +90,7 @@ class Otel2PrometheusConverterTest {
       new Otel2PrometheusConverter(
           /* otelScopeLabelsEnabled= */ true,
           /* targetInfoMetricEnabled= */ true,
+          TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
           /* allowedResourceAttributesFilter= */ null);
 
   @ParameterizedTest
@@ -100,97 +118,471 @@ class Otel2PrometheusConverterTest {
 
   private static Stream<Arguments> metricMetadataArgs() {
     return Stream.of(
-        // the unity unit "1" is unitless - no suffix added
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge unitless 1",
             createSampleMetricData("sample", "1", MetricDataType.LONG_GAUGE),
             "sample gauge",
             "sample description",
             "sample"),
-        // unit is appended to metric name
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge with unit",
             createSampleMetricData("sample", "unit", MetricDataType.LONG_GAUGE),
             "sample_unit gauge",
             "sample_unit description",
             "sample_unit"),
-        // units in curly braces are dropped, "1" is unitless
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge curly braces dropped",
             createSampleMetricData("sample", "1{dropped}", MetricDataType.LONG_GAUGE),
             "sample gauge",
             "sample description",
             "sample"),
-        // monotonic sums always include _total suffix
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum with unit total suffix",
             createSampleMetricData("sample", "unit", MetricDataType.LONG_SUM),
             "sample_unit_total counter",
             "sample_unit_total description",
             "sample_unit_total"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum unitless 1 total suffix",
             createSampleMetricData("sample", "1", MetricDataType.LONG_SUM),
             "sample_total counter",
             "sample_total description",
             "sample_total"),
-        // units expressed as numbers other than 1 are retained
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum numeric unit 2",
             createSampleMetricData("sample", "2", MetricDataType.LONG_SUM),
             "sample_2_total counter",
             "sample_2_total description",
             "sample_2_total"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary numeric unit 2",
             createSampleMetricData("metric_name", "2", MetricDataType.SUMMARY),
             "metric_name_2 summary",
             "metric_name_2 description",
             "metric_name_2_count"),
         // unsupported characters are translated to "_", repeated "_" are dropped
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary special chars translated",
             createSampleMetricData("s%%ple", "%/min", MetricDataType.SUMMARY),
             "s_ple_percent_per_minute summary",
             "s_ple_percent_per_minute description",
             "s_ple_percent_per_minute_count"),
-        // metric unit is not appended if the name already contains the unit
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum name contains unit",
             createSampleMetricData("metric_name_total", "total", MetricDataType.LONG_SUM),
             "metric_name_total counter",
             "metric_name_total description",
             "metric_name_total"),
         // total suffix is stripped because total is a reserved suffixed for monotonic sums
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary total suffix stripped",
             createSampleMetricData("metric_name_total", "total", MetricDataType.SUMMARY),
             "metric_name summary",
             "metric_name description",
             "metric_name_count"),
-        // if metric name ends with unit the unit is omitted
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge name ends with ratio unit omitted",
             createSampleMetricData("metric_name_ratio", "1", MetricDataType.LONG_GAUGE),
             "metric_name_ratio gauge",
             "metric_name_ratio description",
             "metric_name_ratio"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary name ends with ratio unit omitted",
             createSampleMetricData("metric_name_ratio", "1", MetricDataType.SUMMARY),
             "metric_name_ratio summary",
             "metric_name_ratio description",
             "metric_name_ratio_count"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "gauge name ends with hertz unit omitted",
             createSampleMetricData("metric_hertz", "hertz", MetricDataType.LONG_GAUGE),
             "metric_hertz gauge",
             "metric_hertz description",
             "metric_hertz"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum name ends with hertz unit omitted",
             createSampleMetricData("metric_hertz", "hertz", MetricDataType.LONG_SUM),
             "metric_hertz_total counter",
             "metric_hertz_total description",
             "metric_hertz_total"),
-        // if metric name ends with unit the unit is omitted - order matters
-        Arguments.of(
+        Arguments.argumentSet(
+            "sum name total hertz order matters",
             createSampleMetricData("metric_total_hertz", "hertz_total", MetricDataType.LONG_SUM),
             "metric_total_hertz_total counter",
             "metric_total_hertz_total description",
             "metric_total_hertz_total"),
-        // metric name cannot start with a number
-        Arguments.of(
+        Arguments.argumentSet(
+            "summary name starts with number",
             createSampleMetricData("2_metric_name", "By", MetricDataType.SUMMARY),
             "_metric_name_bytes summary",
             "_metric_name_bytes description",
             "_metric_name_bytes_count"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("translationStrategyArgs")
+  void metricMetadata_translationStrategy(
+      TranslationStrategy translationStrategy,
+      String expectedName,
+      String expectedExpositionBaseName,
+      String expectedOriginalName) {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ true,
+            /* targetInfoMetricEnabled= */ true,
+            translationStrategy,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData("sample.name", "By", MetricDataType.LONG_SUM)));
+
+    MetricMetadata metadata = snapshots.get(0).getMetadata();
+    assertThat(metadata.getName()).isEqualTo(expectedName);
+    assertThat(metadata.getExpositionBaseName()).isEqualTo(expectedExpositionBaseName);
+    assertThat(metadata.getOriginalName()).isEqualTo(expectedOriginalName);
+  }
+
+  private static Stream<Arguments> translationStrategyArgs() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "underscore escaping with suffixes",
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
+            "sample_name_bytes",
+            "sample_name_bytes",
+            "sample_name_bytes"),
+        Arguments.argumentSet(
+            "underscore escaping without suffixes",
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
+            "sample_name",
+            "sample_name",
+            "sample_name"),
+        Arguments.argumentSet(
+            "no utf8 escaping with suffixes",
+            TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES,
+            "sample.name_bytes",
+            "sample.name_bytes_total",
+            "sample.name_bytes"),
+        Arguments.argumentSet(
+            "no translation",
+            TranslationStrategy.NO_TRANSLATION,
+            "sample.name",
+            "sample.name",
+            "sample.name"));
+  }
+
+  @Test
+  void metricMetadata_underscoreEscapingCollapsesRepeatedUnderscores() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData("sample__name", "By", MetricDataType.LONG_SUM)));
+
+    MetricMetadata metadata =
+        snapshots.stream()
+            .filter(snapshot -> snapshot instanceof CounterSnapshot)
+            .findFirst()
+            .orElseThrow(AssertionError::new)
+            .getMetadata();
+    assertThat(metadata.getName()).isEqualTo("sample_name_bytes");
+    assertThat(metadata.getExpositionBaseName()).isEqualTo("sample_name_bytes");
+    assertThat(metadata.getOriginalName()).isEqualTo("sample_name_bytes");
+  }
+
+  @ParameterizedTest
+  @MethodSource("legacyLabelNameTranslationArgs")
+  void labelNameTranslation_underscoreEscaping(String labelName, String expectedLabelName) {
+    Labels labels =
+        convertAttributeLabels(labelName, TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES);
+
+    assertThat(labels.size()).isEqualTo(1);
+    assertThat(labels.getName(0)).isEqualTo(expectedLabelName);
+    assertThat(labels.getValue(0)).isEqualTo("value");
+  }
+
+  private static Stream<Arguments> legacyLabelNameTranslationArgs() {
+    return Stream.of(
+        Arguments.argumentSet("colons", "label:with:colons", "label_with_colons"),
+        Arguments.argumentSet(
+            "capital letters", "LabelWithCapitalLetters", "LabelWithCapitalLetters"),
+        Arguments.argumentSet(
+            "special chars", "label!with&special$chars)", "label_with_special_chars_"),
+        Arguments.argumentSet(
+            "foreign characters",
+            "label_with_foreign_characters_字符",
+            "label_with_foreign_characters_"),
+        Arguments.argumentSet("dots", "label.with.dots", "label_with_dots"),
+        Arguments.argumentSet("leading digit", "123label", "key_123label"),
+        Arguments.argumentSet(
+            "leading underscore",
+            "_label_starting_with_underscore",
+            "_label_starting_with_underscore"),
+        Arguments.argumentSet(
+            "leading double underscore",
+            "__label_starting_with_2underscores",
+            "_label_starting_with_2underscores"),
+        Arguments.argumentSet(
+            "double underscores",
+            "label__with__double__underscores",
+            "label_with_double_underscores"),
+        Arguments.argumentSet(
+            "mixed special", "label.name__with&&special##chars", "label_name_with_special_chars"),
+        // Prometheus Java rejects user labels starting with "__".
+        Arguments.argumentSet(
+            "reserved name", "__reserved__label__name__", "_reserved_label_name_"),
+        Arguments.argumentSet(
+            "trailing underscores", "trailing_underscores___", "trailing_underscores_"));
+  }
+
+  @Test
+  void labelNameTranslation_legacyDropsMetricWithInvalidNormalizedName() {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData(
+                    "sample",
+                    "1",
+                    MetricDataType.LONG_SUM,
+                    Attributes.of(stringKey("ようこそ"), "value"),
+                    Resource.empty())));
+
+    assertThat(snapshots).isEmpty();
+  }
+
+  @Test
+  void metricNameTranslation_legacyDropsMetricWithInvalidNormalizedName() {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData("ようこそ", "1", MetricDataType.LONG_SUM)));
+
+    assertThat(snapshots).isEmpty();
+  }
+
+  @Test
+  void metricNameTranslation_legacyDropsMetricWithEmptyName() {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(createSampleMetricData("", "1", MetricDataType.LONG_SUM)));
+
+    assertThat(snapshots).isEmpty();
+  }
+
+  @ParameterizedTest
+  @MethodSource("nonEscapingTranslationStrategyArgs")
+  void labelNameTranslation_nonEscapingStrategiesPreserveLabels(
+      TranslationStrategy translationStrategy) {
+    Labels labels = convertAttributeLabels("label:with:colons", translationStrategy);
+
+    assertThat(labels.size()).isEqualTo(1);
+    assertThat(labels.getName(0)).isEqualTo("label:with:colons");
+    assertThat(labels.getValue(0)).isEqualTo("value");
+  }
+
+  private static Stream<Arguments> nonEscapingTranslationStrategyArgs() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "no utf8 escaping with suffixes", TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES),
+        Arguments.argumentSet("no translation", TranslationStrategy.NO_TRANSLATION));
+  }
+
+  @Test
+  void convertReturnsEmptySnapshotsForNullOrEmptyInput() {
+    assertThat(converter.convert(null)).isEmpty();
+    assertThat(converter.convert(Collections.emptyList())).isEmpty();
+  }
+
+  @Test
+  void convertDoesNotAddTargetInfoWhenAllMetricsAreDropped() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData(
+                    "sample",
+                    "1",
+                    MetricDataType.LONG_SUM,
+                    Attributes.of(stringKey("ようこそ"), "value"),
+                    Resource.empty())));
+
+    assertThat(snapshots).isEmpty();
+  }
+
+  @ParameterizedTest
+  @MethodSource("deltaMetricDataArgs")
+  void convertDropsDeltaMetrics(MetricData metricData) {
+    assertThat(converter.convert(Collections.singletonList(metricData))).isEmpty();
+  }
+
+  private static Stream<Arguments> deltaMetricDataArgs() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "delta long sum", createDeltaMetricData("sample", "1", MetricDataType.LONG_SUM)),
+        Arguments.argumentSet(
+            "delta double sum", createDeltaMetricData("sample", "1", MetricDataType.DOUBLE_SUM)),
+        Arguments.argumentSet(
+            "delta histogram", createDeltaMetricData("sample", "1", MetricDataType.HISTOGRAM)),
+        Arguments.argumentSet(
+            "delta exponential histogram",
+            createDeltaMetricData("sample", "1", MetricDataType.EXPONENTIAL_HISTOGRAM)));
+  }
+
+  @Test
+  void nonMonotonicDoubleSumConvertsToGauge() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createMetricDataWithTemporality(
+                    "sample",
+                    "1",
+                    MetricDataType.DOUBLE_SUM,
+                    null,
+                    null,
+                    /* cumulative= */ true,
+                    /* monotonic= */ false)));
+
+    assertThat(snapshots).hasSize(2);
+    assertThat(snapshots.stream().map(snapshot -> snapshot.getMetadata().getName()))
+        .contains("sample", "target")
+        .doesNotContain("sample_total");
+  }
+
+  @Test
+  void convertDropsExponentialHistogramWithUnsupportedScale() {
+    MetricData metricData = createExponentialHistogramMetricData(-5);
+
+    assertThat(converter.convert(Collections.singletonList(metricData))).isEmpty();
+  }
+
+  @Test
+  void summaryExportsConfiguredQuantiles() {
+    MetricData metricData = createSummaryMetricDataWithQuantiles("summary");
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    SummarySnapshot snapshot =
+        (SummarySnapshot)
+            snapshots.stream()
+                .filter(SummarySnapshot.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+    assertThat(snapshot.getDataPoints().get(0).getQuantiles()).hasSize(2);
+  }
+
+  @Test
+  void mergeSummaryMetricsWithSameName() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Arrays.asList(
+                createSummaryMetricDataWithQuantiles(
+                    "summary", Attributes.of(stringKey("id"), "a")),
+                createSummaryMetricDataWithQuantiles(
+                    "summary", Attributes.of(stringKey("id"), "b"))));
+
+    SummarySnapshot snapshot =
+        (SummarySnapshot)
+            snapshots.stream()
+                .filter(SummarySnapshot.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+    assertThat(snapshot.getDataPoints()).hasSize(2);
+  }
+
+  @Test
+  void mergeHistogramMetricsWithSameName() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Arrays.asList(
+                createSampleMetricData(
+                    "histogram",
+                    "1",
+                    MetricDataType.HISTOGRAM,
+                    Attributes.of(stringKey("id"), "a"),
+                    null),
+                createSampleMetricData(
+                    "histogram",
+                    "1",
+                    MetricDataType.HISTOGRAM,
+                    Attributes.of(stringKey("id"), "b"),
+                    null)));
+
+    HistogramSnapshot snapshot =
+        (HistogramSnapshot)
+            snapshots.stream()
+                .filter(HistogramSnapshot.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+    assertThat(snapshot.getDataPoints()).hasSize(2);
+  }
+
+  @Test
+  void mergeGaugeMetricsWithSameName() {
+    MetricSnapshots snapshots =
+        converter.convert(
+            Arrays.asList(
+                createSampleMetricData(
+                    "gauge",
+                    "1",
+                    MetricDataType.LONG_GAUGE,
+                    Attributes.of(stringKey("id"), "a"),
+                    null),
+                createSampleMetricData(
+                    "gauge",
+                    "1",
+                    MetricDataType.LONG_GAUGE,
+                    Attributes.of(stringKey("id"), "b"),
+                    null)));
+
+    GaugeSnapshot snapshot =
+        (GaugeSnapshot)
+            snapshots.stream()
+                .filter(GaugeSnapshot.class::isInstance)
+                .findFirst()
+                .orElseThrow(AssertionError::new);
+    assertThat(snapshot.getDataPoints()).hasSize(2);
+  }
+
+  private static Labels convertAttributeLabels(
+      String labelName, TranslationStrategy translationStrategy) {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ false,
+            /* targetInfoMetricEnabled= */ false,
+            translationStrategy,
+            /* allowedResourceAttributesFilter= */ null);
+
+    MetricSnapshots snapshots =
+        converter.convert(
+            Collections.singletonList(
+                createSampleMetricData(
+                    "sample",
+                    "1",
+                    MetricDataType.LONG_SUM,
+                    Attributes.of(stringKey(labelName), "value"),
+                    Resource.empty())));
+
+    assertThat(snapshots).hasSize(1);
+    return snapshots.get(0).getDataPoints().get(0).getLabels();
   }
 
   @ParameterizedTest
@@ -206,6 +598,7 @@ class Otel2PrometheusConverterTest {
         new Otel2PrometheusConverter(
             /* otelScopeLabelsEnabled= */ true,
             /* targetInfoMetricEnabled= */ true,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             allowedResourceAttributesFilter);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -232,7 +625,8 @@ class Otel2PrometheusConverterTest {
     for (MetricDataType metricDataType : MetricDataType.values()) {
       // Check that resource attributes are added as labels, according to allowed pattern
       arguments.add(
-          Arguments.of(
+          Arguments.argumentSet(
+              "resource attribute added " + metricDataType,
               createSampleMetricData(
                   "my.metric",
                   "units",
@@ -254,7 +648,8 @@ class Otel2PrometheusConverterTest {
 
     // Resource attributes which also exists in the metric labels are not added twice
     arguments.add(
-        Arguments.of(
+        Arguments.argumentSet(
+            "resource attribute not duplicated",
             createSampleMetricData(
                 "my.metric",
                 "units",
@@ -272,7 +667,8 @@ class Otel2PrometheusConverterTest {
 
     // Empty attributes
     arguments.add(
-        Arguments.of(
+        Arguments.argumentSet(
+            "empty metric attributes",
             createSampleMetricData(
                 "my.metric",
                 "units",
@@ -289,7 +685,7 @@ class Otel2PrometheusConverterTest {
   }
 
   @Test
-  void prometheusNameCollisionTest_Issue6277() {
+  void metricNameCollisionTest_Issue6277() {
     // NOTE: Metrics with the same resolved prometheus name should merge. However,
     // Otel2PrometheusConverter is not responsible for merging individual series, so the merge will
     // fail if the two different metrics contain overlapping series. Users should deal with this by
@@ -335,31 +731,41 @@ class Otel2PrometheusConverterTest {
 
   private static Stream<Arguments> labelValueSerializationArgs() {
     return Stream.of(
-        Arguments.of(Attributes.of(stringKey("key"), "stringValue"), "stringValue"),
-        Arguments.of(Attributes.of(booleanKey("key"), true), "true"),
-        Arguments.of(Attributes.of(longKey("key"), Long.MAX_VALUE), "9223372036854775807"),
-        Arguments.of(Attributes.of(doubleKey("key"), 0.12345), "0.12345"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "string value", Attributes.of(stringKey("key"), "stringValue"), "stringValue"),
+        Arguments.argumentSet("boolean value", Attributes.of(booleanKey("key"), true), "true"),
+        Arguments.argumentSet(
+            "long value", Attributes.of(longKey("key"), Long.MAX_VALUE), "9223372036854775807"),
+        Arguments.argumentSet("double value", Attributes.of(doubleKey("key"), 0.12345), "0.12345"),
+        Arguments.argumentSet(
+            "string array value",
             Attributes.of(
                 stringArrayKey("key"),
                 Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0)),
             "[\"stringValue1\",\"\\\"+\\\\\\\\\\\\+\\b+\\f+\\n+\\r+\\t+\\u0000\"]"),
-        Arguments.of(
-            Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false)), "[true,false]"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "boolean array value",
+            Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false)),
+            "[true,false]"),
+        Arguments.argumentSet(
+            "long array value",
             Attributes.of(longArrayKey("key"), Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE)),
             "[-9223372036854775808,9223372036854775807]"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "double array value",
             Attributes.of(doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE)),
             "[4.9E-324,1.7976931348623157E308]"),
-        Arguments.of(Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})), "AQID"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "bytes value", Attributes.of(valueKey("key"), Value.of(new byte[] {1, 2, 3})), "AQID"),
+        Arguments.argumentSet(
+            "nested key-value value",
             Attributes.of(valueKey("key"), Value.of(KeyValue.of("nested", Value.of("value")))),
             "{\"nested\":\"value\"}"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "list value",
             Attributes.of(valueKey("key"), Value.of(Value.of("string"), Value.of(123L))),
             "[\"string\",123]"),
-        Arguments.of(Attributes.of(valueKey("key"), Value.empty()), ""));
+        Arguments.argumentSet("empty value", Attributes.of(valueKey("key"), Value.empty()), ""));
   }
 
   static MetricData createSampleMetricData(
@@ -379,8 +785,103 @@ class Otel2PrometheusConverterTest {
       MetricDataType metricDataType,
       @Nullable Attributes attributes,
       @Nullable Resource resource) {
+    return createMetricDataWithTemporality(
+        metricName,
+        metricUnit,
+        metricDataType,
+        attributes,
+        resource,
+        /* cumulative= */ true,
+        /* monotonic= */ true);
+  }
+
+  private static MetricData createDeltaMetricData(
+      String metricName, String metricUnit, MetricDataType metricDataType) {
+    return createMetricDataWithTemporality(
+        metricName,
+        metricUnit,
+        metricDataType,
+        null,
+        null,
+        /* cumulative= */ false,
+        /* monotonic= */ true);
+  }
+
+  private static MetricData createSummaryMetricDataWithQuantiles(String metricName) {
+    return createSummaryMetricDataWithQuantiles(metricName, Attributes.empty());
+  }
+
+  private static MetricData createSummaryMetricDataWithQuantiles(
+      String metricName, Attributes attributes) {
+    InstrumentationScopeInfo scope =
+        InstrumentationScopeInfo.builder("scope")
+            .setVersion("version")
+            .setSchemaUrl("schemaUrl")
+            .setAttributes(Attributes.of(stringKey("foo"), "bar"))
+            .build();
+    return ImmutableMetricData.createDoubleSummary(
+        Resource.getDefault(),
+        scope,
+        metricName,
+        "description",
+        "1",
+        ImmutableSummaryData.create(
+            Collections.singletonList(
+                ImmutableSummaryPointData.create(
+                    0,
+                    1,
+                    attributes,
+                    2,
+                    3,
+                    Arrays.asList(
+                        ImmutableValueAtQuantile.create(0.5, 1.5),
+                        ImmutableValueAtQuantile.create(0.9, 2.5))))));
+  }
+
+  private static MetricData createExponentialHistogramMetricData(int scale) {
+    InstrumentationScopeInfo scope =
+        InstrumentationScopeInfo.builder("scope")
+            .setVersion("version")
+            .setSchemaUrl("schemaUrl")
+            .setAttributes(Attributes.of(stringKey("foo"), "bar"))
+            .build();
+    return ImmutableMetricData.createExponentialHistogram(
+        Resource.getDefault(),
+        scope,
+        "histogram",
+        "description",
+        "1",
+        ImmutableExponentialHistogramData.create(
+            AggregationTemporality.CUMULATIVE,
+            Collections.singletonList(
+                ImmutableExponentialHistogramPointData.create(
+                    0,
+                    1,
+                    scale,
+                    false,
+                    1,
+                    false,
+                    1,
+                    ImmutableExponentialHistogramBuckets.create(2, 5, Arrays.asList(1L, 2L)),
+                    ImmutableExponentialHistogramBuckets.create(2, 5, Arrays.asList(1L, 2L)),
+                    0,
+                    10,
+                    Attributes.empty(),
+                    Collections.emptyList()))));
+  }
+
+  private static MetricData createMetricDataWithTemporality(
+      String metricName,
+      String metricUnit,
+      MetricDataType metricDataType,
+      @Nullable Attributes attributes,
+      @Nullable Resource resource,
+      boolean cumulative,
+      boolean monotonic) {
     Attributes attributesToUse = attributes == null ? Attributes.empty() : attributes;
     Resource resourceToUse = resource == null ? Resource.getDefault() : resource;
+    AggregationTemporality aggregationTemporality =
+        cumulative ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA;
 
     InstrumentationScopeInfo scope =
         InstrumentationScopeInfo.builder("scope")
@@ -408,8 +909,8 @@ class Otel2PrometheusConverterTest {
             "description",
             metricUnit,
             ImmutableSumData.create(
-                true,
-                AggregationTemporality.CUMULATIVE,
+                monotonic,
+                aggregationTemporality,
                 Collections.singletonList(
                     ImmutableLongPointData.create(0, 1, attributesToUse, 1L))));
       case DOUBLE_SUM:
@@ -420,8 +921,8 @@ class Otel2PrometheusConverterTest {
             "description",
             metricUnit,
             ImmutableSumData.create(
-                true,
-                AggregationTemporality.CUMULATIVE,
+                monotonic,
+                aggregationTemporality,
                 Collections.singletonList(
                     ImmutableDoublePointData.create(0, 1, attributesToUse, 1.0))));
       case LONG_GAUGE:
@@ -452,7 +953,7 @@ class Otel2PrometheusConverterTest {
             "description",
             metricUnit,
             ImmutableHistogramData.create(
-                AggregationTemporality.CUMULATIVE,
+                aggregationTemporality,
                 Collections.singletonList(
                     ImmutableHistogramPointData.create(
                         0,
@@ -473,7 +974,7 @@ class Otel2PrometheusConverterTest {
             "description",
             metricUnit,
             ImmutableExponentialHistogramData.create(
-                AggregationTemporality.CUMULATIVE,
+                aggregationTemporality,
                 Collections.singletonList(
                     ImmutableExponentialHistogramPointData.create(
                         0,
@@ -509,6 +1010,7 @@ class Otel2PrometheusConverterTest {
         new Otel2PrometheusConverter(
             /* otelScopeLabelsEnabled= */ true,
             /* targetInfoMetricEnabled= */ true,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
             /* allowedResourceAttributesFilter= */ countPredicate);
 
     // Create 20 different metric data objects with 2 different resource attributes;
@@ -554,5 +1056,191 @@ class Otel2PrometheusConverterTest {
     // but if the cache was cleared, it used the predicate for each resource, since it as if
     // it never saw those resources before.
     assertThat(predicateCalledCount.get()).isEqualTo(2);
+  }
+
+  @Test
+  void mergeInfoSnapshotsWithSameName() throws Exception {
+    InfoSnapshot merged =
+        (InfoSnapshot)
+            invokePrivateStatic(
+                "merge",
+                new Class<?>[] {MetricSnapshot.class, MetricSnapshot.class},
+                makeInfoSnapshot("a"),
+                makeInfoSnapshot("b"));
+
+    assertThat(merged.getDataPoints()).hasSize(2);
+  }
+
+  @Test
+  void mergeConflictingTypesReturnsNull() throws Exception {
+    Object merged =
+        invokePrivateStatic(
+            "merge",
+            new Class<?>[] {MetricSnapshot.class, MetricSnapshot.class},
+            makeInfoSnapshot("a"),
+            new GaugeSnapshot(
+                MetricMetadata.builder().name("target").build(),
+                Collections.singletonList(new GaugeDataPointSnapshot(1.0, Labels.EMPTY, null))));
+
+    assertThat(merged).isNull();
+  }
+
+  @Test
+  void mergeMetadataReturnsNullForDifferentUnits() throws Exception {
+    Object merged =
+        invokePrivateStatic(
+            "mergeMetadata",
+            new Class<?>[] {MetricMetadata.class, MetricMetadata.class},
+            MetricMetadata.builder().name("sample").unit(new Unit("seconds")).build(),
+            MetricMetadata.builder().name("sample").unit(new Unit("milliseconds")).build());
+
+    assertThat(merged).isNull();
+  }
+
+  @Test
+  void convertLegacyLabelNameRejectsEmptyName() {
+    assertThatThrownBy(
+            () -> invokePrivateStatic("convertLegacyLabelName", new Class<?>[] {String.class}, ""))
+        .hasCauseInstanceOf(IllegalArgumentException.class)
+        .hasRootCauseMessage("label name is empty");
+  }
+
+  @Test
+  void stripReservedMetricSuffixesHandlesReservedNameOnly() throws Exception {
+    assertThat(
+            invokePrivateStatic(
+                "stripReservedMetricSuffixes", new Class<?>[] {String.class}, "_total"))
+        .isEqualTo("total");
+  }
+
+  @Test
+  void validateNormalizedMetricNameRejectsEmptyName() {
+    assertThatThrownBy(
+            () ->
+                invokePrivateStatic(
+                    "validateNormalizedMetricName",
+                    new Class<?>[] {String.class, String.class},
+                    "orig",
+                    ""))
+        .hasCauseInstanceOf(IllegalArgumentException.class)
+        .hasRootCauseMessage("normalization for metric \"orig\" resulted in empty name");
+  }
+
+  @Test
+  void convertExponentialHistogramBucketsReturnsEmptyForNoBuckets() throws Exception {
+    NativeHistogramBuckets buckets =
+        (NativeHistogramBuckets)
+            invokePrivateStatic(
+                "convertExponentialHistogramBuckets",
+                new Class<?>[] {ExponentialHistogramBuckets.class, int.class},
+                ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
+                0);
+
+    assertThat(buckets).isSameAs(NativeHistogramBuckets.EMPTY);
+  }
+
+  @Test
+  void typeStringUsesLowerCaseClassName() throws Exception {
+    assertThat(
+            invokePrivateStatic(
+                "typeString", new Class<?>[] {MetricSnapshot.class}, makeInfoSnapshot("a")))
+        .isEqualTo("info");
+  }
+
+  @ParameterizedTest
+  @MethodSource("exemplarLabelLimitArgs")
+  void exemplarLabelLimit(
+      SpanContext spanContext,
+      Attributes filteredAttributes,
+      String[] expectedPresentKeys,
+      String[] expectedAbsentKeys) {
+    ImmutableDoubleExemplarData exemplar =
+        (ImmutableDoubleExemplarData)
+            ImmutableDoubleExemplarData.create(filteredAttributes, 1000L, spanContext, 1.0);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleGauge(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.create("test"),
+            "my.gauge",
+            "desc",
+            "unit",
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        0, 1000, Attributes.empty(), 1.0, Collections.singletonList(exemplar)))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    assertThat(snapshots).isNotNull();
+    GaugeDataPointSnapshot point = (GaugeDataPointSnapshot) snapshots.get(0).getDataPoints().get(0);
+    Labels exemplarLabels = point.getExemplar().getLabels();
+    for (String key : expectedPresentKeys) {
+      assertThat(exemplarLabels.get(key)).as("expected label '%s' to be present", key).isNotNull();
+    }
+    for (String key : expectedAbsentKeys) {
+      assertThat(exemplarLabels.get(key)).as("expected label '%s' to be absent", key).isNull();
+    }
+  }
+
+  private static Stream<Arguments> exemplarLabelLimitArgs() {
+    SpanContext validSpanContext =
+        SpanContext.create(
+            "00000000000000000000000000000001",
+            "0000000000000001",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+
+    char[] chars = new char[100];
+    Arrays.fill(chars, 'x');
+    String longValue100 = new String(chars);
+
+    chars = new char[150];
+    Arrays.fill(chars, 'x');
+    String longValue150 = new String(chars);
+
+    return Stream.of(
+        Arguments.argumentSet(
+            "withSpanContext withinLimit",
+            validSpanContext,
+            Attributes.of(stringKey("short_attr"), "val"),
+            new String[] {"trace_id", "span_id", "short_attr"},
+            new String[] {}),
+        Arguments.argumentSet(
+            "withSpanContext exceedingLimit",
+            validSpanContext,
+            Attributes.of(stringKey("long_attr"), longValue100),
+            new String[] {"trace_id", "span_id"},
+            new String[] {"long_attr"}),
+        Arguments.argumentSet(
+            "withoutSpanContext exceedingLimit",
+            SpanContext.getInvalid(),
+            Attributes.of(stringKey("long_attr"), longValue150),
+            new String[] {},
+            new String[] {"long_attr"}),
+        Arguments.argumentSet(
+            "withoutSpanContext withinLimit",
+            SpanContext.getInvalid(),
+            Attributes.of(stringKey("short_attr"), "val"),
+            new String[] {"short_attr"},
+            new String[] {}));
+  }
+
+  private static InfoSnapshot makeInfoSnapshot(String id) {
+    return new InfoSnapshot(
+        MetricMetadata.builder().name("target").build(),
+        Collections.singletonList(
+            new InfoSnapshot.InfoDataPointSnapshot(
+                Labels.of(new String[] {"id"}, new String[] {id}))));
+  }
+
+  private static Object invokePrivateStatic(
+      String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
+    Method method = Otel2PrometheusConverter.class.getDeclaredMethod(methodName, parameterTypes);
+    method.setAccessible(true);
+    try {
+      return method.invoke(null, args);
+    } catch (InvocationTargetException e) {
+      throw e;
+    }
   }
 }

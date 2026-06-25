@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
- * A builder of {@link Resource} that allows to add key-value pairs and copy attributes from other
- * {@link Attributes} or {@link Resource}.
+ * A builder for {@link Resource} that allows adding key-value pairs and copying attributes from
+ * other {@link Attributes} or {@link Resource} instances.
  *
  * @since 1.1.0
  */
@@ -200,7 +200,6 @@ public class ResourceBuilder {
     return this;
   }
 
-  /** Create the {@link Resource} from this. */
   /** Create the {@link Resource} from this. */
   public Resource build() {
     // Derive schemaUrl from entity, if able.

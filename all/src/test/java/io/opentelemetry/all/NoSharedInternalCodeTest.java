@@ -36,20 +36,22 @@ class NoSharedInternalCodeTest {
           "opentelemetry-exporter-logging",
           "opentelemetry-exporter-logging-otlp",
           "opentelemetry-exporter-prometheus",
-          "opentelemetry-exporter-zipkin",
           "opentelemetry-extension-trace-propagators",
           "opentelemetry-opencensus-shim",
           "opentelemetry-sdk-common",
           "opentelemetry-sdk-logs",
           "opentelemetry-sdk-metrics",
+          "opentelemetry-sdk-profiles",
           "opentelemetry-sdk-testing",
           "opentelemetry-sdk-trace",
           "opentelemetry-sdk-extension-autoconfigure",
           "opentelemetry-sdk-extension-autoconfigure-spi",
+          "opentelemetry-sdk-extension-declarative-config",
           "opentelemetry-sdk-extension-incubator",
           "opentelemetry-sdk-extension-jaeger-remote-sampler",
           "opentelemetry-exporter-otlp",
           "opentelemetry-exporter-otlp-common",
+          "opentelemetry-exporter-otlp-profiles",
           "opentelemetry-exporter-sender-grpc-managed-channel",
           "opentelemetry-exporter-sender-jdk",
           "opentelemetry-exporter-sender-okhttp");
@@ -112,7 +114,7 @@ class NoSharedInternalCodeTest {
         .map(
             line -> {
               String[] parts = line.split(":", 2);
-              return Arguments.of(parts[0], parts[1]);
+              return Arguments.argumentSet(parts[0], parts[0], parts[1]);
             });
   }
 }

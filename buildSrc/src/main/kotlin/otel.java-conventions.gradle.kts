@@ -9,6 +9,7 @@ plugins {
   eclipse
   idea
 
+  id("biz.aQute.bnd.builder")
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
   id("otel.spotless-conventions")
@@ -43,14 +44,15 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "13.4.0"
+  toolVersion = "13.6.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
 
 ossIndexAudit {
-  username = System.getenv("SONATYPE_OSS_INDEX_USER") ?: ""
-  password = System.getenv("SONATYPE_OSS_INDEX_PASSWORD") ?: ""
+  // Guide PAT authentication ignores this, but the scan plugin requires it.
+  username = "unused"
+  password = System.getenv("SONATYPE_GUIDE_PAT") ?: ""
   outputFormat = org.sonatype.gradle.plugins.scan.ossindex.OutputFormat.JSON_CYCLONE_DX_1_4
   isPrintBanner = false
 }
@@ -128,6 +130,69 @@ tasks {
 
       addBooleanOption("html5", true)
       addBooleanOption("Xdoclint:all,-missing", true)
+    }
+  }
+
+  afterEvaluate {
+    if (otelJava.osgiEnabled.get()) {
+      named<Jar>("jar") {
+        // Configure OSGi metadata
+        bundle {
+          // Compute import packages.
+          // Certain packages like javax.annotation.* are always optional.
+          // Modules may have additional optional packages, typically corresponding to compileOnly dependencies.
+          // Append wildcard "*" last to import any other referenced packages.
+          val optionalPackages = mutableListOf("javax.annotation")
+          optionalPackages.addAll(otelJava.osgiOptionalPackages.get())
+          val importPackages = optionalPackages.joinToString(",") { "$it.*;resolution:=optional;version=\"\${@}\"" } + ",*"
+
+          // Packages not on the compile classpath (e.g. due to circular dependencies) cannot use
+          // version="${@}" since BND cannot resolve the version. Add them as optional imports without
+          // a version constraint; they are listed before the wildcard so BND uses our explicit
+          // instruction rather than auto-detecting them with a version.
+          val unversionedOptionalPackages = otelJava.osgiUnversionedOptionalPackages.get()
+          val unversionedImports = unversionedOptionalPackages.joinToString(",") { "$it.*;resolution:=optional" }
+          val fullImportPackages = if (unversionedImports.isNotEmpty()) "$unversionedImports,$importPackages" else importPackages
+
+          val bndInstructions = mutableMapOf(
+            "-exportcontents" to "io.opentelemetry.*",
+            "Import-Package" to fullImportPackages
+          )
+
+          // OSGi ServiceLoader Mediator capabilities.
+          // Providers declare what SPI implementations they register via META-INF/services.
+          // Consumers declare what SPI interfaces they discover at runtime via ServiceLoader.
+          // Both require the corresponding extender from a ServiceLoader mediator (e.g. SPI Fly).
+          val slProvides = otelJava.osgiServiceLoaderProvides.get()
+          val slRequires = otelJava.osgiServiceLoaderRequires.get()
+          val requireClauses = mutableListOf<String>()
+
+          if (slProvides.isNotEmpty()) {
+            bndInstructions["Provide-Capability"] = slProvides.joinToString(",") {
+              "osgi.serviceloader;osgi.serviceloader=\"$it\""
+            }
+            requireClauses.add("osgi.extender;filter:=\"(osgi.extender=osgi.serviceloader.registrar)\"")
+          }
+          if (slRequires.isNotEmpty()) {
+            slRequires.forEach {
+              // resolution:=optional: hints the BND resolver to include provider bundles.
+              // Does not add the processor extender — use osgiServiceLoaderProcessor for that.
+              requireClauses.add("osgi.serviceloader;filter:=\"(osgi.serviceloader=$it)\";cardinality:=multiple;resolution:=optional")
+            }
+          }
+          if (otelJava.osgiServiceLoaderProcessor.get()) {
+            // Mandatory: actively pulls a ServiceLoader processor (e.g. SPI Fly) into the resolved
+            // bundle set so that ServiceLoader.load() calls are routed via the OSGi service registry.
+            // Set on whichever bundle contains the ServiceLoader.load() call site.
+            requireClauses.add("osgi.extender;filter:=\"(osgi.extender=osgi.serviceloader.processor)\"")
+          }
+          if (requireClauses.isNotEmpty()) {
+            bndInstructions["Require-Capability"] = requireClauses.joinToString(",")
+          }
+
+          bnd(bndInstructions)
+        }
+      }
     }
   }
 
@@ -244,7 +309,7 @@ testing {
     useJUnitJupiter()
 
     dependencies {
-      implementation(project(project.path))
+      implementation(project())
 
       implementation(project(":testing-internal"))
 

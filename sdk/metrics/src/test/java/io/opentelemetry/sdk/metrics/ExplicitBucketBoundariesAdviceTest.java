@@ -210,14 +210,16 @@ class ExplicitBucketBoundariesAdviceTest {
 
   private static Stream<Arguments> histogramsWithoutAdvice() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "double histogram",
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
                   DoubleHistogram histogram =
                       meterProvider.get("meter").histogramBuilder("histogram").build();
                   return histogram::record;
                 }),
-        Arguments.of(
+        Arguments.argumentSet(
+            "long histogram",
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
                   LongHistogram histogram =
@@ -228,7 +230,8 @@ class ExplicitBucketBoundariesAdviceTest {
 
   private static Stream<Arguments> histogramsWithAdvice() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "double histogram with advice",
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
                   DoubleHistogram histogram =
@@ -239,7 +242,8 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 }),
-        Arguments.of(
+        Arguments.argumentSet(
+            "long histogram with advice",
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
                   LongHistogram histogram =
@@ -255,7 +259,8 @@ class ExplicitBucketBoundariesAdviceTest {
 
   private static Stream<Arguments> histogramsWithInvalidAdvice() {
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "double histogram unsorted advice",
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
                   DoubleHistogram histogram =
@@ -266,8 +271,9 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice: Bucket boundaries must be in increasing order: 10.0 >= 9.0"),
-        Arguments.of(
+            "Error setting explicit bucket boundaries advice"),
+        Arguments.argumentSet(
+            "long histogram unsorted advice",
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
                   LongHistogram histogram =
@@ -279,8 +285,9 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice: Bucket boundaries must be in increasing order: 10.0 >= 9.0"),
-        Arguments.of(
+            "Error setting explicit bucket boundaries advice"),
+        Arguments.argumentSet(
+            "double histogram null advice",
             (Function<SdkMeterProvider, Consumer<Long>>)
                 meterProvider -> {
                   DoubleHistogram histogram =
@@ -291,6 +298,6 @@ class ExplicitBucketBoundariesAdviceTest {
                           .build();
                   return histogram::record;
                 },
-            "Error setting explicit bucket boundaries advice: bucketBoundaries must not be null"));
+            "Error setting explicit bucket boundaries advice"));
   }
 }

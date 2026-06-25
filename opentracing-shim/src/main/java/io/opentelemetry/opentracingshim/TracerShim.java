@@ -78,6 +78,7 @@ final class TracerShim implements Tracer {
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public <C> void inject(SpanContext context, Format<C> format, C carrier) {
     if (context == null) {
       logger.log(Level.WARNING, "Cannot inject a null span context.");
@@ -99,6 +100,7 @@ final class TracerShim implements Tracer {
 
   @Override
   @Nullable
+  @SuppressWarnings("ReferenceEquality")
   public <C> SpanContext extract(Format<C> format, C carrier) {
     try {
       if (format == Format.Builtin.TEXT_MAP
@@ -108,10 +110,7 @@ final class TracerShim implements Tracer {
       }
     } catch (RuntimeException e) {
       logger.log(
-          Level.WARNING,
-          "Exception caught while extracting span context; returning null. "
-              + "Exception: [{0}] Message: [{1}]",
-          new String[] {e.getClass().getName(), e.getMessage()});
+          Level.WARNING, "Exception caught while extracting span context; returning null.", e);
     }
 
     return null;

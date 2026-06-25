@@ -4,6 +4,7 @@ plugins {
 
 description = "OTLP Exporter Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.integration.tests.otlp")
+otelJava.osgiEnabled.set(false)
 
 dependencies {
   api("org.testcontainers:testcontainers-junit-jupiter")

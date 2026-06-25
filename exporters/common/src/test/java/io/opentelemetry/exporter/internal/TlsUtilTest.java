@@ -106,8 +106,11 @@ class TlsUtilTest {
   private static Stream<Arguments> keyManagerArgs() throws CertificateException {
     Instant now = Instant.now();
     return Stream.of(
-        Arguments.of(
-            new SelfSignedCertificate(Date.from(now), Date.from(now), "RSA", 2048),
+        Arguments.argumentSet(
+            "RSA certificate",
+            new SelfSignedCertificate(Date.from(now), Date.from(now), "RSA", 2048)),
+        Arguments.argumentSet(
+            "EC certificate",
             new SelfSignedCertificate(Date.from(now), Date.from(now), "EC", 256)));
   }
 }

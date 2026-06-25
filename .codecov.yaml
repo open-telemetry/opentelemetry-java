@@ -15,6 +15,8 @@ coverage:
         paths:
           - "!opencensus-shim/"
           - "!opentracing-shim/"
+          # exclude declarative config generated POJOs
+          - "!sdk-extensions/declarative-config/src/main/java/io/opentelemetry/sdk/autoconfigure/declarativeconfig/model/"
       unmaintained:
         target: 80%
         paths:

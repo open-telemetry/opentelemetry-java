@@ -29,7 +29,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * <p>For improved readability, ignore the phaser lines as those are there to ensure deterministic
  * execution for the tests without sleeps.
  */
-@SuppressWarnings("FutureReturnValueIgnored")
+@SuppressWarnings({"FutureReturnValueIgnored", "deprecation"})
 class ActorPropagationTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();

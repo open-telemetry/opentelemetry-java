@@ -20,6 +20,7 @@ final class ScopeManagerShim implements ScopeManager {
 
   @Override
   @Nullable
+  @SuppressWarnings("ReferenceEquality")
   public Span activeSpan() {
     SpanShim spanShim = SpanShim.current();
     io.opentelemetry.api.trace.Span span = io.opentelemetry.api.trace.Span.current();

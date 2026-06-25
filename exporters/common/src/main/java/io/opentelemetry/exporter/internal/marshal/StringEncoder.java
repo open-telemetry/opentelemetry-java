@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.marshal;
 
 import java.io.IOException;
+import javax.annotation.Nullable;
 
 /**
  * Interface for efficient UTF-8 string encoding operations.
@@ -29,13 +30,14 @@ import java.io.IOException;
 public interface StringEncoder {
 
   /** Returns the number of bytes required to encode the string as UTF-8. */
-  int getUtf8Size(String string);
+  int getUtf8Size(@Nullable String string);
 
   /**
    * Write a string as UTF-8 bytes to the output stream using the pre-calculated UTF-8 length from
    * {@link #getUtf8Size(String)}.
    */
-  void writeUtf8(CodedOutputStream output, String string, int utf8Length) throws IOException;
+  void writeUtf8(CodedOutputStream output, @Nullable String string, int utf8Length)
+      throws IOException;
 
   /** Returns the best available StringEncoder implementation. */
   static StringEncoder getInstance() {

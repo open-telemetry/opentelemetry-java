@@ -48,63 +48,62 @@ class IncludeExcludePredicateTest {
 
   private static Stream<Arguments> testArgs() {
     return Stream.of(
-        // exact matching
-        // include only
-        Arguments.of(EXACT_INCLUDE, "foo", true),
-        Arguments.of(EXACT_INCLUDE, "bar", false),
-        Arguments.of(EXACT_INCLUDE, "baz", false),
-        Arguments.of(EXACT_INCLUDE, "Foo", false),
-        Arguments.of(EXACT_INCLUDE, "FOO", false),
-        // exclude only
-        Arguments.of(EXACT_EXCLUDE, "foo", true),
-        Arguments.of(EXACT_EXCLUDE, "bar", false),
-        Arguments.of(EXACT_EXCLUDE, "baz", true),
-        Arguments.of(EXACT_EXCLUDE, "Bar", true),
-        Arguments.of(EXACT_EXCLUDE, "BAR", true),
-        // include and exclude
-        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "foo", true),
-        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "Foo", false),
-        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "FOO", false),
-        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "bar", false),
-        Arguments.of(EXACT_INCLUDE_AND_EXCLUDE, "baz", false),
-        // multi
-        Arguments.of(EXACT_MULTI, "foo", true),
-        Arguments.of(EXACT_MULTI, "fooo", true),
-        Arguments.of(EXACT_MULTI, "Foo", false),
-        Arguments.of(EXACT_MULTI, "FOO", false),
-        Arguments.of(EXACT_MULTI, "bar", false),
-        Arguments.of(EXACT_MULTI, "barr", false),
-        Arguments.of(EXACT_MULTI, "baz", false),
-        // pattern matching
-        // include only
-        Arguments.of(PATTERN_INCLUDE, "foo", true),
-        Arguments.of(PATTERN_INCLUDE, "fOo", true),
-        Arguments.of(PATTERN_INCLUDE, "Foo", false),
-        Arguments.of(PATTERN_INCLUDE, "bar", false),
-        Arguments.of(PATTERN_INCLUDE, "baz", false),
-        // exclude only
-        Arguments.of(PATTERN_EXCLUDE, "foo", true),
-        Arguments.of(PATTERN_EXCLUDE, "bar", false),
-        Arguments.of(PATTERN_EXCLUDE, "bAr", false),
-        Arguments.of(PATTERN_EXCLUDE, "Bar", true),
-        Arguments.of(PATTERN_EXCLUDE, "BAR", true),
-        Arguments.of(PATTERN_EXCLUDE, "baz", true),
-        // include and exclude
-        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "foo", true),
-        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "fOo", true),
-        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "FOO", false),
-        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "bar", false),
-        Arguments.of(PATTERN_INCLUDE_AND_EXCLUDE, "baz", false),
-        // multi
-        Arguments.of(PATTERN_MULTI, "foo", true),
-        Arguments.of(PATTERN_MULTI, "fooo", true),
-        Arguments.of(PATTERN_MULTI, "fOo", true),
-        Arguments.of(PATTERN_MULTI, "FOO", false),
-        Arguments.of(PATTERN_MULTI, "bar", false),
-        Arguments.of(PATTERN_MULTI, "bAr", false),
-        Arguments.of(PATTERN_MULTI, "barr", false),
-        Arguments.of(PATTERN_MULTI, "bArr", false),
-        Arguments.of(PATTERN_MULTI, "baz", false));
+        Arguments.argumentSet("exact include foo", EXACT_INCLUDE, "foo", true),
+        Arguments.argumentSet("exact include bar no match", EXACT_INCLUDE, "bar", false),
+        Arguments.argumentSet("exact include baz no match", EXACT_INCLUDE, "baz", false),
+        Arguments.argumentSet("exact include Foo no match", EXACT_INCLUDE, "Foo", false),
+        Arguments.argumentSet("exact include FOO no match", EXACT_INCLUDE, "FOO", false),
+        Arguments.argumentSet("exact exclude foo", EXACT_EXCLUDE, "foo", true),
+        Arguments.argumentSet("exact exclude bar no match", EXACT_EXCLUDE, "bar", false),
+        Arguments.argumentSet("exact exclude baz", EXACT_EXCLUDE, "baz", true),
+        Arguments.argumentSet("exact exclude Bar", EXACT_EXCLUDE, "Bar", true),
+        Arguments.argumentSet("exact exclude BAR", EXACT_EXCLUDE, "BAR", true),
+        Arguments.argumentSet("exact include+exclude foo", EXACT_INCLUDE_AND_EXCLUDE, "foo", true),
+        Arguments.argumentSet(
+            "exact include+exclude Foo no match", EXACT_INCLUDE_AND_EXCLUDE, "Foo", false),
+        Arguments.argumentSet(
+            "exact include+exclude FOO no match", EXACT_INCLUDE_AND_EXCLUDE, "FOO", false),
+        Arguments.argumentSet(
+            "exact include+exclude bar no match", EXACT_INCLUDE_AND_EXCLUDE, "bar", false),
+        Arguments.argumentSet(
+            "exact include+exclude baz no match", EXACT_INCLUDE_AND_EXCLUDE, "baz", false),
+        Arguments.argumentSet("exact multi foo", EXACT_MULTI, "foo", true),
+        Arguments.argumentSet("exact multi fooo", EXACT_MULTI, "fooo", true),
+        Arguments.argumentSet("exact multi Foo no match", EXACT_MULTI, "Foo", false),
+        Arguments.argumentSet("exact multi FOO no match", EXACT_MULTI, "FOO", false),
+        Arguments.argumentSet("exact multi bar no match", EXACT_MULTI, "bar", false),
+        Arguments.argumentSet("exact multi barr no match", EXACT_MULTI, "barr", false),
+        Arguments.argumentSet("exact multi baz no match", EXACT_MULTI, "baz", false),
+        Arguments.argumentSet("pattern include foo", PATTERN_INCLUDE, "foo", true),
+        Arguments.argumentSet("pattern include fOo", PATTERN_INCLUDE, "fOo", true),
+        Arguments.argumentSet("pattern include Foo no match", PATTERN_INCLUDE, "Foo", false),
+        Arguments.argumentSet("pattern include bar no match", PATTERN_INCLUDE, "bar", false),
+        Arguments.argumentSet("pattern include baz no match", PATTERN_INCLUDE, "baz", false),
+        Arguments.argumentSet("pattern exclude foo", PATTERN_EXCLUDE, "foo", true),
+        Arguments.argumentSet("pattern exclude bar no match", PATTERN_EXCLUDE, "bar", false),
+        Arguments.argumentSet("pattern exclude bAr no match", PATTERN_EXCLUDE, "bAr", false),
+        Arguments.argumentSet("pattern exclude Bar", PATTERN_EXCLUDE, "Bar", true),
+        Arguments.argumentSet("pattern exclude BAR", PATTERN_EXCLUDE, "BAR", true),
+        Arguments.argumentSet("pattern exclude baz", PATTERN_EXCLUDE, "baz", true),
+        Arguments.argumentSet(
+            "pattern include+exclude foo", PATTERN_INCLUDE_AND_EXCLUDE, "foo", true),
+        Arguments.argumentSet(
+            "pattern include+exclude fOo", PATTERN_INCLUDE_AND_EXCLUDE, "fOo", true),
+        Arguments.argumentSet(
+            "pattern include+exclude FOO no match", PATTERN_INCLUDE_AND_EXCLUDE, "FOO", false),
+        Arguments.argumentSet(
+            "pattern include+exclude bar no match", PATTERN_INCLUDE_AND_EXCLUDE, "bar", false),
+        Arguments.argumentSet(
+            "pattern include+exclude baz no match", PATTERN_INCLUDE_AND_EXCLUDE, "baz", false),
+        Arguments.argumentSet("pattern multi foo", PATTERN_MULTI, "foo", true),
+        Arguments.argumentSet("pattern multi fooo", PATTERN_MULTI, "fooo", true),
+        Arguments.argumentSet("pattern multi fOo", PATTERN_MULTI, "fOo", true),
+        Arguments.argumentSet("pattern multi FOO no match", PATTERN_MULTI, "FOO", false),
+        Arguments.argumentSet("pattern multi bar no match", PATTERN_MULTI, "bar", false),
+        Arguments.argumentSet("pattern multi bAr no match", PATTERN_MULTI, "bAr", false),
+        Arguments.argumentSet("pattern multi barr no match", PATTERN_MULTI, "barr", false),
+        Arguments.argumentSet("pattern multi bArr no match", PATTERN_MULTI, "bArr", false),
+        Arguments.argumentSet("pattern multi baz no match", PATTERN_MULTI, "baz", false));
   }
 
   @ParameterizedTest
@@ -115,24 +114,36 @@ class IncludeExcludePredicateTest {
 
   private static Stream<Arguments> stringRepresentationArgs() {
     return Stream.of(
-        Arguments.of(
-            EXACT_INCLUDE, "IncludeExcludePredicate{globMatchingEnabled=false, included=[foo]}"),
-        Arguments.of(
-            EXACT_EXCLUDE, "IncludeExcludePredicate{globMatchingEnabled=false, excluded=[bar]}"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "exact include",
+            EXACT_INCLUDE,
+            "IncludeExcludePredicate{globMatchingEnabled=false, included=[foo]}"),
+        Arguments.argumentSet(
+            "exact exclude",
+            EXACT_EXCLUDE,
+            "IncludeExcludePredicate{globMatchingEnabled=false, excluded=[bar]}"),
+        Arguments.argumentSet(
+            "exact include and exclude",
             EXACT_INCLUDE_AND_EXCLUDE,
             "IncludeExcludePredicate{globMatchingEnabled=false, included=[foo], excluded=[bar]}"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "exact multi",
             EXACT_MULTI,
             "IncludeExcludePredicate{globMatchingEnabled=false, included=[foo, fooo], excluded=[bar, barr]}"),
-        Arguments.of(
-            PATTERN_INCLUDE, "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o]}"),
-        Arguments.of(
-            PATTERN_EXCLUDE, "IncludeExcludePredicate{globMatchingEnabled=true, excluded=[b?r]}"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "pattern include",
+            PATTERN_INCLUDE,
+            "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o]}"),
+        Arguments.argumentSet(
+            "pattern exclude",
+            PATTERN_EXCLUDE,
+            "IncludeExcludePredicate{globMatchingEnabled=true, excluded=[b?r]}"),
+        Arguments.argumentSet(
+            "pattern include and exclude",
             PATTERN_INCLUDE_AND_EXCLUDE,
             "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o], excluded=[b?r]}"),
-        Arguments.of(
+        Arguments.argumentSet(
+            "pattern multi",
             PATTERN_MULTI,
             "IncludeExcludePredicate{globMatchingEnabled=true, included=[f?o, f?oo], excluded=[b?r, b?rr]}"));
   }
@@ -161,5 +172,20 @@ class IncludeExcludePredicateTest {
               assertThat(patternMatching.toString())
                   .isEqualTo("IncludeExcludePredicate{globMatchingEnabled=true}");
             });
+  }
+
+  @Test
+  void shouldExcludeWhenValueMatchesBothIncludeAndExclude() {
+    String value = "a";
+    Collection<String> exactMatchingArg = Collections.singletonList("a");
+
+    Predicate<String> exactMatching =
+        IncludeExcludePredicate.createExactMatching(exactMatchingArg, exactMatchingArg);
+    assertThat(exactMatching.test(value)).isFalse();
+
+    Collection<String> patternMatchingArg = Collections.singletonList("*");
+    Predicate<String> patternMatching =
+        IncludeExcludePredicate.createPatternMatching(patternMatchingArg, patternMatchingArg);
+    assertThat(patternMatching.test(value)).isFalse();
   }
 }

@@ -267,6 +267,7 @@ final class SdkMeter implements Meter {
   }
 
   /** Registers new synchronous storage associated with a given instrument. */
+  @SuppressWarnings("ReferenceEquality")
   WriteableMetricStorage registerSynchronousMetricStorage(InstrumentDescriptor instrument) {
 
     List<SynchronousMetricStorage> registeredStorages = new ArrayList<>();
@@ -299,6 +300,7 @@ final class SdkMeter implements Meter {
   }
 
   /** Register new asynchronous storage associated with a given instrument. */
+  @SuppressWarnings("ReferenceEquality")
   SdkObservableMeasurement registerObservableMeasurement(
       InstrumentDescriptor instrumentDescriptor) {
     List<AsynchronousMetricStorage<?>> registeredStorages = new ArrayList<>();
@@ -318,6 +320,7 @@ final class SdkMeter implements Meter {
                     registeredView,
                     meterProviderSharedState.getClock(),
                     instrumentDescriptor,
+                    meterProviderSharedState.getExemplarFilter(),
                     meterEnabled)));
       }
     }

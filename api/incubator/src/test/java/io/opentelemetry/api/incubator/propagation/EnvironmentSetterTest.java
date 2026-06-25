@@ -9,7 +9,11 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class EnvironmentSetterTest {
 
@@ -60,6 +64,27 @@ class EnvironmentSetterTest {
     assertThat(carrier).containsEntry("KEY4", "value\u0000with\u0001control");
     assertThat(carrier).containsEntry("KEY5", "value\nwith\nnewlines");
     assertThat(carrier).containsEntry("KEY6", "value\u0080non-ascii");
+  }
+
+  @ParameterizedTest
+  @MethodSource("isNormalizedKeyCases")
+  void isNormalizedKey(String key, boolean expected) {
+    assertThat(EnvironmentSetter.isNormalizedKey(key)).isEqualTo(expected);
+  }
+
+  static Stream<Arguments> isNormalizedKeyCases() {
+    return Stream.of(
+        Arguments.argumentSet("uppercase letters", "TRACEPARENT", true),
+        Arguments.argumentSet("uppercase with underscores", "OTEL_TRACE_ID", true),
+        Arguments.argumentSet("single letter", "A", true),
+        Arguments.argumentSet("letter then digit", "A0", true),
+        Arguments.argumentSet("mixed uppercase digits underscores", "A_B_0", true),
+        Arguments.argumentSet("empty string", "", false),
+        Arguments.argumentSet("starts with digit", "0ABC", false),
+        Arguments.argumentSet("lowercase letters", "traceparent", false),
+        Arguments.argumentSet("dots", "otel.trace.id", false),
+        Arguments.argumentSet("hyphens", "otel-baggage-key", false),
+        Arguments.argumentSet("space", "OTEL TRACE", false));
   }
 
   @Test

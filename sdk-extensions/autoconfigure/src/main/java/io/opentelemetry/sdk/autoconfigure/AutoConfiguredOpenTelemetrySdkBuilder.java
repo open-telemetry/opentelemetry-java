@@ -62,20 +62,20 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private static final Logger logger =
       Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
-  private static final boolean INCUBATOR_AVAILABLE;
+  private static final boolean DECLARATIVE_CONFIG_AVAILABLE;
 
   static {
-    boolean incubatorAvailable = false;
+    boolean declarativeConfigAvailable = false;
     try {
       Class.forName(
-          "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration",
+          "io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfiguration",
           false,
           AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
-      incubatorAvailable = true;
+      declarativeConfigAvailable = true;
     } catch (ClassNotFoundException e) {
       // Not available
     }
-    INCUBATOR_AVAILABLE = incubatorAvailable;
+    DECLARATIVE_CONFIG_AVAILABLE = declarativeConfigAvailable;
   }
 
   @Nullable private ConfigProperties config;
@@ -501,8 +501,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
           logger.fine("Closing " + closeable.getClass().getName());
           closeable.close();
         } catch (IOException ex) {
-          logger.warning(
-              "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
+          logger.log(Level.WARNING, "Error closing " + closeable.getClass().getName(), ex);
         }
       }
       if (e instanceof ConfigurationException) {
@@ -571,31 +570,24 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   @Nullable
   private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(
       ConfigProperties config, ComponentLoader componentLoader) {
-    if (INCUBATOR_AVAILABLE) {
-      AutoConfiguredOpenTelemetrySdk sdk = IncubatingUtil.configureFromSpi(componentLoader);
+    if (DECLARATIVE_CONFIG_AVAILABLE) {
+      AutoConfiguredOpenTelemetrySdk sdk = DeclarativeConfigUtil.configureFromSpi(componentLoader);
       if (sdk != null) {
-        logger.fine("Autoconfigured from SPI by opentelemetry-sdk-extension-incubator");
+        logger.fine("Autoconfigured from SPI by opentelemetry-sdk-extension-declarative-config");
         return sdk;
       }
     }
 
     String configurationFile = config.getString("otel.config.file");
     if (configurationFile == null || configurationFile.isEmpty()) {
-      configurationFile = config.getString("otel.experimental.config.file");
-      if (configurationFile != null && !configurationFile.isEmpty()) {
-        logger.warning(
-            "otel.experimental.config.file is deprecated and will be removed after 1.62.0 release. Please use otel.config.file instead.");
-      }
-    }
-    if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
 
-    if (!INCUBATOR_AVAILABLE) {
+    if (!DECLARATIVE_CONFIG_AVAILABLE) {
       throw new ConfigurationException(
-          "Cannot autoconfigure from config file without opentelemetry-sdk-extension-incubator on the classpath");
+          "Cannot autoconfigure from config file without opentelemetry-sdk-extension-declarative-config on the classpath");
     }
-    return IncubatingUtil.configureFromFile(logger, configurationFile, componentLoader);
+    return DeclarativeConfigUtil.configureFromFile(logger, configurationFile, componentLoader);
   }
 
   private void maybeRegisterShutdownHook(OpenTelemetrySdk openTelemetrySdk) {

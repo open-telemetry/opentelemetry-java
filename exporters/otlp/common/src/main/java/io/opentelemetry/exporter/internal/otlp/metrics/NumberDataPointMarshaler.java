@@ -68,6 +68,7 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public void writeTo(Serializer output) throws IOException {
     output.serializeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
     output.serializeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
@@ -80,6 +81,7 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);
   }
 
+  @SuppressWarnings("ReferenceEquality")
   private static int calculateSize(
       long startTimeUnixNano,
       long timeUnixNano,

@@ -8,6 +8,7 @@ plugins {
 
 description = "OpenTelemetry Log SDK"
 otelJava.moduleName.set("io.opentelemetry.sdk.logs")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
 dependencies {
   api(project(":api:all"))

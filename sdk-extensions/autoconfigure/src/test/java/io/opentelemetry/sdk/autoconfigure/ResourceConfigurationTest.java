@@ -68,20 +68,13 @@ class ResourceConfigurationTest {
 
   private static Stream<Arguments> decodeResourceAttributesArgs() {
     return Stream.of(
-        // Plus sign preserved
-        Arguments.of("food=cheese+cake", "food", "cheese+cake"),
-        // Percent-encoded space in resource attribute value decoded to space
-        Arguments.of("key=hello%20world", "key", "hello world"),
-        // Invalid percent encoding preserved
-        Arguments.of("key=abc%2Gdef", "key", "abc%2Gdef"),
-        // Incomplete percent encoding preserved
-        Arguments.of("key=abc%2", "key", "abc%2"),
-        // Percent at end preserved
-        Arguments.of("key=abc%", "key", "abc%"),
-        // Multiple percent encodings
-        Arguments.of("key=a%20b%2Bc%3Dd", "key", "a b+c=d"),
-        // No percent encoding
-        Arguments.of("key=plain-value", "key", "plain-value"));
+        Arguments.argumentSet("plus sign preserved", "food=cheese+cake", "food", "cheese+cake"),
+        Arguments.argumentSet("percent-encoded space", "key=hello%20world", "key", "hello world"),
+        Arguments.argumentSet("invalid percent encoding", "key=abc%2Gdef", "key", "abc%2Gdef"),
+        Arguments.argumentSet("incomplete percent encoding", "key=abc%2", "key", "abc%2"),
+        Arguments.argumentSet("percent at end", "key=abc%", "key", "abc%"),
+        Arguments.argumentSet("multiple percent encodings", "key=a%20b%2Bc%3Dd", "key", "a b+c=d"),
+        Arguments.argumentSet("no percent encoding", "key=plain-value", "key", "plain-value"));
   }
 
   @Test
