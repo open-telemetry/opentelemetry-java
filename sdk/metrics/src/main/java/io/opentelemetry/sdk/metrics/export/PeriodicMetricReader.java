@@ -113,8 +113,7 @@ public final class PeriodicMetricReader implements MetricReader {
                 if (doRunResult.isSuccess() && flushResult.isSuccess()) {
                   result.succeed();
                 } else {
-                  result.failExceptionally(
-                      new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
+                  result.failExceptionally(new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
                 }
               });
         });
@@ -296,8 +295,7 @@ public final class PeriodicMetricReader implements MetricReader {
         }
       } else {
         logger.log(Level.FINE, EXPORT_IN_PROGRESS_MESSAGE);
-        flushResult.failExceptionally(
-            new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
+        flushResult.failExceptionally(new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
       }
       return flushResult;
     }
