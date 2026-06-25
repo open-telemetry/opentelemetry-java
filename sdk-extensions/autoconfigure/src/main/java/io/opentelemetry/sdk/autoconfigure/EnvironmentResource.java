@@ -36,6 +36,7 @@ final class EnvironmentResource {
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
+  static final String ENTITIES_PROPERTY = "otel.entities";
 
   /**
    * Create a {@link Resource} from the environment. The resource contains attributes parsed from
@@ -47,11 +48,11 @@ final class EnvironmentResource {
    */
   @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   static Resource createEnvironmentResource(ConfigProperties config) {
-    boolean entitiesEnabled = config.getBoolean("otel.experimental.entities.enabled", false);
+    boolean entitiesEnabled = config.getBoolean(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, false);
     if (entitiesEnabled) {
       ResourceBuilder builder = Resource.builder();
 
-      String entitiesStr = config.getString("otel.entities");
+      String entitiesStr = config.getString(ENTITIES_PROPERTY);
       if (entitiesStr != null && !entitiesStr.isEmpty()) {
         List<Entity> parsedEntities = new EntityParser(entitiesStr).parse();
         for (Entity entity : parsedEntities) {

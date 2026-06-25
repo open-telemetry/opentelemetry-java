@@ -67,10 +67,10 @@ class ServiceResourceDetectorTest {
 
   @Test
   @ClearSystemProperty(key = "otel.service.name")
-  @ClearSystemProperty(key = "otel.experimental.entities.enabled")
+  @ClearSystemProperty(key = EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED)
   void create_EntitiesEnabled() {
     System.setProperty("otel.service.name", "my-service");
-    System.setProperty("otel.experimental.entities.enabled", "true");
+    System.setProperty(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, "true");
 
     Resource resource = new ServiceResourceDetector().create(DeclarativeConfigProperties.empty());
 
@@ -101,10 +101,10 @@ class ServiceResourceDetectorTest {
 
   @Test
   @ClearSystemProperty(key = "otel.service.name")
-  @ClearSystemProperty(key = "otel.experimental.entities.enabled")
+  @ClearSystemProperty(key = EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED)
   void create_EntitiesDisabled() {
     System.setProperty("otel.service.name", "my-service");
-    System.setProperty("otel.experimental.entities.enabled", "false");
+    System.setProperty(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, "false");
 
     Resource resource = new ServiceResourceDetector().create(DeclarativeConfigProperties.empty());
 

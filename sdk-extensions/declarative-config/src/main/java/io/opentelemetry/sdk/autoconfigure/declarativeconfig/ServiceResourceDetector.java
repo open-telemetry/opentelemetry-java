@@ -47,7 +47,8 @@ public class ServiceResourceDetector implements ComponentProvider {
 
     ConfigProperties properties =
         DefaultConfigProperties.create(Collections.emptyMap(), config.getComponentLoader());
-    boolean entitiesEnabled = properties.getBoolean("otel.experimental.entities.enabled", false);
+    boolean entitiesEnabled =
+        properties.getBoolean(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, false);
 
     String serviceName = properties.getString("otel.service.name");
     if (entitiesEnabled) {

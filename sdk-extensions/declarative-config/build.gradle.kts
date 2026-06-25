@@ -172,6 +172,9 @@ val copyResourceConfiguration by tasks.registering(Copy::class) {
   from(
     project(":sdk-extensions:autoconfigure").file(
       "src/main/java/io/opentelemetry/sdk/autoconfigure/EnvironmentResource.java"
+    ),
+    project(":sdk-extensions:autoconfigure").file(
+      "src/main/java/io/opentelemetry/sdk/autoconfigure/EntityExperimentConstants.java"
     )
   )
   into(generatedResourceConfigDir.map { it.dir("io/opentelemetry/sdk/autoconfigure/declarativeconfig") })

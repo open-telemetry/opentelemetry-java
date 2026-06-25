@@ -173,10 +173,10 @@ class ResourceConfigurationTest {
   @Test
   void createEnvironmentResource_EntitiesEnabled() {
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.entities.enabled", "true");
+    props.put(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, "true");
     props.put(
-        "otel.entities",
-        "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}");
+            EnvironmentResource.ENTITIES_PROPERTY,
+                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}");
     props.put("otel.service.name", "my-service");
     props.put("otel.resource.attributes", "flat.attr=flat-val");
 
@@ -221,8 +221,8 @@ class ResourceConfigurationTest {
   @Test
   void createEnvironmentResource_EntitiesDisabled() {
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.entities.enabled", "false");
-    props.put("otel.entities", "process{process.pid=1234}");
+    props.put(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, "false");
+    props.put(EnvironmentResource.ENTITIES_PROPERTY, "process{process.pid=1234}");
     props.put("otel.service.name", "my-service");
     props.put("otel.resource.attributes", "flat.attr=flat-val");
 
