@@ -27,6 +27,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.BenchmarkParams;
 
 @State(Scope.Benchmark)
 public class BatchSpanProcessorMultiThreadBenchmark {
@@ -45,7 +46,8 @@ public class BatchSpanProcessorMultiThreadBenchmark {
     private long droppedSpans;
 
     @Setup(Level.Iteration)
-    public final void setup() {
+    public final void setup(BenchmarkParams params) {
+      numThreads = params.getThreads();
       collector = InMemoryMetricReader.create();
       MeterProvider meterProvider =
           SdkMeterProvider.builder().registerMetricReader(collector).build();
@@ -66,7 +68,7 @@ public class BatchSpanProcessorMultiThreadBenchmark {
   }
 
   @State(Scope.Thread)
-  @AuxCounters(AuxCounters.Type.OPERATIONS)
+  @AuxCounters(AuxCounters.Type.EVENTS)
   public static class ThreadState {
     BenchmarkState benchmarkState;
 
@@ -93,7 +95,6 @@ public class BatchSpanProcessorMultiThreadBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_01Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 1;
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }
@@ -107,7 +108,6 @@ public class BatchSpanProcessorMultiThreadBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_02Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 2;
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }
@@ -121,7 +121,6 @@ public class BatchSpanProcessorMultiThreadBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_05Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 5;
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }
@@ -135,7 +134,6 @@ public class BatchSpanProcessorMultiThreadBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_10Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 10;
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }
@@ -149,7 +147,6 @@ public class BatchSpanProcessorMultiThreadBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_20Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 20;
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }
