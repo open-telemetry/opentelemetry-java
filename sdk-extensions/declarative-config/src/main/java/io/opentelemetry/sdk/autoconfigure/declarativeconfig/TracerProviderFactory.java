@@ -7,11 +7,11 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.FileConfigUtil.requireNonNull;
 
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalTracerConfigModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalTracerConfiguratorModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalTracerMatcherAndConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfiguratorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerMatcherAndConfigModel;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;

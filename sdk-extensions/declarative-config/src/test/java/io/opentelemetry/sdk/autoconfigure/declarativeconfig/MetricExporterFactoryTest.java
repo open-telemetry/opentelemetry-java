@@ -19,7 +19,6 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.MetricExporterComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ConsoleMetricExporterModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalOtlpFileMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.GrpcTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.HttpTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.NameStringValuePairModel;
@@ -27,6 +26,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetric
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterPropertyModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileMetricExporterModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;

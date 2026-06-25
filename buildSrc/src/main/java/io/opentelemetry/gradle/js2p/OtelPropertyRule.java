@@ -33,9 +33,8 @@ import org.jsonschema2pojo.rules.RuleFactory;
  *
  * <p>Mechanism: strip {@code description} from the node before delegating to {@link
  * PropertyRule#apply} so the superclass adds it nowhere (not the field javadoc, the getter javadoc,
- * or a {@code @JsonPropertyDescription}), then apply it to the getter only. The "(Required)" javadoc
- * is appended later by the object-level {@code RequiredArrayRule}, yielding the same
- * description-then-"(Required)" getter ordering jsonschema2pojo produces for inline properties.
+ * or a {@code @JsonPropertyDescription}), then apply it to the getter only — leaving fields without
+ * any javadoc.
  */
 public class OtelPropertyRule extends PropertyRule {
 
@@ -69,11 +68,6 @@ public class OtelPropertyRule extends PropertyRule {
       return result;
     }
 
-    // Invariant: descriptions only ever land on the getter. The one way the superclass would put
-    // one on the field is a referenced $def that defines its own top-level description (which would
-    // duplicate onto the field and, for a $ref with a sibling description, conflict with it). We
-    // don't define top-level descriptions on $defs today; fail loudly and force a decision if that
-    // changes rather than silently emitting field-level descriptions.
     if (hasDescriptionAnnotation(field)) {
       throw new GenerationException(
           "Property '"
@@ -111,9 +105,8 @@ public class OtelPropertyRule extends PropertyRule {
 
   // google-java-format reflows javadoc prose, collapsing the schema's single newlines into spaces
   // (only blank lines survive, rendered as <p>). Promote each interior lone newline to a blank line
-  // so every original line becomes its own <p> paragraph. Existing blank lines and a trailing
-  // newline are left alone — the latter so the paragraph break before the appended "(Required)"
-  // survives.
+  // so every original line becomes its own <p> paragraph. Existing blank lines are left alone, as is
+  // a trailing newline (so the description doesn't gain a stray trailing blank paragraph).
   private static JsonNode preserveLineBreaks(JsonNode description) {
     String text = description.asText();
     if (text.indexOf('\n') < 0) {

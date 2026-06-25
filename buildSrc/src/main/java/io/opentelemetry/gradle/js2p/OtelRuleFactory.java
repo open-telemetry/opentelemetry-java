@@ -5,6 +5,7 @@
 
 package io.opentelemetry.gradle.js2p;
 
+import com.sun.codemodel.JClassContainer;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocCommentable;
 import com.sun.codemodel.JPackage;
@@ -19,7 +20,10 @@ import org.jsonschema2pojo.util.ParcelableHelper;
  *
  * <ul>
  *   <li>{@link OtelObjectRule} — AutoValue-style {@code toString}/{@code equals}/{@code hashCode}
- *       instead of jsonschema2pojo's defaults.
+ *       instead of jsonschema2pojo's defaults, and routes experimental classes into the {@code
+ *       internal} sub-package.
+ *   <li>{@link OtelEnumRule} — routes top-level experimental enums into the {@code internal}
+ *       sub-package, mirroring {@link OtelObjectRule} for classes.
  *   <li>{@link OtelPropertyRule} — restores property descriptions written as siblings of {@code
  *       $ref}, which jsonschema2pojo otherwise drops.
  * </ul>
@@ -32,6 +36,11 @@ public class OtelRuleFactory extends RuleFactory {
   @Override
   public Rule<JPackage, JType> getObjectRule() {
     return new OtelObjectRule(this, new ParcelableHelper(), getReflectionHelper());
+  }
+
+  @Override
+  public Rule<JClassContainer, JType> getEnumRule() {
+    return new OtelEnumRule(this);
   }
 
   @Override

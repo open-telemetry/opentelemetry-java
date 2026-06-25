@@ -30,17 +30,22 @@ import org.jsonschema2pojo.util.ReflectionHelper;
  */
 public class OtelObjectRule extends ObjectRule {
 
+  private final RuleFactory ruleFactory;
+
   public OtelObjectRule(
       RuleFactory ruleFactory,
       ParcelableHelper parcelableHelper,
       ReflectionHelper reflectionHelper) {
     super(ruleFactory, parcelableHelper, reflectionHelper);
+    this.ruleFactory = ruleFactory;
   }
 
   @Override
   public JType apply(
       String nodeName, JsonNode node, JsonNode parent, JPackage pkg, Schema schema) {
-    JType type = super.apply(nodeName, node, parent, pkg, schema);
+    // Route experimental types into the internal sub-package before the class is created.
+    JPackage targetPackage = ExperimentalPackages.resolve(ruleFactory, nodeName, node, pkg);
+    JType type = super.apply(nodeName, node, parent, targetPackage, schema);
     if (type instanceof JDefinedClass
         && ((JDefinedClass) type).getClassType() == ClassType.CLASS) {
       addValueMethods((JDefinedClass) type);

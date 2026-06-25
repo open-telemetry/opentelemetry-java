@@ -11,9 +11,6 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalMeterConfigModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalMeterConfiguratorModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalMeterMatcherAndConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricReaderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel;
@@ -22,6 +19,9 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExpo
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterMatcherAndConfigModel;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfiguratorModel;
 import java.util.List;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;

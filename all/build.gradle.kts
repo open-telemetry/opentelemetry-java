@@ -79,7 +79,7 @@ tasks {
     options.release.set(11)
   }
 
-  val testJavaVersion: String? by project
+  val testJavaVersion = project.findProperty("testJavaVersion") as String?
   test {
     enabled = testJavaVersion != "8"
     dependsOn(writeArtifactsAndJars)
@@ -89,7 +89,7 @@ tasks {
 
 // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
 
-val sourcesPath by configurations.creating {
+val sourcesPath = configurations.create("sourcesPath") {
   isCanBeResolved = true
   isCanBeConsumed = false
   extendsFrom(configurations.implementation.get())
@@ -100,7 +100,7 @@ val sourcesPath by configurations.creating {
   }
 }
 
-val coverageDataPath by configurations.creating {
+val coverageDataPath = configurations.create("coverageDataPath") {
   isCanBeResolved = true
   isCanBeConsumed = false
   extendsFrom(configurations.implementation.get())
