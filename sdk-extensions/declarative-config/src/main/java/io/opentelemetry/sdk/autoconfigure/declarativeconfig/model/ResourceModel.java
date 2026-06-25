@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -18,13 +17,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ResourceModel {
 
-  /**
-   * Configure resource attributes. Entries have higher priority than entries from
-   * .resource.attributes_list. If omitted, no resource attributes are added.
-   */
   @JsonProperty("attributes")
-  @JsonPropertyDescription(
-      "Configure resource attributes. Entries have higher priority than entries from .resource.attributes_list.\nIf omitted, no resource attributes are added.\n")
   @Nullable
   private List<AttributeNameValueModel> attributes;
 
@@ -32,29 +25,19 @@ public class ResourceModel {
   @Nullable
   private ExperimentalResourceDetectionModel detectionDevelopment;
 
-  /** Configure resource schema URL. If omitted or null, no schema URL is used. */
   @JsonProperty("schema_url")
-  @JsonPropertyDescription(
-      "Configure resource schema URL.\nIf omitted or null, no schema URL is used.\n")
   @Nullable
   private String schemaUrl;
 
-  /**
-   * Configure resource attributes. Entries have lower priority than entries from
-   * .resource.attributes. The value is a list of comma separated key-value pairs matching the
-   * format of OTEL_RESOURCE_ATTRIBUTES. See
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#general-sdk-configuration
-   * for details. If omitted or null, no resource attributes are added.
-   */
   @JsonProperty("attributes_list")
-  @JsonPropertyDescription(
-      "Configure resource attributes. Entries have lower priority than entries from .resource.attributes.\nThe value is a list of comma separated key-value pairs matching the format of OTEL_RESOURCE_ATTRIBUTES. See https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#general-sdk-configuration for details.\nIf omitted or null, no resource attributes are added.\n")
   @Nullable
   private String attributesList;
 
   /**
    * Configure resource attributes. Entries have higher priority than entries from
-   * .resource.attributes_list. If omitted, no resource attributes are added.
+   * .resource.attributes_list.
+   *
+   * <p>If omitted, no resource attributes are added.
    */
   @JsonProperty("attributes")
   @Nullable
@@ -67,6 +50,11 @@ public class ResourceModel {
     return this;
   }
 
+  /**
+   * Configure resource detection.
+   *
+   * <p>If omitted, resource detection is disabled.
+   */
   @JsonProperty("detection/development")
   @Nullable
   public ExperimentalResourceDetectionModel getDetectionDevelopment() {
@@ -79,7 +67,11 @@ public class ResourceModel {
     return this;
   }
 
-  /** Configure resource schema URL. If omitted or null, no schema URL is used. */
+  /**
+   * Configure resource schema URL.
+   *
+   * <p>If omitted or null, no schema URL is used.
+   */
   @JsonProperty("schema_url")
   @Nullable
   public String getSchemaUrl() {
@@ -93,10 +85,14 @@ public class ResourceModel {
 
   /**
    * Configure resource attributes. Entries have lower priority than entries from
-   * .resource.attributes. The value is a list of comma separated key-value pairs matching the
-   * format of OTEL_RESOURCE_ATTRIBUTES. See
+   * .resource.attributes.
+   *
+   * <p>The value is a list of comma separated key-value pairs matching the format of
+   * OTEL_RESOURCE_ATTRIBUTES. See
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#general-sdk-configuration
-   * for details. If omitted or null, no resource attributes are added.
+   * for details.
+   *
+   * <p>If omitted or null, no resource attributes are added.
    */
   @JsonProperty("attributes_list")
   @Nullable

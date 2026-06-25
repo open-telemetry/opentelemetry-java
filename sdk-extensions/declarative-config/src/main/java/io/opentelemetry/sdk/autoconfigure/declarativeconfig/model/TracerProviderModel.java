@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -24,14 +23,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class TracerProviderModel {
 
-  /**
-   * Configure span processors. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("processors")
-  @JsonPropertyDescription(
-      "Configure span processors.\nProperty is required and must be non-null.\n")
   @Nullable
   private List<SpanProcessorModel> processors;
 
@@ -52,9 +44,9 @@ public class TracerProviderModel {
   private ExperimentalTracerConfiguratorModel tracerConfiguratorDevelopment;
 
   /**
-   * Configure span processors. Property is required and must be non-null.
+   * Configure span processors.
    *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("processors")
   @Nullable
@@ -67,6 +59,11 @@ public class TracerProviderModel {
     return this;
   }
 
+  /**
+   * Configure span limits. See also attribute_limits.
+   *
+   * <p>If omitted, default values as described in SpanLimits are used.
+   */
   @JsonProperty("limits")
   @Nullable
   public SpanLimitsModel getLimits() {
@@ -78,6 +75,11 @@ public class TracerProviderModel {
     return this;
   }
 
+  /**
+   * Configure the sampler.
+   *
+   * <p>If omitted, parent based sampler with a root of always_on is used.
+   */
   @JsonProperty("sampler")
   @Nullable
   public SamplerModel getSampler() {
@@ -89,6 +91,11 @@ public class TracerProviderModel {
     return this;
   }
 
+  /**
+   * Configure the trace and span ID generator.
+   *
+   * <p>If omitted, RandomIdGenerator is used.
+   */
   @JsonProperty("id_generator")
   @Nullable
   public IdGeneratorModel getIdGenerator() {
@@ -100,6 +107,11 @@ public class TracerProviderModel {
     return this;
   }
 
+  /**
+   * Configure tracers.
+   *
+   * <p>If omitted, all tracers use default values as described in ExperimentalTracerConfig.
+   */
   @JsonProperty("tracer_configurator/development")
   @Nullable
   public ExperimentalTracerConfiguratorModel getTracerConfiguratorDevelopment() {

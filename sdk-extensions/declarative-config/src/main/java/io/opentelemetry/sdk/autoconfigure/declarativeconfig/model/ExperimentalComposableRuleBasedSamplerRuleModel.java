@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -31,33 +30,29 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   @Nullable
   private ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns;
 
-  /**
-   * The span kinds to match. If the span's kind matches any of these, it matches. Values include: *
-   * client: client, a client span. * consumer: consumer, a consumer span. * internal: internal, an
-   * internal span. * producer: producer, a producer span. * server: server, a server span. If
-   * omitted, ignore.
-   */
   @JsonProperty("span_kinds")
-  @JsonPropertyDescription(
-      "The span kinds to match. If the span's kind matches any of these, it matches.\nValues include:\n* client: client, a client span.\n* consumer: consumer, a consumer span.\n* internal: internal, an internal span.\n* producer: producer, a producer span.\n* server: server, a server span.\nIf omitted, ignore.\n")
   @Nullable
   private List<SpanKind> spanKinds;
 
-  /**
-   * The parent span types to match. Values include: * local: local, a local parent. * none: none,
-   * no parent, i.e., the trace root. * remote: remote, a remote parent. If omitted, ignore.
-   */
   @JsonProperty("parent")
-  @JsonPropertyDescription(
-      "The parent span types to match.\nValues include:\n* local: local, a local parent.\n* none: none, no parent, i.e., the trace root.\n* remote: remote, a remote parent.\nIf omitted, ignore.\n")
   @Nullable
   private List<ExperimentalSpanParent> parent;
 
-  /** (Required) */
   @JsonProperty("sampler")
   @Nullable
   private ExperimentalComposableSamplerModel sampler;
 
+  /**
+   * Values to match against a single attribute. Non-string attributes are matched using their
+   * string representation:
+   *
+   * <p>for example, a value of "404" would match the http.response.status_code 404. For array
+   * attributes, if any
+   *
+   * <p>item matches, it is considered a match.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("attribute_values")
   @Nullable
   public ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel getAttributeValues() {
@@ -70,6 +65,17 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return this;
   }
 
+  /**
+   * Patterns to match against a single attribute. Non-string attributes are matched using their
+   * string representation:
+   *
+   * <p>for example, a pattern of "4*" would match any http.response.status_code in 400-499. For
+   * array attributes, if any
+   *
+   * <p>item matches, it is considered a match.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("attribute_patterns")
   @Nullable
   public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel getAttributePatterns() {
@@ -83,10 +89,21 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   /**
-   * The span kinds to match. If the span's kind matches any of these, it matches. Values include: *
-   * client: client, a client span. * consumer: consumer, a consumer span. * internal: internal, an
-   * internal span. * producer: producer, a producer span. * server: server, a server span. If
-   * omitted, ignore.
+   * The span kinds to match. If the span's kind matches any of these, it matches.
+   *
+   * <p>Values include:
+   *
+   * <p>* client: client, a client span.
+   *
+   * <p>* consumer: consumer, a consumer span.
+   *
+   * <p>* internal: internal, an internal span.
+   *
+   * <p>* producer: producer, a producer span.
+   *
+   * <p>* server: server, a server span.
+   *
+   * <p>If omitted, ignore.
    */
   @JsonProperty("span_kinds")
   @Nullable
@@ -100,8 +117,17 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   /**
-   * The parent span types to match. Values include: * local: local, a local parent. * none: none,
-   * no parent, i.e., the trace root. * remote: remote, a remote parent. If omitted, ignore.
+   * The parent span types to match.
+   *
+   * <p>Values include:
+   *
+   * <p>* local: local, a local parent.
+   *
+   * <p>* none: none, no parent, i.e., the trace root.
+   *
+   * <p>* remote: remote, a remote parent.
+   *
+   * <p>If omitted, ignore.
    */
   @JsonProperty("parent")
   @Nullable
@@ -115,7 +141,11 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return this;
   }
 
-  /** (Required) */
+  /**
+   * The sampler to use for matching spans.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("sampler")
   @Nullable
   public ExperimentalComposableSamplerModel getSampler() {

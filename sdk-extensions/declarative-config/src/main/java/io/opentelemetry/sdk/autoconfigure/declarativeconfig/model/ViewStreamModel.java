@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -23,23 +22,11 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ViewStreamModel {
 
-  /**
-   * Configure metric name of the resulting stream(s). If omitted or null, the instrument's original
-   * name is used.
-   */
   @JsonProperty("name")
-  @JsonPropertyDescription(
-      "Configure metric name of the resulting stream(s).\nIf omitted or null, the instrument's original name is used.\n")
   @Nullable
   private String name;
 
-  /**
-   * Configure metric description of the resulting stream(s). If omitted or null, the instrument's
-   * origin description is used.
-   */
   @JsonProperty("description")
-  @JsonPropertyDescription(
-      "Configure metric description of the resulting stream(s).\nIf omitted or null, the instrument's origin description is used.\n")
   @Nullable
   private String description;
 
@@ -47,13 +34,7 @@ public class ViewStreamModel {
   @Nullable
   private AggregationModel aggregation;
 
-  /**
-   * Configure the aggregation cardinality limit. If omitted or null, the metric reader's default
-   * cardinality limit is used.
-   */
   @JsonProperty("aggregation_cardinality_limit")
-  @JsonPropertyDescription(
-      "Configure the aggregation cardinality limit.\nIf omitted or null, the metric reader's default cardinality limit is used.\n")
   @Nullable
   private Integer aggregationCardinalityLimit;
 
@@ -62,8 +43,9 @@ public class ViewStreamModel {
   private IncludeExcludeModel attributeKeys;
 
   /**
-   * Configure metric name of the resulting stream(s). If omitted or null, the instrument's original
-   * name is used.
+   * Configure metric name of the resulting stream(s).
+   *
+   * <p>If omitted or null, the instrument's original name is used.
    */
   @JsonProperty("name")
   @Nullable
@@ -77,8 +59,9 @@ public class ViewStreamModel {
   }
 
   /**
-   * Configure metric description of the resulting stream(s). If omitted or null, the instrument's
-   * origin description is used.
+   * Configure metric description of the resulting stream(s).
+   *
+   * <p>If omitted or null, the instrument's origin description is used.
    */
   @JsonProperty("description")
   @Nullable
@@ -91,6 +74,11 @@ public class ViewStreamModel {
     return this;
   }
 
+  /**
+   * Configure aggregation of the resulting stream(s).
+   *
+   * <p>If omitted, default is used.
+   */
   @JsonProperty("aggregation")
   @Nullable
   public AggregationModel getAggregation() {
@@ -103,8 +91,9 @@ public class ViewStreamModel {
   }
 
   /**
-   * Configure the aggregation cardinality limit. If omitted or null, the metric reader's default
-   * cardinality limit is used.
+   * Configure the aggregation cardinality limit.
+   *
+   * <p>If omitted or null, the metric reader's default cardinality limit is used.
    */
   @JsonProperty("aggregation_cardinality_limit")
   @Nullable
@@ -117,6 +106,11 @@ public class ViewStreamModel {
     return this;
   }
 
+  /**
+   * Configure attribute keys retained in the resulting stream(s).
+   *
+   * <p>If omitted, all attribute keys are retained.
+   */
   @JsonProperty("attribute_keys")
   @Nullable
   public IncludeExcludeModel getAttributeKeys() {

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -22,12 +21,16 @@ public class ExperimentalLoggerConfiguratorModel {
   @Nullable
   private ExperimentalLoggerConfigModel defaultConfig;
 
-  /** Configure loggers. If omitted, all loggers use .default_config. */
   @JsonProperty("loggers")
-  @JsonPropertyDescription("Configure loggers.\nIf omitted, all loggers use .default_config.\n")
   @Nullable
   private List<ExperimentalLoggerMatcherAndConfigModel> loggers;
 
+  /**
+   * Configure the default logger config used there is no matching entry in
+   * .logger_configurator/development.loggers.
+   *
+   * <p>If omitted, unmatched .loggers use default values as described in ExperimentalLoggerConfig.
+   */
   @JsonProperty("default_config")
   @Nullable
   public ExperimentalLoggerConfigModel getDefaultConfig() {
@@ -40,7 +43,11 @@ public class ExperimentalLoggerConfiguratorModel {
     return this;
   }
 
-  /** Configure loggers. If omitted, all loggers use .default_config. */
+  /**
+   * Configure loggers.
+   *
+   * <p>If omitted, all loggers use .default_config.
+   */
   @JsonProperty("loggers")
   @Nullable
   public List<ExperimentalLoggerMatcherAndConfigModel> getLoggers() {

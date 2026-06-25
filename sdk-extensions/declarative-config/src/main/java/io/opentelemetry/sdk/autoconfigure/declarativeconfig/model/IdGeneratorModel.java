@@ -29,6 +29,11 @@ public class IdGeneratorModel {
   private Map<String, IdGeneratorPropertyModel> additionalProperties =
       new LinkedHashMap<String, IdGeneratorPropertyModel>();
 
+  /**
+   * Configure the ID generator to randomly generate TraceIds and SpanIds (spec default).
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("random")
   @Nullable
   public RandomIdGeneratorModel getRandom() {

@@ -33,6 +33,11 @@ public class SpanProcessorModel {
   private Map<String, SpanProcessorPropertyModel> additionalProperties =
       new LinkedHashMap<String, SpanProcessorPropertyModel>();
 
+  /**
+   * Configure a batch span processor.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("batch")
   @Nullable
   public BatchSpanProcessorModel getBatch() {
@@ -44,6 +49,11 @@ public class SpanProcessorModel {
     return this;
   }
 
+  /**
+   * Configure a simple span processor.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("simple")
   @Nullable
   public SimpleSpanProcessorModel getSimple() {

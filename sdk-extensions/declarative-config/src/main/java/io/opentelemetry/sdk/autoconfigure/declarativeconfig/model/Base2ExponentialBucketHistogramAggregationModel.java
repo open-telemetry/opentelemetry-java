@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,30 +16,23 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class Base2ExponentialBucketHistogramAggregationModel {
 
-  /** Configure the max scale factor. If omitted or null, 20 is used. */
   @JsonProperty("max_scale")
-  @JsonPropertyDescription("Configure the max scale factor.\nIf omitted or null, 20 is used.\n")
   @Nullable
   private Integer maxScale;
 
-  /**
-   * Configure the maximum number of buckets in each of the positive and negative ranges, not
-   * counting the special zero bucket. If omitted or null, 160 is used.
-   */
   @JsonProperty("max_size")
-  @JsonPropertyDescription(
-      "Configure the maximum number of buckets in each of the positive and negative ranges, not counting the special zero bucket.\nIf omitted or null, 160 is used.\n")
   @Nullable
   private Integer maxSize;
 
-  /** Configure whether or not to record min and max. If omitted or null, true is used. */
   @JsonProperty("record_min_max")
-  @JsonPropertyDescription(
-      "Configure whether or not to record min and max.\nIf omitted or null, true is used.\n")
   @Nullable
   private Boolean recordMinMax;
 
-  /** Configure the max scale factor. If omitted or null, 20 is used. */
+  /**
+   * Configure the max scale factor.
+   *
+   * <p>If omitted or null, 20 is used.
+   */
   @JsonProperty("max_scale")
   @Nullable
   public Integer getMaxScale() {
@@ -54,7 +46,9 @@ public class Base2ExponentialBucketHistogramAggregationModel {
 
   /**
    * Configure the maximum number of buckets in each of the positive and negative ranges, not
-   * counting the special zero bucket. If omitted or null, 160 is used.
+   * counting the special zero bucket.
+   *
+   * <p>If omitted or null, 160 is used.
    */
   @JsonProperty("max_size")
   @Nullable
@@ -67,7 +61,11 @@ public class Base2ExponentialBucketHistogramAggregationModel {
     return this;
   }
 
-  /** Configure whether or not to record min and max. If omitted or null, true is used. */
+  /**
+   * Configure whether or not to record min and max.
+   *
+   * <p>If omitted or null, true is used.
+   */
   @JsonProperty("record_min_max")
   @Nullable
   public Boolean getRecordMinMax() {

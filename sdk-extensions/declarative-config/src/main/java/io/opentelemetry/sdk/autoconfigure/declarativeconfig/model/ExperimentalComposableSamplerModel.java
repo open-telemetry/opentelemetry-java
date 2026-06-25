@@ -45,6 +45,11 @@ public class ExperimentalComposableSamplerModel {
   private Map<String, ExperimentalComposableSamplerPropertyModel> additionalProperties =
       new LinkedHashMap<String, ExperimentalComposableSamplerPropertyModel>();
 
+  /**
+   * Configure sampler to be always_off.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("always_off")
   @Nullable
   public ExperimentalComposableAlwaysOffSamplerModel getAlwaysOff() {
@@ -57,6 +62,11 @@ public class ExperimentalComposableSamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be always_on.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("always_on")
   @Nullable
   public ExperimentalComposableAlwaysOnSamplerModel getAlwaysOn() {
@@ -69,6 +79,11 @@ public class ExperimentalComposableSamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be parent_threshold.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("parent_threshold")
   @Nullable
   public ExperimentalComposableParentThresholdSamplerModel getParentThreshold() {
@@ -81,6 +96,11 @@ public class ExperimentalComposableSamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be probability.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("probability")
   @Nullable
   public ExperimentalComposableProbabilitySamplerModel getProbability() {
@@ -93,6 +113,11 @@ public class ExperimentalComposableSamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be rule_based.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("rule_based")
   @Nullable
   public ExperimentalComposableRuleBasedSamplerModel getRuleBased() {

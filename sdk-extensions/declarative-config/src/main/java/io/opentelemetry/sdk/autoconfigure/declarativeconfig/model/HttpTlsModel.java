@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,41 +16,24 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class HttpTlsModel {
 
-  /**
-   * Configure certificate used to verify a server's TLS credentials. Absolute path to certificate
-   * file in PEM format. If omitted or null, system default certificate verification is used for
-   * secure connections.
-   */
   @JsonProperty("ca_file")
-  @JsonPropertyDescription(
-      "Configure certificate used to verify a server's TLS credentials. \nAbsolute path to certificate file in PEM format.\nIf omitted or null, system default certificate verification is used for secure connections.\n")
   @Nullable
   private String caFile;
 
-  /**
-   * Configure mTLS private client key. Absolute path to client key file in PEM format. If set,
-   * .client_certificate must also be set. If omitted or null, mTLS is not used.
-   */
   @JsonProperty("key_file")
-  @JsonPropertyDescription(
-      "Configure mTLS private client key. \nAbsolute path to client key file in PEM format. If set, .client_certificate must also be set.\nIf omitted or null, mTLS is not used.\n")
   @Nullable
   private String keyFile;
 
-  /**
-   * Configure mTLS client certificate. Absolute path to client certificate file in PEM format. If
-   * set, .client_key must also be set. If omitted or null, mTLS is not used.
-   */
   @JsonProperty("cert_file")
-  @JsonPropertyDescription(
-      "Configure mTLS client certificate. \nAbsolute path to client certificate file in PEM format. If set, .client_key must also be set.\nIf omitted or null, mTLS is not used.\n")
   @Nullable
   private String certFile;
 
   /**
-   * Configure certificate used to verify a server's TLS credentials. Absolute path to certificate
-   * file in PEM format. If omitted or null, system default certificate verification is used for
-   * secure connections.
+   * Configure certificate used to verify a server's TLS credentials.
+   *
+   * <p>Absolute path to certificate file in PEM format.
+   *
+   * <p>If omitted or null, system default certificate verification is used for secure connections.
    */
   @JsonProperty("ca_file")
   @Nullable
@@ -65,8 +47,12 @@ public class HttpTlsModel {
   }
 
   /**
-   * Configure mTLS private client key. Absolute path to client key file in PEM format. If set,
-   * .client_certificate must also be set. If omitted or null, mTLS is not used.
+   * Configure mTLS private client key.
+   *
+   * <p>Absolute path to client key file in PEM format. If set, .client_certificate must also be
+   * set.
+   *
+   * <p>If omitted or null, mTLS is not used.
    */
   @JsonProperty("key_file")
   @Nullable
@@ -80,8 +66,12 @@ public class HttpTlsModel {
   }
 
   /**
-   * Configure mTLS client certificate. Absolute path to client certificate file in PEM format. If
-   * set, .client_key must also be set. If omitted or null, mTLS is not used.
+   * Configure mTLS client certificate.
+   *
+   * <p>Absolute path to client certificate file in PEM format. If set, .client_key must also be
+   * set.
+   *
+   * <p>If omitted or null, mTLS is not used.
    */
   @JsonProperty("cert_file")
   @Nullable

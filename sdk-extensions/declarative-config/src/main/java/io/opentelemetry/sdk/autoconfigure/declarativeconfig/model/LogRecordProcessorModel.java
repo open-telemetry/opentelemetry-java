@@ -38,6 +38,11 @@ public class LogRecordProcessorModel {
   private Map<String, LogRecordProcessorPropertyModel> additionalProperties =
       new LinkedHashMap<String, LogRecordProcessorPropertyModel>();
 
+  /**
+   * Configure a batch log record processor.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("batch")
   @Nullable
   public BatchLogRecordProcessorModel getBatch() {
@@ -49,6 +54,11 @@ public class LogRecordProcessorModel {
     return this;
   }
 
+  /**
+   * Configure a simple log record processor.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("simple")
   @Nullable
   public SimpleLogRecordProcessorModel getSimple() {
@@ -60,6 +70,11 @@ public class LogRecordProcessorModel {
     return this;
   }
 
+  /**
+   * Configure an event to span event bridge log record processor.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("event_to_span_event_bridge/development")
   @Nullable
   public ExperimentalEventToSpanEventBridgeLogRecordProcessorModel

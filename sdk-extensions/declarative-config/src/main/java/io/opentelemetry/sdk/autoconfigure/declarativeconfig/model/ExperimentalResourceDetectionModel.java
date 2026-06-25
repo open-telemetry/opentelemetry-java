@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -22,17 +21,15 @@ public class ExperimentalResourceDetectionModel {
   @Nullable
   private IncludeExcludeModel attributes;
 
-  /**
-   * Configure resource detectors. Resource detector names are dependent on the SDK language
-   * ecosystem. Please consult documentation for each respective language. If omitted, no resource
-   * detectors are enabled.
-   */
   @JsonProperty("detectors")
-  @JsonPropertyDescription(
-      "Configure resource detectors.\nResource detector names are dependent on the SDK language ecosystem. Please consult documentation for each respective language. \nIf omitted, no resource detectors are enabled.\n")
   @Nullable
   private List<ExperimentalResourceDetectorModel> detectors;
 
+  /**
+   * Configure attributes provided by resource detectors.
+   *
+   * <p>If omitted, all attributes from resource detectors are added.
+   */
   @JsonProperty("attributes")
   @Nullable
   public IncludeExcludeModel getAttributes() {
@@ -45,9 +42,12 @@ public class ExperimentalResourceDetectionModel {
   }
 
   /**
-   * Configure resource detectors. Resource detector names are dependent on the SDK language
-   * ecosystem. Please consult documentation for each respective language. If omitted, no resource
-   * detectors are enabled.
+   * Configure resource detectors.
+   *
+   * <p>Resource detector names are dependent on the SDK language ecosystem. Please consult
+   * documentation for each respective language.
+   *
+   * <p>If omitted, no resource detectors are enabled.
    */
   @JsonProperty("detectors")
   @Nullable

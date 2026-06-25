@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -18,41 +17,22 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalHttpClientInstrumentationModel {
 
-  /**
-   * Configure headers to capture for outbound http requests. If omitted, no outbound request
-   * headers are captured.
-   */
   @JsonProperty("request_captured_headers")
-  @JsonPropertyDescription(
-      "Configure headers to capture for outbound http requests.\nIf omitted, no outbound request headers are captured.\n")
   @Nullable
   private List<String> requestCapturedHeaders;
 
-  /**
-   * Configure headers to capture for inbound http responses. If omitted, no inbound response
-   * headers are captured.
-   */
   @JsonProperty("response_captured_headers")
-  @JsonPropertyDescription(
-      "Configure headers to capture for inbound http responses.\nIf omitted, no inbound response headers are captured.\n")
   @Nullable
   private List<String> responseCapturedHeaders;
 
-  /**
-   * Override the default list of known HTTP methods. Known methods are case-sensitive. This is a
-   * full override of the default known methods, not a list of known methods in addition to the
-   * defaults. If omitted, HTTP methods GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH
-   * are known.
-   */
   @JsonProperty("known_methods")
-  @JsonPropertyDescription(
-      "Override the default list of known HTTP methods.\nKnown methods are case-sensitive.\nThis is a full override of the default known methods, not a list of known methods in addition to the defaults.\nIf omitted, HTTP methods GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH are known.\n")
   @Nullable
   private List<String> knownMethods;
 
   /**
-   * Configure headers to capture for outbound http requests. If omitted, no outbound request
-   * headers are captured.
+   * Configure headers to capture for outbound http requests.
+   *
+   * <p>If omitted, no outbound request headers are captured.
    */
   @JsonProperty("request_captured_headers")
   @Nullable
@@ -67,8 +47,9 @@ public class ExperimentalHttpClientInstrumentationModel {
   }
 
   /**
-   * Configure headers to capture for inbound http responses. If omitted, no inbound response
-   * headers are captured.
+   * Configure headers to capture for inbound http responses.
+   *
+   * <p>If omitted, no inbound response headers are captured.
    */
   @JsonProperty("response_captured_headers")
   @Nullable
@@ -83,10 +64,15 @@ public class ExperimentalHttpClientInstrumentationModel {
   }
 
   /**
-   * Override the default list of known HTTP methods. Known methods are case-sensitive. This is a
-   * full override of the default known methods, not a list of known methods in addition to the
-   * defaults. If omitted, HTTP methods GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH
-   * are known.
+   * Override the default list of known HTTP methods.
+   *
+   * <p>Known methods are case-sensitive.
+   *
+   * <p>This is a full override of the default known methods, not a list of known methods in
+   * addition to the defaults.
+   *
+   * <p>If omitted, HTTP methods GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH are
+   * known.
    */
   @JsonProperty("known_methods")
   @Nullable

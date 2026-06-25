@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,45 +16,23 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalSemconvConfigModel {
 
-  /**
-   * The target semantic convention version for this domain (e.g., 1). If omitted or null, the
-   * latest stable version is used, or if no stable version is available and .experimental is true
-   * then the latest experimental version is used.
-   */
   @JsonProperty("version")
-  @JsonPropertyDescription(
-      "The target semantic convention version for this domain (e.g., 1).\nIf omitted or null, the latest stable version is used, or if no stable version is available and .experimental is true then the latest experimental version is used.\n")
   @Nullable
   private Integer version;
 
-  /**
-   * Use latest experimental semantic conventions (before stable is available or to enable
-   * experimental features on top of stable conventions). If omitted or null, false is used.
-   */
   @JsonProperty("experimental")
-  @JsonPropertyDescription(
-      "Use latest experimental semantic conventions (before stable is available or to enable experimental features on top of stable conventions).\nIf omitted or null, false is used.\n")
   @Nullable
   private Boolean experimental;
 
-  /**
-   * When true, also emit the previous major version alongside the target version. For version=1,
-   * the previous version refers to the pre-stable conventions that the instrumentation emitted
-   * before the first stable semantic convention version was defined. For version=2 and above, the
-   * previous version is the prior stable major version (e.g., version=2, dual_emit=true emits both
-   * v2 and v1). Enables dual-emit for phased migration between versions. If omitted or null, false
-   * is used.
-   */
   @JsonProperty("dual_emit")
-  @JsonPropertyDescription(
-      "When true, also emit the previous major version alongside the target version.\nFor version=1, the previous version refers to the pre-stable conventions that the instrumentation emitted before the first stable semantic convention version was defined.\nFor version=2 and above, the previous version is the prior stable major version (e.g., version=2, dual_emit=true emits both v2 and v1).\nEnables dual-emit for phased migration between versions.\nIf omitted or null, false is used.\n")
   @Nullable
   private Boolean dualEmit;
 
   /**
-   * The target semantic convention version for this domain (e.g., 1). If omitted or null, the
-   * latest stable version is used, or if no stable version is available and .experimental is true
-   * then the latest experimental version is used.
+   * The target semantic convention version for this domain (e.g., 1).
+   *
+   * <p>If omitted or null, the latest stable version is used, or if no stable version is available
+   * and .experimental is true then the latest experimental version is used.
    */
   @JsonProperty("version")
   @Nullable
@@ -70,7 +47,9 @@ public class ExperimentalSemconvConfigModel {
 
   /**
    * Use latest experimental semantic conventions (before stable is available or to enable
-   * experimental features on top of stable conventions). If omitted or null, false is used.
+   * experimental features on top of stable conventions).
+   *
+   * <p>If omitted or null, false is used.
    */
   @JsonProperty("experimental")
   @Nullable
@@ -84,12 +63,17 @@ public class ExperimentalSemconvConfigModel {
   }
 
   /**
-   * When true, also emit the previous major version alongside the target version. For version=1,
-   * the previous version refers to the pre-stable conventions that the instrumentation emitted
-   * before the first stable semantic convention version was defined. For version=2 and above, the
-   * previous version is the prior stable major version (e.g., version=2, dual_emit=true emits both
-   * v2 and v1). Enables dual-emit for phased migration between versions. If omitted or null, false
-   * is used.
+   * When true, also emit the previous major version alongside the target version.
+   *
+   * <p>For version=1, the previous version refers to the pre-stable conventions that the
+   * instrumentation emitted before the first stable semantic convention version was defined.
+   *
+   * <p>For version=2 and above, the previous version is the prior stable major version (e.g.,
+   * version=2, dual_emit=true emits both v2 and v1).
+   *
+   * <p>Enables dual-emit for phased migration between versions.
+   *
+   * <p>If omitted or null, false is used.
    */
   @JsonProperty("dual_emit")
   @Nullable
