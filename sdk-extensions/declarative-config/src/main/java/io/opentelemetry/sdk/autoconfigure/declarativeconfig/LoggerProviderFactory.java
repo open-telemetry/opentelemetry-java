@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.FileConfigUtil.requireNonNull;
 
 import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalLoggerConfigModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalLoggerConfiguratorModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalLoggerMatcherAndConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LoggerProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.SeverityNumber;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfiguratorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerMatcherAndConfigModel;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.LogLimits;
