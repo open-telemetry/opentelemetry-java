@@ -39,12 +39,12 @@ public final class TelemetrySdkEntityDetector implements EntityDetector {
     return Collections.singletonList(
         Entity.builder(ENTITY_TYPE)
             .setSchemaUrl(SCHEMA_URL)
-            .withId(
+            .setId(
                 Attributes.builder()
                     .put(TELEMETRY_SDK_NAME, "opentelemetry")
                     .put(TELEMETRY_SDK_LANGUAGE, "java")
                     .build())
-            .withDescription(
+            .setDescription(
                 Attributes.builder().put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION).build())
             .build());
   }

@@ -365,9 +365,9 @@ public class EnvEntityDetector implements EntityDetector {
     /** Finishes building the current entity and adds it to the parsed list. */
     private void buildAndAddEntity() {
       if (currentType != null && !currentType.isEmpty() && !currentIdAttrs.isEmpty()) {
-        EntityBuilder builder = Entity.builder(currentType).withId(currentIdAttrs);
+        EntityBuilder builder = Entity.builder(currentType).setId(currentIdAttrs);
         if (!currentDescAttrs.isEmpty()) {
-          builder.withDescription(currentDescAttrs);
+          builder.setDescription(currentDescAttrs);
         }
         if (currentSchemaUrl != null && !currentSchemaUrl.isEmpty()) {
           builder.setSchemaUrl(currentSchemaUrl);

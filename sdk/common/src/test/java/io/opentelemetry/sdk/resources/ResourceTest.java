@@ -209,7 +209,7 @@ class ResourceTest {
     Resource resource = Resource.create(attribute1, "http://schema");
     assertThat(resource.toString())
         .isEqualTo(
-            "Resource{schemaUrl=http://schema, rawAttributes={a=\"1\", b=\"2\"}, entities=[]}");
+            "Resource{schemaUrl=http://schema, rawAttributes={a=\"1\", b=\"2\"}, entities=[], attributes={a=\"1\", b=\"2\"}}");
   }
 
   @Test
@@ -242,18 +242,18 @@ class ResourceTest {
   void testMergeResources_entities_separate_types_and_schema() {
     Resource resource1 =
         Resource.builder()
-            .add(
+            .addEntity(
                 Entity.builder("a")
                     .setSchemaUrl("one")
-                    .withId(Attributes.builder().put("a.id", "a").build())
+                    .setId(Attributes.builder().put("a.id", "a").build())
                     .build())
             .build();
     Resource resource2 =
         Resource.builder()
-            .add(
+            .addEntity(
                 Entity.builder("b")
                     .setSchemaUrl("two")
-                    .withId(Attributes.builder().put("b.id", "b").build())
+                    .setId(Attributes.builder().put("b.id", "b").build())
                     .build())
             .build();
     Resource merged = resource1.merge(resource2);

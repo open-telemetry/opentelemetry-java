@@ -38,12 +38,12 @@ public class ServiceEntityDetector implements EntityDetector {
 
     return Arrays.asList(
         Entity.builder(SERVICE_TYPE)
-            .withId(Attributes.builder().put(SERVICE_NAME, serviceName).build())
+            .setId(Attributes.builder().put(SERVICE_NAME, serviceName).build())
             // TODO: Add other service descriptive attributes.
             .setSchemaUrl(SCHEMA_URL)
             .build(),
         Entity.builder(SERVICE_INSTANCE_TYPE)
-            .withId(
+            .setId(
                 Attributes.builder()
                     // TODO: pull from env variable if needed.
                     .put(SERVICE_INSTANCE_ID, RANDOM)

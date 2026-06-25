@@ -27,7 +27,7 @@ abstract class SdkEntity implements Entity {
    * @param description a map of attributes that describe the entity.
    * @return a {@code Entity}.
    */
-  static final Entity create(
+  static Entity create(
       String entityType, Attributes id, Attributes description, @Nullable String schemaUrl) {
     return new AutoValue_SdkEntity(entityType, id, description, schemaUrl);
   }

@@ -29,7 +29,7 @@ public interface EntityBuilder {
    * @param description The attributes that describe the Entity.
    * @return this
    */
-  EntityBuilder withDescription(Attributes description);
+  EntityBuilder setDescription(Attributes description);
 
   /**
    * Modify the identifying attributes of this Entity.
@@ -37,7 +37,7 @@ public interface EntityBuilder {
    * @param id The identifying attributes.
    * @return this
    */
-  EntityBuilder withId(Attributes id);
+  EntityBuilder setId(Attributes id);
 
   /** Create the {@link Entity} from this. */
   Entity build();

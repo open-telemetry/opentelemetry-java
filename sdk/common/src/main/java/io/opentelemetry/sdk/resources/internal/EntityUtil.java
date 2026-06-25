@@ -77,21 +77,7 @@ public final class EntityUtil {
   /** Appends a new entity on to the end of the list of entities. */
   public static ResourceBuilder addEntity(ResourceBuilder rb, Entity e) {
     try {
-      Method method = ResourceBuilder.class.getDeclaredMethod("add", Entity.class);
-      if (method != null) {
-        method.setAccessible(true);
-        method.invoke(rb, e);
-      }
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ex);
-    }
-    return rb;
-  }
-
-  /** Appends a new collection of entities on to the end of the list of entities. */
-  public static ResourceBuilder addAllEntity(ResourceBuilder rb, Collection<Entity> e) {
-    try {
-      Method method = ResourceBuilder.class.getDeclaredMethod("addAll", Collection.class);
+      Method method = ResourceBuilder.class.getDeclaredMethod("addEntity", Entity.class);
       if (method != null) {
         method.setAccessible(true);
         method.invoke(rb, e);
@@ -270,7 +256,7 @@ public final class EntityUtil {
           //     otherwise, ignore.
           Entity next =
               old.toBuilder()
-                  .withDescription(
+                  .setDescription(
                       Attributes.builder()
                           .putAll(e.getDescription())
                           .putAll(old.getDescription())

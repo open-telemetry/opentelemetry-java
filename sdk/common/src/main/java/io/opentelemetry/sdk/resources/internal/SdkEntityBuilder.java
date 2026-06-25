@@ -42,14 +42,14 @@ final class SdkEntityBuilder implements EntityBuilder {
   }
 
   @Override
-  public EntityBuilder withDescription(Attributes description) {
+  public EntityBuilder setDescription(Attributes description) {
     AttributeCheckUtil.checkAttributes(description);
     this.description = description;
     return this;
   }
 
   @Override
-  public EntityBuilder withId(Attributes id) {
+  public EntityBuilder setId(Attributes id) {
     AttributeCheckUtil.checkAttributes(id);
     this.id = id;
     return this;

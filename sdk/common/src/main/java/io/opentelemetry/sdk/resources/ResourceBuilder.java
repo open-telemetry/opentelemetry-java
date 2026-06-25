@@ -11,7 +11,6 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -177,7 +176,11 @@ public class ResourceBuilder {
   /** Puts all attributes from {@link Resource} into this. */
   public ResourceBuilder putAll(Resource resource) {
     if (resource != null) {
-      attributesBuilder.putAll(resource.getAttributes());
+      // Preserve entities when merging resources.
+      entities.addAll(resource.getEntities());
+      // Only pull "raw" attributes - we expect entities to carry some of the full
+      // set.
+      attributesBuilder.putAll(resource.getRawAttributes());
     }
     return this;
   }
@@ -218,14 +221,8 @@ public class ResourceBuilder {
   }
 
   /** Appends a new entity on to the end of the list of entities. */
-  ResourceBuilder add(Entity e) {
+  ResourceBuilder addEntity(Entity e) {
     this.entities.add(e);
-    return this;
-  }
-
-  /** Appends a new collection of entities on to the end of the list of entities. */
-  ResourceBuilder addAll(Collection<Entity> entities) {
-    this.entities.addAll(entities);
     return this;
   }
 }

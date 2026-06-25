@@ -117,7 +117,16 @@ public abstract class Resource {
   static Resource create(
       Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
     AttributeCheckUtil.checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    return new AutoValue_Resource(schemaUrl, attributes, entities);
+    // Memoize the full set of attributes
+    AttributesBuilder fullAttributes = Attributes.builder();
+    entities.forEach(
+        e -> {
+          fullAttributes.putAll(e.getId());
+          fullAttributes.putAll(e.getDescription());
+        });
+    // In merge rules, raw comes last, so we return these last.
+    fullAttributes.putAll(attributes);
+    return new AutoValue_Resource(schemaUrl, attributes, entities, fullAttributes.build());
   }
 
   /**
@@ -148,19 +157,7 @@ public abstract class Resource {
    *
    * @return a map of attributes.
    */
-  // @Memoized - This breaks nullaway.
-  public Attributes getAttributes() {
-    AttributesBuilder result = Attributes.builder();
-    getEntities()
-        .forEach(
-            e -> {
-              result.putAll(e.getId());
-              result.putAll(e.getDescription());
-            });
-    // In merge rules, raw comes last, so we return these last.
-    result.putAll(getRawAttributes());
-    return result.build();
-  }
+  public abstract Attributes getAttributes();
 
   /**
    * Returns the value for a given resource attribute key.
