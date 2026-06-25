@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -21,15 +21,6 @@ public class BatchSpanProcessorMetrics {
     this.numThreads = numThreads;
   }
 
-  public double dropRatio() {
-    long exported = getMetric(false);
-    long dropped = getMetric(true);
-    long total = exported + dropped;
-    // Due to peculiarities of JMH reporting we have to divide this by the number of the
-    // concurrent threads running the actual benchmark.
-    return total == 0 ? 0 : (double) dropped / total / numThreads;
-  }
-
   public long exportedSpans() {
     return getMetric(false) / numThreads;
   }
@@ -39,14 +30,17 @@ public class BatchSpanProcessorMetrics {
   }
 
   private long getMetric(boolean dropped) {
-    String labelValue = String.valueOf(dropped);
     OptionalLong value =
         allMetrics.stream()
             .filter(metricData -> metricData.getName().equals("processedSpans"))
             .filter(metricData -> !metricData.isEmpty())
             .map(metricData -> metricData.getLongSumData().getPoints())
             .flatMap(Collection::stream)
-            .filter(point -> labelValue.equals(point.getAttributes().get(stringKey("dropped"))))
+            .filter(
+                point -> {
+                  Boolean attrDropped = point.getAttributes().get(booleanKey("dropped"));
+                  return attrDropped != null && attrDropped == dropped;
+                })
             .mapToLong(LongPointData::getValue)
             .findFirst();
     return value.isPresent() ? value.getAsLong() : 0;
