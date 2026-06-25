@@ -12,7 +12,7 @@ description = "OpenTelemetry Protocol Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal.otlp")
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
-val versions: Map<String, String> by project
+val versions = project.property("versions") as Map<*, *>
 dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
