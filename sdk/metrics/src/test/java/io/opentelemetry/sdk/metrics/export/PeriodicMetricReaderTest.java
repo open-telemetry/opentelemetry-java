@@ -628,63 +628,64 @@ class PeriodicMetricReaderTest {
 
     reader.shutdown();
   }
+
   @Test
-@Timeout(10)
-@SuppressLogger(PeriodicMetricReader.class)
-void forceFlush_whileExportInFlight_failsExceptionally() throws Exception {
-  CompletableResultCode inflightExportResult = new CompletableResultCode();
-  CountDownLatch exportStarted = new CountDownLatch(1);
+  @Timeout(10)
+  @SuppressLogger(PeriodicMetricReader.class)
+  void forceFlush_whileExportInFlight_failsExceptionally() throws Exception {
+    CompletableResultCode inflightExportResult = new CompletableResultCode();
+    CountDownLatch exportStarted = new CountDownLatch(1);
 
-  MetricExporter blockingExporter =
-      new MetricExporter() {
-        @Override
-        public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-          return AggregationTemporality.CUMULATIVE;
-        }
+    MetricExporter blockingExporter =
+        new MetricExporter() {
+          @Override
+          public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+            return AggregationTemporality.CUMULATIVE;
+          }
 
-        @Override
-        public CompletableResultCode export(Collection<MetricData> metrics) {
-          exportStarted.countDown();
-          return inflightExportResult;
-        }
+          @Override
+          public CompletableResultCode export(Collection<MetricData> metrics) {
+            exportStarted.countDown();
+            return inflightExportResult;
+          }
 
-        @Override
-        public CompletableResultCode flush() {
-          return CompletableResultCode.ofSuccess();
-        }
+          @Override
+          public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+          }
 
-        @Override
-        public CompletableResultCode shutdown() {
-          return CompletableResultCode.ofSuccess();
-        }
-      };
+          @Override
+          public CompletableResultCode shutdown() {
+            return CompletableResultCode.ofSuccess();
+          }
+        };
 
-  PeriodicMetricReader reader =
-      PeriodicMetricReader.builder(blockingExporter)
-          .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
-          .build();
-  reader.register(collectionRegistration);
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(blockingExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .build();
+    reader.register(collectionRegistration);
 
-  // Start a flush that blocks
-  CompletableResultCode firstFlush = reader.forceFlush();
-  assertThat(exportStarted.await(5, TimeUnit.SECONDS)).isTrue();
+    // Start a flush that blocks
+    CompletableResultCode firstFlush = reader.forceFlush();
+    assertThat(exportStarted.await(5, TimeUnit.SECONDS)).isTrue();
 
-  // Second forceFlush while first is in flight — should fail exceptionally
-  CompletableResultCode secondFlush = reader.forceFlush();
-  secondFlush.join(5, TimeUnit.SECONDS);
+    // Second forceFlush while first is in flight — should fail exceptionally
+    CompletableResultCode secondFlush = reader.forceFlush();
+    secondFlush.join(5, TimeUnit.SECONDS);
 
-  assertThat(secondFlush.isSuccess()).isFalse();
-  assertThat(secondFlush.getFailureThrowable())
-      .isInstanceOf(IllegalStateException.class)
-      .hasMessageContaining("Exporter busy");
+    assertThat(secondFlush.isSuccess()).isFalse();
+    assertThat(secondFlush.getFailureThrowable())
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Exporter busy");
 
-  // Release the in-flight export
-  inflightExportResult.succeed();
-  firstFlush.join(5, TimeUnit.SECONDS);
-  assertThat(firstFlush.isSuccess()).isTrue();
+    // Release the in-flight export
+    inflightExportResult.succeed();
+    firstFlush.join(5, TimeUnit.SECONDS);
+    assertThat(firstFlush.isSuccess()).isTrue();
 
-  reader.shutdown();
-}
+    reader.shutdown();
+  }
 
   @Test
   void stringRepresentation() {
