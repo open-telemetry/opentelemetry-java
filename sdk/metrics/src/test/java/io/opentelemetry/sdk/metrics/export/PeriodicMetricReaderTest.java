@@ -677,7 +677,7 @@ class PeriodicMetricReaderTest {
     assertThat(secondFlush.isSuccess()).isFalse();
     assertThat(secondFlush.getFailureThrowable())
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Exporter busy");
+        .hasMessageContaining("Export is already in progress");
 
     // Release the in-flight export
     inflightExportResult.succeed();
