@@ -19,7 +19,7 @@ dependencies {
 }
 
 tasks {
-  val shadowJar by existing(Jar::class) {
+  val shadowJar = named<Jar>("shadowJar") {
     archiveFileName.set("tracecontext-tests.jar")
 
     manifest {

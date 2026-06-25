@@ -65,7 +65,7 @@ val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
-val downloadConfigurationSchema by tasks.registering(Download::class) {
+val downloadConfigurationSchema = tasks.register<Download>("downloadConfigurationSchema") {
   src(configurationRepoZip)
   // The version is encoded in the filename so that a configurationTag change results in a new
   // path that doesn't yet exist, triggering a fresh download. On subsequent builds with the same
@@ -78,7 +78,7 @@ val downloadConfigurationSchema by tasks.registering(Download::class) {
   overwrite(false)
 }
 
-val unzipConfigurationSchema by tasks.registering(Sync::class) {
+val unzipConfigurationSchema = tasks.register<Sync>("unzipConfigurationSchema") {
   // Sync (not Copy) removes stale files from the destination when the source changes, ensuring
   // files deleted or renamed between schema versions don't linger in the build dir.
   dependsOn(downloadConfigurationSchema)
@@ -140,7 +140,7 @@ jsonSchema2Pojo {
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
 generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
 
-val syncPojoModelsToSrc by tasks.registering(Copy::class) {
+val syncPojoModelsToSrc = tasks.register<Copy>("syncPojoModelsToSrc") {
   dependsOn(generateJsonSchema2Pojo)
   finalizedBy("spotlessApply")
   val modelDir = File(projectDir, "src/main/java/io/opentelemetry/sdk/autoconfigure/declarativeconfig/model")
@@ -168,7 +168,7 @@ val syncPojoModelsToSrc by tasks.registering(Copy::class) {
 // autoconfigure and without the risk of divergence from manual syncing.
 val generatedResourceConfigDir =
   layout.buildDirectory.dir("generated/sources/resource-configuration/java/main")
-val copyResourceConfiguration by tasks.registering(Copy::class) {
+val copyResourceConfiguration = tasks.register<Copy>("copyResourceConfiguration") {
   from(
     project(":sdk-extensions:autoconfigure").file(
       "src/main/java/io/opentelemetry/sdk/autoconfigure/EnvironmentResource.java"
