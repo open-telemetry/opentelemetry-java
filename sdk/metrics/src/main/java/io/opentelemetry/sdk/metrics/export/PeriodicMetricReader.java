@@ -114,7 +114,7 @@ public final class PeriodicMetricReader implements MetricReader {
                   result.succeed();
                 } else {
                   result.failExceptionally(
-                      new IllegalStateException("Exporter busy. Dropping metrics."));
+                      new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
                 }
               });
         });
@@ -192,6 +192,9 @@ public final class PeriodicMetricReader implements MetricReader {
               scheduled, intervalNanos, intervalNanos, TimeUnit.NANOSECONDS);
     }
   }
+
+  private static final String EXPORT_IN_PROGRESS_MESSAGE =
+      "Export is already in progress, skipping flush";
 
   private final class Scheduled implements Runnable {
 
@@ -292,9 +295,9 @@ public final class PeriodicMetricReader implements MetricReader {
           flushResult.fail();
         }
       } else {
-        logger.log(Level.FINE, "Exporter busy. Dropping metrics.");
+        logger.log(Level.FINE, EXPORT_IN_PROGRESS_MESSAGE);
         flushResult.failExceptionally(
-            new IllegalStateException("Exporter busy. Dropping metrics."));
+            new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
       }
       return flushResult;
     }
