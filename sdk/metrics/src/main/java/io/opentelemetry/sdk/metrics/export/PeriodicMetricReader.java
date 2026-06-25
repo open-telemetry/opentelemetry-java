@@ -113,7 +113,7 @@ public final class PeriodicMetricReader implements MetricReader {
                 if (doRunResult.isSuccess() && flushResult.isSuccess()) {
                   result.succeed();
                 } else {
-                  result.failExceptionally(new IllegalStateException("forceFlush failed"));
+                  result.failExceptionally(new IllegalStateException("Exporter busy. Dropping metrics."));
                 }
               });
         });
