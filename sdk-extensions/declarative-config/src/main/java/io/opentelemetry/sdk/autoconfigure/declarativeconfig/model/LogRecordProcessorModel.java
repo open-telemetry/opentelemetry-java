@@ -11,24 +11,29 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalEventToSpanEventBridgeLogRecordProcessorModel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"batch", "simple"})
+@JsonPropertyOrder({"batch", "simple", "event_to_span_event_bridge/development"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class LogRecordProcessorModel {
 
-  @Nullable
   @JsonProperty("batch")
+  @Nullable
   private BatchLogRecordProcessorModel batch;
 
-  @Nullable
   @JsonProperty("simple")
+  @Nullable
   private SimpleLogRecordProcessorModel simple;
+
+  @JsonProperty("event_to_span_event_bridge/development")
+  @Nullable
+  private ExperimentalEventToSpanEventBridgeLogRecordProcessorModel
+      eventToSpanEventBridgeDevelopment;
 
   @JsonIgnore
   private Map<String, LogRecordProcessorPropertyModel> additionalProperties =
@@ -56,6 +61,19 @@ public class LogRecordProcessorModel {
     return this;
   }
 
+  @JsonProperty("event_to_span_event_bridge/development")
+  @Nullable
+  public ExperimentalEventToSpanEventBridgeLogRecordProcessorModel
+      getEventToSpanEventBridgeDevelopment() {
+    return eventToSpanEventBridgeDevelopment;
+  }
+
+  public LogRecordProcessorModel withEventToSpanEventBridgeDevelopment(
+      ExperimentalEventToSpanEventBridgeLogRecordProcessorModel eventToSpanEventBridgeDevelopment) {
+    this.eventToSpanEventBridgeDevelopment = eventToSpanEventBridgeDevelopment;
+    return this;
+  }
+
   @JsonAnyGetter
   public Map<String, LogRecordProcessorPropertyModel> getAdditionalProperties() {
     return this.additionalProperties;
@@ -74,56 +92,52 @@ public class LogRecordProcessorModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(LogRecordProcessorModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("batch");
-    sb.append('=');
-    sb.append(((this.batch == null) ? "<null>" : this.batch));
-    sb.append(',');
-    sb.append("simple");
-    sb.append('=');
-    sb.append(((this.simple == null) ? "<null>" : this.simple));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "LogRecordProcessorModel{"
+        + "batch="
+        + batch
+        + ", simple="
+        + simple
+        + ", eventToSpanEventBridgeDevelopment="
+        + eventToSpanEventBridgeDevelopment
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.batch == null) ? 0 : this.batch.hashCode()));
-    result = ((result * 31) + ((this.simple == null) ? 0 : this.simple.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.batch == null) ? 0 : this.batch.hashCode();
+    h *= 1000003;
+    h ^= (this.simple == null) ? 0 : this.simple.hashCode();
+    h *= 1000003;
+    h ^=
+        (this.eventToSpanEventBridgeDevelopment == null)
+            ? 0
+            : this.eventToSpanEventBridgeDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof LogRecordProcessorModel) == false) {
-      return false;
+    if (o instanceof LogRecordProcessorModel) {
+      LogRecordProcessorModel that = (LogRecordProcessorModel) o;
+      return (this.batch == null ? that.batch == null : this.batch.equals(that.batch))
+          && (this.simple == null ? that.simple == null : this.simple.equals(that.simple))
+          && (this.eventToSpanEventBridgeDevelopment == null
+              ? that.eventToSpanEventBridgeDevelopment == null
+              : this.eventToSpanEventBridgeDevelopment.equals(
+                  that.eventToSpanEventBridgeDevelopment))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    LogRecordProcessorModel rhs = ((LogRecordProcessorModel) other);
-    return ((((this.batch == rhs.batch) || ((this.batch != null) && this.batch.equals(rhs.batch)))
-            && ((this.simple == rhs.simple)
-                || ((this.simple != null) && this.simple.equals(rhs.simple))))
-        && ((this.additionalProperties == rhs.additionalProperties)
-            || ((this.additionalProperties != null)
-                && this.additionalProperties.equals(rhs.additionalProperties))));
+    return false;
   }
 }

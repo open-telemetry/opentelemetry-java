@@ -21,37 +21,30 @@ import javax.annotation.Nullable;
   "sum"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class AggregationModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("default")
+  @Nullable
   private DefaultAggregationModel _default;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("drop")
+  @Nullable
   private DropAggregationModel drop;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("explicit_bucket_histogram")
+  @Nullable
   private ExplicitBucketHistogramAggregationModel explicitBucketHistogram;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("base2_exponential_bucket_histogram")
+  @Nullable
   private Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("last_value")
+  @Nullable
   private LastValueAggregationModel lastValue;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("sum")
+  @Nullable
   private SumAggregationModel sum;
 
   @JsonProperty("default")
@@ -124,88 +117,63 @@ public class AggregationModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(AggregationModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("_default");
-    sb.append('=');
-    sb.append(((this._default == null) ? "<null>" : this._default));
-    sb.append(',');
-    sb.append("drop");
-    sb.append('=');
-    sb.append(((this.drop == null) ? "<null>" : this.drop));
-    sb.append(',');
-    sb.append("explicitBucketHistogram");
-    sb.append('=');
-    sb.append(((this.explicitBucketHistogram == null) ? "<null>" : this.explicitBucketHistogram));
-    sb.append(',');
-    sb.append("base2ExponentialBucketHistogram");
-    sb.append('=');
-    sb.append(
-        ((this.base2ExponentialBucketHistogram == null)
-            ? "<null>"
-            : this.base2ExponentialBucketHistogram));
-    sb.append(',');
-    sb.append("lastValue");
-    sb.append('=');
-    sb.append(((this.lastValue == null) ? "<null>" : this.lastValue));
-    sb.append(',');
-    sb.append("sum");
-    sb.append('=');
-    sb.append(((this.sum == null) ? "<null>" : this.sum));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "AggregationModel{"
+        + "_default="
+        + _default
+        + ", drop="
+        + drop
+        + ", explicitBucketHistogram="
+        + explicitBucketHistogram
+        + ", base2ExponentialBucketHistogram="
+        + base2ExponentialBucketHistogram
+        + ", lastValue="
+        + lastValue
+        + ", sum="
+        + sum
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.drop == null) ? 0 : this.drop.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.explicitBucketHistogram == null)
-                ? 0
-                : this.explicitBucketHistogram.hashCode()));
-    result = ((result * 31) + ((this._default == null) ? 0 : this._default.hashCode()));
-    result = ((result * 31) + ((this.lastValue == null) ? 0 : this.lastValue.hashCode()));
-    result = ((result * 31) + ((this.sum == null) ? 0 : this.sum.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.base2ExponentialBucketHistogram == null)
-                ? 0
-                : this.base2ExponentialBucketHistogram.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this._default == null) ? 0 : this._default.hashCode();
+    h *= 1000003;
+    h ^= (this.drop == null) ? 0 : this.drop.hashCode();
+    h *= 1000003;
+    h ^= (this.explicitBucketHistogram == null) ? 0 : this.explicitBucketHistogram.hashCode();
+    h *= 1000003;
+    h ^=
+        (this.base2ExponentialBucketHistogram == null)
+            ? 0
+            : this.base2ExponentialBucketHistogram.hashCode();
+    h *= 1000003;
+    h ^= (this.lastValue == null) ? 0 : this.lastValue.hashCode();
+    h *= 1000003;
+    h ^= (this.sum == null) ? 0 : this.sum.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof AggregationModel) == false) {
-      return false;
+    if (o instanceof AggregationModel) {
+      AggregationModel that = (AggregationModel) o;
+      return (this._default == null ? that._default == null : this._default.equals(that._default))
+          && (this.drop == null ? that.drop == null : this.drop.equals(that.drop))
+          && (this.explicitBucketHistogram == null
+              ? that.explicitBucketHistogram == null
+              : this.explicitBucketHistogram.equals(that.explicitBucketHistogram))
+          && (this.base2ExponentialBucketHistogram == null
+              ? that.base2ExponentialBucketHistogram == null
+              : this.base2ExponentialBucketHistogram.equals(that.base2ExponentialBucketHistogram))
+          && (this.lastValue == null
+              ? that.lastValue == null
+              : this.lastValue.equals(that.lastValue))
+          && (this.sum == null ? that.sum == null : this.sum.equals(that.sum));
     }
-    AggregationModel rhs = ((AggregationModel) other);
-    return (((((((this.drop == rhs.drop) || ((this.drop != null) && this.drop.equals(rhs.drop)))
-                        && ((this.explicitBucketHistogram == rhs.explicitBucketHistogram)
-                            || ((this.explicitBucketHistogram != null)
-                                && this.explicitBucketHistogram.equals(
-                                    rhs.explicitBucketHistogram))))
-                    && ((this._default == rhs._default)
-                        || ((this._default != null) && this._default.equals(rhs._default))))
-                && ((this.lastValue == rhs.lastValue)
-                    || ((this.lastValue != null) && this.lastValue.equals(rhs.lastValue))))
-            && ((this.sum == rhs.sum) || ((this.sum != null) && this.sum.equals(rhs.sum))))
-        && ((this.base2ExponentialBucketHistogram == rhs.base2ExponentialBucketHistogram)
-            || ((this.base2ExponentialBucketHistogram != null)
-                && this.base2ExponentialBucketHistogram.equals(
-                    rhs.base2ExponentialBucketHistogram))));
+    return false;
   }
 }

@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "8.6.0"
+  id("com.diffplug.spotless") version "8.7.0"
 }
 
 spotless {
@@ -34,11 +34,11 @@ repositories {
 
 dependencies {
   implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:7.3.0")
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:6.4.0"))
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:6.4.1"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.1")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.6.0")
-  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.4.2")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.7.0")
+  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.4.3")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
@@ -49,6 +49,7 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:5.1.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:3.1.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21")
-  implementation("org.sonatype.gradle.plugins:scan-gradle-plugin:3.1.5")
+  implementation("org.jsonschema2pojo:jsonschema2pojo-core:1.3.3")
+  implementation("org.sonatype.gradle.plugins:scan-gradle-plugin:3.1.6")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
 }

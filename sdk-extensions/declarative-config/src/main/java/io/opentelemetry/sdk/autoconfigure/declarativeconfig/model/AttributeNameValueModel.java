@@ -14,13 +14,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"name", "value", "type"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class AttributeNameValueModel {
 
   /**
@@ -30,24 +28,23 @@ public class AttributeNameValueModel {
    */
   @JsonProperty("name")
   @JsonPropertyDescription("The attribute name.\nProperty is required and must be non-null.\n")
-  @Nonnull
+  @Nullable
   private String name;
 
   /**
-   * The attribute value. The type of value must match .type. Property is required and must be
-   * non-null.
+   * The attribute value. The type of value must match .type. Property must be present, but if null
+   * the entry is ignored.
    *
    * <p>(Required)
    */
   @JsonProperty("value")
   @JsonPropertyDescription(
-      "The attribute value.\nThe type of value must match .type.\nProperty is required and must be non-null.\n")
-  @Nonnull
+      "The attribute value.\nThe type of value must match .type.\nProperty must be present, but if null the entry is ignored.\n")
+  @Nullable
   private Object value;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("type")
+  @Nullable
   private AttributeNameValueModel.AttributeType type;
 
   /**
@@ -67,8 +64,8 @@ public class AttributeNameValueModel {
   }
 
   /**
-   * The attribute value. The type of value must match .type. Property is required and must be
-   * non-null.
+   * The attribute value. The type of value must match .type. Property must be present, but if null
+   * the entry is ignored.
    *
    * <p>(Required)
    */
@@ -96,56 +93,43 @@ public class AttributeNameValueModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(AttributeNameValueModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("name");
-    sb.append('=');
-    sb.append(((this.name == null) ? "<null>" : this.name));
-    sb.append(',');
-    sb.append("value");
-    sb.append('=');
-    sb.append(((this.value == null) ? "<null>" : this.value));
-    sb.append(',');
-    sb.append("type");
-    sb.append('=');
-    sb.append(((this.type == null) ? "<null>" : this.type));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "AttributeNameValueModel{"
+        + "name="
+        + name
+        + ", value="
+        + value
+        + ", type="
+        + type
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.name == null) ? 0 : this.name.hashCode()));
-    result = ((result * 31) + ((this.type == null) ? 0 : this.type.hashCode()));
-    result = ((result * 31) + ((this.value == null) ? 0 : this.value.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.name == null) ? 0 : this.name.hashCode();
+    h *= 1000003;
+    h ^= (this.value == null) ? 0 : this.value.hashCode();
+    h *= 1000003;
+    h ^= (this.type == null) ? 0 : this.type.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof AttributeNameValueModel) == false) {
-      return false;
+    if (o instanceof AttributeNameValueModel) {
+      AttributeNameValueModel that = (AttributeNameValueModel) o;
+      return (this.name == null ? that.name == null : this.name.equals(that.name))
+          && (this.value == null ? that.value == null : this.value.equals(that.value))
+          && (this.type == null ? that.type == null : this.type.equals(that.type));
     }
-    AttributeNameValueModel rhs = ((AttributeNameValueModel) other);
-    return ((((this.name == rhs.name) || ((this.name != null) && this.name.equals(rhs.name)))
-            && ((this.type == rhs.type) || ((this.type != null) && this.type.equals(rhs.type))))
-        && ((this.value == rhs.value) || ((this.value != null) && this.value.equals(rhs.value))));
+    return false;
   }
 
   @Generated("jsonschema2pojo")
-  @SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
   public enum AttributeType {
     STRING("string"),
     BOOL("bool"),

@@ -11,58 +11,61 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"interval", "timeout", "exporter", "producers", "cardinality_limits"})
+@JsonPropertyOrder({
+  "interval",
+  "timeout",
+  "max_export_batch_size/development",
+  "exporter",
+  "producers",
+  "cardinality_limits"
+})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class PeriodicMetricReaderModel {
 
   /**
    * Configure delay interval (in milliseconds) between start of two consecutive exports. Value must
    * be non-negative. If omitted or null, 60000 is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("interval")
   @JsonPropertyDescription(
       "Configure delay interval (in milliseconds) between start of two consecutive exports. \nValue must be non-negative.\nIf omitted or null, 60000 is used.\n")
+  @Nullable
   private Integer interval;
 
   /**
    * Configure maximum allowed time (in milliseconds) to export data. Value must be non-negative. A
    * value of 0 indicates no limit (infinity). If omitted or null, 30000 is used.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("timeout")
   @JsonPropertyDescription(
       "Configure maximum allowed time (in milliseconds) to export data. \nValue must be non-negative. A value of 0 indicates no limit (infinity).\nIf omitted or null, 30000 is used.\n")
+  @Nullable
   private Integer timeout;
+
+  /** Configure maximum export batch size. If omitted or null, no limit is used. */
+  @JsonProperty("max_export_batch_size/development")
+  @JsonPropertyDescription(
+      "Configure maximum export batch size.\nIf omitted or null, no limit is used.\n")
+  @Nullable
+  private Integer maxExportBatchSizeDevelopment;
 
   /** (Required) */
   @JsonProperty("exporter")
-  @Nonnull
+  @Nullable
   private PushMetricExporterModel exporter;
 
-  /**
-   * Configure metric producers. If omitted, no metric producers are added.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure metric producers. If omitted, no metric producers are added. */
   @JsonProperty("producers")
   @JsonPropertyDescription(
       "Configure metric producers.\nIf omitted, no metric producers are added.\n")
+  @Nullable
   private List<MetricProducerModel> producers;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("cardinality_limits")
+  @Nullable
   private CardinalityLimitsModel cardinalityLimits;
 
   /**
@@ -92,6 +95,19 @@ public class PeriodicMetricReaderModel {
 
   public PeriodicMetricReaderModel withTimeout(Integer timeout) {
     this.timeout = timeout;
+    return this;
+  }
+
+  /** Configure maximum export batch size. If omitted or null, no limit is used. */
+  @JsonProperty("max_export_batch_size/development")
+  @Nullable
+  public Integer getMaxExportBatchSizeDevelopment() {
+    return maxExportBatchSizeDevelopment;
+  }
+
+  public PeriodicMetricReaderModel withMaxExportBatchSizeDevelopment(
+      Integer maxExportBatchSizeDevelopment) {
+    this.maxExportBatchSizeDevelopment = maxExportBatchSizeDevelopment;
     return this;
   }
 
@@ -132,71 +148,63 @@ public class PeriodicMetricReaderModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(PeriodicMetricReaderModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("interval");
-    sb.append('=');
-    sb.append(((this.interval == null) ? "<null>" : this.interval));
-    sb.append(',');
-    sb.append("timeout");
-    sb.append('=');
-    sb.append(((this.timeout == null) ? "<null>" : this.timeout));
-    sb.append(',');
-    sb.append("exporter");
-    sb.append('=');
-    sb.append(((this.exporter == null) ? "<null>" : this.exporter));
-    sb.append(',');
-    sb.append("producers");
-    sb.append('=');
-    sb.append(((this.producers == null) ? "<null>" : this.producers));
-    sb.append(',');
-    sb.append("cardinalityLimits");
-    sb.append('=');
-    sb.append(((this.cardinalityLimits == null) ? "<null>" : this.cardinalityLimits));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "PeriodicMetricReaderModel{"
+        + "interval="
+        + interval
+        + ", timeout="
+        + timeout
+        + ", maxExportBatchSizeDevelopment="
+        + maxExportBatchSizeDevelopment
+        + ", exporter="
+        + exporter
+        + ", producers="
+        + producers
+        + ", cardinalityLimits="
+        + cardinalityLimits
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.interval == null) ? 0 : this.interval.hashCode()));
-    result = ((result * 31) + ((this.exporter == null) ? 0 : this.exporter.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.cardinalityLimits == null) ? 0 : this.cardinalityLimits.hashCode()));
-    result = ((result * 31) + ((this.timeout == null) ? 0 : this.timeout.hashCode()));
-    result = ((result * 31) + ((this.producers == null) ? 0 : this.producers.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.interval == null) ? 0 : this.interval.hashCode();
+    h *= 1000003;
+    h ^= (this.timeout == null) ? 0 : this.timeout.hashCode();
+    h *= 1000003;
+    h ^=
+        (this.maxExportBatchSizeDevelopment == null)
+            ? 0
+            : this.maxExportBatchSizeDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.exporter == null) ? 0 : this.exporter.hashCode();
+    h *= 1000003;
+    h ^= (this.producers == null) ? 0 : this.producers.hashCode();
+    h *= 1000003;
+    h ^= (this.cardinalityLimits == null) ? 0 : this.cardinalityLimits.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof PeriodicMetricReaderModel) == false) {
-      return false;
+    if (o instanceof PeriodicMetricReaderModel) {
+      PeriodicMetricReaderModel that = (PeriodicMetricReaderModel) o;
+      return (this.interval == null ? that.interval == null : this.interval.equals(that.interval))
+          && (this.timeout == null ? that.timeout == null : this.timeout.equals(that.timeout))
+          && (this.maxExportBatchSizeDevelopment == null
+              ? that.maxExportBatchSizeDevelopment == null
+              : this.maxExportBatchSizeDevelopment.equals(that.maxExportBatchSizeDevelopment))
+          && (this.exporter == null ? that.exporter == null : this.exporter.equals(that.exporter))
+          && (this.producers == null
+              ? that.producers == null
+              : this.producers.equals(that.producers))
+          && (this.cardinalityLimits == null
+              ? that.cardinalityLimits == null
+              : this.cardinalityLimits.equals(that.cardinalityLimits));
     }
-    PeriodicMetricReaderModel rhs = ((PeriodicMetricReaderModel) other);
-    return ((((((this.interval == rhs.interval)
-                        || ((this.interval != null) && this.interval.equals(rhs.interval)))
-                    && ((this.exporter == rhs.exporter)
-                        || ((this.exporter != null) && this.exporter.equals(rhs.exporter))))
-                && ((this.cardinalityLimits == rhs.cardinalityLimits)
-                    || ((this.cardinalityLimits != null)
-                        && this.cardinalityLimits.equals(rhs.cardinalityLimits))))
-            && ((this.timeout == rhs.timeout)
-                || ((this.timeout != null) && this.timeout.equals(rhs.timeout))))
-        && ((this.producers == rhs.producers)
-            || ((this.producers != null) && this.producers.equals(rhs.producers))));
+    return false;
   }
 }

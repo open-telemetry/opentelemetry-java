@@ -8,43 +8,33 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
+import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class TraceContextPropagatorModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(TraceContextPropagatorModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "TraceContextPropagatorModel{" + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    return result;
+    int h = 1;
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof TraceContextPropagatorModel) == false) {
-      return false;
+    if (o instanceof TraceContextPropagatorModel) {
+      TraceContextPropagatorModel that = (TraceContextPropagatorModel) o;
+      return true;
     }
-    TraceContextPropagatorModel rhs = ((TraceContextPropagatorModel) other);
-    return true;
+    return false;
   }
 }

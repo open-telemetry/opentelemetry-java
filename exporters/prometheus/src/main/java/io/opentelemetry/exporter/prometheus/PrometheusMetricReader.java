@@ -52,7 +52,8 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
     this(
         allowedResourceAttributesFilter,
         /* otelScopeLabelsEnabled= */ true,
-        /* targetInfoMetricEnabled= */ true);
+        /* targetInfoMetricEnabled= */ true,
+        TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES);
   }
 
   /**
@@ -65,7 +66,8 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
     this(
         allowedResourceAttributesFilter,
         /* otelScopeLabelsEnabled= */ true,
-        /* targetInfoMetricEnabled= */ true);
+        /* targetInfoMetricEnabled= */ true,
+        TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES);
   }
 
   // Package-private constructor used by builder
@@ -73,10 +75,14 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   PrometheusMetricReader(
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       boolean otelScopeLabelsEnabled,
-      boolean targetInfoMetricEnabled) {
+      boolean targetInfoMetricEnabled,
+      TranslationStrategy translationStrategy) {
     this.converter =
         new Otel2PrometheusConverter(
-            otelScopeLabelsEnabled, targetInfoMetricEnabled, allowedResourceAttributesFilter);
+            otelScopeLabelsEnabled,
+            targetInfoMetricEnabled,
+            translationStrategy,
+            allowedResourceAttributesFilter);
   }
 
   @Override
@@ -109,6 +115,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
     StringJoiner joiner = new StringJoiner(",", "PrometheusMetricReader{", "}");
     joiner.add("otelScopeLabelsEnabled=" + converter.isOtelScopeLabelsEnabled());
     joiner.add("targetInfoMetricEnabled=" + converter.isTargetInfoMetricEnabled());
+    joiner.add("translationStrategy=" + converter.getTranslationStrategy());
     joiner.add("allowedResourceAttributesFilter=" + converter.getAllowedResourceAttributesFilter());
     return joiner.toString();
   }
