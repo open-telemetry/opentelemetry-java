@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
-import io.opentelemetry.sdk.extension.incubator.resources.internal.SdkEntity;
+import io.opentelemetry.sdk.resources.internal.Entity;
 import java.util.Collection;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -24,10 +24,10 @@ class TelemetrySdkEntityDetectorTest {
         detector.detect(DefaultConfigProperties.createFromMap(Collections.emptyMap()));
 
     assertThat(entities).hasSize(1);
-    SdkEntity entity = (SdkEntity) entities.iterator().next();
+    Entity entity = entities.iterator().next();
 
     assertThat(entity.getType()).isEqualTo("telemetry.sdk");
-    assertThat(entity.getIdentity())
+    assertThat(entity.getId())
         .isEqualTo(
             Attributes.builder()
                 .put("telemetry.sdk.name", "opentelemetry")

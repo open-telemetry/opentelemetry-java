@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.resources.internal.Entity;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
@@ -37,12 +38,12 @@ public class ServiceEntityDetector implements EntityDetector {
 
     return Arrays.asList(
         Entity.builder(SERVICE_TYPE)
-            .setIdentity(Attributes.builder().put(SERVICE_NAME, serviceName).build())
+            .withId(Attributes.builder().put(SERVICE_NAME, serviceName).build())
             // TODO: Add other service descriptive attributes.
             .setSchemaUrl(SCHEMA_URL)
             .build(),
         Entity.builder(SERVICE_INSTANCE_TYPE)
-            .setIdentity(
+            .withId(
                 Attributes.builder()
                     // TODO: pull from env variable if needed.
                     .put(SERVICE_INSTANCE_ID, RANDOM)

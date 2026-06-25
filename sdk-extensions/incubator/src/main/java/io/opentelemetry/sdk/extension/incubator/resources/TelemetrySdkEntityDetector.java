@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
+import io.opentelemetry.sdk.resources.internal.Entity;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -38,12 +39,12 @@ public final class TelemetrySdkEntityDetector implements EntityDetector {
     return Collections.singletonList(
         Entity.builder(ENTITY_TYPE)
             .setSchemaUrl(SCHEMA_URL)
-            .setIdentity(
+            .withId(
                 Attributes.builder()
                     .put(TELEMETRY_SDK_NAME, "opentelemetry")
                     .put(TELEMETRY_SDK_LANGUAGE, "java")
                     .build())
-            .setDescription(
+            .withDescription(
                 Attributes.builder().put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION).build())
             .build());
   }

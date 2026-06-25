@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.extension.incubator.resources;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityBuilder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -363,9 +365,9 @@ public class EnvEntityDetector implements EntityDetector {
     /** Finishes building the current entity and adds it to the parsed list. */
     private void buildAndAddEntity() {
       if (currentType != null && !currentType.isEmpty() && !currentIdAttrs.isEmpty()) {
-        EntityBuilder builder = Entity.builder(currentType).setIdentity(currentIdAttrs);
+        EntityBuilder builder = Entity.builder(currentType).withId(currentIdAttrs);
         if (!currentDescAttrs.isEmpty()) {
-          builder.setDescription(currentDescAttrs);
+          builder.withDescription(currentDescAttrs);
         }
         if (currentSchemaUrl != null && !currentSchemaUrl.isEmpty()) {
           builder.setSchemaUrl(currentSchemaUrl);

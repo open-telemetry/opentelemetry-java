@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.resources.internal.SdkEntity;
+import io.opentelemetry.sdk.resources.internal.Entity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,9 +37,9 @@ class EnvEntityDetectorTest {
                 Collections.singletonMap("otel.entities", value)));
 
     assertThat(entities).hasSize(1);
-    SdkEntity entity = (SdkEntity) entities.iterator().next();
+    Entity entity = entities.iterator().next();
     assertThat(entity.getType()).isEqualTo("service");
-    assertThat(entity.getIdentity())
+    assertThat(entity.getId())
         .isEqualTo(
             Attributes.builder()
                 .put("service.name", "my-app")
@@ -63,16 +63,15 @@ class EnvEntityDetectorTest {
     assertThat(entities).hasSize(2);
     List<Entity> list = new ArrayList<>(entities);
 
-    SdkEntity entity1 = (SdkEntity) list.get(0);
+    Entity entity1 = list.get(0);
     assertThat(entity1.getType()).isEqualTo("service");
-    assertThat(entity1.getIdentity())
+    assertThat(entity1.getId())
         .isEqualTo(Attributes.builder().put("service.name", "my-app").build());
     assertThat(entity1.getSchemaUrl()).isEqualTo("https://opentelemetry.io/schemas/1.21.0");
 
-    SdkEntity entity2 = (SdkEntity) list.get(1);
+    Entity entity2 = list.get(1);
     assertThat(entity2.getType()).isEqualTo("host");
-    assertThat(entity2.getIdentity())
-        .isEqualTo(Attributes.builder().put("host.id", "host-123").build());
+    assertThat(entity2.getId()).isEqualTo(Attributes.builder().put("host.id", "host-123").build());
     assertThat(entity2.getDescription())
         .isEqualTo(Attributes.builder().put("host.name", "web-server-01").build());
     assertThat(entity2.getSchemaUrl()).isNull();
@@ -88,9 +87,9 @@ class EnvEntityDetectorTest {
                 Collections.singletonMap("otel.entities", value)));
 
     assertThat(entities).hasSize(1);
-    SdkEntity entity = (SdkEntity) entities.iterator().next();
+    Entity entity = entities.iterator().next();
     assertThat(entity.getType()).isEqualTo("service");
-    assertThat(entity.getIdentity())
+    assertThat(entity.getId())
         .isEqualTo(Attributes.builder().put("service.name", "my,app").build());
     assertThat(entity.getDescription())
         .isEqualTo(Attributes.builder().put("config", "key=value[prod]").build());
@@ -119,7 +118,7 @@ class EnvEntityDetectorTest {
 
     // Should skip the malformed one and process the valid one
     assertThat(entities).hasSize(1);
-    SdkEntity entity = (SdkEntity) entities.iterator().next();
+    Entity entity = entities.iterator().next();
     assertThat(entity.getType()).isEqualTo("host");
   }
 
@@ -133,8 +132,9 @@ class EnvEntityDetectorTest {
                 Collections.singletonMap("otel.entities", value)));
 
     assertThat(entities).hasSize(1);
-    SdkEntity entity = (SdkEntity) entities.iterator().next();
+    Entity entity = entities.iterator().next();
     assertThat(entity.getType()).isEqualTo("host");
+    // TODO: why no assert against id?
   }
 
   @Test
@@ -147,7 +147,8 @@ class EnvEntityDetectorTest {
                 Collections.singletonMap("otel.entities", value)));
 
     assertThat(entities).hasSize(1);
-    SdkEntity entity = (SdkEntity) entities.iterator().next();
+    Entity entity = entities.iterator().next();
     assertThat(entity.getType()).isEqualTo("host");
+    // TODO: why no assert against id?
   }
 }

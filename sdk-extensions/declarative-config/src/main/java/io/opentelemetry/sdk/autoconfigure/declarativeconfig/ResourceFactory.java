@@ -16,9 +16,10 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExclude
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.resources.EntityDetector;
-import io.opentelemetry.sdk.extension.incubator.resources.internal.ExtendedEntityUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,9 +58,7 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
             }
           }
           if (!detectors.isEmpty()) {
-            Resource detectedEntityResource =
-                ExtendedEntityUtil.runDetection(
-                    detectors, DefaultConfigProperties.createFromMap(Collections.emptyMap()));
+            Resource detectedEntityResource = detectEntityResource(detectors);
             builder = detectedEntityResource.toBuilder();
           }
         }
@@ -109,6 +108,19 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
       builder.setSchemaUrl(model.getSchemaUrl());
     }
 
+    return builder.build();
+  }
+
+  private static Resource detectEntityResource(List<EntityDetector> detectors) {
+    ResourceBuilder builder = Resource.builder();
+    for (EntityDetector detector : detectors) {
+      for (Entity entity :
+          detector.detect(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
+        if (entity != null) {
+          EntityUtil.addEntity(builder, entity);
+        }
+      }
+    }
     return builder.build();
   }
 

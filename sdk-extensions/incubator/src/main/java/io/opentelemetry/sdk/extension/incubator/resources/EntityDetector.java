@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.resources;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.Entity;
 import java.util.Collection;
 
 /**
