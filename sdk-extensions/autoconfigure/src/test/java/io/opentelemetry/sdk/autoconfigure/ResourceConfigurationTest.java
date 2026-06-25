@@ -175,8 +175,8 @@ class ResourceConfigurationTest {
     Map<String, String> props = new HashMap<>();
     props.put(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, "true");
     props.put(
-            EnvironmentResource.ENTITIES_PROPERTY,
-                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}");
+        EnvironmentResource.ENTITIES_PROPERTY,
+        "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}");
     props.put("otel.service.name", "my-service");
     props.put("otel.resource.attributes", "flat.attr=flat-val");
 

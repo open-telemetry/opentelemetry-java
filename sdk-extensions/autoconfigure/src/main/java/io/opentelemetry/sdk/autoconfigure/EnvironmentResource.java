@@ -48,7 +48,8 @@ final class EnvironmentResource {
    */
   @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   static Resource createEnvironmentResource(ConfigProperties config) {
-    boolean entitiesEnabled = config.getBoolean(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, false);
+    boolean entitiesEnabled =
+        config.getBoolean(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, false);
     if (entitiesEnabled) {
       ResourceBuilder builder = Resource.builder();
 
