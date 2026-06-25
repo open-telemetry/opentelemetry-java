@@ -34,9 +34,11 @@ class EnvironmentSetterTest {
     Map<String, String> carrier = new HashMap<>();
     EnvironmentSetter.getInstance().set(carrier, "otel.trace.id", "val1");
     EnvironmentSetter.getInstance().set(carrier, "otel-baggage-key", "val2");
+    EnvironmentSetter.getInstance().set(carrier, "", "val3");
 
     assertThat(carrier).containsEntry("OTEL_TRACE_ID", "val1");
     assertThat(carrier).containsEntry("OTEL_BAGGAGE_KEY", "val2");
+    assertThat(carrier).containsEntry("_", "val3");
   }
 
   @Test
@@ -76,6 +78,7 @@ class EnvironmentSetterTest {
     return Stream.of(
         Arguments.argumentSet("uppercase letters", "TRACEPARENT", true),
         Arguments.argumentSet("uppercase with underscores", "OTEL_TRACE_ID", true),
+        Arguments.argumentSet("single underscore", "_", true),
         Arguments.argumentSet("single letter", "A", true),
         Arguments.argumentSet("letter then digit", "A0", true),
         Arguments.argumentSet("mixed uppercase digits underscores", "A_B_0", true),

@@ -40,12 +40,15 @@ class EnvironmentGetterTest {
     // Carrier entries are expected to have normalized keys (i.e. set via EnvironmentSetter).
     carrier.put("OTEL_TRACE_ID", "val1");
     carrier.put("OTEL_BAGGAGE_KEY", "val2");
+    carrier.put("_", "val3");
     // Carrier entry with an unnormalized key is not reachable via get().
-    carrier.put("otel-unreachable-key", "val3");
+    carrier.put("", "val4");
+    carrier.put("otel-unreachable-key", "val5");
 
     // Lookup keys are normalized before the carrier map is consulted.
     assertThat(EnvironmentGetter.getInstance().get(carrier, "otel.trace.id")).isEqualTo("val1");
     assertThat(EnvironmentGetter.getInstance().get(carrier, "otel-baggage-key")).isEqualTo("val2");
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "")).isEqualTo("val3");
     // Carrier entries with unnormalized keys are not enumerated.
     assertThat(EnvironmentGetter.getInstance().get(carrier, "otel-unreachable-key")).isNull();
   }
@@ -60,12 +63,15 @@ class EnvironmentGetterTest {
   @SuppressLogger(EnvironmentGetter.class)
   void keys_onlyNormalizedKeysIncluded() {
     Map<String, String> carrier = new HashMap<>();
+    carrier.put("", "V0");
     carrier.put("otel.trace.id", "V1");
     carrier.put("otel-baggage-key", "V2");
     carrier.put("OTEL_FOO", "V3");
+    carrier.put("_", "V4");
 
     // Non-normalized keys are excluded; only already-normalized keys are returned.
-    assertThat(EnvironmentGetter.getInstance().keys(carrier)).containsExactlyInAnyOrder("OTEL_FOO");
+    assertThat(EnvironmentGetter.getInstance().keys(carrier))
+        .containsExactlyInAnyOrder("OTEL_FOO", "_");
     for (String key : EnvironmentGetter.getInstance().keys(carrier)) {
       assertThat(EnvironmentGetter.getInstance().get(carrier, key)).isNotNull();
     }
