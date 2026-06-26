@@ -145,7 +145,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       // correctness.
       DeltaAggregatorHandle<T> newDeltaHandle = aggregatorHandlePool.poll();
       if (newDeltaHandle == null) {
-        newDeltaHandle = new DeltaAggregatorHandle<>(aggregator.createHandle(clock.now()));
+        newDeltaHandle = new DeltaAggregatorHandle<>(this, aggregator.createHandle(clock.now()));
       }
       handle = aggregatorHandles.putIfAbsent(attributes, newDeltaHandle);
       if (handle == null) {
@@ -169,8 +169,12 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // pooled / reset-in-place) by collect(), so this reference stays valid for the instrument's
     // lifetime.
     Attributes processed = attributesProcessor.process(attributes, Context.current());
-    DeltaAggregatorHandle<T> wrapper = bindHandle(processed);
-    return new DeltaBoundHandle(wrapper, attributes);
+    DeltaAggregatorHandle<T> handle = bindHandle(processed);
+    // Stash the original (unprocessed) attributes for exemplar sampling on the bound record path,
+    // matching the unbound path which passes the call-site attributes to the aggregator handle. The
+    // handle itself is the BoundStorageHandle.
+    handle.boundAttributes = attributes;
+    return handle;
   }
 
   @SuppressWarnings("ThreadPriorityCheck")
@@ -204,7 +208,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
         if (handle == null) {
           DeltaAggregatorHandle<T> newDeltaHandle = aggregatorHandlePool.poll();
           if (newDeltaHandle == null) {
-            newDeltaHandle = new DeltaAggregatorHandle<>(aggregator.createHandle(clock.now()));
+            newDeltaHandle =
+                new DeltaAggregatorHandle<>(this, aggregator.createHandle(clock.now()));
           }
           DeltaAggregatorHandle<T> existing =
               aggregatorHandles.putIfAbsent(attributes, newDeltaHandle);
@@ -381,34 +386,6 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     }
   }
 
-  private final class DeltaBoundHandle implements BoundStorageHandle {
-    private final DeltaAggregatorHandle<T> wrapper;
-    // Original (unprocessed) attributes, passed to the handle for exemplar sampling, matching the
-    // unbound record path.
-    private final Attributes attributes;
-
-    DeltaBoundHandle(DeltaAggregatorHandle<T> wrapper, Attributes attributes) {
-      this.wrapper = wrapper;
-      this.attributes = attributes;
-    }
-
-    @Override
-    public void recordLong(long value, Context context) {
-      if (!isEnabled()) {
-        return;
-      }
-      wrapper.recordLong(value, attributes, context);
-    }
-
-    @Override
-    public void recordDouble(double value, Context context) {
-      if (!shouldRecordDouble(value, attributes)) {
-        return;
-      }
-      wrapper.recordDouble(value, attributes, context);
-    }
-  }
-
   private static class AggregatorHolder<T extends PointData> {
     private final ConcurrentHashMap<Attributes, DeltaAggregatorHandle<T>> aggregatorHandles;
     // Guards new-series creation using an even/odd protocol:
@@ -458,7 +435,13 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     }
   }
 
-  private static final class DeltaAggregatorHandle<T extends PointData> {
+  private static final class DeltaAggregatorHandle<T extends PointData>
+      implements BoundStorageHandle {
+    // The storage this handle belongs to. Used by the bound record path (this is the
+    // BoundStorageHandle) to reach the storage-level enabled / NaN checks. Kept as an explicit
+    // back-reference rather than making this a non-static inner class, which would force
+    // AggregatorHolder to be non-static too.
+    private final DeltaSynchronousMetricStorage<T> storage;
     // Volatile and non-final: bound series rotate this accumulator each collect (a fresh,
     // already-zero handle is swapped in while recorders are drained), so a bound instrument's
     // stable reference to this wrapper keeps recording into the current interval without blocking
@@ -470,6 +453,9 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // collect. Touched only by the (serialized) collector; volatile to publish across collect
     // cycles. Always null for unbound handles.
     @Nullable private volatile AggregatorHandle<T> spare;
+    // Original (unprocessed) attributes captured at bind(), passed to the aggregator handle for
+    // exemplar sampling on the bound record path. Null until this handle is bound.
+    @Nullable private volatile Attributes boundAttributes;
     // True once this series has been bound. Bound wrappers are carried across holder swaps (never
     // pooled) and rotated rather than reset in place. Written under the holder gate by bind(), read
     // by the collector.
@@ -484,18 +470,23 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     //     thread decrements by 1 to restore it to even for the next cycle.
     private final AtomicInteger state = new AtomicInteger(0);
 
-    DeltaAggregatorHandle(AggregatorHandle<T> handle) {
+    DeltaAggregatorHandle(DeltaSynchronousMetricStorage<T> storage, AggregatorHandle<T> handle) {
+      this.storage = storage;
       this.handle = handle;
     }
 
     /**
-     * Records onto the current accumulator via the per-handle gate. Used by bound instruments,
-     * which reference this wrapper directly — no map lookup and no holder coordination, since the
-     * wrapper already exists and is carried across holders. Spins if the collector currently holds
-     * the lock.
+     * The bound record path ({@link BoundStorageHandle}). Records onto the current accumulator via
+     * the per-handle gate — no map lookup and no holder coordination, since this wrapper already
+     * exists and is carried across holders. Spins if the collector currently holds the lock.
      */
+    @Override
     @SuppressWarnings("ThreadPriorityCheck")
-    void recordLong(long value, Attributes attributes, Context context) {
+    public void recordLong(long value, Context context) {
+      if (!storage.isEnabled()) {
+        return;
+      }
+      Attributes attributes = Objects.requireNonNull(boundAttributes);
       while (!tryAcquireForRecord()) {
         Thread.yield();
       }
@@ -506,8 +497,13 @@ class DeltaSynchronousMetricStorage<T extends PointData>
       }
     }
 
+    @Override
     @SuppressWarnings("ThreadPriorityCheck")
-    void recordDouble(double value, Attributes attributes, Context context) {
+    public void recordDouble(double value, Context context) {
+      Attributes attributes = Objects.requireNonNull(boundAttributes);
+      if (!storage.shouldRecordDouble(value, attributes)) {
+        return;
+      }
       while (!tryAcquireForRecord()) {
         Thread.yield();
       }
