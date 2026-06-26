@@ -76,8 +76,8 @@ final class EntityRefMarshaler extends MarshalerWithSize {
       size += MarshalerUtil.sizeBytes(EntityRef.SCHEMA_URL, schemaUrlUtf8);
     }
     size += MarshalerUtil.sizeBytes(EntityRef.TYPE, typeUtf8);
-    MarshalerUtil.sizeRepeatedString(EntityRef.ID_KEYS, idKeysUtf8);
-    MarshalerUtil.sizeRepeatedString(EntityRef.DESCRIPTION_KEYS, descriptionKeysUtf8);
+    size += MarshalerUtil.sizeRepeatedString(EntityRef.ID_KEYS, idKeysUtf8);
+    size += MarshalerUtil.sizeRepeatedString(EntityRef.DESCRIPTION_KEYS, descriptionKeysUtf8);
     return size;
   }
 }
