@@ -38,16 +38,19 @@ public class BatchSpanProcessorMultiThreadBenchmark {
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private int numThreads = 1;
+    private int numIterations = 1;
 
     @Param({"0"})
     private int delayMs;
 
+    private double dropRatio;
     private long exportedSpans;
     private long droppedSpans;
 
     @Setup(Level.Iteration)
     public final void setup(BenchmarkParams params) {
       numThreads = params.getThreads();
+      numIterations = params.getMeasurement().getCount();
       collector = InMemoryMetricReader.create();
       MeterProvider meterProvider =
           SdkMeterProvider.builder().registerMetricReader(collector).build();
@@ -61,6 +64,7 @@ public class BatchSpanProcessorMultiThreadBenchmark {
     public final void recordMetrics() {
       BatchSpanProcessorMetrics metrics =
           new BatchSpanProcessorMetrics(collector.collectAllMetrics(), numThreads);
+      dropRatio = metrics.dropRatio(numIterations);
       exportedSpans = metrics.exportedSpans();
       droppedSpans = metrics.droppedSpans();
       processor.shutdown().join(10, TimeUnit.SECONDS);
@@ -75,6 +79,10 @@ public class BatchSpanProcessorMultiThreadBenchmark {
     @TearDown(Level.Iteration)
     public final void recordMetrics(BenchmarkState benchmarkState) {
       this.benchmarkState = benchmarkState;
+    }
+
+    public double dropRatio() {
+      return benchmarkState.dropRatio;
     }
 
     public long exportedSpans() {
