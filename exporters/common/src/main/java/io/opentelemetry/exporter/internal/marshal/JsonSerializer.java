@@ -5,26 +5,17 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 final class JsonSerializer extends Serializer {
 
-  private static final JsonFactory JSON_FACTORY = new JsonFactory();
+  private final JsonWriter generator;
 
-  private final JsonGenerator generator;
-
-  JsonSerializer(OutputStream output) throws IOException {
-    this(JSON_FACTORY.createGenerator(output));
-  }
-
-  JsonSerializer(JsonGenerator generator) {
-    this.generator = generator;
+  JsonSerializer(OutputStream output) {
+    this.generator = new JsonWriter(output);
   }
 
   @Override
@@ -105,13 +96,10 @@ final class JsonSerializer extends Serializer {
   @Override
   public void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException {
     generator.writeFieldName(field.getJsonName());
-    // Marshalers encoded String into UTF-8 bytes to optimize for binary serialization where
-    // we are able to avoid the encoding process happening twice, one for size computation and one
-    // for actual writing. JsonGenerator actually has a writeUTF8String that would be able to accept
-    // this, but it only works when writing to an OutputStream, but not to a String like we do for
-    // writing to logs. It's wasteful to take a String, convert it to bytes, and convert back to
-    // the same String but we can see if this can be improved in the future.
-    generator.writeString(new String(utf8Bytes, StandardCharsets.UTF_8));
+    // Marshalers already encoded the String to UTF-8 bytes (binary serialization needs them for
+    // both size computation and writing), so write them directly rather than decoding and
+    // re-encoding.
+    generator.writeUtf8String(utf8Bytes);
   }
 
   @Override
@@ -126,14 +114,8 @@ final class JsonSerializer extends Serializer {
   public void writeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) throws IOException {
     generator.writeArrayFieldStart(field.getJsonName());
     for (byte[] value : utf8Bytes) {
-      // Marshalers encoded String into UTF-8 bytes to optimize for binary serialization where
-      // we are able to avoid the encoding process happening twice, one for size computation and one
-      // for actual writing. JsonGenerator actually has a writeUTF8String that would be able to
-      // accept
-      // this, but it only works when writing to an OutputStream, but not to a String like we do for
-      // writing to logs. It's wasteful to take a String, convert it to bytes, and convert back to
-      // the same String but we can see if this can be improved in the future.
-      generator.writeString(new String(value, StandardCharsets.UTF_8));
+      // See writeString(ProtoFieldInfo, byte[]): the bytes are already UTF-8, so write directly.
+      generator.writeUtf8String(value);
     }
     generator.writeEndArray();
   }
