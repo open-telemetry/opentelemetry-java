@@ -13,7 +13,6 @@ otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator", "io.o
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider",
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
-  "io.opentelemetry.sdk.extension.incubator.resources.EntityDetector",
 ))
 
 dependencies {
