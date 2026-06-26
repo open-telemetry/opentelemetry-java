@@ -25,6 +25,7 @@ dependencies {
   compileOnly(project(":sdk:logs"))
   compileOnly(project(":api:incubator"))
 
+  testImplementation(project(":json:jackson-2"))
   testImplementation(project(":sdk:metrics"))
   testImplementation(project(":sdk:trace"))
   testImplementation(project(":sdk:logs"))
@@ -36,6 +37,7 @@ dependencies {
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
   jmhImplementation(project(":api:incubator"))
+  jmhImplementation(project(":json:jackson-2"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -47,6 +49,7 @@ testing {
     register<JvmTestSuite>("testIncubating") {
       dependencies {
         implementation(project(":api:incubator"))
+        implementation(project(":json:jackson-2"))
         implementation(project(":sdk:testing"))
 
         implementation("com.fasterxml.jackson.core:jackson-databind")

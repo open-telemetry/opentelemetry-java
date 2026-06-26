@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.marshal;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.JsonProvider;
 import io.opentelemetry.sdk.common.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +21,7 @@ import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
@@ -40,9 +42,11 @@ public final class MarshalerUtil {
   static {
     boolean jsonAvailable = false;
     try {
-      Class.forName("com.fasterxml.jackson.core.JsonFactory");
-      jsonAvailable = true;
-    } catch (ClassNotFoundException e) {
+      jsonAvailable =
+          ServiceLoader.load(JsonProvider.class, MarshalerUtil.class.getClassLoader())
+              .iterator()
+              .hasNext();
+    } catch (RuntimeException e) {
       // Not available
     }
     JSON_AVAILABLE = jsonAvailable;

@@ -28,6 +28,7 @@ val DEPENDENCY_BOMS = listOf(
   // by FOSSA for containing EPL-licensed)
 
   "com.fasterxml.jackson:jackson-bom:2.22.0",
+  "tools.jackson:jackson-bom:3.2.0",
   "com.google.guava:guava-bom:33.6.0-jre",
   "com.google.protobuf:protobuf-bom:4.35.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",

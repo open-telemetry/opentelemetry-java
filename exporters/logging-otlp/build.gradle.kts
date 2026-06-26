@@ -24,9 +24,8 @@ dependencies {
   compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk-extensions:autoconfigure-spi"))
 
-  implementation("com.fasterxml.jackson.core:jackson-core")
-
   testImplementation(project(":api:incubator"))
+  testImplementation(project(":json:jackson-2"))
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure-spi"))
 

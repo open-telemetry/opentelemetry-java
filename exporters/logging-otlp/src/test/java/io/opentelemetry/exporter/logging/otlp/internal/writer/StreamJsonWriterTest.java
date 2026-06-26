@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -50,7 +49,7 @@ class StreamJsonWriterTest {
     Marshaler marshaler = mock(Marshaler.class);
     Mockito.doThrow(new IOException("test"))
         .when(marshaler)
-        .writeJsonWithNewline(any(JsonGenerator.class));
+        .writeJsonWithNewline(any(io.opentelemetry.sdk.common.export.JsonWriter.class));
 
     StreamJsonWriter writer = new StreamJsonWriter(System.out, "type");
     writer.write(marshaler);
