@@ -92,8 +92,8 @@ import org.openjdk.jmh.annotations.Warmup;
  * spreading their record activities over more distinct series. The highest contention scenario is
  * cardinality=1, threads=4. Any scenario with threads=1 has zero contention.
  *
- * <p>To make the cardinality dimension meaningful under contention, each thread traverses the series
- * in its own independent (per-thread shuffled) order — see {@link ThreadState}. This models
+ * <p>To make the cardinality dimension meaningful under contention, each thread traverses the
+ * series in its own independent (per-thread shuffled) order — see {@link ThreadState}. This models
  * independent threads recording to arbitrary series. A naive shared {@code i % cardinality} index
  * would instead march all threads through the same series in lockstep (contention self-synchronizes
  * them), collapsing high-cardinality multi-thread runs into a single rotating hotspot that behaves
@@ -235,8 +235,8 @@ public class MetricRecordBenchmark {
    * series rather than marching through the same series in lockstep. Without this, the shared
    * sequential {@code i % cardinality} index plus contention's self-synchronizing effect collapses
    * the high-cardinality, multi-thread cases into a single rotating hotspot (effectively
-   * cardinality=1 contention), which does not reflect real-world recording where independent threads
-   * touch arbitrary series.
+   * cardinality=1 contention), which does not reflect real-world recording where independent
+   * threads touch arbitrary series.
    */
   @State(Scope.Thread)
   public static class ThreadState {
@@ -250,7 +250,8 @@ public class MetricRecordBenchmark {
         order[i] = i;
       }
       // Distinct seed per thread => independent permutations => no cross-thread lockstep.
-      Random random = new Random(INITIAL_SEED + benchmarkState.threadSeedSequence.getAndIncrement());
+      Random random =
+          new Random(INITIAL_SEED + benchmarkState.threadSeedSequence.getAndIncrement());
       for (int i = cardinality - 1; i > 0; i--) {
         int j = random.nextInt(i + 1);
         int tmp = order[i];
