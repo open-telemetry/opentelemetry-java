@@ -11,6 +11,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
+import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,5 +176,20 @@ class AttributesMapTest {
 
     assertThat(copy.get(stringKey("a"))).isEqualTo("v1");
     assertThat(copy.get(longKey("b"))).isEqualTo(42L);
+  }
+
+  @Test
+  void equals_andHashCode() {
+    AttributesMap withK_v1a = AttributesMap.create(10, Integer.MAX_VALUE);
+    withK_v1a.put(stringKey("k"), "v1");
+    AttributesMap withK_v1b = AttributesMap.create(10, Integer.MAX_VALUE);
+    withK_v1b.put(stringKey("k"), "v1");
+    AttributesMap withK_v2 = AttributesMap.create(10, Integer.MAX_VALUE);
+    withK_v2.put(stringKey("k"), "v2");
+
+    new EqualsTester()
+        .addEqualityGroup(withK_v1a, withK_v1b)
+        .addEqualityGroup(withK_v2)
+        .testEquals();
   }
 }
