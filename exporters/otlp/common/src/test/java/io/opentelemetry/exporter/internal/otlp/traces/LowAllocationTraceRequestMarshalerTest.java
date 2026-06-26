@@ -167,4 +167,20 @@ class LowAllocationTraceRequestMarshalerTest {
 
     assertThat(lowAllocationResult).isEqualTo(result);
   }
+
+  @Test
+  void validateJsonOutputStringBuilder() throws Exception {
+    TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(spanDataList);
+
+    ByteArrayOutputStream streamOutput =
+        new ByteArrayOutputStream(requestMarshaler.getBinarySerializedSize());
+    requestMarshaler.writeJsonTo(streamOutput);
+    String fromStream = new String(streamOutput.toByteArray(), StandardCharsets.UTF_8);
+
+    StringBuilder sb = new StringBuilder();
+    requestMarshaler.writeJsonTo(sb);
+    String fromStringBuilder = sb.toString();
+
+    assertThat(fromStringBuilder).isEqualTo(fromStream);
+  }
 }

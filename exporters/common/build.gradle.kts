@@ -7,7 +7,7 @@ plugins {
 
 description = "OpenTelemetry Exporter Common"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal")
-otelJava.osgiOptionalPackages.set(listOf("com.fasterxml.jackson.core", "com.google.common.io", "io.opentelemetry.api.incubator.config", "io.opentelemetry.sdk.autoconfigure.spi"))
+otelJava.osgiOptionalPackages.set(listOf("com.google.common.io", "io.opentelemetry.api.incubator.config", "io.opentelemetry.sdk.autoconfigure.spi"))
 // sun.misc, io.grpc, and org.jspecify are not OSGi bundles and have no package versioning; must use unversioned optional.
 otelJava.osgiUnversionedOptionalPackages.set(listOf("sun.misc", "io.grpc", "org.jspecify.annotations"))
 // This bundle's exporters load sender implementations via SPI.
@@ -71,13 +71,13 @@ dependencies {
 
   // We include helpers shared by gRPC exporters but do not want to impose these
   // dependency on all of our consumers.
-  compileOnly("com.fasterxml.jackson.core:jackson-core")
   // sun.misc.Unsafe from the JDK isn't found by the compiler, we provide our own trimmed down
   // version that we can compile against.
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:common"))
   testImplementation(project(":sdk:testing"))
+  testImplementation("com.fasterxml.jackson.core:jackson-core")
 
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.linecorp.armeria:armeria-junit5")

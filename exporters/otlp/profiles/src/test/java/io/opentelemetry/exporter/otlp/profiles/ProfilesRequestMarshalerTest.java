@@ -501,6 +501,15 @@ public class ProfilesRequestMarshalerTest {
 
     assertThat(builder.build()).isEqualTo(result);
 
+    // Verify StringBuilder path produces the same JSON as OutputStream path
+    StringBuilder sb = new StringBuilder();
+    try {
+      marshaler.writeJsonTo(sb);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    assertThat(sb.toString()).isEqualTo(json);
+
     return result;
   }
 

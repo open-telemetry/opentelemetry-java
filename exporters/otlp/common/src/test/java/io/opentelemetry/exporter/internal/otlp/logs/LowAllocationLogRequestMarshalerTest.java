@@ -150,4 +150,20 @@ class LowAllocationLogRequestMarshalerTest {
 
     assertThat(lowAllocationResult).isEqualTo(result);
   }
+
+  @Test
+  void validateJsonOutputStringBuilder() throws Exception {
+    LogsRequestMarshaler requestMarshaler = LogsRequestMarshaler.create(logRecordDataList);
+
+    ByteArrayOutputStream streamOutput =
+        new ByteArrayOutputStream(requestMarshaler.getBinarySerializedSize());
+    requestMarshaler.writeJsonTo(streamOutput);
+    String fromStream = new String(streamOutput.toByteArray(), StandardCharsets.UTF_8);
+
+    StringBuilder sb = new StringBuilder();
+    requestMarshaler.writeJsonTo(sb);
+    String fromStringBuilder = sb.toString();
+
+    assertThat(fromStringBuilder).isEqualTo(fromStream);
+  }
 }

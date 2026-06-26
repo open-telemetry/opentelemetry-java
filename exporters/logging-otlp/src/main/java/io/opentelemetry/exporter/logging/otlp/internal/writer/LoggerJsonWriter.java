@@ -5,10 +5,6 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.writer;
 
-import static io.opentelemetry.exporter.logging.otlp.internal.writer.JsonUtil.JSON_FACTORY;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
@@ -31,21 +27,15 @@ public class LoggerJsonWriter implements JsonWriter {
 
   @Override
   public CompletableResultCode write(Marshaler exportRequest) {
-    SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
-    try (JsonGenerator gen = JsonUtil.create(sw)) {
-      exportRequest.writeJsonToGenerator(gen);
-    } catch (IOException e) {
-      logger.log(Level.WARNING, "Unable to write OTLP JSON " + type, e);
-      return CompletableResultCode.ofFailure();
-    }
-
+    StringBuilder sb = new StringBuilder();
     try {
-      logger.log(Level.INFO, sw.getAndClear());
-      return CompletableResultCode.ofSuccess();
+      exportRequest.writeJsonTo(sb);
     } catch (IOException e) {
       logger.log(Level.WARNING, "Unable to write OTLP JSON " + type, e);
       return CompletableResultCode.ofFailure();
     }
+    logger.log(Level.INFO, sb.toString());
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override

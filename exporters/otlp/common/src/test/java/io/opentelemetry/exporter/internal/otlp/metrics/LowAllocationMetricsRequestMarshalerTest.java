@@ -114,6 +114,23 @@ class LowAllocationMetricsRequestMarshalerTest {
   }
 
   @ParameterizedTest
+  @ArgumentsSource(MetricsProvider.class)
+  void validateJsonOutputStringBuilder(Collection<MetricData> metrics) throws Exception {
+    MetricsRequestMarshaler requestMarshaler = MetricsRequestMarshaler.create(metrics);
+
+    ByteArrayOutputStream streamOutput =
+        new ByteArrayOutputStream(requestMarshaler.getBinarySerializedSize());
+    requestMarshaler.writeJsonTo(streamOutput);
+    String fromStream = new String(streamOutput.toByteArray(), StandardCharsets.UTF_8);
+
+    StringBuilder sb = new StringBuilder();
+    requestMarshaler.writeJsonTo(sb);
+    String fromStringBuilder = sb.toString();
+
+    assertThat(fromStringBuilder).isEqualTo(fromStream);
+  }
+
+  @ParameterizedTest
   @ArgumentsSource(ExemplarProvider.class)
   void validateExemplar(ExemplarData exemplar) throws Exception {
     byte[] result;

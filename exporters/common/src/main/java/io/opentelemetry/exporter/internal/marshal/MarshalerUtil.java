@@ -35,19 +35,6 @@ public final class MarshalerUtil {
   private static final int SPAN_ID_VALUE_SIZE =
       CodedOutputStream.computeLengthDelimitedFieldSize(SpanId.getLength() / 2);
 
-  private static final boolean JSON_AVAILABLE;
-
-  static {
-    boolean jsonAvailable = false;
-    try {
-      Class.forName("com.fasterxml.jackson.core.JsonFactory");
-      jsonAvailable = true;
-    } catch (ClassNotFoundException e) {
-      // Not available
-    }
-    JSON_AVAILABLE = jsonAvailable;
-  }
-
   private static final byte[] EMPTY_BYTES = new byte[0];
 
   /** Groups SDK items by resource and instrumentation scope. */
@@ -73,10 +60,6 @@ public final class MarshalerUtil {
 
   /** Preserialize into JSON format. */
   public static String preserializeJsonFields(Marshaler marshaler) {
-    if (!MarshalerUtil.JSON_AVAILABLE) {
-      return "";
-    }
-
     ByteArrayOutputStream jsonBos = new ByteArrayOutputStream();
     try {
       marshaler.writeJsonTo(jsonBos);
