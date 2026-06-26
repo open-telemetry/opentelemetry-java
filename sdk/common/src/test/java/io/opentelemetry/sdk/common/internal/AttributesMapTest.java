@@ -180,16 +180,13 @@ class AttributesMapTest {
 
   @Test
   void equals_andHashCode() {
-    AttributesMap withK_v1a = AttributesMap.create(10, Integer.MAX_VALUE);
-    withK_v1a.put(stringKey("k"), "v1");
-    AttributesMap withK_v1b = AttributesMap.create(10, Integer.MAX_VALUE);
-    withK_v1b.put(stringKey("k"), "v1");
-    AttributesMap withK_v2 = AttributesMap.create(10, Integer.MAX_VALUE);
-    withK_v2.put(stringKey("k"), "v2");
+    AttributesMap mapV1a = AttributesMap.create(10, Integer.MAX_VALUE);
+    mapV1a.put(stringKey("k"), "v1");
+    AttributesMap mapV1b = AttributesMap.create(10, Integer.MAX_VALUE);
+    mapV1b.put(stringKey("k"), "v1");
+    AttributesMap mapV2 = AttributesMap.create(10, Integer.MAX_VALUE);
+    mapV2.put(stringKey("k"), "v2");
 
-    new EqualsTester()
-        .addEqualityGroup(withK_v1a, withK_v1b)
-        .addEqualityGroup(withK_v2)
-        .testEquals();
+    new EqualsTester().addEqualityGroup(mapV1a, mapV1b).addEqualityGroup(mapV2).testEquals();
   }
 }
