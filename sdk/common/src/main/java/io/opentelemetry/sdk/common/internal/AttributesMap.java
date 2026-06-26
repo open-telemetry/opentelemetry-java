@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -18,28 +19,35 @@ import javax.annotation.Nullable;
  * A map with a fixed capacity that drops attributes when the map gets full, and which truncates
  * string and array string attribute values to the {@link #lengthLimit}.
  *
- * <p>WARNING: In order to reduce memory allocation, this class extends {@link HashMap} when it
- * would be more appropriate to delegate. The problem with extending is that we don't enforce that
- * all {@link HashMap} methods for reading / writing data conform to the configured attribute
- * limits. Therefore, it's easy to accidentally call something like {@link Map#putAll(Map)} and
- * bypass the restrictions (see <a
- * href="https://github.com/open-telemetry/opentelemetry-java/issues/7135">#7135</a>). Callers MUST
- * take care to only call methods from {@link AttributesMap}, and not {@link HashMap}.
+ * <p>Keyed internally by raw string attribute name, so that attributes with the same name but
+ * different types are treated as the same key (last-value-wins), consistent with the OpenTelemetry
+ * specification.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
-
-  private static final long serialVersionUID = -5072696312123632376L;
+public final class AttributesMap implements Attributes {
 
   private final long capacity;
   private final int lengthLimit;
   private int totalAddedValues = 0;
 
+  private final LinkedHashMap<String, AttributeEntry> data;
+
+  private static final class AttributeEntry {
+    AttributeKey<?> key;
+    Object value;
+
+    AttributeEntry(AttributeKey<?> key, Object value) {
+      this.key = key;
+      this.value = value;
+    }
+  }
+
   private AttributesMap(long capacity, int lengthLimit) {
     this.capacity = capacity;
     this.lengthLimit = lengthLimit;
+    this.data = new LinkedHashMap<>();
   }
 
   /**
@@ -55,18 +63,30 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
   /**
    * Add the attribute key value pair, applying capacity and length limits. Callers MUST ensure the
    * {@code value} type matches the type required by {@code key}.
+   *
+   * <p>If an attribute with the same string key name already exists (regardless of type), it is
+   * overwritten — last-value-wins, consistent with the OTel spec.
    */
-  @Override
   @Nullable
   public Object put(AttributeKey<?> key, @Nullable Object value) {
     if (value == null) {
       return null;
     }
     totalAddedValues++;
-    if (size() >= capacity && !containsKey(key)) {
+    String name = key.getKey();
+    AttributeEntry entry = data.get(name);
+    if (entry == null && data.size() >= capacity) {
       return null;
     }
-    return super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
+    Object limited = AttributeUtil.applyAttributeLengthLimit(value, lengthLimit);
+    if (entry == null) {
+      data.put(name, new AttributeEntry(key, limited));
+      return null;
+    }
+    Object old = entry.value;
+    entry.key = key;
+    entry.value = limited;
+    return old;
   }
 
   /** Generic overload of {@link #put(AttributeKey, Object)}. */
@@ -83,17 +103,28 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
   @Override
   @Nullable
   public <T> T get(AttributeKey<T> key) {
-    return (T) super.get(key);
+    AttributeEntry entry = data.get(key.getKey());
+    if (entry == null || !entry.key.getType().equals(key.getType())) {
+      return null;
+    }
+    return (T) entry.value;
+  }
+
+  @Override
+  public int size() {
+    return data.size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return data.isEmpty();
   }
 
   @Override
   public Map<AttributeKey<?>, Object> asMap() {
-    // Because Attributes is marked Immutable, IDEs may recognize this as redundant usage. However,
-    // this class is private and is actually mutable, so we need to wrap with unmodifiableMap
-    // anyways. We implement the immutable Attributes for this class to support the
-    // Attributes.builder().putAll usage - it is tricky but an implementation detail of this private
-    // class.
-    return Collections.unmodifiableMap(this);
+    Map<AttributeKey<?>, Object> snapshot = new HashMap<>(data.size());
+    data.values().forEach(e -> snapshot.put(e.key, e.value));
+    return Collections.unmodifiableMap(snapshot);
   }
 
   @Override
@@ -103,17 +134,30 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
 
   @Override
   public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> action) {
-    // https://github.com/open-telemetry/opentelemetry-java/issues/4161
-    // Help out android desugaring by having an explicit call to HashMap.forEach, when forEach is
-    // just called through Attributes.forEach desugaring is unable to correctly handle it.
-    super.forEach(action);
+    data.forEach((name, entry) -> action.accept(entry.key, entry.value));
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Attributes)) {
+      return false;
+    }
+    return asMap().equals(((Attributes) o).asMap());
+  }
+
+  @Override
+  public int hashCode() {
+    return asMap().hashCode();
   }
 
   @Override
   public String toString() {
     return "AttributesMap{"
         + "data="
-        + super.toString()
+        + asMap()
         + ", capacity="
         + capacity
         + ", totalAddedValues="
