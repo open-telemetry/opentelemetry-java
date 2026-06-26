@@ -39,8 +39,9 @@ class JsonWriterTest {
 
   static Stream<Arguments> cases() {
     // Built with concatenation to keep the source ASCII: quote, backslash, slash, control-char
-    // shortcuts, NUL, U+001F, 'a', U+00E9 (e-acute), and U+1F600 (grinning face). Forward slash is
-    // not escaped, control characters use lowercase \\u00xx, and multi-byte UTF-8 passes through.
+    // shortcuts, NUL, U+001F, 'a', and the 2-/3-/4-byte UTF-8 chars U+00E9 (e-acute), U+4E16 (CJK),
+    // and U+1F600 (grinning face). Forward slash is not escaped, control characters use lowercase
+    // \\u00xx, and multi-byte UTF-8 passes through verbatim.
     String escapeInput =
         "\""
             + '\\'
@@ -54,10 +55,12 @@ class JsonWriterTest {
             + (char) 0x1f
             + 'a'
             + (char) 0xe9
+            + (char) 0x4e16
             + new String(Character.toChars(0x1f600));
     String escapeExpected =
         "\"\\\"\\\\/\\b\\f\\n\\r\\t\\u0000\\u001fa"
             + (char) 0xe9
+            + (char) 0x4e16
             + new String(Character.toChars(0x1f600))
             + "\"";
 
@@ -107,6 +110,55 @@ class JsonWriterTest {
             "writeUtf8String escapes ascii and passes multi-byte through",
             (Body) writer -> writer.writeUtf8String(utf8),
             utf8Expected),
+        Arguments.argumentSet(
+            "integer boundaries",
+            (Body)
+                writer -> {
+                  writer.writeStartObject();
+                  writer.writeNumberField("min", Integer.MIN_VALUE);
+                  writer.writeNumberField("max", Integer.MAX_VALUE);
+                  writer.writeEndObject();
+                },
+            "{\"min\":-2147483648,\"max\":2147483647}"),
+        Arguments.argumentSet(
+            "exponent and signed-zero doubles",
+            (Body)
+                writer -> {
+                  writer.writeStartObject();
+                  writer.writeArrayFieldStart("d");
+                  writer.writeNumber(1.0e7);
+                  writer.writeNumber(1.0e-4);
+                  writer.writeNumber(-0.0);
+                  writer.writeNumber(0.0);
+                  writer.writeEndArray();
+                  writer.writeEndObject();
+                },
+            "{\"d\":[1.0E7,1.0E-4,-0.0,0.0]}"),
+        Arguments.argumentSet(
+            "empty base64",
+            (Body)
+                writer -> {
+                  writer.writeStartObject();
+                  writer.writeBinaryField("b", new byte[0]);
+                  writer.writeEndObject();
+                },
+            "{\"b\":\"\"}"),
+        Arguments.argumentSet(
+            "objects in array",
+            (Body)
+                writer -> {
+                  writer.writeStartObject();
+                  writer.writeArrayFieldStart("a");
+                  writer.writeStartObject();
+                  writer.writeNumberField("x", 1);
+                  writer.writeEndObject();
+                  writer.writeStartObject();
+                  writer.writeNumberField("y", 2);
+                  writer.writeEndObject();
+                  writer.writeEndArray();
+                  writer.writeEndObject();
+                },
+            "{\"a\":[{\"x\":1},{\"y\":2}]}"),
         Arguments.argumentSet(
             "non-finite doubles are quoted",
             (Body)
