@@ -265,12 +265,12 @@ configurations.configureEach {
   }
 }
 
-val dependencyManagement by configurations.creating {
+val dependencyManagement = configurations.create("dependencyManagement") {
   isCanBeConsumed = false
   isCanBeResolved = false
 }
 
-val mockitoAgent by configurations.creating {
+val mockitoAgent = configurations.create("mockitoAgent") {
   extendsFrom(dependencyManagement)
 }
 

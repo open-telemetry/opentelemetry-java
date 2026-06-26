@@ -56,7 +56,7 @@ if (javaVersion >= JavaVersion.VERSION_1_9) {
   }
 }
 
-val versions: Map<String, String> by project
+val versions = project.property("versions") as Map<*, *>
 dependencies {
   api(project(":api:all"))
   compileOnly(project(":sdk-extensions:autoconfigure-spi"))
@@ -87,7 +87,7 @@ dependencies {
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 }
 
-val testJavaVersion: String? by project
+val testJavaVersion = project.findProperty("testJavaVersion") as String?
 
 testing {
   suites {

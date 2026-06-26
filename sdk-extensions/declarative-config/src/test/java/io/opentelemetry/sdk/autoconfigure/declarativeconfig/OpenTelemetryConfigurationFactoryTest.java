@@ -28,8 +28,6 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysOnSample
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchSpanProcessorModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalResourceDetectionModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorModel;
@@ -52,6 +50,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProvider
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectionModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;

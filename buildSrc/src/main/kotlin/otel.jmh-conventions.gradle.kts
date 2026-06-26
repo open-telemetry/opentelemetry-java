@@ -23,32 +23,32 @@ jmh {
   // Could not expand ZIP 'byte-buddy-agent-1.9.7.jar'.
   includeTests.set(false)
   profilers.add("gc")
-  val jmhIncludeSingleClass: String? by project
+  val jmhIncludeSingleClass = project.findProperty("jmhIncludeSingleClass") as String?
   if (jmhIncludeSingleClass != null) {
-    includes.add(jmhIncludeSingleClass as String)
+    includes.add(jmhIncludeSingleClass)
   }
 
-  val jmhFork: String? by project
+  val jmhFork = project.findProperty("jmhFork") as String?
   if (jmhFork != null) {
-    fork.set(jmhFork!!.toInt())
+    fork.set(jmhFork.toInt())
   }
 
-  val jmhIterations: String? by project
+  val jmhIterations = project.findProperty("jmhIterations") as String?
   if (jmhIterations != null) {
-    iterations.set(jmhIterations!!.toInt())
+    iterations.set(jmhIterations.toInt())
   }
 
-  val jmhTime: String? by project
+  val jmhTime = project.findProperty("jmhTime") as String?
   if (jmhTime != null) {
     timeOnIteration.set(jmhTime)
   }
 
-  val jmhWarmupIterations: String? by project
+  val jmhWarmupIterations = project.findProperty("jmhWarmupIterations") as String?
   if (jmhWarmupIterations != null) {
-    warmupIterations.set(jmhWarmupIterations!!.toInt())
+    warmupIterations.set(jmhWarmupIterations.toInt())
   }
 
-  val jmhWarmup: String? by project
+  val jmhWarmup = project.findProperty("jmhWarmup") as String?
   if (jmhWarmup != null) {
     warmup.set(jmhWarmup)
   }

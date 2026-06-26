@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
  * conventions:
  *
  * <ul>
+ *   <li>An empty key is replaced with a single underscore ({@code _})
  *   <li>ASCII letters are converted to uppercase
  *   <li>Any character that is not an ASCII letter, digit, or underscore is replaced with an
  *       underscore
@@ -92,6 +93,7 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
    * Normalizes a key to be a valid environment variable name.
    *
    * <ul>
+   *   <li>An empty key is replaced with a single underscore ({@code _})
    *   <li>ASCII letters are converted to uppercase
    *   <li>Any character that is not an ASCII letter, digit, or underscore is replaced with an
    *       underscore (including {@code .}, {@code -}, whitespace, and control characters)
@@ -101,6 +103,9 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
   static String normalizeKey(String key) {
     if (isNormalizedKey(key)) {
       return key;
+    }
+    if (key.isEmpty()) {
+      return "_";
     }
     StringBuilder sb = new StringBuilder(key.length() + 1);
     for (int i = 0; i < key.length(); i++) {
