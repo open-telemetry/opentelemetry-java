@@ -1066,25 +1066,6 @@ class PrometheusMetricReaderTest {
     assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
-  @SuppressWarnings("deprecation") // test deprecated constructor
-  @Test
-  void deprecatedConstructor() {
-    // The 2-arg deprecated constructor should behave the same as the 1-arg constructor
-    // when otelScopeLabelsEnabled=true (which is also the default for the builder)
-    assertThat(new PrometheusMetricReader(/* otelScopeEnabled= */ false, null))
-        .usingRecursiveComparison()
-        .isEqualTo(new PrometheusMetricReader(null));
-    // The 4-arg constructor should behave the same as the 2-arg deprecated constructor
-    assertThat(
-            new PrometheusMetricReader(
-                null,
-                /* otelScopeLabelsEnabled= */ true,
-                /* targetInfoMetricEnabled */ true,
-                TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES))
-        .usingRecursiveComparison()
-        .isEqualTo(new PrometheusMetricReader(null));
-  }
-
   /**
    * Unfortunately there is no easy way to use {@link TestClock} for Exemplar timestamps. Test if
    * {@code expected} equals {@code actual} but {@code <timestamp>} matches arbitrary timestamps.
