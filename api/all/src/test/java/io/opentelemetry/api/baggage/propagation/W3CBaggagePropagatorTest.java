@@ -556,6 +556,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(Parser.class)
   void extract_multiple_headers_all_invalid() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
@@ -570,6 +571,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(Parser.class)
   void extract_multiple_headers_some_invalid() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
