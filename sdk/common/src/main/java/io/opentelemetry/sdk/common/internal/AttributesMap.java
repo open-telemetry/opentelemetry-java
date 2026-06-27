@@ -240,9 +240,6 @@ public final class AttributesMap implements Attributes {
     if (n <= 2) {
       return 4;
     }
-    if (n >= (1 << 29)) {
-      return 1 << 30;
-    }
     return Integer.highestOneBit(2 * n - 1) << 1;
   }
 }
