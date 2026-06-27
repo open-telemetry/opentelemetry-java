@@ -52,7 +52,7 @@ import org.openjdk.jmh.infra.Blackhole;
 @State(Scope.Thread)
 public class AttributesMapBenchmark {
 
-  @Param({"4", "16", "128"})
+  @Param({"4", "16", "20", "32", "128"})
   int numAttributes;
 
   private List<AttributeKey<String>> stringKeys;

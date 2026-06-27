@@ -38,7 +38,7 @@ public final class AttributesMap implements Attributes {
    */
   private static final int EMPTY = 0;
 
-  private final long capacity;
+  private final int capacity;
   private final int lengthLimit;
   private int totalAddedValues = 0;
   private int size = 0;
@@ -49,6 +49,9 @@ public final class AttributesMap implements Attributes {
    */
   private int[] hashTable;
 
+  /** Cached {@code hashTable.length - 1}; kept in sync with {@link #hashTable}. */
+  private int mask;
+
   /** Parallel entry arrays. Index {@code i} holds the i-th inserted entry. */
   private String[] entryNames;
 
@@ -56,13 +59,14 @@ public final class AttributesMap implements Attributes {
   private Object[] entryValues;
 
   private AttributesMap(long capacity, int lengthLimit) {
-    this.capacity = capacity;
+    this.capacity = (int) Math.min(capacity, Integer.MAX_VALUE);
     this.lengthLimit = lengthLimit;
     int init = (int) Math.min(capacity, 16L);
     entryNames = new String[init];
     entryKeys = new AttributeKey<?>[init];
     entryValues = new Object[init];
     hashTable = new int[tableSizeFor(init)]; // JVM zero-init == EMPTY
+    mask = hashTable.length - 1;
   }
 
   /**
@@ -209,7 +213,6 @@ public final class AttributesMap implements Attributes {
    * and {@code grow}. Slots store {@code entryIndex + 1}; 0 ({@link #EMPTY}) means unoccupied.
    */
   private int findSlot(String name) {
-    int mask = hashTable.length - 1;
     int slot = name.hashCode() & mask;
     int stored;
     while ((stored = hashTable[slot]) != EMPTY && !entryNames[stored - 1].equals(name)) {
@@ -225,6 +228,7 @@ public final class AttributesMap implements Attributes {
     entryKeys = Arrays.copyOf(entryKeys, newLen);
     entryValues = Arrays.copyOf(entryValues, newLen);
     hashTable = new int[tableSizeFor(newLen)]; // JVM zero-init == EMPTY
+    mask = hashTable.length - 1;
     for (int i = 0; i < size; i++) {
       int slot = findSlot(entryNames[i]);
       hashTable[slot] = i + 1; // 1-based
