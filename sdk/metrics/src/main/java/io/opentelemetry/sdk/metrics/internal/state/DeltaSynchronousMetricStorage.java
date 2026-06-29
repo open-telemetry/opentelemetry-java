@@ -442,13 +442,11 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     // back-reference rather than making this a non-static inner class, which would force
     // AggregatorHolder to be non-static too.
     private final DeltaSynchronousMetricStorage<T> storage;
-    // Volatile and non-final: bound series rotate this accumulator each collect (a fresh,
-    // already-zero handle is swapped in while recorders are drained), so a bound instrument's
-    // stable reference to this wrapper keeps recording into the current interval without blocking
-    // on aggregation. For unbound series it never changes after construction. Recorders must read
-    // this only after acquiring the per-handle gate, which establishes the happens-before with the
-    // collector's swap.
-    volatile AggregatorHandle<T> handle;
+    // Rotated by the collector for bound series (a fresh, already-zero handle swapped in while
+    // recorders are drained); write-once for unbound series. Not volatile: the per-handle `state`
+    // gate carries visibility — every read is preceded by a `state` acquire and every rotation write
+    // followed by a `state` release. INVARIANT: never read `handle` outside the gate.
+    AggregatorHandle<T> handle;
     // The off-duty accumulator used for bound rotation, ping-ponged with {@link #handle} each
     // collect. Touched only by the (serialized) collector; volatile to publish across collect
     // cycles. Always null for unbound handles.
