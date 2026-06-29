@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.resources;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
