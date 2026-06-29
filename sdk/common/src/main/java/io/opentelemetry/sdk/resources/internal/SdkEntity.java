@@ -36,13 +36,4 @@ abstract class SdkEntity implements Entity {
   public final EntityBuilder toBuilder() {
     return new SdkEntityBuilder(this);
   }
-
-  /**
-   * Returns a new {@link EntityBuilder} instance for creating arbitrary {@link Entity}.
-   *
-   * @param entityType the entity type string of this entity.
-   */
-  public static final EntityBuilder builder(String entityType) {
-    return new SdkEntityBuilder(entityType);
-  }
 }

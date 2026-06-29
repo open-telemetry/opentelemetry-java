@@ -68,6 +68,6 @@ public interface Entity {
    * @param entityType the entity type string of this entity.
    */
   static EntityBuilder builder(String entityType) {
-    return SdkEntity.builder(entityType);
+    return new SdkEntityBuilder(entityType);
   }
 }
