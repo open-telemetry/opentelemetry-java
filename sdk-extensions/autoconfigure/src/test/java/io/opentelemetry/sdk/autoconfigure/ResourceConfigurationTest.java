@@ -17,9 +17,6 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.internal.Entity;
-import io.opentelemetry.sdk.resources.internal.EntityUtil;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -168,75 +165,5 @@ class ResourceConfigurationTest {
               assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
               assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
             });
-  }
-
-  @Test
-  void createEnvironmentResource_EntitiesEnabled() {
-    Map<String, String> props = new HashMap<>();
-    props.put(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, "true");
-    props.put(
-        EnvironmentResource.ENTITIES_PROPERTY,
-        "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}");
-    props.put("otel.service.name", "my-service");
-    props.put("otel.resource.attributes", "flat.attr=flat-val");
-
-    Resource resource =
-        ResourceConfiguration.createEnvironmentResource(
-            DefaultConfigProperties.createFromMap(props));
-
-    Collection<Entity> entities = EntityUtil.getEntities(resource);
-    assertThat(entities).hasSize(3);
-
-    assertThat(entities)
-        .anyMatch(
-            e ->
-                e.getType().equals("process")
-                    && e.getSchemaUrl().equals("http://schema")
-                    && e.getId().equals(Attributes.of(stringKey("process.pid"), "1234"))
-                    && e.getDescription()
-                        .equals(Attributes.of(stringKey("process.executable.name"), "java")));
-
-    assertThat(entities)
-        .anyMatch(
-            e ->
-                e.getType().equals("host")
-                    && e.getSchemaUrl() == null
-                    && e.getId().equals(Attributes.of(stringKey("host.id"), "myhost")));
-
-    assertThat(entities)
-        .anyMatch(
-            e ->
-                e.getType().equals("service")
-                    && e.getId().equals(Attributes.of(stringKey("service.name"), "my-service")));
-
-    // The attributes of the entities should also be flat attributes on the Resource
-    assertThat(resource.getAttributes())
-        .containsEntry(stringKey("service.name"), "my-service")
-        .containsEntry("process.pid", "1234")
-        .containsEntry("process.executable.name", "java")
-        .containsEntry("host.id", "myhost")
-        .containsEntry("flat.attr", "flat-val");
-  }
-
-  @Test
-  void createEnvironmentResource_EntitiesDisabled() {
-    Map<String, String> props = new HashMap<>();
-    props.put(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, "false");
-    props.put(EnvironmentResource.ENTITIES_PROPERTY, "process{process.pid=1234}");
-    props.put("otel.service.name", "my-service");
-    props.put("otel.resource.attributes", "flat.attr=flat-val");
-
-    Resource resource =
-        ResourceConfiguration.createEnvironmentResource(
-            DefaultConfigProperties.createFromMap(props));
-
-    Collection<Entity> entities = EntityUtil.getEntities(resource);
-    assertThat(entities).isEmpty();
-
-    assertThat(resource.getAttributes())
-        .containsEntry(stringKey("service.name"), "my-service")
-        .containsEntry("flat.attr", "flat-val")
-        // otel.entities is ignored when entities are disabled
-        .doesNotContainKey(stringKey("process.pid"));
   }
 }
