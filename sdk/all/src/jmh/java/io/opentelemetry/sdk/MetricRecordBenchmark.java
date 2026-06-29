@@ -42,6 +42,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.ThreadParams;
 
 /**
  * This benchmark measures the performance of recording metrics. It includes the following
@@ -191,8 +192,8 @@ public class MetricRecordBenchmark {
   @Warmup(iterations = 3, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OperationsPerInvocation(RECORDS_PER_INVOCATION)
-  public void record_SingleThread(BenchmarkState benchmarkState) {
-    record(benchmarkState);
+  public void record_SingleThread(BenchmarkState benchmarkState, ThreadParams threadParams) {
+    record(benchmarkState, threadParams);
   }
 
   @Benchmark
@@ -202,14 +203,18 @@ public class MetricRecordBenchmark {
   @Warmup(iterations = 3, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OperationsPerInvocation(RECORDS_PER_INVOCATION)
-  public void record_MultipleThreads(BenchmarkState benchmarkState) {
-    record(benchmarkState);
+  public void record_MultipleThreads(BenchmarkState benchmarkState, ThreadParams threadParams) {
+    record(benchmarkState, threadParams);
   }
 
-  private static void record(BenchmarkState benchmarkState) {
+  private static void record(BenchmarkState benchmarkState, ThreadParams threadParams) {
+    int cardinality = benchmarkState.attributesList.size();
+    // Stagger each thread's starting series so threads don't march through the same series in
+    // lockstep (which would collapse high-cardinality multi-thread runs into a single hotspot).
+    // Single thread / cardinality=1 => offset 0, i.e. plain sequential access.
+    int offset = threadParams.getThreadIndex() * (cardinality / threadParams.getThreadCount());
     for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
-      Attributes attributes =
-          benchmarkState.attributesList.get(i % benchmarkState.attributesList.size());
+      Attributes attributes = benchmarkState.attributesList.get((i + offset) % cardinality);
       long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
       benchmarkState.instrument.record(value, attributes);
     }
