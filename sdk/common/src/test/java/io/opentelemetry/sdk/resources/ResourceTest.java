@@ -208,8 +208,7 @@ class ResourceTest {
     Attributes attribute1 = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
     Resource resource = Resource.create(attribute1, "http://schema");
     assertThat(resource.toString())
-        .isEqualTo(
-            "Resource{schemaUrl=http://schema, rawAttributes={a=\"1\", b=\"2\"}, entities=[], attributes={a=\"1\", b=\"2\"}}");
+        .isEqualTo("Resource{schemaUrl=http://schema, entities=[], attributes={a=\"1\", b=\"2\"}}");
   }
 
   @Test

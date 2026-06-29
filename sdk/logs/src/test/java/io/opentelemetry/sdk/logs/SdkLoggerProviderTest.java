@@ -346,7 +346,7 @@ class SdkLoggerProviderTest {
     assertThat(sdkLoggerProvider.toString())
         .matches(
             "SdkLoggerProvider\\{clock=SystemClock\\{\\}, "
-                + "resource=Resource\\{schemaUrl=null, rawAttributes=\\{key=\"value\"\\}, entities=\\[\\], attributes=\\{key=\"value\"\\}\\}, "
+                + "resource=Resource\\{schemaUrl=null, entities=\\[\\], attributes=\\{key=\"value\"\\}\\}, "
                 + "logLimits=LogLimits\\{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647\\}, "
                 + "logRecordProcessor=MockLogRecordProcessor, "
                 + "loggerConfigurator=ScopeConfiguratorImpl\\{conditions=\\[\\]\\}\\}");

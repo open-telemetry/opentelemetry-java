@@ -126,7 +126,7 @@ public abstract class Resource {
         });
     // In merge rules, raw comes last, so we return these last.
     fullAttributes.putAll(attributes);
-    return new AutoValue_Resource(schemaUrl, attributes, entities, fullAttributes.build());
+    return new AutoValue_Resource(schemaUrl, entities, fullAttributes.build());
   }
 
   /**
@@ -143,7 +143,17 @@ public abstract class Resource {
    *
    * @return a map of attributes.
    */
-  abstract Attributes getRawAttributes();
+  final Attributes getRawAttributes() {
+    AttributesBuilder rawAttributes = getAttributes().toBuilder();
+    rawAttributes.removeIf(
+        key ->
+            getEntities().stream()
+                .anyMatch(
+                    entity ->
+                        entity.getId().get(key) != null
+                            || entity.getDescription().get(key) != null));
+    return rawAttributes.build();
+  }
 
   /**
    * Returns a collection of associated entities.
