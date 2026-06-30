@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Group;
@@ -42,7 +43,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
-import org.openjdk.jmh.infra.ThreadParams;
 
 /**
  * This benchmark measures the performance of recording metrics. It includes the following
@@ -73,6 +73,13 @@ import org.openjdk.jmh.infra.ThreadParams;
  * contention. Increasing cardinality decreases contention, as the threads are now spreading their
  * record activities over more distinct series. The highest contention scenario is cardinality=1,
  * threads=4. Any scenario with threads=1 has zero contention.
+ *
+ * <p>To make the cardinality dimension meaningful under contention, each thread traverses the series
+ * in its own independent (per-thread shuffled) order — see {@link ThreadState}. This models
+ * independent threads recording to arbitrary series. A naive shared {@code i % cardinality} index
+ * would instead march all threads through the same series in lockstep (contention self-synchronizes
+ * them), collapsing high-cardinality multi-thread runs into a single rotating hotspot that behaves
+ * like cardinality=1.
  *
  * <p>It's useful to characterize the performance of the metrics system under contention, as some
  * high-performance applications may have many threads trying to record to the same series. It's
@@ -126,6 +133,9 @@ public class MetricRecordBenchmark {
     List<Attributes> attributesList;
     Span span;
     io.opentelemetry.context.Scope contextScope;
+    // Hands out a distinct seed to each recording thread's ThreadState so threads traverse the
+    // series in independent orders (see ThreadState).
+    final AtomicInteger threadSeedSequence = new AtomicInteger();
 
     @Setup
     @SuppressWarnings("MustBeClosedChecker")
@@ -185,6 +195,37 @@ public class MetricRecordBenchmark {
     }
   }
 
+  /**
+   * Per-thread series traversal order. Each recording thread shuffles {@code [0, cardinality)} with
+   * a distinct seed, so that at any given record the threads are recording to <em>different</em>
+   * series rather than marching through the same series in lockstep. Without this, the shared
+   * sequential {@code i % cardinality} index plus contention's self-synchronizing effect collapses
+   * the high-cardinality, multi-thread cases into a single rotating hotspot (effectively
+   * cardinality=1 contention), which does not reflect real-world recording where independent threads
+   * touch arbitrary series.
+   */
+  @State(Scope.Thread)
+  public static class ThreadState {
+    int[] order;
+
+    @Setup
+    public void setup(BenchmarkState benchmarkState) {
+      int cardinality = benchmarkState.cardinality;
+      order = new int[cardinality];
+      for (int i = 0; i < cardinality; i++) {
+        order[i] = i;
+      }
+      // Distinct seed per thread => independent permutations => no cross-thread lockstep.
+      Random random = new Random(INITIAL_SEED + benchmarkState.threadSeedSequence.getAndIncrement());
+      for (int i = cardinality - 1; i > 0; i--) {
+        int j = random.nextInt(i + 1);
+        int tmp = order[i];
+        order[i] = order[j];
+        order[j] = tmp;
+      }
+    }
+  }
+
   @Benchmark
   @Group("threads1")
   @GroupThreads(1)
@@ -192,8 +233,8 @@ public class MetricRecordBenchmark {
   @Warmup(iterations = 3, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OperationsPerInvocation(RECORDS_PER_INVOCATION)
-  public void record_SingleThread(BenchmarkState benchmarkState, ThreadParams threadParams) {
-    record(benchmarkState, threadParams);
+  public void record_SingleThread(BenchmarkState benchmarkState, ThreadState threadState) {
+    record(benchmarkState, threadState);
   }
 
   @Benchmark
@@ -203,18 +244,15 @@ public class MetricRecordBenchmark {
   @Warmup(iterations = 3, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OperationsPerInvocation(RECORDS_PER_INVOCATION)
-  public void record_MultipleThreads(BenchmarkState benchmarkState, ThreadParams threadParams) {
-    record(benchmarkState, threadParams);
+  public void record_MultipleThreads(BenchmarkState benchmarkState, ThreadState threadState) {
+    record(benchmarkState, threadState);
   }
 
-  private static void record(BenchmarkState benchmarkState, ThreadParams threadParams) {
-    int cardinality = benchmarkState.attributesList.size();
-    // Stagger each thread's starting series so threads don't march through the same series in
-    // lockstep (which would collapse high-cardinality multi-thread runs into a single hotspot).
-    // Single thread / cardinality=1 => offset 0, i.e. plain sequential access.
-    int offset = threadParams.getThreadIndex() * (cardinality / threadParams.getThreadCount());
+  private static void record(BenchmarkState benchmarkState, ThreadState threadState) {
+    // Per-thread series order: at a given i, different threads hit different series (no lockstep).
+    int[] order = threadState.order;
     for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
-      Attributes attributes = benchmarkState.attributesList.get((i + offset) % cardinality);
+      Attributes attributes = benchmarkState.attributesList.get(order[i % order.length]);
       long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
       benchmarkState.instrument.record(value, attributes);
     }
