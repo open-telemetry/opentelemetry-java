@@ -63,6 +63,31 @@ jmh {
   }
 }
 
+// Copy JSON results to a shared directory for later comparison:
+//   -PjmhResultsDir=scratch/benchmarks        target directory
+//   -PjmhLabel=baseline                       filename stem (default: sanitized project path, e.g. sdk-all)
+//
+// Example:
+//   ./gradlew :sdk:all:jmh -PjmhIncludeSingleClass=SpanRecordBenchmark \
+//       -PjmhResultsDir=scratch/benchmarks -PjmhLabel=baseline
+// produces: scratch/benchmarks/baseline.json
+val jmhResultsDir = project.findProperty("jmhResultsDir") as String?
+if (jmhResultsDir != null) {
+  val jmhLabel = (project.findProperty("jmhLabel") as String?)
+    ?: project.path.trimStart(':').replace(':', '-').ifEmpty { project.name }
+
+  val jmhCopyResults = tasks.register<Copy>("jmhCopyResults") {
+    description = "Copies JMH JSON results to jmhResultsDir for cross-run comparison."
+    from(layout.buildDirectory.file("results/jmh/results.json"))
+    into(rootProject.file(jmhResultsDir))
+    rename { "${jmhLabel}.json" }
+  }
+
+  tasks.named("jmh") {
+    finalizedBy(jmhCopyResults)
+  }
+}
+
 jmhReport {
   val buildDirectory = layout.buildDirectory.asFile.get()
   jmhResultPath = file("$buildDirectory/results/jmh/results.json").absolutePath
