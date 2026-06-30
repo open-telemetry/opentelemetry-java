@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 /**
  * {@link RandomSupplier} instance that doesn't use {@link java.util.concurrent.ThreadLocalRandom},
- * which is broken on most versions of Android (it uses the same seed everytime it starts up).
+ * which is broken on most versions of Android (it uses the same seed every time it starts up).
  */
 enum AndroidFriendlyRandomHolder implements Supplier<Random> {
   INSTANCE;
