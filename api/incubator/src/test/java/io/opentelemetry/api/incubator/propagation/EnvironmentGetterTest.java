@@ -49,7 +49,7 @@ class EnvironmentGetterTest {
     assertThat(EnvironmentGetter.getInstance().get(carrier, "otel.trace.id")).isEqualTo("val1");
     assertThat(EnvironmentGetter.getInstance().get(carrier, "otel-baggage-key")).isEqualTo("val2");
     assertThat(EnvironmentGetter.getInstance().get(carrier, "")).isEqualTo("val3");
-    // Carrier entries with unnormalized keys are not enumerated.
+    // Carrier entries with unnormalized names are not consulted by get().
     assertThat(EnvironmentGetter.getInstance().get(carrier, "otel-unreachable-key")).isNull();
   }
 
@@ -78,7 +78,7 @@ class EnvironmentGetterTest {
     assertThat(EnvironmentGetter.getInstance().keys(null)).isEmpty();
 
     assertThat(logCapturer.size()).isEqualTo(1);
-    logCapturer.assertContains("keys() called on EnvironmentGetter");
+    logCapturer.assertContains("returns only normalized environment variable names");
   }
 
   @Test
@@ -90,6 +90,7 @@ class EnvironmentGetterTest {
     carrier.put("KEY4", "value\u0000with\u0001control");
     carrier.put("KEY5", "value\nwith\nnewlines");
     carrier.put("KEY6", "value\u0080non-ascii");
+    carrier.put("KEY7", "");
 
     assertThat(EnvironmentGetter.getInstance().get(carrier, "key1")).isEqualTo("simple-value");
     assertThat(EnvironmentGetter.getInstance().get(carrier, "key2")).isEqualTo("value with spaces");
@@ -100,6 +101,7 @@ class EnvironmentGetterTest {
         .isEqualTo("value\nwith\nnewlines");
     assertThat(EnvironmentGetter.getInstance().get(carrier, "key6"))
         .isEqualTo("value\u0080non-ascii");
+    assertThat(EnvironmentGetter.getInstance().get(carrier, "key7")).isEmpty();
   }
 
   @Test
