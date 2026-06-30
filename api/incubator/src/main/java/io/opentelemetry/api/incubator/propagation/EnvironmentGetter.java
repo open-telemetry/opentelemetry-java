@@ -38,8 +38,8 @@ import javax.annotation.Nullable;
  *   <li>Prepends an underscore if the result would otherwise start with an ASCII digit
  * </ul>
  *
- * <p>Values are treated as opaque strings. Any propagation-format-specific validation or parsing
- * is the responsibility of the propagator, not this carrier.
+ * <p>Values are treated as opaque strings. Any propagation-format-specific validation or parsing is
+ * the responsibility of the propagator, not this carrier.
  *
  * <p>If the underlying carrier performs case-insensitive lookup, as Windows environment variable
  * lookup does, reading a normalized key may resolve an entry whose stored name differs only by

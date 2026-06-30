@@ -33,8 +33,8 @@ import javax.annotation.Nullable;
  *   <li>If the result would start with a digit, an underscore is prepended
  * </ul>
  *
- * <p>Values are treated as opaque strings. Any propagation-format-specific validation or parsing
- * is the responsibility of the propagator, not this carrier.
+ * <p>Values are treated as opaque strings. Any propagation-format-specific validation or parsing is
+ * the responsibility of the propagator, not this carrier.
  *
  * <p><strong>Size limitations:</strong> Environment variable sizes are platform-dependent (e.g.,
  * Windows limits name=value pairs to 32,767 characters). Callers are responsible for being aware of
