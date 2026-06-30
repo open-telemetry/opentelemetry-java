@@ -23,6 +23,8 @@ The following JMH parameters can be configured via `-P` flags:
 | `-PjmhTime=<duration>` | Time per measurement iteration | `-PjmhTime=2s` |
 | `-PjmhWarmupIterations=<n>` | Warmup iterations | `-PjmhWarmupIterations=3` |
 | `-PjmhWarmup=<duration>` | Time per warmup iteration | `-PjmhWarmup=1s` |
+| `-PjmhResultsDir=<path>` | Copy JSON results to this directory after the run | `-PjmhResultsDir=scratch/benchmarks` |
+| `-PjmhLabel=<stem>` | Filename stem for the copied JSON; only used when `jmhResultsDir` is set (default: sanitized project path, e.g. `sdk-all`) | `-PjmhLabel=baseline` |
 
 ## Composite builds
 

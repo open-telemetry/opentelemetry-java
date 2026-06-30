@@ -63,14 +63,6 @@ jmh {
   }
 }
 
-// Copy JSON results to a shared directory for later comparison:
-//   -PjmhResultsDir=scratch/benchmarks        target directory
-//   -PjmhLabel=baseline                       filename stem (default: sanitized project path, e.g. sdk-all)
-//
-// Example:
-//   ./gradlew :sdk:all:jmh -PjmhIncludeSingleClass=SpanRecordBenchmark \
-//       -PjmhResultsDir=scratch/benchmarks -PjmhLabel=baseline
-// produces: scratch/benchmarks/baseline.json
 val jmhResultsDir = project.findProperty("jmhResultsDir") as String?
 if (jmhResultsDir != null) {
   val jmhLabel = (project.findProperty("jmhLabel") as String?)
