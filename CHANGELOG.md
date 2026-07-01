@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### SDK
+
+#### Exporters
+
+* OTLP: Fix sign extension of `LogRecord` flags in the low-allocation log marshaler
+
 ## Version 1.63.0 (2026-06-05)
 
 ### API
