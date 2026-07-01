@@ -16,15 +16,23 @@ import javax.annotation.Nullable;
  *
  * @param <C> carrier of propagation fields, such as an http request.
  */
+@FunctionalInterface
 public interface TextMapGetter<C> {
 
   /**
    * Returns all the keys in the given carrier.
    *
+   * <p>The default method returns an empty {@link Iterable}.
+   *
    * @param carrier carrier of propagation fields, such as an http request.
    * @since 0.10.0
+   * @deprecated Propagators should use {@link #get(Object, String)} or {@link #getAll(Object,
+   *     String)} with known fields instead.
    */
-  Iterable<String> keys(C carrier);
+  @Deprecated
+  default Iterable<String> keys(C carrier) {
+    return Collections.emptyList();
+  }
 
   /**
    * Returns the first value of the given propagation {@code key} or returns {@code null}.
