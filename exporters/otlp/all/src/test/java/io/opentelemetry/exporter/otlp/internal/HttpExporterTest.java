@@ -9,7 +9,9 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -22,12 +24,18 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
 class HttpExporterTest {
+
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(HttpExporter.class);
 
   @ParameterizedTest
   @EnumSource
@@ -197,14 +205,128 @@ class HttpExporterTest {
     }
   }
 
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_httpJsonErrorBodyUsesBodyTextWithoutGrpcParseWarning() {
+    HttpSender mockSender = Mockito.mock(HttpSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockSender,
+            MeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://testing:1234"),
+            false);
+
+    doAnswer(
+            invoc -> {
+              Consumer<HttpResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(
+                  new FakeHttpResponse(
+                      500,
+                      "Internal Server Error",
+                      "{\"error\":\"grpc not supported\"}".getBytes(StandardCharsets.UTF_8)));
+              return null;
+            })
+        .when(mockSender)
+        .send(any(), any(), any());
+
+    assertThat(exporter.export(mockMarshaller, 1).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+
+    logs.assertContains("Response body: {\"error\":\"grpc not supported\"}");
+    logs.assertDoesNotContain("Unable to parse response body");
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_nullErrorBodyUsesMissingBodyMessage() {
+    HttpSender mockSender = Mockito.mock(HttpSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockSender,
+            MeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://testing:1234"),
+            false);
+
+    doAnswer(
+            invoc -> {
+              Consumer<HttpResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(
+                  new HttpResponse() {
+                    @Override
+                    public int getStatusCode() {
+                      return 500;
+                    }
+
+                    @Override
+                    public String getStatusMessage() {
+                      return "Internal Server Error";
+                    }
+
+                    @Override
+                    public byte[] getResponseBody() {
+                      return null;
+                    }
+                  });
+              return null;
+            })
+        .when(mockSender)
+        .send(any(), any(), any());
+
+    assertThat(exporter.export(mockMarshaller, 1).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+
+    logs.assertContains("Response body missing, HTTP status message: Internal Server Error");
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void export_whitespaceErrorBodyFallsBackToStatusMessage() {
+    HttpSender mockSender = Mockito.mock(HttpSender.class);
+    Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+    HttpExporter exporter =
+        new HttpExporter(
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER),
+            mockSender,
+            MeterProvider::noop,
+            InternalTelemetryVersion.LATEST,
+            URI.create("http://testing:1234"),
+            false);
+
+    doAnswer(
+            invoc -> {
+              Consumer<HttpResponse> onResponse = invoc.getArgument(1);
+              onResponse.accept(
+                  new FakeHttpResponse(
+                      500, "Internal Server Error", "   ".getBytes(StandardCharsets.UTF_8)));
+              return null;
+            })
+        .when(mockSender)
+        .send(any(), any(), any());
+
+    assertThat(exporter.export(mockMarshaller, 1).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+
+    logs.assertContains("HTTP status message: Internal Server Error");
+    logs.assertDoesNotContain("Response body:");
+  }
+
   private static class FakeHttpResponse implements HttpResponse {
 
     final int statusCode;
     final String statusMessage;
+    final byte[] responseBody;
 
     FakeHttpResponse(int statusCode, String statusMessage) {
+      this(statusCode, statusMessage, new byte[0]);
+    }
+
+    FakeHttpResponse(int statusCode, String statusMessage, byte[] responseBody) {
       this.statusCode = statusCode;
       this.statusMessage = statusMessage;
+      this.responseBody = responseBody;
     }
 
     @Override
@@ -219,7 +341,7 @@ class HttpExporterTest {
 
     @Override
     public byte[] getResponseBody() {
-      return new byte[0];
+      return responseBody;
     }
   }
 }
