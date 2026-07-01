@@ -351,6 +351,18 @@ class TracerShimTest {
   }
 
   @Test
+  void extract_emptyCarrier_withActiveSpan_returnsNull() {
+    Span span = tracerShim.buildSpan("one").start();
+    try (Scope scope = tracerShim.activateSpan(span)) {
+      SpanContext result =
+          tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(Collections.emptyMap()));
+      assertThat(result).isNull();
+    } finally {
+      span.finish();
+    }
+  }
+
+  @Test
   @SuppressLogger(TracerShim.class)
   void close_OpenTelemetrySdk() {
     SdkTracerProvider sdkProvider = mock(SdkTracerProvider.class);

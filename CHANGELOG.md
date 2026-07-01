@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Shims
+
+* OpenTracing: Return null from `Tracer.extract` when the carrier has no span context
+  ([#8505](https://github.com/open-telemetry/opentelemetry-java/pull/8505))
+
 ## Version 1.63.0 (2026-06-05)
 
 ### API
