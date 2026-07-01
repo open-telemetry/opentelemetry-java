@@ -25,6 +25,8 @@ dependencies {
   compileOnly(project(":sdk-extensions:autoconfigure-spi"))
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":api:incubator"))
+  testImplementation(project(":sdk-extensions:autoconfigure-spi"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("com.google.guava:guava-testlib")
