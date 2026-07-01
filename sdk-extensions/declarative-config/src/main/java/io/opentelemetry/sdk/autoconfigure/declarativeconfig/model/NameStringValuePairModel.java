@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,32 +16,18 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class NameStringValuePairModel {
 
-  /**
-   * The name of the pair. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("name")
-  @JsonPropertyDescription("The name of the pair.\nProperty is required and must be non-null.\n")
   @Nullable
   private String name;
 
-  /**
-   * The value of the pair. Property must be present, but if null the behavior is dependent on usage
-   * context.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("value")
-  @JsonPropertyDescription(
-      "The value of the pair.\nProperty must be present, but if null the behavior is dependent on usage context.\n")
   @Nullable
   private String value;
 
   /**
-   * The name of the pair. Property is required and must be non-null.
+   * The name of the pair.
    *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("name")
   @Nullable
@@ -56,10 +41,9 @@ public class NameStringValuePairModel {
   }
 
   /**
-   * The value of the pair. Property must be present, but if null the behavior is dependent on usage
-   * context.
+   * The value of the pair.
    *
-   * <p>(Required)
+   * <p>Property must be present, but if null the behavior is dependent on usage context.
    */
   @JsonProperty("value")
   @Nullable

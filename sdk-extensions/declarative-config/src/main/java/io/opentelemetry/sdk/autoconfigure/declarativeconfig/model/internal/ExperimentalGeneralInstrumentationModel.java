@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -54,41 +53,17 @@ public class ExperimentalGeneralInstrumentationModel {
   @Nullable
   private ExperimentalSanitizationModel sanitization;
 
-  /**
-   * Configure semantic convention stability opt-in as a comma-separated list. This property follows
-   * the format and semantics of the OTEL_SEMCONV_STABILITY_OPT_IN environment variable. Controls
-   * the emission of stable vs. experimental semantic conventions for instrumentation. This setting
-   * is only intended for migrating from experimental to stable semantic conventions.
-   *
-   * <p>Known values include: - http: Emit stable HTTP and networking conventions only - http/dup:
-   * Emit both old and stable HTTP and networking conventions (for phased migration) - database:
-   * Emit stable database conventions only - database/dup: Emit both old and stable database
-   * conventions (for phased migration) - rpc: Emit stable RPC conventions only - rpc/dup: Emit both
-   * experimental and stable RPC conventions (for phased migration) - messaging: Emit stable
-   * messaging conventions only - messaging/dup: Emit both old and stable messaging conventions (for
-   * phased migration) - code: Emit stable code conventions only - code/dup: Emit both old and
-   * stable code conventions (for phased migration)
-   *
-   * <p>Multiple values can be specified as a comma-separated list (e.g., "http,database/dup").
-   * Additional signal types may be supported in future versions.
-   *
-   * <p>Domain-specific semconv properties (e.g., .instrumentation/development.general.db.semconv)
-   * take precedence over this general setting.
-   *
-   * <p>See: - HTTP migration:
-   * https://opentelemetry.io/docs/specs/semconv/non-normative/http-migration/ - Database migration:
-   * https://opentelemetry.io/docs/specs/semconv/database/ - RPC:
-   * https://opentelemetry.io/docs/specs/semconv/rpc/ - Messaging:
-   * https://opentelemetry.io/docs/specs/semconv/messaging/messaging-spans/ If omitted or null, no
-   * opt-in is configured and instrumentations continue emitting their default semantic convention
-   * version.
-   */
   @JsonProperty("stability_opt_in_list")
-  @JsonPropertyDescription(
-      "Configure semantic convention stability opt-in as a comma-separated list.\nThis property follows the format and semantics of the OTEL_SEMCONV_STABILITY_OPT_IN environment variable.\nControls the emission of stable vs. experimental semantic conventions for instrumentation.\nThis setting is only intended for migrating from experimental to stable semantic conventions.\n\nKnown values include:\n- http: Emit stable HTTP and networking conventions only\n- http/dup: Emit both old and stable HTTP and networking conventions (for phased migration)\n- database: Emit stable database conventions only\n- database/dup: Emit both old and stable database conventions (for phased migration)\n- rpc: Emit stable RPC conventions only\n- rpc/dup: Emit both experimental and stable RPC conventions (for phased migration)\n- messaging: Emit stable messaging conventions only\n- messaging/dup: Emit both old and stable messaging conventions (for phased migration)\n- code: Emit stable code conventions only\n- code/dup: Emit both old and stable code conventions (for phased migration)\n\nMultiple values can be specified as a comma-separated list (e.g., \"http,database/dup\").\nAdditional signal types may be supported in future versions.\n\nDomain-specific semconv properties (e.g., .instrumentation/development.general.db.semconv) take precedence over this general setting.\n\nSee:\n- HTTP migration: https://opentelemetry.io/docs/specs/semconv/non-normative/http-migration/\n- Database migration: https://opentelemetry.io/docs/specs/semconv/database/\n- RPC: https://opentelemetry.io/docs/specs/semconv/rpc/\n- Messaging: https://opentelemetry.io/docs/specs/semconv/messaging/messaging-spans/\nIf omitted or null, no opt-in is configured and instrumentations continue emitting their default semantic convention version.\n")
   @Nullable
   private String stabilityOptInList;
 
+  /**
+   * Configure instrumentations following the http semantic conventions.
+   *
+   * <p>See http semantic conventions: https://opentelemetry.io/docs/specs/semconv/http/
+   *
+   * <p>If omitted, defaults as described in ExperimentalHttpInstrumentation are used.
+   */
   @JsonProperty("http")
   @Nullable
   public ExperimentalHttpInstrumentationModel getHttp() {
@@ -101,6 +76,14 @@ public class ExperimentalGeneralInstrumentationModel {
     return this;
   }
 
+  /**
+   * Configure instrumentations following the code semantic conventions.
+   *
+   * <p>See code semantic conventions:
+   * https://opentelemetry.io/docs/specs/semconv/registry/attributes/code/
+   *
+   * <p>If omitted, defaults as described in ExperimentalCodeInstrumentation are used.
+   */
   @JsonProperty("code")
   @Nullable
   public ExperimentalCodeInstrumentationModel getCode() {
@@ -113,6 +96,13 @@ public class ExperimentalGeneralInstrumentationModel {
     return this;
   }
 
+  /**
+   * Configure instrumentations following the database semantic conventions.
+   *
+   * <p>See database semantic conventions: https://opentelemetry.io/docs/specs/semconv/database/
+   *
+   * <p>If omitted, defaults as described in ExperimentalDbInstrumentation are used.
+   */
   @JsonProperty("db")
   @Nullable
   public ExperimentalDbInstrumentationModel getDb() {
@@ -124,6 +114,13 @@ public class ExperimentalGeneralInstrumentationModel {
     return this;
   }
 
+  /**
+   * Configure instrumentations following the GenAI semantic conventions.
+   *
+   * <p>See GenAI semantic conventions: https://opentelemetry.io/docs/specs/semconv/gen-ai/
+   *
+   * <p>If omitted, defaults as described in ExperimentalGenAiInstrumentation are used.
+   */
   @JsonProperty("gen_ai")
   @Nullable
   public ExperimentalGenAiInstrumentationModel getGenAi() {
@@ -136,6 +133,13 @@ public class ExperimentalGeneralInstrumentationModel {
     return this;
   }
 
+  /**
+   * Configure instrumentations following the messaging semantic conventions.
+   *
+   * <p>See messaging semantic conventions: https://opentelemetry.io/docs/specs/semconv/messaging/
+   *
+   * <p>If omitted, defaults as described in ExperimentalMessagingInstrumentation are used.
+   */
   @JsonProperty("messaging")
   @Nullable
   public ExperimentalMessagingInstrumentationModel getMessaging() {
@@ -148,6 +152,13 @@ public class ExperimentalGeneralInstrumentationModel {
     return this;
   }
 
+  /**
+   * Configure instrumentations following the RPC semantic conventions.
+   *
+   * <p>See RPC semantic conventions: https://opentelemetry.io/docs/specs/semconv/rpc/
+   *
+   * <p>If omitted, defaults as described in ExperimentalRpcInstrumentation are used.
+   */
   @JsonProperty("rpc")
   @Nullable
   public ExperimentalRpcInstrumentationModel getRpc() {
@@ -159,6 +170,11 @@ public class ExperimentalGeneralInstrumentationModel {
     return this;
   }
 
+  /**
+   * Configure general sanitization options.
+   *
+   * <p>If omitted, defaults as described in ExperimentalSanitization are used.
+   */
   @JsonProperty("sanitization")
   @Nullable
   public ExperimentalSanitizationModel getSanitization() {
@@ -172,33 +188,57 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   /**
-   * Configure semantic convention stability opt-in as a comma-separated list. This property follows
-   * the format and semantics of the OTEL_SEMCONV_STABILITY_OPT_IN environment variable. Controls
-   * the emission of stable vs. experimental semantic conventions for instrumentation. This setting
-   * is only intended for migrating from experimental to stable semantic conventions.
+   * Configure semantic convention stability opt-in as a comma-separated list.
    *
-   * <p>Known values include: - http: Emit stable HTTP and networking conventions only - http/dup:
-   * Emit both old and stable HTTP and networking conventions (for phased migration) - database:
-   * Emit stable database conventions only - database/dup: Emit both old and stable database
-   * conventions (for phased migration) - rpc: Emit stable RPC conventions only - rpc/dup: Emit both
-   * experimental and stable RPC conventions (for phased migration) - messaging: Emit stable
-   * messaging conventions only - messaging/dup: Emit both old and stable messaging conventions (for
-   * phased migration) - code: Emit stable code conventions only - code/dup: Emit both old and
-   * stable code conventions (for phased migration)
+   * <p>This property follows the format and semantics of the OTEL_SEMCONV_STABILITY_OPT_IN
+   * environment variable.
+   *
+   * <p>Controls the emission of stable vs. experimental semantic conventions for instrumentation.
+   *
+   * <p>This setting is only intended for migrating from experimental to stable semantic
+   * conventions.
+   *
+   * <p>Known values include:
+   *
+   * <p>- http: Emit stable HTTP and networking conventions only
+   *
+   * <p>- http/dup: Emit both old and stable HTTP and networking conventions (for phased migration)
+   *
+   * <p>- database: Emit stable database conventions only
+   *
+   * <p>- database/dup: Emit both old and stable database conventions (for phased migration)
+   *
+   * <p>- rpc: Emit stable RPC conventions only
+   *
+   * <p>- rpc/dup: Emit both experimental and stable RPC conventions (for phased migration)
+   *
+   * <p>- messaging: Emit stable messaging conventions only
+   *
+   * <p>- messaging/dup: Emit both old and stable messaging conventions (for phased migration)
+   *
+   * <p>- code: Emit stable code conventions only
+   *
+   * <p>- code/dup: Emit both old and stable code conventions (for phased migration)
    *
    * <p>Multiple values can be specified as a comma-separated list (e.g., "http,database/dup").
-   * Additional signal types may be supported in future versions.
+   *
+   * <p>Additional signal types may be supported in future versions.
    *
    * <p>Domain-specific semconv properties (e.g., .instrumentation/development.general.db.semconv)
    * take precedence over this general setting.
    *
-   * <p>See: - HTTP migration:
-   * https://opentelemetry.io/docs/specs/semconv/non-normative/http-migration/ - Database migration:
-   * https://opentelemetry.io/docs/specs/semconv/database/ - RPC:
-   * https://opentelemetry.io/docs/specs/semconv/rpc/ - Messaging:
-   * https://opentelemetry.io/docs/specs/semconv/messaging/messaging-spans/ If omitted or null, no
-   * opt-in is configured and instrumentations continue emitting their default semantic convention
-   * version.
+   * <p>See:
+   *
+   * <p>- HTTP migration: https://opentelemetry.io/docs/specs/semconv/non-normative/http-migration/
+   *
+   * <p>- Database migration: https://opentelemetry.io/docs/specs/semconv/database/
+   *
+   * <p>- RPC: https://opentelemetry.io/docs/specs/semconv/rpc/
+   *
+   * <p>- Messaging: https://opentelemetry.io/docs/specs/semconv/messaging/messaging-spans/
+   *
+   * <p>If omitted or null, no opt-in is configured and instrumentations continue emitting their
+   * default semantic convention version.
    */
   @JsonProperty("stability_opt_in_list")
   @Nullable

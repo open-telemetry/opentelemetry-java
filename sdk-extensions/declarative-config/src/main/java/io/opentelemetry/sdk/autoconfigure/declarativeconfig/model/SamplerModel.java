@@ -64,6 +64,11 @@ public class SamplerModel {
   private Map<String, SamplerPropertyModel> additionalProperties =
       new LinkedHashMap<String, SamplerPropertyModel>();
 
+  /**
+   * Configure sampler to be always_off.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("always_off")
   @Nullable
   public AlwaysOffSamplerModel getAlwaysOff() {
@@ -75,6 +80,11 @@ public class SamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be always_on.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("always_on")
   @Nullable
   public AlwaysOnSamplerModel getAlwaysOn() {
@@ -86,6 +96,11 @@ public class SamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be composite.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("composite/development")
   @Nullable
   public ExperimentalComposableSamplerModel getCompositeDevelopment() {
@@ -98,6 +113,11 @@ public class SamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be jaeger_remote.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("jaeger_remote/development")
   @Nullable
   public ExperimentalJaegerRemoteSamplerModel getJaegerRemoteDevelopment() {
@@ -110,6 +130,11 @@ public class SamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be parent_based.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("parent_based")
   @Nullable
   public ParentBasedSamplerModel getParentBased() {
@@ -121,6 +146,11 @@ public class SamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be probability.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("probability/development")
   @Nullable
   public ExperimentalProbabilitySamplerModel getProbabilityDevelopment() {
@@ -133,6 +163,11 @@ public class SamplerModel {
     return this;
   }
 
+  /**
+   * Configure sampler to be trace_id_ratio_based.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("trace_id_ratio_based")
   @Nullable
   public TraceIdRatioBasedSamplerModel getTraceIdRatioBased() {

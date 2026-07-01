@@ -29,6 +29,11 @@ public class MetricProducerModel {
   private Map<String, MetricProducerPropertyModel> additionalProperties =
       new LinkedHashMap<String, MetricProducerPropertyModel>();
 
+  /**
+   * Configure metric producer to be opencensus.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("opencensus")
   @Nullable
   public OpenCensusMetricProducerModel getOpencensus() {

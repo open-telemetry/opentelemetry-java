@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalInstrumentationModel;
@@ -43,27 +42,11 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class OpenTelemetryConfigurationModel {
 
-  /**
-   * The file format version. Represented as a string including the semver major, minor version
-   * numbers (and optionally the meta tag). For example: "0.4", "1.0-rc.2", "1.0" (after stable
-   * release). See
-   * https://github.com/open-telemetry/opentelemetry-configuration/blob/main/VERSIONING.md for more
-   * details. The yaml format is documented at
-   * https://github.com/open-telemetry/opentelemetry-configuration/tree/main/schema Property is
-   * required and must be non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("file_format")
-  @JsonPropertyDescription(
-      "The file format version.\nRepresented as a string including the semver major, minor version numbers (and optionally the meta tag). For example: \"0.4\", \"1.0-rc.2\", \"1.0\" (after stable release).\nSee https://github.com/open-telemetry/opentelemetry-configuration/blob/main/VERSIONING.md for more details.\nThe yaml format is documented at https://github.com/open-telemetry/opentelemetry-configuration/tree/main/schema\nProperty is required and must be non-null.\n")
   @Nullable
   private String fileFormat;
 
-  /** Configure if the SDK is disabled or not. If omitted or null, false is used. */
   @JsonProperty("disabled")
-  @JsonPropertyDescription(
-      "Configure if the SDK is disabled or not.\nIf omitted or null, false is used.\n")
   @Nullable
   private Boolean disabled;
 
@@ -107,15 +90,18 @@ public class OpenTelemetryConfigurationModel {
   private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
   /**
-   * The file format version. Represented as a string including the semver major, minor version
-   * numbers (and optionally the meta tag). For example: "0.4", "1.0-rc.2", "1.0" (after stable
-   * release). See
-   * https://github.com/open-telemetry/opentelemetry-configuration/blob/main/VERSIONING.md for more
-   * details. The yaml format is documented at
-   * https://github.com/open-telemetry/opentelemetry-configuration/tree/main/schema Property is
-   * required and must be non-null.
+   * The file format version.
    *
-   * <p>(Required)
+   * <p>Represented as a string including the semver major, minor version numbers (and optionally
+   * the meta tag). For example: "0.4", "1.0-rc.2", "1.0" (after stable release).
+   *
+   * <p>See https://github.com/open-telemetry/opentelemetry-configuration/blob/main/VERSIONING.md
+   * for more details.
+   *
+   * <p>The yaml format is documented at
+   * https://github.com/open-telemetry/opentelemetry-configuration/tree/main/schema
+   *
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("file_format")
   @Nullable
@@ -128,7 +114,11 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
-  /** Configure if the SDK is disabled or not. If omitted or null, false is used. */
+  /**
+   * Configure if the SDK is disabled or not.
+   *
+   * <p>If omitted or null, false is used.
+   */
   @JsonProperty("disabled")
   @Nullable
   public Boolean getDisabled() {
@@ -140,6 +130,61 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Configure the log level of the internal logger used by the SDK.
+   *
+   * <p>Values include:
+   *
+   * <p>* debug: debug, severity number 5.
+   *
+   * <p>* debug2: debug2, severity number 6.
+   *
+   * <p>* debug3: debug3, severity number 7.
+   *
+   * <p>* debug4: debug4, severity number 8.
+   *
+   * <p>* error: error, severity number 17.
+   *
+   * <p>* error2: error2, severity number 18.
+   *
+   * <p>* error3: error3, severity number 19.
+   *
+   * <p>* error4: error4, severity number 20.
+   *
+   * <p>* fatal: fatal, severity number 21.
+   *
+   * <p>* fatal2: fatal2, severity number 22.
+   *
+   * <p>* fatal3: fatal3, severity number 23.
+   *
+   * <p>* fatal4: fatal4, severity number 24.
+   *
+   * <p>* info: info, severity number 9.
+   *
+   * <p>* info2: info2, severity number 10.
+   *
+   * <p>* info3: info3, severity number 11.
+   *
+   * <p>* info4: info4, severity number 12.
+   *
+   * <p>* trace: trace, severity number 1.
+   *
+   * <p>* trace2: trace2, severity number 2.
+   *
+   * <p>* trace3: trace3, severity number 3.
+   *
+   * <p>* trace4: trace4, severity number 4.
+   *
+   * <p>* warn: warn, severity number 13.
+   *
+   * <p>* warn2: warn2, severity number 14.
+   *
+   * <p>* warn3: warn3, severity number 15.
+   *
+   * <p>* warn4: warn4, severity number 16.
+   *
+   * <p>If omitted, INFO is used.
+   */
   @JsonProperty("log_level")
   @Nullable
   public OpenTelemetryConfigurationModel.SeverityNumber getLogLevel() {
@@ -152,6 +197,11 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Configure general attribute limits. See also tracer_provider.limits, logger_provider.limits.
+   *
+   * <p>If omitted, default values as described in AttributeLimits are used.
+   */
   @JsonProperty("attribute_limits")
   @Nullable
   public AttributeLimitsModel getAttributeLimits() {
@@ -163,6 +213,11 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Configure logger provider.
+   *
+   * <p>If omitted, a noop logger provider is used.
+   */
   @JsonProperty("logger_provider")
   @Nullable
   public LoggerProviderModel getLoggerProvider() {
@@ -174,6 +229,11 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Configure meter provider.
+   *
+   * <p>If omitted, a noop meter provider is used.
+   */
   @JsonProperty("meter_provider")
   @Nullable
   public MeterProviderModel getMeterProvider() {
@@ -185,6 +245,11 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Configure text map context propagators.
+   *
+   * <p>If omitted, a noop propagator is used.
+   */
   @JsonProperty("propagator")
   @Nullable
   public PropagatorModel getPropagator() {
@@ -196,6 +261,11 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Configure tracer provider.
+   *
+   * <p>If omitted, a noop tracer provider is used.
+   */
   @JsonProperty("tracer_provider")
   @Nullable
   public TracerProviderModel getTracerProvider() {
@@ -207,6 +277,11 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Configure resource for all signals.
+   *
+   * <p>If omitted, the default resource is used.
+   */
   @JsonProperty("resource")
   @Nullable
   public ResourceModel getResource() {
@@ -218,6 +293,11 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Configure instrumentation.
+   *
+   * <p>If omitted, instrumentation defaults are used.
+   */
   @JsonProperty("instrumentation/development")
   @Nullable
   public ExperimentalInstrumentationModel getInstrumentationDevelopment() {
@@ -230,6 +310,17 @@ public class OpenTelemetryConfigurationModel {
     return this;
   }
 
+  /**
+   * Defines configuration parameters specific to a particular OpenTelemetry distribution or vendor.
+   *
+   * <p>This section provides a standardized location for distribution-specific settings
+   *
+   * <p>that are not part of the OpenTelemetry configuration model.
+   *
+   * <p>It allows vendors to expose their own extensions and general configuration options.
+   *
+   * <p>If omitted, distribution defaults are used.
+   */
   @JsonProperty("distribution")
   @Nullable
   public DistributionModel getDistribution() {

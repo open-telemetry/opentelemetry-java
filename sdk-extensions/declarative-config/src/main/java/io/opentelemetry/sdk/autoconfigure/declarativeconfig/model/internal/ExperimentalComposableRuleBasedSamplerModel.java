@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -18,23 +17,21 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalComposableRuleBasedSamplerModel {
 
-  /**
-   * The rules for the sampler, matched in order. Each rule can have multiple match conditions. All
-   * conditions must match for the rule to match. If no conditions are specified, the rule matches
-   * all spans that reach it. If no rules match, the span is not sampled. If omitted, no span is
-   * sampled.
-   */
   @JsonProperty("rules")
-  @JsonPropertyDescription(
-      "The rules for the sampler, matched in order.\nEach rule can have multiple match conditions. All conditions must match for the rule to match.\nIf no conditions are specified, the rule matches all spans that reach it.\nIf no rules match, the span is not sampled.\nIf omitted, no span is sampled.\n")
   @Nullable
   private List<ExperimentalComposableRuleBasedSamplerRuleModel> rules;
 
   /**
-   * The rules for the sampler, matched in order. Each rule can have multiple match conditions. All
-   * conditions must match for the rule to match. If no conditions are specified, the rule matches
-   * all spans that reach it. If no rules match, the span is not sampled. If omitted, no span is
-   * sampled.
+   * The rules for the sampler, matched in order.
+   *
+   * <p>Each rule can have multiple match conditions. All conditions must match for the rule to
+   * match.
+   *
+   * <p>If no conditions are specified, the rule matches all spans that reach it.
+   *
+   * <p>If no rules match, the span is not sampled.
+   *
+   * <p>If omitted, no span is sampled.
    */
   @JsonProperty("rules")
   @Nullable

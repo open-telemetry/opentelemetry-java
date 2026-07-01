@@ -41,6 +41,11 @@ public class TextMapPropagatorModel {
   private Map<String, TextMapPropagatorPropertyModel> additionalProperties =
       new LinkedHashMap<String, TextMapPropagatorPropertyModel>();
 
+  /**
+   * Include the w3c trace context propagator.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("tracecontext")
   @Nullable
   public TraceContextPropagatorModel getTracecontext() {
@@ -52,6 +57,11 @@ public class TextMapPropagatorModel {
     return this;
   }
 
+  /**
+   * Include the w3c baggage propagator.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("baggage")
   @Nullable
   public BaggagePropagatorModel getBaggage() {
@@ -63,6 +73,11 @@ public class TextMapPropagatorModel {
     return this;
   }
 
+  /**
+   * Include the zipkin b3 propagator.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("b3")
   @Nullable
   public B3PropagatorModel getB3() {
@@ -74,6 +89,11 @@ public class TextMapPropagatorModel {
     return this;
   }
 
+  /**
+   * Include the zipkin b3 multi propagator.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("b3multi")
   @Nullable
   public B3MultiPropagatorModel getB3multi() {

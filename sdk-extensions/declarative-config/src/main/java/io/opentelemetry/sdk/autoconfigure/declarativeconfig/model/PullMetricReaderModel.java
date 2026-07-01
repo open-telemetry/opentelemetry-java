@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -18,15 +17,11 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class PullMetricReaderModel {
 
-  /** (Required) */
   @JsonProperty("exporter")
   @Nullable
   private PullMetricExporterModel exporter;
 
-  /** Configure metric producers. If omitted, no metric producers are added. */
   @JsonProperty("producers")
-  @JsonPropertyDescription(
-      "Configure metric producers.\nIf omitted, no metric producers are added.\n")
   @Nullable
   private List<MetricProducerModel> producers;
 
@@ -34,7 +29,11 @@ public class PullMetricReaderModel {
   @Nullable
   private CardinalityLimitsModel cardinalityLimits;
 
-  /** (Required) */
+  /**
+   * Configure exporter.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("exporter")
   @Nullable
   public PullMetricExporterModel getExporter() {
@@ -46,7 +45,11 @@ public class PullMetricReaderModel {
     return this;
   }
 
-  /** Configure metric producers. If omitted, no metric producers are added. */
+  /**
+   * Configure metric producers.
+   *
+   * <p>If omitted, no metric producers are added.
+   */
   @JsonProperty("producers")
   @Nullable
   public List<MetricProducerModel> getProducers() {
@@ -58,6 +61,11 @@ public class PullMetricReaderModel {
     return this;
   }
 
+  /**
+   * Configure cardinality limits.
+   *
+   * <p>If omitted, default values as described in CardinalityLimits are used.
+   */
   @JsonProperty("cardinality_limits")
   @Nullable
   public CardinalityLimitsModel getCardinalityLimits() {

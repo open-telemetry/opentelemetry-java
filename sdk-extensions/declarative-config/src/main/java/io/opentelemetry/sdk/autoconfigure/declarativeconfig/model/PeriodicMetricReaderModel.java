@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -25,42 +24,23 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class PeriodicMetricReaderModel {
 
-  /**
-   * Configure delay interval (in milliseconds) between start of two consecutive exports. Value must
-   * be non-negative. If omitted or null, 60000 is used.
-   */
   @JsonProperty("interval")
-  @JsonPropertyDescription(
-      "Configure delay interval (in milliseconds) between start of two consecutive exports. \nValue must be non-negative.\nIf omitted or null, 60000 is used.\n")
   @Nullable
   private Integer interval;
 
-  /**
-   * Configure maximum allowed time (in milliseconds) to export data. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 30000 is used.
-   */
   @JsonProperty("timeout")
-  @JsonPropertyDescription(
-      "Configure maximum allowed time (in milliseconds) to export data. \nValue must be non-negative. A value of 0 indicates no limit (infinity).\nIf omitted or null, 30000 is used.\n")
   @Nullable
   private Integer timeout;
 
-  /** Configure maximum export batch size. If omitted or null, no limit is used. */
   @JsonProperty("max_export_batch_size/development")
-  @JsonPropertyDescription(
-      "Configure maximum export batch size.\nIf omitted or null, no limit is used.\n")
   @Nullable
   private Integer maxExportBatchSizeDevelopment;
 
-  /** (Required) */
   @JsonProperty("exporter")
   @Nullable
   private PushMetricExporterModel exporter;
 
-  /** Configure metric producers. If omitted, no metric producers are added. */
   @JsonProperty("producers")
-  @JsonPropertyDescription(
-      "Configure metric producers.\nIf omitted, no metric producers are added.\n")
   @Nullable
   private List<MetricProducerModel> producers;
 
@@ -69,8 +49,11 @@ public class PeriodicMetricReaderModel {
   private CardinalityLimitsModel cardinalityLimits;
 
   /**
-   * Configure delay interval (in milliseconds) between start of two consecutive exports. Value must
-   * be non-negative. If omitted or null, 60000 is used.
+   * Configure delay interval (in milliseconds) between start of two consecutive exports.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 60000 is used.
    */
   @JsonProperty("interval")
   @Nullable
@@ -84,8 +67,11 @@ public class PeriodicMetricReaderModel {
   }
 
   /**
-   * Configure maximum allowed time (in milliseconds) to export data. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 30000 is used.
+   * Configure maximum allowed time (in milliseconds) to export data.
+   *
+   * <p>Value must be non-negative. A value of 0 indicates no limit (infinity).
+   *
+   * <p>If omitted or null, 30000 is used.
    */
   @JsonProperty("timeout")
   @Nullable
@@ -98,7 +84,11 @@ public class PeriodicMetricReaderModel {
     return this;
   }
 
-  /** Configure maximum export batch size. If omitted or null, no limit is used. */
+  /**
+   * Configure maximum export batch size.
+   *
+   * <p>If omitted or null, no limit is used.
+   */
   @JsonProperty("max_export_batch_size/development")
   @Nullable
   public Integer getMaxExportBatchSizeDevelopment() {
@@ -111,7 +101,11 @@ public class PeriodicMetricReaderModel {
     return this;
   }
 
-  /** (Required) */
+  /**
+   * Configure exporter.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("exporter")
   @Nullable
   public PushMetricExporterModel getExporter() {
@@ -123,7 +117,11 @@ public class PeriodicMetricReaderModel {
     return this;
   }
 
-  /** Configure metric producers. If omitted, no metric producers are added. */
+  /**
+   * Configure metric producers.
+   *
+   * <p>If omitted, no metric producers are added.
+   */
   @JsonProperty("producers")
   @Nullable
   public List<MetricProducerModel> getProducers() {
@@ -135,6 +133,11 @@ public class PeriodicMetricReaderModel {
     return this;
   }
 
+  /**
+   * Configure cardinality limits.
+   *
+   * <p>If omitted, default values as described in CardinalityLimits are used.
+   */
   @JsonProperty("cardinality_limits")
   @Nullable
   public CardinalityLimitsModel getCardinalityLimits() {

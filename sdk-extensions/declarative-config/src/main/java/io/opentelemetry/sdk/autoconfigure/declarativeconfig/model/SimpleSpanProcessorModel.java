@@ -16,12 +16,15 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SimpleSpanProcessorModel {
 
-  /** (Required) */
   @JsonProperty("exporter")
   @Nullable
   private SpanExporterModel exporter;
 
-  /** (Required) */
+  /**
+   * Configure exporter.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("exporter")
   @Nullable
   public SpanExporterModel getExporter() {

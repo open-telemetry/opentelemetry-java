@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,13 +16,15 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalComposableProbabilitySamplerModel {
 
-  /** Configure ratio. If omitted or null, 1.0 is used. */
   @JsonProperty("ratio")
-  @JsonPropertyDescription("Configure ratio.\nIf omitted or null, 1.0 is used.\n")
   @Nullable
   private Double ratio;
 
-  /** Configure ratio. If omitted or null, 1.0 is used. */
+  /**
+   * Configure ratio.
+   *
+   * <p>If omitted or null, 1.0 is used.
+   */
   @JsonProperty("ratio")
   @Nullable
   public Double getRatio() {

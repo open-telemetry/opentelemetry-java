@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
@@ -29,35 +28,19 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalPrometheusMetricExporterModel {
 
-  /** Configure host. If omitted or null, localhost is used. */
   @JsonProperty("host")
-  @JsonPropertyDescription("Configure host.\nIf omitted or null, localhost is used.\n")
   @Nullable
   private String host;
 
-  /** Configure port. If omitted or null, 9464 is used. */
   @JsonProperty("port")
-  @JsonPropertyDescription("Configure port.\nIf omitted or null, 9464 is used.\n")
   @Nullable
   private Integer port;
 
-  /**
-   * Configure Prometheus Exporter to produce metrics with scope labels. If omitted or null, true is
-   * used.
-   */
   @JsonProperty("scope_info_enabled")
-  @JsonPropertyDescription(
-      "Configure Prometheus Exporter to produce metrics with scope labels.\nIf omitted or null, true is used.\n")
   @Nullable
   private Boolean scopeInfoEnabled;
 
-  /**
-   * Configure Prometheus Exporter to produce metrics with a target info metric for the resource. If
-   * omitted or null, true is used.
-   */
   @JsonProperty("target_info_enabled/development")
-  @JsonPropertyDescription(
-      "Configure Prometheus Exporter to produce metrics with a target info metric for the resource.\nIf omitted or null, true is used.\n")
   @Nullable
   private Boolean targetInfoEnabledDevelopment;
 
@@ -70,7 +53,11 @@ public class ExperimentalPrometheusMetricExporterModel {
   private ExperimentalPrometheusMetricExporterModel.ExperimentalPrometheusTranslationStrategy
       translationStrategy;
 
-  /** Configure host. If omitted or null, localhost is used. */
+  /**
+   * Configure host.
+   *
+   * <p>If omitted or null, localhost is used.
+   */
   @JsonProperty("host")
   @Nullable
   public String getHost() {
@@ -82,7 +69,11 @@ public class ExperimentalPrometheusMetricExporterModel {
     return this;
   }
 
-  /** Configure port. If omitted or null, 9464 is used. */
+  /**
+   * Configure port.
+   *
+   * <p>If omitted or null, 9464 is used.
+   */
   @JsonProperty("port")
   @Nullable
   public Integer getPort() {
@@ -95,8 +86,9 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   /**
-   * Configure Prometheus Exporter to produce metrics with scope labels. If omitted or null, true is
-   * used.
+   * Configure Prometheus Exporter to produce metrics with scope labels.
+   *
+   * <p>If omitted or null, true is used.
    */
   @JsonProperty("scope_info_enabled")
   @Nullable
@@ -110,8 +102,9 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   /**
-   * Configure Prometheus Exporter to produce metrics with a target info metric for the resource. If
-   * omitted or null, true is used.
+   * Configure Prometheus Exporter to produce metrics with a target info metric for the resource.
+   *
+   * <p>If omitted or null, true is used.
    */
   @JsonProperty("target_info_enabled/development")
   @Nullable
@@ -125,6 +118,12 @@ public class ExperimentalPrometheusMetricExporterModel {
     return this;
   }
 
+  /**
+   * Configure Prometheus Exporter to add resource attributes as metrics attributes, where the
+   * resource attribute keys match the patterns.
+   *
+   * <p>If omitted, no resource attributes are added.
+   */
   @JsonProperty("resource_constant_labels")
   @Nullable
   public IncludeExcludeModel getResourceConstantLabels() {
@@ -137,6 +136,26 @@ public class ExperimentalPrometheusMetricExporterModel {
     return this;
   }
 
+  /**
+   * Configure how metric names are translated to Prometheus metric names.
+   *
+   * <p>Values include:
+   *
+   * <p>* no_translation/development: Special character escaping is disabled. Type and unit suffixes
+   * are disabled. Metric names are unaltered.
+   *
+   * <p>* no_utf8_escaping_with_suffixes/development: Special character escaping is disabled. Type
+   * and unit suffixes are enabled.
+   *
+   * <p>* underscore_escaping_with_suffixes: Special character escaping is enabled. Type and unit
+   * suffixes are enabled.
+   *
+   * <p>* underscore_escaping_without_suffixes/development: Special character escaping is enabled.
+   * Type and unit suffixes are disabled. This represents classic Prometheus metric name
+   * compatibility.
+   *
+   * <p>If omitted, underscore_escaping_with_suffixes is used.
+   */
   @JsonProperty("translation_strategy")
   @Nullable
   public ExperimentalPrometheusMetricExporterModel.ExperimentalPrometheusTranslationStrategy
