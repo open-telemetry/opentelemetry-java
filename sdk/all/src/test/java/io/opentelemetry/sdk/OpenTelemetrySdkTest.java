@@ -14,6 +14,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import groovy.lang.GroovyClassLoader;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -39,8 +40,10 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -136,6 +139,104 @@ class OpenTelemetrySdkTest {
         .isEqualTo(meterProvider);
     assertThat(openTelemetry.getSdkLoggerProvider()).isEqualTo(loggerProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
+  }
+
+  @Test
+  void buildFromGroovyWithoutIncubator() throws Exception {
+    try (GroovyClassLoader groovyClassLoader = new GroovyClassLoader(getClass().getClassLoader())) {
+      Class<?> groovyClass =
+          groovyClassLoader.parseClass(
+              "import io.opentelemetry.sdk.OpenTelemetrySdk\n"
+                  + "class GroovyBuilderCaller {\n"
+                  + "  static Object buildSdk() {\n"
+                  + "    OpenTelemetrySdk.builder().build()\n"
+                  + "  }\n"
+                  + "}\n");
+
+      assertThat(groovyClass.getMethod("buildSdk").invoke(null))
+          .isInstanceOf(OpenTelemetrySdk.class);
+    }
+  }
+
+  @Test
+  void createExtendedOpenTelemetrySdk_rethrowsRuntimeException() throws Exception {
+    Method method =
+        OpenTelemetrySdkTest.class.getDeclaredMethod(
+            "throwRuntimeException", OpenTelemetrySdk.class, Object.class);
+
+    assertThatThrownBy(
+            () ->
+                OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
+                    OpenTelemetrySdk.builder().build(), null, method))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("runtime boom");
+  }
+
+  @Test
+  void createExtendedOpenTelemetrySdk_rethrowsError() throws Exception {
+    Method method =
+        OpenTelemetrySdkTest.class.getDeclaredMethod(
+            "throwError", OpenTelemetrySdk.class, Object.class);
+
+    assertThatThrownBy(
+            () ->
+                OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
+                    OpenTelemetrySdk.builder().build(), null, method))
+        .isInstanceOf(AssertionError.class)
+        .hasMessage("error boom");
+  }
+
+  @Test
+  void createExtendedOpenTelemetrySdk_wrapsCheckedException() throws Exception {
+    Method method =
+        OpenTelemetrySdkTest.class.getDeclaredMethod(
+            "throwCheckedException", OpenTelemetrySdk.class, Object.class);
+
+    assertThatThrownBy(
+            () ->
+                OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
+                    OpenTelemetrySdk.builder().build(), null, method))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+            "IncubatingUtil.createExtendedOpenTelemetrySdk failed. This is a bug in OpenTelemetry.")
+        .cause()
+        .isInstanceOf(Exception.class)
+        .hasMessage("checked boom");
+  }
+
+  @Test
+  void createExtendedOpenTelemetrySdk_wrapsIllegalArgumentException() throws Exception {
+    Method method = OpenTelemetrySdkTest.class.getDeclaredMethod("wrongSignature", String.class);
+
+    assertThatThrownBy(
+            () ->
+                OpenTelemetrySdkBuilder.createExtendedOpenTelemetrySdk(
+                    OpenTelemetrySdk.builder().build(), null, method))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+            "IncubatingUtil.createExtendedOpenTelemetrySdk could not be called with the expected"
+                + " arguments. This is a bug in OpenTelemetry.")
+        .cause()
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  static OpenTelemetrySdk throwRuntimeException(
+      OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
+    throw new IllegalStateException("runtime boom");
+  }
+
+  static OpenTelemetrySdk throwError(
+      OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
+    throw new AssertionError("error boom");
+  }
+
+  static OpenTelemetrySdk throwCheckedException(
+      OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) throws Exception {
+    throw new Exception("checked boom");
+  }
+
+  static OpenTelemetrySdk wrongSignature(String ignored) {
+    return null;
   }
 
   @Test
