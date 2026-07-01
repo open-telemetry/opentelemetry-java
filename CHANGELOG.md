@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### SDK
+
+#### Logs
+
+* Fix `ReadWriteLogRecord.getObservedTimestampEpochNanos()` default method returning the record timestamp instead of the observed timestamp
+  ([#8504](https://github.com/open-telemetry/opentelemetry-java/pull/8504))
+
 ## Version 1.63.0 (2026-06-05)
 
 ### API
