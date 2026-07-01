@@ -60,6 +60,17 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   }
 
   @Override
+  public TelemetryExporterBuilder<SpanData> setMaxRequestBodySize(long maxRequestBodySize) {
+    builder.setMaxRequestBodySize(maxRequestBodySize);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setMaxRequestMessageSize(long maxRequestMessageSize) {
+    throw new UnsupportedOperationException("Request message size is not supported for HTTP");
+  }
+
+  @Override
   public TelemetryExporterBuilder<SpanData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;

@@ -42,6 +42,7 @@ public final class HttpExporter {
   private final HttpSender httpSender;
   private final ExporterInstrumentation exporterMetrics;
   private final boolean exportAsJson;
+  private final long maxRequestBodySize;
 
   public HttpExporter(
       StandardComponentId componentId,
@@ -49,13 +50,15 @@ public final class HttpExporter {
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetryVersion internalTelemetryVersion,
       URI endpoint,
-      boolean exportAsJson) {
+      boolean exportAsJson,
+      long maxRequestBodySize) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
     this.httpSender = httpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
     this.exportAsJson = exportAsJson;
+    this.maxRequestBodySize = maxRequestBodySize;
   }
 
   public CompletableResultCode export(Marshaler exportRequest, int numItems) {
@@ -66,15 +69,39 @@ public final class HttpExporter {
     ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
-    CompletableResultCode result = new CompletableResultCode();
     MessageWriter messageWriter =
         exportAsJson ? exportRequest.toJsonMessageWriter() : exportRequest.toBinaryMessageWriter();
+
+    int requestBodySize = messageWriter.getContentLength();
+    if (requestBodySize > maxRequestBodySize) {
+      return failRequestTooLarge(metricRecording, requestBodySize);
+    }
+
+    CompletableResultCode result = new CompletableResultCode();
 
     httpSender.send(
         messageWriter,
         httpResponse -> onResponse(result, metricRecording, httpResponse),
         throwable -> onError(result, metricRecording, throwable));
 
+    return result;
+  }
+
+  private CompletableResultCode failRequestTooLarge(
+      ExporterInstrumentation.Recording metricRecording, long requestBodySize) {
+    String errorMessage =
+        "Failed to export "
+            + type
+            + "s. Request body size "
+            + requestBodySize
+            + " exceeded limit of "
+            + maxRequestBodySize
+            + " bytes";
+    IOException exception = new IOException(errorMessage);
+    metricRecording.finishFailed(exception);
+    logger.log(Level.WARNING, errorMessage);
+    CompletableResultCode result = new CompletableResultCode();
+    result.failExceptionally(FailedExportException.httpFailedExceptionally(exception));
     return result;
   }
 

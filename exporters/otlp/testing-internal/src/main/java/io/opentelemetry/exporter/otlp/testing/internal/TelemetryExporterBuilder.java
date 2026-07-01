@@ -55,6 +55,10 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setConnectTimeout(Duration timeout);
 
+  TelemetryExporterBuilder<T> setMaxRequestBodySize(long maxRequestBodySize);
+
+  TelemetryExporterBuilder<T> setMaxRequestMessageSize(long maxRequestMessageSize);
+
   TelemetryExporterBuilder<T> setCompression(String compression);
 
   TelemetryExporterBuilder<T> addHeader(String key, String value);

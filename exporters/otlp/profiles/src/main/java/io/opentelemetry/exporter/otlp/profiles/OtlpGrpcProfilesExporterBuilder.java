@@ -115,6 +115,13 @@ public final class OtlpGrpcProfilesExporterBuilder {
     return this;
   }
 
+  /** Sets the maximum OTLP gRPC request message size in bytes. If unset, defaults to 64 MiB. */
+  public OtlpGrpcProfilesExporterBuilder setMaxRequestMessageSize(long maxRequestMessageSizeBytes) {
+    checkArgument(maxRequestMessageSizeBytes > 0, "maxRequestMessageSizeBytes must be positive");
+    delegate.setMaxRequestMessageSize(maxRequestMessageSizeBytes);
+    return this;
+  }
+
   /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT_URL}. The
    * endpoint must start with either http:// or https://.

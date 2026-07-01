@@ -61,6 +61,17 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
   }
 
   @Override
+  public TelemetryExporterBuilder<SpanData> setMaxRequestBodySize(long maxRequestBodySize) {
+    throw new UnsupportedOperationException("Request body size is not supported for gRPC");
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setMaxRequestMessageSize(long maxRequestMessageSize) {
+    builder.setMaxRequestMessageSize(maxRequestMessageSize);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<SpanData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;

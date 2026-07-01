@@ -104,6 +104,17 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setMaxRequestBodySize(long maxRequestBodySize) {
+    throw new UnsupportedOperationException("Request body size is not supported for gRPC");
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setMaxRequestMessageSize(long maxRequestMessageSize) {
+    delegate.setMaxRequestMessageSize(maxRequestMessageSize);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setCompression(String compression) {
     delegate.setCompression(compression);
     return this;
