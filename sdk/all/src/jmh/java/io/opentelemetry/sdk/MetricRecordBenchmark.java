@@ -12,6 +12,22 @@ import static io.opentelemetry.sdk.metrics.InstrumentType.UP_DOWN_COUNTER;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.BoundDoubleCounter;
+import io.opentelemetry.api.incubator.metrics.BoundDoubleGauge;
+import io.opentelemetry.api.incubator.metrics.BoundDoubleHistogram;
+import io.opentelemetry.api.incubator.metrics.BoundDoubleUpDownCounter;
+import io.opentelemetry.api.incubator.metrics.BoundLongCounter;
+import io.opentelemetry.api.incubator.metrics.BoundLongGauge;
+import io.opentelemetry.api.incubator.metrics.BoundLongHistogram;
+import io.opentelemetry.api.incubator.metrics.BoundLongUpDownCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogram;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongGauge;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -30,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Group;
@@ -52,6 +69,8 @@ import org.openjdk.jmh.annotations.Warmup;
  *       {@link Aggregation}, including all relevant combinations for synchronous instruments.
  *   <li>{@link BenchmarkState#aggregationTemporality}
  *   <li>{@link BenchmarkState#cardinality}
+ *   <li>{@link BenchmarkState#bound} whether recording goes through bound instruments ({@code
+ *       Extended*#bind(Attributes)}) or unbound instruments.
  *   <li>thread count
  *   <li>{@link BenchmarkState#instrumentValueType}, {@link BenchmarkState#memoryMode}, and {@link
  *       BenchmarkState#exemplars} are disabled to reduce combinatorial explosion.
@@ -62,16 +81,23 @@ import org.openjdk.jmh.annotations.Warmup;
  *
  * <p>The cardinality and thread count dimensions partially overlap. Cardinality dictates how many
  * unique attribute sets (i.e. series) are recorded to, and thread count dictates how many threads
- * are simultaneously recording to those series. In all cases, the record path needs to look up an
- * aggregation handle for the series corresponding to the measurement's {@link Attributes} in a
- * {@link java.util.concurrent.ConcurrentHashMap}. That will be the case until otel adds support for
- * <a href="https://github.com/open-telemetry/opentelemetry-specification/issues/4126">bound
- * instruments</a>. The cardinality dictates the size of this map, which has some impact on
- * performance. However, by far the dominant bottleneck is contention. That is, the number of
- * threads simultaneously trying to record to the same series. Increasing the threads increases
- * contention. Increasing cardinality decreases contention, as the threads are now spreading their
- * record activities over more distinct series. The highest contention scenario is cardinality=1,
- * threads=4. Any scenario with threads=1 has zero contention.
+ * are simultaneously recording to those series. For unbound instruments, the record path looks up
+ * an aggregation handle for the series corresponding to the measurement's {@link Attributes} in a
+ * {@link java.util.concurrent.ConcurrentHashMap}; for bound instruments ({@link
+ * BenchmarkState#bound}) that handle is resolved once at bind time, so the record path skips the
+ * lookup and attribute processing entirely. The cardinality dictates the size of this map, which
+ * has some impact on performance. However, by far the dominant bottleneck is contention. That is,
+ * the number of threads simultaneously trying to record to the same series. Increasing the threads
+ * increases contention. Increasing cardinality decreases contention, as the threads are now
+ * spreading their record activities over more distinct series. The highest contention scenario is
+ * cardinality=1, threads=4. Any scenario with threads=1 has zero contention.
+ *
+ * <p>To make the cardinality dimension meaningful under contention, each thread traverses the
+ * series in its own independent (per-thread shuffled) order — see {@link ThreadState}. This models
+ * independent threads recording to arbitrary series. A naive shared {@code i % cardinality} index
+ * would instead march all threads through the same series in lockstep (contention self-synchronizes
+ * them), collapsing high-cardinality multi-thread runs into a single rotating hotspot that behaves
+ * like cardinality=1.
  *
  * <p>It's useful to characterize the performance of the metrics system under contention, as some
  * high-performance applications may have many threads trying to record to the same series. It's
@@ -99,6 +125,14 @@ public class MetricRecordBenchmark {
     @Param({"1", "128"})
     int cardinality;
 
+    // Whether to record through bound instruments (Extended*#bind(Attributes)), which resolve the
+    // timeseries once up front, or unbound instruments, which look up the timeseries by Attributes
+    // on every record. Uncomment to evaluate.
+    @Param({"false", "true"})
+    boolean bound;
+
+    // boolean bound = false;
+
     // The following parameters are excluded from the benchmark to reduce combinatorial explosion
     // but can optionally be enabled for adhoc evaluation.
 
@@ -120,11 +154,17 @@ public class MetricRecordBenchmark {
     boolean exemplars = false;
 
     OpenTelemetrySdk openTelemetry;
+    // Populated when bound == false.
     private Instrument instrument;
+    // Populated when bound == true; parallel to attributesList (one bound instrument per series).
+    private List<BoundInstrument> boundInstruments;
     List<Long> measurements;
     List<Attributes> attributesList;
     Span span;
     io.opentelemetry.context.Scope contextScope;
+    // Hands out a distinct seed to each recording thread's ThreadState so threads traverse the
+    // series in independent orders (see ThreadState).
+    final AtomicInteger threadSeedSequence = new AtomicInteger();
 
     @Setup
     @SuppressWarnings("MustBeClosedChecker")
@@ -151,7 +191,6 @@ public class MetricRecordBenchmark {
               .build();
 
       Meter meter = openTelemetry.getMeter("benchmark");
-      instrument = getInstrument(meter, instrumentType, instrumentValueType);
       Tracer tracer = openTelemetry.getTracer("benchmark");
       span = tracer.spanBuilder("benchmark").startSpan();
       // We suppress warnings on closing here, as we rely on tests to make sure context is closed.
@@ -169,6 +208,13 @@ public class MetricRecordBenchmark {
       }
       Collections.shuffle(attributesList);
 
+      if (bound) {
+        boundInstruments =
+            bindInstruments(meter, instrumentType, instrumentValueType, attributesList);
+      } else {
+        instrument = getInstrument(meter, instrumentType, instrumentValueType);
+      }
+
       measurements = new ArrayList<>(RECORDS_PER_INVOCATION);
       for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
         measurements.add((long) random.nextInt(2000));
@@ -184,6 +230,38 @@ public class MetricRecordBenchmark {
     }
   }
 
+  /**
+   * Per-thread series traversal order. Each recording thread shuffles {@code [0, cardinality)} with
+   * a distinct seed, so that at any given record the threads are recording to <em>different</em>
+   * series rather than marching through the same series in lockstep. Without this, the shared
+   * sequential {@code i % cardinality} index plus contention's self-synchronizing effect collapses
+   * the high-cardinality, multi-thread cases into a single rotating hotspot (effectively
+   * cardinality=1 contention), which does not reflect real-world recording where independent
+   * threads touch arbitrary series.
+   */
+  @State(Scope.Thread)
+  public static class ThreadState {
+    int[] order;
+
+    @Setup
+    public void setup(BenchmarkState benchmarkState) {
+      int cardinality = benchmarkState.cardinality;
+      order = new int[cardinality];
+      for (int i = 0; i < cardinality; i++) {
+        order[i] = i;
+      }
+      // Distinct seed per thread => independent permutations => no cross-thread lockstep.
+      Random random =
+          new Random(INITIAL_SEED + benchmarkState.threadSeedSequence.getAndIncrement());
+      for (int i = cardinality - 1; i > 0; i--) {
+        int j = random.nextInt(i + 1);
+        int tmp = order[i];
+        order[i] = order[j];
+        order[j] = tmp;
+      }
+    }
+  }
+
   @Benchmark
   @Group("threads1")
   @GroupThreads(1)
@@ -191,8 +269,8 @@ public class MetricRecordBenchmark {
   @Warmup(iterations = 3, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OperationsPerInvocation(RECORDS_PER_INVOCATION)
-  public void record_SingleThread(BenchmarkState benchmarkState) {
-    record(benchmarkState);
+  public void record_SingleThread(BenchmarkState benchmarkState, ThreadState threadState) {
+    record(benchmarkState, threadState);
   }
 
   @Benchmark
@@ -202,16 +280,27 @@ public class MetricRecordBenchmark {
   @Warmup(iterations = 3, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OperationsPerInvocation(RECORDS_PER_INVOCATION)
-  public void record_MultipleThreads(BenchmarkState benchmarkState) {
-    record(benchmarkState);
+  public void record_MultipleThreads(BenchmarkState benchmarkState, ThreadState threadState) {
+    record(benchmarkState, threadState);
   }
 
-  private static void record(BenchmarkState benchmarkState) {
-    for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
-      Attributes attributes =
-          benchmarkState.attributesList.get(i % benchmarkState.attributesList.size());
-      long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
-      benchmarkState.instrument.record(value, attributes);
+  private static void record(BenchmarkState benchmarkState, ThreadState threadState) {
+    // Per-thread series order: at a given i, different threads hit different series (no lockstep).
+    int[] order = threadState.order;
+    if (benchmarkState.bound) {
+      // Bound: record straight to the pre-resolved bound instrument for the series — no per-record
+      // Attributes lookup.
+      List<BoundInstrument> boundInstruments = benchmarkState.boundInstruments;
+      for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
+        long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
+        boundInstruments.get(order[i % order.length]).record(value);
+      }
+    } else {
+      for (int i = 0; i < RECORDS_PER_INVOCATION; i++) {
+        Attributes attributes = benchmarkState.attributesList.get(order[i % order.length]);
+        long value = benchmarkState.measurements.get(i % benchmarkState.measurements.size());
+        benchmarkState.instrument.record(value, attributes);
+      }
     }
   }
 
@@ -256,6 +345,97 @@ public class MetricRecordBenchmark {
         return instrumentValueType == InstrumentValueType.DOUBLE
             ? meter.gaugeBuilder(name).build()::set
             : meter.gaugeBuilder(name).ofLongs().build()::set;
+      case OBSERVABLE_COUNTER:
+      case OBSERVABLE_UP_DOWN_COUNTER:
+      case OBSERVABLE_GAUGE:
+    }
+    throw new IllegalArgumentException();
+  }
+
+  @FunctionalInterface
+  private interface BoundInstrument {
+    void record(long value);
+  }
+
+  /**
+   * Builds the instrument, then binds one {@link BoundInstrument} per series in {@code
+   * attributesList}, returned in the same order so the record loop can index it in lockstep.
+   */
+  private static List<BoundInstrument> bindInstruments(
+      Meter meter,
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      List<Attributes> attributesList) {
+    boolean isDouble = instrumentValueType == InstrumentValueType.DOUBLE;
+    String name = "instrument";
+    List<BoundInstrument> result = new ArrayList<>(attributesList.size());
+    switch (instrumentType) {
+      case COUNTER:
+        if (isDouble) {
+          ExtendedDoubleCounter instrument =
+              (ExtendedDoubleCounter) meter.counterBuilder(name).ofDoubles().build();
+          for (Attributes attributes : attributesList) {
+            BoundDoubleCounter bound = instrument.bind(attributes);
+            result.add(bound::add);
+          }
+        } else {
+          ExtendedLongCounter instrument = (ExtendedLongCounter) meter.counterBuilder(name).build();
+          for (Attributes attributes : attributesList) {
+            BoundLongCounter bound = instrument.bind(attributes);
+            result.add(bound::add);
+          }
+        }
+        return result;
+      case UP_DOWN_COUNTER:
+        if (isDouble) {
+          ExtendedDoubleUpDownCounter instrument =
+              (ExtendedDoubleUpDownCounter) meter.upDownCounterBuilder(name).ofDoubles().build();
+          for (Attributes attributes : attributesList) {
+            BoundDoubleUpDownCounter bound = instrument.bind(attributes);
+            result.add(bound::add);
+          }
+        } else {
+          ExtendedLongUpDownCounter instrument =
+              (ExtendedLongUpDownCounter) meter.upDownCounterBuilder(name).build();
+          for (Attributes attributes : attributesList) {
+            BoundLongUpDownCounter bound = instrument.bind(attributes);
+            result.add(bound::add);
+          }
+        }
+        return result;
+      case HISTOGRAM:
+        if (isDouble) {
+          ExtendedDoubleHistogram instrument =
+              (ExtendedDoubleHistogram) meter.histogramBuilder(name).build();
+          for (Attributes attributes : attributesList) {
+            BoundDoubleHistogram bound = instrument.bind(attributes);
+            result.add(bound::record);
+          }
+        } else {
+          ExtendedLongHistogram instrument =
+              (ExtendedLongHistogram) meter.histogramBuilder(name).ofLongs().build();
+          for (Attributes attributes : attributesList) {
+            BoundLongHistogram bound = instrument.bind(attributes);
+            result.add(bound::record);
+          }
+        }
+        return result;
+      case GAUGE:
+        if (isDouble) {
+          ExtendedDoubleGauge instrument = (ExtendedDoubleGauge) meter.gaugeBuilder(name).build();
+          for (Attributes attributes : attributesList) {
+            BoundDoubleGauge bound = instrument.bind(attributes);
+            result.add(bound::set);
+          }
+        } else {
+          ExtendedLongGauge instrument =
+              (ExtendedLongGauge) meter.gaugeBuilder(name).ofLongs().build();
+          for (Attributes attributes : attributesList) {
+            BoundLongGauge bound = instrument.bind(attributes);
+            result.add(bound::set);
+          }
+        }
+        return result;
       case OBSERVABLE_COUNTER:
       case OBSERVABLE_UP_DOWN_COUNTER:
       case OBSERVABLE_GAUGE:
