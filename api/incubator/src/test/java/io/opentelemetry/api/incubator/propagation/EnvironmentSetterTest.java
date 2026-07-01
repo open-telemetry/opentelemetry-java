@@ -30,7 +30,7 @@ class EnvironmentSetterTest {
   }
 
   @Test
-  void set_sanitization() {
+  void set_normalization() {
     Map<String, String> carrier = new HashMap<>();
     EnvironmentSetter.getInstance().set(carrier, "otel.trace.id", "val1");
     EnvironmentSetter.getInstance().set(carrier, "otel-baggage-key", "val2");
@@ -59,6 +59,7 @@ class EnvironmentSetterTest {
     EnvironmentSetter.getInstance().set(carrier, "key4", "value\u0000with\u0001control");
     EnvironmentSetter.getInstance().set(carrier, "key5", "value\nwith\nnewlines");
     EnvironmentSetter.getInstance().set(carrier, "key6", "value\u0080non-ascii");
+    EnvironmentSetter.getInstance().set(carrier, "key7", "");
 
     assertThat(carrier).containsEntry("KEY1", "simple-value");
     assertThat(carrier).containsEntry("KEY2", "value with spaces");
@@ -66,6 +67,7 @@ class EnvironmentSetterTest {
     assertThat(carrier).containsEntry("KEY4", "value\u0000with\u0001control");
     assertThat(carrier).containsEntry("KEY5", "value\nwith\nnewlines");
     assertThat(carrier).containsEntry("KEY6", "value\u0080non-ascii");
+    assertThat(carrier).containsEntry("KEY7", "");
   }
 
   @ParameterizedTest
