@@ -39,39 +39,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
     return new PrometheusMetricReaderBuilder();
   }
 
-  /**
-   * Deprecated. Use {@link #builder()}.
-   *
-   * @deprecated use {@link #builder()}.
-   */
-  @Deprecated
-  @SuppressWarnings({"unused", "InconsistentOverloads"})
-  public PrometheusMetricReader(
-      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
-    // otelScopeEnabled parameter was used to control the scope info metric, not scope labels.
-    this(
-        allowedResourceAttributesFilter,
-        /* otelScopeLabelsEnabled= */ true,
-        /* targetInfoMetricEnabled= */ true,
-        TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES);
-  }
-
-  /**
-   * Deprecated. Use {@link #builder()}.
-   *
-   * @deprecated use {@link #builder()}.
-   */
-  @Deprecated
-  public PrometheusMetricReader(@Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this(
-        allowedResourceAttributesFilter,
-        /* otelScopeLabelsEnabled= */ true,
-        /* targetInfoMetricEnabled= */ true,
-        TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES);
-  }
-
   // Package-private constructor used by builder
-  @SuppressWarnings("InconsistentOverloads")
   PrometheusMetricReader(
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       boolean otelScopeLabelsEnabled,

@@ -16,7 +16,6 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"included", "excluded"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class IncludeExcludeModel {
 
   /**
@@ -24,13 +23,11 @@ public class IncludeExcludeModel {
    * to match as follows: * If the value exactly matches. * If the value matches the wildcard
    * pattern, where '?' matches any single character and '*' matches any number of characters
    * including none. If omitted, all values are included.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("included")
   @JsonPropertyDescription(
       "Configure list of value patterns to include.\nMatching is case-sensitive. Values are evaluated to match as follows:\n * If the value exactly matches.\n * If the value matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nIf omitted, all values are included.\n")
+  @Nullable
   private List<String> included;
 
   /**
@@ -39,13 +36,11 @@ public class IncludeExcludeModel {
    * * If the value exactly matches. * If the value matches the wildcard pattern, where '?' matches
    * any single character and '*' matches any number of characters including none. If omitted,
    * .included attributes are included.
-   *
-   * <p>(Can be null)
    */
-  @Nullable
   @JsonProperty("excluded")
   @JsonPropertyDescription(
       "Configure list of value patterns to exclude. Applies after .included (i.e. excluded has higher priority than included).\nMatching is case-sensitive. Values are evaluated to match as follows:\n * If the value exactly matches.\n * If the value matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nIf omitted, .included attributes are included.\n")
+  @Nullable
   private List<String> excluded;
 
   /**
@@ -85,47 +80,29 @@ public class IncludeExcludeModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(IncludeExcludeModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("included");
-    sb.append('=');
-    sb.append(((this.included == null) ? "<null>" : this.included));
-    sb.append(',');
-    sb.append("excluded");
-    sb.append('=');
-    sb.append(((this.excluded == null) ? "<null>" : this.excluded));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "IncludeExcludeModel{" + "included=" + included + ", excluded=" + excluded + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.excluded == null) ? 0 : this.excluded.hashCode()));
-    result = ((result * 31) + ((this.included == null) ? 0 : this.included.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.included == null) ? 0 : this.included.hashCode();
+    h *= 1000003;
+    h ^= (this.excluded == null) ? 0 : this.excluded.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof IncludeExcludeModel) == false) {
-      return false;
+    if (o instanceof IncludeExcludeModel) {
+      IncludeExcludeModel that = (IncludeExcludeModel) o;
+      return (this.included == null ? that.included == null : this.included.equals(that.included))
+          && (this.excluded == null ? that.excluded == null : this.excluded.equals(that.excluded));
     }
-    IncludeExcludeModel rhs = ((IncludeExcludeModel) other);
-    return (((this.excluded == rhs.excluded)
-            || ((this.excluded != null) && this.excluded.equals(rhs.excluded)))
-        && ((this.included == rhs.included)
-            || ((this.included != null) && this.included.equals(rhs.included))));
+    return false;
   }
 }

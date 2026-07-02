@@ -19,12 +19,10 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"opencensus"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class MetricProducerModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("opencensus")
+  @Nullable
   private OpenCensusMetricProducerModel opencensus;
 
   @JsonIgnore
@@ -60,50 +58,38 @@ public class MetricProducerModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(MetricProducerModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("opencensus");
-    sb.append('=');
-    sb.append(((this.opencensus == null) ? "<null>" : this.opencensus));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "MetricProducerModel{"
+        + "opencensus="
+        + opencensus
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.opencensus == null) ? 0 : this.opencensus.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.opencensus == null) ? 0 : this.opencensus.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof MetricProducerModel) == false) {
-      return false;
+    if (o instanceof MetricProducerModel) {
+      MetricProducerModel that = (MetricProducerModel) o;
+      return (this.opencensus == null
+              ? that.opencensus == null
+              : this.opencensus.equals(that.opencensus))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    MetricProducerModel rhs = ((MetricProducerModel) other);
-    return (((this.opencensus == rhs.opencensus)
-            || ((this.opencensus != null) && this.opencensus.equals(rhs.opencensus)))
-        && ((this.additionalProperties == rhs.additionalProperties)
-            || ((this.additionalProperties != null)
-                && this.additionalProperties.equals(rhs.additionalProperties))));
+    return false;
   }
 }

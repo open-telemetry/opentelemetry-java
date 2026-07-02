@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableParentThresholdSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableProbabilitySamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableParentThresholdSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 
 final class ComposableSamplerFactory

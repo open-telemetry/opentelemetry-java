@@ -48,6 +48,7 @@ public abstract class AbstractDefaultLoggerTest {
   @Test
   void defaultIsEnabled() {
     assertThat(getLogger().isEnabled(Severity.ERROR, Context.root())).isFalse();
+    assertThat(getLogger().isEnabled(Severity.ERROR)).isFalse();
   }
 
   @Test

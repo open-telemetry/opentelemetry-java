@@ -51,7 +51,7 @@ dependencies {
   jmhRuntimeOnly("io.grpc:grpc-netty")
 }
 
-val testJavaVersion: String? by project
+val testJavaVersion = project.findProperty("testJavaVersion") as String?
 
 testing {
   suites {

@@ -14,11 +14,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalInstrumentationModel;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -41,7 +41,6 @@ import javax.annotation.Nullable;
   "distribution"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class OpenTelemetryConfigurationModel {
 
   /**
@@ -58,60 +57,50 @@ public class OpenTelemetryConfigurationModel {
   @JsonProperty("file_format")
   @JsonPropertyDescription(
       "The file format version.\nRepresented as a string including the semver major, minor version numbers (and optionally the meta tag). For example: \"0.4\", \"1.0-rc.2\", \"1.0\" (after stable release).\nSee https://github.com/open-telemetry/opentelemetry-configuration/blob/main/VERSIONING.md for more details.\nThe yaml format is documented at https://github.com/open-telemetry/opentelemetry-configuration/tree/main/schema\nProperty is required and must be non-null.\n")
-  @Nonnull
+  @Nullable
   private String fileFormat;
 
-  /**
-   * Configure if the SDK is disabled or not. If omitted or null, false is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure if the SDK is disabled or not. If omitted or null, false is used. */
   @JsonProperty("disabled")
   @JsonPropertyDescription(
       "Configure if the SDK is disabled or not.\nIf omitted or null, false is used.\n")
+  @Nullable
   private Boolean disabled;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("log_level")
+  @Nullable
   private OpenTelemetryConfigurationModel.SeverityNumber logLevel;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("attribute_limits")
+  @Nullable
   private AttributeLimitsModel attributeLimits;
 
-  @Nullable
   @JsonProperty("logger_provider")
+  @Nullable
   private LoggerProviderModel loggerProvider;
 
-  @Nullable
   @JsonProperty("meter_provider")
+  @Nullable
   private MeterProviderModel meterProvider;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("propagator")
+  @Nullable
   private PropagatorModel propagator;
 
-  @Nullable
   @JsonProperty("tracer_provider")
+  @Nullable
   private TracerProviderModel tracerProvider;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("resource")
+  @Nullable
   private ResourceModel resource;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("instrumentation/development")
+  @Nullable
   private ExperimentalInstrumentationModel instrumentationDevelopment;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("distribution")
+  @Nullable
   private DistributionModel distribution;
 
   @JsonIgnore
@@ -269,140 +258,106 @@ public class OpenTelemetryConfigurationModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(OpenTelemetryConfigurationModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("fileFormat");
-    sb.append('=');
-    sb.append(((this.fileFormat == null) ? "<null>" : this.fileFormat));
-    sb.append(',');
-    sb.append("disabled");
-    sb.append('=');
-    sb.append(((this.disabled == null) ? "<null>" : this.disabled));
-    sb.append(',');
-    sb.append("logLevel");
-    sb.append('=');
-    sb.append(((this.logLevel == null) ? "<null>" : this.logLevel));
-    sb.append(',');
-    sb.append("attributeLimits");
-    sb.append('=');
-    sb.append(((this.attributeLimits == null) ? "<null>" : this.attributeLimits));
-    sb.append(',');
-    sb.append("loggerProvider");
-    sb.append('=');
-    sb.append(((this.loggerProvider == null) ? "<null>" : this.loggerProvider));
-    sb.append(',');
-    sb.append("meterProvider");
-    sb.append('=');
-    sb.append(((this.meterProvider == null) ? "<null>" : this.meterProvider));
-    sb.append(',');
-    sb.append("propagator");
-    sb.append('=');
-    sb.append(((this.propagator == null) ? "<null>" : this.propagator));
-    sb.append(',');
-    sb.append("tracerProvider");
-    sb.append('=');
-    sb.append(((this.tracerProvider == null) ? "<null>" : this.tracerProvider));
-    sb.append(',');
-    sb.append("resource");
-    sb.append('=');
-    sb.append(((this.resource == null) ? "<null>" : this.resource));
-    sb.append(',');
-    sb.append("instrumentationDevelopment");
-    sb.append('=');
-    sb.append(
-        ((this.instrumentationDevelopment == null) ? "<null>" : this.instrumentationDevelopment));
-    sb.append(',');
-    sb.append("distribution");
-    sb.append('=');
-    sb.append(((this.distribution == null) ? "<null>" : this.distribution));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "OpenTelemetryConfigurationModel{"
+        + "fileFormat="
+        + fileFormat
+        + ", disabled="
+        + disabled
+        + ", logLevel="
+        + logLevel
+        + ", attributeLimits="
+        + attributeLimits
+        + ", loggerProvider="
+        + loggerProvider
+        + ", meterProvider="
+        + meterProvider
+        + ", propagator="
+        + propagator
+        + ", tracerProvider="
+        + tracerProvider
+        + ", resource="
+        + resource
+        + ", instrumentationDevelopment="
+        + instrumentationDevelopment
+        + ", distribution="
+        + distribution
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result =
-        ((result * 31)
-            + ((this.instrumentationDevelopment == null)
-                ? 0
-                : this.instrumentationDevelopment.hashCode()));
-    result =
-        ((result * 31) + ((this.attributeLimits == null) ? 0 : this.attributeLimits.hashCode()));
-    result = ((result * 31) + ((this.logLevel == null) ? 0 : this.logLevel.hashCode()));
-    result = ((result * 31) + ((this.tracerProvider == null) ? 0 : this.tracerProvider.hashCode()));
-    result = ((result * 31) + ((this.resource == null) ? 0 : this.resource.hashCode()));
-    result = ((result * 31) + ((this.meterProvider == null) ? 0 : this.meterProvider.hashCode()));
-    result = ((result * 31) + ((this.propagator == null) ? 0 : this.propagator.hashCode()));
-    result = ((result * 31) + ((this.disabled == null) ? 0 : this.disabled.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    result = ((result * 31) + ((this.distribution == null) ? 0 : this.distribution.hashCode()));
-    result = ((result * 31) + ((this.fileFormat == null) ? 0 : this.fileFormat.hashCode()));
-    result = ((result * 31) + ((this.loggerProvider == null) ? 0 : this.loggerProvider.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.fileFormat == null) ? 0 : this.fileFormat.hashCode();
+    h *= 1000003;
+    h ^= (this.disabled == null) ? 0 : this.disabled.hashCode();
+    h *= 1000003;
+    h ^= (this.logLevel == null) ? 0 : this.logLevel.hashCode();
+    h *= 1000003;
+    h ^= (this.attributeLimits == null) ? 0 : this.attributeLimits.hashCode();
+    h *= 1000003;
+    h ^= (this.loggerProvider == null) ? 0 : this.loggerProvider.hashCode();
+    h *= 1000003;
+    h ^= (this.meterProvider == null) ? 0 : this.meterProvider.hashCode();
+    h *= 1000003;
+    h ^= (this.propagator == null) ? 0 : this.propagator.hashCode();
+    h *= 1000003;
+    h ^= (this.tracerProvider == null) ? 0 : this.tracerProvider.hashCode();
+    h *= 1000003;
+    h ^= (this.resource == null) ? 0 : this.resource.hashCode();
+    h *= 1000003;
+    h ^= (this.instrumentationDevelopment == null) ? 0 : this.instrumentationDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.distribution == null) ? 0 : this.distribution.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof OpenTelemetryConfigurationModel) == false) {
-      return false;
+    if (o instanceof OpenTelemetryConfigurationModel) {
+      OpenTelemetryConfigurationModel that = (OpenTelemetryConfigurationModel) o;
+      return (this.fileFormat == null
+              ? that.fileFormat == null
+              : this.fileFormat.equals(that.fileFormat))
+          && (this.disabled == null ? that.disabled == null : this.disabled.equals(that.disabled))
+          && (this.logLevel == null ? that.logLevel == null : this.logLevel.equals(that.logLevel))
+          && (this.attributeLimits == null
+              ? that.attributeLimits == null
+              : this.attributeLimits.equals(that.attributeLimits))
+          && (this.loggerProvider == null
+              ? that.loggerProvider == null
+              : this.loggerProvider.equals(that.loggerProvider))
+          && (this.meterProvider == null
+              ? that.meterProvider == null
+              : this.meterProvider.equals(that.meterProvider))
+          && (this.propagator == null
+              ? that.propagator == null
+              : this.propagator.equals(that.propagator))
+          && (this.tracerProvider == null
+              ? that.tracerProvider == null
+              : this.tracerProvider.equals(that.tracerProvider))
+          && (this.resource == null ? that.resource == null : this.resource.equals(that.resource))
+          && (this.instrumentationDevelopment == null
+              ? that.instrumentationDevelopment == null
+              : this.instrumentationDevelopment.equals(that.instrumentationDevelopment))
+          && (this.distribution == null
+              ? that.distribution == null
+              : this.distribution.equals(that.distribution))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    OpenTelemetryConfigurationModel rhs = ((OpenTelemetryConfigurationModel) other);
-    return (((((((((((((this.instrumentationDevelopment == rhs.instrumentationDevelopment)
-                                                    || ((this.instrumentationDevelopment != null)
-                                                        && this.instrumentationDevelopment.equals(
-                                                            rhs.instrumentationDevelopment)))
-                                                && ((this.attributeLimits == rhs.attributeLimits)
-                                                    || ((this.attributeLimits != null)
-                                                        && this.attributeLimits.equals(
-                                                            rhs.attributeLimits))))
-                                            && ((this.logLevel == rhs.logLevel)
-                                                || ((this.logLevel != null)
-                                                    && this.logLevel.equals(rhs.logLevel))))
-                                        && ((this.tracerProvider == rhs.tracerProvider)
-                                            || ((this.tracerProvider != null)
-                                                && this.tracerProvider.equals(rhs.tracerProvider))))
-                                    && ((this.resource == rhs.resource)
-                                        || ((this.resource != null)
-                                            && this.resource.equals(rhs.resource))))
-                                && ((this.meterProvider == rhs.meterProvider)
-                                    || ((this.meterProvider != null)
-                                        && this.meterProvider.equals(rhs.meterProvider))))
-                            && ((this.propagator == rhs.propagator)
-                                || ((this.propagator != null)
-                                    && this.propagator.equals(rhs.propagator))))
-                        && ((this.disabled == rhs.disabled)
-                            || ((this.disabled != null) && this.disabled.equals(rhs.disabled))))
-                    && ((this.additionalProperties == rhs.additionalProperties)
-                        || ((this.additionalProperties != null)
-                            && this.additionalProperties.equals(rhs.additionalProperties))))
-                && ((this.distribution == rhs.distribution)
-                    || ((this.distribution != null) && this.distribution.equals(rhs.distribution))))
-            && ((this.fileFormat == rhs.fileFormat)
-                || ((this.fileFormat != null) && this.fileFormat.equals(rhs.fileFormat))))
-        && ((this.loggerProvider == rhs.loggerProvider)
-            || ((this.loggerProvider != null) && this.loggerProvider.equals(rhs.loggerProvider))));
+    return false;
   }
 
   @Generated("jsonschema2pojo")
-  @SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
   public enum SeverityNumber {
     TRACE("trace"),
     TRACE_2("trace2"),

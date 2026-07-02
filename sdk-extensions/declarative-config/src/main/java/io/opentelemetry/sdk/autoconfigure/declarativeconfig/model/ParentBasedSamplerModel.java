@@ -20,32 +20,26 @@ import javax.annotation.Nullable;
   "local_parent_not_sampled"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ParentBasedSamplerModel {
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("root")
+  @Nullable
   private SamplerModel root;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("remote_parent_sampled")
+  @Nullable
   private SamplerModel remoteParentSampled;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("remote_parent_not_sampled")
+  @Nullable
   private SamplerModel remoteParentNotSampled;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("local_parent_sampled")
+  @Nullable
   private SamplerModel localParentSampled;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("local_parent_not_sampled")
+  @Nullable
   private SamplerModel localParentNotSampled;
 
   @JsonProperty("root")
@@ -105,79 +99,57 @@ public class ParentBasedSamplerModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ParentBasedSamplerModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("root");
-    sb.append('=');
-    sb.append(((this.root == null) ? "<null>" : this.root));
-    sb.append(',');
-    sb.append("remoteParentSampled");
-    sb.append('=');
-    sb.append(((this.remoteParentSampled == null) ? "<null>" : this.remoteParentSampled));
-    sb.append(',');
-    sb.append("remoteParentNotSampled");
-    sb.append('=');
-    sb.append(((this.remoteParentNotSampled == null) ? "<null>" : this.remoteParentNotSampled));
-    sb.append(',');
-    sb.append("localParentSampled");
-    sb.append('=');
-    sb.append(((this.localParentSampled == null) ? "<null>" : this.localParentSampled));
-    sb.append(',');
-    sb.append("localParentNotSampled");
-    sb.append('=');
-    sb.append(((this.localParentNotSampled == null) ? "<null>" : this.localParentNotSampled));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ParentBasedSamplerModel{"
+        + "root="
+        + root
+        + ", remoteParentSampled="
+        + remoteParentSampled
+        + ", remoteParentNotSampled="
+        + remoteParentNotSampled
+        + ", localParentSampled="
+        + localParentSampled
+        + ", localParentNotSampled="
+        + localParentNotSampled
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result =
-        ((result * 31)
-            + ((this.remoteParentNotSampled == null) ? 0 : this.remoteParentNotSampled.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.localParentNotSampled == null) ? 0 : this.localParentNotSampled.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.remoteParentSampled == null) ? 0 : this.remoteParentSampled.hashCode()));
-    result = ((result * 31) + ((this.root == null) ? 0 : this.root.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.localParentSampled == null) ? 0 : this.localParentSampled.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.root == null) ? 0 : this.root.hashCode();
+    h *= 1000003;
+    h ^= (this.remoteParentSampled == null) ? 0 : this.remoteParentSampled.hashCode();
+    h *= 1000003;
+    h ^= (this.remoteParentNotSampled == null) ? 0 : this.remoteParentNotSampled.hashCode();
+    h *= 1000003;
+    h ^= (this.localParentSampled == null) ? 0 : this.localParentSampled.hashCode();
+    h *= 1000003;
+    h ^= (this.localParentNotSampled == null) ? 0 : this.localParentNotSampled.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ParentBasedSamplerModel) == false) {
-      return false;
+    if (o instanceof ParentBasedSamplerModel) {
+      ParentBasedSamplerModel that = (ParentBasedSamplerModel) o;
+      return (this.root == null ? that.root == null : this.root.equals(that.root))
+          && (this.remoteParentSampled == null
+              ? that.remoteParentSampled == null
+              : this.remoteParentSampled.equals(that.remoteParentSampled))
+          && (this.remoteParentNotSampled == null
+              ? that.remoteParentNotSampled == null
+              : this.remoteParentNotSampled.equals(that.remoteParentNotSampled))
+          && (this.localParentSampled == null
+              ? that.localParentSampled == null
+              : this.localParentSampled.equals(that.localParentSampled))
+          && (this.localParentNotSampled == null
+              ? that.localParentNotSampled == null
+              : this.localParentNotSampled.equals(that.localParentNotSampled));
     }
-    ParentBasedSamplerModel rhs = ((ParentBasedSamplerModel) other);
-    return ((((((this.remoteParentNotSampled == rhs.remoteParentNotSampled)
-                        || ((this.remoteParentNotSampled != null)
-                            && this.remoteParentNotSampled.equals(rhs.remoteParentNotSampled)))
-                    && ((this.localParentNotSampled == rhs.localParentNotSampled)
-                        || ((this.localParentNotSampled != null)
-                            && this.localParentNotSampled.equals(rhs.localParentNotSampled))))
-                && ((this.remoteParentSampled == rhs.remoteParentSampled)
-                    || ((this.remoteParentSampled != null)
-                        && this.remoteParentSampled.equals(rhs.remoteParentSampled))))
-            && ((this.root == rhs.root) || ((this.root != null) && this.root.equals(rhs.root))))
-        && ((this.localParentSampled == rhs.localParentSampled)
-            || ((this.localParentSampled != null)
-                && this.localParentSampled.equals(rhs.localParentSampled))));
+    return false;
   }
 }

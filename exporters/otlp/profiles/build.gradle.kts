@@ -8,7 +8,7 @@ plugins {
 description = "OpenTelemetry - Profiles Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.profiles")
 
-val versions: Map<String, String> by project
+val versions = project.property("versions") as Map<*, *>
 
 dependencies {
   api(project(":sdk:common"))

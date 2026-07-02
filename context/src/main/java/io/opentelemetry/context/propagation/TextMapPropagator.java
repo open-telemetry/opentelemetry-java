@@ -82,7 +82,7 @@ public interface TextMapPropagator {
 
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
-   * before calling {@link #inject(Context, Object, TextMapSetter)} )}.
+   * before calling {@link #inject(Context, Object, TextMapSetter)}.
    *
    * <p>For example, if the carrier is a single-use or immutable request object, you don't need to
    * clear fields as they couldn't have been set before. If it is a mutable, retryable object,

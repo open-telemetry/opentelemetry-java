@@ -241,6 +241,7 @@ class BatchSpanProcessorTest {
 
   @Test
   @SuppressLogger(BatchSpanProcessor.class)
+  @SuppressLogger(BatchSpanProcessorBuilder.class)
   void droppedSpanIsLogged() {
     sdkTracerProvider =
         SdkTracerProvider.builder()

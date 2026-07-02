@@ -16,7 +16,7 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.18"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.8.0"
-val armeriaVersion = "1.39.1"
+val armeriaVersion = "1.40.0"
 val junitVersion = "5.14.4"
 val junitPlatformVersion = "1.14.4"
 val okhttpVersion = "5.4.0"
@@ -32,7 +32,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:4.35.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
   "com.squareup.okio:okio-bom:3.17.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.82.0",
+  "io.grpc:grpc-bom:1.82.1",
   "io.netty:netty-bom:4.2.15.Final",
   "io.zipkin.brave:brave-bom:6.3.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.3",
@@ -80,15 +80,15 @@ val DEPENDENCIES = listOf(
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
   "com.tngtech.archunit:archunit-junit5:1.4.2",
-  "com.uber.nullaway:nullaway:0.13.6",
+  "com.uber.nullaway:nullaway:0.13.7",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.11",
   "io.github.crac:org-crac:0.1.3",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.instrumentation:opentelemetry-resources:2.28.1-alpha",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.57.0-alpha",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.41.1-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.58.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.42.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.10.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",

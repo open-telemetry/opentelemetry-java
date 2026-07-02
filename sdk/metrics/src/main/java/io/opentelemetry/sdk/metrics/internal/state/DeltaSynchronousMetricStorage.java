@@ -444,7 +444,8 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     private final DeltaSynchronousMetricStorage<T> storage;
     // Rotated by the collector for bound series (a fresh, already-zero handle swapped in while
     // recorders are drained); write-once for unbound series. Not volatile: the per-handle `state`
-    // gate carries visibility — every read is preceded by a `state` acquire and every rotation write
+    // gate carries visibility — every read is preceded by a `state` acquire and every rotation
+    // write
     // followed by a `state` release. INVARIANT: never read `handle` outside the gate.
     AggregatorHandle<T> handle;
     // The off-duty accumulator used for bound rotation, ping-ponged with {@link #handle} each

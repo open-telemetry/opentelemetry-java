@@ -11,34 +11,27 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"exporter", "producers", "cardinality_limits"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class PullMetricReaderModel {
 
   /** (Required) */
   @JsonProperty("exporter")
-  @Nonnull
+  @Nullable
   private PullMetricExporterModel exporter;
 
-  /**
-   * Configure metric producers. If omitted, no metric producers are added.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
+  /** Configure metric producers. If omitted, no metric producers are added. */
   @JsonProperty("producers")
   @JsonPropertyDescription(
       "Configure metric producers.\nIf omitted, no metric producers are added.\n")
+  @Nullable
   private List<MetricProducerModel> producers;
 
-  /** (Can be null) */
-  @Nullable
   @JsonProperty("cardinality_limits")
+  @Nullable
   private CardinalityLimitsModel cardinalityLimits;
 
   /** (Required) */
@@ -78,57 +71,43 @@ public class PullMetricReaderModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(PullMetricReaderModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("exporter");
-    sb.append('=');
-    sb.append(((this.exporter == null) ? "<null>" : this.exporter));
-    sb.append(',');
-    sb.append("producers");
-    sb.append('=');
-    sb.append(((this.producers == null) ? "<null>" : this.producers));
-    sb.append(',');
-    sb.append("cardinalityLimits");
-    sb.append('=');
-    sb.append(((this.cardinalityLimits == null) ? "<null>" : this.cardinalityLimits));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "PullMetricReaderModel{"
+        + "exporter="
+        + exporter
+        + ", producers="
+        + producers
+        + ", cardinalityLimits="
+        + cardinalityLimits
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result =
-        ((result * 31)
-            + ((this.cardinalityLimits == null) ? 0 : this.cardinalityLimits.hashCode()));
-    result = ((result * 31) + ((this.exporter == null) ? 0 : this.exporter.hashCode()));
-    result = ((result * 31) + ((this.producers == null) ? 0 : this.producers.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.exporter == null) ? 0 : this.exporter.hashCode();
+    h *= 1000003;
+    h ^= (this.producers == null) ? 0 : this.producers.hashCode();
+    h *= 1000003;
+    h ^= (this.cardinalityLimits == null) ? 0 : this.cardinalityLimits.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof PullMetricReaderModel) == false) {
-      return false;
+    if (o instanceof PullMetricReaderModel) {
+      PullMetricReaderModel that = (PullMetricReaderModel) o;
+      return (this.exporter == null ? that.exporter == null : this.exporter.equals(that.exporter))
+          && (this.producers == null
+              ? that.producers == null
+              : this.producers.equals(that.producers))
+          && (this.cardinalityLimits == null
+              ? that.cardinalityLimits == null
+              : this.cardinalityLimits.equals(that.cardinalityLimits));
     }
-    PullMetricReaderModel rhs = ((PullMetricReaderModel) other);
-    return ((((this.cardinalityLimits == rhs.cardinalityLimits)
-                || ((this.cardinalityLimits != null)
-                    && this.cardinalityLimits.equals(rhs.cardinalityLimits)))
-            && ((this.exporter == rhs.exporter)
-                || ((this.exporter != null) && this.exporter.equals(rhs.exporter))))
-        && ((this.producers == rhs.producers)
-            || ((this.producers != null) && this.producers.equals(rhs.producers))));
+    return false;
   }
 }
