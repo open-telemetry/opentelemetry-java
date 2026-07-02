@@ -24,6 +24,11 @@ public class MetricReaderModel {
   @Nullable
   private PullMetricReaderModel pull;
 
+  /**
+   * Configure a periodic metric reader.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("periodic")
   @Nullable
   public PeriodicMetricReaderModel getPeriodic() {
@@ -35,6 +40,11 @@ public class MetricReaderModel {
     return this;
   }
 
+  /**
+   * Configure a pull based metric reader.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("pull")
   @Nullable
   public PullMetricReaderModel getPull() {

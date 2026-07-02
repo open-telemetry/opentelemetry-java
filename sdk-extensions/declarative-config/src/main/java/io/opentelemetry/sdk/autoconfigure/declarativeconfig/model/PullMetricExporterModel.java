@@ -30,6 +30,11 @@ public class PullMetricExporterModel {
   private Map<String, PullMetricExporterPropertyModel> additionalProperties =
       new LinkedHashMap<String, PullMetricExporterPropertyModel>();
 
+  /**
+   * Configure exporter to be prometheus.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("prometheus/development")
   @Nullable
   public ExperimentalPrometheusMetricExporterModel getPrometheusDevelopment() {

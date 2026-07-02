@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -18,33 +17,18 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
 
-  /**
-   * The attribute key to match against. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("key")
-  @JsonPropertyDescription(
-      "The attribute key to match against.\nProperty is required and must be non-null.\n")
   @Nullable
   private String key;
 
-  /**
-   * The attribute values to match against. If the attribute's value matches any of these, it
-   * matches. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("values")
-  @JsonPropertyDescription(
-      "The attribute values to match against. If the attribute's value matches any of these, it matches.\nProperty is required and must be non-null.\n")
   @Nullable
   private List<String> values;
 
   /**
-   * The attribute key to match against. Property is required and must be non-null.
+   * The attribute key to match against.
    *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("key")
   @Nullable
@@ -59,9 +43,9 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
 
   /**
    * The attribute values to match against. If the attribute's value matches any of these, it
-   * matches. Property is required and must be non-null.
+   * matches.
    *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("values")
   @Nullable

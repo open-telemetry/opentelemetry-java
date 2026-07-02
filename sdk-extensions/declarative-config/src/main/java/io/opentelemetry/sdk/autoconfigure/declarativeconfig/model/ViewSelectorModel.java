@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.HashMap;
@@ -28,12 +27,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ViewSelectorModel {
 
-  /**
-   * Configure instrument name selection criteria. If omitted or null, all instrument names match.
-   */
   @JsonProperty("instrument_name")
-  @JsonPropertyDescription(
-      "Configure instrument name selection criteria.\nIf omitted or null, all instrument names match.\n")
   @Nullable
   private String instrumentName;
 
@@ -41,41 +35,26 @@ public class ViewSelectorModel {
   @Nullable
   private ViewSelectorModel.InstrumentType instrumentType;
 
-  /**
-   * Configure the instrument unit selection criteria. If omitted or null, all instrument units
-   * match.
-   */
   @JsonProperty("unit")
-  @JsonPropertyDescription(
-      "Configure the instrument unit selection criteria.\nIf omitted or null, all instrument units match.\n")
   @Nullable
   private String unit;
 
-  /** Configure meter name selection criteria. If omitted or null, all meter names match. */
   @JsonProperty("meter_name")
-  @JsonPropertyDescription(
-      "Configure meter name selection criteria.\nIf omitted or null, all meter names match.\n")
   @Nullable
   private String meterName;
 
-  /** Configure meter version selection criteria. If omitted or null, all meter versions match. */
   @JsonProperty("meter_version")
-  @JsonPropertyDescription(
-      "Configure meter version selection criteria.\nIf omitted or null, all meter versions match.\n")
   @Nullable
   private String meterVersion;
 
-  /**
-   * Configure meter schema url selection criteria. If omitted or null, all meter schema URLs match.
-   */
   @JsonProperty("meter_schema_url")
-  @JsonPropertyDescription(
-      "Configure meter schema url selection criteria.\nIf omitted or null, all meter schema URLs match.\n")
   @Nullable
   private String meterSchemaUrl;
 
   /**
-   * Configure instrument name selection criteria. If omitted or null, all instrument names match.
+   * Configure instrument name selection criteria.
+   *
+   * <p>If omitted or null, all instrument names match.
    */
   @JsonProperty("instrument_name")
   @Nullable
@@ -88,6 +67,27 @@ public class ViewSelectorModel {
     return this;
   }
 
+  /**
+   * Configure instrument type selection criteria.
+   *
+   * <p>Values include:
+   *
+   * <p>* counter: Synchronous counter instruments.
+   *
+   * <p>* gauge: Synchronous gauge instruments.
+   *
+   * <p>* histogram: Synchronous histogram instruments.
+   *
+   * <p>* observable_counter: Asynchronous counter instruments.
+   *
+   * <p>* observable_gauge: Asynchronous gauge instruments.
+   *
+   * <p>* observable_up_down_counter: Asynchronous up down counter instruments.
+   *
+   * <p>* up_down_counter: Synchronous up down counter instruments.
+   *
+   * <p>If omitted, all instrument types match.
+   */
   @JsonProperty("instrument_type")
   @Nullable
   public ViewSelectorModel.InstrumentType getInstrumentType() {
@@ -100,8 +100,9 @@ public class ViewSelectorModel {
   }
 
   /**
-   * Configure the instrument unit selection criteria. If omitted or null, all instrument units
-   * match.
+   * Configure the instrument unit selection criteria.
+   *
+   * <p>If omitted or null, all instrument units match.
    */
   @JsonProperty("unit")
   @Nullable
@@ -114,7 +115,11 @@ public class ViewSelectorModel {
     return this;
   }
 
-  /** Configure meter name selection criteria. If omitted or null, all meter names match. */
+  /**
+   * Configure meter name selection criteria.
+   *
+   * <p>If omitted or null, all meter names match.
+   */
   @JsonProperty("meter_name")
   @Nullable
   public String getMeterName() {
@@ -126,7 +131,11 @@ public class ViewSelectorModel {
     return this;
   }
 
-  /** Configure meter version selection criteria. If omitted or null, all meter versions match. */
+  /**
+   * Configure meter version selection criteria.
+   *
+   * <p>If omitted or null, all meter versions match.
+   */
   @JsonProperty("meter_version")
   @Nullable
   public String getMeterVersion() {
@@ -139,7 +148,9 @@ public class ViewSelectorModel {
   }
 
   /**
-   * Configure meter schema url selection criteria. If omitted or null, all meter schema URLs match.
+   * Configure meter schema url selection criteria.
+   *
+   * <p>If omitted or null, all meter schema URLs match.
    */
   @JsonProperty("meter_schema_url")
   @Nullable

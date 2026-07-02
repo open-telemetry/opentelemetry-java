@@ -28,6 +28,18 @@ public class ExperimentalHttpInstrumentationModel {
   @Nullable
   private ExperimentalHttpServerInstrumentationModel server;
 
+  /**
+   * Configure HTTP semantic convention version and migration behavior.
+   *
+   * <p>This property takes precedence over the
+   * .instrumentation/development.general.stability_opt_in_list setting.
+   *
+   * <p>See HTTP migration:
+   * https://opentelemetry.io/docs/specs/semconv/non-normative/http-migration/
+   *
+   * <p>If omitted, uses the general stability_opt_in_list setting, or instrumentations continue
+   * emitting their default semantic convention version if not set.
+   */
   @JsonProperty("semconv")
   @Nullable
   public ExperimentalSemconvConfigModel getSemconv() {
@@ -39,6 +51,11 @@ public class ExperimentalHttpInstrumentationModel {
     return this;
   }
 
+  /**
+   * Configure instrumentations following the http client semantic conventions.
+   *
+   * <p>If omitted, defaults as described in ExperimentalHttpClientInstrumentation are used.
+   */
   @JsonProperty("client")
   @Nullable
   public ExperimentalHttpClientInstrumentationModel getClient() {
@@ -51,6 +68,11 @@ public class ExperimentalHttpInstrumentationModel {
     return this;
   }
 
+  /**
+   * Configure instrumentations following the http server semantic conventions.
+   *
+   * <p>If omitted, defaults as described in ExperimentalHttpServerInstrumentation are used.
+   */
   @JsonProperty("server")
   @Nullable
   public ExperimentalHttpServerInstrumentationModel getServer() {

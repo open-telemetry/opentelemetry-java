@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfiguratorModel;
 import java.util.List;
@@ -19,14 +18,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class LoggerProviderModel {
 
-  /**
-   * Configure log record processors. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("processors")
-  @JsonPropertyDescription(
-      "Configure log record processors.\nProperty is required and must be non-null.\n")
   @Nullable
   private List<LogRecordProcessorModel> processors;
 
@@ -39,9 +31,9 @@ public class LoggerProviderModel {
   private ExperimentalLoggerConfiguratorModel loggerConfiguratorDevelopment;
 
   /**
-   * Configure log record processors. Property is required and must be non-null.
+   * Configure log record processors.
    *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("processors")
   @Nullable
@@ -54,6 +46,11 @@ public class LoggerProviderModel {
     return this;
   }
 
+  /**
+   * Configure log record limits. See also attribute_limits.
+   *
+   * <p>If omitted, default values as described in LogRecordLimits are used.
+   */
   @JsonProperty("limits")
   @Nullable
   public LogRecordLimitsModel getLimits() {
@@ -65,6 +62,11 @@ public class LoggerProviderModel {
     return this;
   }
 
+  /**
+   * Configure loggers.
+   *
+   * <p>If omitted, all loggers use default values as described in ExperimentalLoggerConfig.
+   */
   @JsonProperty("logger_configurator/development")
   @Nullable
   public ExperimentalLoggerConfiguratorModel getLoggerConfiguratorDevelopment() {

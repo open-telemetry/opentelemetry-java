@@ -42,6 +42,11 @@ public class PushMetricExporterModel {
   private Map<String, PushMetricExporterPropertyModel> additionalProperties =
       new LinkedHashMap<String, PushMetricExporterPropertyModel>();
 
+  /**
+   * Configure exporter to be OTLP with HTTP transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_http")
   @Nullable
   public OtlpHttpMetricExporterModel getOtlpHttp() {
@@ -53,6 +58,11 @@ public class PushMetricExporterModel {
     return this;
   }
 
+  /**
+   * Configure exporter to be OTLP with gRPC transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_grpc")
   @Nullable
   public OtlpGrpcMetricExporterModel getOtlpGrpc() {
@@ -64,6 +74,11 @@ public class PushMetricExporterModel {
     return this;
   }
 
+  /**
+   * Configure exporter to be OTLP with file transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_file/development")
   @Nullable
   public ExperimentalOtlpFileMetricExporterModel getOtlpFileDevelopment() {
@@ -76,6 +91,11 @@ public class PushMetricExporterModel {
     return this;
   }
 
+  /**
+   * Configure exporter to be console.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("console")
   @Nullable
   public ConsoleMetricExporterModel getConsole() {

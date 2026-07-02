@@ -47,6 +47,14 @@ public class AggregationModel {
   @Nullable
   private SumAggregationModel sum;
 
+  /**
+   * Configures the stream to use the instrument kind to select an aggregation and advisory
+   * parameters to influence aggregation configuration parameters. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#default-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("default")
   @Nullable
   public DefaultAggregationModel getDefault() {
@@ -58,6 +66,13 @@ public class AggregationModel {
     return this;
   }
 
+  /**
+   * Configures the stream to ignore/drop all instrument measurements. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#drop-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("drop")
   @Nullable
   public DropAggregationModel getDrop() {
@@ -69,6 +84,14 @@ public class AggregationModel {
     return this;
   }
 
+  /**
+   * Configures the stream to collect data for the histogram metric point using a set of explicit
+   * boundary values for histogram bucketing. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#explicit-bucket-histogram-aggregation
+   * for details
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("explicit_bucket_histogram")
   @Nullable
   public ExplicitBucketHistogramAggregationModel getExplicitBucketHistogram() {
@@ -81,6 +104,15 @@ public class AggregationModel {
     return this;
   }
 
+  /**
+   * Configures the stream to collect data for the exponential histogram metric point, which uses a
+   * base-2 exponential formula to determine bucket boundaries and an integer scale parameter to
+   * control resolution. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#base2-exponential-bucket-histogram-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("base2_exponential_bucket_histogram")
   @Nullable
   public Base2ExponentialBucketHistogramAggregationModel getBase2ExponentialBucketHistogram() {
@@ -93,6 +125,13 @@ public class AggregationModel {
     return this;
   }
 
+  /**
+   * Configures the stream to collect data using the last measurement. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#last-value-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("last_value")
   @Nullable
   public LastValueAggregationModel getLastValue() {
@@ -104,6 +143,13 @@ public class AggregationModel {
     return this;
   }
 
+  /**
+   * Configures the stream to collect the arithmetic sum of measurement values. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#sum-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("sum")
   @Nullable
   public SumAggregationModel getSum() {

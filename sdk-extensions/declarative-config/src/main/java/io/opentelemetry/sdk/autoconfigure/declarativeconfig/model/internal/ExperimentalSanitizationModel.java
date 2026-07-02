@@ -20,6 +20,11 @@ public class ExperimentalSanitizationModel {
   @Nullable
   private ExperimentalUrlSanitizationModel url;
 
+  /**
+   * Configure URL sanitization options.
+   *
+   * <p>If omitted, defaults as described in ExperimentalUrlSanitization are used.
+   */
   @JsonProperty("url")
   @Nullable
   public ExperimentalUrlSanitizationModel getUrl() {

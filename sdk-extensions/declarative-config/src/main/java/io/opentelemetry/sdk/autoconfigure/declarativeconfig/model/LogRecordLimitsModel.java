@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,29 +16,20 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class LogRecordLimitsModel {
 
-  /**
-   * Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit.
-   * Value must be non-negative. If omitted or null, there is no limit.
-   */
   @JsonProperty("attribute_value_length_limit")
-  @JsonPropertyDescription(
-      "Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit. \nValue must be non-negative.\nIf omitted or null, there is no limit.\n")
   @Nullable
   private Integer attributeValueLengthLimit;
 
-  /**
-   * Configure max attribute count. Overrides .attribute_limits.attribute_count_limit. Value must be
-   * non-negative. If omitted or null, 128 is used.
-   */
   @JsonProperty("attribute_count_limit")
-  @JsonPropertyDescription(
-      "Configure max attribute count. Overrides .attribute_limits.attribute_count_limit. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
   @Nullable
   private Integer attributeCountLimit;
 
   /**
    * Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit.
-   * Value must be non-negative. If omitted or null, there is no limit.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, there is no limit.
    */
   @JsonProperty("attribute_value_length_limit")
   @Nullable
@@ -53,8 +43,11 @@ public class LogRecordLimitsModel {
   }
 
   /**
-   * Configure max attribute count. Overrides .attribute_limits.attribute_count_limit. Value must be
-   * non-negative. If omitted or null, 128 is used.
+   * Configure max attribute count. Overrides .attribute_limits.attribute_count_limit.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 128 is used.
    */
   @JsonProperty("attribute_count_limit")
   @Nullable

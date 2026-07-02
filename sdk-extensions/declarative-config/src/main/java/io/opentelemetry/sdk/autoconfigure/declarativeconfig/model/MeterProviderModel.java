@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
@@ -23,24 +22,11 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class MeterProviderModel {
 
-  /**
-   * Configure metric readers. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("readers")
-  @JsonPropertyDescription(
-      "Configure metric readers.\nProperty is required and must be non-null.\n")
   @Nullable
   private List<MetricReaderModel> readers;
 
-  /**
-   * Configure views. Each view has a selector which determines the instrument(s) it applies to, and
-   * a configuration for the resulting stream(s). If omitted, no views are registered.
-   */
   @JsonProperty("views")
-  @JsonPropertyDescription(
-      "Configure views. \nEach view has a selector which determines the instrument(s) it applies to, and a configuration for the resulting stream(s).\nIf omitted, no views are registered.\n")
   @Nullable
   private List<ViewModel> views;
 
@@ -53,9 +39,9 @@ public class MeterProviderModel {
   private ExperimentalMeterConfiguratorModel meterConfiguratorDevelopment;
 
   /**
-   * Configure metric readers. Property is required and must be non-null.
+   * Configure metric readers.
    *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("readers")
   @Nullable
@@ -69,8 +55,12 @@ public class MeterProviderModel {
   }
 
   /**
-   * Configure views. Each view has a selector which determines the instrument(s) it applies to, and
-   * a configuration for the resulting stream(s). If omitted, no views are registered.
+   * Configure views.
+   *
+   * <p>Each view has a selector which determines the instrument(s) it applies to, and a
+   * configuration for the resulting stream(s).
+   *
+   * <p>If omitted, no views are registered.
    */
   @JsonProperty("views")
   @Nullable
@@ -83,6 +73,20 @@ public class MeterProviderModel {
     return this;
   }
 
+  /**
+   * Configure the exemplar filter.
+   *
+   * <p>Values include:
+   *
+   * <p>* always_off: ExemplarFilter which makes no measurements eligible for being an Exemplar.
+   *
+   * <p>* always_on: ExemplarFilter which makes all measurements eligible for being an Exemplar.
+   *
+   * <p>* trace_based: ExemplarFilter which makes measurements recorded in the context of a sampled
+   * parent span eligible for being an Exemplar.
+   *
+   * <p>If omitted, trace_based is used.
+   */
   @JsonProperty("exemplar_filter")
   @Nullable
   public MeterProviderModel.ExemplarFilter getExemplarFilter() {
@@ -94,6 +98,11 @@ public class MeterProviderModel {
     return this;
   }
 
+  /**
+   * Configure meters.
+   *
+   * <p>If omitted, all meters use default values as described in ExperimentalMeterConfig.
+   */
   @JsonProperty("meter_configurator/development")
   @Nullable
   public ExperimentalMeterConfiguratorModel getMeterConfiguratorDevelopment() {
