@@ -15,6 +15,7 @@ import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -439,6 +440,41 @@ class W3CBaggagePropagatorTest {
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
+  @ParameterizedTest
+  @MethodSource
+  @SuppressLogger(Parser.class)
+  void extract_member_invalidPercentEncoding_preservesValidMembers(
+      String header, Baggage expectedBaggage) {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result = propagator.extract(Context.root(), ImmutableMap.of("baggage", header), getter);
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  static Stream<Arguments> extract_member_invalidPercentEncoding_preservesValidMembers() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "invalid entry at beginning",
+            "bad=va%lue,key1=value1,encoded=value%202",
+            Baggage.builder().put("key1", "value1").put("encoded", "value 2").build()),
+        Arguments.argumentSet(
+            "invalid entry in middle",
+            "key1=value1,bad=va%lue,encoded=value%202,key2=value2",
+            Baggage.builder()
+                .put("key1", "value1")
+                .put("encoded", "value 2")
+                .put("key2", "value2")
+                .build()),
+        Arguments.argumentSet(
+            "invalid entry at end",
+            "key1=value1,encoded=value%202,bad=va%lue",
+            Baggage.builder().put("key1", "value1").put("encoded", "value 2").build()),
+        Arguments.argumentSet(
+            "multiple invalid entries",
+            "bad1=va%lue,key1=value1,bad2=value%GG,encoded=value%202,bad3=value;meta=%GG",
+            Baggage.builder().put("key1", "value1").put("encoded", "value 2").build()));
+  }
+
   @Test
   void extract_nullContext() {
     assertThat(W3CBaggagePropagator.getInstance().extract(null, Collections.emptyMap(), getter))
@@ -520,6 +556,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(Parser.class)
   void extract_multiple_headers_all_invalid() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
@@ -534,6 +571,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(Parser.class)
   void extract_multiple_headers_some_invalid() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 

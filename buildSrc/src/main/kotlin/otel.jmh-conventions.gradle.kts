@@ -63,6 +63,23 @@ jmh {
   }
 }
 
+val jmhResultsDir = project.findProperty("jmhResultsDir") as String?
+if (jmhResultsDir != null) {
+  val jmhLabel = (project.findProperty("jmhLabel") as String?)
+    ?: project.path.trimStart(':').replace(':', '-').ifEmpty { project.name }
+
+  val jmhCopyResults = tasks.register<Copy>("jmhCopyResults") {
+    description = "Copies JMH JSON results to jmhResultsDir for cross-run comparison."
+    from(layout.buildDirectory.file("results/jmh/results.json"))
+    into(rootProject.file(jmhResultsDir))
+    rename { "${jmhLabel}.json" }
+  }
+
+  tasks.named("jmh") {
+    finalizedBy(jmhCopyResults)
+  }
+}
+
 jmhReport {
   val buildDirectory = layout.buildDirectory.asFile.get()
   jmhResultPath = file("$buildDirectory/results/jmh/results.json").absolutePath
