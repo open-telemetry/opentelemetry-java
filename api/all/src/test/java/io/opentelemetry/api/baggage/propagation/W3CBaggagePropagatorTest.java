@@ -232,7 +232,8 @@ class W3CBaggagePropagatorTest {
     Context result =
         propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1=     "), getter);
 
-    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+    Baggage expectedBaggage = Baggage.builder().put("key1", "").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test

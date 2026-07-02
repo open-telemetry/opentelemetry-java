@@ -32,7 +32,6 @@ class Element {
 
   private final BitSet excluded;
   private final boolean allowEmpty;
-  private boolean seenWhitespace;
 
   private boolean leadingSpace;
   private boolean readingValue;
@@ -71,7 +70,6 @@ class Element {
     readingValue = false;
     trailingSpace = false;
     value = null;
-    seenWhitespace = false;
   }
 
   boolean tryTerminating(int index, String header) {
@@ -81,11 +79,11 @@ class Element {
     if (this.trailingSpace) {
       setValue(header);
       return true;
-    } else if (allowEmpty && !seenWhitespace) {
+    } else if (allowEmpty) {
+      // no content: empty value is valid (e.g. "key=" or "key=   "), empty key is not
       this.value = "";
       return true;
     } else {
-      // leading spaces - no content, invalid
       return false;
     }
   }
@@ -117,8 +115,6 @@ class Element {
   private boolean tryNextWhitespace(int index) {
     if (readingValue) {
       markEnd(index);
-    } else {
-      seenWhitespace = true;
     }
     return true;
   }
