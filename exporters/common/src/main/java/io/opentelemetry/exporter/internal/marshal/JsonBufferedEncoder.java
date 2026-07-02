@@ -12,16 +12,24 @@ import java.util.Arrays;
 import java.util.Base64;
 
 /**
- * A minimal JSON writer that serializes directly to an {@link OutputStream} as UTF-8, implementing
- * only the subset of JSON generation {@link JsonSerializer} needs so OTLP JSON serialization has no
- * third party dependency. Method names mirror the Jackson {@code JsonGenerator} that previously
- * backed {@link JsonSerializer}.
+ * A minimal JSON encoder that serializes directly to an {@link OutputStream} as UTF-8, buffering
+ * writes and implementing only the subset of JSON generation {@link JsonSerializer} needs so OTLP
+ * JSON serialization has no third party dependency. Method names mirror the Jackson {@code
+ * JsonGenerator} that previously backed {@link JsonSerializer}.
  *
  * <p>The caller is responsible for structural validity (matching braces); this class only inserts
  * separators between members. {@link #writeRaw(String)} writes verbatim without touching separator
  * state, which {@link MarshalerUtil#preserializeJsonFields(Marshaler)} relies on.
+ *
+ * <p>Nesting depth is capped at {@value #MAX_NESTING_DEPTH}. Attempting to nest deeper throws
+ * {@link IOException} rather than {@link StackOverflowError}, which matters for recursive OTLP
+ * structures such as cyclic {@code Value} bodies that could otherwise DoS an exporter. The cap is
+ * intentionally conservative (Jackson 3's default is 500). Real OTLP payloads nest only a handful
+ * of levels, and it is easier to relax the cap later than to tighten it.
  */
-final class JsonWriter {
+final class JsonBufferedEncoder {
+
+  static final int MAX_NESTING_DEPTH = 100;
 
   private static final byte[] TRUE = {'t', 'r', 'u', 'e'};
   private static final byte[] FALSE = {'f', 'a', 'l', 's', 'e'};
@@ -33,14 +41,15 @@ final class JsonWriter {
   private final byte[] buffer = new byte[4096];
   private int pos;
 
-  // Number of members already written at each nesting depth; depth 0 is the implicit root.
-  private int[] counts = new int[16];
+  // Whether any member has been written at each nesting depth; depth 0 is the implicit root. The
+  // array grows on demand in push(), so it does not cap nesting depth.
+  private boolean[] hasMembers = new boolean[16];
   private int depth;
   // True immediately after a field name has been written, meaning the next value is that field's
   // value and must not be preceded by a comma.
   private boolean afterKey;
 
-  JsonWriter(OutputStream out) {
+  JsonBufferedEncoder(OutputStream out) {
     this.out = out;
   }
 
@@ -73,10 +82,10 @@ final class JsonWriter {
   }
 
   void writeFieldName(String name) throws IOException {
-    if (counts[depth] > 0) {
+    if (hasMembers[depth]) {
       writeByte((byte) ',');
     }
-    counts[depth]++;
+    hasMembers[depth] = true;
     writeQuoted(name);
     writeByte((byte) ':');
     afterKey = true;
@@ -176,18 +185,22 @@ final class JsonWriter {
       afterKey = false;
       return;
     }
-    if (counts[depth] > 0) {
+    if (hasMembers[depth]) {
       writeByte((byte) ',');
     }
-    counts[depth]++;
+    hasMembers[depth] = true;
   }
 
-  private void push() {
-    depth++;
-    if (depth == counts.length) {
-      counts = Arrays.copyOf(counts, counts.length * 2);
+  private void push() throws IOException {
+    if (depth == MAX_NESTING_DEPTH) {
+      throw new IOException(
+          "JSON nesting depth exceeds maximum allowed (" + MAX_NESTING_DEPTH + ")");
     }
-    counts[depth] = 0;
+    depth++;
+    if (depth == hasMembers.length) {
+      hasMembers = Arrays.copyOf(hasMembers, hasMembers.length * 2);
+    }
+    hasMembers[depth] = false;
   }
 
   private void pop() {

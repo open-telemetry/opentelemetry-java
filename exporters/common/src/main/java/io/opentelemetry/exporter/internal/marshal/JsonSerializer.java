@@ -12,176 +12,176 @@ import java.util.List;
 
 final class JsonSerializer extends Serializer {
 
-  private final JsonWriter generator;
+  private final JsonBufferedEncoder encoder;
 
   JsonSerializer(OutputStream output) {
-    this.generator = new JsonWriter(output);
+    this.encoder = new JsonBufferedEncoder(output);
   }
 
   @Override
   protected void writeTraceId(ProtoFieldInfo field, String traceId) throws IOException {
-    generator.writeStringField(field.getJsonName(), traceId);
+    encoder.writeStringField(field.getJsonName(), traceId);
   }
 
   @Override
   protected void writeSpanId(ProtoFieldInfo field, String spanId) throws IOException {
-    generator.writeStringField(field.getJsonName(), spanId);
+    encoder.writeStringField(field.getJsonName(), spanId);
   }
 
   @Override
   public void writeBool(ProtoFieldInfo field, boolean value) throws IOException {
-    generator.writeBooleanField(field.getJsonName(), value);
+    encoder.writeBooleanField(field.getJsonName(), value);
   }
 
   @Override
   protected void writeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue) throws IOException {
-    generator.writeNumberField(field.getJsonName(), enumValue.getEnumNumber());
+    encoder.writeNumberField(field.getJsonName(), enumValue.getEnumNumber());
   }
 
   @Override
   protected void writeUint32(ProtoFieldInfo field, int value) throws IOException {
-    generator.writeNumberField(field.getJsonName(), value);
+    encoder.writeNumberField(field.getJsonName(), value);
   }
 
   @Override
   protected void writeSInt32(ProtoFieldInfo field, int value) throws IOException {
-    generator.writeNumberField(field.getJsonName(), value);
+    encoder.writeNumberField(field.getJsonName(), value);
   }
 
   @Override
   protected void writeint32(ProtoFieldInfo field, int value) throws IOException {
-    generator.writeNumberField(field.getJsonName(), value);
+    encoder.writeNumberField(field.getJsonName(), value);
   }
 
   @Override
   public void writeInt64(ProtoFieldInfo field, long value) throws IOException {
-    generator.writeStringField(field.getJsonName(), Long.toString(value));
+    encoder.writeStringField(field.getJsonName(), Long.toString(value));
   }
 
   @Override
   protected void writeFixed64(ProtoFieldInfo field, long value) throws IOException {
-    generator.writeStringField(field.getJsonName(), Long.toString(value));
+    encoder.writeStringField(field.getJsonName(), Long.toString(value));
   }
 
   @Override
   protected void writeFixed64Value(long value) throws IOException {
-    generator.writeString(Long.toString(value));
+    encoder.writeString(Long.toString(value));
   }
 
   @Override
   protected void writeUInt64Value(long value) throws IOException {
-    generator.writeString(Long.toString(value));
+    encoder.writeString(Long.toString(value));
   }
 
   @Override
   public void writeUInt64(ProtoFieldInfo field, long value) throws IOException {
-    generator.writeStringField(field.getJsonName(), Long.toString(value));
+    encoder.writeStringField(field.getJsonName(), Long.toString(value));
   }
 
   @Override
   protected void writeFixed32(ProtoFieldInfo field, int value) throws IOException {
-    generator.writeNumberField(field.getJsonName(), value);
+    encoder.writeNumberField(field.getJsonName(), value);
   }
 
   @Override
   public void writeDouble(ProtoFieldInfo field, double value) throws IOException {
-    generator.writeNumberField(field.getJsonName(), value);
+    encoder.writeNumberField(field.getJsonName(), value);
   }
 
   @Override
   protected void writeDoubleValue(double value) throws IOException {
-    generator.writeNumber(value);
+    encoder.writeNumber(value);
   }
 
   @Override
   public void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException {
-    generator.writeFieldName(field.getJsonName());
+    encoder.writeFieldName(field.getJsonName());
     // Marshalers already encoded the String to UTF-8 bytes (binary serialization needs them for
     // both size computation and writing), so write them directly rather than decoding and
     // re-encoding.
-    generator.writeUtf8String(utf8Bytes);
+    encoder.writeUtf8String(utf8Bytes);
   }
 
   @Override
   public void writeString(
       ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
       throws IOException {
-    generator.writeFieldName(field.getJsonName());
-    generator.writeString(string);
+    encoder.writeFieldName(field.getJsonName());
+    encoder.writeString(string);
   }
 
   @Override
   public void writeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) throws IOException {
-    generator.writeArrayFieldStart(field.getJsonName());
+    encoder.writeArrayFieldStart(field.getJsonName());
     for (byte[] value : utf8Bytes) {
       // See writeString(ProtoFieldInfo, byte[]): the bytes are already UTF-8, so write directly.
-      generator.writeUtf8String(value);
+      encoder.writeUtf8String(value);
     }
-    generator.writeEndArray();
+    encoder.writeEndArray();
   }
 
   @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
-    generator.writeBinaryField(field.getJsonName(), value);
+    encoder.writeBinaryField(field.getJsonName(), value);
   }
 
   @Override
   public void writeByteBuffer(ProtoFieldInfo field, ByteBuffer value) throws IOException {
     byte[] data = new byte[value.capacity()];
     ((ByteBuffer) value.duplicate().clear()).get(data);
-    generator.writeBinaryField(field.getJsonName(), data);
+    encoder.writeBinaryField(field.getJsonName(), data);
   }
 
   @Override
   protected void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
-    generator.writeObjectFieldStart(field.getJsonName());
+    encoder.writeObjectFieldStart(field.getJsonName());
   }
 
   @Override
   protected void writeEndMessage() throws IOException {
-    generator.writeEndObject();
+    encoder.writeEndObject();
   }
 
   @Override
   protected void writeStartRepeatedPrimitive(
       ProtoFieldInfo field, int protoSizePerElement, int numElements) throws IOException {
-    generator.writeArrayFieldStart(field.getJsonName());
+    encoder.writeArrayFieldStart(field.getJsonName());
   }
 
   @Override
   protected void writeEndRepeatedPrimitive() throws IOException {
-    generator.writeEndArray();
+    encoder.writeEndArray();
   }
 
   @Override
   protected void writeStartRepeatedVarint(ProtoFieldInfo field, int payloadSize)
       throws IOException {
-    generator.writeArrayFieldStart(field.getJsonName());
+    encoder.writeArrayFieldStart(field.getJsonName());
   }
 
   @Override
   protected void writeEndRepeatedVarint() throws IOException {
-    generator.writeEndArray();
+    encoder.writeEndArray();
   }
 
   @Override
   public void serializeRepeatedMessage(ProtoFieldInfo field, Marshaler[] repeatedMessage)
       throws IOException {
-    generator.writeArrayFieldStart(field.getJsonName());
+    encoder.writeArrayFieldStart(field.getJsonName());
     for (Marshaler marshaler : repeatedMessage) {
       writeMessageValue(marshaler);
     }
-    generator.writeEndArray();
+    encoder.writeEndArray();
   }
 
   @Override
   public void serializeRepeatedMessage(
       ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) throws IOException {
-    generator.writeArrayFieldStart(field.getJsonName());
+    encoder.writeArrayFieldStart(field.getJsonName());
     for (Marshaler marshaler : repeatedMessage) {
       writeMessageValue(marshaler);
     }
-    generator.writeEndArray();
+    encoder.writeEndArray();
   }
 
   @Override
@@ -191,52 +191,52 @@ final class JsonSerializer extends Serializer {
       StatelessMarshaler<T> marshaler,
       MarshalerContext context)
       throws IOException {
-    generator.writeArrayFieldStart(field.getJsonName());
+    encoder.writeArrayFieldStart(field.getJsonName());
     for (int i = 0; i < messages.size(); i++) {
       T message = messages.get(i);
-      generator.writeStartObject();
+      encoder.writeStartObject();
       marshaler.writeTo(this, message, context);
-      generator.writeEndObject();
+      encoder.writeEndObject();
     }
-    generator.writeEndArray();
+    encoder.writeEndArray();
   }
 
   @Override
   public void writeStartRepeated(ProtoFieldInfo field) throws IOException {
-    generator.writeArrayFieldStart(field.getJsonName());
+    encoder.writeArrayFieldStart(field.getJsonName());
   }
 
   @Override
   public void writeEndRepeated() throws IOException {
-    generator.writeEndArray();
+    encoder.writeEndArray();
   }
 
   @Override
   public void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
       throws IOException {
-    generator.writeStartObject();
+    encoder.writeStartObject();
   }
 
   @Override
   public void writeEndRepeatedElement() throws IOException {
-    generator.writeEndObject();
+    encoder.writeEndObject();
   }
 
   // Not a field.
   void writeMessageValue(Marshaler message) throws IOException {
-    generator.writeStartObject();
+    encoder.writeStartObject();
     message.writeTo(this);
-    generator.writeEndObject();
+    encoder.writeEndObject();
   }
 
   @Override
   public void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
       throws IOException {
-    generator.writeRaw(jsonSerialized);
+    encoder.writeRaw(jsonSerialized);
   }
 
   @Override
   public void close() throws IOException {
-    generator.close();
+    encoder.close();
   }
 }
