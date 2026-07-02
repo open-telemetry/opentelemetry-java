@@ -17,9 +17,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalComposableRuleBasedSamplerModel {
 
-  @JsonProperty("rules")
-  @Nullable
-  private List<ExperimentalComposableRuleBasedSamplerRuleModel> rules;
+  @Nullable private List<ExperimentalComposableRuleBasedSamplerRuleModel> rules;
 
   /**
    * The rules for the sampler, matched in order.
@@ -39,6 +37,7 @@ public class ExperimentalComposableRuleBasedSamplerModel {
     return rules;
   }
 
+  @JsonProperty("rules")
   public ExperimentalComposableRuleBasedSamplerModel withRules(
       List<ExperimentalComposableRuleBasedSamplerRuleModel> rules) {
     this.rules = rules;

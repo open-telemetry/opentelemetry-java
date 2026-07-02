@@ -16,17 +16,13 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalOtlpFileMetricExporterModel {
 
-  @JsonProperty("output_stream")
-  @Nullable
-  private String outputStream;
+  @Nullable private String outputStream;
 
-  @JsonProperty("temporality_preference")
   @Nullable
   private io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
           .ExporterTemporalityPreference
       temporalityPreference;
 
-  @JsonProperty("default_histogram_aggregation")
   @Nullable
   private io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
           .ExporterDefaultHistogramAggregation
@@ -45,6 +41,7 @@ public class ExperimentalOtlpFileMetricExporterModel {
     return outputStream;
   }
 
+  @JsonProperty("output_stream")
   public ExperimentalOtlpFileMetricExporterModel withOutputStream(String outputStream) {
     this.outputStream = outputStream;
     return this;
@@ -73,6 +70,7 @@ public class ExperimentalOtlpFileMetricExporterModel {
     return temporalityPreference;
   }
 
+  @JsonProperty("temporality_preference")
   public ExperimentalOtlpFileMetricExporterModel withTemporalityPreference(
       io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
               .ExporterTemporalityPreference
@@ -102,6 +100,7 @@ public class ExperimentalOtlpFileMetricExporterModel {
     return defaultHistogramAggregation;
   }
 
+  @JsonProperty("default_histogram_aggregation")
   public ExperimentalOtlpFileMetricExporterModel withDefaultHistogramAggregation(
       io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
               .ExporterDefaultHistogramAggregation

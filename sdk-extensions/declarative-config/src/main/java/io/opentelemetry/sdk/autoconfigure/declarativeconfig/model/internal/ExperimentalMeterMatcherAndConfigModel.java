@@ -16,13 +16,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalMeterMatcherAndConfigModel {
 
-  @JsonProperty("name")
-  @Nullable
-  private String name;
-
-  @JsonProperty("config")
-  @Nullable
-  private ExperimentalMeterConfigModel config;
+  @Nullable private String name;
+  @Nullable private ExperimentalMeterConfigModel config;
 
   /**
    * Configure meter names to match. Matching is case-sensitive, evaluated as follows:
@@ -40,6 +35,7 @@ public class ExperimentalMeterMatcherAndConfigModel {
     return name;
   }
 
+  @JsonProperty("name")
   public ExperimentalMeterMatcherAndConfigModel withName(String name) {
     this.name = name;
     return this;
@@ -56,6 +52,7 @@ public class ExperimentalMeterMatcherAndConfigModel {
     return config;
   }
 
+  @JsonProperty("config")
   public ExperimentalMeterMatcherAndConfigModel withConfig(ExperimentalMeterConfigModel config) {
     this.config = config;
     return this;

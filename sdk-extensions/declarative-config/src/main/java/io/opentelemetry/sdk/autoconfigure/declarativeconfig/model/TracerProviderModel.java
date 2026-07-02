@@ -24,25 +24,11 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class TracerProviderModel {
 
-  @JsonProperty("processors")
-  @Nullable
-  private List<SpanProcessorModel> processors;
-
-  @JsonProperty("limits")
-  @Nullable
-  private SpanLimitsModel limits;
-
-  @JsonProperty("sampler")
-  @Nullable
-  private SamplerModel sampler;
-
-  @JsonProperty("id_generator")
-  @Nullable
-  private IdGeneratorModel idGenerator;
-
-  @JsonProperty("tracer_configurator/development")
-  @Nullable
-  private ExperimentalTracerConfiguratorModel tracerConfiguratorDevelopment;
+  @Nullable private List<SpanProcessorModel> processors;
+  @Nullable private SpanLimitsModel limits;
+  @Nullable private SamplerModel sampler;
+  @Nullable private IdGeneratorModel idGenerator;
+  @Nullable private ExperimentalTracerConfiguratorModel tracerConfiguratorDevelopment;
 
   /**
    * Configure span processors.
@@ -55,6 +41,7 @@ public class TracerProviderModel {
     return processors;
   }
 
+  @JsonProperty("processors")
   public TracerProviderModel withProcessors(List<SpanProcessorModel> processors) {
     this.processors = processors;
     return this;
@@ -71,6 +58,7 @@ public class TracerProviderModel {
     return limits;
   }
 
+  @JsonProperty("limits")
   public TracerProviderModel withLimits(SpanLimitsModel limits) {
     this.limits = limits;
     return this;
@@ -87,6 +75,7 @@ public class TracerProviderModel {
     return sampler;
   }
 
+  @JsonProperty("sampler")
   public TracerProviderModel withSampler(SamplerModel sampler) {
     this.sampler = sampler;
     return this;
@@ -103,6 +92,7 @@ public class TracerProviderModel {
     return idGenerator;
   }
 
+  @JsonProperty("id_generator")
   public TracerProviderModel withIdGenerator(IdGeneratorModel idGenerator) {
     this.idGenerator = idGenerator;
     return this;
@@ -119,6 +109,7 @@ public class TracerProviderModel {
     return tracerConfiguratorDevelopment;
   }
 
+  @JsonProperty("tracer_configurator/development")
   public TracerProviderModel withTracerConfiguratorDevelopment(
       ExperimentalTracerConfiguratorModel tracerConfiguratorDevelopment) {
     this.tracerConfiguratorDevelopment = tracerConfiguratorDevelopment;

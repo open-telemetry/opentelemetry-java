@@ -27,29 +27,12 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ViewSelectorModel {
 
-  @JsonProperty("instrument_name")
-  @Nullable
-  private String instrumentName;
-
-  @JsonProperty("instrument_type")
-  @Nullable
-  private ViewSelectorModel.InstrumentType instrumentType;
-
-  @JsonProperty("unit")
-  @Nullable
-  private String unit;
-
-  @JsonProperty("meter_name")
-  @Nullable
-  private String meterName;
-
-  @JsonProperty("meter_version")
-  @Nullable
-  private String meterVersion;
-
-  @JsonProperty("meter_schema_url")
-  @Nullable
-  private String meterSchemaUrl;
+  @Nullable private String instrumentName;
+  @Nullable private ViewSelectorModel.InstrumentType instrumentType;
+  @Nullable private String unit;
+  @Nullable private String meterName;
+  @Nullable private String meterVersion;
+  @Nullable private String meterSchemaUrl;
 
   /**
    * Configure instrument name selection criteria.
@@ -62,6 +45,7 @@ public class ViewSelectorModel {
     return instrumentName;
   }
 
+  @JsonProperty("instrument_name")
   public ViewSelectorModel withInstrumentName(String instrumentName) {
     this.instrumentName = instrumentName;
     return this;
@@ -94,6 +78,7 @@ public class ViewSelectorModel {
     return instrumentType;
   }
 
+  @JsonProperty("instrument_type")
   public ViewSelectorModel withInstrumentType(ViewSelectorModel.InstrumentType instrumentType) {
     this.instrumentType = instrumentType;
     return this;
@@ -110,6 +95,7 @@ public class ViewSelectorModel {
     return unit;
   }
 
+  @JsonProperty("unit")
   public ViewSelectorModel withUnit(String unit) {
     this.unit = unit;
     return this;
@@ -126,6 +112,7 @@ public class ViewSelectorModel {
     return meterName;
   }
 
+  @JsonProperty("meter_name")
   public ViewSelectorModel withMeterName(String meterName) {
     this.meterName = meterName;
     return this;
@@ -142,6 +129,7 @@ public class ViewSelectorModel {
     return meterVersion;
   }
 
+  @JsonProperty("meter_version")
   public ViewSelectorModel withMeterVersion(String meterVersion) {
     this.meterVersion = meterVersion;
     return this;
@@ -158,6 +146,7 @@ public class ViewSelectorModel {
     return meterSchemaUrl;
   }
 
+  @JsonProperty("meter_schema_url")
   public ViewSelectorModel withMeterSchemaUrl(String meterSchemaUrl) {
     this.meterSchemaUrl = meterSchemaUrl;
     return this;

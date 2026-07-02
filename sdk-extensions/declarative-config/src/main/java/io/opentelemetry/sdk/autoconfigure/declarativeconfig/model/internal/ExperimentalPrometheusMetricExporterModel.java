@@ -28,27 +28,12 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalPrometheusMetricExporterModel {
 
-  @JsonProperty("host")
-  @Nullable
-  private String host;
+  @Nullable private String host;
+  @Nullable private Integer port;
+  @Nullable private Boolean scopeInfoEnabled;
+  @Nullable private Boolean targetInfoEnabledDevelopment;
+  @Nullable private IncludeExcludeModel resourceConstantLabels;
 
-  @JsonProperty("port")
-  @Nullable
-  private Integer port;
-
-  @JsonProperty("scope_info_enabled")
-  @Nullable
-  private Boolean scopeInfoEnabled;
-
-  @JsonProperty("target_info_enabled/development")
-  @Nullable
-  private Boolean targetInfoEnabledDevelopment;
-
-  @JsonProperty("resource_constant_labels")
-  @Nullable
-  private IncludeExcludeModel resourceConstantLabels;
-
-  @JsonProperty("translation_strategy")
   @Nullable
   private ExperimentalPrometheusMetricExporterModel.ExperimentalPrometheusTranslationStrategy
       translationStrategy;
@@ -64,6 +49,7 @@ public class ExperimentalPrometheusMetricExporterModel {
     return host;
   }
 
+  @JsonProperty("host")
   public ExperimentalPrometheusMetricExporterModel withHost(String host) {
     this.host = host;
     return this;
@@ -80,6 +66,7 @@ public class ExperimentalPrometheusMetricExporterModel {
     return port;
   }
 
+  @JsonProperty("port")
   public ExperimentalPrometheusMetricExporterModel withPort(Integer port) {
     this.port = port;
     return this;
@@ -96,6 +83,7 @@ public class ExperimentalPrometheusMetricExporterModel {
     return scopeInfoEnabled;
   }
 
+  @JsonProperty("scope_info_enabled")
   public ExperimentalPrometheusMetricExporterModel withScopeInfoEnabled(Boolean scopeInfoEnabled) {
     this.scopeInfoEnabled = scopeInfoEnabled;
     return this;
@@ -112,6 +100,7 @@ public class ExperimentalPrometheusMetricExporterModel {
     return targetInfoEnabledDevelopment;
   }
 
+  @JsonProperty("target_info_enabled/development")
   public ExperimentalPrometheusMetricExporterModel withTargetInfoEnabledDevelopment(
       Boolean targetInfoEnabledDevelopment) {
     this.targetInfoEnabledDevelopment = targetInfoEnabledDevelopment;
@@ -130,6 +119,7 @@ public class ExperimentalPrometheusMetricExporterModel {
     return resourceConstantLabels;
   }
 
+  @JsonProperty("resource_constant_labels")
   public ExperimentalPrometheusMetricExporterModel withResourceConstantLabels(
       IncludeExcludeModel resourceConstantLabels) {
     this.resourceConstantLabels = resourceConstantLabels;
@@ -163,6 +153,7 @@ public class ExperimentalPrometheusMetricExporterModel {
     return translationStrategy;
   }
 
+  @JsonProperty("translation_strategy")
   public ExperimentalPrometheusMetricExporterModel withTranslationStrategy(
       ExperimentalPrometheusMetricExporterModel.ExperimentalPrometheusTranslationStrategy
           translationStrategy) {

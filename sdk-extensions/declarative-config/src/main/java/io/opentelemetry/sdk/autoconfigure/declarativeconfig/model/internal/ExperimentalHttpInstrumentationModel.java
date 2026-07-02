@@ -16,17 +16,9 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalHttpInstrumentationModel {
 
-  @JsonProperty("semconv")
-  @Nullable
-  private ExperimentalSemconvConfigModel semconv;
-
-  @JsonProperty("client")
-  @Nullable
-  private ExperimentalHttpClientInstrumentationModel client;
-
-  @JsonProperty("server")
-  @Nullable
-  private ExperimentalHttpServerInstrumentationModel server;
+  @Nullable private ExperimentalSemconvConfigModel semconv;
+  @Nullable private ExperimentalHttpClientInstrumentationModel client;
+  @Nullable private ExperimentalHttpServerInstrumentationModel server;
 
   /**
    * Configure HTTP semantic convention version and migration behavior.
@@ -46,6 +38,7 @@ public class ExperimentalHttpInstrumentationModel {
     return semconv;
   }
 
+  @JsonProperty("semconv")
   public ExperimentalHttpInstrumentationModel withSemconv(ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;
     return this;
@@ -62,6 +55,7 @@ public class ExperimentalHttpInstrumentationModel {
     return client;
   }
 
+  @JsonProperty("client")
   public ExperimentalHttpInstrumentationModel withClient(
       ExperimentalHttpClientInstrumentationModel client) {
     this.client = client;
@@ -79,6 +73,7 @@ public class ExperimentalHttpInstrumentationModel {
     return server;
   }
 
+  @JsonProperty("server")
   public ExperimentalHttpInstrumentationModel withServer(
       ExperimentalHttpServerInstrumentationModel server) {
     this.server = server;

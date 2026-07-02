@@ -16,13 +16,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalTracerMatcherAndConfigModel {
 
-  @JsonProperty("name")
-  @Nullable
-  private String name;
-
-  @JsonProperty("config")
-  @Nullable
-  private ExperimentalTracerConfigModel config;
+  @Nullable private String name;
+  @Nullable private ExperimentalTracerConfigModel config;
 
   /**
    * Configure tracer names to match. Matching is case-sensitive, evaluated as follows:
@@ -40,6 +35,7 @@ public class ExperimentalTracerMatcherAndConfigModel {
     return name;
   }
 
+  @JsonProperty("name")
   public ExperimentalTracerMatcherAndConfigModel withName(String name) {
     this.name = name;
     return this;
@@ -56,6 +52,7 @@ public class ExperimentalTracerMatcherAndConfigModel {
     return config;
   }
 
+  @JsonProperty("config")
   public ExperimentalTracerMatcherAndConfigModel withConfig(ExperimentalTracerConfigModel config) {
     this.config = config;
     return this;

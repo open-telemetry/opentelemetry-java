@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -21,11 +20,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class IdGeneratorModel {
 
-  @JsonProperty("random")
-  @Nullable
-  private RandomIdGeneratorModel random;
-
-  @JsonIgnore
+  @Nullable private RandomIdGeneratorModel random;
   private Map<String, IdGeneratorPropertyModel> additionalProperties =
       new LinkedHashMap<String, IdGeneratorPropertyModel>();
 
@@ -40,6 +35,7 @@ public class IdGeneratorModel {
     return random;
   }
 
+  @JsonProperty("random")
   public IdGeneratorModel withRandom(RandomIdGeneratorModel random) {
     this.random = random;
     return this;
@@ -51,10 +47,6 @@ public class IdGeneratorModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, IdGeneratorPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public IdGeneratorModel withAdditionalProperty(String name, IdGeneratorPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

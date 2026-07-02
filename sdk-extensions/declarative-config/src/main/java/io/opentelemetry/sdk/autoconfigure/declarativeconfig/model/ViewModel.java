@@ -16,13 +16,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ViewModel {
 
-  @JsonProperty("selector")
-  @Nullable
-  private ViewSelectorModel selector;
-
-  @JsonProperty("stream")
-  @Nullable
-  private ViewStreamModel stream;
+  @Nullable private ViewSelectorModel selector;
+  @Nullable private ViewStreamModel stream;
 
   /**
    * Configure view selector.
@@ -38,6 +33,7 @@ public class ViewModel {
     return selector;
   }
 
+  @JsonProperty("selector")
   public ViewModel withSelector(ViewSelectorModel selector) {
     this.selector = selector;
     return this;
@@ -54,6 +50,7 @@ public class ViewModel {
     return stream;
   }
 
+  @JsonProperty("stream")
   public ViewModel withStream(ViewStreamModel stream) {
     this.stream = stream;
     return this;

@@ -17,13 +17,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class IncludeExcludeModel {
 
-  @JsonProperty("included")
-  @Nullable
-  private List<String> included;
-
-  @JsonProperty("excluded")
-  @Nullable
-  private List<String> excluded;
+  @Nullable private List<String> included;
+  @Nullable private List<String> excluded;
 
   /**
    * Configure list of value patterns to include.
@@ -43,6 +38,7 @@ public class IncludeExcludeModel {
     return included;
   }
 
+  @JsonProperty("included")
   public IncludeExcludeModel withIncluded(List<String> included) {
     this.included = included;
     return this;
@@ -67,6 +63,7 @@ public class IncludeExcludeModel {
     return excluded;
   }
 
+  @JsonProperty("excluded")
   public IncludeExcludeModel withExcluded(List<String> excluded) {
     this.excluded = excluded;
     return this;

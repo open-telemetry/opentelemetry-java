@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalRpcInstrumentationModel {
 
-  @JsonProperty("semconv")
-  @Nullable
-  private ExperimentalSemconvConfigModel semconv;
+  @Nullable private ExperimentalSemconvConfigModel semconv;
 
   /**
    * Configure RPC semantic convention version and migration behavior.
@@ -37,6 +35,7 @@ public class ExperimentalRpcInstrumentationModel {
     return semconv;
   }
 
+  @JsonProperty("semconv")
   public ExperimentalRpcInstrumentationModel withSemconv(ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;
     return this;

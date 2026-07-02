@@ -22,25 +22,11 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class BatchSpanProcessorModel {
 
-  @JsonProperty("schedule_delay")
-  @Nullable
-  private Integer scheduleDelay;
-
-  @JsonProperty("export_timeout")
-  @Nullable
-  private Integer exportTimeout;
-
-  @JsonProperty("max_queue_size")
-  @Nullable
-  private Integer maxQueueSize;
-
-  @JsonProperty("max_export_batch_size")
-  @Nullable
-  private Integer maxExportBatchSize;
-
-  @JsonProperty("exporter")
-  @Nullable
-  private SpanExporterModel exporter;
+  @Nullable private Integer scheduleDelay;
+  @Nullable private Integer exportTimeout;
+  @Nullable private Integer maxQueueSize;
+  @Nullable private Integer maxExportBatchSize;
+  @Nullable private SpanExporterModel exporter;
 
   /**
    * Configure delay interval (in milliseconds) between two consecutive exports.
@@ -55,6 +41,7 @@ public class BatchSpanProcessorModel {
     return scheduleDelay;
   }
 
+  @JsonProperty("schedule_delay")
   public BatchSpanProcessorModel withScheduleDelay(Integer scheduleDelay) {
     this.scheduleDelay = scheduleDelay;
     return this;
@@ -73,6 +60,7 @@ public class BatchSpanProcessorModel {
     return exportTimeout;
   }
 
+  @JsonProperty("export_timeout")
   public BatchSpanProcessorModel withExportTimeout(Integer exportTimeout) {
     this.exportTimeout = exportTimeout;
     return this;
@@ -89,6 +77,7 @@ public class BatchSpanProcessorModel {
     return maxQueueSize;
   }
 
+  @JsonProperty("max_queue_size")
   public BatchSpanProcessorModel withMaxQueueSize(Integer maxQueueSize) {
     this.maxQueueSize = maxQueueSize;
     return this;
@@ -105,6 +94,7 @@ public class BatchSpanProcessorModel {
     return maxExportBatchSize;
   }
 
+  @JsonProperty("max_export_batch_size")
   public BatchSpanProcessorModel withMaxExportBatchSize(Integer maxExportBatchSize) {
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
@@ -121,6 +111,7 @@ public class BatchSpanProcessorModel {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public BatchSpanProcessorModel withExporter(SpanExporterModel exporter) {
     this.exporter = exporter;
     return this;

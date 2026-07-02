@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalTracerConfigModel {
 
-  @JsonProperty("enabled")
-  @Nullable
-  private Boolean enabled;
+  @Nullable private Boolean enabled;
 
   /**
    * Configure if the tracer is enabled or not.
@@ -31,6 +29,7 @@ public class ExperimentalTracerConfigModel {
     return enabled;
   }
 
+  @JsonProperty("enabled")
   public ExperimentalTracerConfigModel withEnabled(Boolean enabled) {
     this.enabled = enabled;
     return this;
