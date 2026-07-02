@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeLimits;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -17,7 +19,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributeUtil;
-import io.opentelemetry.sdk.common.internal.AttributesMap;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
@@ -74,7 +75,12 @@ final class SdkSpan implements ReadWriteSpan {
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("lock")
   @Nullable
-  private AttributesMap attributes;
+  private AttributesBuilder attributes;
+
+  // Count of setAttribute() calls with a non-null value, including those dropped for capacity. The
+  // builder does not track this since capacity-drop is not observable from AttributesBuilder.
+  @GuardedBy("lock")
+  private int totalAttributeCount = 0;
 
   // List of recorded events.
   @GuardedBy("lock")
@@ -133,7 +139,8 @@ final class SdkSpan implements ReadWriteSpan {
       ExceptionAttributeResolver exceptionAttributeResolver,
       AnchoredClock clock,
       Resource resource,
-      @Nullable AttributesMap attributes,
+      @Nullable AttributesBuilder attributes,
+      int initialTotalAttributeCount,
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
       long startEpochNanos,
@@ -152,6 +159,7 @@ final class SdkSpan implements ReadWriteSpan {
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
+    this.totalAttributeCount = initialTotalAttributeCount;
     this.spanLimits = spanLimits;
     this.recordEndMetrics = recordEndMetrics;
   }
@@ -184,7 +192,8 @@ final class SdkSpan implements ReadWriteSpan {
       ExceptionAttributeResolver exceptionAttributeResolver,
       Clock tracerClock,
       Resource resource,
-      @Nullable AttributesMap attributes,
+      @Nullable AttributesBuilder attributes,
+      int initialTotalAttributeCount,
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
       long userStartEpochNanos,
@@ -225,6 +234,7 @@ final class SdkSpan implements ReadWriteSpan {
             clock,
             resource,
             attributes,
+            initialTotalAttributeCount,
             links,
             totalRecordedLinks,
             startEpochNanos,
@@ -246,7 +256,7 @@ final class SdkSpan implements ReadWriteSpan {
           getImmutableLinks(),
           getImmutableTimedEvents(),
           getImmutableAttributes(),
-          (attributes == null) ? 0 : attributes.getTotalAddedValues(),
+          totalAttributeCount,
           totalRecordedEvents,
           totalRecordedLinks,
           status,
@@ -260,14 +270,14 @@ final class SdkSpan implements ReadWriteSpan {
   @Nullable
   public <T> T getAttribute(AttributeKey<T> key) {
     synchronized (lock) {
-      return attributes == null ? null : attributes.get(key);
+      return attributes == null ? null : attributes.build().get(key);
     }
   }
 
   @Override
   public Attributes getAttributes() {
     synchronized (lock) {
-      return attributes == null ? Attributes.empty() : attributes.immutableCopy();
+      return attributes == null ? Attributes.empty() : attributes.build();
     }
   }
 
@@ -340,14 +350,20 @@ final class SdkSpan implements ReadWriteSpan {
         return this;
       }
       if (attributes == null) {
-        attributes =
-            AttributesMap.create(
-                spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
+        attributes = Attributes.builder(attributeLimits(spanLimits));
       }
 
+      totalAttributeCount++;
       attributes.put(key, value);
     }
     return this;
+  }
+
+  private static AttributeLimits attributeLimits(SpanLimits spanLimits) {
+    return AttributeLimits.builder()
+        .setCapacity(spanLimits.getMaxNumberOfAttributes())
+        .setLengthLimit(spanLimits.getMaxAttributeValueLength())
+        .build();
   }
 
   @GuardedBy("lock")
@@ -483,18 +499,27 @@ final class SdkSpan implements ReadWriteSpan {
     }
 
     int maxAttributeLength = spanLimits.getMaxAttributeValueLength();
-    AttributesMap attributes =
-        AttributesMap.create(
-            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
+    AttributesBuilder eventAttributes = Attributes.builder(attributeLimits(spanLimits));
+    int[] counter = {0};
 
     exceptionAttributeResolver.setExceptionAttributes(
-        attributes::putIfCapacity, exception, maxAttributeLength);
+        new ExceptionAttributeResolver.AttributeSetter() {
+          @Override
+          public <T> void setAttribute(AttributeKey<T> key, @Nullable T value) {
+            if (value != null) {
+              counter[0]++;
+            }
+            eventAttributes.put(key, value);
+          }
+        },
+        exception,
+        maxAttributeLength);
 
-    additionalAttributes.forEach(attributes::put);
+    counter[0] += additionalAttributes.size();
+    eventAttributes.putAll(additionalAttributes);
 
     addTimedEvent(
-        ExceptionEventData.create(
-            clock.now(), exception, attributes, attributes.getTotalAddedValues()));
+        ExceptionEventData.create(clock.now(), exception, eventAttributes.build(), counter[0]));
     return this;
   }
 
@@ -620,16 +645,12 @@ final class SdkSpan implements ReadWriteSpan {
 
   @GuardedBy("lock")
   private Attributes getImmutableAttributes() {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
       return Attributes.empty();
     }
-    // if the span has ended, then the attributes are unmodifiable,
-    // so we can return them directly and save copying all the data.
-    if (hasEnded == EndState.ENDED) {
-      return attributes;
-    }
-    // otherwise, make a copy of the data into an immutable container.
-    return attributes.immutableCopy();
+    // The builder caches its build() result until the next mutation, so this is cheap on repeated
+    // calls (including when the span has ended and no further mutations can happen).
+    return attributes.build();
   }
 
   @GuardedBy("lock")

@@ -8,12 +8,13 @@ package io.opentelemetry.sdk.logs;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeLimits;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.internal.AttributesMap;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
@@ -50,7 +51,8 @@ class ReadWriteLogRecordTest {
 
   SdkReadWriteLogRecord buildLogRecord() {
     Value<?> body = Value.of("bod");
-    AttributesMap initialAttributes = AttributesMap.create(100, 200);
+    AttributesBuilder initialAttributes =
+        Attributes.builder(AttributeLimits.builder().setCapacity(100).setLengthLimit(200).build());
     initialAttributes.put(stringKey("foo"), "aaiosjfjioasdiojfjioasojifja");
     initialAttributes.put(stringKey("untouched"), "yes");
     LogLimits limits = LogLimits.getDefault();
@@ -69,6 +71,7 @@ class ReadWriteLogRecordTest {
         "buggin",
         body,
         initialAttributes,
+        2,
         "my.event.name");
   }
 }
