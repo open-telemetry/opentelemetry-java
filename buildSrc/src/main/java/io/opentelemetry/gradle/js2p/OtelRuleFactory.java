@@ -24,8 +24,11 @@ import org.jsonschema2pojo.util.ParcelableHelper;
  *       internal} sub-package.
  *   <li>{@link OtelEnumRule} — routes top-level experimental enums into the {@code internal}
  *       sub-package, mirroring {@link OtelObjectRule} for classes.
- *   <li>{@link OtelPropertyRule} — restores property descriptions written as siblings of {@code
- *       $ref}, which jsonschema2pojo otherwise drops.
+ *   <li>{@link OtelPropertyRule} — emits property descriptions on getters only (restoring those
+ *       written as {@code $ref} siblings, which jsonschema2pojo drops) and annotates the {@code
+ *       withX} builder methods with {@code @JsonProperty}.
+ *   <li>{@link OtelAdditionalPropertiesRule} — removes the redundant {@code setAdditionalProperty},
+ *       moving {@code @JsonAnySetter} onto {@code withAdditionalProperty}.
  * </ul>
  *
  * <p>Referenced from {@code sdk-extensions/declarative-config/build.gradle.kts} via {@code
@@ -46,6 +49,11 @@ public class OtelRuleFactory extends RuleFactory {
   @Override
   public Rule<JDefinedClass, JDefinedClass> getPropertyRule() {
     return new OtelPropertyRule(this);
+  }
+
+  @Override
+  public Rule<JDefinedClass, JDefinedClass> getAdditionalPropertiesRule() {
+    return new OtelAdditionalPropertiesRule(this);
   }
 
   // The opentelemetry-configuration schema already documents required-ness in each required

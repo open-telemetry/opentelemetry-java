@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalGenAiInstrumentationModel {
 
-  @JsonProperty("semconv")
-  @Nullable
-  private ExperimentalSemconvConfigModel semconv;
+  @Nullable private ExperimentalSemconvConfigModel semconv;
 
   /**
    * Configure GenAI semantic convention version and migration behavior.
@@ -37,6 +35,7 @@ public class ExperimentalGenAiInstrumentationModel {
     return semconv;
   }
 
+  @JsonProperty("semconv")
   public ExperimentalGenAiInstrumentationModel withSemconv(ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;
     return this;

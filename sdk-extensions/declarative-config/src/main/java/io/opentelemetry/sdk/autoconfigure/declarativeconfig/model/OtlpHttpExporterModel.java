@@ -29,33 +29,13 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class OtlpHttpExporterModel {
 
-  @JsonProperty("endpoint")
-  @Nullable
-  private String endpoint;
-
-  @JsonProperty("tls")
-  @Nullable
-  private HttpTlsModel tls;
-
-  @JsonProperty("headers")
-  @Nullable
-  private List<NameStringValuePairModel> headers;
-
-  @JsonProperty("headers_list")
-  @Nullable
-  private String headersList;
-
-  @JsonProperty("compression")
-  @Nullable
-  private String compression;
-
-  @JsonProperty("timeout")
-  @Nullable
-  private Integer timeout;
-
-  @JsonProperty("encoding")
-  @Nullable
-  private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
+  @Nullable private String endpoint;
+  @Nullable private HttpTlsModel tls;
+  @Nullable private List<NameStringValuePairModel> headers;
+  @Nullable private String headersList;
+  @Nullable private String compression;
+  @Nullable private Integer timeout;
+  @Nullable private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
 
   /**
    * Configure endpoint, including the signal specific path.
@@ -69,6 +49,7 @@ public class OtlpHttpExporterModel {
     return endpoint;
   }
 
+  @JsonProperty("endpoint")
   public OtlpHttpExporterModel withEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
@@ -85,6 +66,7 @@ public class OtlpHttpExporterModel {
     return tls;
   }
 
+  @JsonProperty("tls")
   public OtlpHttpExporterModel withTls(HttpTlsModel tls) {
     this.tls = tls;
     return this;
@@ -103,6 +85,7 @@ public class OtlpHttpExporterModel {
     return headers;
   }
 
+  @JsonProperty("headers")
   public OtlpHttpExporterModel withHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
@@ -124,6 +107,7 @@ public class OtlpHttpExporterModel {
     return headersList;
   }
 
+  @JsonProperty("headers_list")
   public OtlpHttpExporterModel withHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
@@ -142,6 +126,7 @@ public class OtlpHttpExporterModel {
     return compression;
   }
 
+  @JsonProperty("compression")
   public OtlpHttpExporterModel withCompression(String compression) {
     this.compression = compression;
     return this;
@@ -160,6 +145,7 @@ public class OtlpHttpExporterModel {
     return timeout;
   }
 
+  @JsonProperty("timeout")
   public OtlpHttpExporterModel withTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
@@ -184,6 +170,7 @@ public class OtlpHttpExporterModel {
     return encoding;
   }
 
+  @JsonProperty("encoding")
   public OtlpHttpExporterModel withEncoding(OtlpHttpExporterModel.OtlpHttpEncoding encoding) {
     this.encoding = encoding;
     return this;

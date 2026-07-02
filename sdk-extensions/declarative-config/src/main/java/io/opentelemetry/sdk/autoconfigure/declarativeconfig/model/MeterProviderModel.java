@@ -22,21 +22,10 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class MeterProviderModel {
 
-  @JsonProperty("readers")
-  @Nullable
-  private List<MetricReaderModel> readers;
-
-  @JsonProperty("views")
-  @Nullable
-  private List<ViewModel> views;
-
-  @JsonProperty("exemplar_filter")
-  @Nullable
-  private MeterProviderModel.ExemplarFilter exemplarFilter;
-
-  @JsonProperty("meter_configurator/development")
-  @Nullable
-  private ExperimentalMeterConfiguratorModel meterConfiguratorDevelopment;
+  @Nullable private List<MetricReaderModel> readers;
+  @Nullable private List<ViewModel> views;
+  @Nullable private MeterProviderModel.ExemplarFilter exemplarFilter;
+  @Nullable private ExperimentalMeterConfiguratorModel meterConfiguratorDevelopment;
 
   /**
    * Configure metric readers.
@@ -49,6 +38,7 @@ public class MeterProviderModel {
     return readers;
   }
 
+  @JsonProperty("readers")
   public MeterProviderModel withReaders(List<MetricReaderModel> readers) {
     this.readers = readers;
     return this;
@@ -68,6 +58,7 @@ public class MeterProviderModel {
     return views;
   }
 
+  @JsonProperty("views")
   public MeterProviderModel withViews(List<ViewModel> views) {
     this.views = views;
     return this;
@@ -93,6 +84,7 @@ public class MeterProviderModel {
     return exemplarFilter;
   }
 
+  @JsonProperty("exemplar_filter")
   public MeterProviderModel withExemplarFilter(MeterProviderModel.ExemplarFilter exemplarFilter) {
     this.exemplarFilter = exemplarFilter;
     return this;
@@ -109,6 +101,7 @@ public class MeterProviderModel {
     return meterConfiguratorDevelopment;
   }
 
+  @JsonProperty("meter_configurator/development")
   public MeterProviderModel withMeterConfiguratorDevelopment(
       ExperimentalMeterConfiguratorModel meterConfiguratorDevelopment) {
     this.meterConfiguratorDevelopment = meterConfiguratorDevelopment;

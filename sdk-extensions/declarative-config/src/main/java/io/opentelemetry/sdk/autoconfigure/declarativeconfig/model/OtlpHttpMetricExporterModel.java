@@ -31,39 +31,15 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class OtlpHttpMetricExporterModel {
 
-  @JsonProperty("endpoint")
-  @Nullable
-  private String endpoint;
+  @Nullable private String endpoint;
+  @Nullable private HttpTlsModel tls;
+  @Nullable private List<NameStringValuePairModel> headers;
+  @Nullable private String headersList;
+  @Nullable private String compression;
+  @Nullable private Integer timeout;
+  @Nullable private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
+  @Nullable private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
 
-  @JsonProperty("tls")
-  @Nullable
-  private HttpTlsModel tls;
-
-  @JsonProperty("headers")
-  @Nullable
-  private List<NameStringValuePairModel> headers;
-
-  @JsonProperty("headers_list")
-  @Nullable
-  private String headersList;
-
-  @JsonProperty("compression")
-  @Nullable
-  private String compression;
-
-  @JsonProperty("timeout")
-  @Nullable
-  private Integer timeout;
-
-  @JsonProperty("encoding")
-  @Nullable
-  private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
-
-  @JsonProperty("temporality_preference")
-  @Nullable
-  private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
-
-  @JsonProperty("default_histogram_aggregation")
   @Nullable
   private OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
       defaultHistogramAggregation;
@@ -79,6 +55,7 @@ public class OtlpHttpMetricExporterModel {
     return endpoint;
   }
 
+  @JsonProperty("endpoint")
   public OtlpHttpMetricExporterModel withEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
@@ -95,6 +72,7 @@ public class OtlpHttpMetricExporterModel {
     return tls;
   }
 
+  @JsonProperty("tls")
   public OtlpHttpMetricExporterModel withTls(HttpTlsModel tls) {
     this.tls = tls;
     return this;
@@ -113,6 +91,7 @@ public class OtlpHttpMetricExporterModel {
     return headers;
   }
 
+  @JsonProperty("headers")
   public OtlpHttpMetricExporterModel withHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
@@ -134,6 +113,7 @@ public class OtlpHttpMetricExporterModel {
     return headersList;
   }
 
+  @JsonProperty("headers_list")
   public OtlpHttpMetricExporterModel withHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
@@ -152,6 +132,7 @@ public class OtlpHttpMetricExporterModel {
     return compression;
   }
 
+  @JsonProperty("compression")
   public OtlpHttpMetricExporterModel withCompression(String compression) {
     this.compression = compression;
     return this;
@@ -170,6 +151,7 @@ public class OtlpHttpMetricExporterModel {
     return timeout;
   }
 
+  @JsonProperty("timeout")
   public OtlpHttpMetricExporterModel withTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
@@ -194,6 +176,7 @@ public class OtlpHttpMetricExporterModel {
     return encoding;
   }
 
+  @JsonProperty("encoding")
   public OtlpHttpMetricExporterModel withEncoding(OtlpHttpExporterModel.OtlpHttpEncoding encoding) {
     this.encoding = encoding;
     return this;
@@ -220,6 +203,7 @@ public class OtlpHttpMetricExporterModel {
     return temporalityPreference;
   }
 
+  @JsonProperty("temporality_preference")
   public OtlpHttpMetricExporterModel withTemporalityPreference(
       OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
@@ -246,6 +230,7 @@ public class OtlpHttpMetricExporterModel {
     return defaultHistogramAggregation;
   }
 
+  @JsonProperty("default_histogram_aggregation")
   public OtlpHttpMetricExporterModel withDefaultHistogramAggregation(
       OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;

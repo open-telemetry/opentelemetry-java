@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -22,23 +21,10 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SpanExporterModel {
 
-  @JsonProperty("otlp_http")
-  @Nullable
-  private OtlpHttpExporterModel otlpHttp;
-
-  @JsonProperty("otlp_grpc")
-  @Nullable
-  private OtlpGrpcExporterModel otlpGrpc;
-
-  @JsonProperty("otlp_file/development")
-  @Nullable
-  private ExperimentalOtlpFileExporterModel otlpFileDevelopment;
-
-  @JsonProperty("console")
-  @Nullable
-  private ConsoleExporterModel console;
-
-  @JsonIgnore
+  @Nullable private OtlpHttpExporterModel otlpHttp;
+  @Nullable private OtlpGrpcExporterModel otlpGrpc;
+  @Nullable private ExperimentalOtlpFileExporterModel otlpFileDevelopment;
+  @Nullable private ConsoleExporterModel console;
   private Map<String, SpanExporterPropertyModel> additionalProperties =
       new LinkedHashMap<String, SpanExporterPropertyModel>();
 
@@ -53,6 +39,7 @@ public class SpanExporterModel {
     return otlpHttp;
   }
 
+  @JsonProperty("otlp_http")
   public SpanExporterModel withOtlpHttp(OtlpHttpExporterModel otlpHttp) {
     this.otlpHttp = otlpHttp;
     return this;
@@ -69,6 +56,7 @@ public class SpanExporterModel {
     return otlpGrpc;
   }
 
+  @JsonProperty("otlp_grpc")
   public SpanExporterModel withOtlpGrpc(OtlpGrpcExporterModel otlpGrpc) {
     this.otlpGrpc = otlpGrpc;
     return this;
@@ -85,6 +73,7 @@ public class SpanExporterModel {
     return otlpFileDevelopment;
   }
 
+  @JsonProperty("otlp_file/development")
   public SpanExporterModel withOtlpFileDevelopment(
       ExperimentalOtlpFileExporterModel otlpFileDevelopment) {
     this.otlpFileDevelopment = otlpFileDevelopment;
@@ -102,6 +91,7 @@ public class SpanExporterModel {
     return console;
   }
 
+  @JsonProperty("console")
   public SpanExporterModel withConsole(ConsoleExporterModel console) {
     this.console = console;
     return this;
@@ -113,10 +103,6 @@ public class SpanExporterModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, SpanExporterPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public SpanExporterModel withAdditionalProperty(String name, SpanExporterPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

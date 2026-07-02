@@ -16,11 +16,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ConsoleMetricExporterModel {
 
-  @JsonProperty("temporality_preference")
-  @Nullable
-  private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
+  @Nullable private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
 
-  @JsonProperty("default_histogram_aggregation")
   @Nullable
   private OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
       defaultHistogramAggregation;
@@ -46,6 +43,7 @@ public class ConsoleMetricExporterModel {
     return temporalityPreference;
   }
 
+  @JsonProperty("temporality_preference")
   public ConsoleMetricExporterModel withTemporalityPreference(
       OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
@@ -72,6 +70,7 @@ public class ConsoleMetricExporterModel {
     return defaultHistogramAggregation;
   }
 
+  @JsonProperty("default_histogram_aggregation")
   public ConsoleMetricExporterModel withDefaultHistogramAggregation(
       OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;

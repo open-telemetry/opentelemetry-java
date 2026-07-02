@@ -22,25 +22,11 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ViewStreamModel {
 
-  @JsonProperty("name")
-  @Nullable
-  private String name;
-
-  @JsonProperty("description")
-  @Nullable
-  private String description;
-
-  @JsonProperty("aggregation")
-  @Nullable
-  private AggregationModel aggregation;
-
-  @JsonProperty("aggregation_cardinality_limit")
-  @Nullable
-  private Integer aggregationCardinalityLimit;
-
-  @JsonProperty("attribute_keys")
-  @Nullable
-  private IncludeExcludeModel attributeKeys;
+  @Nullable private String name;
+  @Nullable private String description;
+  @Nullable private AggregationModel aggregation;
+  @Nullable private Integer aggregationCardinalityLimit;
+  @Nullable private IncludeExcludeModel attributeKeys;
 
   /**
    * Configure metric name of the resulting stream(s).
@@ -53,6 +39,7 @@ public class ViewStreamModel {
     return name;
   }
 
+  @JsonProperty("name")
   public ViewStreamModel withName(String name) {
     this.name = name;
     return this;
@@ -69,6 +56,7 @@ public class ViewStreamModel {
     return description;
   }
 
+  @JsonProperty("description")
   public ViewStreamModel withDescription(String description) {
     this.description = description;
     return this;
@@ -85,6 +73,7 @@ public class ViewStreamModel {
     return aggregation;
   }
 
+  @JsonProperty("aggregation")
   public ViewStreamModel withAggregation(AggregationModel aggregation) {
     this.aggregation = aggregation;
     return this;
@@ -101,6 +90,7 @@ public class ViewStreamModel {
     return aggregationCardinalityLimit;
   }
 
+  @JsonProperty("aggregation_cardinality_limit")
   public ViewStreamModel withAggregationCardinalityLimit(Integer aggregationCardinalityLimit) {
     this.aggregationCardinalityLimit = aggregationCardinalityLimit;
     return this;
@@ -117,6 +107,7 @@ public class ViewStreamModel {
     return attributeKeys;
   }
 
+  @JsonProperty("attribute_keys")
   public ViewStreamModel withAttributeKeys(IncludeExcludeModel attributeKeys) {
     this.attributeKeys = attributeKeys;
     return this;

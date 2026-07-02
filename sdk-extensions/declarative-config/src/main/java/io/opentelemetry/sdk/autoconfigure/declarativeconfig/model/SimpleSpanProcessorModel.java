@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SimpleSpanProcessorModel {
 
-  @JsonProperty("exporter")
-  @Nullable
-  private SpanExporterModel exporter;
+  @Nullable private SpanExporterModel exporter;
 
   /**
    * Configure exporter.
@@ -31,6 +29,7 @@ public class SimpleSpanProcessorModel {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public SimpleSpanProcessorModel withExporter(SpanExporterModel exporter) {
     this.exporter = exporter;
     return this;

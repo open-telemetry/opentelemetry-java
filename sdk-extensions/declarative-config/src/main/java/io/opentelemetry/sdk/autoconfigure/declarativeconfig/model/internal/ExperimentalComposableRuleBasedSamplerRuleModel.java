@@ -23,25 +23,14 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalComposableRuleBasedSamplerRuleModel {
 
-  @JsonProperty("attribute_values")
-  @Nullable
-  private ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues;
+  @Nullable private ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues;
 
-  @JsonProperty("attribute_patterns")
   @Nullable
   private ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns;
 
-  @JsonProperty("span_kinds")
-  @Nullable
-  private List<SpanKind> spanKinds;
-
-  @JsonProperty("parent")
-  @Nullable
-  private List<ExperimentalSpanParent> parent;
-
-  @JsonProperty("sampler")
-  @Nullable
-  private ExperimentalComposableSamplerModel sampler;
+  @Nullable private List<SpanKind> spanKinds;
+  @Nullable private List<ExperimentalSpanParent> parent;
+  @Nullable private ExperimentalComposableSamplerModel sampler;
 
   /**
    * Values to match against a single attribute. Non-string attributes are matched using their
@@ -60,6 +49,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return attributeValues;
   }
 
+  @JsonProperty("attribute_values")
   public ExperimentalComposableRuleBasedSamplerRuleModel withAttributeValues(
       ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues) {
     this.attributeValues = attributeValues;
@@ -83,6 +73,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return attributePatterns;
   }
 
+  @JsonProperty("attribute_patterns")
   public ExperimentalComposableRuleBasedSamplerRuleModel withAttributePatterns(
       ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns) {
     this.attributePatterns = attributePatterns;
@@ -112,6 +103,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return spanKinds;
   }
 
+  @JsonProperty("span_kinds")
   public ExperimentalComposableRuleBasedSamplerRuleModel withSpanKinds(List<SpanKind> spanKinds) {
     this.spanKinds = spanKinds;
     return this;
@@ -136,6 +128,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return parent;
   }
 
+  @JsonProperty("parent")
   public ExperimentalComposableRuleBasedSamplerRuleModel withParent(
       List<ExperimentalSpanParent> parent) {
     this.parent = parent;
@@ -153,6 +146,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return sampler;
   }
 
+  @JsonProperty("sampler")
   public ExperimentalComposableRuleBasedSamplerRuleModel withSampler(
       ExperimentalComposableSamplerModel sampler) {
     this.sampler = sampler;

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -32,35 +31,13 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SamplerModel {
 
-  @JsonProperty("always_off")
-  @Nullable
-  private AlwaysOffSamplerModel alwaysOff;
-
-  @JsonProperty("always_on")
-  @Nullable
-  private AlwaysOnSamplerModel alwaysOn;
-
-  @JsonProperty("composite/development")
-  @Nullable
-  private ExperimentalComposableSamplerModel compositeDevelopment;
-
-  @JsonProperty("jaeger_remote/development")
-  @Nullable
-  private ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment;
-
-  @JsonProperty("parent_based")
-  @Nullable
-  private ParentBasedSamplerModel parentBased;
-
-  @JsonProperty("probability/development")
-  @Nullable
-  private ExperimentalProbabilitySamplerModel probabilityDevelopment;
-
-  @JsonProperty("trace_id_ratio_based")
-  @Nullable
-  private TraceIdRatioBasedSamplerModel traceIdRatioBased;
-
-  @JsonIgnore
+  @Nullable private AlwaysOffSamplerModel alwaysOff;
+  @Nullable private AlwaysOnSamplerModel alwaysOn;
+  @Nullable private ExperimentalComposableSamplerModel compositeDevelopment;
+  @Nullable private ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment;
+  @Nullable private ParentBasedSamplerModel parentBased;
+  @Nullable private ExperimentalProbabilitySamplerModel probabilityDevelopment;
+  @Nullable private TraceIdRatioBasedSamplerModel traceIdRatioBased;
   private Map<String, SamplerPropertyModel> additionalProperties =
       new LinkedHashMap<String, SamplerPropertyModel>();
 
@@ -75,6 +52,7 @@ public class SamplerModel {
     return alwaysOff;
   }
 
+  @JsonProperty("always_off")
   public SamplerModel withAlwaysOff(AlwaysOffSamplerModel alwaysOff) {
     this.alwaysOff = alwaysOff;
     return this;
@@ -91,6 +69,7 @@ public class SamplerModel {
     return alwaysOn;
   }
 
+  @JsonProperty("always_on")
   public SamplerModel withAlwaysOn(AlwaysOnSamplerModel alwaysOn) {
     this.alwaysOn = alwaysOn;
     return this;
@@ -107,6 +86,7 @@ public class SamplerModel {
     return compositeDevelopment;
   }
 
+  @JsonProperty("composite/development")
   public SamplerModel withCompositeDevelopment(
       ExperimentalComposableSamplerModel compositeDevelopment) {
     this.compositeDevelopment = compositeDevelopment;
@@ -124,6 +104,7 @@ public class SamplerModel {
     return jaegerRemoteDevelopment;
   }
 
+  @JsonProperty("jaeger_remote/development")
   public SamplerModel withJaegerRemoteDevelopment(
       ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment) {
     this.jaegerRemoteDevelopment = jaegerRemoteDevelopment;
@@ -141,6 +122,7 @@ public class SamplerModel {
     return parentBased;
   }
 
+  @JsonProperty("parent_based")
   public SamplerModel withParentBased(ParentBasedSamplerModel parentBased) {
     this.parentBased = parentBased;
     return this;
@@ -157,6 +139,7 @@ public class SamplerModel {
     return probabilityDevelopment;
   }
 
+  @JsonProperty("probability/development")
   public SamplerModel withProbabilityDevelopment(
       ExperimentalProbabilitySamplerModel probabilityDevelopment) {
     this.probabilityDevelopment = probabilityDevelopment;
@@ -174,6 +157,7 @@ public class SamplerModel {
     return traceIdRatioBased;
   }
 
+  @JsonProperty("trace_id_ratio_based")
   public SamplerModel withTraceIdRatioBased(TraceIdRatioBasedSamplerModel traceIdRatioBased) {
     this.traceIdRatioBased = traceIdRatioBased;
     return this;
@@ -185,10 +169,6 @@ public class SamplerModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, SamplerPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public SamplerModel withAdditionalProperty(String name, SamplerPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

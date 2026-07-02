@@ -16,17 +16,9 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class HttpTlsModel {
 
-  @JsonProperty("ca_file")
-  @Nullable
-  private String caFile;
-
-  @JsonProperty("key_file")
-  @Nullable
-  private String keyFile;
-
-  @JsonProperty("cert_file")
-  @Nullable
-  private String certFile;
+  @Nullable private String caFile;
+  @Nullable private String keyFile;
+  @Nullable private String certFile;
 
   /**
    * Configure certificate used to verify a server's TLS credentials.
@@ -41,6 +33,7 @@ public class HttpTlsModel {
     return caFile;
   }
 
+  @JsonProperty("ca_file")
   public HttpTlsModel withCaFile(String caFile) {
     this.caFile = caFile;
     return this;
@@ -60,6 +53,7 @@ public class HttpTlsModel {
     return keyFile;
   }
 
+  @JsonProperty("key_file")
   public HttpTlsModel withKeyFile(String keyFile) {
     this.keyFile = keyFile;
     return this;
@@ -79,6 +73,7 @@ public class HttpTlsModel {
     return certFile;
   }
 
+  @JsonProperty("cert_file")
   public HttpTlsModel withCertFile(String certFile) {
     this.certFile = certFile;
     return this;

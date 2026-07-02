@@ -24,29 +24,12 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class PeriodicMetricReaderModel {
 
-  @JsonProperty("interval")
-  @Nullable
-  private Integer interval;
-
-  @JsonProperty("timeout")
-  @Nullable
-  private Integer timeout;
-
-  @JsonProperty("max_export_batch_size/development")
-  @Nullable
-  private Integer maxExportBatchSizeDevelopment;
-
-  @JsonProperty("exporter")
-  @Nullable
-  private PushMetricExporterModel exporter;
-
-  @JsonProperty("producers")
-  @Nullable
-  private List<MetricProducerModel> producers;
-
-  @JsonProperty("cardinality_limits")
-  @Nullable
-  private CardinalityLimitsModel cardinalityLimits;
+  @Nullable private Integer interval;
+  @Nullable private Integer timeout;
+  @Nullable private Integer maxExportBatchSizeDevelopment;
+  @Nullable private PushMetricExporterModel exporter;
+  @Nullable private List<MetricProducerModel> producers;
+  @Nullable private CardinalityLimitsModel cardinalityLimits;
 
   /**
    * Configure delay interval (in milliseconds) between start of two consecutive exports.
@@ -61,6 +44,7 @@ public class PeriodicMetricReaderModel {
     return interval;
   }
 
+  @JsonProperty("interval")
   public PeriodicMetricReaderModel withInterval(Integer interval) {
     this.interval = interval;
     return this;
@@ -79,6 +63,7 @@ public class PeriodicMetricReaderModel {
     return timeout;
   }
 
+  @JsonProperty("timeout")
   public PeriodicMetricReaderModel withTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
@@ -95,6 +80,7 @@ public class PeriodicMetricReaderModel {
     return maxExportBatchSizeDevelopment;
   }
 
+  @JsonProperty("max_export_batch_size/development")
   public PeriodicMetricReaderModel withMaxExportBatchSizeDevelopment(
       Integer maxExportBatchSizeDevelopment) {
     this.maxExportBatchSizeDevelopment = maxExportBatchSizeDevelopment;
@@ -112,6 +98,7 @@ public class PeriodicMetricReaderModel {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public PeriodicMetricReaderModel withExporter(PushMetricExporterModel exporter) {
     this.exporter = exporter;
     return this;
@@ -128,6 +115,7 @@ public class PeriodicMetricReaderModel {
     return producers;
   }
 
+  @JsonProperty("producers")
   public PeriodicMetricReaderModel withProducers(List<MetricProducerModel> producers) {
     this.producers = producers;
     return this;
@@ -144,6 +132,7 @@ public class PeriodicMetricReaderModel {
     return cardinalityLimits;
   }
 
+  @JsonProperty("cardinality_limits")
   public PeriodicMetricReaderModel withCardinalityLimits(CardinalityLimitsModel cardinalityLimits) {
     this.cardinalityLimits = cardinalityLimits;
     return this;

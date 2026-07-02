@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalOtlpFileExporterModel {
 
-  @JsonProperty("output_stream")
-  @Nullable
-  private String outputStream;
+  @Nullable private String outputStream;
 
   /**
    * Configure output stream.
@@ -33,6 +31,7 @@ public class ExperimentalOtlpFileExporterModel {
     return outputStream;
   }
 
+  @JsonProperty("output_stream")
   public ExperimentalOtlpFileExporterModel withOutputStream(String outputStream) {
     this.outputStream = outputStream;
     return this;

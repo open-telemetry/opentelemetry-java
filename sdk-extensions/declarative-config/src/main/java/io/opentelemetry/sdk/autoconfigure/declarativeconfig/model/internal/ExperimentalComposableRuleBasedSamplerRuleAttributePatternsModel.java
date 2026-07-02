@@ -17,17 +17,9 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
 
-  @JsonProperty("key")
-  @Nullable
-  private String key;
-
-  @JsonProperty("included")
-  @Nullable
-  private List<String> included;
-
-  @JsonProperty("excluded")
-  @Nullable
-  private List<String> excluded;
+  @Nullable private String key;
+  @Nullable private List<String> included;
+  @Nullable private List<String> excluded;
 
   /**
    * The attribute key to match against.
@@ -40,6 +32,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
     return key;
   }
 
+  @JsonProperty("key")
   public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel withKey(String key) {
     this.key = key;
     return this;
@@ -63,6 +56,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
     return included;
   }
 
+  @JsonProperty("included")
   public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel withIncluded(
       List<String> included) {
     this.included = included;
@@ -88,6 +82,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
     return excluded;
   }
 
+  @JsonProperty("excluded")
   public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel withExcluded(
       List<String> excluded) {
     this.excluded = excluded;
