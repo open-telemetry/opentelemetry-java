@@ -42,6 +42,11 @@ public class SpanExporterModel {
   private Map<String, SpanExporterPropertyModel> additionalProperties =
       new LinkedHashMap<String, SpanExporterPropertyModel>();
 
+  /**
+   * Configure exporter to be OTLP with HTTP transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_http")
   @Nullable
   public OtlpHttpExporterModel getOtlpHttp() {
@@ -53,6 +58,11 @@ public class SpanExporterModel {
     return this;
   }
 
+  /**
+   * Configure exporter to be OTLP with gRPC transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_grpc")
   @Nullable
   public OtlpGrpcExporterModel getOtlpGrpc() {
@@ -64,6 +74,11 @@ public class SpanExporterModel {
     return this;
   }
 
+  /**
+   * Configure exporter to be OTLP with file transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_file/development")
   @Nullable
   public ExperimentalOtlpFileExporterModel getOtlpFileDevelopment() {
@@ -76,6 +91,11 @@ public class SpanExporterModel {
     return this;
   }
 
+  /**
+   * Configure exporter to be console.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("console")
   @Nullable
   public ConsoleExporterModel getConsole() {

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,22 +16,10 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalTracerMatcherAndConfigModel {
 
-  /**
-   * Configure tracer names to match. Matching is case-sensitive, evaluated as follows:
-   *
-   * <p>* If the tracer name exactly matches. * If the tracer name matches the wildcard pattern,
-   * where '?' matches any single character and '*' matches any number of characters including none.
-   * Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("name")
-  @JsonPropertyDescription(
-      "Configure tracer names to match. Matching is case-sensitive, evaluated as follows:\n\n * If the tracer name exactly matches.\n * If the tracer name matches the wildcard pattern, where '?' matches any single character and '*' matches any number of characters including none.\nProperty is required and must be non-null.\n")
   @Nullable
   private String name;
 
-  /** (Required) */
   @JsonProperty("config")
   @Nullable
   private ExperimentalTracerConfigModel config;
@@ -40,11 +27,12 @@ public class ExperimentalTracerMatcherAndConfigModel {
   /**
    * Configure tracer names to match. Matching is case-sensitive, evaluated as follows:
    *
-   * <p>* If the tracer name exactly matches. * If the tracer name matches the wildcard pattern,
-   * where '?' matches any single character and '*' matches any number of characters including none.
-   * Property is required and must be non-null.
+   * <p>* If the tracer name exactly matches.
    *
-   * <p>(Required)
+   * <p>* If the tracer name matches the wildcard pattern, where '?' matches any single character
+   * and '*' matches any number of characters including none.
+   *
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("name")
   @Nullable
@@ -57,7 +45,11 @@ public class ExperimentalTracerMatcherAndConfigModel {
     return this;
   }
 
-  /** (Required) */
+  /**
+   * The tracer config.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("config")
   @Nullable
   public ExperimentalTracerConfigModel getConfig() {

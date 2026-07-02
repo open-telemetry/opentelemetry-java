@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -26,89 +25,44 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class CardinalityLimitsModel {
 
-  /**
-   * Configure default cardinality limit for all instrument types. Instrument-specific cardinality
-   * limits take priority. If omitted or null, 2000 is used.
-   */
   @JsonProperty("default")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for all instrument types.\nInstrument-specific cardinality limits take priority.\nIf omitted or null, 2000 is used.\n")
   @Nullable
   private Integer _default;
 
-  /**
-   * Configure default cardinality limit for counter instruments. If omitted or null, the value from
-   * .default is used.
-   */
   @JsonProperty("counter")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for counter instruments.\nIf omitted or null, the value from .default is used.\n")
   @Nullable
   private Integer counter;
 
-  /**
-   * Configure default cardinality limit for gauge instruments. If omitted or null, the value from
-   * .default is used.
-   */
   @JsonProperty("gauge")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for gauge instruments.\nIf omitted or null, the value from .default is used.\n")
   @Nullable
   private Integer gauge;
 
-  /**
-   * Configure default cardinality limit for histogram instruments. If omitted or null, the value
-   * from .default is used.
-   */
   @JsonProperty("histogram")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for histogram instruments.\nIf omitted or null, the value from .default is used.\n")
   @Nullable
   private Integer histogram;
 
-  /**
-   * Configure default cardinality limit for observable_counter instruments. If omitted or null, the
-   * value from .default is used.
-   */
   @JsonProperty("observable_counter")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for observable_counter instruments.\nIf omitted or null, the value from .default is used.\n")
   @Nullable
   private Integer observableCounter;
 
-  /**
-   * Configure default cardinality limit for observable_gauge instruments. If omitted or null, the
-   * value from .default is used.
-   */
   @JsonProperty("observable_gauge")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for observable_gauge instruments.\nIf omitted or null, the value from .default is used.\n")
   @Nullable
   private Integer observableGauge;
 
-  /**
-   * Configure default cardinality limit for observable_up_down_counter instruments. If omitted or
-   * null, the value from .default is used.
-   */
   @JsonProperty("observable_up_down_counter")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for observable_up_down_counter instruments.\nIf omitted or null, the value from .default is used.\n")
   @Nullable
   private Integer observableUpDownCounter;
 
-  /**
-   * Configure default cardinality limit for up_down_counter instruments. If omitted or null, the
-   * value from .default is used.
-   */
   @JsonProperty("up_down_counter")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for up_down_counter instruments.\nIf omitted or null, the value from .default is used.\n")
   @Nullable
   private Integer upDownCounter;
 
   /**
-   * Configure default cardinality limit for all instrument types. Instrument-specific cardinality
-   * limits take priority. If omitted or null, 2000 is used.
+   * Configure default cardinality limit for all instrument types.
+   *
+   * <p>Instrument-specific cardinality limits take priority.
+   *
+   * <p>If omitted or null, 2000 is used.
    */
   @JsonProperty("default")
   @Nullable
@@ -122,8 +76,9 @@ public class CardinalityLimitsModel {
   }
 
   /**
-   * Configure default cardinality limit for counter instruments. If omitted or null, the value from
-   * .default is used.
+   * Configure default cardinality limit for counter instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("counter")
   @Nullable
@@ -137,8 +92,9 @@ public class CardinalityLimitsModel {
   }
 
   /**
-   * Configure default cardinality limit for gauge instruments. If omitted or null, the value from
-   * .default is used.
+   * Configure default cardinality limit for gauge instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("gauge")
   @Nullable
@@ -152,8 +108,9 @@ public class CardinalityLimitsModel {
   }
 
   /**
-   * Configure default cardinality limit for histogram instruments. If omitted or null, the value
-   * from .default is used.
+   * Configure default cardinality limit for histogram instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("histogram")
   @Nullable
@@ -167,8 +124,9 @@ public class CardinalityLimitsModel {
   }
 
   /**
-   * Configure default cardinality limit for observable_counter instruments. If omitted or null, the
-   * value from .default is used.
+   * Configure default cardinality limit for observable_counter instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("observable_counter")
   @Nullable
@@ -182,8 +140,9 @@ public class CardinalityLimitsModel {
   }
 
   /**
-   * Configure default cardinality limit for observable_gauge instruments. If omitted or null, the
-   * value from .default is used.
+   * Configure default cardinality limit for observable_gauge instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("observable_gauge")
   @Nullable
@@ -197,8 +156,9 @@ public class CardinalityLimitsModel {
   }
 
   /**
-   * Configure default cardinality limit for observable_up_down_counter instruments. If omitted or
-   * null, the value from .default is used.
+   * Configure default cardinality limit for observable_up_down_counter instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("observable_up_down_counter")
   @Nullable
@@ -212,8 +172,9 @@ public class CardinalityLimitsModel {
   }
 
   /**
-   * Configure default cardinality limit for up_down_counter instruments. If omitted or null, the
-   * value from .default is used.
+   * Configure default cardinality limit for up_down_counter instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("up_down_counter")
   @Nullable

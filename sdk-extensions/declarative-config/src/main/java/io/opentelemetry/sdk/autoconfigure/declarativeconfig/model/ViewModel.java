@@ -16,17 +16,22 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ViewModel {
 
-  /** (Required) */
   @JsonProperty("selector")
   @Nullable
   private ViewSelectorModel selector;
 
-  /** (Required) */
   @JsonProperty("stream")
   @Nullable
   private ViewStreamModel stream;
 
-  /** (Required) */
+  /**
+   * Configure view selector.
+   *
+   * <p>Selection criteria is additive as described in
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#instrument-selection-criteria.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("selector")
   @Nullable
   public ViewSelectorModel getSelector() {
@@ -38,7 +43,11 @@ public class ViewModel {
     return this;
   }
 
-  /** (Required) */
+  /**
+   * Configure view stream.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("stream")
   @Nullable
   public ViewStreamModel getStream() {

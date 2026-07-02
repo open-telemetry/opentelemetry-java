@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import javax.annotation.Generated;
@@ -18,38 +17,22 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalJaegerRemoteSamplerModel {
 
-  /**
-   * Configure the endpoint of the jaeger remote sampling service. Property is required and must be
-   * non-null.
-   *
-   * <p>(Required)
-   */
   @JsonProperty("endpoint")
-  @JsonPropertyDescription(
-      "Configure the endpoint of the jaeger remote sampling service.\nProperty is required and must be non-null.\n")
   @Nullable
   private String endpoint;
 
-  /**
-   * Configure the polling interval (in milliseconds) to fetch from the remote sampling service. If
-   * omitted or null, 60000 is used.
-   */
   @JsonProperty("interval")
-  @JsonPropertyDescription(
-      "Configure the polling interval (in milliseconds) to fetch from the remote sampling service.\nIf omitted or null, 60000 is used.\n")
   @Nullable
   private Integer interval;
 
-  /** (Required) */
   @JsonProperty("initial_sampler")
   @Nullable
   private SamplerModel initialSampler;
 
   /**
-   * Configure the endpoint of the jaeger remote sampling service. Property is required and must be
-   * non-null.
+   * Configure the endpoint of the jaeger remote sampling service.
    *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("endpoint")
   @Nullable
@@ -63,8 +46,9 @@ public class ExperimentalJaegerRemoteSamplerModel {
   }
 
   /**
-   * Configure the polling interval (in milliseconds) to fetch from the remote sampling service. If
-   * omitted or null, 60000 is used.
+   * Configure the polling interval (in milliseconds) to fetch from the remote sampling service.
+   *
+   * <p>If omitted or null, 60000 is used.
    */
   @JsonProperty("interval")
   @Nullable
@@ -77,7 +61,11 @@ public class ExperimentalJaegerRemoteSamplerModel {
     return this;
   }
 
-  /** (Required) */
+  /**
+   * Configure the initial sampler used before first configuration is fetched.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("initial_sampler")
   @Nullable
   public SamplerModel getInitialSampler() {

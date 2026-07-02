@@ -41,6 +41,11 @@ public class ExperimentalResourceDetectorModel {
   private Map<String, ExperimentalResourceDetectorPropertyModel> additionalProperties =
       new LinkedHashMap<String, ExperimentalResourceDetectorPropertyModel>();
 
+  /**
+   * Enable the container resource detector, which populates container.* attributes.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("container")
   @Nullable
   public ExperimentalContainerResourceDetectorModel getContainer() {
@@ -53,6 +58,11 @@ public class ExperimentalResourceDetectorModel {
     return this;
   }
 
+  /**
+   * Enable the host resource detector, which populates host.* and os.* attributes.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("host")
   @Nullable
   public ExperimentalHostResourceDetectorModel getHost() {
@@ -64,6 +74,11 @@ public class ExperimentalResourceDetectorModel {
     return this;
   }
 
+  /**
+   * Enable the process resource detector, which populates process.* attributes.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("process")
   @Nullable
   public ExperimentalProcessResourceDetectorModel getProcess() {
@@ -76,6 +91,12 @@ public class ExperimentalResourceDetectorModel {
     return this;
   }
 
+  /**
+   * Enable the service detector, which populates service.name based on the OTEL_SERVICE_NAME
+   * environment variable and service.instance.id.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("service")
   @Nullable
   public ExperimentalServiceResourceDetectorModel getService() {

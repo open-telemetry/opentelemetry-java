@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,19 +16,16 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalOtlpFileExporterModel {
 
-  /**
-   * Configure output stream. Values include stdout, or scheme+destination. For example:
-   * file:///path/to/file.jsonl. If omitted or null, stdout is used.
-   */
   @JsonProperty("output_stream")
-  @JsonPropertyDescription(
-      "Configure output stream. \nValues include stdout, or scheme+destination. For example: file:///path/to/file.jsonl.\nIf omitted or null, stdout is used.\n")
   @Nullable
   private String outputStream;
 
   /**
-   * Configure output stream. Values include stdout, or scheme+destination. For example:
-   * file:///path/to/file.jsonl. If omitted or null, stdout is used.
+   * Configure output stream.
+   *
+   * <p>Values include stdout, or scheme+destination. For example: file:///path/to/file.jsonl.
+   *
+   * <p>If omitted or null, stdout is used.
    */
   @JsonProperty("output_stream")
   @Nullable

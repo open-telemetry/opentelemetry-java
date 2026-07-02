@@ -42,6 +42,11 @@ public class ParentBasedSamplerModel {
   @Nullable
   private SamplerModel localParentNotSampled;
 
+  /**
+   * Configure root sampler.
+   *
+   * <p>If omitted, always_on is used.
+   */
   @JsonProperty("root")
   @Nullable
   public SamplerModel getRoot() {
@@ -53,6 +58,11 @@ public class ParentBasedSamplerModel {
     return this;
   }
 
+  /**
+   * Configure remote_parent_sampled sampler.
+   *
+   * <p>If omitted, always_on is used.
+   */
   @JsonProperty("remote_parent_sampled")
   @Nullable
   public SamplerModel getRemoteParentSampled() {
@@ -64,6 +74,11 @@ public class ParentBasedSamplerModel {
     return this;
   }
 
+  /**
+   * Configure remote_parent_not_sampled sampler.
+   *
+   * <p>If omitted, always_off is used.
+   */
   @JsonProperty("remote_parent_not_sampled")
   @Nullable
   public SamplerModel getRemoteParentNotSampled() {
@@ -75,6 +90,11 @@ public class ParentBasedSamplerModel {
     return this;
   }
 
+  /**
+   * Configure local_parent_sampled sampler.
+   *
+   * <p>If omitted, always_on is used.
+   */
   @JsonProperty("local_parent_sampled")
   @Nullable
   public SamplerModel getLocalParentSampled() {
@@ -86,6 +106,11 @@ public class ParentBasedSamplerModel {
     return this;
   }
 
+  /**
+   * Configure local_parent_not_sampled sampler.
+   *
+   * <p>If omitted, always_off is used.
+   */
   @JsonProperty("local_parent_not_sampled")
   @Nullable
   public SamplerModel getLocalParentNotSampled() {
