@@ -79,6 +79,11 @@ class TlsUtilTest {
         .hasMessage("Unable to generate key from supported algorithms: [EC]");
   }
 
+  @Test
+  void defaultTrustManager() {
+    assertThatCode(TlsUtil::defaultTrustManager).doesNotThrowAnyException();
+  }
+
   /**
    * Append <a href="https://datatracker.ietf.org/doc/html/rfc7468#section-5.2">explanatory text</a>
    * prefix and verify {@link TlsUtil#keyManager(byte[], byte[])} succeeds.

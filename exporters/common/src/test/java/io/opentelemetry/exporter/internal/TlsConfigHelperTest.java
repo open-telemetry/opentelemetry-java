@@ -94,4 +94,30 @@ class TlsConfigHelperTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("sslContext or trustManager has been previously configured");
   }
+
+  @Test
+  void getEffectiveTrustManager_returnsConfiguredTrustManager()
+      throws CertificateEncodingException {
+    helper.setTrustManagerFromCerts(serverTls.certificate().getEncoded());
+
+    assertThat(helper.getEffectiveTrustManager()).isSameAs(helper.getTrustManager());
+  }
+
+  @Test
+  void getEffectiveTrustManager_returnsDefaultTrustManager() {
+    assertThat(helper.getEffectiveTrustManager()).isNotNull();
+  }
+
+  @Test
+  void getEffectiveTrustManager_returnsNullWhenSslContextConfigured() throws Exception {
+    helper.setSslContext(
+        SSLContext.getInstance("TLS"), TlsUtil.trustManager(serverTls.certificate().getEncoded()));
+
+    assertThat(helper.getEffectiveTrustManager()).isNull();
+  }
+
+  @Test
+  void getSslContext_usesDefaultTrustManagerWhenUnset() {
+    assertThat(helper.getSslContext()).isNotNull();
+  }
 }

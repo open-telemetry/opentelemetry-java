@@ -17,6 +17,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.net.ssl.SSLContext;
 import org.junit.jupiter.api.Test;
 
 class OkHttpHttpSenderTest {
@@ -59,5 +60,28 @@ class OkHttpHttpSenderTest {
     public int getContentLength() {
       return 0;
     }
+  }
+
+  @Test
+  void constructor_usesDefaultTrustManagerWhenTrustManagerIsNull() throws Exception {
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(null, null, null);
+
+    OkHttpHttpSender sender =
+        new OkHttpHttpSender(
+            URI.create("https://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            sslContext,
+            null,
+            null,
+            Long.MAX_VALUE);
+
+    assertThat(sender).isNotNull();
   }
 }
