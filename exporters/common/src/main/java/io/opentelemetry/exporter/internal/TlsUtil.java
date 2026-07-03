@@ -95,9 +95,8 @@ public final class TlsUtil {
       throw new SSLException("Could not build KeyManagerFactory from clientKeysPem.", e);
     }
   }
-  /**
-   * Returns the platform default {@link X509TrustManager}.
-   */
+
+  /** Returns the platform default {@link X509TrustManager}. */
   public static X509TrustManager defaultTrustManager() throws SSLException {
     try {
       TrustManagerFactory tmf =
@@ -117,6 +116,7 @@ public final class TlsUtil {
       throw new SSLException("Could not build default TrustManager.", e);
     }
   }
+
   // Visible for testing
   static PrivateKey generatePrivateKey(PKCS8EncodedKeySpec keySpec, List<KeyFactory> keyFactories)
       throws SSLException {

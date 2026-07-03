@@ -93,6 +93,11 @@
   ([#8469](https://github.com/open-telemetry/opentelemetry-java/pull/8469))
 * Make benchmark path configurable
   ([#8557](https://github.com/open-telemetry/opentelemetry-java/pull/8557))
+### SDK
+
+#### Exporters
+
+* * Fix OkHttp client mTLS when using the platform default trust store ([#8565](https://github.com/open-telemetry/opentelemetry-java/pull/8565))
 
 ## Version 1.63.0 (2026-06-05)
 
