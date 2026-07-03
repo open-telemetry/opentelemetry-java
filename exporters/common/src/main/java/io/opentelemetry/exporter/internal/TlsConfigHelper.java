@@ -112,20 +112,11 @@ public class TlsConfigHelper {
   }
 
   @Nullable
-  public X509TrustManager getEffectiveTrustManager() {
+  public X509TrustManager getEffectiveTrustManager() throws SSLException {
     if (trustManager != null) {
       return trustManager;
     }
-
-    if (sslContext != null) {
-      return null;
-    }
-
-    try {
-      return TlsUtil.defaultTrustManager();
-    } catch (SSLException e) {
-      throw new IllegalArgumentException(e);
-    }
+    return TlsUtil.defaultTrustManager();
   }
 
   /** Get the {@link SSLContext}. */
@@ -142,7 +133,7 @@ public class TlsConfigHelper {
           new TrustManager[] {getEffectiveTrustManager()},
           null);
       return sslContext;
-    } catch (NoSuchAlgorithmException | KeyManagementException e) {
+    } catch (NoSuchAlgorithmException | KeyManagementException | SSLException e) {
       throw new IllegalArgumentException(e);
     }
   }

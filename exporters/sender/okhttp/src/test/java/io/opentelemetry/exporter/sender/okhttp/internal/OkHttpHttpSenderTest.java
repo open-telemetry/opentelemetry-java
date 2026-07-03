@@ -6,11 +6,13 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.OutputStream;
 import java.net.URI;
+import java.security.Security;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.SynchronousQueue;
@@ -18,6 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import org.junit.jupiter.api.Test;
 
 class OkHttpHttpSenderTest {
@@ -83,5 +86,39 @@ class OkHttpHttpSenderTest {
             Long.MAX_VALUE);
 
     assertThat(sender).isNotNull();
+  }
+
+  @Test
+  void constructor_wrapsDefaultTrustManagerFailure() throws Exception {
+    String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
+
+    try {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", "invalid");
+
+      SSLContext sslContext = SSLContext.getInstance("TLS");
+      sslContext.init(null, null, null);
+
+      assertThatThrownBy(
+              () ->
+                  new OkHttpHttpSender(
+                      URI.create("https://localhost"),
+                      "text/plain",
+                      null,
+                      Duration.ofSeconds(10),
+                      Duration.ofSeconds(10),
+                      Collections::emptyMap,
+                      null,
+                      null,
+                      sslContext,
+                      null,
+                      null,
+                      Long.MAX_VALUE))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessage("Unable to initialize default trust manager")
+          .hasCauseInstanceOf(SSLException.class);
+
+    } finally {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
+    }
   }
 }

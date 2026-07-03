@@ -10,8 +10,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -97,23 +99,31 @@ class TlsConfigHelperTest {
 
   @Test
   void getEffectiveTrustManager_returnsConfiguredTrustManager()
-      throws CertificateEncodingException {
+      throws CertificateEncodingException, SSLException {
     helper.setTrustManagerFromCerts(serverTls.certificate().getEncoded());
 
     assertThat(helper.getEffectiveTrustManager()).isSameAs(helper.getTrustManager());
   }
 
   @Test
-  void getEffectiveTrustManager_returnsDefaultTrustManager() {
+  void getEffectiveTrustManager_returnsDefaultTrustManager() throws SSLException {
     assertThat(helper.getEffectiveTrustManager()).isNotNull();
   }
 
   @Test
-  void getEffectiveTrustManager_returnsNullWhenSslContextConfigured() throws Exception {
-    helper.setSslContext(
-        SSLContext.getInstance("TLS"), TlsUtil.trustManager(serverTls.certificate().getEncoded()));
+  void getSslContext_wrapsDefaultTrustManagerFailure() {
+    String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
 
-    assertThat(helper.getEffectiveTrustManager()).isNull();
+    try {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", "invalid");
+
+      assertThatThrownBy(() -> helper.getSslContext())
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasCauseInstanceOf(SSLException.class);
+
+    } finally {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
+    }
   }
 
   @Test

@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.internal.common.util.SelfSignedCertificate;
 import java.io.File;
@@ -15,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
@@ -82,6 +85,23 @@ class TlsUtilTest {
   @Test
   void defaultTrustManager() {
     assertThatCode(TlsUtil::defaultTrustManager).doesNotThrowAnyException();
+  }
+
+  @Test
+  void defaultTrustManager_NoSuchAlgorithmException() {
+    String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
+
+    try {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", "invalid-algorithm");
+
+      assertThatThrownBy(TlsUtil::defaultTrustManager)
+          .isInstanceOf(SSLException.class)
+          .hasMessage("Could not build default TrustManager.")
+          .hasCauseInstanceOf(NoSuchAlgorithmException.class);
+
+    } finally {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
+    }
   }
 
   /**
