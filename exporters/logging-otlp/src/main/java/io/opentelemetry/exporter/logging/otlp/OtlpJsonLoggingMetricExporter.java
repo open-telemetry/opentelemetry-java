@@ -29,7 +29,7 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
   private final OtlpStdoutMetricExporter delegate;
 
   /**
-   * Returns a new {@link OtlpJsonLoggingMetricExporter} with a aggregation temporality of {@link
+   * Returns a new {@link OtlpJsonLoggingMetricExporter} with an aggregation temporality of {@link
    * AggregationTemporality#CUMULATIVE}.
    */
   public static MetricExporter create() {
