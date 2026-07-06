@@ -135,25 +135,28 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
 
   /**
    * Attempts to stop all the activity for {@link Tracer}s created by this provider. Calls {@link
-   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
+   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s and {@link
+   * Sampler#shutdown()} for the configured {@link Sampler}.
    *
-   * <p>The returned {@link CompletableResultCode} will be completed when all the Spans are
-   * processed.
+   * <p>The returned {@link CompletableResultCode} will be completed when shutdown processing is
+   * finished.
    *
    * <p>After this is called, newly created {@code Span}s will be no-ops.
    *
    * <p>After this is called, further attempts at re-using this instance will result in undefined
    * behavior. It should be considered a terminal operation for the SDK.
    *
-   * @return a {@link CompletableResultCode} which is completed when all the span processors have
-   *     been shut down.
+   * @return a {@link CompletableResultCode} which is completed when all span processors and the
+   *     sampler have been shut down.
    */
   public CompletableResultCode shutdown() {
     if (sharedState.hasBeenShutdown()) {
       logger.log(Level.INFO, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
-    return sharedState.shutdown();
+
+    return CompletableResultCode.ofAll(
+        List.of(sharedState.shutdown(), sharedState.getSampler().shutdown()));
   }
 
   /**
