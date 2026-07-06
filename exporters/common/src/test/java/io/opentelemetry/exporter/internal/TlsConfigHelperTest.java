@@ -98,19 +98,6 @@ class TlsConfigHelperTest {
   }
 
   @Test
-  void getEffectiveTrustManager_returnsConfiguredTrustManager()
-      throws CertificateEncodingException, SSLException {
-    helper.setTrustManagerFromCerts(serverTls.certificate().getEncoded());
-
-    assertThat(helper.getEffectiveTrustManager()).isSameAs(helper.getTrustManager());
-  }
-
-  @Test
-  void getEffectiveTrustManager_returnsDefaultTrustManager() throws SSLException {
-    assertThat(helper.getEffectiveTrustManager()).isNotNull();
-  }
-
-  @Test
   void getSslContext_wrapsDefaultTrustManagerFailure() {
     String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
 

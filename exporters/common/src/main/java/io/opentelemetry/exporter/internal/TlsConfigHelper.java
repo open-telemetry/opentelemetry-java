@@ -111,8 +111,7 @@ public class TlsConfigHelper {
     return trustManager;
   }
 
-  @Nullable
-  public X509TrustManager getEffectiveTrustManager() throws SSLException {
+  private X509TrustManager getEffectiveTrustManager() throws SSLException {
     if (trustManager != null) {
       return trustManager;
     }

@@ -97,7 +97,11 @@
 
 #### Exporters
 
+<<<<<<< HEAD
 * * Fix OkHttp client mTLS when using the platform default trust store ([#8565](https://github.com/open-telemetry/opentelemetry-java/pull/8565))
+=======
+* Fix OkHttp client mTLS when using the platform default trust store ([#8565](https://github.com/open-telemetry/opentelemetry-java/pull/8565))
+>>>>>>> c7e07ce27 (Address review feedback for mTLS default trust handling)
 
 ## Version 1.63.0 (2026-06-05)
 

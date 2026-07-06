@@ -105,16 +105,21 @@ public final class TlsUtil {
       // Initialize with the platform default trust store.
       tmf.init((KeyStore) null);
 
-      for (TrustManager trustManager : tmf.getTrustManagers()) {
-        if (trustManager instanceof X509TrustManager) {
-          return (X509TrustManager) trustManager;
-        }
-      }
-
-      throw new SSLException("No X509TrustManager found");
+      return defaultTrustManager(tmf);
     } catch (KeyStoreException | NoSuchAlgorithmException e) {
       throw new SSLException("Could not build default TrustManager.", e);
     }
+  }
+
+  // Visible for testing
+  static X509TrustManager defaultTrustManager(TrustManagerFactory tmf) throws SSLException {
+    for (TrustManager trustManager : tmf.getTrustManagers()) {
+      if (trustManager instanceof X509TrustManager) {
+        return (X509TrustManager) trustManager;
+      }
+    }
+
+    throw new SSLException("No X509TrustManager found");
   }
 
   // Visible for testing

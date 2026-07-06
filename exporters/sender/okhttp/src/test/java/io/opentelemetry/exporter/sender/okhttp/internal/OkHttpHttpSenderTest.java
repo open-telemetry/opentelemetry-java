@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.MessageWriter;
@@ -70,22 +71,21 @@ class OkHttpHttpSenderTest {
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(null, null, null);
 
-    OkHttpHttpSender sender =
-        new OkHttpHttpSender(
-            URI.create("https://localhost"),
-            "text/plain",
-            null,
-            Duration.ofSeconds(10),
-            Duration.ofSeconds(10),
-            Collections::emptyMap,
-            null,
-            null,
-            sslContext,
-            null,
-            null,
-            Long.MAX_VALUE);
-
-    assertThat(sender).isNotNull();
+    assertDoesNotThrow(
+        () ->
+            new OkHttpHttpSender(
+                URI.create("https://localhost"),
+                "text/plain",
+                null,
+                Duration.ofSeconds(10),
+                Duration.ofSeconds(10),
+                Collections::emptyMap,
+                null,
+                null,
+                sslContext,
+                null,
+                null,
+                Long.MAX_VALUE));
   }
 
   @Test
