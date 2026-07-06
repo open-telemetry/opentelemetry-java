@@ -1,4 +1,4 @@
-Comparing source compatibility of opentelemetry-sdk-trace-1.65.0-SNAPSHOT.jar against opentelemetry-sdk-trace-1.63.0.jar
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.export.BatchSpanProcessor  (not serializable)
+Comparing source compatibility of opentelemetry-sdk-trace-1.64.0-SNAPSHOT.jar against opentelemetry-sdk-trace-1.63.0.jar
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.samplers.Sampler  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.export.BatchSpanProcessor create(io.opentelemetry.sdk.trace.export.SpanExporter)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
