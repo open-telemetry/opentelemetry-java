@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
@@ -176,10 +177,15 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   }
 
   @Override
+  public CompletableResultCode shutdown() {
+    pollFuture.cancel(false);
+    pollExecutor.shutdownNow();
+    return grpcSender.shutdown();
+  }
+
+  @Override
   @SuppressWarnings("Interruption")
   public void close() {
-    pollFuture.cancel(true);
-    pollExecutor.shutdownNow();
-    grpcSender.shutdown().join(10, TimeUnit.SECONDS);
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 }

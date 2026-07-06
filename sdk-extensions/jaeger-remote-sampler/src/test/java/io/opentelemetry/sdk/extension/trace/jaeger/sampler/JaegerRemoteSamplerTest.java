@@ -161,6 +161,20 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
+  void shutdown() {
+    JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
+            .setServiceName(SERVICE_NAME)
+            .build();
+
+    assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
+
+    assertThat(sampler.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void tlsConnectionWorks() throws IOException {
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()

@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -106,18 +107,28 @@ final class TracerSharedState {
   }
 
   /**
-   * Stops tracing, including shutting down processors and set to {@code true} {@link
+   * Stops tracing, including shutting down processors and sampler and set to {@code true} {@link
    * #hasBeenShutdown()}.
    *
-   * @return a {@link CompletableResultCode} that will be completed when the span processor is shut
-   *     down.
+   * @return a {@link CompletableResultCode} that will be completed when the span processor and
+   *     sampler are shut down.
    */
   CompletableResultCode shutdown() {
     synchronized (lock) {
       if (shutdownResult != null) {
         return shutdownResult;
       }
-      shutdownResult = activeSpanProcessor.shutdown();
+
+      CompletableResultCode samplerShutdownResult = sampler.shutdown();
+
+      shutdownResult =
+          CompletableResultCode.ofAll(
+              Arrays.asList(
+                  activeSpanProcessor.shutdown(),
+                  samplerShutdownResult == null
+                      ? CompletableResultCode.ofSuccess()
+                      : samplerShutdownResult));
+
       return shutdownResult;
     }
   }
