@@ -52,6 +52,9 @@ import org.openjdk.jmh.infra.Blackhole;
 @State(Scope.Thread)
 public class AttributesMapBenchmark {
 
+  // Default SpanLimits attribute count limit.
+  private static final int CAPACITY = 128;
+
   @Param({"4", "16", "20", "32", "128"})
   int numAttributes;
 
@@ -72,7 +75,7 @@ public class AttributesMapBenchmark {
       boolKeys.add(booleanKey("key" + i));
       values.add("value" + i);
     }
-    filledMap = AttributesMap.create(numAttributes, Integer.MAX_VALUE);
+    filledMap = AttributesMap.create(CAPACITY, Integer.MAX_VALUE);
     for (int i = 0; i < numAttributes; i++) {
       filledMap.put(stringKeys.get(i), values.get(i));
     }
@@ -81,7 +84,7 @@ public class AttributesMapBenchmark {
   /** Each key name is unique — the common production case. */
   @Benchmark
   public AttributesMap uniqueKeys() {
-    AttributesMap map = AttributesMap.create(numAttributes, Integer.MAX_VALUE);
+    AttributesMap map = AttributesMap.create(CAPACITY, Integer.MAX_VALUE);
     for (int i = 0; i < numAttributes; i++) {
       map.put(stringKeys.get(i), values.get(i));
     }
@@ -127,7 +130,7 @@ public class AttributesMapBenchmark {
    */
   @Benchmark
   public void putThenForEach(Blackhole bh) {
-    AttributesMap map = AttributesMap.create(numAttributes, Integer.MAX_VALUE);
+    AttributesMap map = AttributesMap.create(CAPACITY, Integer.MAX_VALUE);
     for (int i = 0; i < numAttributes; i++) {
       map.put(stringKeys.get(i), values.get(i));
     }
