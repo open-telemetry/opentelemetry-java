@@ -48,6 +48,6 @@ jobs:
     needs:
       - analyze
     if: always() && github.repository == 'open-telemetry/opentelemetry-java'
-    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@70659e38ed50e743a5cce6fb40ba336c40154aa1
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@v0.3.0
     with:
       success: ${{ needs.analyze.result == 'success' }}
