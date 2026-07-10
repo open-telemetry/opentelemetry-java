@@ -4,6 +4,10 @@
 
 ### SDK
 
+#### Exporters
+
+* Prometheus: Fix serialization of array-valued scope and resource attributes to JSON strings
+
 #### Traces
 
 * Add `BatchSpanProcessor.create(SpanExporter)` convenience factory to mirror
