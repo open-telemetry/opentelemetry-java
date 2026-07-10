@@ -66,7 +66,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
    *
    * @param spanExporter the {@link SpanExporter} to which the Spans are pushed.
    * @return a new {@link BatchSpanProcessor}.
-   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    * @since 1.64.0
    */
   public static BatchSpanProcessor create(SpanExporter spanExporter) {
