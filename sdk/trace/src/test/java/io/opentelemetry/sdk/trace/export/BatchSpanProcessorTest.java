@@ -105,6 +105,21 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  void createDefaults() {
+    BatchSpanProcessor processor =
+        BatchSpanProcessor.create(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()));
+    assertThat(processor).isNotNull();
+    processor.shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void createNull() {
+    assertThatThrownBy(() -> BatchSpanProcessor.create(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("spanExporter");
+  }
+
+  @Test
   void builderInvalidConfig() {
     assertThatThrownBy(
             () ->
