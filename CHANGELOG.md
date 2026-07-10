@@ -20,10 +20,6 @@
 
 ### SDK
 
-#### Exporters
-
-* Prometheus: Fix serialization of array-valued scope and resource attributes to JSON strings
-
 #### Traces
 
 * Add `BatchSpanProcessor.create(SpanExporter)` convenience factory to mirror
@@ -65,6 +61,8 @@
   ([#8492](https://github.com/open-telemetry/opentelemetry-java/pull/8492))
 * Prometheus: Add translation strategy support
   ([#8346](https://github.com/open-telemetry/opentelemetry-java/pull/8346))
+* Prometheus: Fix serialization of array-valued scope and resource attributes to JSON strings
+  ([#8497](https://github.com/open-telemetry/opentelemetry-java/pull/8497))
 
 #### Extensions
 
