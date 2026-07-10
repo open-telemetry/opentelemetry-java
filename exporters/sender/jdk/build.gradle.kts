@@ -15,6 +15,4 @@ dependencies {
 
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
-
-  testImplementation("com.fasterxml.jackson.core:jackson-core")
 }
