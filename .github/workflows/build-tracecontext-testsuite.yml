@@ -35,3 +35,13 @@ jobs:
           context: integration-tests/tracecontext/docker
           push: true
           tags: ghcr.io/open-telemetry/java-test-containers:w3c-tracecontext-testsuite
+
+  workflow-notification:
+    permissions:
+      issues: write
+    needs:
+      - publish
+    if: always()
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@7c49790392da7de86fdb4bb968446f9cb8461eb8 # v0.3.1
+    with:
+      success: ${{ needs.publish.result == 'success' }}
