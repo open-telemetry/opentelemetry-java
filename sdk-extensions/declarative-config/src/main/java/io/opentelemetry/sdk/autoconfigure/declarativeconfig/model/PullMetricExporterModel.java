@@ -7,10 +7,10 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalPrometheusMetricExporterModel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
@@ -19,24 +19,24 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"prometheus/development"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class PullMetricExporterModel {
 
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("prometheus/development")
-  private ExperimentalPrometheusMetricExporterModel prometheusDevelopment;
-
-  @JsonIgnore
+  @Nullable private ExperimentalPrometheusMetricExporterModel prometheusDevelopment;
   private Map<String, PullMetricExporterPropertyModel> additionalProperties =
       new LinkedHashMap<String, PullMetricExporterPropertyModel>();
 
+  /**
+   * Configure exporter to be prometheus.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("prometheus/development")
   @Nullable
   public ExperimentalPrometheusMetricExporterModel getPrometheusDevelopment() {
     return prometheusDevelopment;
   }
 
+  @JsonProperty("prometheus/development")
   public PullMetricExporterModel withPrometheusDevelopment(
       ExperimentalPrometheusMetricExporterModel prometheusDevelopment) {
     this.prometheusDevelopment = prometheusDevelopment;
@@ -49,10 +49,6 @@ public class PullMetricExporterModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, PullMetricExporterPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public PullMetricExporterModel withAdditionalProperty(
       String name, PullMetricExporterPropertyModel value) {
     this.additionalProperties.put(name, value);
@@ -61,53 +57,38 @@ public class PullMetricExporterModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(PullMetricExporterModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("prometheusDevelopment");
-    sb.append('=');
-    sb.append(((this.prometheusDevelopment == null) ? "<null>" : this.prometheusDevelopment));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "PullMetricExporterModel{"
+        + "prometheusDevelopment="
+        + prometheusDevelopment
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result =
-        ((result * 31)
-            + ((this.prometheusDevelopment == null) ? 0 : this.prometheusDevelopment.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.prometheusDevelopment == null) ? 0 : this.prometheusDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof PullMetricExporterModel) == false) {
-      return false;
+    if (o instanceof PullMetricExporterModel) {
+      PullMetricExporterModel that = (PullMetricExporterModel) o;
+      return (this.prometheusDevelopment == null
+              ? that.prometheusDevelopment == null
+              : this.prometheusDevelopment.equals(that.prometheusDevelopment))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    PullMetricExporterModel rhs = ((PullMetricExporterModel) other);
-    return (((this.prometheusDevelopment == rhs.prometheusDevelopment)
-            || ((this.prometheusDevelopment != null)
-                && this.prometheusDevelopment.equals(rhs.prometheusDevelopment)))
-        && ((this.additionalProperties == rhs.additionalProperties)
-            || ((this.additionalProperties != null)
-                && this.additionalProperties.equals(rhs.additionalProperties))));
+    return false;
   }
 }

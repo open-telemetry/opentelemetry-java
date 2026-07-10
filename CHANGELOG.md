@@ -8,6 +8,12 @@
 
 * Prometheus: Fix serialization of array-valued scope and resource attributes to JSON strings
 
+#### Traces
+
+* Add `BatchSpanProcessor.create(SpanExporter)` convenience factory to mirror
+  `SimpleSpanProcessor.create(SpanExporter)`
+  ([#8561](https://github.com/open-telemetry/opentelemetry-java/issues/8561))
+
 ## Version 1.63.0 (2026-06-05)
 
 ### API

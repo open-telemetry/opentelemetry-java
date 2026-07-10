@@ -189,6 +189,18 @@
       customType: 'regex',
       datasourceTemplate: 'docker',
       managerFilePatterns: [
+        '.github/workflows/**',
+      ],
+      matchStrings: [
+        '(?<currentValue>\\d+) # renovate\\(graal-java-version\\)',
+      ],
+      // gates updates on GraalVM Community actually publishing support for a Java version
+      depNameTemplate: 'ghcr.io/graalvm/graalvm-community',
+    },
+    {
+      customType: 'regex',
+      datasourceTemplate: 'docker',
+      managerFilePatterns: [
         '**/*.java',
       ],
       matchStrings: [

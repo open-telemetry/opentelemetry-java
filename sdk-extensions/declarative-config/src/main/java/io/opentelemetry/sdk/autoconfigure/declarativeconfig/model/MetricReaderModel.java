@@ -14,34 +14,40 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"periodic", "pull"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class MetricReaderModel {
 
-  @Nullable
-  @JsonProperty("periodic")
-  private PeriodicMetricReaderModel periodic;
+  @Nullable private PeriodicMetricReaderModel periodic;
+  @Nullable private PullMetricReaderModel pull;
 
-  @Nullable
-  @JsonProperty("pull")
-  private PullMetricReaderModel pull;
-
+  /**
+   * Configure a periodic metric reader.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("periodic")
   @Nullable
   public PeriodicMetricReaderModel getPeriodic() {
     return periodic;
   }
 
+  @JsonProperty("periodic")
   public MetricReaderModel withPeriodic(PeriodicMetricReaderModel periodic) {
     this.periodic = periodic;
     return this;
   }
 
+  /**
+   * Configure a pull based metric reader.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("pull")
   @Nullable
   public PullMetricReaderModel getPull() {
     return pull;
   }
 
+  @JsonProperty("pull")
   public MetricReaderModel withPull(PullMetricReaderModel pull) {
     this.pull = pull;
     return this;
@@ -49,46 +55,29 @@ public class MetricReaderModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(MetricReaderModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("periodic");
-    sb.append('=');
-    sb.append(((this.periodic == null) ? "<null>" : this.periodic));
-    sb.append(',');
-    sb.append("pull");
-    sb.append('=');
-    sb.append(((this.pull == null) ? "<null>" : this.pull));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "MetricReaderModel{" + "periodic=" + periodic + ", pull=" + pull + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.pull == null) ? 0 : this.pull.hashCode()));
-    result = ((result * 31) + ((this.periodic == null) ? 0 : this.periodic.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.periodic == null) ? 0 : this.periodic.hashCode();
+    h *= 1000003;
+    h ^= (this.pull == null) ? 0 : this.pull.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof MetricReaderModel) == false) {
-      return false;
+    if (o instanceof MetricReaderModel) {
+      MetricReaderModel that = (MetricReaderModel) o;
+      return (this.periodic == null ? that.periodic == null : this.periodic.equals(that.periodic))
+          && (this.pull == null ? that.pull == null : this.pull.equals(that.pull));
     }
-    MetricReaderModel rhs = ((MetricReaderModel) other);
-    return (((this.pull == rhs.pull) || ((this.pull != null) && this.pull.equals(rhs.pull)))
-        && ((this.periodic == rhs.periodic)
-            || ((this.periodic != null) && this.periodic.equals(rhs.periodic))));
+    return false;
   }
 }

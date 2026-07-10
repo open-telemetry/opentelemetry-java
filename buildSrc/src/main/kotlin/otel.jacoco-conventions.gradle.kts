@@ -16,7 +16,7 @@ tasks.named("jacocoTestReport") {
 }
 
 configurations {
-  val implementation by getting
+  val implementation = getByName("implementation")
 
   create("transitiveSourceElements") {
     isCanBeResolved = false

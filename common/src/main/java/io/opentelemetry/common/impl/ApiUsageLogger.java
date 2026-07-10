@@ -61,7 +61,7 @@ public final class ApiUsageLogger {
   public static void logUsageIssue(Class<?> apiClass, String methodName, String message) {
     if (WARN_ONCE.compareAndSet(false, true)) {
       LOGGER.warning(
-          "OpenTelemetry API usage issue detected. To see more details, enable FINEST logging for io.opentelemetry.usage. Stacktraces are includes to identify the offending call site.");
+          "OpenTelemetry API usage issue detected. To see more details, enable FINEST logging for io.opentelemetry.usage. Stacktraces are included to identify the offending call site.");
     }
     if (LOGGER.isLoggable(Level.FINEST)) {
       LOGGER.log(

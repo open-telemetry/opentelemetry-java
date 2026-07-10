@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProce
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleLogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalEventToSpanEventBridgeLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.logs.EventToSpanEventBridge;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
@@ -95,9 +96,8 @@ class LogRecordProcessorFactoryTest {
         Arguments.argumentSet(
             "event_to_span_event_bridge/development",
             new LogRecordProcessorModel()
-                .withAdditionalProperty(
-                    "event_to_span_event_bridge/development",
-                    new LogRecordProcessorPropertyModel()),
+                .withEventToSpanEventBridgeDevelopment(
+                    new ExperimentalEventToSpanEventBridgeLogRecordProcessorModel()),
             EventToSpanEventBridge.create()),
         Arguments.argumentSet(
             "spi test processor",

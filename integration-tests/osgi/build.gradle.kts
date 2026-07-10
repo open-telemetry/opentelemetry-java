@@ -194,7 +194,7 @@ fun registerOsgiSuite(
     bndrun = resolveTask.flatMap { it.outputBndrun }
     bundles = files(sourceSet.runtimeClasspath, bundleTask.get().archiveFile)
     if (minJavaVersion != null) {
-      val testJavaVersion: String? by project
+      val testJavaVersion = project.findProperty("testJavaVersion") as String?
       enabled = testJavaVersion == null || testJavaVersion!!.toInt() >= minJavaVersion
     }
     // BND reports success when zero tests ran (e.g. if bundles failed to start). Fail explicitly.
