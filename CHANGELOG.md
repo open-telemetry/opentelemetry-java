@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.64.0 (2026-07-10)
+
 ### API
 
 * Fix `W3CBaggagePropagator` to allow empty baggage values per W3C spec
