@@ -27,6 +27,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -255,23 +256,7 @@ class HttpExporterTest {
     doAnswer(
             invoc -> {
               Consumer<HttpResponse> onResponse = invoc.getArgument(1);
-              onResponse.accept(
-                  new HttpResponse() {
-                    @Override
-                    public int getStatusCode() {
-                      return 500;
-                    }
-
-                    @Override
-                    public String getStatusMessage() {
-                      return "Internal Server Error";
-                    }
-
-                    @Override
-                    public byte[] getResponseBody() {
-                      return null;
-                    }
-                  });
+              onResponse.accept(new FakeHttpResponse(500, "Internal Server Error", null));
               return null;
             })
         .when(mockSender)
@@ -317,13 +302,13 @@ class HttpExporterTest {
 
     final int statusCode;
     final String statusMessage;
-    final byte[] responseBody;
+    @Nullable final byte[] responseBody;
 
     FakeHttpResponse(int statusCode, String statusMessage) {
       this(statusCode, statusMessage, new byte[0]);
     }
 
-    FakeHttpResponse(int statusCode, String statusMessage, byte[] responseBody) {
+    FakeHttpResponse(int statusCode, String statusMessage, @Nullable byte[] responseBody) {
       this.statusCode = statusCode;
       this.statusMessage = statusMessage;
       this.responseBody = responseBody;
@@ -340,6 +325,7 @@ class HttpExporterTest {
     }
 
     @Override
+    @Nullable
     public byte[] getResponseBody() {
       return responseBody;
     }
