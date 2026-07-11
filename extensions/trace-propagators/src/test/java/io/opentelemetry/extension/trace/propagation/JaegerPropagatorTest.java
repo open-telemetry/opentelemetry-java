@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -462,8 +463,8 @@ class JaegerPropagatorTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     // Some TextMapGetters return header keys in their original case (e.g. undertow 1.7), so baggage
     // matching must be case insensitive.
-    carrier.put("Uberctx-some-key", "value");
-    carrier.put("Jaeger-Baggage", "nometa=nometa-value,meta=meta-value");
+    carrier.put(BAGGAGE_PREFIX.toUpperCase(Locale.ROOT) + "some-key", "value");
+    carrier.put(BAGGAGE_HEADER.toUpperCase(Locale.ROOT), "nometa=nometa-value,meta=meta-value");
 
     assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
