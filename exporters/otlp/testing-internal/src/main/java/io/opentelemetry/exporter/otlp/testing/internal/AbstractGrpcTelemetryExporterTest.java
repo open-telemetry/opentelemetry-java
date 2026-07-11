@@ -1058,7 +1058,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestMessageSize(1)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestSize(1)))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4317"))
@@ -1172,10 +1172,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .hasMessage(
             "Unsupported compressionMethod. Compression method must be \"none\" or one of:"
                 + " [base64,gzip]");
-    assertThatThrownBy(() -> exporterBuilder().setMaxRequestMessageSize(0))
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxRequestMessageSizeBytes must be positive");
-    assertThatThrownBy(() -> exporterBuilder().setMaxRequestMessageSize(-1))
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(-1))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxRequestMessageSizeBytes must be positive");
   }
@@ -1183,10 +1183,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   void requestMessageSizeLimit() {
     try (TelemetryExporter<T> exporter =
-        exporterBuilder()
-            .setEndpoint(server.httpUri().toString())
-            .setMaxRequestMessageSize(1)
-            .build()) {
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setMaxRequestSize(1).build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
 

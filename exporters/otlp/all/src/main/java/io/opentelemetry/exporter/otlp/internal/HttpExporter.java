@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,7 +76,12 @@ public final class HttpExporter {
     MessageWriter messageWriter =
         exportAsJson ? exportRequest.toJsonMessageWriter() : exportRequest.toBinaryMessageWriter();
 
-    int requestBodySize = messageWriter.getContentLength();
+    long requestBodySize;
+    try {
+      requestBodySize = getRequestBodySize(messageWriter);
+    } catch (IOException e) {
+      return failRequestBodySizeComputation(metricRecording, e);
+    }
     if (requestBodySize > maxRequestBodySize) {
       return failRequestTooLarge(metricRecording, requestBodySize);
     }
@@ -103,9 +109,48 @@ public final class HttpExporter {
     IOException exception = new IOException(errorMessage);
     metricRecording.finishFailed(exception);
     logger.log(Level.WARNING, errorMessage);
-    CompletableResultCode result = new CompletableResultCode();
-    result.failExceptionally(FailedExportException.httpFailedExceptionally(exception));
-    return result;
+    return CompletableResultCode.ofExceptionalFailure(
+        FailedExportException.httpFailedExceptionally(exception));
+  }
+
+  private CompletableResultCode failRequestBodySizeComputation(
+      ExporterInstrumentation.Recording metricRecording, IOException exception) {
+    metricRecording.finishFailed(exception);
+    logger.log(
+        Level.SEVERE,
+        "Failed to export " + type + "s. The request body size could not be computed.",
+        exception);
+    return CompletableResultCode.ofExceptionalFailure(
+        FailedExportException.httpFailedExceptionally(exception));
+  }
+
+  private static long getRequestBodySize(MessageWriter messageWriter) throws IOException {
+    int contentLength = messageWriter.getContentLength();
+    if (contentLength >= 0) {
+      return contentLength;
+    }
+
+    CountingOutputStream countingOutputStream = new CountingOutputStream();
+    messageWriter.writeMessage(countingOutputStream);
+    return countingOutputStream.getCount();
+  }
+
+  private static final class CountingOutputStream extends OutputStream {
+    private long count;
+
+    @Override
+    public void write(int b) {
+      count++;
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) {
+      count += len;
+    }
+
+    private long getCount() {
+      return count;
+    }
   }
 
   private void onResponse(

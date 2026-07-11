@@ -60,14 +60,9 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setMaxRequestBodySize(long maxRequestBodySize) {
-    builder.setMaxRequestBodySize(maxRequestBodySize);
+  public TelemetryExporterBuilder<MetricData> setMaxRequestSize(long maxRequestSize) {
+    builder.setMaxRequestBodySize(maxRequestSize);
     return this;
-  }
-
-  @Override
-  public TelemetryExporterBuilder<MetricData> setMaxRequestMessageSize(long maxRequestMessageSize) {
-    throw new UnsupportedOperationException("Request message size is not supported for HTTP");
   }
 
   @Override

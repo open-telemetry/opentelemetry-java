@@ -15,6 +15,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
@@ -80,6 +81,17 @@ class GrpcExporterTest {
 
       GrpcSender mockSender = Mockito.mock(GrpcSender.class);
       Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
+      MessageWriter emptyMessageWriter =
+          new MessageWriter() {
+            @Override
+            public void writeMessage(OutputStream output) {}
+
+            @Override
+            public int getContentLength() {
+              return 0;
+            }
+          };
+      Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(emptyMessageWriter);
 
       GrpcExporter exporter =
           new GrpcExporter(
@@ -227,19 +239,9 @@ class GrpcExporterTest {
             1);
 
     Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
-    MessageWriter messageWriter =
-        new MessageWriter() {
-          @Override
-          public void writeMessage(OutputStream output) throws IOException {}
+    Mockito.when(mockMarshaller.getBinarySerializedSize()).thenReturn(2);
 
-          @Override
-          public int getContentLength() {
-            return 2;
-          }
-        };
-    Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(messageWriter);
-
-    io.opentelemetry.sdk.common.CompletableResultCode result = exporter.export(mockMarshaller, 1);
+    CompletableResultCode result = exporter.export(mockMarshaller, 1);
 
     assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
     assertThat(result.getFailureThrowable())

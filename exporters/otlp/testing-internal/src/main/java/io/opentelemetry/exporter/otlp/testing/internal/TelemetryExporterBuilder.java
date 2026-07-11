@@ -55,9 +55,7 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setConnectTimeout(Duration timeout);
 
-  TelemetryExporterBuilder<T> setMaxRequestBodySize(long maxRequestBodySize);
-
-  TelemetryExporterBuilder<T> setMaxRequestMessageSize(long maxRequestMessageSize);
+  TelemetryExporterBuilder<T> setMaxRequestSize(long maxRequestSize);
 
   TelemetryExporterBuilder<T> setCompression(String compression);
 

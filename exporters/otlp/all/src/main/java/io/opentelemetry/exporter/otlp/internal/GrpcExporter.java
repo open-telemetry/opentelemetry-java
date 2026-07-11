@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -70,12 +69,12 @@ public final class GrpcExporter {
     ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
-    MessageWriter messageWriter = exportRequest.toBinaryMessageWriter();
-
-    long requestMessageSize = getRequestMessageSize(messageWriter);
+    int requestMessageSize = exportRequest.getBinarySerializedSize();
     if (requestMessageSize > maxRequestMessageSize) {
       return failRequestTooLarge(metricRecording, requestMessageSize);
     }
+
+    MessageWriter messageWriter = exportRequest.toBinaryMessageWriter();
 
     CompletableResultCode result = new CompletableResultCode();
 
@@ -100,41 +99,8 @@ public final class GrpcExporter {
     IOException exception = new IOException(errorMessage);
     metricRecording.finishFailed(exception);
     logger.log(Level.WARNING, errorMessage);
-    CompletableResultCode result = new CompletableResultCode();
-    result.failExceptionally(FailedExportException.grpcFailedExceptionally(exception));
-    return result;
-  }
-
-  private static long getRequestMessageSize(MessageWriter messageWriter) {
-    int contentLength = messageWriter.getContentLength();
-    if (contentLength >= 0) {
-      return contentLength;
-    }
-    try {
-      CountingOutputStream countingOutputStream = new CountingOutputStream();
-      messageWriter.writeMessage(countingOutputStream);
-      return countingOutputStream.getCount();
-    } catch (IOException e) {
-      return Long.MAX_VALUE;
-    }
-  }
-
-  private static final class CountingOutputStream extends OutputStream {
-    private long count;
-
-    @Override
-    public void write(int b) {
-      count++;
-    }
-
-    @Override
-    public void write(byte[] b, int off, int len) {
-      count += len;
-    }
-
-    private long getCount() {
-      return count;
-    }
+    return CompletableResultCode.ofExceptionalFailure(
+        FailedExportException.grpcFailedExceptionally(exception));
   }
 
   private void onResponse(

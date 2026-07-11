@@ -15,6 +15,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.HttpSender;
@@ -31,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -297,12 +299,12 @@ class HttpExporterTest {
         };
     Mockito.when(mockMarshaller.toBinaryMessageWriter()).thenReturn(messageWriter);
 
-    io.opentelemetry.sdk.common.CompletableResultCode result = exporter.export(mockMarshaller, 1);
+    CompletableResultCode result = exporter.export(mockMarshaller, 1);
 
-    org.assertj.core.api.Assertions.assertThat(result.join(10, TimeUnit.SECONDS).isSuccess())
-        .isFalse();
-    org.assertj.core.api.Assertions.assertThat(result.getFailureThrowable())
-        .hasMessageContaining("Failed to export spans. Request body size 2 exceeded limit of 1 bytes");
+    Assertions.assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    Assertions.assertThat(result.getFailureThrowable())
+        .hasMessageContaining(
+            "Failed to export spans. Request body size 2 exceeded limit of 1 bytes");
     verifyNoInteractions(mockSender);
   }
 
@@ -418,12 +420,12 @@ class HttpExporterTest {
         };
     Mockito.when(mockMarshaller.toJsonMessageWriter()).thenReturn(messageWriter);
 
-    io.opentelemetry.sdk.common.CompletableResultCode result = exporter.export(mockMarshaller, 1);
+    CompletableResultCode result = exporter.export(mockMarshaller, 1);
 
-    org.assertj.core.api.Assertions.assertThat(result.join(10, TimeUnit.SECONDS).isSuccess())
-        .isFalse();
-    org.assertj.core.api.Assertions.assertThat(result.getFailureThrowable())
-        .hasMessageContaining("Failed to export spans. Request body size 2 exceeded limit of 1 bytes");
+    Assertions.assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    Assertions.assertThat(result.getFailureThrowable())
+        .hasMessageContaining(
+            "Failed to export spans. Request body size 2 exceeded limit of 1 bytes");
     verifyNoInteractions(mockSender);
   }
 

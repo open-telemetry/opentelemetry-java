@@ -834,7 +834,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestBodySize(1)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestSize(1)))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4318"))
@@ -917,10 +917,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .hasMessage(
             "Unsupported compressionMethod. Compression method must be \"none\" or one of:"
                 + " [base64,gzip]");
-    assertThatThrownBy(() -> exporterBuilder().setMaxRequestBodySize(0))
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxRequestBodySizeBytes must be positive");
-    assertThatThrownBy(() -> exporterBuilder().setMaxRequestBodySize(-1))
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(-1))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxRequestBodySizeBytes must be positive");
   }
@@ -928,7 +928,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   void requestBodySizeLimit() {
     try (TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).setMaxRequestBodySize(1).build()) {
+        exporterBuilder().setEndpoint(server.httpUri() + path).setMaxRequestSize(1).build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
 
