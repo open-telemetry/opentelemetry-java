@@ -13,12 +13,14 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.LinkData;
+import java.io.Closeable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A Sampler is used to make decisions on {@link Span} sampling. */
 @ThreadSafe
-public interface Sampler {
+public interface Sampler extends Closeable {
 
   /**
    * Returns a {@link Sampler} that always makes a "yes" {@link SamplingResult} for {@link Span}
@@ -130,5 +132,10 @@ public interface Sampler {
    */
   default CompletableResultCode shutdown() {
     return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  default void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 }

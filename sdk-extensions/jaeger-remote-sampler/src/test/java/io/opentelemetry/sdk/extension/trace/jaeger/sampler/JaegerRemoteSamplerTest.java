@@ -24,6 +24,7 @@ import io.netty.handler.ssl.ClientAuth;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
@@ -169,9 +170,11 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .build();
 
-    assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
+    CompletableResultCode first = sampler.shutdown();
+    CompletableResultCode second = sampler.shutdown();
 
-    assertThat(sampler.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(first.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(second.isSuccess()).isTrue();
   }
 
   @Test

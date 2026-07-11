@@ -17,19 +17,19 @@ import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
-public final class JaegerRemoteSampler implements Sampler, Closeable {
+public final class JaegerRemoteSampler implements Sampler {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
   private static final String WORKER_THREAD_NAME =
@@ -41,6 +41,8 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   private final ScheduledFuture<?> pollFuture;
 
   private volatile Sampler sampler;
+
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final GrpcSender grpcSender;
 
@@ -177,15 +179,20 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   }
 
   @Override
+  @SuppressWarnings("Interruption")
   public CompletableResultCode shutdown() {
-    pollFuture.cancel(false);
+    if (isShutdown.getAndSet(true)) {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    pollFuture.cancel(true);
     pollExecutor.shutdownNow();
     return grpcSender.shutdown();
   }
 
   @Override
-  @SuppressWarnings("Interruption")
+  @Deprecated
   public void close() {
-    shutdown().join(10, TimeUnit.SECONDS);
+    shutdown();
   }
 }

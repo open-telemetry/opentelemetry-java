@@ -119,15 +119,9 @@ final class TracerSharedState {
         return shutdownResult;
       }
 
-      CompletableResultCode samplerShutdownResult = sampler.shutdown();
-
       shutdownResult =
           CompletableResultCode.ofAll(
-              Arrays.asList(
-                  activeSpanProcessor.shutdown(),
-                  samplerShutdownResult == null
-                      ? CompletableResultCode.ofSuccess()
-                      : samplerShutdownResult));
+              Arrays.asList(activeSpanProcessor.shutdown(), sampler.shutdown()));
 
       return shutdownResult;
     }
