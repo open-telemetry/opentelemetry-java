@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.ATTRIBUTE_PROPERTY;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.createEnvironmentResource;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalResourceDetectorModel;
@@ -52,12 +51,12 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
           attributesIncludeExcludeModel == null
               ? ResourceFactory::matchAll
               : IncludeExcludeFactory.getInstance().create(attributesIncludeExcludeModel, context);
-      Attributes filteredDetectedAttributes =
-          detectedResourceBuilder.build().getAttributes().toBuilder()
+      Resource filteredDetectedResource =
+          detectedResourceBuilder
               .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
               .build();
 
-      builder.putAll(filteredDetectedAttributes);
+      builder.putAll(filteredDetectedResource);
     }
 
     String attributeList = model.getAttributesList();

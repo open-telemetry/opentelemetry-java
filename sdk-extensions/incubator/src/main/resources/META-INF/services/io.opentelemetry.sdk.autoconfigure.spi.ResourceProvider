@@ -1,2 +1,1 @@
 io.opentelemetry.sdk.extension.incubator.resources.ServiceInstanceIdResourceProvider
-io.opentelemetry.sdk.extension.incubator.resources.EnvResourceProvider

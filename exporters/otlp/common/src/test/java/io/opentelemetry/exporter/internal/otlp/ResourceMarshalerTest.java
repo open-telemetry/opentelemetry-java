@@ -28,8 +28,7 @@ class ResourceMarshalerTest {
   @Test
   void marshalResourceWithEntities() {
     Entity entity =
-        Entity.builder("process")
-            .setId(Attributes.of(stringKey("process.pid"), "1234"))
+        Entity.builder("process", Attributes.of(stringKey("process.pid"), "1234"))
             .setDescription(Attributes.of(stringKey("process.executable.name"), "java"))
             .setSchemaUrl("http://process.schema")
             .build();

@@ -31,14 +31,6 @@ public interface EntityBuilder {
    */
   EntityBuilder setDescription(Attributes description);
 
-  /**
-   * Modify the identifying attributes of this Entity.
-   *
-   * @param id The identifying attributes.
-   * @return this
-   */
-  EntityBuilder setId(Attributes id);
-
   /** Create the {@link Entity} from this. */
   Entity build();
 }
