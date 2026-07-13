@@ -55,8 +55,8 @@ public interface SampleData {
   List<Long> getValues();
 
   /**
-   * Timestamps associated with Sample represented in ms. These timestamps are expected to fall
-   * within the Profile's time range.
+   * Timestamps associated with Sample represented as nanoseconds past the epoch. These timestamps
+   * are expected to fall within the Profile's time range.
    */
   List<Long> getTimestamps();
 }
