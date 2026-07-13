@@ -27,3 +27,13 @@ jobs:
         run: ./gradlew :javadoc-crawler:crawl
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
+  workflow-notification:
+    permissions:
+      issues: write
+    needs:
+      - crawl
+    if: always()
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@7c49790392da7de86fdb4bb968446f9cb8461eb8 # v0.3.1
+    with:
+      success: ${{ needs.crawl.result == 'success' }}

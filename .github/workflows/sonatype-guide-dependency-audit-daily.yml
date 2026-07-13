@@ -43,11 +43,10 @@ jobs:
 
   workflow-notification:
     permissions:
-      contents: read
       issues: write
     needs:
       - analyze
-    if: always() && github.repository == 'open-telemetry/opentelemetry-java'
-    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@70659e38ed50e743a5cce6fb40ba336c40154aa1 # v0.3.0
+    if: always()
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@7c49790392da7de86fdb4bb968446f9cb8461eb8 # v0.3.1
     with:
       success: ${{ needs.analyze.result == 'success' }}
