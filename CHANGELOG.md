@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-<<<<<<< HEAD
 ## Version 1.64.0 (2026-07-10)
 
 ### API
@@ -94,10 +93,6 @@
   ([#8469](https://github.com/open-telemetry/opentelemetry-java/pull/8469))
 * Make benchmark path configurable
   ([#8557](https://github.com/open-telemetry/opentelemetry-java/pull/8557))
-=======
-* Add shutdown lifecycle method to `Sampler` to allow resource cleanup for stateful samplers.
-  ([#8574](https://github.com/open-telemetry/opentelemetry-java/pull/8574))
->>>>>>> 83b70e5ee (Shutdown JaegerRemoteSampler resources)
 
 ## Version 1.63.0 (2026-06-05)
 
