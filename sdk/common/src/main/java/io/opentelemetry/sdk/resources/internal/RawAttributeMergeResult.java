@@ -26,7 +26,7 @@ abstract class RawAttributeMergeResult {
    */
   abstract Collection<Entity> getConflicts();
 
-  static final RawAttributeMergeResult create(Attributes attributes, Collection<Entity> conflicts) {
+  static RawAttributeMergeResult create(Attributes attributes, Collection<Entity> conflicts) {
     return new AutoValue_RawAttributeMergeResult(attributes, conflicts);
   }
 }

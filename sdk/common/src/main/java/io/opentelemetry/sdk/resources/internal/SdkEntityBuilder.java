@@ -17,15 +17,16 @@ import javax.annotation.Nullable;
  */
 final class SdkEntityBuilder implements EntityBuilder {
   private final String entityType;
+  private final Attributes id;
   private Attributes description;
-  private Attributes id;
   @Nullable private String schemaUrl;
 
-  SdkEntityBuilder(String entityType) {
+  SdkEntityBuilder(String entityType, Attributes id) {
     AttributeCheckUtil.isValid(entityType);
+    AttributeCheckUtil.checkAttributes(id);
     this.entityType = entityType;
+    this.id = id;
     this.description = Attributes.empty();
-    this.id = Attributes.empty();
   }
 
   SdkEntityBuilder(Entity seed) {
@@ -45,13 +46,6 @@ final class SdkEntityBuilder implements EntityBuilder {
   public EntityBuilder setDescription(Attributes description) {
     AttributeCheckUtil.checkAttributes(description);
     this.description = description;
-    return this;
-  }
-
-  @Override
-  public EntityBuilder setId(Attributes id) {
-    AttributeCheckUtil.checkAttributes(id);
-    this.id = id;
     return this;
   }
 

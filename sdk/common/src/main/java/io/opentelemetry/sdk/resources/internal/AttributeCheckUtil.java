@@ -12,10 +12,12 @@ import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
 
 /**
- * Helpers to check resource attributes.
+ * Helpers to check resource entity attributes.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
+ *
+ * @see SdkEntityBuilder
  */
 public final class AttributeCheckUtil {
   private AttributeCheckUtil() {}

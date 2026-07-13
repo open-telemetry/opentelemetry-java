@@ -9,9 +9,19 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.EntityExperimentConstants;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityBuilder;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Creates an OpenTelemetry {@link Resource} from environment configuration.
@@ -27,6 +37,7 @@ final class EnvironmentResource {
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
+  static final String ENTITIES_PROPERTY = "otel.entities";
 
   /**
    * Create a {@link Resource} from the environment. The resource contains attributes parsed from
@@ -38,9 +49,20 @@ final class EnvironmentResource {
    */
   @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
   static Resource createEnvironmentResource(ConfigProperties config) {
-    AttributesBuilder resourceAttributes = Attributes.builder();
+    ResourceBuilder resourceBuilder = Resource.builder();
+
+    boolean entitiesEnabled =
+        config.getBoolean(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, false);
+    String entitiesStr = config.getString(ENTITIES_PROPERTY);
+    if (entitiesEnabled && entitiesStr != null && !entitiesStr.isEmpty()) {
+      List<Entity> parsedEntities = new EntityParser(entitiesStr).parse();
+      for (Entity entity : parsedEntities) {
+        EntityUtil.addEntity(resourceBuilder, entity);
+      }
+    }
+
     for (Map.Entry<String, String> entry : config.getMap(ATTRIBUTE_PROPERTY).entrySet()) {
-      resourceAttributes.put(
+      resourceBuilder.put(
           entry.getKey(),
           // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
           // characters outside the baggage-octet range are percent encoded
@@ -49,10 +71,10 @@ final class EnvironmentResource {
     }
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);
     if (serviceName != null) {
-      resourceAttributes.put(SERVICE_NAME, serviceName);
+      resourceBuilder.put(SERVICE_NAME, serviceName);
     }
 
-    return Resource.create(resourceAttributes.build());
+    return resourceBuilder.build();
   }
 
   /**
@@ -100,6 +122,238 @@ final class EnvironmentResource {
       bytes[pos++] = (byte) c;
     }
     return new String(bytes, 0, pos, StandardCharsets.UTF_8);
+  }
+
+  private static final class Segment {
+    private final String source;
+    private int start;
+    private int end;
+    private boolean needsDecoding;
+
+    Segment(String source) {
+      this.source = source;
+      reset(0);
+    }
+
+    void reset(int start) {
+      this.start = start;
+      this.end = start;
+      this.needsDecoding = false;
+    }
+
+    void markEnd(int end) {
+      this.end = end;
+    }
+
+    void markNeedsDecoding() {
+      this.needsDecoding = true;
+    }
+
+    boolean isEmpty() {
+      return start >= end;
+    }
+
+    String getValue() {
+      if (isEmpty()) {
+        return "";
+      }
+      String substring = source.substring(start, end).trim();
+      return needsDecoding ? decodeResourceAttributes(substring) : substring;
+    }
+  }
+
+  // State machine parser
+  private static final class EntityParser {
+    private static final Logger logger = Logger.getLogger(EntityParser.class.getName());
+
+    private enum State {
+      TYPE,
+      ID_KEY,
+      ID_VAL,
+      DESC_KEY,
+      DESC_VAL,
+      SCHEMA_URL,
+      SKIP_TO_NEXT
+    }
+
+    private final String input;
+    private State state = State.TYPE;
+    private final Segment currentSegment;
+    private final List<Entity> entities = new ArrayList<>();
+
+    @Nullable private String currentType;
+    private Attributes currentIdAttrs = Attributes.empty();
+    private Attributes currentDescAttrs = Attributes.empty();
+    @Nullable private String currentSchemaUrl;
+    @Nullable private AttributesBuilder currentBuilder;
+    @Nullable private String currentKey;
+
+    EntityParser(String input) {
+      this.input = input;
+      this.currentSegment = new Segment(input);
+    }
+
+    List<Entity> parse() {
+      int n = input.length();
+      for (int i = 0; i < n; i++) {
+        char c = input.charAt(i);
+
+        if (state == State.SKIP_TO_NEXT) {
+          if (c == ';') {
+            resetEntityState(i + 1);
+            state = State.TYPE;
+          }
+          continue;
+        }
+
+        switch (c) {
+          case '{':
+            if (state == State.TYPE) {
+              currentSegment.markEnd(i);
+              currentType = currentSegment.getValue();
+              if (currentType == null || currentType.isEmpty()) {
+                logger.log(Level.WARNING, "Malformed entity definition (empty type): " + input);
+                state = State.SKIP_TO_NEXT;
+              } else {
+                state = State.ID_KEY;
+                currentSegment.reset(i + 1);
+                currentBuilder = Attributes.builder();
+              }
+            }
+            break;
+          case '}':
+            if (state == State.ID_VAL || state == State.ID_KEY) {
+              currentSegment.markEnd(i);
+              if (state == State.ID_VAL) {
+                putAttr();
+              }
+              if (currentBuilder != null) {
+                currentIdAttrs = currentBuilder.build();
+              }
+              if (currentIdAttrs.isEmpty()) {
+                logger.log(
+                    Level.WARNING,
+                    "Malformed entity definition (missing identifying attributes): " + input);
+                state = State.SKIP_TO_NEXT;
+              } else {
+                state = State.TYPE;
+                currentSegment.reset(i + 1);
+              }
+            }
+            break;
+          case '[':
+            if (state == State.TYPE) {
+              state = State.DESC_KEY;
+              currentSegment.reset(i + 1);
+              currentBuilder = Attributes.builder();
+            }
+            break;
+          case ']':
+            if (state == State.DESC_VAL || state == State.DESC_KEY) {
+              currentSegment.markEnd(i);
+              if (state == State.DESC_VAL) {
+                putAttr();
+              }
+              if (currentBuilder != null) {
+                currentDescAttrs = currentBuilder.build();
+              }
+              state = State.TYPE;
+              currentSegment.reset(i + 1);
+            }
+            break;
+          case '=':
+            if (state == State.ID_KEY || state == State.DESC_KEY) {
+              currentSegment.markEnd(i);
+              currentKey = currentSegment.getValue();
+              if (currentKey == null || currentKey.isEmpty()) {
+                logger.log(Level.WARNING, "Malformed key-value pair (empty key): " + input);
+                state = State.SKIP_TO_NEXT;
+              } else {
+                state = (state == State.ID_KEY) ? State.ID_VAL : State.DESC_VAL;
+                currentSegment.reset(i + 1);
+              }
+            }
+            break;
+          case ',':
+            if (state == State.ID_VAL || state == State.DESC_VAL) {
+              currentSegment.markEnd(i);
+              putAttr();
+              state = (state == State.ID_VAL) ? State.ID_KEY : State.DESC_KEY;
+              currentSegment.reset(i + 1);
+            }
+            break;
+          case '@':
+            if (state == State.TYPE) {
+              state = State.SCHEMA_URL;
+              currentSegment.reset(i + 1);
+            }
+            break;
+          case ';':
+            if (state == State.TYPE || state == State.SCHEMA_URL) {
+              if (state == State.SCHEMA_URL) {
+                currentSegment.markEnd(i);
+                currentSchemaUrl = currentSegment.getValue();
+              }
+              buildAndAddEntity();
+              resetEntityState(i + 1);
+              state = State.TYPE;
+            } else if (state == State.ID_KEY
+                || state == State.ID_VAL
+                || state == State.DESC_KEY
+                || state == State.DESC_VAL) {
+              logger.log(Level.WARNING, "Malformed entity definition (unexpected ';'): " + input);
+              resetEntityState(i + 1);
+              state = State.TYPE;
+            }
+            break;
+          case '%':
+            currentSegment.markNeedsDecoding();
+            break;
+          default:
+            break;
+        }
+      }
+
+      if (state == State.TYPE || state == State.SCHEMA_URL) {
+        if (state == State.SCHEMA_URL) {
+          currentSegment.markEnd(input.length());
+          currentSchemaUrl = currentSegment.getValue();
+        }
+        buildAndAddEntity();
+      }
+
+      return entities;
+    }
+
+    private void putAttr() {
+      String val = currentSegment.getValue();
+      if (currentKey != null && !currentKey.isEmpty() && currentBuilder != null) {
+        currentBuilder.put(currentKey, val);
+      }
+    }
+
+    private void buildAndAddEntity() {
+      if (currentType != null && !currentType.isEmpty() && !currentIdAttrs.isEmpty()) {
+        EntityBuilder builder = Entity.builder(currentType, currentIdAttrs);
+        if (!currentDescAttrs.isEmpty()) {
+          builder.setDescription(currentDescAttrs);
+        }
+        if (currentSchemaUrl != null && !currentSchemaUrl.isEmpty()) {
+          builder.setSchemaUrl(currentSchemaUrl);
+        }
+        entities.add(builder.build());
+      }
+    }
+
+    private void resetEntityState(int nextStart) {
+      currentType = null;
+      currentIdAttrs = Attributes.empty();
+      currentDescAttrs = Attributes.empty();
+      currentSchemaUrl = null;
+      currentBuilder = null;
+      currentKey = null;
+      currentSegment.reset(nextStart);
+    }
   }
 
   private EnvironmentResource() {}

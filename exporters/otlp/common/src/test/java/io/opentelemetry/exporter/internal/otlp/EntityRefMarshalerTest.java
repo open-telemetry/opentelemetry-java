@@ -24,10 +24,9 @@ class EntityRefMarshalerTest {
   @Test
   void toEntityRefs() {
     Entity e =
-        Entity.builder("test")
+        Entity.builder("test", Attributes.builder().put("id.key", "id.value").build())
             .setSchemaUrl("test-url")
             .setDescription(Attributes.builder().put("desc.key", "desc.value").build())
-            .setId(Attributes.builder().put("id.key", "id.value").build())
             .build();
     EntityRef proto = parse(EntityRef.getDefaultInstance(), EntityRefMarshaler.createForEntity(e));
     assertThat(proto.getType()).isEqualTo("test");
@@ -48,7 +47,7 @@ class EntityRefMarshalerTest {
     // Our marshaler should produce the exact same length of serialized output (for example, field
     // default values are not outputted), so we check that here. The output itself may have slightly
     // different ordering, mostly due to the way we don't output oneof values in field order all the
-    // tieme. If the lengths are equal and the resulting protos are equal, the marshaling is
+    // time. If the lengths are equal and the resulting protos are equal, the marshaling is
     // guaranteed to be valid.
     assertThat(result.getSerializedSize()).isEqualTo(serialized.length);
 

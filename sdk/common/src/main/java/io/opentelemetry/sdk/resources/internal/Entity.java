@@ -25,6 +25,7 @@ import javax.annotation.concurrent.Immutable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+// TODO(jack-berg): Should Entity/EntityBuilder be replaced with autovalue equivalent
 @Immutable
 public interface Entity {
   /**
@@ -66,8 +67,9 @@ public interface Entity {
    * Returns a new {@link EntityBuilder} instance for creating arbitrary {@link Entity}.
    *
    * @param entityType the entity type string of this entity.
+   * @param id the identifying attributes of this entity
    */
-  static EntityBuilder builder(String entityType) {
-    return new SdkEntityBuilder(entityType);
+  static EntityBuilder builder(String entityType, Attributes id) {
+    return new SdkEntityBuilder(entityType, id);
   }
 }

@@ -37,7 +37,7 @@ final class EntityRefMarshaler extends MarshalerWithSize {
     output.writeRepeatedString(EntityRef.DESCRIPTION_KEYS, descriptionKeysUtf8);
   }
 
-  /** Consttructs an entity reference marshaler from a full entity. */
+  /** Constructs an entity reference marshaler from a full entity. */
   static EntityRefMarshaler createForEntity(Entity e) {
     byte[] schemaUrlUtf8 = null;
     if (!StringUtils.isNullOrEmpty(e.getSchemaUrl())) {

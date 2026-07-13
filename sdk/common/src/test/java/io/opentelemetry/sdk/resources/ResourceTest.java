@@ -242,17 +242,15 @@ class ResourceTest {
     Resource resource1 =
         Resource.builder()
             .addEntity(
-                Entity.builder("a")
+                Entity.builder("a", Attributes.builder().put("a.id", "a").build())
                     .setSchemaUrl("one")
-                    .setId(Attributes.builder().put("a.id", "a").build())
                     .build())
             .build();
     Resource resource2 =
         Resource.builder()
             .addEntity(
-                Entity.builder("b")
+                Entity.builder("b", Attributes.builder().put("b.id", "b").build())
                     .setSchemaUrl("two")
-                    .setId(Attributes.builder().put("b.id", "b").build())
                     .build())
             .build();
     Resource merged = resource1.merge(resource2);

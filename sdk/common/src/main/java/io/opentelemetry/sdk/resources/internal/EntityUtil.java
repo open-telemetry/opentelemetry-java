@@ -14,11 +14,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -59,37 +58,28 @@ public final class EntityUtil {
       Method method =
           Resource.class.getDeclaredMethod(
               "create", Attributes.class, String.class, Collection.class);
-      if (method != null) {
-        method.setAccessible(true);
-        Object result = method.invoke(null, attributes, schemaUrl, entities);
-        if (result instanceof Resource) {
-          return (Resource) result;
-        }
-      }
+      method.setAccessible(true);
+      Object result = method.invoke(null, attributes, schemaUrl, entities);
+      return (Resource) result;
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", e);
+      throw new IllegalStateException("Error calling create on Resource", e);
     }
-    // Fall back to non-entity behavior?
-    logger.log(Level.WARNING, "Attempting to use entities with unsupported resource");
-    return Resource.empty();
   }
 
   /** Appends a new entity on to the end of the list of entities. */
   public static ResourceBuilder addEntity(ResourceBuilder rb, Entity e) {
     try {
       Method method = ResourceBuilder.class.getDeclaredMethod("addEntity", Entity.class);
-      if (method != null) {
-        method.setAccessible(true);
-        method.invoke(rb, e);
-      }
+      method.setAccessible(true);
+      method.invoke(rb, e);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ex);
+      throw new IllegalStateException("Error calling addEntity on ResourceBuilder", ex);
     }
     return rb;
   }
 
   /**
-   * Returns a collectoion of associated entities.
+   * Returns a collection of associated entities.
    *
    * @return a collection of entities.
    */
@@ -97,14 +87,11 @@ public final class EntityUtil {
   public static Collection<Entity> getEntities(Resource r) {
     try {
       Method method = Resource.class.getDeclaredMethod("getEntities");
-      if (method != null) {
-        method.setAccessible(true);
-        return (Collection<Entity>) method.invoke(r);
-      }
+      method.setAccessible(true);
+      return (Collection<Entity>) method.invoke(r);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", e);
+      throw new IllegalStateException("Error calling getEntities on Resource", e);
     }
-    return Collections.emptyList();
   }
 
   /**
@@ -115,14 +102,11 @@ public final class EntityUtil {
   public static Attributes getRawAttributes(Resource r) {
     try {
       Method method = Resource.class.getDeclaredMethod("getRawAttributes");
-      if (method != null) {
-        method.setAccessible(true);
-        return (Attributes) method.invoke(r);
-      }
+      method.setAccessible(true);
+      return (Attributes) method.invoke(r);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", e);
+      throw new IllegalStateException("Error calling getRawAttributes on Resource", e);
     }
-    return Attributes.empty();
   }
 
   /** Returns true if any entity in the collection has the attribute key, in id or description. */
@@ -179,7 +163,7 @@ public final class EntityUtil {
    *     MUST NOT be reported on OTLP resource.
    */
   @SuppressWarnings("unchecked")
-  static final RawAttributeMergeResult mergeRawAttributes(
+  static RawAttributeMergeResult mergeRawAttributes(
       Attributes base, Attributes additional, Collection<Entity> entities) {
     AttributesBuilder result = base.toBuilder();
     // We know attribute conflicts were handled perviously on the resource, so
@@ -188,7 +172,7 @@ public final class EntityUtil {
     result.removeIf(key -> hasAttributeKey(entities, key));
     // For every "raw" attribute on the other resource, we merge into the
     // resource, but check for entity conflicts from previous entities.
-    ArrayList<Entity> conflicts = new ArrayList<>();
+    List<Entity> conflicts = new ArrayList<>();
     if (!additional.isEmpty()) {
       additional.forEach(
           (key, value) -> {
