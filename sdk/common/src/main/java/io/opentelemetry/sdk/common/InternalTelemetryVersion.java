@@ -12,7 +12,7 @@ package io.opentelemetry.sdk.common;
  */
 public enum InternalTelemetryVersion {
   /**
-   * Record self-monitoring metrics defined in the SDK prior the standardization in semantic
+   * Record self-monitoring metrics defined in the SDK prior to the standardization in semantic
    * conventions.
    */
   LEGACY,

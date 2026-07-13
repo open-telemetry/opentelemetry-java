@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -22,7 +21,7 @@ public final class OpenTelemetrySdkBuilderUtil {
 
   private OpenTelemetrySdkBuilderUtil() {}
 
-  /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkTracerProvider}. */
+  /** Reflectively set the {@link SdkConfigProvider} on the {@link OpenTelemetrySdkBuilder}. */
   public static OpenTelemetrySdkBuilder setConfigProvider(
       OpenTelemetrySdkBuilder builder, SdkConfigProvider configProvider) {
     try {
