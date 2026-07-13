@@ -8,6 +8,8 @@ package io.opentelemetry.api.baggage.propagation;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -19,6 +21,8 @@ import javax.annotation.Nullable;
  * anything besides element terminator (comma).
  */
 class Parser {
+
+  private static final Logger LOGGER = Logger.getLogger(Parser.class.getName());
 
   private enum State {
     KEY,
@@ -140,8 +144,14 @@ class Parser {
     if (entriesAdded >= maxEntries) {
       return;
     }
-    String decodedValue = decodeValue(value);
-    metadataValue = decodeValue(metadataValue);
+    String decodedValue;
+    try {
+      decodedValue = decodeValue(value);
+      metadataValue = decodeValue(metadataValue);
+    } catch (IllegalArgumentException e) {
+      LOGGER.log(Level.WARNING, "Skipping invalid baggage member", e);
+      return;
+    }
     BaggageEntryMetadata baggageEntryMetadata =
         metadataValue != null
             ? BaggageEntryMetadata.create(metadataValue)

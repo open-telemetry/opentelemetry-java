@@ -23,6 +23,6 @@ is the signal.
 ## Conventions
 
 - File names are kebab-cased and topic-oriented. Most follow a `<domain>-<focus>.md` pattern
-  (e.g. `api-stability.md`, `testing-patterns.md`).
+  (e.g. `api-design.md`, `testing-patterns.md`).
 - Sections within each document are ordered alphabetically, with the exception of any
   introductory content placed directly under the document title.

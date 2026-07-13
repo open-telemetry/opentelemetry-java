@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import java.time.Duration;
 
 final class MetricReaderFactory
@@ -70,6 +71,10 @@ final class MetricReaderFactory
       if (model.getCardinalityLimits() != null) {
         cardinalityLimitSelector =
             CardinalityLimitsFactory.getInstance().create(model.getCardinalityLimits(), context);
+      }
+      if (model.getMaxExportBatchSizeDevelopment() != null) {
+        SdkMeterProviderUtil.setMaxExportBatchSize(
+            builder, model.getMaxExportBatchSizeDevelopment());
       }
 
       MetricReader reader = context.addCloseable(builder.build());

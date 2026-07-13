@@ -129,7 +129,7 @@ public class FullDeclarativeConfigTest {
 
     String endpoint = "http://localhost:" + server.httpPort();
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.1\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
