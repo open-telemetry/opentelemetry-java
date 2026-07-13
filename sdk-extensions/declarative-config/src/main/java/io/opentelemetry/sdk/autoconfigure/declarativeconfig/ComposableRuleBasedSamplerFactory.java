@@ -135,7 +135,6 @@ final class ComposableRuleBasedSamplerFactory
     @Override
     public boolean matches(
         Context parentContext,
-        String traceId,
         String name,
         SpanKind spanKind,
         Attributes attributes,
