@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.HashMap;
@@ -26,72 +25,19 @@ import javax.annotation.Nullable;
   "meter_schema_url"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ViewSelectorModel {
 
+  @Nullable private String instrumentName;
+  @Nullable private ViewSelectorModel.InstrumentType instrumentType;
+  @Nullable private String unit;
+  @Nullable private String meterName;
+  @Nullable private String meterVersion;
+  @Nullable private String meterSchemaUrl;
+
   /**
-   * Configure instrument name selection criteria. If omitted or null, all instrument names match.
+   * Configure instrument name selection criteria.
    *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("instrument_name")
-  @JsonPropertyDescription(
-      "Configure instrument name selection criteria.\nIf omitted or null, all instrument names match.\n")
-  private String instrumentName;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("instrument_type")
-  private ViewSelectorModel.InstrumentType instrumentType;
-
-  /**
-   * Configure the instrument unit selection criteria. If omitted or null, all instrument units
-   * match.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("unit")
-  @JsonPropertyDescription(
-      "Configure the instrument unit selection criteria.\nIf omitted or null, all instrument units match.\n")
-  private String unit;
-
-  /**
-   * Configure meter name selection criteria. If omitted or null, all meter names match.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("meter_name")
-  @JsonPropertyDescription(
-      "Configure meter name selection criteria.\nIf omitted or null, all meter names match.\n")
-  private String meterName;
-
-  /**
-   * Configure meter version selection criteria. If omitted or null, all meter versions match.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("meter_version")
-  @JsonPropertyDescription(
-      "Configure meter version selection criteria.\nIf omitted or null, all meter versions match.\n")
-  private String meterVersion;
-
-  /**
-   * Configure meter schema url selection criteria. If omitted or null, all meter schema URLs match.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("meter_schema_url")
-  @JsonPropertyDescription(
-      "Configure meter schema url selection criteria.\nIf omitted or null, all meter schema URLs match.\n")
-  private String meterSchemaUrl;
-
-  /**
-   * Configure instrument name selection criteria. If omitted or null, all instrument names match.
+   * <p>If omitted or null, all instrument names match.
    */
   @JsonProperty("instrument_name")
   @Nullable
@@ -99,25 +45,49 @@ public class ViewSelectorModel {
     return instrumentName;
   }
 
+  @JsonProperty("instrument_name")
   public ViewSelectorModel withInstrumentName(String instrumentName) {
     this.instrumentName = instrumentName;
     return this;
   }
 
+  /**
+   * Configure instrument type selection criteria.
+   *
+   * <p>Values include:
+   *
+   * <p>* counter: Synchronous counter instruments.
+   *
+   * <p>* gauge: Synchronous gauge instruments.
+   *
+   * <p>* histogram: Synchronous histogram instruments.
+   *
+   * <p>* observable_counter: Asynchronous counter instruments.
+   *
+   * <p>* observable_gauge: Asynchronous gauge instruments.
+   *
+   * <p>* observable_up_down_counter: Asynchronous up down counter instruments.
+   *
+   * <p>* up_down_counter: Synchronous up down counter instruments.
+   *
+   * <p>If omitted, all instrument types match.
+   */
   @JsonProperty("instrument_type")
   @Nullable
   public ViewSelectorModel.InstrumentType getInstrumentType() {
     return instrumentType;
   }
 
+  @JsonProperty("instrument_type")
   public ViewSelectorModel withInstrumentType(ViewSelectorModel.InstrumentType instrumentType) {
     this.instrumentType = instrumentType;
     return this;
   }
 
   /**
-   * Configure the instrument unit selection criteria. If omitted or null, all instrument units
-   * match.
+   * Configure the instrument unit selection criteria.
+   *
+   * <p>If omitted or null, all instrument units match.
    */
   @JsonProperty("unit")
   @Nullable
@@ -125,37 +95,50 @@ public class ViewSelectorModel {
     return unit;
   }
 
+  @JsonProperty("unit")
   public ViewSelectorModel withUnit(String unit) {
     this.unit = unit;
     return this;
   }
 
-  /** Configure meter name selection criteria. If omitted or null, all meter names match. */
+  /**
+   * Configure meter name selection criteria.
+   *
+   * <p>If omitted or null, all meter names match.
+   */
   @JsonProperty("meter_name")
   @Nullable
   public String getMeterName() {
     return meterName;
   }
 
+  @JsonProperty("meter_name")
   public ViewSelectorModel withMeterName(String meterName) {
     this.meterName = meterName;
     return this;
   }
 
-  /** Configure meter version selection criteria. If omitted or null, all meter versions match. */
+  /**
+   * Configure meter version selection criteria.
+   *
+   * <p>If omitted or null, all meter versions match.
+   */
   @JsonProperty("meter_version")
   @Nullable
   public String getMeterVersion() {
     return meterVersion;
   }
 
+  @JsonProperty("meter_version")
   public ViewSelectorModel withMeterVersion(String meterVersion) {
     this.meterVersion = meterVersion;
     return this;
   }
 
   /**
-   * Configure meter schema url selection criteria. If omitted or null, all meter schema URLs match.
+   * Configure meter schema url selection criteria.
+   *
+   * <p>If omitted or null, all meter schema URLs match.
    */
   @JsonProperty("meter_schema_url")
   @Nullable
@@ -163,6 +146,7 @@ public class ViewSelectorModel {
     return meterSchemaUrl;
   }
 
+  @JsonProperty("meter_schema_url")
   public ViewSelectorModel withMeterSchemaUrl(String meterSchemaUrl) {
     this.meterSchemaUrl = meterSchemaUrl;
     return this;
@@ -170,83 +154,68 @@ public class ViewSelectorModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ViewSelectorModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("instrumentName");
-    sb.append('=');
-    sb.append(((this.instrumentName == null) ? "<null>" : this.instrumentName));
-    sb.append(',');
-    sb.append("instrumentType");
-    sb.append('=');
-    sb.append(((this.instrumentType == null) ? "<null>" : this.instrumentType));
-    sb.append(',');
-    sb.append("unit");
-    sb.append('=');
-    sb.append(((this.unit == null) ? "<null>" : this.unit));
-    sb.append(',');
-    sb.append("meterName");
-    sb.append('=');
-    sb.append(((this.meterName == null) ? "<null>" : this.meterName));
-    sb.append(',');
-    sb.append("meterVersion");
-    sb.append('=');
-    sb.append(((this.meterVersion == null) ? "<null>" : this.meterVersion));
-    sb.append(',');
-    sb.append("meterSchemaUrl");
-    sb.append('=');
-    sb.append(((this.meterSchemaUrl == null) ? "<null>" : this.meterSchemaUrl));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ViewSelectorModel{"
+        + "instrumentName="
+        + instrumentName
+        + ", instrumentType="
+        + instrumentType
+        + ", unit="
+        + unit
+        + ", meterName="
+        + meterName
+        + ", meterVersion="
+        + meterVersion
+        + ", meterSchemaUrl="
+        + meterSchemaUrl
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.instrumentName == null) ? 0 : this.instrumentName.hashCode()));
-    result = ((result * 31) + ((this.instrumentType == null) ? 0 : this.instrumentType.hashCode()));
-    result = ((result * 31) + ((this.unit == null) ? 0 : this.unit.hashCode()));
-    result = ((result * 31) + ((this.meterSchemaUrl == null) ? 0 : this.meterSchemaUrl.hashCode()));
-    result = ((result * 31) + ((this.meterName == null) ? 0 : this.meterName.hashCode()));
-    result = ((result * 31) + ((this.meterVersion == null) ? 0 : this.meterVersion.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.instrumentName == null) ? 0 : this.instrumentName.hashCode();
+    h *= 1000003;
+    h ^= (this.instrumentType == null) ? 0 : this.instrumentType.hashCode();
+    h *= 1000003;
+    h ^= (this.unit == null) ? 0 : this.unit.hashCode();
+    h *= 1000003;
+    h ^= (this.meterName == null) ? 0 : this.meterName.hashCode();
+    h *= 1000003;
+    h ^= (this.meterVersion == null) ? 0 : this.meterVersion.hashCode();
+    h *= 1000003;
+    h ^= (this.meterSchemaUrl == null) ? 0 : this.meterSchemaUrl.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ViewSelectorModel) == false) {
-      return false;
+    if (o instanceof ViewSelectorModel) {
+      ViewSelectorModel that = (ViewSelectorModel) o;
+      return (this.instrumentName == null
+              ? that.instrumentName == null
+              : this.instrumentName.equals(that.instrumentName))
+          && (this.instrumentType == null
+              ? that.instrumentType == null
+              : this.instrumentType.equals(that.instrumentType))
+          && (this.unit == null ? that.unit == null : this.unit.equals(that.unit))
+          && (this.meterName == null
+              ? that.meterName == null
+              : this.meterName.equals(that.meterName))
+          && (this.meterVersion == null
+              ? that.meterVersion == null
+              : this.meterVersion.equals(that.meterVersion))
+          && (this.meterSchemaUrl == null
+              ? that.meterSchemaUrl == null
+              : this.meterSchemaUrl.equals(that.meterSchemaUrl));
     }
-    ViewSelectorModel rhs = ((ViewSelectorModel) other);
-    return (((((((this.instrumentName == rhs.instrumentName)
-                            || ((this.instrumentName != null)
-                                && this.instrumentName.equals(rhs.instrumentName)))
-                        && ((this.instrumentType == rhs.instrumentType)
-                            || ((this.instrumentType != null)
-                                && this.instrumentType.equals(rhs.instrumentType))))
-                    && ((this.unit == rhs.unit)
-                        || ((this.unit != null) && this.unit.equals(rhs.unit))))
-                && ((this.meterSchemaUrl == rhs.meterSchemaUrl)
-                    || ((this.meterSchemaUrl != null)
-                        && this.meterSchemaUrl.equals(rhs.meterSchemaUrl))))
-            && ((this.meterName == rhs.meterName)
-                || ((this.meterName != null) && this.meterName.equals(rhs.meterName))))
-        && ((this.meterVersion == rhs.meterVersion)
-            || ((this.meterVersion != null) && this.meterVersion.equals(rhs.meterVersion))));
+    return false;
   }
 
   @Generated("jsonschema2pojo")
-  @SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
   public enum InstrumentType {
     COUNTER("counter"),
     GAUGE("gauge"),

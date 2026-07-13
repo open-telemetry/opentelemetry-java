@@ -63,7 +63,7 @@ testing {
 }
 
 sourceSets {
-  val module by creating
+  val module = create("module")
   main {
     output.dir(mapOf("builtBy" to "compileModuleJava"), module.java.destinationDirectory)
   }

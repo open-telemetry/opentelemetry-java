@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalProbabilitySamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TraceIdRatioBasedSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalProbabilitySamplerModel;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.CompositeSampler;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;

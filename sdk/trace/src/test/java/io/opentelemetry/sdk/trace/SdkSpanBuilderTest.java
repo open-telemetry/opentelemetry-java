@@ -34,6 +34,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -1129,6 +1130,7 @@ class SdkSpanBuilderTest {
   }
 
   @Test
+  @SuppressLogger(loggerName = "io.opentelemetry.usage")
   void doNotCrash() {
     assertThatCode(
             () -> {
