@@ -125,7 +125,7 @@ final class StrictContextStorage implements ContextStorage, AutoCloseable {
    *
    * <p><em>Note:</em> It is important to close all resources prior to calling this, so that
    * in-flight operations are not mistaken as scope leaks. If this raises an error, consider if a
-   * {@linkplain Context#wrap(Executor)} wrapped executor} is still running.
+   * {@linkplain Context#wrap(Executor) wrapped executor} is still running.
    *
    * @throws AssertionError if any scopes were left unclosed.
    */
