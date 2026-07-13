@@ -20,7 +20,6 @@ dependencies {
   compileOnly("io.grpc:grpc-stub")
 
   testCompileOnly("com.google.guava:guava")
-  testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation(project(":exporters:otlp:testing-internal"))
