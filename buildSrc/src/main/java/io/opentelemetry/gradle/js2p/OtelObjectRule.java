@@ -25,8 +25,9 @@ import org.jsonschema2pojo.util.ParcelableHelper;
 import org.jsonschema2pojo.util.ReflectionHelper;
 
 /**
- * An {@link ObjectRule} that replaces jsonschema2pojo's generated {@code toString}/{@code
- * equals}/{@code hashCode} with implementations that mirror AutoValue's style.
+ * An {@link ObjectRule} that routes experimental classes into the {@code internal} sub-package and
+ * replaces jsonschema2pojo's generated {@code toString}/{@code equals}/{@code hashCode} with
+ * implementations that mirror AutoValue's style.
  */
 public class OtelObjectRule extends ObjectRule {
 
