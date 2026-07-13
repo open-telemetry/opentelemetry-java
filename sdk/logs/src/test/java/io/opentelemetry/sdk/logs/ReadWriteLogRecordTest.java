@@ -8,13 +8,17 @@ package io.opentelemetry.sdk.logs;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributesMap;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class ReadWriteLogRecordTest {
@@ -46,6 +50,33 @@ class ReadWriteLogRecordTest {
     Attributes originalAttributes = logRecord.getAttributes();
     ReadWriteLogRecord result = logRecord.setAllAttributes(Attributes.empty());
     assertThat(result.getAttributes()).isEqualTo(originalAttributes);
+  }
+
+  @Test
+  void defaultGetObservedTimestampEpochNanos_returnsObservedTimestamp() {
+    LogRecordData data =
+        TestLogRecordData.builder()
+            .setTimestamp(100, TimeUnit.NANOSECONDS)
+            .setObservedTimestamp(200, TimeUnit.NANOSECONDS)
+            .build();
+    // A ReadWriteLogRecord that relies on the interface default methods, implementing only the
+    // abstract methods. The SDK's SdkReadWriteLogRecord overrides the getters, so the default
+    // method behavior must be exercised through a custom implementation.
+    ReadWriteLogRecord logRecord =
+        new ReadWriteLogRecord() {
+          @Override
+          public <T> ReadWriteLogRecord setAttribute(AttributeKey<T> key, T value) {
+            return this;
+          }
+
+          @Override
+          public LogRecordData toLogRecordData() {
+            return data;
+          }
+        };
+
+    assertThat(logRecord.getObservedTimestampEpochNanos()).isEqualTo(200);
+    assertThat(logRecord.getTimestampEpochNanos()).isEqualTo(100);
   }
 
   SdkReadWriteLogRecord buildLogRecord() {

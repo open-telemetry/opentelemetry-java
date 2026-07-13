@@ -19,7 +19,6 @@ enum ComposableAlwaysOffSampler implements ComposableSampler {
   @Override
   public SamplingIntent getSamplingIntent(
       Context parentContext,
-      String traceId,
       String name,
       SpanKind spanKind,
       Attributes attributes,

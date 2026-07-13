@@ -123,7 +123,13 @@ class OpenTelemetrySpanImpl extends Span
   @Override
   public void setStatus(Status status) {
     Preconditions.checkNotNull(status, "status");
-    DelegatingSpan.super.setStatus(status.isOk() ? StatusCode.OK : StatusCode.ERROR);
+    StatusCode code = status.isOk() ? StatusCode.OK : StatusCode.ERROR;
+    String description = status.getDescription();
+    if (description == null) {
+      DelegatingSpan.super.setStatus(code);
+    } else {
+      DelegatingSpan.super.setStatus(code, description);
+    }
   }
 
   @Override
