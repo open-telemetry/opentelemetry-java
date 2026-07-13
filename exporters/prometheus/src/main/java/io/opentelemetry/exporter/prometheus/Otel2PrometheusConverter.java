@@ -71,7 +71,7 @@ import javax.annotation.Nullable;
 final class Otel2PrometheusConverter {
 
   private static final Logger LOGGER = Logger.getLogger(Otel2PrometheusConverter.class.getName());
-  private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(LOGGER);
   // Prometheus limits the total UTF-8 character count across all exemplar label names and values
   // to 128. See https://github.com/open-telemetry/opentelemetry-java/issues/6770
   private static final int EXEMPLAR_MAX_LABEL_SET_LENGTH = 128;
@@ -161,7 +161,7 @@ final class Otel2PrometheusConverter {
     try {
       return doConvert(metricData);
     } catch (IllegalArgumentException e) {
-      THROTTLING_LOGGER.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Failed to convert metric " + metricData.getName() + ". Dropping metric.",
           e);
@@ -338,7 +338,7 @@ final class Otel2PrometheusConverter {
     for (ExponentialHistogramPointData histogramData : dataPoints) {
       int scale = histogramData.getScale();
       if (scale < -4) {
-        THROTTLING_LOGGER.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Dropping histogram "
                 + metadata.getName()
@@ -461,7 +461,7 @@ final class Otel2PrometheusConverter {
       if (labelSetLength(labels) > EXEMPLAR_MAX_LABEL_SET_LENGTH) {
         // Drop filtered attributes to stay within Prometheus 128-char exemplar label limit,
         // keeping trace_id and span_id which are the most valuable for correlation.
-        THROTTLING_LOGGER.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Exemplar attributes exceeded Prometheus limit of "
                 + EXEMPLAR_MAX_LABEL_SET_LENGTH
@@ -484,7 +484,7 @@ final class Otel2PrometheusConverter {
               null, // scope attributes are only needed for point's attributes
               exemplar.getFilteredAttributes());
       if (labelSetLength(labels) > EXEMPLAR_MAX_LABEL_SET_LENGTH) {
-        THROTTLING_LOGGER.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Exemplar attributes exceeded Prometheus limit of "
                 + EXEMPLAR_MAX_LABEL_SET_LENGTH
@@ -561,7 +561,8 @@ final class Otel2PrometheusConverter {
           .forEach(
               (key, value) ->
                   labelNameToValue.putIfAbsent(
-                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(), value.toString()));
+                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(),
+                      toLabelValue(key.getType(), value)));
     }
 
     if (resource != null) {
@@ -570,7 +571,8 @@ final class Otel2PrometheusConverter {
         Object attributeValue = resourceAttributes.get(attributeKey);
         if (attributeValue != null) {
           labelNameToValue.putIfAbsent(
-              convertLabelName(attributeKey.getKey()), attributeValue.toString());
+              convertLabelName(attributeKey.getKey()),
+              toLabelValue(attributeKey.getType(), attributeValue));
         }
       }
     }
@@ -822,7 +824,7 @@ final class Otel2PrometheusConverter {
    * type. If the type differs, we log a message and drop one of them.
    */
   @Nullable
-  private static MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
+  private MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
     MetricMetadata metadata = mergeMetadata(a.getMetadata(), b.getMetadata());
     if (metadata == null) {
       return null;
@@ -854,7 +856,7 @@ final class Otel2PrometheusConverter {
       dataPoints.addAll(((InfoSnapshot) b).getDataPoints());
       return new InfoSnapshot(metadata, dataPoints);
     } else {
-      THROTTLING_LOGGER.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Conflicting metric name "
               + a.getMetadata().getPrometheusName()
@@ -870,7 +872,7 @@ final class Otel2PrometheusConverter {
   }
 
   @Nullable
-  private static MetricMetadata mergeMetadata(MetricMetadata a, MetricMetadata b) {
+  private MetricMetadata mergeMetadata(MetricMetadata a, MetricMetadata b) {
     String name = a.getPrometheusName();
     if (a.getName().equals(b.getName())) {
       name = a.getName();
@@ -881,7 +883,7 @@ final class Otel2PrometheusConverter {
     }
     Unit unit = a.getUnit();
     if (unit != null && !unit.equals(b.getUnit())) {
-      THROTTLING_LOGGER.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Conflicting metrics: Multiple metrics with name "
               + name

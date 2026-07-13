@@ -9,44 +9,48 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"selector", "stream"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class ViewModel {
 
-  /** (Required) */
-  @JsonProperty("selector")
-  @Nonnull
-  private ViewSelectorModel selector;
+  @Nullable private ViewSelectorModel selector;
+  @Nullable private ViewStreamModel stream;
 
-  /** (Required) */
-  @JsonProperty("stream")
-  @Nonnull
-  private ViewStreamModel stream;
-
-  /** (Required) */
+  /**
+   * Configure view selector.
+   *
+   * <p>Selection criteria is additive as described in
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#instrument-selection-criteria.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("selector")
   @Nullable
   public ViewSelectorModel getSelector() {
     return selector;
   }
 
+  @JsonProperty("selector")
   public ViewModel withSelector(ViewSelectorModel selector) {
     this.selector = selector;
     return this;
   }
 
-  /** (Required) */
+  /**
+   * Configure view stream.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("stream")
   @Nullable
   public ViewStreamModel getStream() {
     return stream;
   }
 
+  @JsonProperty("stream")
   public ViewModel withStream(ViewStreamModel stream) {
     this.stream = stream;
     return this;
@@ -54,47 +58,29 @@ public class ViewModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(ViewModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("selector");
-    sb.append('=');
-    sb.append(((this.selector == null) ? "<null>" : this.selector));
-    sb.append(',');
-    sb.append("stream");
-    sb.append('=');
-    sb.append(((this.stream == null) ? "<null>" : this.stream));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "ViewModel{" + "selector=" + selector + ", stream=" + stream + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.stream == null) ? 0 : this.stream.hashCode()));
-    result = ((result * 31) + ((this.selector == null) ? 0 : this.selector.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.selector == null) ? 0 : this.selector.hashCode();
+    h *= 1000003;
+    h ^= (this.stream == null) ? 0 : this.stream.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof ViewModel) == false) {
-      return false;
+    if (o instanceof ViewModel) {
+      ViewModel that = (ViewModel) o;
+      return (this.selector == null ? that.selector == null : this.selector.equals(that.selector))
+          && (this.stream == null ? that.stream == null : this.stream.equals(that.stream));
     }
-    ViewModel rhs = ((ViewModel) other);
-    return (((this.stream == rhs.stream)
-            || ((this.stream != null) && this.stream.equals(rhs.stream)))
-        && ((this.selector == rhs.selector)
-            || ((this.selector != null) && this.selector.equals(rhs.selector))));
+    return false;
   }
 }

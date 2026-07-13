@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -25,112 +24,60 @@ import javax.annotation.Nullable;
   "default_histogram_aggregation"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class OtlpGrpcMetricExporterModel {
 
-  /**
-   * Configure endpoint. If omitted or null, http://localhost:4317 is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("endpoint")
-  @JsonPropertyDescription(
-      "Configure endpoint.\nIf omitted or null, http://localhost:4317 is used.\n")
-  private String endpoint;
+  @Nullable private String endpoint;
+  @Nullable private GrpcTlsModel tls;
+  @Nullable private List<NameStringValuePairModel> headers;
+  @Nullable private String headersList;
+  @Nullable private String compression;
+  @Nullable private Integer timeout;
+  @Nullable private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
 
-  /** (Can be null) */
   @Nullable
-  @JsonProperty("tls")
-  private GrpcTlsModel tls;
-
-  /**
-   * Configure headers. Entries have higher priority than entries from .headers_list. If an entry's
-   * .value is null, the entry is ignored. If omitted, no headers are added.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("headers")
-  @JsonPropertyDescription(
-      "Configure headers. Entries have higher priority than entries from .headers_list.\nIf an entry's .value is null, the entry is ignored.\nIf omitted, no headers are added.\n")
-  private List<NameStringValuePairModel> headers;
-
-  /**
-   * Configure headers. Entries have lower priority than entries from .headers. The value is a list
-   * of comma separated key-value pairs matching the format of OTEL_EXPORTER_OTLP_HEADERS. See
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#configuration-options
-   * for details. If omitted or null, no headers are added.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("headers_list")
-  @JsonPropertyDescription(
-      "Configure headers. Entries have lower priority than entries from .headers.\nThe value is a list of comma separated key-value pairs matching the format of OTEL_EXPORTER_OTLP_HEADERS. See https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#configuration-options for details.\nIf omitted or null, no headers are added.\n")
-  private String headersList;
-
-  /**
-   * Configure compression. Known values include: gzip, none. Implementations may support other
-   * compression algorithms. If omitted or null, none is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("compression")
-  @JsonPropertyDescription(
-      "Configure compression.\nKnown values include: gzip, none. Implementations may support other compression algorithms.\nIf omitted or null, none is used.\n")
-  private String compression;
-
-  /**
-   * Configure max time (in milliseconds) to wait for each export. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 10000 is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("timeout")
-  @JsonPropertyDescription(
-      "Configure max time (in milliseconds) to wait for each export.\nValue must be non-negative. A value of 0 indicates no limit (infinity).\nIf omitted or null, 10000 is used.\n")
-  private Integer timeout;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("temporality_preference")
-  private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("default_histogram_aggregation")
   private OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
       defaultHistogramAggregation;
 
-  /** Configure endpoint. If omitted or null, http://localhost:4317 is used. */
+  /**
+   * Configure endpoint.
+   *
+   * <p>If omitted or null, http://localhost:4317 is used.
+   */
   @JsonProperty("endpoint")
   @Nullable
   public String getEndpoint() {
     return endpoint;
   }
 
+  @JsonProperty("endpoint")
   public OtlpGrpcMetricExporterModel withEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
 
+  /**
+   * Configure TLS settings for the exporter.
+   *
+   * <p>If omitted, system default TLS settings are used.
+   */
   @JsonProperty("tls")
   @Nullable
   public GrpcTlsModel getTls() {
     return tls;
   }
 
+  @JsonProperty("tls")
   public OtlpGrpcMetricExporterModel withTls(GrpcTlsModel tls) {
     this.tls = tls;
     return this;
   }
 
   /**
-   * Configure headers. Entries have higher priority than entries from .headers_list. If an entry's
-   * .value is null, the entry is ignored. If omitted, no headers are added.
+   * Configure headers. Entries have higher priority than entries from .headers_list.
+   *
+   * <p>If an entry's .value is null, the entry is ignored.
+   *
+   * <p>If omitted, no headers are added.
    */
   @JsonProperty("headers")
   @Nullable
@@ -138,16 +85,21 @@ public class OtlpGrpcMetricExporterModel {
     return headers;
   }
 
+  @JsonProperty("headers")
   public OtlpGrpcMetricExporterModel withHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
   }
 
   /**
-   * Configure headers. Entries have lower priority than entries from .headers. The value is a list
-   * of comma separated key-value pairs matching the format of OTEL_EXPORTER_OTLP_HEADERS. See
+   * Configure headers. Entries have lower priority than entries from .headers.
+   *
+   * <p>The value is a list of comma separated key-value pairs matching the format of
+   * OTEL_EXPORTER_OTLP_HEADERS. See
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#configuration-options
-   * for details. If omitted or null, no headers are added.
+   * for details.
+   *
+   * <p>If omitted or null, no headers are added.
    */
   @JsonProperty("headers_list")
   @Nullable
@@ -155,14 +107,18 @@ public class OtlpGrpcMetricExporterModel {
     return headersList;
   }
 
+  @JsonProperty("headers_list")
   public OtlpGrpcMetricExporterModel withHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
   }
 
   /**
-   * Configure compression. Known values include: gzip, none. Implementations may support other
-   * compression algorithms. If omitted or null, none is used.
+   * Configure compression.
+   *
+   * <p>Known values include: gzip, none. Implementations may support other compression algorithms.
+   *
+   * <p>If omitted or null, none is used.
    */
   @JsonProperty("compression")
   @Nullable
@@ -170,14 +126,18 @@ public class OtlpGrpcMetricExporterModel {
     return compression;
   }
 
+  @JsonProperty("compression")
   public OtlpGrpcMetricExporterModel withCompression(String compression) {
     this.compression = compression;
     return this;
   }
 
   /**
-   * Configure max time (in milliseconds) to wait for each export. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 10000 is used.
+   * Configure max time (in milliseconds) to wait for each export.
+   *
+   * <p>Value must be non-negative. A value of 0 indicates no limit (infinity).
+   *
+   * <p>If omitted or null, 10000 is used.
    */
   @JsonProperty("timeout")
   @Nullable
@@ -185,23 +145,53 @@ public class OtlpGrpcMetricExporterModel {
     return timeout;
   }
 
+  @JsonProperty("timeout")
   public OtlpGrpcMetricExporterModel withTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
 
+  /**
+   * Configure temporality preference.
+   *
+   * <p>Values include:
+   *
+   * <p>* cumulative: Use cumulative aggregation temporality for all instrument types.
+   *
+   * <p>* delta: Use delta aggregation for all instrument types except up down counter and
+   * asynchronous up down counter.
+   *
+   * <p>* low_memory: Use delta aggregation temporality for counter and histogram instrument types.
+   * Use cumulative aggregation temporality for all other instrument types.
+   *
+   * <p>If omitted, cumulative is used.
+   */
   @JsonProperty("temporality_preference")
   @Nullable
   public OtlpHttpMetricExporterModel.ExporterTemporalityPreference getTemporalityPreference() {
     return temporalityPreference;
   }
 
+  @JsonProperty("temporality_preference")
   public OtlpGrpcMetricExporterModel withTemporalityPreference(
       OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
   }
 
+  /**
+   * Configure default histogram aggregation.
+   *
+   * <p>Values include:
+   *
+   * <p>* base2_exponential_bucket_histogram: Use base2 exponential histogram as the default
+   * aggregation for histogram instruments.
+   *
+   * <p>* explicit_bucket_histogram: Use explicit bucket histogram as the default aggregation for
+   * histogram instruments.
+   *
+   * <p>If omitted, explicit_bucket_histogram is used.
+   */
   @JsonProperty("default_histogram_aggregation")
   @Nullable
   public OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
@@ -209,6 +199,7 @@ public class OtlpGrpcMetricExporterModel {
     return defaultHistogramAggregation;
   }
 
+  @JsonProperty("default_histogram_aggregation")
   public OtlpGrpcMetricExporterModel withDefaultHistogramAggregation(
       OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
@@ -217,101 +208,75 @@ public class OtlpGrpcMetricExporterModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(OtlpGrpcMetricExporterModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("endpoint");
-    sb.append('=');
-    sb.append(((this.endpoint == null) ? "<null>" : this.endpoint));
-    sb.append(',');
-    sb.append("tls");
-    sb.append('=');
-    sb.append(((this.tls == null) ? "<null>" : this.tls));
-    sb.append(',');
-    sb.append("headers");
-    sb.append('=');
-    sb.append(((this.headers == null) ? "<null>" : this.headers));
-    sb.append(',');
-    sb.append("headersList");
-    sb.append('=');
-    sb.append(((this.headersList == null) ? "<null>" : this.headersList));
-    sb.append(',');
-    sb.append("compression");
-    sb.append('=');
-    sb.append(((this.compression == null) ? "<null>" : this.compression));
-    sb.append(',');
-    sb.append("timeout");
-    sb.append('=');
-    sb.append(((this.timeout == null) ? "<null>" : this.timeout));
-    sb.append(',');
-    sb.append("temporalityPreference");
-    sb.append('=');
-    sb.append(((this.temporalityPreference == null) ? "<null>" : this.temporalityPreference));
-    sb.append(',');
-    sb.append("defaultHistogramAggregation");
-    sb.append('=');
-    sb.append(
-        ((this.defaultHistogramAggregation == null) ? "<null>" : this.defaultHistogramAggregation));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "OtlpGrpcMetricExporterModel{"
+        + "endpoint="
+        + endpoint
+        + ", tls="
+        + tls
+        + ", headers="
+        + headers
+        + ", headersList="
+        + headersList
+        + ", compression="
+        + compression
+        + ", timeout="
+        + timeout
+        + ", temporalityPreference="
+        + temporalityPreference
+        + ", defaultHistogramAggregation="
+        + defaultHistogramAggregation
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.headers == null) ? 0 : this.headers.hashCode()));
-    result = ((result * 31) + ((this.endpoint == null) ? 0 : this.endpoint.hashCode()));
-    result = ((result * 31) + ((this.headersList == null) ? 0 : this.headersList.hashCode()));
-    result = ((result * 31) + ((this.tls == null) ? 0 : this.tls.hashCode()));
-    result = ((result * 31) + ((this.compression == null) ? 0 : this.compression.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.temporalityPreference == null) ? 0 : this.temporalityPreference.hashCode()));
-    result = ((result * 31) + ((this.timeout == null) ? 0 : this.timeout.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.defaultHistogramAggregation == null)
-                ? 0
-                : this.defaultHistogramAggregation.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.endpoint == null) ? 0 : this.endpoint.hashCode();
+    h *= 1000003;
+    h ^= (this.tls == null) ? 0 : this.tls.hashCode();
+    h *= 1000003;
+    h ^= (this.headers == null) ? 0 : this.headers.hashCode();
+    h *= 1000003;
+    h ^= (this.headersList == null) ? 0 : this.headersList.hashCode();
+    h *= 1000003;
+    h ^= (this.compression == null) ? 0 : this.compression.hashCode();
+    h *= 1000003;
+    h ^= (this.timeout == null) ? 0 : this.timeout.hashCode();
+    h *= 1000003;
+    h ^= (this.temporalityPreference == null) ? 0 : this.temporalityPreference.hashCode();
+    h *= 1000003;
+    h ^=
+        (this.defaultHistogramAggregation == null)
+            ? 0
+            : this.defaultHistogramAggregation.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof OtlpGrpcMetricExporterModel) == false) {
-      return false;
+    if (o instanceof OtlpGrpcMetricExporterModel) {
+      OtlpGrpcMetricExporterModel that = (OtlpGrpcMetricExporterModel) o;
+      return (this.endpoint == null ? that.endpoint == null : this.endpoint.equals(that.endpoint))
+          && (this.tls == null ? that.tls == null : this.tls.equals(that.tls))
+          && (this.headers == null ? that.headers == null : this.headers.equals(that.headers))
+          && (this.headersList == null
+              ? that.headersList == null
+              : this.headersList.equals(that.headersList))
+          && (this.compression == null
+              ? that.compression == null
+              : this.compression.equals(that.compression))
+          && (this.timeout == null ? that.timeout == null : this.timeout.equals(that.timeout))
+          && (this.temporalityPreference == null
+              ? that.temporalityPreference == null
+              : this.temporalityPreference.equals(that.temporalityPreference))
+          && (this.defaultHistogramAggregation == null
+              ? that.defaultHistogramAggregation == null
+              : this.defaultHistogramAggregation.equals(that.defaultHistogramAggregation));
     }
-    OtlpGrpcMetricExporterModel rhs = ((OtlpGrpcMetricExporterModel) other);
-    return (((((((((this.headers == rhs.headers)
-                                    || ((this.headers != null) && this.headers.equals(rhs.headers)))
-                                && ((this.endpoint == rhs.endpoint)
-                                    || ((this.endpoint != null)
-                                        && this.endpoint.equals(rhs.endpoint))))
-                            && ((this.headersList == rhs.headersList)
-                                || ((this.headersList != null)
-                                    && this.headersList.equals(rhs.headersList))))
-                        && ((this.tls == rhs.tls)
-                            || ((this.tls != null) && this.tls.equals(rhs.tls))))
-                    && ((this.compression == rhs.compression)
-                        || ((this.compression != null)
-                            && this.compression.equals(rhs.compression))))
-                && ((this.temporalityPreference == rhs.temporalityPreference)
-                    || ((this.temporalityPreference != null)
-                        && this.temporalityPreference.equals(rhs.temporalityPreference))))
-            && ((this.timeout == rhs.timeout)
-                || ((this.timeout != null) && this.timeout.equals(rhs.timeout))))
-        && ((this.defaultHistogramAggregation == rhs.defaultHistogramAggregation)
-            || ((this.defaultHistogramAggregation != null)
-                && this.defaultHistogramAggregation.equals(rhs.defaultHistogramAggregation))));
+    return false;
   }
 }

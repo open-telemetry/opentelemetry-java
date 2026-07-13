@@ -12,6 +12,7 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.lang.syntax.elements.ClassesShouldConjunction;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,6 +28,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressLogger(NoSharedInternalCodeTest.class)
 class NoSharedInternalCodeTest {
 
   private static final Set<String> exemptions =

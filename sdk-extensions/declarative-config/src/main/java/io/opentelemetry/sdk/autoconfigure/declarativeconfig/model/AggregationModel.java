@@ -21,102 +21,130 @@ import javax.annotation.Nullable;
   "sum"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class AggregationModel {
 
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("default")
-  private DefaultAggregationModel _default;
+  @Nullable private DefaultAggregationModel _default;
+  @Nullable private DropAggregationModel drop;
+  @Nullable private ExplicitBucketHistogramAggregationModel explicitBucketHistogram;
+  @Nullable private Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram;
+  @Nullable private LastValueAggregationModel lastValue;
+  @Nullable private SumAggregationModel sum;
 
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("drop")
-  private DropAggregationModel drop;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("explicit_bucket_histogram")
-  private ExplicitBucketHistogramAggregationModel explicitBucketHistogram;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("base2_exponential_bucket_histogram")
-  private Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("last_value")
-  private LastValueAggregationModel lastValue;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("sum")
-  private SumAggregationModel sum;
-
+  /**
+   * Configures the stream to use the instrument kind to select an aggregation and advisory
+   * parameters to influence aggregation configuration parameters. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#default-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("default")
   @Nullable
   public DefaultAggregationModel getDefault() {
     return _default;
   }
 
+  @JsonProperty("default")
   public AggregationModel withDefault(DefaultAggregationModel _default) {
     this._default = _default;
     return this;
   }
 
+  /**
+   * Configures the stream to ignore/drop all instrument measurements. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#drop-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("drop")
   @Nullable
   public DropAggregationModel getDrop() {
     return drop;
   }
 
+  @JsonProperty("drop")
   public AggregationModel withDrop(DropAggregationModel drop) {
     this.drop = drop;
     return this;
   }
 
+  /**
+   * Configures the stream to collect data for the histogram metric point using a set of explicit
+   * boundary values for histogram bucketing. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#explicit-bucket-histogram-aggregation
+   * for details
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("explicit_bucket_histogram")
   @Nullable
   public ExplicitBucketHistogramAggregationModel getExplicitBucketHistogram() {
     return explicitBucketHistogram;
   }
 
+  @JsonProperty("explicit_bucket_histogram")
   public AggregationModel withExplicitBucketHistogram(
       ExplicitBucketHistogramAggregationModel explicitBucketHistogram) {
     this.explicitBucketHistogram = explicitBucketHistogram;
     return this;
   }
 
+  /**
+   * Configures the stream to collect data for the exponential histogram metric point, which uses a
+   * base-2 exponential formula to determine bucket boundaries and an integer scale parameter to
+   * control resolution. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#base2-exponential-bucket-histogram-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("base2_exponential_bucket_histogram")
   @Nullable
   public Base2ExponentialBucketHistogramAggregationModel getBase2ExponentialBucketHistogram() {
     return base2ExponentialBucketHistogram;
   }
 
+  @JsonProperty("base2_exponential_bucket_histogram")
   public AggregationModel withBase2ExponentialBucketHistogram(
       Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram) {
     this.base2ExponentialBucketHistogram = base2ExponentialBucketHistogram;
     return this;
   }
 
+  /**
+   * Configures the stream to collect data using the last measurement. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#last-value-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("last_value")
   @Nullable
   public LastValueAggregationModel getLastValue() {
     return lastValue;
   }
 
+  @JsonProperty("last_value")
   public AggregationModel withLastValue(LastValueAggregationModel lastValue) {
     this.lastValue = lastValue;
     return this;
   }
 
+  /**
+   * Configures the stream to collect the arithmetic sum of measurement values. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#sum-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("sum")
   @Nullable
   public SumAggregationModel getSum() {
     return sum;
   }
 
+  @JsonProperty("sum")
   public AggregationModel withSum(SumAggregationModel sum) {
     this.sum = sum;
     return this;
@@ -124,88 +152,63 @@ public class AggregationModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(AggregationModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("_default");
-    sb.append('=');
-    sb.append(((this._default == null) ? "<null>" : this._default));
-    sb.append(',');
-    sb.append("drop");
-    sb.append('=');
-    sb.append(((this.drop == null) ? "<null>" : this.drop));
-    sb.append(',');
-    sb.append("explicitBucketHistogram");
-    sb.append('=');
-    sb.append(((this.explicitBucketHistogram == null) ? "<null>" : this.explicitBucketHistogram));
-    sb.append(',');
-    sb.append("base2ExponentialBucketHistogram");
-    sb.append('=');
-    sb.append(
-        ((this.base2ExponentialBucketHistogram == null)
-            ? "<null>"
-            : this.base2ExponentialBucketHistogram));
-    sb.append(',');
-    sb.append("lastValue");
-    sb.append('=');
-    sb.append(((this.lastValue == null) ? "<null>" : this.lastValue));
-    sb.append(',');
-    sb.append("sum");
-    sb.append('=');
-    sb.append(((this.sum == null) ? "<null>" : this.sum));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "AggregationModel{"
+        + "_default="
+        + _default
+        + ", drop="
+        + drop
+        + ", explicitBucketHistogram="
+        + explicitBucketHistogram
+        + ", base2ExponentialBucketHistogram="
+        + base2ExponentialBucketHistogram
+        + ", lastValue="
+        + lastValue
+        + ", sum="
+        + sum
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.drop == null) ? 0 : this.drop.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.explicitBucketHistogram == null)
-                ? 0
-                : this.explicitBucketHistogram.hashCode()));
-    result = ((result * 31) + ((this._default == null) ? 0 : this._default.hashCode()));
-    result = ((result * 31) + ((this.lastValue == null) ? 0 : this.lastValue.hashCode()));
-    result = ((result * 31) + ((this.sum == null) ? 0 : this.sum.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.base2ExponentialBucketHistogram == null)
-                ? 0
-                : this.base2ExponentialBucketHistogram.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this._default == null) ? 0 : this._default.hashCode();
+    h *= 1000003;
+    h ^= (this.drop == null) ? 0 : this.drop.hashCode();
+    h *= 1000003;
+    h ^= (this.explicitBucketHistogram == null) ? 0 : this.explicitBucketHistogram.hashCode();
+    h *= 1000003;
+    h ^=
+        (this.base2ExponentialBucketHistogram == null)
+            ? 0
+            : this.base2ExponentialBucketHistogram.hashCode();
+    h *= 1000003;
+    h ^= (this.lastValue == null) ? 0 : this.lastValue.hashCode();
+    h *= 1000003;
+    h ^= (this.sum == null) ? 0 : this.sum.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof AggregationModel) == false) {
-      return false;
+    if (o instanceof AggregationModel) {
+      AggregationModel that = (AggregationModel) o;
+      return (this._default == null ? that._default == null : this._default.equals(that._default))
+          && (this.drop == null ? that.drop == null : this.drop.equals(that.drop))
+          && (this.explicitBucketHistogram == null
+              ? that.explicitBucketHistogram == null
+              : this.explicitBucketHistogram.equals(that.explicitBucketHistogram))
+          && (this.base2ExponentialBucketHistogram == null
+              ? that.base2ExponentialBucketHistogram == null
+              : this.base2ExponentialBucketHistogram.equals(that.base2ExponentialBucketHistogram))
+          && (this.lastValue == null
+              ? that.lastValue == null
+              : this.lastValue.equals(that.lastValue))
+          && (this.sum == null ? that.sum == null : this.sum.equals(that.sum));
     }
-    AggregationModel rhs = ((AggregationModel) other);
-    return (((((((this.drop == rhs.drop) || ((this.drop != null) && this.drop.equals(rhs.drop)))
-                        && ((this.explicitBucketHistogram == rhs.explicitBucketHistogram)
-                            || ((this.explicitBucketHistogram != null)
-                                && this.explicitBucketHistogram.equals(
-                                    rhs.explicitBucketHistogram))))
-                    && ((this._default == rhs._default)
-                        || ((this._default != null) && this._default.equals(rhs._default))))
-                && ((this.lastValue == rhs.lastValue)
-                    || ((this.lastValue != null) && this.lastValue.equals(rhs.lastValue))))
-            && ((this.sum == rhs.sum) || ((this.sum != null) && this.sum.equals(rhs.sum))))
-        && ((this.base2ExponentialBucketHistogram == rhs.base2ExponentialBucketHistogram)
-            || ((this.base2ExponentialBucketHistogram != null)
-                && this.base2ExponentialBucketHistogram.equals(
-                    rhs.base2ExponentialBucketHistogram))));
+    return false;
   }
 }

@@ -15,10 +15,10 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfiguration;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalInstrumentationModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalLanguageSpecificInstrumentationModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalLanguageSpecificInstrumentationPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalInstrumentationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLanguageSpecificInstrumentationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLanguageSpecificInstrumentationPropertyModel;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -129,7 +129,7 @@ class InstrumentationConfigUtilTest {
       ExperimentalLanguageSpecificInstrumentationPropertyModel instrumentationConfig) {
     ExperimentalLanguageSpecificInstrumentationModel javaConfig =
         new ExperimentalLanguageSpecificInstrumentationModel();
-    javaConfig.setAdditionalProperty(instrumentationName, instrumentationConfig);
+    javaConfig.withAdditionalProperty(instrumentationName, instrumentationConfig);
     DeclarativeConfigProperties modelProperties =
         DeclarativeConfiguration.toConfigProperties(
             new OpenTelemetryConfigurationModel()
