@@ -95,7 +95,10 @@ class DeclarativeConfigurationCreateTest {
                 "cert_file: .*\n",
                 "cert_file: "
                     + clientCertificatePath.replace("\\", "\\\\")
-                    + System.lineSeparator());
+                    + System.lineSeparator())
+            // A snippet references a custom id generator named my_custom_id_generator. Replace with
+            // one named test, which we provide via SPI
+            .replace("my_custom_id_generator", "test");
     InputStream is =
         new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
@@ -122,7 +125,7 @@ class DeclarativeConfigurationCreateTest {
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.1\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -149,7 +152,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void parseAndCreate_EmptyComponentProviderConfig() {
     String yaml =
-        "file_format: \"1.0\"\n"
+        "file_format: \"1.1\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - test:\n"
@@ -167,7 +170,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void create_ModelCustomizer() {
     OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
-    model.withFileFormat("1.0");
+    model.withFileFormat("1.1");
     model.withTracerProvider(
         new TracerProviderModel()
             .withProcessors(

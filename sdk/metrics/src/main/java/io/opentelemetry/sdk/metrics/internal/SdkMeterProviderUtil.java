@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.lang.reflect.InvocationTargetException;
@@ -77,18 +78,18 @@ public final class SdkMeterProviderUtil {
   }
 
   /** Reflectively set the max export batch size for the {@link SdkMeterProviderBuilder}. */
-  public static SdkMeterProviderBuilder setMaxExportBatchSize(
-      SdkMeterProviderBuilder sdkMeterProviderBuilder, int maxExportBatchSize) {
+  public static PeriodicMetricReaderBuilder setMaxExportBatchSize(
+      PeriodicMetricReaderBuilder periodicMetricReaderBuilder, int maxExportBatchSize) {
     try {
       Method method =
-          SdkMeterProviderBuilder.class.getDeclaredMethod("setMaxExportBatchSize", int.class);
+          PeriodicMetricReaderBuilder.class.getDeclaredMethod("setMaxExportBatchSize", int.class);
       method.setAccessible(true);
-      method.invoke(sdkMeterProviderBuilder, maxExportBatchSize);
+      method.invoke(periodicMetricReaderBuilder, maxExportBatchSize);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
-          "Error calling setMaxExportBatchSize on SdkMeterProviderBuilder", e);
+          "Error calling setMaxExportBatchSize on PeriodicMetricReaderBuilder", e);
     }
-    return sdkMeterProviderBuilder;
+    return periodicMetricReaderBuilder;
   }
 
   /**

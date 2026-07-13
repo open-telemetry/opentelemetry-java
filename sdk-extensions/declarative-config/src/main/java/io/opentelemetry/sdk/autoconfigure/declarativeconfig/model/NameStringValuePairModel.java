@@ -7,44 +7,22 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"name", "value"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class NameStringValuePairModel {
 
-  /**
-   * The name of the pair. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
-  @JsonProperty("name")
-  @JsonPropertyDescription("The name of the pair.\nProperty is required and must be non-null.\n")
-  @Nonnull
-  private String name;
+  @Nullable private String name;
+  @Nullable private String value;
 
   /**
-   * The value of the pair. Property must be present, but if null the behavior is dependent on usage
-   * context.
+   * The name of the pair.
    *
-   * <p>(Required)
-   */
-  @JsonProperty("value")
-  @JsonPropertyDescription(
-      "The value of the pair.\nProperty must be present, but if null the behavior is dependent on usage context.\n")
-  @Nonnull
-  private String value;
-
-  /**
-   * The name of the pair. Property is required and must be non-null.
-   *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("name")
   @Nullable
@@ -52,16 +30,16 @@ public class NameStringValuePairModel {
     return name;
   }
 
+  @JsonProperty("name")
   public NameStringValuePairModel withName(String name) {
     this.name = name;
     return this;
   }
 
   /**
-   * The value of the pair. Property must be present, but if null the behavior is dependent on usage
-   * context.
+   * The value of the pair.
    *
-   * <p>(Required)
+   * <p>Property must be present, but if null the behavior is dependent on usage context.
    */
   @JsonProperty("value")
   @Nullable
@@ -69,6 +47,7 @@ public class NameStringValuePairModel {
     return value;
   }
 
+  @JsonProperty("value")
   public NameStringValuePairModel withValue(String value) {
     this.value = value;
     return this;
@@ -76,45 +55,29 @@ public class NameStringValuePairModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(NameStringValuePairModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("name");
-    sb.append('=');
-    sb.append(((this.name == null) ? "<null>" : this.name));
-    sb.append(',');
-    sb.append("value");
-    sb.append('=');
-    sb.append(((this.value == null) ? "<null>" : this.value));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "NameStringValuePairModel{" + "name=" + name + ", value=" + value + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.name == null) ? 0 : this.name.hashCode()));
-    result = ((result * 31) + ((this.value == null) ? 0 : this.value.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.name == null) ? 0 : this.name.hashCode();
+    h *= 1000003;
+    h ^= (this.value == null) ? 0 : this.value.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof NameStringValuePairModel) == false) {
-      return false;
+    if (o instanceof NameStringValuePairModel) {
+      NameStringValuePairModel that = (NameStringValuePairModel) o;
+      return (this.name == null ? that.name == null : this.name.equals(that.name))
+          && (this.value == null ? that.value == null : this.value.equals(that.value));
     }
-    NameStringValuePairModel rhs = ((NameStringValuePairModel) other);
-    return (((this.name == rhs.name) || ((this.name != null) && this.name.equals(rhs.name)))
-        && ((this.value == rhs.value) || ((this.value != null) && this.value.equals(rhs.value))));
+    return false;
   }
 }

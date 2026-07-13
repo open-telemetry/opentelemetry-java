@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.test.junit5.context.BundleContextExtension;
 
+/** Verifies the SDK (traces, metrics, logs) and Context API work in OSGi. */
 @ExtendWith(BundleContextExtension.class)
 public class OpenTelemetryOsgiTest {
 

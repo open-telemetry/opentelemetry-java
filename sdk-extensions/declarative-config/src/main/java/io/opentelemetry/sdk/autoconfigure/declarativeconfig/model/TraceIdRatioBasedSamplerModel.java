@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -15,26 +14,22 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"ratio"})
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class TraceIdRatioBasedSamplerModel {
 
-  /**
-   * Configure trace_id_ratio. If omitted or null, 1.0 is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("ratio")
-  @JsonPropertyDescription("Configure trace_id_ratio.\nIf omitted or null, 1.0 is used.\n")
-  private Double ratio;
+  @Nullable private Double ratio;
 
-  /** Configure trace_id_ratio. If omitted or null, 1.0 is used. */
+  /**
+   * Configure trace_id_ratio.
+   *
+   * <p>If omitted or null, 1.0 is used.
+   */
   @JsonProperty("ratio")
   @Nullable
   public Double getRatio() {
     return ratio;
   }
 
+  @JsonProperty("ratio")
   public TraceIdRatioBasedSamplerModel withRatio(Double ratio) {
     this.ratio = ratio;
     return this;
@@ -42,39 +37,26 @@ public class TraceIdRatioBasedSamplerModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(TraceIdRatioBasedSamplerModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("ratio");
-    sb.append('=');
-    sb.append(((this.ratio == null) ? "<null>" : this.ratio));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "TraceIdRatioBasedSamplerModel{" + "ratio=" + ratio + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.ratio == null) ? 0 : this.ratio.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.ratio == null) ? 0 : this.ratio.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof TraceIdRatioBasedSamplerModel) == false) {
-      return false;
+    if (o instanceof TraceIdRatioBasedSamplerModel) {
+      TraceIdRatioBasedSamplerModel that = (TraceIdRatioBasedSamplerModel) o;
+      return (this.ratio == null ? that.ratio == null : this.ratio.equals(that.ratio));
     }
-    TraceIdRatioBasedSamplerModel rhs = ((TraceIdRatioBasedSamplerModel) other);
-    return ((this.ratio == rhs.ratio) || ((this.ratio != null) && this.ratio.equals(rhs.ratio)));
+    return false;
   }
 }

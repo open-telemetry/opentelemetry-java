@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -301,9 +302,10 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
             error = "export_failed";
           }
         }
-      } catch (RuntimeException e) {
-        logger.log(Level.WARNING, "Exporter threw an Exception", e);
-        error = e.getClass().getName();
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
+        logger.log(Level.WARNING, "Exporter threw an Exception", t);
+        error = t.getClass().getName();
       } finally {
         logProcessorInstrumentation.finishLogs(batch.size(), error);
         batch.clear();

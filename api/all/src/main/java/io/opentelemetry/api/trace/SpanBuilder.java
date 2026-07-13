@@ -281,9 +281,8 @@ public interface SpanBuilder {
   /**
    * Sets an explicit start timestamp for the newly created {@code Span}.
    *
-   * <p>LIRInstruction.Use this method to specify an explicit start timestamp. If not called, the
-   * implementation will use the timestamp value at {@link #startSpan()} time, which should be the
-   * default case.
+   * <p>Use this method to specify an explicit start timestamp. If not called, the implementation
+   * will use the timestamp value at {@link #startSpan()} time, which should be the default case.
    *
    * <p>Important this is NOT equivalent with System.nanoTime().
    *
