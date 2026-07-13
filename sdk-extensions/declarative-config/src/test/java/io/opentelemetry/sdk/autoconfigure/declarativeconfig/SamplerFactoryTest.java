@@ -58,10 +58,8 @@ class SamplerFactoryTest {
   @ParameterizedTest
   @MethodSource("createArguments")
   void create(@Nullable SamplerModel model, Sampler expectedSampler) {
-    // Some samplers like JaegerRemoteSampler are Closeable - ensure these get cleaned up
-    if (expectedSampler instanceof Closeable) {
-      cleanup.addCloseable((Closeable) expectedSampler);
-    }
+    // // All samplers are Closeable - ensure these get cleaned up
+    cleanup.addCloseable(expectedSampler);
 
     List<Closeable> closeables = new ArrayList<>();
     Sampler sampler = SamplerFactory.getInstance().create(model, context);
