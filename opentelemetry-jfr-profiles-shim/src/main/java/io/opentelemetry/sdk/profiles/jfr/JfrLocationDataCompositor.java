@@ -32,7 +32,7 @@ public class JfrLocationDataCompositor {
    * Returns a new JFR Compositor, using the offered Dictionary for storage.
    *
    * @param profilesDictionaryCompositor the underlying dictionary state store.
-   * @return a new ProfilesDictionaryCompositor.
+   * @return a new JfrLocationDataCompositor.
    */
   public static JfrLocationDataCompositor create(
       ProfilesDictionaryCompositor profilesDictionaryCompositor) {

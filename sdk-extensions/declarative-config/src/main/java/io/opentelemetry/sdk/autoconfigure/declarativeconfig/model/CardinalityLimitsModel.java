@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -24,108 +23,23 @@ import javax.annotation.Nullable;
   "up_down_counter"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class CardinalityLimitsModel {
 
-  /**
-   * Configure default cardinality limit for all instrument types. Instrument-specific cardinality
-   * limits take priority. If omitted or null, 2000 is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("default")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for all instrument types.\nInstrument-specific cardinality limits take priority.\nIf omitted or null, 2000 is used.\n")
-  private Integer _default;
+  @Nullable private Integer _default;
+  @Nullable private Integer counter;
+  @Nullable private Integer gauge;
+  @Nullable private Integer histogram;
+  @Nullable private Integer observableCounter;
+  @Nullable private Integer observableGauge;
+  @Nullable private Integer observableUpDownCounter;
+  @Nullable private Integer upDownCounter;
 
   /**
-   * Configure default cardinality limit for counter instruments. If omitted or null, the value from
-   * .default is used.
+   * Configure default cardinality limit for all instrument types.
    *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("counter")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for counter instruments.\nIf omitted or null, the value from .default is used.\n")
-  private Integer counter;
-
-  /**
-   * Configure default cardinality limit for gauge instruments. If omitted or null, the value from
-   * .default is used.
+   * <p>Instrument-specific cardinality limits take priority.
    *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("gauge")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for gauge instruments.\nIf omitted or null, the value from .default is used.\n")
-  private Integer gauge;
-
-  /**
-   * Configure default cardinality limit for histogram instruments. If omitted or null, the value
-   * from .default is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("histogram")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for histogram instruments.\nIf omitted or null, the value from .default is used.\n")
-  private Integer histogram;
-
-  /**
-   * Configure default cardinality limit for observable_counter instruments. If omitted or null, the
-   * value from .default is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("observable_counter")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for observable_counter instruments.\nIf omitted or null, the value from .default is used.\n")
-  private Integer observableCounter;
-
-  /**
-   * Configure default cardinality limit for observable_gauge instruments. If omitted or null, the
-   * value from .default is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("observable_gauge")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for observable_gauge instruments.\nIf omitted or null, the value from .default is used.\n")
-  private Integer observableGauge;
-
-  /**
-   * Configure default cardinality limit for observable_up_down_counter instruments. If omitted or
-   * null, the value from .default is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("observable_up_down_counter")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for observable_up_down_counter instruments.\nIf omitted or null, the value from .default is used.\n")
-  private Integer observableUpDownCounter;
-
-  /**
-   * Configure default cardinality limit for up_down_counter instruments. If omitted or null, the
-   * value from .default is used.
-   *
-   * <p>(Can be null)
-   */
-  @Nullable
-  @JsonProperty("up_down_counter")
-  @JsonPropertyDescription(
-      "Configure default cardinality limit for up_down_counter instruments.\nIf omitted or null, the value from .default is used.\n")
-  private Integer upDownCounter;
-
-  /**
-   * Configure default cardinality limit for all instrument types. Instrument-specific cardinality
-   * limits take priority. If omitted or null, 2000 is used.
+   * <p>If omitted or null, 2000 is used.
    */
   @JsonProperty("default")
   @Nullable
@@ -133,14 +47,16 @@ public class CardinalityLimitsModel {
     return _default;
   }
 
+  @JsonProperty("default")
   public CardinalityLimitsModel withDefault(Integer _default) {
     this._default = _default;
     return this;
   }
 
   /**
-   * Configure default cardinality limit for counter instruments. If omitted or null, the value from
-   * .default is used.
+   * Configure default cardinality limit for counter instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("counter")
   @Nullable
@@ -148,14 +64,16 @@ public class CardinalityLimitsModel {
     return counter;
   }
 
+  @JsonProperty("counter")
   public CardinalityLimitsModel withCounter(Integer counter) {
     this.counter = counter;
     return this;
   }
 
   /**
-   * Configure default cardinality limit for gauge instruments. If omitted or null, the value from
-   * .default is used.
+   * Configure default cardinality limit for gauge instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("gauge")
   @Nullable
@@ -163,14 +81,16 @@ public class CardinalityLimitsModel {
     return gauge;
   }
 
+  @JsonProperty("gauge")
   public CardinalityLimitsModel withGauge(Integer gauge) {
     this.gauge = gauge;
     return this;
   }
 
   /**
-   * Configure default cardinality limit for histogram instruments. If omitted or null, the value
-   * from .default is used.
+   * Configure default cardinality limit for histogram instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("histogram")
   @Nullable
@@ -178,14 +98,16 @@ public class CardinalityLimitsModel {
     return histogram;
   }
 
+  @JsonProperty("histogram")
   public CardinalityLimitsModel withHistogram(Integer histogram) {
     this.histogram = histogram;
     return this;
   }
 
   /**
-   * Configure default cardinality limit for observable_counter instruments. If omitted or null, the
-   * value from .default is used.
+   * Configure default cardinality limit for observable_counter instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("observable_counter")
   @Nullable
@@ -193,14 +115,16 @@ public class CardinalityLimitsModel {
     return observableCounter;
   }
 
+  @JsonProperty("observable_counter")
   public CardinalityLimitsModel withObservableCounter(Integer observableCounter) {
     this.observableCounter = observableCounter;
     return this;
   }
 
   /**
-   * Configure default cardinality limit for observable_gauge instruments. If omitted or null, the
-   * value from .default is used.
+   * Configure default cardinality limit for observable_gauge instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("observable_gauge")
   @Nullable
@@ -208,14 +132,16 @@ public class CardinalityLimitsModel {
     return observableGauge;
   }
 
+  @JsonProperty("observable_gauge")
   public CardinalityLimitsModel withObservableGauge(Integer observableGauge) {
     this.observableGauge = observableGauge;
     return this;
   }
 
   /**
-   * Configure default cardinality limit for observable_up_down_counter instruments. If omitted or
-   * null, the value from .default is used.
+   * Configure default cardinality limit for observable_up_down_counter instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("observable_up_down_counter")
   @Nullable
@@ -223,14 +149,16 @@ public class CardinalityLimitsModel {
     return observableUpDownCounter;
   }
 
+  @JsonProperty("observable_up_down_counter")
   public CardinalityLimitsModel withObservableUpDownCounter(Integer observableUpDownCounter) {
     this.observableUpDownCounter = observableUpDownCounter;
     return this;
   }
 
   /**
-   * Configure default cardinality limit for up_down_counter instruments. If omitted or null, the
-   * value from .default is used.
+   * Configure default cardinality limit for up_down_counter instruments.
+   *
+   * <p>If omitted or null, the value from .default is used.
    */
   @JsonProperty("up_down_counter")
   @Nullable
@@ -238,6 +166,7 @@ public class CardinalityLimitsModel {
     return upDownCounter;
   }
 
+  @JsonProperty("up_down_counter")
   public CardinalityLimitsModel withUpDownCounter(Integer upDownCounter) {
     this.upDownCounter = upDownCounter;
     return this;
@@ -245,100 +174,74 @@ public class CardinalityLimitsModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(CardinalityLimitsModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("_default");
-    sb.append('=');
-    sb.append(((this._default == null) ? "<null>" : this._default));
-    sb.append(',');
-    sb.append("counter");
-    sb.append('=');
-    sb.append(((this.counter == null) ? "<null>" : this.counter));
-    sb.append(',');
-    sb.append("gauge");
-    sb.append('=');
-    sb.append(((this.gauge == null) ? "<null>" : this.gauge));
-    sb.append(',');
-    sb.append("histogram");
-    sb.append('=');
-    sb.append(((this.histogram == null) ? "<null>" : this.histogram));
-    sb.append(',');
-    sb.append("observableCounter");
-    sb.append('=');
-    sb.append(((this.observableCounter == null) ? "<null>" : this.observableCounter));
-    sb.append(',');
-    sb.append("observableGauge");
-    sb.append('=');
-    sb.append(((this.observableGauge == null) ? "<null>" : this.observableGauge));
-    sb.append(',');
-    sb.append("observableUpDownCounter");
-    sb.append('=');
-    sb.append(((this.observableUpDownCounter == null) ? "<null>" : this.observableUpDownCounter));
-    sb.append(',');
-    sb.append("upDownCounter");
-    sb.append('=');
-    sb.append(((this.upDownCounter == null) ? "<null>" : this.upDownCounter));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "CardinalityLimitsModel{"
+        + "_default="
+        + _default
+        + ", counter="
+        + counter
+        + ", gauge="
+        + gauge
+        + ", histogram="
+        + histogram
+        + ", observableCounter="
+        + observableCounter
+        + ", observableGauge="
+        + observableGauge
+        + ", observableUpDownCounter="
+        + observableUpDownCounter
+        + ", upDownCounter="
+        + upDownCounter
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result = ((result * 31) + ((this.gauge == null) ? 0 : this.gauge.hashCode()));
-    result = ((result * 31) + ((this.histogram == null) ? 0 : this.histogram.hashCode()));
-    result = ((result * 31) + ((this._default == null) ? 0 : this._default.hashCode()));
-    result =
-        ((result * 31) + ((this.observableGauge == null) ? 0 : this.observableGauge.hashCode()));
-    result = ((result * 31) + ((this.counter == null) ? 0 : this.counter.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.observableUpDownCounter == null)
-                ? 0
-                : this.observableUpDownCounter.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.observableCounter == null) ? 0 : this.observableCounter.hashCode()));
-    result = ((result * 31) + ((this.upDownCounter == null) ? 0 : this.upDownCounter.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this._default == null) ? 0 : this._default.hashCode();
+    h *= 1000003;
+    h ^= (this.counter == null) ? 0 : this.counter.hashCode();
+    h *= 1000003;
+    h ^= (this.gauge == null) ? 0 : this.gauge.hashCode();
+    h *= 1000003;
+    h ^= (this.histogram == null) ? 0 : this.histogram.hashCode();
+    h *= 1000003;
+    h ^= (this.observableCounter == null) ? 0 : this.observableCounter.hashCode();
+    h *= 1000003;
+    h ^= (this.observableGauge == null) ? 0 : this.observableGauge.hashCode();
+    h *= 1000003;
+    h ^= (this.observableUpDownCounter == null) ? 0 : this.observableUpDownCounter.hashCode();
+    h *= 1000003;
+    h ^= (this.upDownCounter == null) ? 0 : this.upDownCounter.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof CardinalityLimitsModel) == false) {
-      return false;
+    if (o instanceof CardinalityLimitsModel) {
+      CardinalityLimitsModel that = (CardinalityLimitsModel) o;
+      return (this._default == null ? that._default == null : this._default.equals(that._default))
+          && (this.counter == null ? that.counter == null : this.counter.equals(that.counter))
+          && (this.gauge == null ? that.gauge == null : this.gauge.equals(that.gauge))
+          && (this.histogram == null
+              ? that.histogram == null
+              : this.histogram.equals(that.histogram))
+          && (this.observableCounter == null
+              ? that.observableCounter == null
+              : this.observableCounter.equals(that.observableCounter))
+          && (this.observableGauge == null
+              ? that.observableGauge == null
+              : this.observableGauge.equals(that.observableGauge))
+          && (this.observableUpDownCounter == null
+              ? that.observableUpDownCounter == null
+              : this.observableUpDownCounter.equals(that.observableUpDownCounter))
+          && (this.upDownCounter == null
+              ? that.upDownCounter == null
+              : this.upDownCounter.equals(that.upDownCounter));
     }
-    CardinalityLimitsModel rhs = ((CardinalityLimitsModel) other);
-    return (((((((((this.gauge == rhs.gauge)
-                                    || ((this.gauge != null) && this.gauge.equals(rhs.gauge)))
-                                && ((this.histogram == rhs.histogram)
-                                    || ((this.histogram != null)
-                                        && this.histogram.equals(rhs.histogram))))
-                            && ((this._default == rhs._default)
-                                || ((this._default != null) && this._default.equals(rhs._default))))
-                        && ((this.observableGauge == rhs.observableGauge)
-                            || ((this.observableGauge != null)
-                                && this.observableGauge.equals(rhs.observableGauge))))
-                    && ((this.counter == rhs.counter)
-                        || ((this.counter != null) && this.counter.equals(rhs.counter))))
-                && ((this.observableUpDownCounter == rhs.observableUpDownCounter)
-                    || ((this.observableUpDownCounter != null)
-                        && this.observableUpDownCounter.equals(rhs.observableUpDownCounter))))
-            && ((this.observableCounter == rhs.observableCounter)
-                || ((this.observableCounter != null)
-                    && this.observableCounter.equals(rhs.observableCounter))))
-        && ((this.upDownCounter == rhs.upDownCounter)
-            || ((this.upDownCounter != null) && this.upDownCounter.equals(rhs.upDownCounter))));
+    return false;
   }
 }

@@ -65,17 +65,6 @@ class InstrumentationConfigUtilTest {
             new ByteArrayInputStream(configYaml.getBytes(StandardCharsets.UTF_8))));
   }
 
-  @SuppressWarnings("deprecation") // testing deprecated method
-  @Test
-  void peerServiceMapping() {
-    assertThat(InstrumentationConfigUtil.peerServiceMapping(kitchenSinkConfigProvider))
-        .isEqualTo(ImmutableMap.of("1.2.3.4", "FooService", "2.3.4.5", "BarService"));
-    assertThat(InstrumentationConfigUtil.peerServiceMapping(emptyInstrumentationConfigProvider))
-        .isNull();
-    assertThat(InstrumentationConfigUtil.peerServiceMapping(emptyGeneralConfigProvider)).isNull();
-    assertThat(InstrumentationConfigUtil.peerServiceMapping(emptyHttpConfigProvider)).isNull();
-  }
-
   @Test
   void httpClientRequestCapturedHeaders() {
     assertThat(

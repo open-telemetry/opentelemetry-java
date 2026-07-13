@@ -24,7 +24,6 @@ dependencies {
   implementation("com.squareup.okhttp3:okhttp")
 
   compileOnly("io.grpc:grpc-stub")
-  compileOnly("com.fasterxml.jackson.core:jackson-core")
 
   testImplementation("com.linecorp.armeria:armeria-junit5")
 }

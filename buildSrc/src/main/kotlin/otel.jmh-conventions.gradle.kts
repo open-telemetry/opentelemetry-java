@@ -23,32 +23,32 @@ jmh {
   // Could not expand ZIP 'byte-buddy-agent-1.9.7.jar'.
   includeTests.set(false)
   profilers.add("gc")
-  val jmhIncludeSingleClass: String? by project
+  val jmhIncludeSingleClass = project.findProperty("jmhIncludeSingleClass") as String?
   if (jmhIncludeSingleClass != null) {
-    includes.add(jmhIncludeSingleClass as String)
+    includes.add(jmhIncludeSingleClass)
   }
 
-  val jmhFork: String? by project
+  val jmhFork = project.findProperty("jmhFork") as String?
   if (jmhFork != null) {
-    fork.set(jmhFork!!.toInt())
+    fork.set(jmhFork.toInt())
   }
 
-  val jmhIterations: String? by project
+  val jmhIterations = project.findProperty("jmhIterations") as String?
   if (jmhIterations != null) {
-    iterations.set(jmhIterations!!.toInt())
+    iterations.set(jmhIterations.toInt())
   }
 
-  val jmhTime: String? by project
+  val jmhTime = project.findProperty("jmhTime") as String?
   if (jmhTime != null) {
     timeOnIteration.set(jmhTime)
   }
 
-  val jmhWarmupIterations: String? by project
+  val jmhWarmupIterations = project.findProperty("jmhWarmupIterations") as String?
   if (jmhWarmupIterations != null) {
-    warmupIterations.set(jmhWarmupIterations!!.toInt())
+    warmupIterations.set(jmhWarmupIterations.toInt())
   }
 
-  val jmhWarmup: String? by project
+  val jmhWarmup = project.findProperty("jmhWarmup") as String?
   if (jmhWarmup != null) {
     warmup.set(jmhWarmup)
   }
@@ -60,6 +60,23 @@ jmh {
     }.get().executablePath.asFile.absolutePath
 
     jvm.set(javaExecutable)
+  }
+}
+
+val jmhResultsDir = project.findProperty("jmhResultsDir") as String?
+if (jmhResultsDir != null) {
+  val jmhLabel = (project.findProperty("jmhLabel") as String?)
+    ?: project.path.trimStart(':').replace(':', '-').ifEmpty { project.name }
+
+  val jmhCopyResults = tasks.register<Copy>("jmhCopyResults") {
+    description = "Copies JMH JSON results to jmhResultsDir for cross-run comparison."
+    from(layout.buildDirectory.file("results/jmh/results.json"))
+    into(rootProject.file(jmhResultsDir))
+    rename { "${jmhLabel}.json" }
+  }
+
+  tasks.named("jmh") {
+    finalizedBy(jmhCopyResults)
   }
 }
 

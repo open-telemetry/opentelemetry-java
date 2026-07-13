@@ -7,10 +7,12 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalJaegerRemoteSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalProbabilitySamplerModel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
@@ -27,122 +29,135 @@ import javax.annotation.Nullable;
   "trace_id_ratio_based"
 })
 @Generated("jsonschema2pojo")
-@SuppressWarnings({"NullAway", "rawtypes", "BoxedPrimitiveEquality"})
 public class SamplerModel {
 
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("always_off")
-  private AlwaysOffSamplerModel alwaysOff;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("always_on")
-  private AlwaysOnSamplerModel alwaysOn;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("composite/development")
-  private ExperimentalComposableSamplerModel compositeDevelopment;
-
-  @Nullable
-  @JsonProperty("jaeger_remote/development")
-  private ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("parent_based")
-  private ParentBasedSamplerModel parentBased;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("probability/development")
-  private ExperimentalProbabilitySamplerModel probabilityDevelopment;
-
-  /** (Can be null) */
-  @Nullable
-  @JsonProperty("trace_id_ratio_based")
-  private TraceIdRatioBasedSamplerModel traceIdRatioBased;
-
-  @JsonIgnore
+  @Nullable private AlwaysOffSamplerModel alwaysOff;
+  @Nullable private AlwaysOnSamplerModel alwaysOn;
+  @Nullable private ExperimentalComposableSamplerModel compositeDevelopment;
+  @Nullable private ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment;
+  @Nullable private ParentBasedSamplerModel parentBased;
+  @Nullable private ExperimentalProbabilitySamplerModel probabilityDevelopment;
+  @Nullable private TraceIdRatioBasedSamplerModel traceIdRatioBased;
   private Map<String, SamplerPropertyModel> additionalProperties =
       new LinkedHashMap<String, SamplerPropertyModel>();
 
+  /**
+   * Configure sampler to be always_off.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("always_off")
   @Nullable
   public AlwaysOffSamplerModel getAlwaysOff() {
     return alwaysOff;
   }
 
+  @JsonProperty("always_off")
   public SamplerModel withAlwaysOff(AlwaysOffSamplerModel alwaysOff) {
     this.alwaysOff = alwaysOff;
     return this;
   }
 
+  /**
+   * Configure sampler to be always_on.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("always_on")
   @Nullable
   public AlwaysOnSamplerModel getAlwaysOn() {
     return alwaysOn;
   }
 
+  @JsonProperty("always_on")
   public SamplerModel withAlwaysOn(AlwaysOnSamplerModel alwaysOn) {
     this.alwaysOn = alwaysOn;
     return this;
   }
 
+  /**
+   * Configure sampler to be composite.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("composite/development")
   @Nullable
   public ExperimentalComposableSamplerModel getCompositeDevelopment() {
     return compositeDevelopment;
   }
 
+  @JsonProperty("composite/development")
   public SamplerModel withCompositeDevelopment(
       ExperimentalComposableSamplerModel compositeDevelopment) {
     this.compositeDevelopment = compositeDevelopment;
     return this;
   }
 
+  /**
+   * Configure sampler to be jaeger_remote.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("jaeger_remote/development")
   @Nullable
   public ExperimentalJaegerRemoteSamplerModel getJaegerRemoteDevelopment() {
     return jaegerRemoteDevelopment;
   }
 
+  @JsonProperty("jaeger_remote/development")
   public SamplerModel withJaegerRemoteDevelopment(
       ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment) {
     this.jaegerRemoteDevelopment = jaegerRemoteDevelopment;
     return this;
   }
 
+  /**
+   * Configure sampler to be parent_based.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("parent_based")
   @Nullable
   public ParentBasedSamplerModel getParentBased() {
     return parentBased;
   }
 
+  @JsonProperty("parent_based")
   public SamplerModel withParentBased(ParentBasedSamplerModel parentBased) {
     this.parentBased = parentBased;
     return this;
   }
 
+  /**
+   * Configure sampler to be probability.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("probability/development")
   @Nullable
   public ExperimentalProbabilitySamplerModel getProbabilityDevelopment() {
     return probabilityDevelopment;
   }
 
+  @JsonProperty("probability/development")
   public SamplerModel withProbabilityDevelopment(
       ExperimentalProbabilitySamplerModel probabilityDevelopment) {
     this.probabilityDevelopment = probabilityDevelopment;
     return this;
   }
 
+  /**
+   * Configure sampler to be trace_id_ratio_based.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("trace_id_ratio_based")
   @Nullable
   public TraceIdRatioBasedSamplerModel getTraceIdRatioBased() {
     return traceIdRatioBased;
   }
 
+  @JsonProperty("trace_id_ratio_based")
   public SamplerModel withTraceIdRatioBased(TraceIdRatioBasedSamplerModel traceIdRatioBased) {
     this.traceIdRatioBased = traceIdRatioBased;
     return this;
@@ -154,10 +169,6 @@ public class SamplerModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, SamplerPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public SamplerModel withAdditionalProperty(String name, SamplerPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;
@@ -165,109 +176,78 @@ public class SamplerModel {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(SamplerModel.class.getName())
-        .append('@')
-        .append(Integer.toHexString(System.identityHashCode(this)))
-        .append('[');
-    sb.append("alwaysOff");
-    sb.append('=');
-    sb.append(((this.alwaysOff == null) ? "<null>" : this.alwaysOff));
-    sb.append(',');
-    sb.append("alwaysOn");
-    sb.append('=');
-    sb.append(((this.alwaysOn == null) ? "<null>" : this.alwaysOn));
-    sb.append(',');
-    sb.append("compositeDevelopment");
-    sb.append('=');
-    sb.append(((this.compositeDevelopment == null) ? "<null>" : this.compositeDevelopment));
-    sb.append(',');
-    sb.append("jaegerRemoteDevelopment");
-    sb.append('=');
-    sb.append(((this.jaegerRemoteDevelopment == null) ? "<null>" : this.jaegerRemoteDevelopment));
-    sb.append(',');
-    sb.append("parentBased");
-    sb.append('=');
-    sb.append(((this.parentBased == null) ? "<null>" : this.parentBased));
-    sb.append(',');
-    sb.append("probabilityDevelopment");
-    sb.append('=');
-    sb.append(((this.probabilityDevelopment == null) ? "<null>" : this.probabilityDevelopment));
-    sb.append(',');
-    sb.append("traceIdRatioBased");
-    sb.append('=');
-    sb.append(((this.traceIdRatioBased == null) ? "<null>" : this.traceIdRatioBased));
-    sb.append(',');
-    sb.append("additionalProperties");
-    sb.append('=');
-    sb.append(((this.additionalProperties == null) ? "<null>" : this.additionalProperties));
-    sb.append(',');
-    if (sb.charAt((sb.length() - 1)) == ',') {
-      sb.setCharAt((sb.length() - 1), ']');
-    } else {
-      sb.append(']');
-    }
-    return sb.toString();
+    return "SamplerModel{"
+        + "alwaysOff="
+        + alwaysOff
+        + ", alwaysOn="
+        + alwaysOn
+        + ", compositeDevelopment="
+        + compositeDevelopment
+        + ", jaegerRemoteDevelopment="
+        + jaegerRemoteDevelopment
+        + ", parentBased="
+        + parentBased
+        + ", probabilityDevelopment="
+        + probabilityDevelopment
+        + ", traceIdRatioBased="
+        + traceIdRatioBased
+        + ", additionalProperties="
+        + additionalProperties
+        + "}";
   }
 
   @Override
   public int hashCode() {
-    int result = 1;
-    result =
-        ((result * 31)
-            + ((this.compositeDevelopment == null) ? 0 : this.compositeDevelopment.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.jaegerRemoteDevelopment == null)
-                ? 0
-                : this.jaegerRemoteDevelopment.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.probabilityDevelopment == null) ? 0 : this.probabilityDevelopment.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.traceIdRatioBased == null) ? 0 : this.traceIdRatioBased.hashCode()));
-    result = ((result * 31) + ((this.alwaysOff == null) ? 0 : this.alwaysOff.hashCode()));
-    result = ((result * 31) + ((this.parentBased == null) ? 0 : this.parentBased.hashCode()));
-    result =
-        ((result * 31)
-            + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-    result = ((result * 31) + ((this.alwaysOn == null) ? 0 : this.alwaysOn.hashCode()));
-    return result;
+    int h = 1;
+    h *= 1000003;
+    h ^= (this.alwaysOff == null) ? 0 : this.alwaysOff.hashCode();
+    h *= 1000003;
+    h ^= (this.alwaysOn == null) ? 0 : this.alwaysOn.hashCode();
+    h *= 1000003;
+    h ^= (this.compositeDevelopment == null) ? 0 : this.compositeDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.jaegerRemoteDevelopment == null) ? 0 : this.jaegerRemoteDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.parentBased == null) ? 0 : this.parentBased.hashCode();
+    h *= 1000003;
+    h ^= (this.probabilityDevelopment == null) ? 0 : this.probabilityDevelopment.hashCode();
+    h *= 1000003;
+    h ^= (this.traceIdRatioBased == null) ? 0 : this.traceIdRatioBased.hashCode();
+    h *= 1000003;
+    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    return h;
   }
 
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
       return true;
     }
-    if ((other instanceof SamplerModel) == false) {
-      return false;
+    if (o instanceof SamplerModel) {
+      SamplerModel that = (SamplerModel) o;
+      return (this.alwaysOff == null
+              ? that.alwaysOff == null
+              : this.alwaysOff.equals(that.alwaysOff))
+          && (this.alwaysOn == null ? that.alwaysOn == null : this.alwaysOn.equals(that.alwaysOn))
+          && (this.compositeDevelopment == null
+              ? that.compositeDevelopment == null
+              : this.compositeDevelopment.equals(that.compositeDevelopment))
+          && (this.jaegerRemoteDevelopment == null
+              ? that.jaegerRemoteDevelopment == null
+              : this.jaegerRemoteDevelopment.equals(that.jaegerRemoteDevelopment))
+          && (this.parentBased == null
+              ? that.parentBased == null
+              : this.parentBased.equals(that.parentBased))
+          && (this.probabilityDevelopment == null
+              ? that.probabilityDevelopment == null
+              : this.probabilityDevelopment.equals(that.probabilityDevelopment))
+          && (this.traceIdRatioBased == null
+              ? that.traceIdRatioBased == null
+              : this.traceIdRatioBased.equals(that.traceIdRatioBased))
+          && (this.additionalProperties == null
+              ? that.additionalProperties == null
+              : this.additionalProperties.equals(that.additionalProperties));
     }
-    SamplerModel rhs = ((SamplerModel) other);
-    return (((((((((this.compositeDevelopment == rhs.compositeDevelopment)
-                                    || ((this.compositeDevelopment != null)
-                                        && this.compositeDevelopment.equals(
-                                            rhs.compositeDevelopment)))
-                                && ((this.jaegerRemoteDevelopment == rhs.jaegerRemoteDevelopment)
-                                    || ((this.jaegerRemoteDevelopment != null)
-                                        && this.jaegerRemoteDevelopment.equals(
-                                            rhs.jaegerRemoteDevelopment))))
-                            && ((this.probabilityDevelopment == rhs.probabilityDevelopment)
-                                || ((this.probabilityDevelopment != null)
-                                    && this.probabilityDevelopment.equals(
-                                        rhs.probabilityDevelopment))))
-                        && ((this.traceIdRatioBased == rhs.traceIdRatioBased)
-                            || ((this.traceIdRatioBased != null)
-                                && this.traceIdRatioBased.equals(rhs.traceIdRatioBased))))
-                    && ((this.alwaysOff == rhs.alwaysOff)
-                        || ((this.alwaysOff != null) && this.alwaysOff.equals(rhs.alwaysOff))))
-                && ((this.parentBased == rhs.parentBased)
-                    || ((this.parentBased != null) && this.parentBased.equals(rhs.parentBased))))
-            && ((this.additionalProperties == rhs.additionalProperties)
-                || ((this.additionalProperties != null)
-                    && this.additionalProperties.equals(rhs.additionalProperties))))
-        && ((this.alwaysOn == rhs.alwaysOn)
-            || ((this.alwaysOn != null) && this.alwaysOn.equals(rhs.alwaysOn))));
+    return false;
   }
 }

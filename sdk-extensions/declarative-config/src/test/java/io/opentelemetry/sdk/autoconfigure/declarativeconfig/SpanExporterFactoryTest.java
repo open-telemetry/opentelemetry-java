@@ -17,9 +17,9 @@ import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExpo
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.SpanExporterComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ConsoleExporterModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.GrpcTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.HttpTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.NameStringValuePairModel;
@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExport
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterPropertyModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileExporterModel;
+import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,6 +48,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SuppressLogger(JaegerRemoteSampler.class)
 class SpanExporterFactoryTest {
 
   @RegisterExtension

@@ -39,7 +39,7 @@ public interface ProfileData {
       ValueTypeData periodType,
       long period,
       String profileId,
-      int droppedAttributesCount,
+      int totalAttributeCount,
       String originalPayloadFormat,
       ByteBuffer originalPayload,
       List<Integer> attributeIndices) {
@@ -54,7 +54,7 @@ public interface ProfileData {
         periodType,
         period,
         profileId,
-        droppedAttributesCount,
+        totalAttributeCount,
         originalPayloadFormat,
         originalPayload,
         attributeIndices);

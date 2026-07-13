@@ -25,6 +25,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -255,13 +256,14 @@ public final class JaegerPropagator implements TextMapPropagator {
       if (entriesAdded >= MAX_BAGGAGE_ENTRIES || bytesAdded > MAX_BAGGAGE_BYTES) {
         break;
       }
-      if (key.startsWith(BAGGAGE_PREFIX)) {
-        if (key.length() == BAGGAGE_PREFIX.length()) {
+      String lowercaseKey = key.toLowerCase(Locale.ROOT);
+      if (lowercaseKey.startsWith(BAGGAGE_PREFIX)) {
+        if (lowercaseKey.length() == BAGGAGE_PREFIX.length()) {
           continue;
         }
         String value = getter.get(carrier, key);
         if (value != null) {
-          String baggageKey = key.substring(BAGGAGE_PREFIX.length());
+          String baggageKey = lowercaseKey.substring(BAGGAGE_PREFIX.length());
           if (bytesAdded + baggageKey.length() + value.length() > MAX_BAGGAGE_BYTES) {
             break;
           }
@@ -272,7 +274,7 @@ public final class JaegerPropagator implements TextMapPropagator {
           entriesAdded++;
           bytesAdded += baggageKey.length() + value.length();
         }
-      } else if (key.equals(BAGGAGE_HEADER)) {
+      } else if (lowercaseKey.equals(BAGGAGE_HEADER)) {
         String value = getter.get(carrier, key);
         if (value != null) {
           if (builder == null) {
