@@ -24,6 +24,7 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
@@ -61,6 +62,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,6 +80,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressLogger(Otel2PrometheusConverter.class)
 class Otel2PrometheusConverterTest {
 
   private static final Pattern PATTERN =
@@ -681,7 +684,54 @@ class Otel2PrometheusConverterTest {
             "my_metric_units",
             "cluster=\"mycluster\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
+    // Array-valued resource attribute is serialized as a JSON string, matching the point attribute
+    // path
+    arguments.add(
+        Arguments.argumentSet(
+            "array-valued resource attribute serialized as json",
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.empty(),
+                Resource.create(
+                    Attributes.of(stringArrayKey("clusters"), Arrays.asList("a", "b")))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
+            "my_metric_units",
+            "clusters=\"[\\\"a\\\",\\\"b\\\"]\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
     return arguments.stream();
+  }
+
+  @Test
+  void arrayValuedScopeAttributeSerializedAsJson() {
+    // Array-valued scope attribute is serialized as a JSON string, matching the point attribute
+    // path
+    InstrumentationScopeInfo scope =
+        InstrumentationScopeInfo.builder("scope")
+            .setAttributes(Attributes.of(stringArrayKey("foo"), Arrays.asList("a", "b")))
+            .build();
+    MetricData metricData =
+        ImmutableMetricData.createLongSum(
+            Resource.getDefault(),
+            scope,
+            "sample",
+            "description",
+            "1",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableLongPointData.create(0, 1, Attributes.empty(), 1L))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    Optional<MetricSnapshot> metricSnapshot =
+        snapshots.stream().filter(snapshot -> snapshot instanceof CounterSnapshot).findFirst();
+    assertThat(metricSnapshot).isPresent();
+
+    Labels labels = metricSnapshot.get().getDataPoints().get(0).getLabels();
+    assertThat(labels.get("otel_scope_foo")).isEqualTo("[\"a\",\"b\"]");
   }
 
   @Test
@@ -1062,7 +1112,7 @@ class Otel2PrometheusConverterTest {
   void mergeInfoSnapshotsWithSameName() throws Exception {
     InfoSnapshot merged =
         (InfoSnapshot)
-            invokePrivateStatic(
+            invokePrivate(
                 "merge",
                 new Class<?>[] {MetricSnapshot.class, MetricSnapshot.class},
                 makeInfoSnapshot("a"),
@@ -1074,7 +1124,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void mergeConflictingTypesReturnsNull() throws Exception {
     Object merged =
-        invokePrivateStatic(
+        invokePrivate(
             "merge",
             new Class<?>[] {MetricSnapshot.class, MetricSnapshot.class},
             makeInfoSnapshot("a"),
@@ -1088,7 +1138,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void mergeMetadataReturnsNullForDifferentUnits() throws Exception {
     Object merged =
-        invokePrivateStatic(
+        invokePrivate(
             "mergeMetadata",
             new Class<?>[] {MetricMetadata.class, MetricMetadata.class},
             MetricMetadata.builder().name("sample").unit(new Unit("seconds")).build(),
@@ -1100,7 +1150,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void convertLegacyLabelNameRejectsEmptyName() {
     assertThatThrownBy(
-            () -> invokePrivateStatic("convertLegacyLabelName", new Class<?>[] {String.class}, ""))
+            () -> invokePrivate("convertLegacyLabelName", new Class<?>[] {String.class}, ""))
         .hasCauseInstanceOf(IllegalArgumentException.class)
         .hasRootCauseMessage("label name is empty");
   }
@@ -1108,8 +1158,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void stripReservedMetricSuffixesHandlesReservedNameOnly() throws Exception {
     assertThat(
-            invokePrivateStatic(
-                "stripReservedMetricSuffixes", new Class<?>[] {String.class}, "_total"))
+            invokePrivate("stripReservedMetricSuffixes", new Class<?>[] {String.class}, "_total"))
         .isEqualTo("total");
   }
 
@@ -1117,7 +1166,7 @@ class Otel2PrometheusConverterTest {
   void validateNormalizedMetricNameRejectsEmptyName() {
     assertThatThrownBy(
             () ->
-                invokePrivateStatic(
+                invokePrivate(
                     "validateNormalizedMetricName",
                     new Class<?>[] {String.class, String.class},
                     "orig",
@@ -1130,7 +1179,7 @@ class Otel2PrometheusConverterTest {
   void convertExponentialHistogramBucketsReturnsEmptyForNoBuckets() throws Exception {
     NativeHistogramBuckets buckets =
         (NativeHistogramBuckets)
-            invokePrivateStatic(
+            invokePrivate(
                 "convertExponentialHistogramBuckets",
                 new Class<?>[] {ExponentialHistogramBuckets.class, int.class},
                 ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
@@ -1142,7 +1191,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void typeStringUsesLowerCaseClassName() throws Exception {
     assertThat(
-            invokePrivateStatic(
+            invokePrivate(
                 "typeString", new Class<?>[] {MetricSnapshot.class}, makeInfoSnapshot("a")))
         .isEqualTo("info");
   }
@@ -1233,12 +1282,15 @@ class Otel2PrometheusConverterTest {
                 Labels.of(new String[] {"id"}, new String[] {id}))));
   }
 
-  private static Object invokePrivateStatic(
-      String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
+  private Object invokePrivate(String methodName, Class<?>[] parameterTypes, Object... args)
+      throws Exception {
     Method method = Otel2PrometheusConverter.class.getDeclaredMethod(methodName, parameterTypes);
     method.setAccessible(true);
+    // Support both static and instance methods: static methods receive null, instance methods
+    // receive the converter instance so that instance fields (e.g. throttlingLogger) are available.
+    Object instance = Modifier.isStatic(method.getModifiers()) ? null : converter;
     try {
-      return method.invoke(null, args);
+      return method.invoke(instance, args);
     } catch (InvocationTargetException e) {
       throw e;
     }

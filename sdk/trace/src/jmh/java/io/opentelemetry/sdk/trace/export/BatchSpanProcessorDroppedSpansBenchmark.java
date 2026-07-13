@@ -24,6 +24,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.BenchmarkParams;
 
 public class BatchSpanProcessorDroppedSpansBenchmark {
 
@@ -36,9 +37,12 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     private long exportedSpans;
     private long droppedSpans;
     private int numThreads;
+    private int numIterations;
 
     @Setup(Level.Iteration)
-    public final void setup() {
+    public final void setup(BenchmarkParams params) {
+      numThreads = params.getThreads();
+      numIterations = params.getMeasurement().getCount();
       metricReader = InMemoryMetricReader.create();
       MeterProvider meterProvider =
           SdkMeterProvider.builder().registerMetricReader(metricReader).build();
@@ -52,7 +56,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     public final void recordMetrics() {
       BatchSpanProcessorMetrics metrics =
           new BatchSpanProcessorMetrics(metricReader.collectAllMetrics(), numThreads);
-      dropRatio = metrics.dropRatio();
+      dropRatio = metrics.dropRatio(numIterations);
       exportedSpans = metrics.exportedSpans();
       droppedSpans = metrics.droppedSpans();
     }
@@ -64,7 +68,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
   }
 
   @State(Scope.Thread)
-  @AuxCounters(AuxCounters.Type.OPERATIONS)
+  @AuxCounters(AuxCounters.Type.EVENTS)
   public static class ThreadState {
     BenchmarkState benchmarkState;
 
@@ -95,7 +99,6 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
   @BenchmarkMode(Mode.Throughput)
   public void export(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 5;
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }

@@ -12,7 +12,7 @@ description = "OpenTelemetry Protocol Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal.otlp")
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
-val versions: Map<String, String> by project
+val versions = project.property("versions") as Map<*, *>
 dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
@@ -30,14 +30,12 @@ dependencies {
   testImplementation(project(":sdk:logs"))
   testImplementation(project(":sdk:testing"))
 
-  testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.google.guava:guava")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
   jmhImplementation(project(":api:incubator"))
   jmhImplementation(project(":sdk:testing"))
-  jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
   jmhImplementation("io.grpc:grpc-netty")
 }
@@ -49,7 +47,6 @@ testing {
         implementation(project(":api:incubator"))
         implementation(project(":sdk:testing"))
 
-        implementation("com.fasterxml.jackson.core:jackson-databind")
         implementation("com.google.protobuf:protobuf-java-util")
         implementation("com.google.guava:guava")
         implementation("io.opentelemetry.proto:opentelemetry-proto")

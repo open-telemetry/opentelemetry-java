@@ -16,11 +16,11 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
- * A {@link TextMapGetter} that extracts context from a map carrier, intended for use with
- * environment variables in child processes.
+ * A {@link TextMapGetter} that extracts context from a map carrier containing environment
+ * variables.
  *
- * <p>This is useful when a child process needs to extract propagated context from its environment.
- * For example:
+ * <p>This is useful when a child process extracts propagated context from environment variables
+ * that an application placed in the child process environment. For example:
  *
  * <pre>{@code
  * Map<String, String> env = System.getenv();
@@ -28,17 +28,22 @@ import javax.annotation.Nullable;
  *     .extract(Context.current(), env, EnvironmentGetter.getInstance());
  * }</pre>
  *
- * <p>This getter automatically sanitizes keys to match environment variable naming conventions:
+ * <p>This getter automatically normalizes keys as environment variable names:
  *
  * <ul>
- *   <li>Converts keys to uppercase (e.g., {@code traceparent} becomes {@code TRACEPARENT})
- *   <li>Replaces {@code .} and {@code -} with underscores
+ *   <li>Replaces an empty key with a single underscore ({@code _})
+ *   <li>Converts ASCII letters to uppercase (e.g., {@code traceparent} becomes {@code TRACEPARENT})
+ *   <li>Replaces every character that is not an ASCII letter, digit, or underscore with an
+ *       underscore
+ *   <li>Prepends an underscore if the result would otherwise start with an ASCII digit
  * </ul>
  *
- * <p>Values are validated to contain only characters valid in HTTP header fields per <a
- * href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.5">RFC 9110</a> (visible ASCII
- * characters, space, and horizontal tab). Values containing invalid characters are treated as
- * absent and {@code null} is returned.
+ * <p>Values are treated as opaque strings. Any propagation-format-specific validation or parsing is
+ * the responsibility of the propagator, not this carrier.
+ *
+ * <p>If the underlying carrier performs case-insensitive lookup, as Windows environment variable
+ * lookup does, reading a normalized key may resolve an entry whose stored name differs only by
+ * case.
  *
  * @see <a href=
  *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/context/env-carriers.md#format-restrictions">Environment
@@ -63,7 +68,7 @@ public final class EnvironmentGetter implements TextMapGetter<Map<String, String
       LOGGER.log(
           Level.WARNING,
           "keys() called on EnvironmentGetter. "
-              + "This may produce unexpected results with propagators which depend on case sensitivity or special characters in keys.",
+              + "This getter returns only normalized environment variable names, which may produce unexpected results with propagators that depend on original key casing or special characters.",
           new Throwable());
     }
     if (carrier == null) {
