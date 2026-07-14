@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -39,7 +38,6 @@ class ComposableAnnotatingSamplerTest {
         ComposableSampler.annotating(ComposableSampler.alwaysOn(), ATTRIBUTES)
             .getSamplingIntent(
                 Context.root(),
-                TraceId.getInvalid(),
                 "span",
                 SpanKind.SERVER,
                 Attributes.empty(),
@@ -66,7 +64,6 @@ class ComposableAnnotatingSamplerTest {
         ComposableSampler.annotating(baseSampler, ATTRIBUTES)
             .getSamplingIntent(
                 Context.root(),
-                TraceId.getInvalid(),
                 "span",
                 SpanKind.SERVER,
                 Attributes.empty(),

@@ -27,16 +27,15 @@ final class ComposableAnnotatingSampler implements ComposableSampler {
   @Override
   public SamplingIntent getSamplingIntent(
       Context parentContext,
-      String traceId,
       String name,
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
     SamplingIntent intent =
-        delegate.getSamplingIntent(parentContext, traceId, name, spanKind, attributes, parentLinks);
+        delegate.getSamplingIntent(parentContext, name, spanKind, attributes, parentLinks);
     return SamplingIntent.create(
         intent.getThreshold(),
-        intent.isThresholdReliable(),
+        intent.isAdjustedCountReliable(),
         intent.getAttributes().toBuilder().putAll(this.attributes).build(),
         intent.getTraceStateUpdater());
   }

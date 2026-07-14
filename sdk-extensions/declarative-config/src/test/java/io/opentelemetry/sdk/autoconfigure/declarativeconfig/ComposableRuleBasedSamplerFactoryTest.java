@@ -26,16 +26,16 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.ComposableRuleBasedSamplerFactory.AttributeMatcher;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.ComposableRuleBasedSamplerFactory.DeclarativeConfigSamplingPredicate;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableAlwaysOffSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableAlwaysOnSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableProbabilitySamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerRuleModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalSpanParent;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKind;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableAlwaysOffSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableAlwaysOnSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerRuleModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalSpanParent;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -259,7 +259,6 @@ class ComposableRuleBasedSamplerFactoryTest {
                       IdGenerator.random().generateSpanId(),
                       TraceFlags.getDefault(),
                       TraceState.getDefault())));
-  private static final String tid = IdGenerator.random().generateTraceId();
   private static final String sn = "name";
   private static final io.opentelemetry.api.trace.SpanKind sk = CLIENT;
   private static final AttributeKey<String> HTTP_ROUTE = AttributeKey.stringKey("http.route");
@@ -273,7 +272,7 @@ class ComposableRuleBasedSamplerFactoryTest {
       io.opentelemetry.api.trace.SpanKind spanKind,
       Attributes attributes,
       boolean expectedResult) {
-    assertThat(predicate.matches(context, tid, sn, spanKind, attributes, emptyList()))
+    assertThat(predicate.matches(context, sn, spanKind, attributes, emptyList()))
         .isEqualTo(expectedResult);
   }
 

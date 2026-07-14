@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -17,26 +16,15 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class AttributeLimitsModel {
 
-  /**
-   * Configure max attribute value size. Value must be non-negative. If omitted or null, there is no
-   * limit.
-   */
-  @JsonProperty("attribute_value_length_limit")
-  @JsonPropertyDescription(
-      "Configure max attribute value size. \nValue must be non-negative.\nIf omitted or null, there is no limit.\n")
-  @Nullable
-  private Integer attributeValueLengthLimit;
-
-  /** Configure max attribute count. Value must be non-negative. If omitted or null, 128 is used. */
-  @JsonProperty("attribute_count_limit")
-  @JsonPropertyDescription(
-      "Configure max attribute count. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
-  @Nullable
-  private Integer attributeCountLimit;
+  @Nullable private Integer attributeValueLengthLimit;
+  @Nullable private Integer attributeCountLimit;
 
   /**
-   * Configure max attribute value size. Value must be non-negative. If omitted or null, there is no
-   * limit.
+   * Configure max attribute value size.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, there is no limit.
    */
   @JsonProperty("attribute_value_length_limit")
   @Nullable
@@ -44,18 +32,26 @@ public class AttributeLimitsModel {
     return attributeValueLengthLimit;
   }
 
+  @JsonProperty("attribute_value_length_limit")
   public AttributeLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
     return this;
   }
 
-  /** Configure max attribute count. Value must be non-negative. If omitted or null, 128 is used. */
+  /**
+   * Configure max attribute count.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 128 is used.
+   */
   @JsonProperty("attribute_count_limit")
   @Nullable
   public Integer getAttributeCountLimit() {
     return attributeCountLimit;
   }
 
+  @JsonProperty("attribute_count_limit")
   public AttributeLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
     return this;

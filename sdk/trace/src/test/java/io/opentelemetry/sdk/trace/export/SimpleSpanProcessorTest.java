@@ -73,6 +73,8 @@ class SimpleSpanProcessorTest {
     simpleSampledSpansProcessor = SimpleSpanProcessor.create(spanExporter);
     when(spanExporter.export(anyCollection())).thenReturn(CompletableResultCode.ofSuccess());
     when(spanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    when(mockSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test

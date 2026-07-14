@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -25,52 +24,19 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class PeriodicMetricReaderModel {
 
-  /**
-   * Configure delay interval (in milliseconds) between start of two consecutive exports. Value must
-   * be non-negative. If omitted or null, 60000 is used.
-   */
-  @JsonProperty("interval")
-  @JsonPropertyDescription(
-      "Configure delay interval (in milliseconds) between start of two consecutive exports. \nValue must be non-negative.\nIf omitted or null, 60000 is used.\n")
-  @Nullable
-  private Integer interval;
+  @Nullable private Integer interval;
+  @Nullable private Integer timeout;
+  @Nullable private Integer maxExportBatchSizeDevelopment;
+  @Nullable private PushMetricExporterModel exporter;
+  @Nullable private List<MetricProducerModel> producers;
+  @Nullable private CardinalityLimitsModel cardinalityLimits;
 
   /**
-   * Configure maximum allowed time (in milliseconds) to export data. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 30000 is used.
-   */
-  @JsonProperty("timeout")
-  @JsonPropertyDescription(
-      "Configure maximum allowed time (in milliseconds) to export data. \nValue must be non-negative. A value of 0 indicates no limit (infinity).\nIf omitted or null, 30000 is used.\n")
-  @Nullable
-  private Integer timeout;
-
-  /** Configure maximum export batch size. If omitted or null, no limit is used. */
-  @JsonProperty("max_export_batch_size/development")
-  @JsonPropertyDescription(
-      "Configure maximum export batch size.\nIf omitted or null, no limit is used.\n")
-  @Nullable
-  private Integer maxExportBatchSizeDevelopment;
-
-  /** (Required) */
-  @JsonProperty("exporter")
-  @Nullable
-  private PushMetricExporterModel exporter;
-
-  /** Configure metric producers. If omitted, no metric producers are added. */
-  @JsonProperty("producers")
-  @JsonPropertyDescription(
-      "Configure metric producers.\nIf omitted, no metric producers are added.\n")
-  @Nullable
-  private List<MetricProducerModel> producers;
-
-  @JsonProperty("cardinality_limits")
-  @Nullable
-  private CardinalityLimitsModel cardinalityLimits;
-
-  /**
-   * Configure delay interval (in milliseconds) between start of two consecutive exports. Value must
-   * be non-negative. If omitted or null, 60000 is used.
+   * Configure delay interval (in milliseconds) between start of two consecutive exports.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 60000 is used.
    */
   @JsonProperty("interval")
   @Nullable
@@ -78,14 +44,18 @@ public class PeriodicMetricReaderModel {
     return interval;
   }
 
+  @JsonProperty("interval")
   public PeriodicMetricReaderModel withInterval(Integer interval) {
     this.interval = interval;
     return this;
   }
 
   /**
-   * Configure maximum allowed time (in milliseconds) to export data. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 30000 is used.
+   * Configure maximum allowed time (in milliseconds) to export data.
+   *
+   * <p>Value must be non-negative. A value of 0 indicates no limit (infinity).
+   *
+   * <p>If omitted or null, 30000 is used.
    */
   @JsonProperty("timeout")
   @Nullable
@@ -93,54 +63,76 @@ public class PeriodicMetricReaderModel {
     return timeout;
   }
 
+  @JsonProperty("timeout")
   public PeriodicMetricReaderModel withTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
 
-  /** Configure maximum export batch size. If omitted or null, no limit is used. */
+  /**
+   * Configure maximum export batch size.
+   *
+   * <p>If omitted or null, no limit is used.
+   */
   @JsonProperty("max_export_batch_size/development")
   @Nullable
   public Integer getMaxExportBatchSizeDevelopment() {
     return maxExportBatchSizeDevelopment;
   }
 
+  @JsonProperty("max_export_batch_size/development")
   public PeriodicMetricReaderModel withMaxExportBatchSizeDevelopment(
       Integer maxExportBatchSizeDevelopment) {
     this.maxExportBatchSizeDevelopment = maxExportBatchSizeDevelopment;
     return this;
   }
 
-  /** (Required) */
+  /**
+   * Configure exporter.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("exporter")
   @Nullable
   public PushMetricExporterModel getExporter() {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public PeriodicMetricReaderModel withExporter(PushMetricExporterModel exporter) {
     this.exporter = exporter;
     return this;
   }
 
-  /** Configure metric producers. If omitted, no metric producers are added. */
+  /**
+   * Configure metric producers.
+   *
+   * <p>If omitted, no metric producers are added.
+   */
   @JsonProperty("producers")
   @Nullable
   public List<MetricProducerModel> getProducers() {
     return producers;
   }
 
+  @JsonProperty("producers")
   public PeriodicMetricReaderModel withProducers(List<MetricProducerModel> producers) {
     this.producers = producers;
     return this;
   }
 
+  /**
+   * Configure cardinality limits.
+   *
+   * <p>If omitted, default values as described in CardinalityLimits are used.
+   */
   @JsonProperty("cardinality_limits")
   @Nullable
   public CardinalityLimitsModel getCardinalityLimits() {
     return cardinalityLimits;
   }
 
+  @JsonProperty("cardinality_limits")
   public PeriodicMetricReaderModel withCardinalityLimits(CardinalityLimitsModel cardinalityLimits) {
     this.cardinalityLimits = cardinalityLimits;
     return this;

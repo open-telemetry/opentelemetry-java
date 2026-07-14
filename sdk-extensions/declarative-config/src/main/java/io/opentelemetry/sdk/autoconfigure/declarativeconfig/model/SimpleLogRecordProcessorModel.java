@@ -16,18 +16,20 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SimpleLogRecordProcessorModel {
 
-  /** (Required) */
-  @JsonProperty("exporter")
-  @Nullable
-  private LogRecordExporterModel exporter;
+  @Nullable private LogRecordExporterModel exporter;
 
-  /** (Required) */
+  /**
+   * Configure exporter.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("exporter")
   @Nullable
   public LogRecordExporterModel getExporter() {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public SimpleLogRecordProcessorModel withExporter(LogRecordExporterModel exporter) {
     this.exporter = exporter;
     return this;

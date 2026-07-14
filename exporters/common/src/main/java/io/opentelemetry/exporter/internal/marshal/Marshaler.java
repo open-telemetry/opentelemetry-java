@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,24 +28,6 @@ public abstract class Marshaler {
   public final void writeJsonTo(OutputStream output) throws IOException {
     try (JsonSerializer serializer = new JsonSerializer(output)) {
       serializer.writeMessageValue(this);
-    }
-  }
-
-  /** Marshals into the {@link JsonGenerator} in proto JSON format. */
-  // Intentionally not overloading writeJsonTo(OutputStream) in order to avoid compilation
-  // dependency on jackson when using writeJsonTo(OutputStream). See:
-  // https://github.com/open-telemetry/opentelemetry-java-contrib/pull/1551#discussion_r1849064365
-  public final void writeJsonToGenerator(JsonGenerator output) throws IOException {
-    try (JsonSerializer serializer = new JsonSerializer(output)) {
-      serializer.writeMessageValue(this);
-    }
-  }
-
-  /** Marshals into the {@link JsonGenerator} in proto JSON format and adds a newline. */
-  public final void writeJsonWithNewline(JsonGenerator output) throws IOException {
-    try (JsonSerializer serializer = new JsonSerializer(output)) {
-      serializer.writeMessageValue(this);
-      output.writeRaw('\n');
     }
   }
 

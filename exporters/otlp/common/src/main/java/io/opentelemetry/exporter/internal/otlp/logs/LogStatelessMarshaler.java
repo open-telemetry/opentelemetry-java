@@ -52,7 +52,7 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
         log.getTotalAttributeCount() - log.getAttributes().size());
 
     SpanContext spanContext = log.getSpanContext();
-    output.serializeFixed32(LogRecord.FLAGS, spanContext.getTraceFlags().asByte());
+    output.serializeByteAsFixed32(LogRecord.FLAGS, spanContext.getTraceFlags().asByte());
     if (!spanContext.getTraceId().equals(INVALID_TRACE_ID)) {
       output.serializeTraceId(LogRecord.TRACE_ID, spanContext.getTraceId(), context);
     }
@@ -91,7 +91,7 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     size += MarshalerUtil.sizeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
     SpanContext spanContext = log.getSpanContext();
-    size += MarshalerUtil.sizeFixed32(LogRecord.FLAGS, spanContext.getTraceFlags().asByte());
+    size += MarshalerUtil.sizeByteAsFixed32(LogRecord.FLAGS, spanContext.getTraceFlags().asByte());
     if (!spanContext.getTraceId().equals(INVALID_TRACE_ID)) {
       size += MarshalerUtil.sizeTraceId(LogRecord.TRACE_ID, spanContext.getTraceId());
     }

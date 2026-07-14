@@ -7,7 +7,7 @@ plugins {
 }
 
 protobuf {
-  val versions: Map<String, String> by project
+  val versions = project.property("versions") as Map<*, *>
   protoc {
     // The artifact spec for the Protobuf Compiler
     artifact = "com.google.protobuf:protoc:${versions["com.google.protobuf"]}"

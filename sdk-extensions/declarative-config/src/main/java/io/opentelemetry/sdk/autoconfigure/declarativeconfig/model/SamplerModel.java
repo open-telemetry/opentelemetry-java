@@ -7,10 +7,12 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalJaegerRemoteSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalProbabilitySamplerModel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
@@ -29,113 +31,133 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SamplerModel {
 
-  @JsonProperty("always_off")
-  @Nullable
-  private AlwaysOffSamplerModel alwaysOff;
-
-  @JsonProperty("always_on")
-  @Nullable
-  private AlwaysOnSamplerModel alwaysOn;
-
-  @JsonProperty("composite/development")
-  @Nullable
-  private ExperimentalComposableSamplerModel compositeDevelopment;
-
-  @JsonProperty("jaeger_remote/development")
-  @Nullable
-  private ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment;
-
-  @JsonProperty("parent_based")
-  @Nullable
-  private ParentBasedSamplerModel parentBased;
-
-  @JsonProperty("probability/development")
-  @Nullable
-  private ExperimentalProbabilitySamplerModel probabilityDevelopment;
-
-  @JsonProperty("trace_id_ratio_based")
-  @Nullable
-  private TraceIdRatioBasedSamplerModel traceIdRatioBased;
-
-  @JsonIgnore
+  @Nullable private AlwaysOffSamplerModel alwaysOff;
+  @Nullable private AlwaysOnSamplerModel alwaysOn;
+  @Nullable private ExperimentalComposableSamplerModel compositeDevelopment;
+  @Nullable private ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment;
+  @Nullable private ParentBasedSamplerModel parentBased;
+  @Nullable private ExperimentalProbabilitySamplerModel probabilityDevelopment;
+  @Nullable private TraceIdRatioBasedSamplerModel traceIdRatioBased;
   private Map<String, SamplerPropertyModel> additionalProperties =
       new LinkedHashMap<String, SamplerPropertyModel>();
 
+  /**
+   * Configure sampler to be always_off.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("always_off")
   @Nullable
   public AlwaysOffSamplerModel getAlwaysOff() {
     return alwaysOff;
   }
 
+  @JsonProperty("always_off")
   public SamplerModel withAlwaysOff(AlwaysOffSamplerModel alwaysOff) {
     this.alwaysOff = alwaysOff;
     return this;
   }
 
+  /**
+   * Configure sampler to be always_on.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("always_on")
   @Nullable
   public AlwaysOnSamplerModel getAlwaysOn() {
     return alwaysOn;
   }
 
+  @JsonProperty("always_on")
   public SamplerModel withAlwaysOn(AlwaysOnSamplerModel alwaysOn) {
     this.alwaysOn = alwaysOn;
     return this;
   }
 
+  /**
+   * Configure sampler to be composite.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("composite/development")
   @Nullable
   public ExperimentalComposableSamplerModel getCompositeDevelopment() {
     return compositeDevelopment;
   }
 
+  @JsonProperty("composite/development")
   public SamplerModel withCompositeDevelopment(
       ExperimentalComposableSamplerModel compositeDevelopment) {
     this.compositeDevelopment = compositeDevelopment;
     return this;
   }
 
+  /**
+   * Configure sampler to be jaeger_remote.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("jaeger_remote/development")
   @Nullable
   public ExperimentalJaegerRemoteSamplerModel getJaegerRemoteDevelopment() {
     return jaegerRemoteDevelopment;
   }
 
+  @JsonProperty("jaeger_remote/development")
   public SamplerModel withJaegerRemoteDevelopment(
       ExperimentalJaegerRemoteSamplerModel jaegerRemoteDevelopment) {
     this.jaegerRemoteDevelopment = jaegerRemoteDevelopment;
     return this;
   }
 
+  /**
+   * Configure sampler to be parent_based.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("parent_based")
   @Nullable
   public ParentBasedSamplerModel getParentBased() {
     return parentBased;
   }
 
+  @JsonProperty("parent_based")
   public SamplerModel withParentBased(ParentBasedSamplerModel parentBased) {
     this.parentBased = parentBased;
     return this;
   }
 
+  /**
+   * Configure sampler to be probability.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("probability/development")
   @Nullable
   public ExperimentalProbabilitySamplerModel getProbabilityDevelopment() {
     return probabilityDevelopment;
   }
 
+  @JsonProperty("probability/development")
   public SamplerModel withProbabilityDevelopment(
       ExperimentalProbabilitySamplerModel probabilityDevelopment) {
     this.probabilityDevelopment = probabilityDevelopment;
     return this;
   }
 
+  /**
+   * Configure sampler to be trace_id_ratio_based.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("trace_id_ratio_based")
   @Nullable
   public TraceIdRatioBasedSamplerModel getTraceIdRatioBased() {
     return traceIdRatioBased;
   }
 
+  @JsonProperty("trace_id_ratio_based")
   public SamplerModel withTraceIdRatioBased(TraceIdRatioBasedSamplerModel traceIdRatioBased) {
     this.traceIdRatioBased = traceIdRatioBased;
     return this;
@@ -147,10 +169,6 @@ public class SamplerModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, SamplerPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public SamplerModel withAdditionalProperty(String name, SamplerPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

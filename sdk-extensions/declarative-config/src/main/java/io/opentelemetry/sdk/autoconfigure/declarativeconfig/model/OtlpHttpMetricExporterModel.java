@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.HashMap;
@@ -32,98 +31,59 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class OtlpHttpMetricExporterModel {
 
-  /** Configure endpoint. If omitted or null, http://localhost:4318/v1/metrics is used. */
-  @JsonProperty("endpoint")
-  @JsonPropertyDescription(
-      "Configure endpoint.\nIf omitted or null, http://localhost:4318/v1/metrics is used.\n")
-  @Nullable
-  private String endpoint;
+  @Nullable private String endpoint;
+  @Nullable private HttpTlsModel tls;
+  @Nullable private List<NameStringValuePairModel> headers;
+  @Nullable private String headersList;
+  @Nullable private String compression;
+  @Nullable private Integer timeout;
+  @Nullable private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
+  @Nullable private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
 
-  @JsonProperty("tls")
-  @Nullable
-  private HttpTlsModel tls;
-
-  /**
-   * Configure headers. Entries have higher priority than entries from .headers_list. If an entry's
-   * .value is null, the entry is ignored. If omitted, no headers are added.
-   */
-  @JsonProperty("headers")
-  @JsonPropertyDescription(
-      "Configure headers. Entries have higher priority than entries from .headers_list.\nIf an entry's .value is null, the entry is ignored.\nIf omitted, no headers are added.\n")
-  @Nullable
-  private List<NameStringValuePairModel> headers;
-
-  /**
-   * Configure headers. Entries have lower priority than entries from .headers. The value is a list
-   * of comma separated key-value pairs matching the format of OTEL_EXPORTER_OTLP_HEADERS. See
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#configuration-options
-   * for details. If omitted or null, no headers are added.
-   */
-  @JsonProperty("headers_list")
-  @JsonPropertyDescription(
-      "Configure headers. Entries have lower priority than entries from .headers.\nThe value is a list of comma separated key-value pairs matching the format of OTEL_EXPORTER_OTLP_HEADERS. See https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#configuration-options for details.\nIf omitted or null, no headers are added.\n")
-  @Nullable
-  private String headersList;
-
-  /**
-   * Configure compression. Known values include: gzip, none. Implementations may support other
-   * compression algorithms. If omitted or null, none is used.
-   */
-  @JsonProperty("compression")
-  @JsonPropertyDescription(
-      "Configure compression.\nKnown values include: gzip, none. Implementations may support other compression algorithms.\nIf omitted or null, none is used.\n")
-  @Nullable
-  private String compression;
-
-  /**
-   * Configure max time (in milliseconds) to wait for each export. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 10000 is used.
-   */
-  @JsonProperty("timeout")
-  @JsonPropertyDescription(
-      "Configure max time (in milliseconds) to wait for each export.\nValue must be non-negative. A value of 0 indicates no limit (infinity).\nIf omitted or null, 10000 is used.\n")
-  @Nullable
-  private Integer timeout;
-
-  @JsonProperty("encoding")
-  @Nullable
-  private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
-
-  @JsonProperty("temporality_preference")
-  @Nullable
-  private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
-
-  @JsonProperty("default_histogram_aggregation")
   @Nullable
   private OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
       defaultHistogramAggregation;
 
-  /** Configure endpoint. If omitted or null, http://localhost:4318/v1/metrics is used. */
+  /**
+   * Configure endpoint.
+   *
+   * <p>If omitted or null, http://localhost:4318/v1/metrics is used.
+   */
   @JsonProperty("endpoint")
   @Nullable
   public String getEndpoint() {
     return endpoint;
   }
 
+  @JsonProperty("endpoint")
   public OtlpHttpMetricExporterModel withEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
 
+  /**
+   * Configure TLS settings for the exporter.
+   *
+   * <p>If omitted, system default TLS settings are used.
+   */
   @JsonProperty("tls")
   @Nullable
   public HttpTlsModel getTls() {
     return tls;
   }
 
+  @JsonProperty("tls")
   public OtlpHttpMetricExporterModel withTls(HttpTlsModel tls) {
     this.tls = tls;
     return this;
   }
 
   /**
-   * Configure headers. Entries have higher priority than entries from .headers_list. If an entry's
-   * .value is null, the entry is ignored. If omitted, no headers are added.
+   * Configure headers. Entries have higher priority than entries from .headers_list.
+   *
+   * <p>If an entry's .value is null, the entry is ignored.
+   *
+   * <p>If omitted, no headers are added.
    */
   @JsonProperty("headers")
   @Nullable
@@ -131,16 +91,21 @@ public class OtlpHttpMetricExporterModel {
     return headers;
   }
 
+  @JsonProperty("headers")
   public OtlpHttpMetricExporterModel withHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
   }
 
   /**
-   * Configure headers. Entries have lower priority than entries from .headers. The value is a list
-   * of comma separated key-value pairs matching the format of OTEL_EXPORTER_OTLP_HEADERS. See
+   * Configure headers. Entries have lower priority than entries from .headers.
+   *
+   * <p>The value is a list of comma separated key-value pairs matching the format of
+   * OTEL_EXPORTER_OTLP_HEADERS. See
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#configuration-options
-   * for details. If omitted or null, no headers are added.
+   * for details.
+   *
+   * <p>If omitted or null, no headers are added.
    */
   @JsonProperty("headers_list")
   @Nullable
@@ -148,14 +113,18 @@ public class OtlpHttpMetricExporterModel {
     return headersList;
   }
 
+  @JsonProperty("headers_list")
   public OtlpHttpMetricExporterModel withHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
   }
 
   /**
-   * Configure compression. Known values include: gzip, none. Implementations may support other
-   * compression algorithms. If omitted or null, none is used.
+   * Configure compression.
+   *
+   * <p>Known values include: gzip, none. Implementations may support other compression algorithms.
+   *
+   * <p>If omitted or null, none is used.
    */
   @JsonProperty("compression")
   @Nullable
@@ -163,14 +132,18 @@ public class OtlpHttpMetricExporterModel {
     return compression;
   }
 
+  @JsonProperty("compression")
   public OtlpHttpMetricExporterModel withCompression(String compression) {
     this.compression = compression;
     return this;
   }
 
   /**
-   * Configure max time (in milliseconds) to wait for each export. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 10000 is used.
+   * Configure max time (in milliseconds) to wait for each export.
+   *
+   * <p>Value must be non-negative. A value of 0 indicates no limit (infinity).
+   *
+   * <p>If omitted or null, 10000 is used.
    */
   @JsonProperty("timeout")
   @Nullable
@@ -178,34 +151,78 @@ public class OtlpHttpMetricExporterModel {
     return timeout;
   }
 
+  @JsonProperty("timeout")
   public OtlpHttpMetricExporterModel withTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
 
+  /**
+   * Configure the encoding used for messages.
+   *
+   * <p>Implementations may not support json.
+   *
+   * <p>Values include:
+   *
+   * <p>* json: Protobuf JSON encoding.
+   *
+   * <p>* protobuf: Protobuf binary encoding.
+   *
+   * <p>If omitted, protobuf is used.
+   */
   @JsonProperty("encoding")
   @Nullable
   public OtlpHttpExporterModel.OtlpHttpEncoding getEncoding() {
     return encoding;
   }
 
+  @JsonProperty("encoding")
   public OtlpHttpMetricExporterModel withEncoding(OtlpHttpExporterModel.OtlpHttpEncoding encoding) {
     this.encoding = encoding;
     return this;
   }
 
+  /**
+   * Configure temporality preference.
+   *
+   * <p>Values include:
+   *
+   * <p>* cumulative: Use cumulative aggregation temporality for all instrument types.
+   *
+   * <p>* delta: Use delta aggregation for all instrument types except up down counter and
+   * asynchronous up down counter.
+   *
+   * <p>* low_memory: Use delta aggregation temporality for counter and histogram instrument types.
+   * Use cumulative aggregation temporality for all other instrument types.
+   *
+   * <p>If omitted, cumulative is used.
+   */
   @JsonProperty("temporality_preference")
   @Nullable
   public OtlpHttpMetricExporterModel.ExporterTemporalityPreference getTemporalityPreference() {
     return temporalityPreference;
   }
 
+  @JsonProperty("temporality_preference")
   public OtlpHttpMetricExporterModel withTemporalityPreference(
       OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
   }
 
+  /**
+   * Configure default histogram aggregation.
+   *
+   * <p>Values include:
+   *
+   * <p>* base2_exponential_bucket_histogram: Use base2 exponential histogram as the default
+   * aggregation for histogram instruments.
+   *
+   * <p>* explicit_bucket_histogram: Use explicit bucket histogram as the default aggregation for
+   * histogram instruments.
+   *
+   * <p>If omitted, explicit_bucket_histogram is used.
+   */
   @JsonProperty("default_histogram_aggregation")
   @Nullable
   public OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
@@ -213,6 +230,7 @@ public class OtlpHttpMetricExporterModel {
     return defaultHistogramAggregation;
   }
 
+  @JsonProperty("default_histogram_aggregation")
   public OtlpHttpMetricExporterModel withDefaultHistogramAggregation(
       OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;

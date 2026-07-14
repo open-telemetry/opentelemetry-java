@@ -31,3 +31,13 @@ jobs:
             This has been automatically marked as stale because it has been marked
             as needing author feedback and has not had any activity for 7 days.
             It will be closed if no further activity occurs within 7 days of this comment.
+
+  workflow-notification:
+    permissions:
+      issues: write
+    needs:
+      - stale
+    if: always()
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@7c49790392da7de86fdb4bb968446f9cb8461eb8 # v0.3.1
+    with:
+      success: ${{ needs.stale.result == 'success' }}

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -23,48 +22,18 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class BatchSpanProcessorModel {
 
-  /**
-   * Configure delay interval (in milliseconds) between two consecutive exports. Value must be
-   * non-negative. If omitted or null, 5000 is used.
-   */
-  @JsonProperty("schedule_delay")
-  @JsonPropertyDescription(
-      "Configure delay interval (in milliseconds) between two consecutive exports. \nValue must be non-negative.\nIf omitted or null, 5000 is used.\n")
-  @Nullable
-  private Integer scheduleDelay;
+  @Nullable private Integer scheduleDelay;
+  @Nullable private Integer exportTimeout;
+  @Nullable private Integer maxQueueSize;
+  @Nullable private Integer maxExportBatchSize;
+  @Nullable private SpanExporterModel exporter;
 
   /**
-   * Configure maximum allowed time (in milliseconds) to export data. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 30000 is used.
-   */
-  @JsonProperty("export_timeout")
-  @JsonPropertyDescription(
-      "Configure maximum allowed time (in milliseconds) to export data. \nValue must be non-negative. A value of 0 indicates no limit (infinity).\nIf omitted or null, 30000 is used.\n")
-  @Nullable
-  private Integer exportTimeout;
-
-  /** Configure maximum queue size. Value must be positive. If omitted or null, 2048 is used. */
-  @JsonProperty("max_queue_size")
-  @JsonPropertyDescription(
-      "Configure maximum queue size. Value must be positive.\nIf omitted or null, 2048 is used.\n")
-  @Nullable
-  private Integer maxQueueSize;
-
-  /** Configure maximum batch size. Value must be positive. If omitted or null, 512 is used. */
-  @JsonProperty("max_export_batch_size")
-  @JsonPropertyDescription(
-      "Configure maximum batch size. Value must be positive.\nIf omitted or null, 512 is used.\n")
-  @Nullable
-  private Integer maxExportBatchSize;
-
-  /** (Required) */
-  @JsonProperty("exporter")
-  @Nullable
-  private SpanExporterModel exporter;
-
-  /**
-   * Configure delay interval (in milliseconds) between two consecutive exports. Value must be
-   * non-negative. If omitted or null, 5000 is used.
+   * Configure delay interval (in milliseconds) between two consecutive exports.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 5000 is used.
    */
   @JsonProperty("schedule_delay")
   @Nullable
@@ -72,14 +41,18 @@ public class BatchSpanProcessorModel {
     return scheduleDelay;
   }
 
+  @JsonProperty("schedule_delay")
   public BatchSpanProcessorModel withScheduleDelay(Integer scheduleDelay) {
     this.scheduleDelay = scheduleDelay;
     return this;
   }
 
   /**
-   * Configure maximum allowed time (in milliseconds) to export data. Value must be non-negative. A
-   * value of 0 indicates no limit (infinity). If omitted or null, 30000 is used.
+   * Configure maximum allowed time (in milliseconds) to export data.
+   *
+   * <p>Value must be non-negative. A value of 0 indicates no limit (infinity).
+   *
+   * <p>If omitted or null, 30000 is used.
    */
   @JsonProperty("export_timeout")
   @Nullable
@@ -87,42 +60,58 @@ public class BatchSpanProcessorModel {
     return exportTimeout;
   }
 
+  @JsonProperty("export_timeout")
   public BatchSpanProcessorModel withExportTimeout(Integer exportTimeout) {
     this.exportTimeout = exportTimeout;
     return this;
   }
 
-  /** Configure maximum queue size. Value must be positive. If omitted or null, 2048 is used. */
+  /**
+   * Configure maximum queue size. Value must be positive.
+   *
+   * <p>If omitted or null, 2048 is used.
+   */
   @JsonProperty("max_queue_size")
   @Nullable
   public Integer getMaxQueueSize() {
     return maxQueueSize;
   }
 
+  @JsonProperty("max_queue_size")
   public BatchSpanProcessorModel withMaxQueueSize(Integer maxQueueSize) {
     this.maxQueueSize = maxQueueSize;
     return this;
   }
 
-  /** Configure maximum batch size. Value must be positive. If omitted or null, 512 is used. */
+  /**
+   * Configure maximum batch size. Value must be positive.
+   *
+   * <p>If omitted or null, 512 is used.
+   */
   @JsonProperty("max_export_batch_size")
   @Nullable
   public Integer getMaxExportBatchSize() {
     return maxExportBatchSize;
   }
 
+  @JsonProperty("max_export_batch_size")
   public BatchSpanProcessorModel withMaxExportBatchSize(Integer maxExportBatchSize) {
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
 
-  /** (Required) */
+  /**
+   * Configure exporter.
+   *
+   * <p>Property is required and must be non-null.
+   */
   @JsonProperty("exporter")
   @Nullable
   public SpanExporterModel getExporter() {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public BatchSpanProcessorModel withExporter(SpanExporterModel exporter) {
     this.exporter = exporter;
     return this;
