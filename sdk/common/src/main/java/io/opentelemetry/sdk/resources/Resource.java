@@ -143,16 +143,16 @@ public abstract class Resource {
    *
    * @return a map of attributes.
    */
-  final Attributes getRawAttributes() {
-    AttributesBuilder rawAttributes = getAttributes().toBuilder();
-    rawAttributes.removeIf(
+  final Attributes getUnassociatedAttributes() {
+    AttributesBuilder unassociatedAttributes = getAttributes().toBuilder();
+    unassociatedAttributes.removeIf(
         key ->
             getEntities().stream()
                 .anyMatch(
                     entity ->
                         entity.getId().get(key) != null
                             || entity.getDescription().get(key) != null));
-    return rawAttributes.build();
+    return unassociatedAttributes.build();
   }
 
   /**

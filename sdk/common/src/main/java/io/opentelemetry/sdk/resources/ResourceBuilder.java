@@ -180,7 +180,7 @@ public class ResourceBuilder {
       entities.addAll(resource.getEntities());
       // Only pull "raw" attributes - we expect entities to carry some of the full
       // set.
-      attributesBuilder.putAll(resource.getRawAttributes());
+      attributesBuilder.putAll(resource.getUnassociatedAttributes());
     }
     return this;
   }

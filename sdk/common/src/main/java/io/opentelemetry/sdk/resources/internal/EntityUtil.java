@@ -95,17 +95,18 @@ public final class EntityUtil {
   }
 
   /**
-   * Returns a map of attributes that describe the resource, not associated with entites.
+   * Returns a map of attributes that describe the resource, not associated with
+   * entities.
    *
    * @return a map of attributes.
    */
-  public static Attributes getRawAttributes(Resource r) {
+  public static Attributes getUnassociatedAttributes(Resource r) {
     try {
-      Method method = Resource.class.getDeclaredMethod("getRawAttributes");
+      Method method = Resource.class.getDeclaredMethod("getUnassociatedAttributes");
       method.setAccessible(true);
       return (Attributes) method.invoke(r);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException("Error calling getRawAttributes on Resource", e);
+      throw new IllegalStateException("Error calling getUnassociatedAttributes on Resource", e);
     }
   }
 
@@ -270,7 +271,7 @@ public final class EntityUtil {
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/entities/0264-resource-and-entities.md#entity-merging-and-resource
     Collection<Entity> entities = EntityUtil.mergeEntities(getEntities(base), getEntities(next));
     RawAttributeMergeResult attributeResult =
-        EntityUtil.mergeRawAttributes(getRawAttributes(base), getRawAttributes(next), entities);
+        EntityUtil.mergeRawAttributes(getUnassociatedAttributes(base), getUnassociatedAttributes(next), entities);
     // Remove entities that are conflicting with raw attributes, and therefore in an unknown state.
     entities.removeAll(attributeResult.getConflicts());
     // Now figure out schema url for overall resource.
