@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.export;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import java.time.Duration;
 import java.util.concurrent.Executors;
@@ -25,6 +26,8 @@ public final class PeriodicMetricReaderBuilder {
   static final long DEFAULT_SCHEDULE_DELAY_MINUTES = 1;
 
   private final MetricExporter metricExporter;
+
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LATEST;
 
   private long intervalNanos = TimeUnit.MINUTES.toNanos(DEFAULT_SCHEDULE_DELAY_MINUTES);
 
@@ -82,6 +85,18 @@ public final class PeriodicMetricReaderBuilder {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReader(metricExporter, intervalNanos, executor, maxExportBatchSize);
+    return new PeriodicMetricReader(
+        metricExporter, intervalNanos, executor, maxExportBatchSize, internalTelemetryVersion);
+  }
+
+  /**
+   * Sets the internal telemetry version used to control self-observability metrics.
+   *
+   * @since 1.65.0
+   */
+  public PeriodicMetricReaderBuilder setInternalTelemetryVersion(InternalTelemetryVersion version) {
+    requireNonNull(version, "version");
+    this.internalTelemetryVersion = version;
+    return this;
   }
 }
