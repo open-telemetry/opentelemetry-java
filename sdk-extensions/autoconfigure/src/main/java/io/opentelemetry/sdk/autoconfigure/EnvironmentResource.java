@@ -5,11 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.EntityExperimentConstants;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.resources.internal.Entity;
@@ -32,12 +31,11 @@ import javax.annotation.Nullable;
  */
 final class EnvironmentResource {
 
-  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
-
   // Visible for testing
-  static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
+  static final String RESOURCE_ATTRIBUTES_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
   static final String ENTITIES_PROPERTY = "otel.entities";
+  static final String EXPERIMENTAL_ENTITIES_ENABLED = "otel.experimental.entities.enabled";
 
   /**
    * Create a {@link Resource} from the environment. The resource contains attributes parsed from
@@ -48,11 +46,26 @@ final class EnvironmentResource {
    * @return the resource.
    */
   @SuppressWarnings("JdkObsolete") // Recommended alternative was introduced in java 10
-  static Resource createEnvironmentResource(ConfigProperties config) {
+  static Resource otelResourceAttributesResource(ConfigProperties config) {
     ResourceBuilder resourceBuilder = Resource.builder();
 
-    boolean entitiesEnabled =
-        config.getBoolean(EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED, false);
+    for (Map.Entry<String, String> entry : config.getMap(RESOURCE_ATTRIBUTES_PROPERTY).entrySet()) {
+      resourceBuilder.put(
+          entry.getKey(),
+          // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
+          // characters outside the baggage-octet range are percent encoded
+          // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
+          decodeResourceAttributes(entry.getValue()));
+    }
+
+    return resourceBuilder.build();
+  }
+
+  static Resource otelEntitiesResource(ConfigProperties config) {
+    ResourceBuilder resourceBuilder = Resource.builder();
+
+    boolean entitiesEnabled = config.getBoolean(EXPERIMENTAL_ENTITIES_ENABLED, false);
+
     String entitiesStr = config.getString(ENTITIES_PROPERTY);
     if (entitiesEnabled && entitiesStr != null && !entitiesStr.isEmpty()) {
       List<Entity> parsedEntities = new EntityParser(entitiesStr).parse();
@@ -61,20 +74,34 @@ final class EnvironmentResource {
       }
     }
 
-    for (Map.Entry<String, String> entry : config.getMap(ATTRIBUTE_PROPERTY).entrySet()) {
-      resourceBuilder.put(
-          entry.getKey(),
-          // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
-          // characters outside the baggage-octet range are percent encoded
-          // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-          decodeResourceAttributes(entry.getValue()));
-    }
+    return resourceBuilder.build();
+  }
+
+  static Resource otelServiceNameResource(ConfigProperties config) {
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);
-    if (serviceName != null) {
-      resourceBuilder.put(SERVICE_NAME, serviceName);
+    if (serviceName == null) {
+      return Resource.empty();
     }
 
-    return resourceBuilder.build();
+    Entity serviceEntity =
+        Entity.builder(
+                SemConvAttributes.SERVICE_TYPE,
+                Attributes.of(SemConvAttributes.SERVICE_NAME, serviceName))
+            .setSchemaUrl(SemConvAttributes.SCHEMA_URL_V1_40_0)
+            .build();
+    return EntityUtil.addEntity(Resource.builder(), serviceEntity).build();
+  }
+
+  static Resource eraseEntities(Resource resource) {
+    ResourceBuilder entityErasedBuilder = Resource.builder().putAll(resource.getAttributes());
+    // TODO: entities include schemaUrl, which the resource merge algorithm retains as long as all
+    // entities agree. However, schemaUrl is not set by by pre-entity resource detectors. Preserving
+    // the schemaUrl of while erasing entities adds new schemaUrl to the resource when none was
+    // typically used before. Therefore, we do not map the schemaUrl.
+    //    if (resource.getSchemaUrl() != null) {
+    //      entityErasedBuilder.setSchemaUrl(resource.getSchemaUrl());
+    //    }
+    return entityErasedBuilder.build();
   }
 
   /**

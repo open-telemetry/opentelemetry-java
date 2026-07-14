@@ -14,12 +14,13 @@ import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"attributes", "detectors"})
+@JsonPropertyOrder({"attributes", "detectors", "entities_enabled"})
 @Generated("jsonschema2pojo")
 public class ExperimentalResourceDetectionModel {
 
   @Nullable private IncludeExcludeModel attributes;
   @Nullable private List<ExperimentalResourceDetectorModel> detectors;
+  @Nullable private Boolean entitiesEnabled;
 
   /**
    * Configure attributes provided by resource detectors.
@@ -59,6 +60,29 @@ public class ExperimentalResourceDetectionModel {
     return this;
   }
 
+  /**
+   * Configure whether resource detectors emit entity-aware resources.
+   *
+   * <p>Resource detectors always produce entity-aware output internally. When this option is
+   *
+   * <p>not true, the SDK erases entity information from detector results before merging
+   *
+   * <p>them into the resource.
+   *
+   * <p>If omitted or null, false is used.
+   */
+  @JsonProperty("entities_enabled")
+  @Nullable
+  public Boolean getEntitiesEnabled() {
+    return entitiesEnabled;
+  }
+
+  @JsonProperty("entities_enabled")
+  public ExperimentalResourceDetectionModel withEntitiesEnabled(Boolean entitiesEnabled) {
+    this.entitiesEnabled = entitiesEnabled;
+    return this;
+  }
+
   @Override
   public String toString() {
     return "ExperimentalResourceDetectionModel{"
@@ -66,6 +90,8 @@ public class ExperimentalResourceDetectionModel {
         + attributes
         + ", detectors="
         + detectors
+        + ", entitiesEnabled="
+        + entitiesEnabled
         + "}";
   }
 
@@ -76,6 +102,8 @@ public class ExperimentalResourceDetectionModel {
     h ^= (this.attributes == null) ? 0 : this.attributes.hashCode();
     h *= 1000003;
     h ^= (this.detectors == null) ? 0 : this.detectors.hashCode();
+    h *= 1000003;
+    h ^= (this.entitiesEnabled == null) ? 0 : this.entitiesEnabled.hashCode();
     return h;
   }
 
@@ -91,7 +119,10 @@ public class ExperimentalResourceDetectionModel {
               : this.attributes.equals(that.attributes))
           && (this.detectors == null
               ? that.detectors == null
-              : this.detectors.equals(that.detectors));
+              : this.detectors.equals(that.detectors))
+          && (this.entitiesEnabled == null
+              ? that.entitiesEnabled == null
+              : this.entitiesEnabled.equals(that.entitiesEnabled));
     }
     return false;
   }

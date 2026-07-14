@@ -178,7 +178,11 @@ class ResourceConfigurationTest {
       Map<String, String> properties, Collection<Entity> expectedEntities) {
     ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
 
-    Resource resource = ResourceConfiguration.createEnvironmentResource(configProperties);
+    Resource resource =
+        ResourceConfiguration.configureResource(
+            configProperties,
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
 
     Collection<Entity> entities = EntityUtil.getEntities(resource);
     assertThat(entities).hasSize(expectedEntities.size());

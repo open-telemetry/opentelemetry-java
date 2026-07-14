@@ -13,7 +13,6 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
 import org.jsonschema2pojo.Schema;
-import org.jsonschema2pojo.exception.GenerationException;
 import org.jsonschema2pojo.rules.PropertyRule;
 import org.jsonschema2pojo.rules.RuleFactory;
 
@@ -32,9 +31,14 @@ import org.jsonschema2pojo.rules.RuleFactory;
  * valid; re-applying from the original node restores those descriptions on the getter too.
  *
  * <p>Mechanism: strip {@code description} from the node before delegating to {@link
- * PropertyRule#apply} so the superclass adds it nowhere (not the field javadoc, the getter javadoc,
- * or a {@code @JsonPropertyDescription}), then apply it to the getter only — leaving fields without
- * any javadoc.
+ * PropertyRule#apply} so the superclass does not add the property description to the field or
+ * getter. The superclass calls {@code resolveRefs()} before applying annotations, so if the
+ * property node is a {@code $ref} whose target {@code $def} has its own description, that
+ * description would otherwise land on the field and getter via {@link
+ * org.jsonschema2pojo.rules.DescriptionRule}. {@link OtelDescriptionRule} suppresses all
+ * description placements on fields and getters from that path. The property's own description
+ * (stripped from the node before delegation) is then applied to the getter only by
+ * {@link #applyGetterDescription}, which writes directly to the getter's javadoc.
  *
  * <p>{@link OtelJacksonAnnotator} puts {@code @JsonProperty} on the getter, but has no hook for the
  * {@code withX} builder methods, so this rule annotates them.
@@ -69,19 +73,6 @@ public class OtelPropertyRule extends PropertyRule {
       return result;
     }
 
-    // A $ref target with its own top-level description would land on the field via DescriptionRule
-    // and conflict with the sibling description we re-apply to the getter. The schema puts
-    // descriptions on properties, not $defs, so this doesn't happen today; fail loud if it does.
-    if (referencedTypeHasDescription(node, schema)) {
-      throw new GenerationException(
-          "Property '"
-              + nodeName
-              + "' resolves to a type that defines its own top-level description, which is not"
-              + " handled (it would land on the field). See "
-              + OtelPropertyRule.class.getName()
-              + ".");
-    }
-
     annotateBuilderMethod(result, propertyName, node, nodeName);
 
     if (description != null) {
@@ -102,29 +93,6 @@ public class OtelPropertyRule extends PropertyRule {
     }
   }
 
-  /**
-   * Returns whether a (possibly chained) {@code $ref} resolves to a schema with its own
-   * description. Uses {@link org.jsonschema2pojo.SchemaStore} rather than inspecting {@code
-   * field.javadoc()} (which would instantiate an empty comment).
-   */
-  private boolean referencedTypeHasDescription(JsonNode node, Schema schema) {
-    JsonNode current = node;
-    Schema currentSchema = schema;
-    boolean resolved = false;
-    while (current.has("$ref")) {
-      currentSchema =
-          ruleFactory
-              .getSchemaStore()
-              .create(
-                  currentSchema,
-                  current.get("$ref").asText(),
-                  ruleFactory.getGenerationConfig().getRefFragmentPathDelimiters());
-      current = currentSchema.getContent();
-      resolved = true;
-    }
-    return resolved && current.has("description");
-  }
-
   private void applyGetterDescription(
       String nodeName,
       JsonNode node,
@@ -134,11 +102,13 @@ public class OtelPropertyRule extends PropertyRule {
       JFieldVar field,
       JsonNode description) {
     String getterName = ruleFactory.getNameHelper().getGetterName(propertyName, field.type(), node);
+    String text = preserveLineBreaks(description).asText();
     for (JMethod method : jclass.methods()) {
       if (method.name().equals(getterName)) {
-        ruleFactory
-            .getDescriptionRule()
-            .apply(nodeName, preserveLineBreaks(description), node, method, schema);
+        // OtelDescriptionRule suppresses DescriptionRule for JMethod targets, so write the
+        // description directly. JCommentPart.format() handles embedded '\n' characters by
+        // emitting line breaks, so append the whole text as one string to preserve newlines.
+        method.javadoc().append(text);
         return;
       }
     }

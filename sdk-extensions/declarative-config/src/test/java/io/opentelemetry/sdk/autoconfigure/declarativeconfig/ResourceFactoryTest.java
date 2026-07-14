@@ -5,9 +5,11 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
@@ -16,9 +18,12 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,14 +37,21 @@ class ResourceFactoryTest {
 
   @ParameterizedTest
   @MethodSource("createArgs")
-  void create(ResourceModel model, Resource expectedResource) {
-    assertThat(ResourceFactory.getInstance().create(model, context)).isEqualTo(expectedResource);
+  void create(
+      Map<String, String> systemProperties, ResourceModel model, Resource expectedResource) {
+    systemProperties.forEach(System::setProperty);
+    try {
+      assertThat(ResourceFactory.getInstance().create(model, context)).isEqualTo(expectedResource);
+    } finally {
+      systemProperties.forEach((key, unused) -> System.clearProperty(key));
+    }
   }
 
   private static Stream<Arguments> createArgs() {
     return Stream.of(
         Arguments.argumentSet(
             "with attributes",
+            Collections.emptyMap(),
             new ResourceModel()
                 .withAttributes(
                     Arrays.asList(
@@ -55,12 +67,135 @@ class ResourceFactoryTest {
                 .build()),
         Arguments.argumentSet(
             "with schema url",
+            Collections.emptyMap(),
             new ResourceModel().withSchemaUrl("http://foo"),
             Resource.getDefault().toBuilder().setSchemaUrl("http://foo").build()),
         Arguments.argumentSet(
             "with attributes list",
+            Collections.emptyMap(),
             new ResourceModel().withAttributesList("key1=val1,key2=val2"),
-            Resource.getDefault().toBuilder().put("key1", "val1").put("key2", "val2").build()));
+            Resource.getDefault().toBuilder().put("key1", "val1").put("key2", "val2").build()),
+        Arguments.argumentSet(
+            "env detector - happy path",
+            Collections.singletonMap(
+                "otel.entities",
+                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withEntitiesEnabled(true)
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("env", null)))),
+            Resource.getDefault().toBuilder()
+                .putAll(
+                    EntityUtil.createResource(
+                        Arrays.asList(
+                            Entity.builder(
+                                    "process", Attributes.of(stringKey("process.pid"), "1234"))
+                                .setSchemaUrl("http://schema")
+                                .setDescription(
+                                    Attributes.of(stringKey("process.executable.name"), "java"))
+                                .build(),
+                            Entity.builder("host", Attributes.of(stringKey("host.id"), "myhost"))
+                                .build())))
+                .build()),
+        Arguments.argumentSet(
+            "env detector - empty",
+            Collections.singletonMap("otel.entities", ""),
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withEntitiesEnabled(true)
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("env", null)))),
+            Resource.getDefault()),
+        Arguments.argumentSet(
+            "env detector - entities disabled",
+            Collections.singletonMap(
+                "otel.entities",
+                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withEntitiesEnabled(false)
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("env", null)))),
+            Resource.getDefault().toBuilder()
+                .put("process.pid", "1234")
+                .put("process.executable.name", "java")
+                .put("host.id", "myhost")
+                .build()),
+        Arguments.argumentSet(
+            "service detector - happy path",
+            Collections.singletonMap("otel.service.name", "test"),
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withEntitiesEnabled(true)
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("service", null)))),
+            Resource.getDefault().toBuilder()
+                .putAll(
+                    EntityUtil.createResource(
+                        Arrays.asList(
+                            Entity.builder(
+                                    "service", Attributes.of(stringKey("service.name"), "test"))
+                                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                                .build(),
+                            Entity.builder(
+                                    "service.instance",
+                                    Attributes.of(
+                                        stringKey("service.instance.id"),
+                                        ServiceResourceDetector.RANDOM_SERVICE_INSTANCE_ID))
+                                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                                .build())))
+                .build()),
+        Arguments.argumentSet(
+            "service detector - no otel.service.name",
+            Collections.emptyMap(),
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withEntitiesEnabled(true)
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("service", null)))),
+            Resource.getDefault().toBuilder()
+                .putAll(
+                    EntityUtil.createResource(
+                        Collections.singletonList(
+                            Entity.builder(
+                                    "service.instance",
+                                    Attributes.of(
+                                        stringKey("service.instance.id"),
+                                        ServiceResourceDetector.RANDOM_SERVICE_INSTANCE_ID))
+                                .setSchemaUrl("https://opentelemetry.io/schemas/1.40.0")
+                                .build())))
+                .build()),
+        Arguments.argumentSet(
+            "service detector - entities disabled",
+            Collections.singletonMap("otel.service.name", "test"),
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withEntitiesEnabled(false)
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("service", null)))),
+            Resource.getDefault().toBuilder()
+                .put("service.name", "test")
+                .put("service.instance.id", ServiceResourceDetector.RANDOM_SERVICE_INSTANCE_ID)
+                .build()));
   }
 
   @ParameterizedTest

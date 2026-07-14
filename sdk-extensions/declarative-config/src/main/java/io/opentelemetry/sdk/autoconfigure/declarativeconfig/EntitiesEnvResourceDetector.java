@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.ENTITIES_PROPERTY;
-import static io.opentelemetry.sdk.autoconfigure.spi.internal.EntityExperimentConstants.EXPERIMENTAL_ENTITIES_ENABLED;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.EXPERIMENTAL_ENTITIES_ENABLED;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -38,7 +38,7 @@ public class EntitiesEnvResourceDetector implements ComponentProvider {
     configPropertiesMap.put(ENTITIES_PROPERTY, envConfigProperties.getString(ENTITIES_PROPERTY));
     configPropertiesMap.put(EXPERIMENTAL_ENTITIES_ENABLED, "true");
 
-    return EnvironmentResource.createEnvironmentResource(
+    return EnvironmentResource.otelEntitiesResource(
         DefaultConfigProperties.createFromMap(configPropertiesMap));
   }
 }

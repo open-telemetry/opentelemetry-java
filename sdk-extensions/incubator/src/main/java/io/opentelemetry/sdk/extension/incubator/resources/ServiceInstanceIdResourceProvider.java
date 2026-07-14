@@ -5,12 +5,14 @@
 
 package io.opentelemetry.sdk.extension.incubator.resources;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.util.UUID;
 
 /**
@@ -19,23 +21,27 @@ import java.util.UUID;
  */
 public final class ServiceInstanceIdResourceProvider implements ConditionalResourceProvider {
 
-  public static final AttributeKey<String> SERVICE_INSTANCE_ID =
-      AttributeKey.stringKey("service.instance.id");
-
   // multiple calls to this resource provider should return the same value
-  private static final Resource RANDOM =
-      Resource.create(Attributes.of(SERVICE_INSTANCE_ID, UUID.randomUUID().toString()));
+  private static final String RANDOM_SERVICE_INSTANCE_ID = UUID.randomUUID().toString();
 
   static final int ORDER = Integer.MAX_VALUE;
 
   @Override
   public Resource createResource(ConfigProperties config) {
-    return RANDOM;
+    return EntityUtil.addEntity(
+            Resource.builder(),
+            Entity.builder(
+                    SemConvAttributes.SERVICE_INSTANCE_TYPE,
+                    Attributes.of(
+                        SemConvAttributes.SERVICE_INSTANCE_ID, RANDOM_SERVICE_INSTANCE_ID))
+                .setSchemaUrl(SemConvAttributes.SCHEMA_URL_V1_40_0)
+                .build())
+        .build();
   }
 
   @Override
   public boolean shouldApply(ConfigProperties config, Resource existing) {
-    return existing.getAttribute(SERVICE_INSTANCE_ID) == null;
+    return existing.getAttribute(SemConvAttributes.SERVICE_INSTANCE_ID) == null;
   }
 
   @Override
