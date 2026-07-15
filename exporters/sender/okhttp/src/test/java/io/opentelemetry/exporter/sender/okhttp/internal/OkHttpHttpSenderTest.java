@@ -213,7 +213,8 @@ class OkHttpHttpSenderTest {
         null,
         null,
         executorService,
-        Long.MAX_VALUE);
+        Long.MAX_VALUE,
+        TlsCompatibilityMode.MODERN);
   }
 
   private static class NoOpRequestBodyWriter implements MessageWriter {
