@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"composite", "composite_list"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class PropagatorModel {
 
   @Nullable private List<TextMapPropagatorModel> composite;

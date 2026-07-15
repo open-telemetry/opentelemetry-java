@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
   "id_generator",
   "tracer_configurator/development"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class TracerProviderModel {
 
   @Nullable private List<SpanProcessorModel> processors;

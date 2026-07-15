@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"attributes", "detection/development", "schema_url", "attributes_list"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ResourceModel {
 
   @Nullable private List<AttributeNameValueModel> attributes;

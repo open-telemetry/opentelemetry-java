@@ -8,25 +8,19 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExporterDefaultHistogramAggregationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExporterTemporalityPreferenceModel;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"output_stream", "temporality_preference", "default_histogram_aggregation"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalOtlpFileMetricExporterModel {
 
   @Nullable private String outputStream;
-
-  @Nullable
-  private io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
-          .ExporterTemporalityPreference
-      temporalityPreference;
-
-  @Nullable
-  private io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
-          .ExporterDefaultHistogramAggregation
-      defaultHistogramAggregation;
+  @Nullable private ExporterTemporalityPreferenceModel temporalityPreference;
+  @Nullable private ExporterDefaultHistogramAggregationModel defaultHistogramAggregation;
 
   /**
    * Configure output stream.
@@ -64,17 +58,13 @@ public class ExperimentalOtlpFileMetricExporterModel {
    */
   @JsonProperty("temporality_preference")
   @Nullable
-  public io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
-          .ExporterTemporalityPreference
-      getTemporalityPreference() {
+  public ExporterTemporalityPreferenceModel getTemporalityPreference() {
     return temporalityPreference;
   }
 
   @JsonProperty("temporality_preference")
   public ExperimentalOtlpFileMetricExporterModel withTemporalityPreference(
-      io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
-              .ExporterTemporalityPreference
-          temporalityPreference) {
+      ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
   }
@@ -94,17 +84,13 @@ public class ExperimentalOtlpFileMetricExporterModel {
    */
   @JsonProperty("default_histogram_aggregation")
   @Nullable
-  public io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
-          .ExporterDefaultHistogramAggregation
-      getDefaultHistogramAggregation() {
+  public ExporterDefaultHistogramAggregationModel getDefaultHistogramAggregation() {
     return defaultHistogramAggregation;
   }
 
   @JsonProperty("default_histogram_aggregation")
   public ExperimentalOtlpFileMetricExporterModel withDefaultHistogramAggregation(
-      io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel
-              .ExporterDefaultHistogramAggregation
-          defaultHistogramAggregation) {
+      ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
     return this;
   }

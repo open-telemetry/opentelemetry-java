@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
   "producers",
   "cardinality_limits"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class PeriodicMetricReaderModel {
 
   @Nullable private Integer interval;

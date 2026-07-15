@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"batch", "simple", "event_to_span_event_bridge/development"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class LogRecordProcessorModel {
 
   @Nullable private BatchLogRecordProcessorModel batch;

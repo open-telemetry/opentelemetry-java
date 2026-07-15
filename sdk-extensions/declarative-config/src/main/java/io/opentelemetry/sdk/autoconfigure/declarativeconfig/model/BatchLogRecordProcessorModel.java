@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
   "max_export_batch_size",
   "exporter"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class BatchLogRecordProcessorModel {
 
   @Nullable private Integer scheduleDelay;

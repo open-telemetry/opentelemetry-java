@@ -19,6 +19,8 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.MetricExporterComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ConsoleMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExporterDefaultHistogramAggregationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExporterTemporalityPreferenceModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.GrpcTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.HttpTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.NameStringValuePairModel;
@@ -119,10 +121,9 @@ class MetricExporterFactoryTest {
                                 .withCaFile(certificatePath)
                                 .withKeyFile(clientKeyPath)
                                 .withCertFile(clientCertificatePath))
-                        .withTemporalityPreference(
-                            OtlpHttpMetricExporterModel.ExporterTemporalityPreference.DELTA)
+                        .withTemporalityPreference(ExporterTemporalityPreferenceModel.DELTA)
                         .withDefaultHistogramAggregation(
-                            OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
+                            ExporterDefaultHistogramAggregationModel
                                 .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
             OtlpHttpMetricExporter.builder()
                 .setEndpoint("http://example:4318/v1/metrics")
@@ -161,10 +162,9 @@ class MetricExporterFactoryTest {
                                 .withCaFile(certificatePath)
                                 .withKeyFile(clientKeyPath)
                                 .withCertFile(clientCertificatePath))
-                        .withTemporalityPreference(
-                            OtlpHttpMetricExporterModel.ExporterTemporalityPreference.DELTA)
+                        .withTemporalityPreference(ExporterTemporalityPreferenceModel.DELTA)
                         .withDefaultHistogramAggregation(
-                            OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
+                            ExporterDefaultHistogramAggregationModel
                                 .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
             OtlpGrpcMetricExporter.builder()
                 .setEndpoint("http://example:4317")
