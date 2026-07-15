@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.export.HttpSenderProvider;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.common.export.TlsCompatibilityMode;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import java.net.URI;
@@ -69,6 +70,7 @@ public final class HttpExporterBuilder {
   private ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
+  private TlsCompatibilityMode tlsCompatibilityMode = TlsCompatibilityMode.MODERN;
 
   public HttpExporterBuilder(
       StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
@@ -167,6 +169,11 @@ public final class HttpExporterBuilder {
     return this;
   }
 
+  public HttpExporterBuilder setTlsCompatibilityMode(TlsCompatibilityMode tlsCompatibilityMode) {
+    this.tlsCompatibilityMode = tlsCompatibilityMode;
+    return this;
+  }
+
   public HttpExporterBuilder exportAsJson() {
     this.exportAsJson = true;
     exporterType = mapToJsonTypeIfPossible(exporterType);
@@ -204,6 +211,7 @@ public final class HttpExporterBuilder {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
     copy.componentLoader = componentLoader;
+    copy.tlsCompatibilityMode = tlsCompatibilityMode;
     return copy;
   }
 
@@ -247,7 +255,8 @@ public final class HttpExporterBuilder {
                 executorService,
                 // 4mb to align with spec guidance - even though we don't do anything with the
                 // response today, we will so better to have future-looking memory profile
-                4 * 1024L * 1024L));
+                4 * 1024L * 1024L,
+                tlsCompatibilityMode));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter(

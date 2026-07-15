@@ -98,4 +98,15 @@ public interface HttpSenderConfig {
   default long getMaxResponseBodySize() {
     return 4 * 1024L * 1024L;
   }
+
+  /**
+   * The TLS compatibility mode to use when connecting to an HTTPS endpoint.
+   *
+   * <p>Defaults to {@link TlsCompatibilityMode#MODERN}, which uses modern TLS versions only. {@link
+   * TlsCompatibilityMode#COMPATIBLE} enables support for legacy TLS versions for compatibility with
+   * older servers.
+   */
+  default TlsCompatibilityMode getTlsCompatibilityMode() {
+    return TlsCompatibilityMode.MODERN;
+  }
 }

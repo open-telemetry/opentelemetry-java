@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.export.HttpSender;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.common.export.TlsCompatibilityMode;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
@@ -79,7 +80,8 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
-      long maxResponseBodySize) {
+      long maxResponseBodySize,
+      TlsCompatibilityMode tlsCompatibilityMode) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -109,8 +111,13 @@ public final class OkHttpHttpSender implements HttpSender {
     boolean isPlainHttp = endpoint.getScheme().equals("http");
     if (isPlainHttp) {
       builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
-    } else if (sslContext != null && trustManager != null) {
-      builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+    } else {
+      if (sslContext != null && trustManager != null) {
+        builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+      }
+      if (tlsCompatibilityMode == TlsCompatibilityMode.COMPATIBLE) {
+        builder.connectionSpecs(Collections.singletonList(ConnectionSpec.COMPATIBLE_TLS));
+      }
     }
 
     this.client = builder.build();
