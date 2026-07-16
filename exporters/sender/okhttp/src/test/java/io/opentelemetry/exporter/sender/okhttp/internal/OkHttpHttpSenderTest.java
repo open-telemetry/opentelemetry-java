@@ -48,7 +48,8 @@ class OkHttpHttpSenderTest {
             null,
             null,
             executor,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
     AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -211,7 +212,8 @@ class OkHttpHttpSenderTest {
         null,
         null,
         executorService,
-        Long.MAX_VALUE);
+        Long.MAX_VALUE,
+        null);
   }
 
   private static class NoOpRequestBodyWriter implements MessageWriter {

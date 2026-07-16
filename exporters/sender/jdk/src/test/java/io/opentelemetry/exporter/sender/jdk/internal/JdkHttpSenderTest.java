@@ -191,7 +191,8 @@ class JdkHttpSenderTest {
             null,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     try {
       int expectedMax = Math.max(Runtime.getRuntime().availableProcessors(), 5);
@@ -223,7 +224,8 @@ class JdkHttpSenderTest {
             null,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     assertThat(sender)
         .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))

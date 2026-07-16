@@ -98,4 +98,19 @@ public interface HttpSenderConfig {
   default long getMaxResponseBodySize() {
     return 4 * 1024L * 1024L;
   }
+
+  /**
+   * The TLS protocol versions to enable when connecting to an HTTPS endpoint, or {@code null} to
+   * defer to the sender implementation's default.
+   *
+   * <p>Protocol names follow the JSSE convention: {@code "TLSv1"}, {@code "TLSv1.1"}, {@code
+   * "TLSv1.2"}, {@code "TLSv1.3"}. When set, only the listed versions will be enabled.
+   *
+   * <p>Note: enabling legacy protocol versions (TLSv1, TLSv1.1) also requires removing them from
+   * the JVM's {@code jdk.tls.disabledAlgorithms} security property.
+   */
+  @Nullable
+  default List<String> getEnabledProtocols() {
+    return null;
+  }
 }

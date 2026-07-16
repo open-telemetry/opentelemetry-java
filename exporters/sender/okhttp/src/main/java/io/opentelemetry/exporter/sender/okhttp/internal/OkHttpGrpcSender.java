@@ -61,6 +61,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.TlsVersion;
 import okio.Buffer;
 import okio.GzipSource;
 
@@ -96,7 +97,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
-      long maxResponseBodySize) {
+      long maxResponseBodySize,
+      @Nullable List<String> enabledProtocols) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -127,6 +129,15 @@ public final class OkHttpGrpcSender implements GrpcSender {
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
       if (sslContext != null && trustManager != null) {
         clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+      }
+      if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
+        TlsVersion[] versions =
+            enabledProtocols.stream().map(TlsVersion::forJavaName).toArray(TlsVersion[]::new);
+        clientBuilder.connectionSpecs(
+            Collections.singletonList(
+                new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+                    .tlsVersions(versions)
+                    .build()));
       }
     }
 
