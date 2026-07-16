@@ -62,7 +62,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * <p>The test server is restricted to TLSv1/TLSv1.1 because these are the protocol versions that
  * distinguish MODERN_TLS from COMPATIBLE_TLS.
  */
-
 class OkHttpHttpSenderTlsCompatibilityTest {
 
   @RegisterExtension
