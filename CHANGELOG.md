@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### API
+
+* Fix `TraceStateBuilder.remove` corrupting the builder when the same key is removed twice
+  ([#8613](https://github.com/open-telemetry/opentelemetry-java/pull/8613))
+
 ### SDK
 
 #### Exporters
