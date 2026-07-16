@@ -140,6 +140,9 @@ class LoggingMetricExporterTest {
 
   @Test
   void stringRepresentation() {
-    assertThat(LoggingMetricExporter.create().toString()).isEqualTo("LoggingMetricExporter{}");
+    assertThat(LoggingMetricExporter.create().toString())
+        .isEqualTo("LoggingMetricExporter{aggregationTemporality=CUMULATIVE}");
+    assertThat(LoggingMetricExporter.create(AggregationTemporality.DELTA).toString())
+        .isEqualTo("LoggingMetricExporter{aggregationTemporality=DELTA}");
   }
 }
