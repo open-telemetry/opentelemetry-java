@@ -130,7 +130,6 @@ public final class TestUtils {
   /** Asserts the specified {@code List} of {@code Span} belongs to the same trace. */
   public static void assertSameTrace(List<SpanData> spans) {
     for (int i = 0; i < spans.size() - 1; i++) {
-      // TODO - Include nanos in this comparison.
       assertThat(spans.get(i).getEndEpochNanos())
           .isLessThanOrEqualTo(spans.get(spans.size() - 1).getEndEpochNanos());
       assertThat(spans.get(i).getTraceId()).isEqualTo(spans.get(spans.size() - 1).getTraceId());

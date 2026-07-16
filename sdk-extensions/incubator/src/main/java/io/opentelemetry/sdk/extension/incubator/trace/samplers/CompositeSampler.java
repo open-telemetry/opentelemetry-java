@@ -53,14 +53,14 @@ public final class CompositeSampler implements Sampler {
     OtelTraceState otelTraceState = OtelTraceState.parse(traceState);
 
     SamplingIntent intent =
-        delegate.getSamplingIntent(parentContext, traceId, name, spanKind, attributes, parentLinks);
+        delegate.getSamplingIntent(parentContext, name, spanKind, attributes, parentLinks);
 
-    boolean thresholdReliable = false;
+    boolean adjustedCountReliable = false;
     boolean sampled = false;
     if (isValidThreshold(intent.getThreshold())) {
-      thresholdReliable = intent.isThresholdReliable();
+      adjustedCountReliable = intent.isAdjustedCountReliable();
       long randomValue;
-      if (thresholdReliable) {
+      if (adjustedCountReliable) {
         if (isValidRandomValue(otelTraceState.getRandomValue())) {
           randomValue = otelTraceState.getRandomValue();
         } else {
@@ -75,7 +75,7 @@ public final class CompositeSampler implements Sampler {
 
     SamplingDecision decision =
         sampled ? SamplingDecision.RECORD_AND_SAMPLE : SamplingDecision.DROP;
-    if (sampled && thresholdReliable) {
+    if (sampled && adjustedCountReliable) {
       otelTraceState =
           new OtelTraceState(
               otelTraceState.getRandomValue(), intent.getThreshold(), otelTraceState.getRest());

@@ -72,6 +72,8 @@ class BatchSpanProcessorTest {
   void setUp() {
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockSpanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
+
+    when(mockSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @AfterEach

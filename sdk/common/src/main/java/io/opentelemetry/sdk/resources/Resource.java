@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * {@link Resource} represents a resource, which capture identifying information about the entities
+ * {@link Resource} represents a resource, which captures identifying information about the entities
  * for which signals (stats or traces) are reported.
  */
 @Immutable
