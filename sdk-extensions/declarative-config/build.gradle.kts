@@ -101,12 +101,12 @@ jsonSchema2Pojo {
   // Clear old source files to avoid contaminated source dir when updating
   removeOldOutput = true
 
-  // Annotate fields/getters via NullableAnnotator instead of jsonschema2pojo's JSR-305 support. The
-  // built-in support adds @Nonnull to required fields, which NullAway flags as uninitialized (Jackson
-  // populates them reflectively). NullableAnnotator annotates everything @Nullable instead, matching
-  // the getters and letting the model factories validate required-ness at runtime.
+  // OtelJacksonAnnotator drives Jackson annotations (annotationStyle = none disables the built-in
+  // one); puts @JsonProperty on getters/withX builders instead of private fields. JSR-305 stays off
+  // so @Nullable comes only from OtelJacksonAnnotator.
   includeJsr305Annotations = false
-  setCustomAnnotator(io.opentelemetry.gradle.js2p.NullableAnnotator::class.java)
+  setAnnotationStyle("none")
+  setCustomAnnotator(io.opentelemetry.gradle.js2p.OtelJacksonAnnotator::class.java)
 
   // Generate AutoValue-style toString/equals/hashCode via OtelObjectRule (wired through
   // OtelRuleFactory) rather than jsonschema2pojo's defaults. The defaults use a commons-style

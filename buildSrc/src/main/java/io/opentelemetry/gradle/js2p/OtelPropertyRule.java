@@ -5,11 +5,10 @@
 
 package io.opentelemetry.gradle.js2p;
 
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
@@ -19,7 +18,8 @@ import org.jsonschema2pojo.rules.PropertyRule;
 import org.jsonschema2pojo.rules.RuleFactory;
 
 /**
- * A {@link PropertyRule} that emits each property's {@code description} only on its getter.
+ * A {@link PropertyRule} that emits each property's {@code description} only on its getter, and
+ * annotates the generated {@code withX} builder method with {@code @JsonProperty}.
  *
  * <p>By default jsonschema2pojo writes a property description in three places: the field javadoc,
  * the getter javadoc, and a {@code @JsonPropertyDescription} annotation on the field. The getter is
@@ -35,10 +35,11 @@ import org.jsonschema2pojo.rules.RuleFactory;
  * PropertyRule#apply} so the superclass adds it nowhere (not the field javadoc, the getter javadoc,
  * or a {@code @JsonPropertyDescription}), then apply it to the getter only — leaving fields without
  * any javadoc.
+ *
+ * <p>{@link OtelJacksonAnnotator} puts {@code @JsonProperty} on the getter, but has no hook for the
+ * {@code withX} builder methods, so this rule annotates them.
  */
 public class OtelPropertyRule extends PropertyRule {
-
-  private static final String JSON_PROPERTY_DESCRIPTION = JsonPropertyDescription.class.getName();
 
   private final RuleFactory ruleFactory;
 
@@ -68,20 +69,60 @@ public class OtelPropertyRule extends PropertyRule {
       return result;
     }
 
-    if (hasDescriptionAnnotation(field)) {
+    // A $ref target with its own top-level description would land on the field via DescriptionRule
+    // and conflict with the sibling description we re-apply to the getter. The schema puts
+    // descriptions on properties, not $defs, so this doesn't happen today; fail loud if it does.
+    if (referencedTypeHasDescription(node, schema)) {
       throw new GenerationException(
           "Property '"
               + nodeName
-              + "' resolves to a type that defines its own top-level description. Descriptions on"
-              + " $defs are not handled (they would duplicate onto the field). See "
+              + "' resolves to a type that defines its own top-level description, which is not"
+              + " handled (it would land on the field). See "
               + OtelPropertyRule.class.getName()
               + ".");
     }
+
+    annotateBuilderMethod(result, propertyName, node, nodeName);
 
     if (description != null) {
       applyGetterDescription(nodeName, node, schema, result, propertyName, field, description);
     }
     return result;
+  }
+
+  /** Binds Jackson to withX so deserialization goes through the builder, not the private field. */
+  private void annotateBuilderMethod(
+      JDefinedClass jclass, String propertyName, JsonNode node, String jsonName) {
+    String builderName = ruleFactory.getNameHelper().getBuilderName(propertyName, node);
+    for (JMethod method : jclass.methods()) {
+      if (method.name().equals(builderName)) {
+        method.annotate(JsonProperty.class).param("value", jsonName);
+        return;
+      }
+    }
+  }
+
+  /**
+   * Returns whether a (possibly chained) {@code $ref} resolves to a schema with its own
+   * description. Uses {@link org.jsonschema2pojo.SchemaStore} rather than inspecting {@code
+   * field.javadoc()} (which would instantiate an empty comment).
+   */
+  private boolean referencedTypeHasDescription(JsonNode node, Schema schema) {
+    JsonNode current = node;
+    Schema currentSchema = schema;
+    boolean resolved = false;
+    while (current.has("$ref")) {
+      currentSchema =
+          ruleFactory
+              .getSchemaStore()
+              .create(
+                  currentSchema,
+                  current.get("$ref").asText(),
+                  ruleFactory.getGenerationConfig().getRefFragmentPathDelimiters());
+      current = currentSchema.getContent();
+      resolved = true;
+    }
+    return resolved && current.has("description");
   }
 
   private void applyGetterDescription(
@@ -116,14 +157,5 @@ public class OtelPropertyRule extends PropertyRule {
     String body = trailingNewline ? text.substring(0, text.length() - 1) : text;
     body = body.replaceAll("(?<!\n)\n(?!\n)", "\n\n");
     return TextNode.valueOf(trailingNewline ? body + "\n" : body);
-  }
-
-  private static boolean hasDescriptionAnnotation(JFieldVar field) {
-    for (JAnnotationUse annotation : field.annotations()) {
-      if (annotation.getAnnotationClass().fullName().equals(JSON_PROPERTY_DESCRIPTION)) {
-        return true;
-      }
-    }
-    return false;
   }
 }

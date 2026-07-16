@@ -17,13 +17,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalLoggerConfiguratorModel {
 
-  @JsonProperty("default_config")
-  @Nullable
-  private ExperimentalLoggerConfigModel defaultConfig;
-
-  @JsonProperty("loggers")
-  @Nullable
-  private List<ExperimentalLoggerMatcherAndConfigModel> loggers;
+  @Nullable private ExperimentalLoggerConfigModel defaultConfig;
+  @Nullable private List<ExperimentalLoggerMatcherAndConfigModel> loggers;
 
   /**
    * Configure the default logger config used there is no matching entry in
@@ -37,6 +32,7 @@ public class ExperimentalLoggerConfiguratorModel {
     return defaultConfig;
   }
 
+  @JsonProperty("default_config")
   public ExperimentalLoggerConfiguratorModel withDefaultConfig(
       ExperimentalLoggerConfigModel defaultConfig) {
     this.defaultConfig = defaultConfig;
@@ -54,6 +50,7 @@ public class ExperimentalLoggerConfiguratorModel {
     return loggers;
   }
 
+  @JsonProperty("loggers")
   public ExperimentalLoggerConfiguratorModel withLoggers(
       List<ExperimentalLoggerMatcherAndConfigModel> loggers) {
     this.loggers = loggers;

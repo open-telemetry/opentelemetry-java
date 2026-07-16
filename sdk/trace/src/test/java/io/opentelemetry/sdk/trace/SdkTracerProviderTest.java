@@ -238,6 +238,19 @@ class SdkTracerProviderTest {
   }
 
   @Test
+  void shutdown_ShutsDownSampler() {
+    Sampler sampler = mock(Sampler.class);
+
+    when(sampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().setSampler(sampler).build();
+
+    tracerProvider.shutdown();
+
+    verify(sampler).shutdown();
+  }
+
+  @Test
   void close() {
     tracerProvider.close();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();

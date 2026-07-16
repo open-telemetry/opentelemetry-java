@@ -18,21 +18,10 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ResourceModel {
 
-  @JsonProperty("attributes")
-  @Nullable
-  private List<AttributeNameValueModel> attributes;
-
-  @JsonProperty("detection/development")
-  @Nullable
-  private ExperimentalResourceDetectionModel detectionDevelopment;
-
-  @JsonProperty("schema_url")
-  @Nullable
-  private String schemaUrl;
-
-  @JsonProperty("attributes_list")
-  @Nullable
-  private String attributesList;
+  @Nullable private List<AttributeNameValueModel> attributes;
+  @Nullable private ExperimentalResourceDetectionModel detectionDevelopment;
+  @Nullable private String schemaUrl;
+  @Nullable private String attributesList;
 
   /**
    * Configure resource attributes. Entries have higher priority than entries from
@@ -46,6 +35,7 @@ public class ResourceModel {
     return attributes;
   }
 
+  @JsonProperty("attributes")
   public ResourceModel withAttributes(List<AttributeNameValueModel> attributes) {
     this.attributes = attributes;
     return this;
@@ -62,6 +52,7 @@ public class ResourceModel {
     return detectionDevelopment;
   }
 
+  @JsonProperty("detection/development")
   public ResourceModel withDetectionDevelopment(
       ExperimentalResourceDetectionModel detectionDevelopment) {
     this.detectionDevelopment = detectionDevelopment;
@@ -79,6 +70,7 @@ public class ResourceModel {
     return schemaUrl;
   }
 
+  @JsonProperty("schema_url")
   public ResourceModel withSchemaUrl(String schemaUrl) {
     this.schemaUrl = schemaUrl;
     return this;
@@ -101,6 +93,7 @@ public class ResourceModel {
     return attributesList;
   }
 
+  @JsonProperty("attributes_list")
   public ResourceModel withAttributesList(String attributesList) {
     this.attributesList = attributesList;
     return this;

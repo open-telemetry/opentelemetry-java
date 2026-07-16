@@ -16,17 +16,9 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class Base2ExponentialBucketHistogramAggregationModel {
 
-  @JsonProperty("max_scale")
-  @Nullable
-  private Integer maxScale;
-
-  @JsonProperty("max_size")
-  @Nullable
-  private Integer maxSize;
-
-  @JsonProperty("record_min_max")
-  @Nullable
-  private Boolean recordMinMax;
+  @Nullable private Integer maxScale;
+  @Nullable private Integer maxSize;
+  @Nullable private Boolean recordMinMax;
 
   /**
    * Configure the max scale factor.
@@ -39,6 +31,7 @@ public class Base2ExponentialBucketHistogramAggregationModel {
     return maxScale;
   }
 
+  @JsonProperty("max_scale")
   public Base2ExponentialBucketHistogramAggregationModel withMaxScale(Integer maxScale) {
     this.maxScale = maxScale;
     return this;
@@ -56,6 +49,7 @@ public class Base2ExponentialBucketHistogramAggregationModel {
     return maxSize;
   }
 
+  @JsonProperty("max_size")
   public Base2ExponentialBucketHistogramAggregationModel withMaxSize(Integer maxSize) {
     this.maxSize = maxSize;
     return this;
@@ -72,6 +66,7 @@ public class Base2ExponentialBucketHistogramAggregationModel {
     return recordMinMax;
   }
 
+  @JsonProperty("record_min_max")
   public Base2ExponentialBucketHistogramAggregationModel withRecordMinMax(Boolean recordMinMax) {
     this.recordMinMax = recordMinMax;
     return this;

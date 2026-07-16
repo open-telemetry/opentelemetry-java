@@ -17,13 +17,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExplicitBucketHistogramAggregationModel {
 
-  @JsonProperty("boundaries")
-  @Nullable
-  private List<Double> boundaries;
-
-  @JsonProperty("record_min_max")
-  @Nullable
-  private Boolean recordMinMax;
+  @Nullable private List<Double> boundaries;
+  @Nullable private Boolean recordMinMax;
 
   /**
    * Configure bucket boundaries.
@@ -37,6 +32,7 @@ public class ExplicitBucketHistogramAggregationModel {
     return boundaries;
   }
 
+  @JsonProperty("boundaries")
   public ExplicitBucketHistogramAggregationModel withBoundaries(List<Double> boundaries) {
     this.boundaries = boundaries;
     return this;
@@ -53,6 +49,7 @@ public class ExplicitBucketHistogramAggregationModel {
     return recordMinMax;
   }
 
+  @JsonProperty("record_min_max")
   public ExplicitBucketHistogramAggregationModel withRecordMinMax(Boolean recordMinMax) {
     this.recordMinMax = recordMinMax;
     return this;

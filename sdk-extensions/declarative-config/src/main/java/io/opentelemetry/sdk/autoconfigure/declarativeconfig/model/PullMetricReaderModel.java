@@ -17,17 +17,9 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class PullMetricReaderModel {
 
-  @JsonProperty("exporter")
-  @Nullable
-  private PullMetricExporterModel exporter;
-
-  @JsonProperty("producers")
-  @Nullable
-  private List<MetricProducerModel> producers;
-
-  @JsonProperty("cardinality_limits")
-  @Nullable
-  private CardinalityLimitsModel cardinalityLimits;
+  @Nullable private PullMetricExporterModel exporter;
+  @Nullable private List<MetricProducerModel> producers;
+  @Nullable private CardinalityLimitsModel cardinalityLimits;
 
   /**
    * Configure exporter.
@@ -40,6 +32,7 @@ public class PullMetricReaderModel {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public PullMetricReaderModel withExporter(PullMetricExporterModel exporter) {
     this.exporter = exporter;
     return this;
@@ -56,6 +49,7 @@ public class PullMetricReaderModel {
     return producers;
   }
 
+  @JsonProperty("producers")
   public PullMetricReaderModel withProducers(List<MetricProducerModel> producers) {
     this.producers = producers;
     return this;
@@ -72,6 +66,7 @@ public class PullMetricReaderModel {
     return cardinalityLimits;
   }
 
+  @JsonProperty("cardinality_limits")
   public PullMetricReaderModel withCardinalityLimits(CardinalityLimitsModel cardinalityLimits) {
     this.cardinalityLimits = cardinalityLimits;
     return this;

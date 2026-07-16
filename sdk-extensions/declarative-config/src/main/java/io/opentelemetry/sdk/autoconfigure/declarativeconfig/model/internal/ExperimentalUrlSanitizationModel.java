@@ -17,9 +17,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalUrlSanitizationModel {
 
-  @JsonProperty("sensitive_query_parameters")
-  @Nullable
-  private List<String> sensitiveQueryParameters;
+  @Nullable private List<String> sensitiveQueryParameters;
 
   /**
    * List of query parameter names whose values should be redacted from URLs.
@@ -42,6 +40,7 @@ public class ExperimentalUrlSanitizationModel {
     return sensitiveQueryParameters;
   }
 
+  @JsonProperty("sensitive_query_parameters")
   public ExperimentalUrlSanitizationModel withSensitiveQueryParameters(
       List<String> sensitiveQueryParameters) {
     this.sensitiveQueryParameters = sensitiveQueryParameters;

@@ -31,22 +31,20 @@ final class ComposableParentThresholdSampler implements ComposableSampler {
   @Override
   public SamplingIntent getSamplingIntent(
       Context parentContext,
-      String traceId,
       String name,
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
     SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
     if (!parentSpanContext.isValid()) {
-      return rootSampler.getSamplingIntent(
-          parentContext, traceId, name, spanKind, attributes, parentLinks);
+      return rootSampler.getSamplingIntent(parentContext, name, spanKind, attributes, parentLinks);
     }
 
     OtelTraceState otTraceState = OtelTraceState.parse(parentSpanContext.getTraceState());
     if (isValidThreshold(otTraceState.getThreshold())) {
       return ImmutableSamplingIntent.create(
           otTraceState.getThreshold(),
-          /* thresholdReliable= */ true,
+          /* adjustedCountReliable= */ true,
           Attributes.empty(),
           Function.identity());
     }
@@ -54,7 +52,7 @@ final class ComposableParentThresholdSampler implements ComposableSampler {
     long threshold =
         parentSpanContext.getTraceFlags().isSampled() ? MIN_THRESHOLD : INVALID_THRESHOLD;
     return ImmutableSamplingIntent.create(
-        threshold, /* thresholdReliable= */ false, Attributes.empty(), Function.identity());
+        threshold, /* adjustedCountReliable= */ false, Attributes.empty(), Function.identity());
   }
 
   @Override

@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalProbabilitySamplerModel {
 
-  @JsonProperty("ratio")
-  @Nullable
-  private Double ratio;
+  @Nullable private Double ratio;
 
   /**
    * Configure ratio.
@@ -31,6 +29,7 @@ public class ExperimentalProbabilitySamplerModel {
     return ratio;
   }
 
+  @JsonProperty("ratio")
   public ExperimentalProbabilitySamplerModel withRatio(Double ratio) {
     this.ratio = ratio;
     return this;

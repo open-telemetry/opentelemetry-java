@@ -129,7 +129,7 @@ class InstrumentationConfigUtilTest {
       ExperimentalLanguageSpecificInstrumentationPropertyModel instrumentationConfig) {
     ExperimentalLanguageSpecificInstrumentationModel javaConfig =
         new ExperimentalLanguageSpecificInstrumentationModel();
-    javaConfig.setAdditionalProperty(instrumentationName, instrumentationConfig);
+    javaConfig.withAdditionalProperty(instrumentationName, instrumentationConfig);
     DeclarativeConfigProperties modelProperties =
         DeclarativeConfiguration.toConfigProperties(
             new OpenTelemetryConfigurationModel()

@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
  * <p>A Context object can be {@linkplain #makeCurrent set} to the {@link ContextStorage}, which
  * effectively forms a <b>scope</b> for the context. The scope is bound to the current thread.
  * Within a scope, its Context is accessible even across API boundaries, through {@link #current}.
- * The scope is later exited by {@link Scope#close()} closing} the scope.
+ * The scope is later exited by {@linkplain Scope#close() closing} the scope.
  *
  * <p>Context objects are immutable and inherit state from their parent. To add or overwrite the
  * current state a new context object must be created and then attached, replacing the previously

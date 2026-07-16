@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class TraceIdRatioBasedSamplerModel {
 
-  @JsonProperty("ratio")
-  @Nullable
-  private Double ratio;
+  @Nullable private Double ratio;
 
   /**
    * Configure trace_id_ratio.
@@ -31,6 +29,7 @@ public class TraceIdRatioBasedSamplerModel {
     return ratio;
   }
 
+  @JsonProperty("ratio")
   public TraceIdRatioBasedSamplerModel withRatio(Double ratio) {
     this.ratio = ratio;
     return this;

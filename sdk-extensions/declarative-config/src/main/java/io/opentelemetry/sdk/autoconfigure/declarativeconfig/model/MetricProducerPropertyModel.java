@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.LinkedHashMap;
@@ -20,7 +19,6 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class MetricProducerPropertyModel {
 
-  @JsonIgnore
   private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
   @JsonAnyGetter
@@ -29,10 +27,6 @@ public class MetricProducerPropertyModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public MetricProducerPropertyModel withAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);
     return this;

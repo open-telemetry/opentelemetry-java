@@ -17,13 +17,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class PropagatorModel {
 
-  @JsonProperty("composite")
-  @Nullable
-  private List<TextMapPropagatorModel> composite;
-
-  @JsonProperty("composite_list")
-  @Nullable
-  private String compositeList;
+  @Nullable private List<TextMapPropagatorModel> composite;
+  @Nullable private String compositeList;
 
   /**
    * Configure the propagators in the composite text map propagator. Entries from .composite_list
@@ -40,6 +35,7 @@ public class PropagatorModel {
     return composite;
   }
 
+  @JsonProperty("composite")
   public PropagatorModel withComposite(List<TextMapPropagatorModel> composite) {
     this.composite = composite;
     return this;
@@ -65,6 +61,7 @@ public class PropagatorModel {
     return compositeList;
   }
 
+  @JsonProperty("composite_list")
   public PropagatorModel withCompositeList(String compositeList) {
     this.compositeList = compositeList;
     return this;

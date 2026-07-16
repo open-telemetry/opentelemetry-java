@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalComposableParentThresholdSamplerModel {
 
-  @JsonProperty("root")
-  @Nullable
-  private ExperimentalComposableSamplerModel root;
+  @Nullable private ExperimentalComposableSamplerModel root;
 
   /**
    * Sampler to use when there is no parent.
@@ -31,6 +29,7 @@ public class ExperimentalComposableParentThresholdSamplerModel {
     return root;
   }
 
+  @JsonProperty("root")
   public ExperimentalComposableParentThresholdSamplerModel withRoot(
       ExperimentalComposableSamplerModel root) {
     this.root = root;

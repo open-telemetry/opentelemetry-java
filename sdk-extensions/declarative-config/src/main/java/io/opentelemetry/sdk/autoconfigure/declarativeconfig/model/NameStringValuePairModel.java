@@ -16,13 +16,8 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class NameStringValuePairModel {
 
-  @JsonProperty("name")
-  @Nullable
-  private String name;
-
-  @JsonProperty("value")
-  @Nullable
-  private String value;
+  @Nullable private String name;
+  @Nullable private String value;
 
   /**
    * The name of the pair.
@@ -35,6 +30,7 @@ public class NameStringValuePairModel {
     return name;
   }
 
+  @JsonProperty("name")
   public NameStringValuePairModel withName(String name) {
     this.name = name;
     return this;
@@ -51,6 +47,7 @@ public class NameStringValuePairModel {
     return value;
   }
 
+  @JsonProperty("value")
   public NameStringValuePairModel withValue(String value) {
     this.value = value;
     return this;

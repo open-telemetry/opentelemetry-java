@@ -25,37 +25,14 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class CardinalityLimitsModel {
 
-  @JsonProperty("default")
-  @Nullable
-  private Integer _default;
-
-  @JsonProperty("counter")
-  @Nullable
-  private Integer counter;
-
-  @JsonProperty("gauge")
-  @Nullable
-  private Integer gauge;
-
-  @JsonProperty("histogram")
-  @Nullable
-  private Integer histogram;
-
-  @JsonProperty("observable_counter")
-  @Nullable
-  private Integer observableCounter;
-
-  @JsonProperty("observable_gauge")
-  @Nullable
-  private Integer observableGauge;
-
-  @JsonProperty("observable_up_down_counter")
-  @Nullable
-  private Integer observableUpDownCounter;
-
-  @JsonProperty("up_down_counter")
-  @Nullable
-  private Integer upDownCounter;
+  @Nullable private Integer _default;
+  @Nullable private Integer counter;
+  @Nullable private Integer gauge;
+  @Nullable private Integer histogram;
+  @Nullable private Integer observableCounter;
+  @Nullable private Integer observableGauge;
+  @Nullable private Integer observableUpDownCounter;
+  @Nullable private Integer upDownCounter;
 
   /**
    * Configure default cardinality limit for all instrument types.
@@ -70,6 +47,7 @@ public class CardinalityLimitsModel {
     return _default;
   }
 
+  @JsonProperty("default")
   public CardinalityLimitsModel withDefault(Integer _default) {
     this._default = _default;
     return this;
@@ -86,6 +64,7 @@ public class CardinalityLimitsModel {
     return counter;
   }
 
+  @JsonProperty("counter")
   public CardinalityLimitsModel withCounter(Integer counter) {
     this.counter = counter;
     return this;
@@ -102,6 +81,7 @@ public class CardinalityLimitsModel {
     return gauge;
   }
 
+  @JsonProperty("gauge")
   public CardinalityLimitsModel withGauge(Integer gauge) {
     this.gauge = gauge;
     return this;
@@ -118,6 +98,7 @@ public class CardinalityLimitsModel {
     return histogram;
   }
 
+  @JsonProperty("histogram")
   public CardinalityLimitsModel withHistogram(Integer histogram) {
     this.histogram = histogram;
     return this;
@@ -134,6 +115,7 @@ public class CardinalityLimitsModel {
     return observableCounter;
   }
 
+  @JsonProperty("observable_counter")
   public CardinalityLimitsModel withObservableCounter(Integer observableCounter) {
     this.observableCounter = observableCounter;
     return this;
@@ -150,6 +132,7 @@ public class CardinalityLimitsModel {
     return observableGauge;
   }
 
+  @JsonProperty("observable_gauge")
   public CardinalityLimitsModel withObservableGauge(Integer observableGauge) {
     this.observableGauge = observableGauge;
     return this;
@@ -166,6 +149,7 @@ public class CardinalityLimitsModel {
     return observableUpDownCounter;
   }
 
+  @JsonProperty("observable_up_down_counter")
   public CardinalityLimitsModel withObservableUpDownCounter(Integer observableUpDownCounter) {
     this.observableUpDownCounter = observableUpDownCounter;
     return this;
@@ -182,6 +166,7 @@ public class CardinalityLimitsModel {
     return upDownCounter;
   }
 
+  @JsonProperty("up_down_counter")
   public CardinalityLimitsModel withUpDownCounter(Integer upDownCounter) {
     this.upDownCounter = upDownCounter;
     return this;

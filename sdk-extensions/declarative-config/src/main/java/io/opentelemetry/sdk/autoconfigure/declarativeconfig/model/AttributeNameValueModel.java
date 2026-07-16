@@ -20,17 +20,9 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class AttributeNameValueModel {
 
-  @JsonProperty("name")
-  @Nullable
-  private String name;
-
-  @JsonProperty("value")
-  @Nullable
-  private Object value;
-
-  @JsonProperty("type")
-  @Nullable
-  private AttributeNameValueModel.AttributeType type;
+  @Nullable private String name;
+  @Nullable private Object value;
+  @Nullable private AttributeNameValueModel.AttributeType type;
 
   /**
    * The attribute name.
@@ -43,6 +35,7 @@ public class AttributeNameValueModel {
     return name;
   }
 
+  @JsonProperty("name")
   public AttributeNameValueModel withName(String name) {
     this.name = name;
     return this;
@@ -61,6 +54,7 @@ public class AttributeNameValueModel {
     return value;
   }
 
+  @JsonProperty("value")
   public AttributeNameValueModel withValue(Object value) {
     this.value = value;
     return this;
@@ -95,6 +89,7 @@ public class AttributeNameValueModel {
     return type;
   }
 
+  @JsonProperty("type")
   public AttributeNameValueModel withType(AttributeNameValueModel.AttributeType type) {
     this.type = type;
     return this;

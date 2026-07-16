@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -22,20 +21,13 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class LogRecordProcessorModel {
 
-  @JsonProperty("batch")
-  @Nullable
-  private BatchLogRecordProcessorModel batch;
+  @Nullable private BatchLogRecordProcessorModel batch;
+  @Nullable private SimpleLogRecordProcessorModel simple;
 
-  @JsonProperty("simple")
-  @Nullable
-  private SimpleLogRecordProcessorModel simple;
-
-  @JsonProperty("event_to_span_event_bridge/development")
   @Nullable
   private ExperimentalEventToSpanEventBridgeLogRecordProcessorModel
       eventToSpanEventBridgeDevelopment;
 
-  @JsonIgnore
   private Map<String, LogRecordProcessorPropertyModel> additionalProperties =
       new LinkedHashMap<String, LogRecordProcessorPropertyModel>();
 
@@ -50,6 +42,7 @@ public class LogRecordProcessorModel {
     return batch;
   }
 
+  @JsonProperty("batch")
   public LogRecordProcessorModel withBatch(BatchLogRecordProcessorModel batch) {
     this.batch = batch;
     return this;
@@ -66,6 +59,7 @@ public class LogRecordProcessorModel {
     return simple;
   }
 
+  @JsonProperty("simple")
   public LogRecordProcessorModel withSimple(SimpleLogRecordProcessorModel simple) {
     this.simple = simple;
     return this;
@@ -83,6 +77,7 @@ public class LogRecordProcessorModel {
     return eventToSpanEventBridgeDevelopment;
   }
 
+  @JsonProperty("event_to_span_event_bridge/development")
   public LogRecordProcessorModel withEventToSpanEventBridgeDevelopment(
       ExperimentalEventToSpanEventBridgeLogRecordProcessorModel eventToSpanEventBridgeDevelopment) {
     this.eventToSpanEventBridgeDevelopment = eventToSpanEventBridgeDevelopment;
@@ -95,10 +90,6 @@ public class LogRecordProcessorModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, LogRecordProcessorPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public LogRecordProcessorModel withAdditionalProperty(
       String name, LogRecordProcessorPropertyModel value) {
     this.additionalProperties.put(name, value);

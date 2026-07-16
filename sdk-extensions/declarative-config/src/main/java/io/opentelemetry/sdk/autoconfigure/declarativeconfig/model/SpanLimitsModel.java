@@ -23,29 +23,12 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SpanLimitsModel {
 
-  @JsonProperty("attribute_value_length_limit")
-  @Nullable
-  private Integer attributeValueLengthLimit;
-
-  @JsonProperty("attribute_count_limit")
-  @Nullable
-  private Integer attributeCountLimit;
-
-  @JsonProperty("event_count_limit")
-  @Nullable
-  private Integer eventCountLimit;
-
-  @JsonProperty("link_count_limit")
-  @Nullable
-  private Integer linkCountLimit;
-
-  @JsonProperty("event_attribute_count_limit")
-  @Nullable
-  private Integer eventAttributeCountLimit;
-
-  @JsonProperty("link_attribute_count_limit")
-  @Nullable
-  private Integer linkAttributeCountLimit;
+  @Nullable private Integer attributeValueLengthLimit;
+  @Nullable private Integer attributeCountLimit;
+  @Nullable private Integer eventCountLimit;
+  @Nullable private Integer linkCountLimit;
+  @Nullable private Integer eventAttributeCountLimit;
+  @Nullable private Integer linkAttributeCountLimit;
 
   /**
    * Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit.
@@ -60,6 +43,7 @@ public class SpanLimitsModel {
     return attributeValueLengthLimit;
   }
 
+  @JsonProperty("attribute_value_length_limit")
   public SpanLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
     return this;
@@ -78,6 +62,7 @@ public class SpanLimitsModel {
     return attributeCountLimit;
   }
 
+  @JsonProperty("attribute_count_limit")
   public SpanLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
     return this;
@@ -96,6 +81,7 @@ public class SpanLimitsModel {
     return eventCountLimit;
   }
 
+  @JsonProperty("event_count_limit")
   public SpanLimitsModel withEventCountLimit(Integer eventCountLimit) {
     this.eventCountLimit = eventCountLimit;
     return this;
@@ -114,6 +100,7 @@ public class SpanLimitsModel {
     return linkCountLimit;
   }
 
+  @JsonProperty("link_count_limit")
   public SpanLimitsModel withLinkCountLimit(Integer linkCountLimit) {
     this.linkCountLimit = linkCountLimit;
     return this;
@@ -132,6 +119,7 @@ public class SpanLimitsModel {
     return eventAttributeCountLimit;
   }
 
+  @JsonProperty("event_attribute_count_limit")
   public SpanLimitsModel withEventAttributeCountLimit(Integer eventAttributeCountLimit) {
     this.eventAttributeCountLimit = eventAttributeCountLimit;
     return this;
@@ -150,6 +138,7 @@ public class SpanLimitsModel {
     return linkAttributeCountLimit;
   }
 
+  @JsonProperty("link_attribute_count_limit")
   public SpanLimitsModel withLinkAttributeCountLimit(Integer linkAttributeCountLimit) {
     this.linkAttributeCountLimit = linkAttributeCountLimit;
     return this;

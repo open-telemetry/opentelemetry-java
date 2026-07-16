@@ -16,19 +16,14 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalLoggerConfigModel {
 
-  @JsonProperty("enabled")
-  @Nullable
-  private Boolean enabled;
+  @Nullable private Boolean enabled;
 
-  @JsonProperty("minimum_severity")
   @Nullable
   private io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel
           .SeverityNumber
       minimumSeverity;
 
-  @JsonProperty("trace_based")
-  @Nullable
-  private Boolean traceBased;
+  @Nullable private Boolean traceBased;
 
   /**
    * Configure if the logger is enabled or not.
@@ -41,6 +36,7 @@ public class ExperimentalLoggerConfigModel {
     return enabled;
   }
 
+  @JsonProperty("enabled")
   public ExperimentalLoggerConfigModel withEnabled(Boolean enabled) {
     this.enabled = enabled;
     return this;
@@ -112,6 +108,7 @@ public class ExperimentalLoggerConfigModel {
     return minimumSeverity;
   }
 
+  @JsonProperty("minimum_severity")
   public ExperimentalLoggerConfigModel withMinimumSeverity(
       io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel
               .SeverityNumber
@@ -135,6 +132,7 @@ public class ExperimentalLoggerConfigModel {
     return traceBased;
   }
 
+  @JsonProperty("trace_based")
   public ExperimentalLoggerConfigModel withTraceBased(Boolean traceBased) {
     this.traceBased = traceBased;
     return this;

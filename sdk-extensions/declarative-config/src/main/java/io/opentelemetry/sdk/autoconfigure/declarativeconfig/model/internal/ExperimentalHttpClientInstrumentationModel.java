@@ -17,17 +17,9 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalHttpClientInstrumentationModel {
 
-  @JsonProperty("request_captured_headers")
-  @Nullable
-  private List<String> requestCapturedHeaders;
-
-  @JsonProperty("response_captured_headers")
-  @Nullable
-  private List<String> responseCapturedHeaders;
-
-  @JsonProperty("known_methods")
-  @Nullable
-  private List<String> knownMethods;
+  @Nullable private List<String> requestCapturedHeaders;
+  @Nullable private List<String> responseCapturedHeaders;
+  @Nullable private List<String> knownMethods;
 
   /**
    * Configure headers to capture for outbound http requests.
@@ -40,6 +32,7 @@ public class ExperimentalHttpClientInstrumentationModel {
     return requestCapturedHeaders;
   }
 
+  @JsonProperty("request_captured_headers")
   public ExperimentalHttpClientInstrumentationModel withRequestCapturedHeaders(
       List<String> requestCapturedHeaders) {
     this.requestCapturedHeaders = requestCapturedHeaders;
@@ -57,6 +50,7 @@ public class ExperimentalHttpClientInstrumentationModel {
     return responseCapturedHeaders;
   }
 
+  @JsonProperty("response_captured_headers")
   public ExperimentalHttpClientInstrumentationModel withResponseCapturedHeaders(
       List<String> responseCapturedHeaders) {
     this.responseCapturedHeaders = responseCapturedHeaders;
@@ -80,6 +74,7 @@ public class ExperimentalHttpClientInstrumentationModel {
     return knownMethods;
   }
 
+  @JsonProperty("known_methods")
   public ExperimentalHttpClientInstrumentationModel withKnownMethods(List<String> knownMethods) {
     this.knownMethods = knownMethods;
     return this;

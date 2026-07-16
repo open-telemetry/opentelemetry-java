@@ -16,9 +16,7 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExperimentalMessagingInstrumentationModel {
 
-  @JsonProperty("semconv")
-  @Nullable
-  private ExperimentalSemconvConfigModel semconv;
+  @Nullable private ExperimentalSemconvConfigModel semconv;
 
   /**
    * Configure messaging semantic convention version and migration behavior.
@@ -37,6 +35,7 @@ public class ExperimentalMessagingInstrumentationModel {
     return semconv;
   }
 
+  @JsonProperty("semconv")
   public ExperimentalMessagingInstrumentationModel withSemconv(
       ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;

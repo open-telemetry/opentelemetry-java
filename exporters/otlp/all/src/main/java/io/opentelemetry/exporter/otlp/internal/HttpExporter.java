@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -32,6 +33,8 @@ import javax.annotation.Nullable;
  */
 @SuppressWarnings("checkstyle:JavadocMethod")
 public final class HttpExporter {
+  // Limit logged response body text to avoid flooding warnings with large payloads.
+  private static final int MAX_RESPONSE_BODY_LOG_LENGTH = 1024;
 
   private static final Logger internalLogger = Logger.getLogger(HttpExporter.class.getName());
 
@@ -132,10 +135,23 @@ public final class HttpExporter {
     if (responseBody == null) {
       return "Response body missing, HTTP status message: " + statusMessage;
     }
+    if (responseBody.length == 0) {
+      return "Response body has 0 length, HTTP status message: " + statusMessage;
+    }
     try {
       return GrpcExporterUtil.getStatusMessage(responseBody);
     } catch (IOException e) {
-      return "Unable to parse response body, HTTP status message: " + statusMessage;
+      return extractResponseBodyMessage(responseBody, statusMessage);
     }
+  }
+
+  private static String extractResponseBodyMessage(byte[] responseBody, String statusMessage) {
+    int lengthToRead = Math.min(responseBody.length, MAX_RESPONSE_BODY_LOG_LENGTH);
+    String responseBodyText =
+        new String(responseBody, 0, lengthToRead, StandardCharsets.UTF_8).trim();
+    if (responseBodyText.isEmpty()) {
+      return "HTTP status message: " + statusMessage;
+    }
+    return "Response body: " + responseBodyText + ", HTTP status message: " + statusMessage;
   }
 }

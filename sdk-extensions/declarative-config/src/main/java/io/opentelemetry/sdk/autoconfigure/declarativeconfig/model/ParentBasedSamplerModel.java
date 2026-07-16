@@ -22,25 +22,11 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ParentBasedSamplerModel {
 
-  @JsonProperty("root")
-  @Nullable
-  private SamplerModel root;
-
-  @JsonProperty("remote_parent_sampled")
-  @Nullable
-  private SamplerModel remoteParentSampled;
-
-  @JsonProperty("remote_parent_not_sampled")
-  @Nullable
-  private SamplerModel remoteParentNotSampled;
-
-  @JsonProperty("local_parent_sampled")
-  @Nullable
-  private SamplerModel localParentSampled;
-
-  @JsonProperty("local_parent_not_sampled")
-  @Nullable
-  private SamplerModel localParentNotSampled;
+  @Nullable private SamplerModel root;
+  @Nullable private SamplerModel remoteParentSampled;
+  @Nullable private SamplerModel remoteParentNotSampled;
+  @Nullable private SamplerModel localParentSampled;
+  @Nullable private SamplerModel localParentNotSampled;
 
   /**
    * Configure root sampler.
@@ -53,6 +39,7 @@ public class ParentBasedSamplerModel {
     return root;
   }
 
+  @JsonProperty("root")
   public ParentBasedSamplerModel withRoot(SamplerModel root) {
     this.root = root;
     return this;
@@ -69,6 +56,7 @@ public class ParentBasedSamplerModel {
     return remoteParentSampled;
   }
 
+  @JsonProperty("remote_parent_sampled")
   public ParentBasedSamplerModel withRemoteParentSampled(SamplerModel remoteParentSampled) {
     this.remoteParentSampled = remoteParentSampled;
     return this;
@@ -85,6 +73,7 @@ public class ParentBasedSamplerModel {
     return remoteParentNotSampled;
   }
 
+  @JsonProperty("remote_parent_not_sampled")
   public ParentBasedSamplerModel withRemoteParentNotSampled(SamplerModel remoteParentNotSampled) {
     this.remoteParentNotSampled = remoteParentNotSampled;
     return this;
@@ -101,6 +90,7 @@ public class ParentBasedSamplerModel {
     return localParentSampled;
   }
 
+  @JsonProperty("local_parent_sampled")
   public ParentBasedSamplerModel withLocalParentSampled(SamplerModel localParentSampled) {
     this.localParentSampled = localParentSampled;
     return this;
@@ -117,6 +107,7 @@ public class ParentBasedSamplerModel {
     return localParentNotSampled;
   }
 
+  @JsonProperty("local_parent_not_sampled")
   public ParentBasedSamplerModel withLocalParentNotSampled(SamplerModel localParentNotSampled) {
     this.localParentNotSampled = localParentNotSampled;
     return this;

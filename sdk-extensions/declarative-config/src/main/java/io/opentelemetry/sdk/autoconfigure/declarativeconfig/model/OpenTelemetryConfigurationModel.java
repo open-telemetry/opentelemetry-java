@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -42,51 +41,17 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class OpenTelemetryConfigurationModel {
 
-  @JsonProperty("file_format")
-  @Nullable
-  private String fileFormat;
-
-  @JsonProperty("disabled")
-  @Nullable
-  private Boolean disabled;
-
-  @JsonProperty("log_level")
-  @Nullable
-  private OpenTelemetryConfigurationModel.SeverityNumber logLevel;
-
-  @JsonProperty("attribute_limits")
-  @Nullable
-  private AttributeLimitsModel attributeLimits;
-
-  @JsonProperty("logger_provider")
-  @Nullable
-  private LoggerProviderModel loggerProvider;
-
-  @JsonProperty("meter_provider")
-  @Nullable
-  private MeterProviderModel meterProvider;
-
-  @JsonProperty("propagator")
-  @Nullable
-  private PropagatorModel propagator;
-
-  @JsonProperty("tracer_provider")
-  @Nullable
-  private TracerProviderModel tracerProvider;
-
-  @JsonProperty("resource")
-  @Nullable
-  private ResourceModel resource;
-
-  @JsonProperty("instrumentation/development")
-  @Nullable
-  private ExperimentalInstrumentationModel instrumentationDevelopment;
-
-  @JsonProperty("distribution")
-  @Nullable
-  private DistributionModel distribution;
-
-  @JsonIgnore
+  @Nullable private String fileFormat;
+  @Nullable private Boolean disabled;
+  @Nullable private OpenTelemetryConfigurationModel.SeverityNumber logLevel;
+  @Nullable private AttributeLimitsModel attributeLimits;
+  @Nullable private LoggerProviderModel loggerProvider;
+  @Nullable private MeterProviderModel meterProvider;
+  @Nullable private PropagatorModel propagator;
+  @Nullable private TracerProviderModel tracerProvider;
+  @Nullable private ResourceModel resource;
+  @Nullable private ExperimentalInstrumentationModel instrumentationDevelopment;
+  @Nullable private DistributionModel distribution;
   private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
   /**
@@ -109,6 +74,7 @@ public class OpenTelemetryConfigurationModel {
     return fileFormat;
   }
 
+  @JsonProperty("file_format")
   public OpenTelemetryConfigurationModel withFileFormat(String fileFormat) {
     this.fileFormat = fileFormat;
     return this;
@@ -125,6 +91,7 @@ public class OpenTelemetryConfigurationModel {
     return disabled;
   }
 
+  @JsonProperty("disabled")
   public OpenTelemetryConfigurationModel withDisabled(Boolean disabled) {
     this.disabled = disabled;
     return this;
@@ -191,6 +158,7 @@ public class OpenTelemetryConfigurationModel {
     return logLevel;
   }
 
+  @JsonProperty("log_level")
   public OpenTelemetryConfigurationModel withLogLevel(
       OpenTelemetryConfigurationModel.SeverityNumber logLevel) {
     this.logLevel = logLevel;
@@ -208,6 +176,7 @@ public class OpenTelemetryConfigurationModel {
     return attributeLimits;
   }
 
+  @JsonProperty("attribute_limits")
   public OpenTelemetryConfigurationModel withAttributeLimits(AttributeLimitsModel attributeLimits) {
     this.attributeLimits = attributeLimits;
     return this;
@@ -224,6 +193,7 @@ public class OpenTelemetryConfigurationModel {
     return loggerProvider;
   }
 
+  @JsonProperty("logger_provider")
   public OpenTelemetryConfigurationModel withLoggerProvider(LoggerProviderModel loggerProvider) {
     this.loggerProvider = loggerProvider;
     return this;
@@ -240,6 +210,7 @@ public class OpenTelemetryConfigurationModel {
     return meterProvider;
   }
 
+  @JsonProperty("meter_provider")
   public OpenTelemetryConfigurationModel withMeterProvider(MeterProviderModel meterProvider) {
     this.meterProvider = meterProvider;
     return this;
@@ -256,6 +227,7 @@ public class OpenTelemetryConfigurationModel {
     return propagator;
   }
 
+  @JsonProperty("propagator")
   public OpenTelemetryConfigurationModel withPropagator(PropagatorModel propagator) {
     this.propagator = propagator;
     return this;
@@ -272,6 +244,7 @@ public class OpenTelemetryConfigurationModel {
     return tracerProvider;
   }
 
+  @JsonProperty("tracer_provider")
   public OpenTelemetryConfigurationModel withTracerProvider(TracerProviderModel tracerProvider) {
     this.tracerProvider = tracerProvider;
     return this;
@@ -288,6 +261,7 @@ public class OpenTelemetryConfigurationModel {
     return resource;
   }
 
+  @JsonProperty("resource")
   public OpenTelemetryConfigurationModel withResource(ResourceModel resource) {
     this.resource = resource;
     return this;
@@ -304,6 +278,7 @@ public class OpenTelemetryConfigurationModel {
     return instrumentationDevelopment;
   }
 
+  @JsonProperty("instrumentation/development")
   public OpenTelemetryConfigurationModel withInstrumentationDevelopment(
       ExperimentalInstrumentationModel instrumentationDevelopment) {
     this.instrumentationDevelopment = instrumentationDevelopment;
@@ -327,6 +302,7 @@ public class OpenTelemetryConfigurationModel {
     return distribution;
   }
 
+  @JsonProperty("distribution")
   public OpenTelemetryConfigurationModel withDistribution(DistributionModel distribution) {
     this.distribution = distribution;
     return this;
@@ -338,10 +314,6 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public OpenTelemetryConfigurationModel withAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);
     return this;
