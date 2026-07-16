@@ -39,14 +39,11 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -55,7 +52,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.api.parallel.Isolated;
 
 /**
  * Tests TLS compatibility modes against a server that only supports legacy TLS protocols.
@@ -67,9 +63,6 @@ import org.junit.jupiter.api.parallel.Isolated;
  * distinguish MODERN_TLS from COMPATIBLE_TLS.
  */
 
-// This test temporarily changes the JVM-wide TLS disabled algorithms to enable legacy TLS protocol
-// testing, so it must not run concurrently with other tests.
-@Isolated
 class OkHttpHttpSenderTlsCompatibilityTest {
 
   @RegisterExtension
@@ -80,26 +73,8 @@ class OkHttpHttpSenderTlsCompatibilityTest {
   private static Channel serverChannel;
   private static URI serverUri;
 
-  @Nullable private static String previousDisabledAlgorithms;
-
   @BeforeAll
   static void setup() throws Exception {
-    String disabledAlgorithms = Security.getProperty("jdk.tls.disabledAlgorithms");
-
-    previousDisabledAlgorithms = disabledAlgorithms;
-
-    if (disabledAlgorithms
-        != null) { // remove (TLSv1, TLSv1.1) from the disabled algorithms so we can test legacy
-      // protocols
-      String updatedAlgorithms =
-          Arrays.stream(disabledAlgorithms.split(","))
-              .map(String::trim)
-              .filter(algorithm -> !algorithm.equals("TLSv1") && !algorithm.equals("TLSv1.1"))
-              .collect(Collectors.joining(", "));
-
-      Security.setProperty("jdk.tls.disabledAlgorithms", updatedAlgorithms);
-    }
-
     bossGroup = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
 
     workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
@@ -165,11 +140,6 @@ class OkHttpHttpSenderTlsCompatibilityTest {
 
     if (workerGroup != null) {
       workerGroup.shutdownGracefully().sync();
-    }
-    if (previousDisabledAlgorithms == null) {
-      Security.setProperty("jdk.tls.disabledAlgorithms", null);
-    } else {
-      Security.setProperty("jdk.tls.disabledAlgorithms", previousDisabledAlgorithms);
     }
   }
 
