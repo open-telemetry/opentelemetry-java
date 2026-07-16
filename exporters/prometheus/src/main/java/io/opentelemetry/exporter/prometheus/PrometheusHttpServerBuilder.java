@@ -52,6 +52,7 @@ public final class PrometheusHttpServerBuilder {
     this.metricReaderBuilder = new PrometheusMetricReaderBuilder(builder.metricReaderBuilder);
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
+    this.defaultHandler = builder.defaultHandler;
     this.defaultAggregationSelector = builder.defaultAggregationSelector;
     this.authenticator = builder.authenticator;
   }

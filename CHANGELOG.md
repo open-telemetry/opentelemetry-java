@@ -6,6 +6,8 @@
 
 #### Exporters
 
+* Prometheus: Fix `PrometheusHttpServer.toBuilder()` dropping the configured default handler
+  ([#8619](https://github.com/open-telemetry/opentelemetry-java/pull/8619))
 * Logging: Output event name in `SystemOutLogRecordExporter`
   ([#8609](https://github.com/open-telemetry/opentelemetry-java/pull/8609))
 
