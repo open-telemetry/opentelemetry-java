@@ -27,3 +27,16 @@ dependencies {
 
   testImplementation("com.linecorp.armeria:armeria-junit5")
 }
+
+tasks.withType<Test>().configureEach {
+  // OkHttpHttpSenderTlsCompatibilityTest needs TLSv1/TLSv1.1 available to test COMPATIBLE_TLS
+  // against a legacy-protocol-only server. jdk.tls.disabledAlgorithms is a security property
+  // (not a regular system property) that the JDK caches the first time any TLS code runs in
+  // the JVM, so mutating it at test runtime only works if nothing else in the shared test JVM
+  // has touched TLS yet -- not guaranteed. Overriding it via java.security.properties applies
+  // at JVM bootstrap, before that caching can happen, so it's always in effect.
+  systemProperty(
+    "java.security.properties",
+    file("src/test/resources/enable-legacy-tls-test.security").absolutePath
+  )
+}

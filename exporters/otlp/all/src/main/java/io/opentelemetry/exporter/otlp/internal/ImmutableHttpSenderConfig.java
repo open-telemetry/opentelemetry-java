@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpSenderConfig;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.common.export.TlsCompatibilityMode;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -36,7 +37,8 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
-      long maxResponseBodySize) {
+      long maxResponseBodySize,
+      TlsCompatibilityMode tlsCompatibilityMode) {
     return new AutoValue_ImmutableHttpSenderConfig(
         endpoint,
         contentType,
@@ -49,9 +51,13 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
         sslContext,
         trustManager,
         executorService,
-        maxResponseBodySize);
+        maxResponseBodySize,
+        tlsCompatibilityMode);
   }
 
   @Override
   public abstract long getMaxResponseBodySize();
+
+  @Override
+  public abstract TlsCompatibilityMode getTlsCompatibilityMode();
 }

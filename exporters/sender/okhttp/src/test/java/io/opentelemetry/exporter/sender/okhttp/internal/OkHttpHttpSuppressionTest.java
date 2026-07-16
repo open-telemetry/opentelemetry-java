@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.sdk.common.export.MessageWriter;
+import io.opentelemetry.sdk.common.export.TlsCompatibilityMode;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -47,6 +48,7 @@ class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttp
         null,
         null,
         null,
-        Long.MAX_VALUE);
+        Long.MAX_VALUE,
+        TlsCompatibilityMode.MODERN);
   }
 }

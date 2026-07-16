@@ -1,0 +1,8 @@
+# Used only for this module's test JVM (see build.gradle.kts), via -Djava.security.properties.
+#
+# Mirrors the JDK's default jdk.tls.disabledAlgorithms, minus TLSv1 and TLSv1.1, so that
+# OkHttpHttpSenderTlsCompatibilityTest can exercise COMPATIBLE_TLS against a legacy-protocol-only
+# server. Setting this via java.security.properties applies at JVM bootstrap, before any class
+# has a chance to initialize the JDK's TLS internals and cache the previous value
+jdk.tls.disabledAlgorithms=SSLv3, RC4, DES, MD5withRSA, DH keySize < 1024, \
+    EC keySize < 224, 3DES_EDE_CBC, anon, NULL, include jdk.disabled.namedCurves
