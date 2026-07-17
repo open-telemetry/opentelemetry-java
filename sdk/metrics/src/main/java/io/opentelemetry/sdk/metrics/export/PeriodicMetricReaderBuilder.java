@@ -89,11 +89,7 @@ public final class PeriodicMetricReaderBuilder {
         metricExporter, intervalNanos, executor, maxExportBatchSize, internalTelemetryVersion);
   }
 
-  /**
-   * Sets the internal telemetry version used to control self-observability metrics.
-   *
-   * @since 1.65.0
-   */
+  /** Sets the internal telemetry version used to control self-observability metrics. */
   public PeriodicMetricReaderBuilder setInternalTelemetryVersion(InternalTelemetryVersion version) {
     requireNonNull(version, "version");
     this.internalTelemetryVersion = version;
