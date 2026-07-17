@@ -111,13 +111,6 @@ public class TlsConfigHelper {
     return trustManager;
   }
 
-  private X509TrustManager getEffectiveTrustManager() throws SSLException {
-    if (trustManager != null) {
-      return trustManager;
-    }
-    return TlsUtil.defaultTrustManager();
-  }
-
   /** Get the {@link SSLContext}. */
   @Nullable
   public SSLContext getSslContext() {
@@ -129,10 +122,10 @@ public class TlsConfigHelper {
       SSLContext sslContext = SSLContext.getInstance("TLS");
       sslContext.init(
           keyManager == null ? null : new KeyManager[] {keyManager},
-          new TrustManager[] {getEffectiveTrustManager()},
+          trustManager == null ? null : new TrustManager[] {trustManager},
           null);
       return sslContext;
-    } catch (NoSuchAlgorithmException | KeyManagementException | SSLException e) {
+    } catch (NoSuchAlgorithmException | KeyManagementException e) {
       throw new IllegalArgumentException(e);
     }
   }

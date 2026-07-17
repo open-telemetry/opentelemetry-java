@@ -10,10 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -95,26 +93,5 @@ class TlsConfigHelperTest {
     assertThatThrownBy(() -> helper.setSslContext(sslContext, trustManager))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("sslContext or trustManager has been previously configured");
-  }
-
-  @Test
-  void getSslContext_wrapsDefaultTrustManagerFailure() {
-    String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
-
-    try {
-      Security.setProperty("ssl.TrustManagerFactory.algorithm", "invalid");
-
-      assertThatThrownBy(() -> helper.getSslContext())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasCauseInstanceOf(SSLException.class);
-
-    } finally {
-      Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
-    }
-  }
-
-  @Test
-  void getSslContext_usesDefaultTrustManagerWhenUnset() {
-    assertThat(helper.getSslContext()).isNotNull();
   }
 }
