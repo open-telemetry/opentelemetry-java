@@ -391,6 +391,19 @@ class OtTracePropagatorTest {
   }
 
   @Test
+  void extract_Baggage_EmptyKey() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracePropagator.PREFIX_BAGGAGE_HEADER, "value"); // Not really a valid key.
+
+    Context context = propagator.extract(Context.current(), carrier, getter);
+
+    assertThat(Baggage.fromContext(context)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
   void extract_Baggage_InvalidContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(OtTracePropagator.TRACE_ID_HEADER, TraceId.getInvalid());

@@ -146,7 +146,8 @@ public final class OtTracePropagator implements TextMapPropagator {
           break;
         }
         String lowercaseKey = key.toLowerCase(Locale.ROOT);
-        if (!lowercaseKey.startsWith(PREFIX_BAGGAGE_HEADER)) {
+        if (!lowercaseKey.startsWith(PREFIX_BAGGAGE_HEADER)
+            || lowercaseKey.length() == PREFIX_BAGGAGE_HEADER.length()) {
           continue;
         }
         String value = getter.get(carrier, key);
