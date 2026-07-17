@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.impl.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpResponse;
@@ -29,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -109,8 +111,17 @@ public final class OkHttpHttpSender implements HttpSender {
     boolean isPlainHttp = endpoint.getScheme().equals("http");
     if (isPlainHttp) {
       builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
-    } else if (sslContext != null && trustManager != null) {
-      builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+    } else if (sslContext != null) {
+      X509TrustManager effectiveTrustManager = trustManager;
+
+      if (effectiveTrustManager == null) {
+        try {
+          effectiveTrustManager = TlsUtil.defaultTrustManager();
+        } catch (SSLException e) {
+          throw new IllegalStateException("Unable to initialize default trust manager", e);
+        }
+      }
+      builder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
     }
 
     this.client = builder.build();
