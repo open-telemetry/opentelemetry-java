@@ -7,6 +7,7 @@ package io.opentelemetry.gradle.js2p;
 
 import com.sun.codemodel.JClassContainer;
 import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JDocComment;
 import com.sun.codemodel.JDocCommentable;
 import com.sun.codemodel.JPackage;
 import com.sun.codemodel.JType;
@@ -49,6 +50,11 @@ public class OtelRuleFactory extends RuleFactory {
   @Override
   public Rule<JDefinedClass, JDefinedClass> getPropertyRule() {
     return new OtelPropertyRule(this);
+  }
+
+  @Override
+  public Rule<JDocCommentable, JDocComment> getDescriptionRule() {
+    return new OtelDescriptionRule();
   }
 
   @Override

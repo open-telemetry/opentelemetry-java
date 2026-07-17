@@ -31,6 +31,7 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":api:incubator"))
+  compileOnly(project(":sdk-extensions:incubator"))
   compileOnly(project(":sdk-extensions:declarative-config"))
 
   annotationProcessor("com.google.auto.value:auto-value")
@@ -107,6 +108,7 @@ testing {
     register<JvmTestSuite>("testIncubating") {
       dependencies {
         implementation(project(":sdk-extensions:declarative-config"))
+        implementation(project(":sdk-extensions:incubator"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":sdk:testing"))

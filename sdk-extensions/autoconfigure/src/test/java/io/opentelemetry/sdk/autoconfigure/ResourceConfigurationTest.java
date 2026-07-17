@@ -17,6 +17,11 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -165,5 +170,80 @@ class ResourceConfigurationTest {
               assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
               assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
             });
+  }
+
+  @ParameterizedTest
+  @MethodSource("createEnvironmentResourceEntitiesTestCases")
+  void createEnvironmentResource_WithEntities(
+      Map<String, String> properties, Collection<Entity> expectedEntities) {
+    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
+
+    Resource resource =
+        ResourceConfiguration.configureResource(
+            configProperties,
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    Collection<Entity> entities = EntityUtil.getEntities(resource);
+    assertThat(entities).hasSize(expectedEntities.size());
+    assertThat(entities).containsAll(expectedEntities);
+  }
+
+  static Stream<Arguments> createEnvironmentResourceEntitiesTestCases() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "otel.entities happy path",
+            ImmutableMap.of(
+                "otel.experimental.entities.enabled",
+                "true",
+                "otel.entities",
+                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
+            Arrays.asList(
+                Entity.builder("process", Attributes.of(stringKey("process.pid"), "1234"))
+                    .setSchemaUrl("http://schema")
+                    .setDescription(Attributes.of(stringKey("process.executable.name"), "java"))
+                    .build(),
+                Entity.builder("host", Attributes.of(stringKey("host.id"), "myhost")).build())),
+        Arguments.argumentSet(
+            "percent decoding",
+            ImmutableMap.of(
+                "otel.experimental.entities.enabled",
+                "true",
+                "otel.entities",
+                "service{service.name=my+app,space=hello%20world,utf8=%C3%A9,invalid=%2G,incomplete=%2,end=%}"),
+            Collections.singletonList(
+                Entity.builder(
+                        "service",
+                        Attributes.builder()
+                            .put("service.name", "my+app")
+                            .put("space", "hello world")
+                            .put("utf8", "é")
+                            .put("invalid", "%2G")
+                            .put("incomplete", "%2")
+                            .put("end", "%")
+                            .build())
+                    .build())),
+        Arguments.argumentSet(
+            "malformed",
+            ImmutableMap.of(
+                "otel.experimental.entities.enabled",
+                "true",
+                "otel.entities",
+                "{empty.type=val};process{};process{=val};process{key;=val};host{host.id=valid}"),
+            Collections.singletonList(
+                Entity.builder("host", Attributes.builder().put("host.id", "valid").build())
+                    .build())),
+        Arguments.argumentSet(
+            "empty",
+            ImmutableMap.of("otel.experimental.entities.enabled", "true", "otel.entities", ""),
+            Collections.emptyList()),
+        Arguments.argumentSet(
+            "otel.experimental.entities.enabled=false",
+            ImmutableMap.of(
+                "otel.experimental.entities.enabled",
+                "false",
+                "otel.entities",
+                "process{process.pid=1234}[process.executable.name=java]@http://schema;host{host.id=myhost}"),
+            Collections.emptyList()));
   }
 }

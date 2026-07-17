@@ -27,6 +27,16 @@ public class MetricProducerModel {
   /**
    * Configure metric producer to be opencensus.
    *
+   * <p>**Deprecated** as of v1.2.0, may be removed in v2.0.0. The OpenCensus
+   *
+   * <p>compatibility specification it relies on was deprecated in
+   *
+   * <p>https://github.com/open-telemetry/opentelemetry-specification/pull/5138.
+   *
+   * <p>SDKs MAY continue to support this entry for backwards compatibility;
+   *
+   * <p>new configurations SHOULD NOT use it.
+   *
    * <p>If omitted, ignore.
    */
   @JsonProperty("opencensus")

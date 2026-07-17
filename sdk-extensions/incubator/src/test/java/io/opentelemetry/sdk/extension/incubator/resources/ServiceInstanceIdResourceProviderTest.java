@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.Map;
@@ -32,8 +33,7 @@ class ServiceInstanceIdResourceProviderTest {
     Resource resource =
         provider.shouldApply(config, existing) ? provider.createResource(config) : Resource.empty();
 
-    String actual =
-        resource.getAttributes().get(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID);
+    String actual = resource.getAttributes().get(SemConvAttributes.SERVICE_INSTANCE_ID);
     if ("random".equals(expectedValue)) {
       assertThat(actual).isNotNull();
     } else {

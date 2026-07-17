@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.sdk.autoconfigure.EnvironmentResource.EXPERIMENTAL_ENTITIES_ENABLED;
+import static io.opentelemetry.sdk.autoconfigure.EnvironmentResource.eraseEntities;
+
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -54,7 +57,10 @@ public final class ResourceConfiguration {
    * @return the resource.
    */
   public static Resource createEnvironmentResource(ConfigProperties config) {
-    return EnvironmentResource.createEnvironmentResource(config);
+    ResourceBuilder builder = Resource.builder();
+    builder.putAll(EnvironmentResource.otelResourceAttributesResource(config));
+    builder.putAll(EnvironmentResource.otelServiceNameResource(config));
+    return maybeEraseEntities(builder.build(), config);
   }
 
   static Resource configureResource(
@@ -83,6 +89,8 @@ public final class ResourceConfiguration {
 
     result = filterAttributes(result, config);
 
+    maybeEraseEntities(result, config);
+
     return resourceCustomizer.apply(result, config);
   }
 
@@ -99,6 +107,14 @@ public final class ResourceConfiguration {
     }
 
     return builder.build();
+  }
+
+  static Resource maybeEraseEntities(Resource resource, ConfigProperties config) {
+    boolean entitiesEnabled = config.getBoolean(EXPERIMENTAL_ENTITIES_ENABLED, false);
+    if (entitiesEnabled) {
+      return resource;
+    }
+    return eraseEntities(resource);
   }
 
   private ResourceConfiguration() {}

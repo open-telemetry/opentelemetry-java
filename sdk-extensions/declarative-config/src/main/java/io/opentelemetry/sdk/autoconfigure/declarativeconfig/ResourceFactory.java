@@ -5,10 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.ATTRIBUTE_PROPERTY;
-import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.createEnvironmentResource;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.RESOURCE_ATTRIBUTES_PROPERTY;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.EnvironmentResource.otelResourceAttributesResource;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
@@ -52,20 +51,24 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
           attributesIncludeExcludeModel == null
               ? ResourceFactory::matchAll
               : IncludeExcludeFactory.getInstance().create(attributesIncludeExcludeModel, context);
-      Attributes filteredDetectedAttributes =
-          detectedResourceBuilder.build().getAttributes().toBuilder()
+      Resource filteredDetectedResource =
+          detectedResourceBuilder
               .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
               .build();
 
-      builder.putAll(filteredDetectedAttributes);
+      builder.putAll(filteredDetectedResource);
+
+      if (detectionModel.getEntitiesEnabled() == null || !detectionModel.getEntitiesEnabled()) {
+        builder = EnvironmentResource.eraseEntities(builder.build()).toBuilder();
+      }
     }
 
     String attributeList = model.getAttributesList();
     if (attributeList != null) {
       builder.putAll(
-          createEnvironmentResource(
+          otelResourceAttributesResource(
               DefaultConfigProperties.createFromMap(
-                  Collections.singletonMap(ATTRIBUTE_PROPERTY, attributeList))));
+                  Collections.singletonMap(RESOURCE_ATTRIBUTES_PROPERTY, attributeList))));
     }
 
     List<AttributeNameValueModel> attributeNameValueModel = model.getAttributes();

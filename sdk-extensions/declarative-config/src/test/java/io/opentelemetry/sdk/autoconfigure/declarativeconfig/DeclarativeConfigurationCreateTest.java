@@ -183,15 +183,13 @@ class DeclarativeConfigurationCreateTest {
                 ComponentLoader.forClassLoader(
                     DeclarativeConfigurationCreateTest.class.getClassLoader()))
             .getSdk();
-    assertThat(sdk.toString())
-        .contains(
-            "resource=Resource{schemaUrl=null, attributes={"
-                + "color=\"blue\", "
-                + "foo=\"bar\", "
-                + "service.name=\"unknown_service:java\", "
-                + "telemetry.sdk.language=\"java\", "
-                + "telemetry.sdk.name=\"opentelemetry\", "
-                + "telemetry.sdk.version=\"");
+    String sdkStr = sdk.toString();
+    assertThat(sdkStr).contains("color=\"blue\"");
+    assertThat(sdkStr).contains("foo=\"bar\"");
+    assertThat(sdkStr).contains("service.name=\"unknown_service:java\"");
+    assertThat(sdkStr).contains("telemetry.sdk.language=\"java\"");
+    assertThat(sdkStr).contains("telemetry.sdk.name=\"opentelemetry\"");
+    assertThat(sdkStr).contains("telemetry.sdk.version=\"");
   }
 
   @Test
