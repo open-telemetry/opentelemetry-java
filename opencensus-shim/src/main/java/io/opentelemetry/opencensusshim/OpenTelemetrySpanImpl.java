@@ -39,6 +39,8 @@ import io.opencensus.trace.Link;
 import io.opencensus.trace.MessageEvent;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
+import io.opencensus.trace.TraceOptions;
+import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -46,13 +48,12 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.logging.Logger;
 
 class OpenTelemetrySpanImpl extends Span
     implements io.opentelemetry.api.trace.Span, DelegatingSpan {
-  private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySpanImpl.class.getName());
   private static final EnumSet<Span.Options> RECORD_EVENTS_SPAN_OPTIONS =
       EnumSet.of(Span.Options.RECORD_EVENTS);
+  private static final Tracestate OC_TRACESTATE_DEFAULT = Tracestate.builder().build();
 
   private final io.opentelemetry.api.trace.Span otelSpan;
 
@@ -104,7 +105,20 @@ class OpenTelemetrySpanImpl extends Span
 
   @Override
   public void addLink(Link link) {
-    LOGGER.warning("OpenTelemetry does not support links added after a span is created.");
+    Preconditions.checkNotNull(link, "link");
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    mapAttributes(link.getAttributes(), attributesBuilder);
+    // DelegatingSpan does not override addLink, so DelegatingSpan.super.addLink(..) would call the
+    // no-op default method of Span and drop the link. Call the delegate directly instead.
+    getDelegate()
+        .addLink(
+            mapSpanContext(
+                io.opencensus.trace.SpanContext.create(
+                    link.getTraceId(),
+                    link.getSpanId(),
+                    TraceOptions.DEFAULT,
+                    OC_TRACESTATE_DEFAULT)),
+            attributesBuilder.build());
   }
 
   @Override
