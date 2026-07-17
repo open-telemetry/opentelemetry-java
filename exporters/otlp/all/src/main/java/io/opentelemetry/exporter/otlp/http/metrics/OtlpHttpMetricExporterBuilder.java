@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -330,6 +331,22 @@ public final class OtlpHttpMetricExporterBuilder {
   public OtlpHttpMetricExporterBuilder setExecutorService(ExecutorService executorService) {
     requireNonNull(executorService, "executorService");
     delegate.setExecutorService(executorService);
+    return this;
+  }
+
+  /**
+   * Sets the TLS protocol versions enabled for HTTPS connections. If unset, sender defaults are
+   * used.
+   *
+   * <p>Protocol names use the JSSE convention, for example {@code TLSv1.2} and {@code TLSv1.3}. The
+   * JVM security policy may prevent use of configured protocols.
+   *
+   * @param enabledProtocols the non-empty list of TLS protocol versions to enable
+   * @return this builder
+   */
+  public OtlpHttpMetricExporterBuilder setEnabledProtocols(List<String> enabledProtocols) {
+    requireNonNull(enabledProtocols, "enabledProtocols");
+    delegate.setEnabledProtocols(enabledProtocols);
     return this;
   }
 

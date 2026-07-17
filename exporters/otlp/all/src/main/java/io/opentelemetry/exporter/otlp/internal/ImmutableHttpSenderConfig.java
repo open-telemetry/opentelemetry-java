@@ -23,6 +23,10 @@ import javax.net.ssl.X509TrustManager;
 @AutoValue
 abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
 
+  @Override
+  @Nullable
+  public abstract List<String> getEnabledProtocols();
+
   @SuppressWarnings("TooManyParameters")
   static HttpSenderConfig create(
       URI endpoint,
@@ -36,6 +40,7 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
+      @Nullable List<String> enabledProtocols,
       long maxResponseBodySize) {
     return new AutoValue_ImmutableHttpSenderConfig(
         endpoint,
@@ -49,6 +54,7 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
         sslContext,
         trustManager,
         executorService,
+        enabledProtocols,
         maxResponseBodySize);
   }
 

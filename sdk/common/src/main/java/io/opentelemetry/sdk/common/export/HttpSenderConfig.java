@@ -87,6 +87,11 @@ public interface HttpSenderConfig {
   @Nullable
   ExecutorService getExecutorService();
 
+  @Nullable
+  default List<String> getEnabledProtocols() {
+    return null;
+  }
+
   /**
    * The maximum number of bytes to read from a response body. Defaults to 4 MiB.
    *

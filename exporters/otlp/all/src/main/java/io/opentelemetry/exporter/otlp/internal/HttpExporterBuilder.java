@@ -69,6 +69,7 @@ public final class HttpExporterBuilder {
   private ComponentLoader componentLoader =
       ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
+  @Nullable private List<String> enabledProtocols;
 
   public HttpExporterBuilder(
       StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
@@ -167,6 +168,14 @@ public final class HttpExporterBuilder {
     return this;
   }
 
+  public HttpExporterBuilder setEnabledProtocols(List<String> enabledProtocols) {
+    if (enabledProtocols.isEmpty()) {
+      throw new IllegalArgumentException("enabledProtocols must not be empty");
+    }
+    this.enabledProtocols = Collections.unmodifiableList(new ArrayList<>(enabledProtocols));
+    return this;
+  }
+
   public HttpExporterBuilder exportAsJson() {
     this.exportAsJson = true;
     exporterType = mapToJsonTypeIfPossible(exporterType);
@@ -204,6 +213,7 @@ public final class HttpExporterBuilder {
     copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.proxyOptions = proxyOptions;
     copy.componentLoader = componentLoader;
+    copy.enabledProtocols = enabledProtocols;
     return copy;
   }
 
@@ -245,6 +255,7 @@ public final class HttpExporterBuilder {
                 isPlainHttp ? null : tlsConfigHelper.getSslContext(),
                 isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
                 executorService,
+                enabledProtocols,
                 // 4mb to align with spec guidance - even though we don't do anything with the
                 // response today, we will so better to have future-looking memory profile
                 4 * 1024L * 1024L));

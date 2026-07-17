@@ -53,6 +53,7 @@ class OkHttpHttpSenderTest {
             null,
             null,
             executor,
+            null,
             Long.MAX_VALUE);
 
     AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
@@ -216,6 +217,7 @@ class OkHttpHttpSenderTest {
         null,
         null,
         executorService,
+        null,
         Long.MAX_VALUE);
   }
 
@@ -248,6 +250,7 @@ class OkHttpHttpSenderTest {
                     sslContext,
                     null,
                     null,
+                    null,
                     Long.MAX_VALUE))
         .doesNotThrowAnyException();
   }
@@ -274,6 +277,7 @@ class OkHttpHttpSenderTest {
                       null,
                       null,
                       sslContext,
+                      null,
                       null,
                       null,
                       Long.MAX_VALUE))

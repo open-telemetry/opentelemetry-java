@@ -81,6 +81,7 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
+      @Nullable List<String> enabledProtocols,
       long maxResponseBodySize) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
@@ -111,17 +112,28 @@ public final class OkHttpHttpSender implements HttpSender {
     boolean isPlainHttp = endpoint.getScheme().equals("http");
     if (isPlainHttp) {
       builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
-    } else if (sslContext != null) {
-      X509TrustManager effectiveTrustManager = trustManager;
+    } else {
+      if (enabledProtocols != null) {
+        ConnectionSpec spec =
+            new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+                .tlsVersions(enabledProtocols.toArray(new String[0]))
+                .build();
 
-      if (effectiveTrustManager == null) {
-        try {
-          effectiveTrustManager = TlsUtil.defaultTrustManager();
-        } catch (SSLException e) {
-          throw new IllegalStateException("Unable to initialize default trust manager", e);
-        }
+        builder.connectionSpecs(Collections.singletonList(spec));
       }
-      builder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
+
+      if (sslContext != null) {
+        X509TrustManager effectiveTrustManager = trustManager;
+
+        if (effectiveTrustManager == null) {
+          try {
+            effectiveTrustManager = TlsUtil.defaultTrustManager();
+          } catch (SSLException e) {
+            throw new IllegalStateException("Unable to initialize default trust manager", e);
+          }
+        }
+        builder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
+      }
     }
 
     this.client = builder.build();

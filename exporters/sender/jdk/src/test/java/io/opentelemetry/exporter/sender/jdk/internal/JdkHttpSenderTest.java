@@ -191,6 +191,7 @@ class JdkHttpSenderTest {
             null,
             null,
             null,
+            null,
             Long.MAX_VALUE);
 
     try {
@@ -219,6 +220,7 @@ class JdkHttpSenderTest {
             Duration.ofNanos(1),
             Duration.ofSeconds(10),
             Collections::emptyMap,
+            null,
             null,
             null,
             null,
