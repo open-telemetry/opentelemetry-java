@@ -9,6 +9,11 @@
 * Logging: Output event name in `SystemOutLogRecordExporter`
   ([#8609](https://github.com/open-telemetry/opentelemetry-java/pull/8609))
 
+### Shims
+
+* OpenTracing: Return the extracted `SpanContext` when it is sampled but invalid
+  ([#8634](https://github.com/open-telemetry/opentelemetry-java/pull/8634))
+
 ## Version 1.64.0 (2026-07-10)
 
 ### API
