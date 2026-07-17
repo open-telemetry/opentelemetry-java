@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import okhttp3.OkHttp;
@@ -18,6 +19,7 @@ class OkHttpVersionTest {
   private static final Logger LOGGER = Logger.getLogger(OkHttpVersionTest.class.getName());
 
   @Test
+  @SuppressLogger(OkHttpVersionTest.class)
   void expectedOkHttpVersion() {
     String expectedVersion = System.getProperty("expected.okhttp.version");
     LOGGER.log(Level.WARNING, "Testing okhttp version " + expectedVersion);

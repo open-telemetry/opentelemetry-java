@@ -48,6 +48,7 @@ public abstract class AbstractDefaultLoggerTest {
   @Test
   void defaultIsEnabled() {
     assertThat(getLogger().isEnabled(Severity.ERROR, Context.root())).isFalse();
+    assertThat(getLogger().isEnabled(Severity.ERROR)).isFalse();
   }
 
   @Test
@@ -67,6 +68,12 @@ public abstract class AbstractDefaultLoggerTest {
                     .setBody("body")
                     .setBody(Value.of("body"))
                     .setAttribute(AttributeKey.stringKey("key1"), "value1")
+                    .setAttribute("stringKey", "value")
+                    .setAttribute("longKey", 100L)
+                    .setAttribute("intKey", 100)
+                    .setAttribute("doubleKey", 1.23)
+                    .setAttribute("boolKey", true)
+                    .setAttribute("valueKey", Value.of("value"))
                     .setAllAttributes(Attributes.builder().put("key2", "value2").build())
                     .setException(new RuntimeException("error"))
                     .emit())

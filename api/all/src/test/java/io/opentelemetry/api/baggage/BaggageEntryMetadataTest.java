@@ -8,6 +8,7 @@ package io.opentelemetry.api.baggage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
 
 class BaggageEntryMetadataTest {
@@ -19,6 +20,7 @@ class BaggageEntryMetadataTest {
   }
 
   @Test
+  @SuppressLogger(loggerName = "io.opentelemetry.usage")
   void nullValue() {
     assertThat(BaggageEntryMetadata.create(null)).isEqualTo(BaggageEntryMetadata.empty());
   }

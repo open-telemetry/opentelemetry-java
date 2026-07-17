@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
  * <p>A Context object can be {@linkplain #makeCurrent set} to the {@link ContextStorage}, which
  * effectively forms a <b>scope</b> for the context. The scope is bound to the current thread.
  * Within a scope, its Context is accessible even across API boundaries, through {@link #current}.
- * The scope is later exited by {@link Scope#close()} closing} the scope.
+ * The scope is later exited by {@linkplain Scope#close() closing} the scope.
  *
  * <p>Context objects are immutable and inherit state from their parent. To add or overwrite the
  * current state a new context object must be created and then attached, replacing the previously
@@ -112,8 +112,9 @@ public interface Context {
    *
    * <p>This is generally used to create an {@link Executor} which will forward the {@link Context}
    * during an invocation to another thread. For example, you may use something like {@code Executor
-   * dbExecutor = Context.wrapTasks(threadPool)} to ensure calls like {@code dbExecutor.execute(()
-   * -> database.query())} have {@link Context} available on the thread executing database queries.
+   * dbExecutor = Context.taskWrapping(threadPool)} to ensure calls like {@code
+   * dbExecutor.execute(() -> database.query())} have {@link Context} available on the thread
+   * executing database queries.
    *
    * @since 1.1.0
    */
@@ -129,7 +130,7 @@ public interface Context {
    *
    * <p>This is generally used to create an {@link ExecutorService} which will forward the {@link
    * Context} during an invocation to another thread. For example, you may use something like {@code
-   * ExecutorService dbExecutor = Context.wrapTasks(threadPool)} to ensure calls like {@code
+   * ExecutorService dbExecutor = Context.taskWrapping(threadPool)} to ensure calls like {@code
    * dbExecutor.execute(() -> database.query())} have {@link Context} available on the thread
    * executing database queries.
    *
@@ -150,7 +151,7 @@ public interface Context {
    *
    * <p>This is generally used to create an {@link ScheduledExecutorService} which will forward the
    * {@link Context} during an invocation to another thread. For example, you may use something like
-   * {@code ScheduledExecutorService dbExecutor = Context.wrapTasks(threadPool)} to ensure calls
+   * {@code ScheduledExecutorService dbExecutor = Context.taskWrapping(threadPool)} to ensure calls
    * like {@code dbExecutor.execute(() -> database.query())} have {@link Context} available on the
    * thread executing database queries.
    *

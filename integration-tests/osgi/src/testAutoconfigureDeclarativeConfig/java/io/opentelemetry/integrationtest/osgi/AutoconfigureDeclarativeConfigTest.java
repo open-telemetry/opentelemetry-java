@@ -75,8 +75,8 @@ public class AutoconfigureDeclarativeConfigTest {
     Path configFile = tempDir.resolve("otel-config.yaml");
     Files.write(configFile, yaml.getBytes(StandardCharsets.UTF_8));
 
-    // System.setProperty is required: addPropertiesSupplier because property suppliers are not
-    // resolved until after otel.config.file check
+    // System.setProperty (not addPropertiesSupplier) is required because property suppliers are
+    // not resolved until after the otel.config.file check.
     System.setProperty("otel.config.file", configFile.toString());
     AutoConfiguredOpenTelemetrySdk autoConfigured;
     try {

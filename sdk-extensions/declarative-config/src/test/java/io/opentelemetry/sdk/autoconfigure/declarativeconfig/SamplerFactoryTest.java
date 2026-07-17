@@ -15,17 +15,17 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.SamplerComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysOffSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysOnSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableAlwaysOffSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableAlwaysOnSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableParentThresholdSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableProbabilitySamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableRuleBasedSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalComposableSamplerModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExperimentalJaegerRemoteSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TraceIdRatioBasedSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableAlwaysOffSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableAlwaysOnSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableParentThresholdSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableProbabilitySamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalJaegerRemoteSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.CompositeSampler;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
@@ -58,10 +58,8 @@ class SamplerFactoryTest {
   @ParameterizedTest
   @MethodSource("createArguments")
   void create(@Nullable SamplerModel model, Sampler expectedSampler) {
-    // Some samplers like JaegerRemoteSampler are Closeable - ensure these get cleaned up
-    if (expectedSampler instanceof Closeable) {
-      cleanup.addCloseable((Closeable) expectedSampler);
-    }
+    // // All samplers are Closeable - ensure these get cleaned up
+    cleanup.addCloseable(expectedSampler);
 
     List<Closeable> closeables = new ArrayList<>();
     Sampler sampler = SamplerFactory.getInstance().create(model, context);

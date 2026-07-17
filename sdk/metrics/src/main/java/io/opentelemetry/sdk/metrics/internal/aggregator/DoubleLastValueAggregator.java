@@ -21,9 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -93,8 +90,9 @@ public final class DoubleLastValueAggregator implements Aggregator<DoublePointDa
   }
 
   static final class Handle extends AggregatorHandle<DoublePointData> {
-    private final AtomicReference<AtomicLong> current = new AtomicReference<>(null);
-    private final AtomicLong valueBits = new AtomicLong();
+    // AggregatorHandle#valuesRecorded records whether any values have been recorded so this field
+    // never needs to be reset on collect. Stale values are never observed.
+    private volatile double currentValue;
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
@@ -116,9 +114,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoublePointDa
         Attributes attributes,
         List<DoubleExemplarData> exemplars,
         boolean reset) {
-      AtomicLong valueBits =
-          Objects.requireNonNull(reset ? this.current.getAndSet(null) : this.current.get());
-      double value = Double.longBitsToDouble(valueBits.get());
+      double value = this.currentValue;
       if (reusablePoint != null) {
         reusablePoint.set(startEpochNanos, epochNanos, attributes, value, exemplars);
         return reusablePoint;
@@ -130,8 +126,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoublePointDa
 
     @Override
     protected void doRecordDouble(double value) {
-      valueBits.set(Double.doubleToLongBits(value));
-      current.compareAndSet(null, valueBits);
+      this.currentValue = value;
     }
   }
 }

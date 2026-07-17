@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -80,8 +81,10 @@ final class MetricExporterConfiguration {
     if (customizedMetricExporter != metricExporter) {
       closeables.add(customizedMetricExporter);
     }
+    InternalTelemetryVersion telemetryVersion = InternalTelemetryConfiguration.getVersion(config);
     MetricReader reader =
         PeriodicMetricReader.builder(customizedMetricExporter)
+            .setInternalTelemetryVersion(telemetryVersion)
             .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
             .build();
     closeables.add(reader);

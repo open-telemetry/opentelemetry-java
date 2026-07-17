@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.export;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -48,6 +49,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
   private final Object lock = new Object();
+  private final InternalTelemetryVersion internalTelemetryVersion;
 
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
@@ -71,12 +73,14 @@ public final class PeriodicMetricReader implements MetricReader {
       MetricExporter exporter,
       long intervalNanos,
       ScheduledExecutorService scheduler,
-      int maxExportBatchSize) {
+      int maxExportBatchSize,
+      InternalTelemetryVersion internalTelemetryVersion) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
     this.maxExportBatchSize = maxExportBatchSize;
     this.scheduled = new Scheduled();
+    this.internalTelemetryVersion = internalTelemetryVersion;
   }
 
   @Override
@@ -94,6 +98,13 @@ public final class PeriodicMetricReader implements MetricReader {
     return exporter.getMemoryMode();
   }
 
+  /**
+   * Forces a flush of all metrics.
+   *
+   * <p>If an export is already in progress, the flush will be skipped and the returned result will
+   * be completed exceptionally with an {@link IllegalStateException}. Callers can inspect the cause
+   * via {@link CompletableResultCode#getFailureThrowable()}.
+   */
   @Override
   public CompletableResultCode forceFlush() {
     CompletableResultCode result = new CompletableResultCode();
@@ -106,7 +117,7 @@ public final class PeriodicMetricReader implements MetricReader {
                 if (doRunResult.isSuccess() && flushResult.isSuccess()) {
                   result.succeed();
                 } else {
-                  result.fail();
+                  result.failExceptionally(new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
                 }
               });
         });
@@ -159,7 +170,9 @@ public final class PeriodicMetricReader implements MetricReader {
    */
   @SuppressWarnings("UnusedMethod")
   private void setMeterProvider(MeterProvider meterProvider) {
-    this.scheduled.setMeterProvider(meterProvider);
+    if (internalTelemetryVersion != InternalTelemetryVersion.LEGACY) {
+      scheduled.setMeterProvider(meterProvider);
+    }
   }
 
   @Override
@@ -184,6 +197,9 @@ public final class PeriodicMetricReader implements MetricReader {
               scheduled, intervalNanos, intervalNanos, TimeUnit.NANOSECONDS);
     }
   }
+
+  private static final String EXPORT_IN_PROGRESS_MESSAGE =
+      "Export is already in progress, skipping flush";
 
   private final class Scheduled implements Runnable {
 
@@ -284,8 +300,8 @@ public final class PeriodicMetricReader implements MetricReader {
           flushResult.fail();
         }
       } else {
-        logger.log(Level.FINE, "Exporter busy. Dropping metrics.");
-        flushResult.fail();
+        logger.log(Level.FINE, EXPORT_IN_PROGRESS_MESSAGE);
+        flushResult.failExceptionally(new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
       }
       return flushResult;
     }

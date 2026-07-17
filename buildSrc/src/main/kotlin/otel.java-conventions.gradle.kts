@@ -44,7 +44,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "13.6.0"
+  toolVersion = "13.8.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -265,12 +265,12 @@ configurations.configureEach {
   }
 }
 
-val dependencyManagement by configurations.creating {
+val dependencyManagement = configurations.create("dependencyManagement") {
   isCanBeConsumed = false
   isCanBeResolved = false
 }
 
-val mockitoAgent by configurations.creating {
+val mockitoAgent = configurations.create("mockitoAgent") {
   extendsFrom(dependencyManagement)
 }
 
@@ -332,6 +332,8 @@ testing {
       all {
         testTask.configure {
           systemProperty("java.util.logging.config.class", "io.opentelemetry.internal.testing.slf4j.JulBridgeInitializer")
+          systemProperty("org.slf4j.simpleLogger.log.io.micrometer.core.instrument.MeterRegistry", "error")
+          systemProperty("org.slf4j.simpleLogger.log.tc", "error")
 
           // Starting in java 21, dynamically attaching agents triggers warnings. Mockito depends on
           // agents to redefine classes. Hence, on java 21+ we get warnings of the form:
