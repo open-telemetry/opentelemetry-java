@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.export;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -48,6 +49,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
   private final Object lock = new Object();
+  private final InternalTelemetryVersion internalTelemetryVersion;
 
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
@@ -71,12 +73,14 @@ public final class PeriodicMetricReader implements MetricReader {
       MetricExporter exporter,
       long intervalNanos,
       ScheduledExecutorService scheduler,
-      int maxExportBatchSize) {
+      int maxExportBatchSize,
+      InternalTelemetryVersion internalTelemetryVersion) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
     this.maxExportBatchSize = maxExportBatchSize;
     this.scheduled = new Scheduled();
+    this.internalTelemetryVersion = internalTelemetryVersion;
   }
 
   @Override
@@ -166,7 +170,9 @@ public final class PeriodicMetricReader implements MetricReader {
    */
   @SuppressWarnings("UnusedMethod")
   private void setMeterProvider(MeterProvider meterProvider) {
-    this.scheduled.setMeterProvider(meterProvider);
+    if (internalTelemetryVersion != InternalTelemetryVersion.LEGACY) {
+      scheduled.setMeterProvider(meterProvider);
+    }
   }
 
   @Override
