@@ -92,6 +92,7 @@ import org.openjdk.jmh.annotations.Warmup;
  * spreading their record activities over more distinct series. The highest contention scenario is
  * cardinality=1, threads=4. Any scenario with threads=1 has zero contention.
  *
+<<<<<<< Updated upstream
  * <p>To make the cardinality dimension meaningful under contention, each thread traverses the
  * series in its own independent (per-thread shuffled) order — see {@link ThreadState}. This models
  * independent threads recording to arbitrary series. A naive shared {@code i % cardinality} index
@@ -106,6 +107,8 @@ import org.openjdk.jmh.annotations.Warmup;
  * them), collapsing high-cardinality multi-thread runs into a single rotating hotspot that behaves
  * like cardinality=1.
  *
+=======
+>>>>>>> Stashed changes
  * <p>It's useful to characterize the performance of the metrics system under contention, as some
  * high-performance applications may have many threads trying to record to the same series. It's
  * also useful to characterize the performance of the metrics system under low contention, as some
@@ -137,8 +140,6 @@ public class MetricRecordBenchmark {
     // on every record. Uncomment to evaluate.
     @Param({"false", "true"})
     boolean bound;
-
-    // boolean bound = false;
 
     // The following parameters are excluded from the benchmark to reduce combinatorial explosion
     // but can optionally be enabled for adhoc evaluation.

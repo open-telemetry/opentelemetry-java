@@ -373,7 +373,7 @@ class DeltaSynchronousMetricStorage<T extends PointData>
     if (next == null) {
       next = aggregator.createHandle(clock.now());
     }
-    handle.handle = next; // volatile: recorders resuming after unlock see the zero accumulator
+    handle.handle = next; // recorders resuming after unlock see the zero accumulator
     handle.spare = collected;
     handle.unlockAfterCollect();
     // Aggregate (and reset) the drained accumulator off the lock; it becomes the spare for the next
