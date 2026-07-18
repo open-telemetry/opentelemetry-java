@@ -47,7 +47,7 @@ public class JaegerRemoteSamplerComponentProvider implements ComponentProvider {
     }
     builder.setInitialSampler(DeclarativeConfiguration.createSampler(initialSamplerModel));
 
-    Long pollingIntervalMs = config.getLong("internal");
+    Long pollingIntervalMs = config.getLong("interval");
     if (pollingIntervalMs != null) {
       builder.setPollingInterval(Duration.ofMillis(pollingIntervalMs));
     }
