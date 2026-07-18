@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -18,25 +17,14 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ExplicitBucketHistogramAggregationModel {
 
-  /**
-   * Configure bucket boundaries. If omitted, [0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500,
-   * 5000, 7500, 10000] is used.
-   */
-  @JsonProperty("boundaries")
-  @JsonPropertyDescription(
-      "Configure bucket boundaries.\nIf omitted, [0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000] is used.\n")
-  @Nullable
-  private List<Double> boundaries;
-
-  /** Configure record min and max. If omitted or null, true is used. */
-  @JsonProperty("record_min_max")
-  @JsonPropertyDescription("Configure record min and max.\nIf omitted or null, true is used.\n")
-  @Nullable
-  private Boolean recordMinMax;
+  @Nullable private List<Double> boundaries;
+  @Nullable private Boolean recordMinMax;
 
   /**
-   * Configure bucket boundaries. If omitted, [0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500,
-   * 5000, 7500, 10000] is used.
+   * Configure bucket boundaries.
+   *
+   * <p>If omitted, [0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000] is
+   * used.
    */
   @JsonProperty("boundaries")
   @Nullable
@@ -44,18 +32,24 @@ public class ExplicitBucketHistogramAggregationModel {
     return boundaries;
   }
 
+  @JsonProperty("boundaries")
   public ExplicitBucketHistogramAggregationModel withBoundaries(List<Double> boundaries) {
     this.boundaries = boundaries;
     return this;
   }
 
-  /** Configure record min and max. If omitted or null, true is used. */
+  /**
+   * Configure record min and max.
+   *
+   * <p>If omitted or null, true is used.
+   */
   @JsonProperty("record_min_max")
   @Nullable
   public Boolean getRecordMinMax() {
     return recordMinMax;
   }
 
+  @JsonProperty("record_min_max")
   public ExplicitBucketHistogramAggregationModel withRecordMinMax(Boolean recordMinMax) {
     this.recordMinMax = recordMinMax;
     return this;

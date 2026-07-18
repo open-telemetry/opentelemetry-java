@@ -125,7 +125,7 @@ public final class LongExemplarAssert extends AbstractAssert<LongExemplarAssert,
    */
   public LongExemplarAssert hasFilteredAttributesSatisfyingExactly(
       AttributeAssertion... assertions) {
-    return hasFilteredAttributesSatisfying(Arrays.asList(assertions));
+    return hasFilteredAttributesSatisfyingExactly(Arrays.asList(assertions));
   }
 
   /**

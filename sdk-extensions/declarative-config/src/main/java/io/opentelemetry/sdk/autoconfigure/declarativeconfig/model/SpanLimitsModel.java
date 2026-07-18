@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -24,65 +23,19 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SpanLimitsModel {
 
-  /**
-   * Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit.
-   * Value must be non-negative. If omitted or null, there is no limit.
-   */
-  @JsonProperty("attribute_value_length_limit")
-  @JsonPropertyDescription(
-      "Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit. \nValue must be non-negative.\nIf omitted or null, there is no limit.\n")
-  @Nullable
-  private Integer attributeValueLengthLimit;
-
-  /**
-   * Configure max attribute count. Overrides .attribute_limits.attribute_count_limit. Value must be
-   * non-negative. If omitted or null, 128 is used.
-   */
-  @JsonProperty("attribute_count_limit")
-  @JsonPropertyDescription(
-      "Configure max attribute count. Overrides .attribute_limits.attribute_count_limit. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
-  @Nullable
-  private Integer attributeCountLimit;
-
-  /**
-   * Configure max span event count. Value must be non-negative. If omitted or null, 128 is used.
-   */
-  @JsonProperty("event_count_limit")
-  @JsonPropertyDescription(
-      "Configure max span event count. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
-  @Nullable
-  private Integer eventCountLimit;
-
-  /** Configure max span link count. Value must be non-negative. If omitted or null, 128 is used. */
-  @JsonProperty("link_count_limit")
-  @JsonPropertyDescription(
-      "Configure max span link count. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
-  @Nullable
-  private Integer linkCountLimit;
-
-  /**
-   * Configure max attributes per span event. Value must be non-negative. If omitted or null, 128 is
-   * used.
-   */
-  @JsonProperty("event_attribute_count_limit")
-  @JsonPropertyDescription(
-      "Configure max attributes per span event. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
-  @Nullable
-  private Integer eventAttributeCountLimit;
-
-  /**
-   * Configure max attributes per span link. Value must be non-negative. If omitted or null, 128 is
-   * used.
-   */
-  @JsonProperty("link_attribute_count_limit")
-  @JsonPropertyDescription(
-      "Configure max attributes per span link. \nValue must be non-negative.\nIf omitted or null, 128 is used.\n")
-  @Nullable
-  private Integer linkAttributeCountLimit;
+  @Nullable private Integer attributeValueLengthLimit;
+  @Nullable private Integer attributeCountLimit;
+  @Nullable private Integer eventCountLimit;
+  @Nullable private Integer linkCountLimit;
+  @Nullable private Integer eventAttributeCountLimit;
+  @Nullable private Integer linkAttributeCountLimit;
 
   /**
    * Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit.
-   * Value must be non-negative. If omitted or null, there is no limit.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, there is no limit.
    */
   @JsonProperty("attribute_value_length_limit")
   @Nullable
@@ -90,14 +43,18 @@ public class SpanLimitsModel {
     return attributeValueLengthLimit;
   }
 
+  @JsonProperty("attribute_value_length_limit")
   public SpanLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
     return this;
   }
 
   /**
-   * Configure max attribute count. Overrides .attribute_limits.attribute_count_limit. Value must be
-   * non-negative. If omitted or null, 128 is used.
+   * Configure max attribute count. Overrides .attribute_limits.attribute_count_limit.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 128 is used.
    */
   @JsonProperty("attribute_count_limit")
   @Nullable
@@ -105,13 +62,18 @@ public class SpanLimitsModel {
     return attributeCountLimit;
   }
 
+  @JsonProperty("attribute_count_limit")
   public SpanLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
     return this;
   }
 
   /**
-   * Configure max span event count. Value must be non-negative. If omitted or null, 128 is used.
+   * Configure max span event count.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 128 is used.
    */
   @JsonProperty("event_count_limit")
   @Nullable
@@ -119,26 +81,37 @@ public class SpanLimitsModel {
     return eventCountLimit;
   }
 
+  @JsonProperty("event_count_limit")
   public SpanLimitsModel withEventCountLimit(Integer eventCountLimit) {
     this.eventCountLimit = eventCountLimit;
     return this;
   }
 
-  /** Configure max span link count. Value must be non-negative. If omitted or null, 128 is used. */
+  /**
+   * Configure max span link count.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 128 is used.
+   */
   @JsonProperty("link_count_limit")
   @Nullable
   public Integer getLinkCountLimit() {
     return linkCountLimit;
   }
 
+  @JsonProperty("link_count_limit")
   public SpanLimitsModel withLinkCountLimit(Integer linkCountLimit) {
     this.linkCountLimit = linkCountLimit;
     return this;
   }
 
   /**
-   * Configure max attributes per span event. Value must be non-negative. If omitted or null, 128 is
-   * used.
+   * Configure max attributes per span event.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 128 is used.
    */
   @JsonProperty("event_attribute_count_limit")
   @Nullable
@@ -146,14 +119,18 @@ public class SpanLimitsModel {
     return eventAttributeCountLimit;
   }
 
+  @JsonProperty("event_attribute_count_limit")
   public SpanLimitsModel withEventAttributeCountLimit(Integer eventAttributeCountLimit) {
     this.eventAttributeCountLimit = eventAttributeCountLimit;
     return this;
   }
 
   /**
-   * Configure max attributes per span link. Value must be non-negative. If omitted or null, 128 is
-   * used.
+   * Configure max attributes per span link.
+   *
+   * <p>Value must be non-negative.
+   *
+   * <p>If omitted or null, 128 is used.
    */
   @JsonProperty("link_attribute_count_limit")
   @Nullable
@@ -161,6 +138,7 @@ public class SpanLimitsModel {
     return linkAttributeCountLimit;
   }
 
+  @JsonProperty("link_attribute_count_limit")
   public SpanLimitsModel withLinkAttributeCountLimit(Integer linkAttributeCountLimit) {
     this.linkAttributeCountLimit = linkAttributeCountLimit;
     return this;

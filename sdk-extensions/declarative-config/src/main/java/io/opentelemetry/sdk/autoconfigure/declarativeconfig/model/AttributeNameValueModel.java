@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.HashMap;
@@ -21,36 +20,14 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class AttributeNameValueModel {
 
-  /**
-   * The attribute name. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
-  @JsonProperty("name")
-  @JsonPropertyDescription("The attribute name.\nProperty is required and must be non-null.\n")
-  @Nullable
-  private String name;
+  @Nullable private String name;
+  @Nullable private Object value;
+  @Nullable private AttributeNameValueModel.AttributeType type;
 
   /**
-   * The attribute value. The type of value must match .type. Property must be present, but if null
-   * the entry is ignored.
+   * The attribute name.
    *
-   * <p>(Required)
-   */
-  @JsonProperty("value")
-  @JsonPropertyDescription(
-      "The attribute value.\nThe type of value must match .type.\nProperty must be present, but if null the entry is ignored.\n")
-  @Nullable
-  private Object value;
-
-  @JsonProperty("type")
-  @Nullable
-  private AttributeNameValueModel.AttributeType type;
-
-  /**
-   * The attribute name. Property is required and must be non-null.
-   *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("name")
   @Nullable
@@ -58,16 +35,18 @@ public class AttributeNameValueModel {
     return name;
   }
 
+  @JsonProperty("name")
   public AttributeNameValueModel withName(String name) {
     this.name = name;
     return this;
   }
 
   /**
-   * The attribute value. The type of value must match .type. Property must be present, but if null
-   * the entry is ignored.
+   * The attribute value.
    *
-   * <p>(Required)
+   * <p>The type of value must match .type.
+   *
+   * <p>Property must be present, but if null the entry is ignored.
    */
   @JsonProperty("value")
   @Nullable
@@ -75,17 +54,42 @@ public class AttributeNameValueModel {
     return value;
   }
 
+  @JsonProperty("value")
   public AttributeNameValueModel withValue(Object value) {
     this.value = value;
     return this;
   }
 
+  /**
+   * The attribute type.
+   *
+   * <p>Values include:
+   *
+   * <p>* bool: Boolean attribute value.
+   *
+   * <p>* bool_array: Boolean array attribute value.
+   *
+   * <p>* double: Double attribute value.
+   *
+   * <p>* double_array: Double array attribute value.
+   *
+   * <p>* int: Integer attribute value.
+   *
+   * <p>* int_array: Integer array attribute value.
+   *
+   * <p>* string: String attribute value.
+   *
+   * <p>* string_array: String array attribute value.
+   *
+   * <p>If omitted, string is used.
+   */
   @JsonProperty("type")
   @Nullable
   public AttributeNameValueModel.AttributeType getType() {
     return type;
   }
 
+  @JsonProperty("type")
   public AttributeNameValueModel withType(AttributeNameValueModel.AttributeType type) {
     this.type = type;
     return this;

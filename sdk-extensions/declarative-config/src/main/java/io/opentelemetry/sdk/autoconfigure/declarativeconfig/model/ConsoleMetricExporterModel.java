@@ -16,27 +16,53 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ConsoleMetricExporterModel {
 
-  @JsonProperty("temporality_preference")
-  @Nullable
-  private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
+  @Nullable private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
 
-  @JsonProperty("default_histogram_aggregation")
   @Nullable
   private OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
       defaultHistogramAggregation;
 
+  /**
+   * Configure temporality preference.
+   *
+   * <p>Values include:
+   *
+   * <p>* cumulative: Use cumulative aggregation temporality for all instrument types.
+   *
+   * <p>* delta: Use delta aggregation for all instrument types except up down counter and
+   * asynchronous up down counter.
+   *
+   * <p>* low_memory: Use delta aggregation temporality for counter and histogram instrument types.
+   * Use cumulative aggregation temporality for all other instrument types.
+   *
+   * <p>If omitted, cumulative is used.
+   */
   @JsonProperty("temporality_preference")
   @Nullable
   public OtlpHttpMetricExporterModel.ExporterTemporalityPreference getTemporalityPreference() {
     return temporalityPreference;
   }
 
+  @JsonProperty("temporality_preference")
   public ConsoleMetricExporterModel withTemporalityPreference(
       OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
   }
 
+  /**
+   * Configure default histogram aggregation.
+   *
+   * <p>Values include:
+   *
+   * <p>* base2_exponential_bucket_histogram: Use base2 exponential histogram as the default
+   * aggregation for histogram instruments.
+   *
+   * <p>* explicit_bucket_histogram: Use explicit bucket histogram as the default aggregation for
+   * histogram instruments.
+   *
+   * <p>If omitted, explicit_bucket_histogram is used.
+   */
   @JsonProperty("default_histogram_aggregation")
   @Nullable
   public OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
@@ -44,6 +70,7 @@ public class ConsoleMetricExporterModel {
     return defaultHistogramAggregation;
   }
 
+  @JsonProperty("default_histogram_aggregation")
   public ConsoleMetricExporterModel withDefaultHistogramAggregation(
       OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;

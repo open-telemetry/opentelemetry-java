@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -21,35 +20,40 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class SpanProcessorModel {
 
-  @JsonProperty("batch")
-  @Nullable
-  private BatchSpanProcessorModel batch;
-
-  @JsonProperty("simple")
-  @Nullable
-  private SimpleSpanProcessorModel simple;
-
-  @JsonIgnore
+  @Nullable private BatchSpanProcessorModel batch;
+  @Nullable private SimpleSpanProcessorModel simple;
   private Map<String, SpanProcessorPropertyModel> additionalProperties =
       new LinkedHashMap<String, SpanProcessorPropertyModel>();
 
+  /**
+   * Configure a batch span processor.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("batch")
   @Nullable
   public BatchSpanProcessorModel getBatch() {
     return batch;
   }
 
+  @JsonProperty("batch")
   public SpanProcessorModel withBatch(BatchSpanProcessorModel batch) {
     this.batch = batch;
     return this;
   }
 
+  /**
+   * Configure a simple span processor.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("simple")
   @Nullable
   public SimpleSpanProcessorModel getSimple() {
     return simple;
   }
 
+  @JsonProperty("simple")
   public SpanProcessorModel withSimple(SimpleSpanProcessorModel simple) {
     this.simple = simple;
     return this;
@@ -61,10 +65,6 @@ public class SpanProcessorModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, SpanProcessorPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public SpanProcessorModel withAdditionalProperty(String name, SpanProcessorPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

@@ -97,7 +97,7 @@ public interface ReadWriteLogRecord {
    * @since 1.46.0
    */
   default long getObservedTimestampEpochNanos() {
-    return toLogRecordData().getTimestampEpochNanos();
+    return toLogRecordData().getObservedTimestampEpochNanos();
   }
 
   /**

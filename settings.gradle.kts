@@ -1,11 +1,11 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "9.4.2"
-    id("com.gradle.develocity") version "4.4.3"
+    id("com.gradleup.shadow") version "9.6.0"
+    id("com.gradle.develocity") version "4.5.0"
     id("de.undercouch.download") version "5.7.0"
     id("org.jsonschema2pojo") version "1.3.3"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("org.graalvm.buildtools.native") version "1.1.2"
+    id("org.graalvm.buildtools.native") version "1.1.4"
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
   }
 }

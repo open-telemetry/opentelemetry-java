@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfiguratorModel;
 import java.util.List;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
@@ -24,37 +24,16 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class TracerProviderModel {
 
-  /**
-   * Configure span processors. Property is required and must be non-null.
-   *
-   * <p>(Required)
-   */
-  @JsonProperty("processors")
-  @JsonPropertyDescription(
-      "Configure span processors.\nProperty is required and must be non-null.\n")
-  @Nullable
-  private List<SpanProcessorModel> processors;
-
-  @JsonProperty("limits")
-  @Nullable
-  private SpanLimitsModel limits;
-
-  @JsonProperty("sampler")
-  @Nullable
-  private SamplerModel sampler;
-
-  @JsonProperty("id_generator")
-  @Nullable
-  private IdGeneratorModel idGenerator;
-
-  @JsonProperty("tracer_configurator/development")
-  @Nullable
-  private ExperimentalTracerConfiguratorModel tracerConfiguratorDevelopment;
+  @Nullable private List<SpanProcessorModel> processors;
+  @Nullable private SpanLimitsModel limits;
+  @Nullable private SamplerModel sampler;
+  @Nullable private IdGeneratorModel idGenerator;
+  @Nullable private ExperimentalTracerConfiguratorModel tracerConfiguratorDevelopment;
 
   /**
-   * Configure span processors. Property is required and must be non-null.
+   * Configure span processors.
    *
-   * <p>(Required)
+   * <p>Property is required and must be non-null.
    */
   @JsonProperty("processors")
   @Nullable
@@ -62,50 +41,75 @@ public class TracerProviderModel {
     return processors;
   }
 
+  @JsonProperty("processors")
   public TracerProviderModel withProcessors(List<SpanProcessorModel> processors) {
     this.processors = processors;
     return this;
   }
 
+  /**
+   * Configure span limits. See also attribute_limits.
+   *
+   * <p>If omitted, default values as described in SpanLimits are used.
+   */
   @JsonProperty("limits")
   @Nullable
   public SpanLimitsModel getLimits() {
     return limits;
   }
 
+  @JsonProperty("limits")
   public TracerProviderModel withLimits(SpanLimitsModel limits) {
     this.limits = limits;
     return this;
   }
 
+  /**
+   * Configure the sampler.
+   *
+   * <p>If omitted, parent based sampler with a root of always_on is used.
+   */
   @JsonProperty("sampler")
   @Nullable
   public SamplerModel getSampler() {
     return sampler;
   }
 
+  @JsonProperty("sampler")
   public TracerProviderModel withSampler(SamplerModel sampler) {
     this.sampler = sampler;
     return this;
   }
 
+  /**
+   * Configure the trace and span ID generator.
+   *
+   * <p>If omitted, RandomIdGenerator is used.
+   */
   @JsonProperty("id_generator")
   @Nullable
   public IdGeneratorModel getIdGenerator() {
     return idGenerator;
   }
 
+  @JsonProperty("id_generator")
   public TracerProviderModel withIdGenerator(IdGeneratorModel idGenerator) {
     this.idGenerator = idGenerator;
     return this;
   }
 
+  /**
+   * Configure tracers.
+   *
+   * <p>If omitted, all tracers use default values as described in ExperimentalTracerConfig.
+   */
   @JsonProperty("tracer_configurator/development")
   @Nullable
   public ExperimentalTracerConfiguratorModel getTracerConfiguratorDevelopment() {
     return tracerConfiguratorDevelopment;
   }
 
+  @JsonProperty("tracer_configurator/development")
   public TracerProviderModel withTracerConfiguratorDevelopment(
       ExperimentalTracerConfiguratorModel tracerConfiguratorDevelopment) {
     this.tracerConfiguratorDevelopment = tracerConfiguratorDevelopment;

@@ -42,7 +42,7 @@ final class Propagation {
       carrierMap.put(entry.getKey(), entry.getValue());
     }
 
-    Context context = getPropagator(format).extract(Context.current(), carrierMap, GETTER_INSTANCE);
+    Context context = getPropagator(format).extract(Context.root(), carrierMap, GETTER_INSTANCE);
 
     Span span = Span.fromContext(context);
     Baggage baggage = Baggage.fromContext(context);

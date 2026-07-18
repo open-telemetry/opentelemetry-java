@@ -22,76 +22,92 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class ParentBasedSamplerModel {
 
-  @JsonProperty("root")
-  @Nullable
-  private SamplerModel root;
+  @Nullable private SamplerModel root;
+  @Nullable private SamplerModel remoteParentSampled;
+  @Nullable private SamplerModel remoteParentNotSampled;
+  @Nullable private SamplerModel localParentSampled;
+  @Nullable private SamplerModel localParentNotSampled;
 
-  @JsonProperty("remote_parent_sampled")
-  @Nullable
-  private SamplerModel remoteParentSampled;
-
-  @JsonProperty("remote_parent_not_sampled")
-  @Nullable
-  private SamplerModel remoteParentNotSampled;
-
-  @JsonProperty("local_parent_sampled")
-  @Nullable
-  private SamplerModel localParentSampled;
-
-  @JsonProperty("local_parent_not_sampled")
-  @Nullable
-  private SamplerModel localParentNotSampled;
-
+  /**
+   * Configure root sampler.
+   *
+   * <p>If omitted, always_on is used.
+   */
   @JsonProperty("root")
   @Nullable
   public SamplerModel getRoot() {
     return root;
   }
 
+  @JsonProperty("root")
   public ParentBasedSamplerModel withRoot(SamplerModel root) {
     this.root = root;
     return this;
   }
 
+  /**
+   * Configure remote_parent_sampled sampler.
+   *
+   * <p>If omitted, always_on is used.
+   */
   @JsonProperty("remote_parent_sampled")
   @Nullable
   public SamplerModel getRemoteParentSampled() {
     return remoteParentSampled;
   }
 
+  @JsonProperty("remote_parent_sampled")
   public ParentBasedSamplerModel withRemoteParentSampled(SamplerModel remoteParentSampled) {
     this.remoteParentSampled = remoteParentSampled;
     return this;
   }
 
+  /**
+   * Configure remote_parent_not_sampled sampler.
+   *
+   * <p>If omitted, always_off is used.
+   */
   @JsonProperty("remote_parent_not_sampled")
   @Nullable
   public SamplerModel getRemoteParentNotSampled() {
     return remoteParentNotSampled;
   }
 
+  @JsonProperty("remote_parent_not_sampled")
   public ParentBasedSamplerModel withRemoteParentNotSampled(SamplerModel remoteParentNotSampled) {
     this.remoteParentNotSampled = remoteParentNotSampled;
     return this;
   }
 
+  /**
+   * Configure local_parent_sampled sampler.
+   *
+   * <p>If omitted, always_on is used.
+   */
   @JsonProperty("local_parent_sampled")
   @Nullable
   public SamplerModel getLocalParentSampled() {
     return localParentSampled;
   }
 
+  @JsonProperty("local_parent_sampled")
   public ParentBasedSamplerModel withLocalParentSampled(SamplerModel localParentSampled) {
     this.localParentSampled = localParentSampled;
     return this;
   }
 
+  /**
+   * Configure local_parent_not_sampled sampler.
+   *
+   * <p>If omitted, always_off is used.
+   */
   @JsonProperty("local_parent_not_sampled")
   @Nullable
   public SamplerModel getLocalParentNotSampled() {
     return localParentNotSampled;
   }
 
+  @JsonProperty("local_parent_not_sampled")
   public ParentBasedSamplerModel withLocalParentNotSampled(SamplerModel localParentNotSampled) {
     this.localParentNotSampled = localParentNotSampled;
     return this;

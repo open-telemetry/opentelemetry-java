@@ -18,12 +18,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
@@ -61,13 +64,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -78,6 +85,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressLogger(Otel2PrometheusConverter.class)
 class Otel2PrometheusConverterTest {
 
   private static final Pattern PATTERN =
@@ -681,7 +689,183 @@ class Otel2PrometheusConverterTest {
             "my_metric_units",
             "cluster=\"mycluster\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
+    // Array-valued resource attribute is serialized as a JSON string, matching the point attribute
+    // path.
+    arguments.add(
+        Arguments.argumentSet(
+            "array-valued resource attribute serialized as json",
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.empty(),
+                Resource.create(
+                    Attributes.of(stringArrayKey("clusters"), Arrays.asList("a", "b")))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
+            "my_metric_units",
+            "clusters=\"[\\\"a\\\",\\\"b\\\"]\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
+    arguments.add(
+        Arguments.argumentSet(
+            "resource attribute collisions are merged",
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.empty(),
+                Resource.create(
+                    createMapAttributes("foo_bar", "b", "foo-bar", "c", "foo.bar", "a"))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("foo"),
+            "my_metric_units",
+            "foo_bar=\"c;a;b\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
+    arguments.add(
+        Arguments.argumentSet(
+            "metric resource collisions preserve metric precedence",
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                createMapAttributes("foo-bar", "metric"),
+                Resource.create(createMapAttributes("foo.bar", "resource"))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("foo"),
+            "my_metric_units",
+            "foo_bar=\"metric\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
+    arguments.add(
+        Arguments.argumentSet(
+            "array-valued resource collisions use label rendering",
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.empty(),
+                Resource.create(
+                    Attributes.builder()
+                        .put(stringArrayKey("foo.bar"), Arrays.asList("a", "b"))
+                        .put("foo-bar", "c")
+                        .build())),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("foo"),
+            "my_metric_units",
+            "foo_bar=\"c;[\\\"a\\\",\\\"b\\\"]\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
+
     return arguments.stream();
+  }
+
+  @Test
+  void arrayValuedScopeAttributeSerializedAsJson() {
+    // Array-valued scope attribute is serialized as a JSON string, matching the point attribute
+    // path
+    InstrumentationScopeInfo scope =
+        InstrumentationScopeInfo.builder("scope")
+            .setAttributes(Attributes.of(stringArrayKey("foo"), Arrays.asList("a", "b")))
+            .build();
+    MetricData metricData =
+        ImmutableMetricData.createLongSum(
+            Resource.getDefault(),
+            scope,
+            "sample",
+            "description",
+            "1",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableLongPointData.create(0, 1, Attributes.empty(), 1L))));
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    Optional<MetricSnapshot> metricSnapshot =
+        snapshots.stream().filter(snapshot -> snapshot instanceof CounterSnapshot).findFirst();
+    assertThat(metricSnapshot).isPresent();
+
+    Labels labels = metricSnapshot.get().getDataPoints().get(0).getLabels();
+    assertThat(labels.get("otel_scope_foo")).isEqualTo("[\"a\",\"b\"]");
+  }
+
+  @ParameterizedTest
+  @MethodSource("metricAttributeCollisionArgs")
+  void metricAttributeCollisionsAreMergedAndSorted(
+      TranslationStrategy translationStrategy,
+      Attributes attributes,
+      String expectedLabelName,
+      String expectedLabelValue) {
+    MetricData metricData =
+        createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
+
+    Labels labels = extractMetricLabels(metricData, translationStrategy, null);
+    assertThat(extractLabelNames(labels))
+        .containsExactly(
+            expectedLabelName,
+            "otel_scope_foo",
+            "otel_scope_name",
+            "otel_scope_schema_url",
+            "otel_scope_version");
+    assertThat(labels.get(expectedLabelName)).isEqualTo(expectedLabelValue);
+  }
+
+  private static Stream<Arguments> metricAttributeCollisionArgs() {
+    List<Arguments> arguments = new ArrayList<>();
+    List<TranslationStrategy> escapingStrategies =
+        Arrays.asList(
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES,
+            TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES);
+    for (TranslationStrategy translationStrategy : escapingStrategies) {
+      arguments.add(
+          Arguments.argumentSet(
+              translationStrategy + " basic collision",
+              translationStrategy,
+              createMapAttributes("foo_bar", "b", "foo-bar", "c", "foo.bar", "a"),
+              "foo_bar",
+              "c;a;b"));
+      arguments.add(
+          Arguments.argumentSet(
+              translationStrategy + " semicolon value",
+              translationStrategy,
+              createMapAttributes("foo.bar", "a;b", "foo-bar", "c"),
+              "foo_bar",
+              "c;a;b"));
+      arguments.add(
+          Arguments.argumentSet(
+              translationStrategy + " many symbols",
+              translationStrategy,
+              createMapAttributes("a.b", "1", "a-b", "2", "a_b", "3", "a/b", "4", "a@b", "5"),
+              "a_b",
+              "2;1;4;5;3"));
+    }
+    return arguments.stream();
+  }
+
+  @ParameterizedTest
+  @MethodSource("metricAttributeCollisionNonEscapingArgs")
+  void metricAttributeCollisionsRemainDistinctWhenEscapingDisabled(
+      TranslationStrategy translationStrategy) {
+    MetricData metricData =
+        createSampleMetricData(
+            "sample",
+            "1",
+            MetricDataType.LONG_SUM,
+            createMapAttributes("foo:bar", "a", "foo_bar", "c"),
+            null);
+
+    Labels labels = extractMetricLabels(metricData, translationStrategy, null);
+    assertThat(extractLabelNames(labels))
+        .containsExactly(
+            "foo:bar",
+            "foo_bar",
+            "otel_scope_foo",
+            "otel_scope_name",
+            "otel_scope_schema_url",
+            "otel_scope_version");
+    assertThat(labels.get("foo:bar")).isEqualTo("a");
+    assertThat(labels.get("foo_bar")).isEqualTo("c");
+  }
+
+  private static Stream<Arguments> metricAttributeCollisionNonEscapingArgs() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "no utf8 escaping with suffixes", TranslationStrategy.NO_UTF8_ESCAPING_WITH_SUFFIXES),
+        Arguments.argumentSet("no translation", TranslationStrategy.NO_TRANSLATION));
   }
 
   @Test
@@ -1062,7 +1246,7 @@ class Otel2PrometheusConverterTest {
   void mergeInfoSnapshotsWithSameName() throws Exception {
     InfoSnapshot merged =
         (InfoSnapshot)
-            invokePrivateStatic(
+            invokePrivate(
                 "merge",
                 new Class<?>[] {MetricSnapshot.class, MetricSnapshot.class},
                 makeInfoSnapshot("a"),
@@ -1074,7 +1258,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void mergeConflictingTypesReturnsNull() throws Exception {
     Object merged =
-        invokePrivateStatic(
+        invokePrivate(
             "merge",
             new Class<?>[] {MetricSnapshot.class, MetricSnapshot.class},
             makeInfoSnapshot("a"),
@@ -1088,7 +1272,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void mergeMetadataReturnsNullForDifferentUnits() throws Exception {
     Object merged =
-        invokePrivateStatic(
+        invokePrivate(
             "mergeMetadata",
             new Class<?>[] {MetricMetadata.class, MetricMetadata.class},
             MetricMetadata.builder().name("sample").unit(new Unit("seconds")).build(),
@@ -1100,7 +1284,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void convertLegacyLabelNameRejectsEmptyName() {
     assertThatThrownBy(
-            () -> invokePrivateStatic("convertLegacyLabelName", new Class<?>[] {String.class}, ""))
+            () -> invokePrivate("convertLegacyLabelName", new Class<?>[] {String.class}, ""))
         .hasCauseInstanceOf(IllegalArgumentException.class)
         .hasRootCauseMessage("label name is empty");
   }
@@ -1108,8 +1292,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void stripReservedMetricSuffixesHandlesReservedNameOnly() throws Exception {
     assertThat(
-            invokePrivateStatic(
-                "stripReservedMetricSuffixes", new Class<?>[] {String.class}, "_total"))
+            invokePrivate("stripReservedMetricSuffixes", new Class<?>[] {String.class}, "_total"))
         .isEqualTo("total");
   }
 
@@ -1117,7 +1300,7 @@ class Otel2PrometheusConverterTest {
   void validateNormalizedMetricNameRejectsEmptyName() {
     assertThatThrownBy(
             () ->
-                invokePrivateStatic(
+                invokePrivate(
                     "validateNormalizedMetricName",
                     new Class<?>[] {String.class, String.class},
                     "orig",
@@ -1130,7 +1313,7 @@ class Otel2PrometheusConverterTest {
   void convertExponentialHistogramBucketsReturnsEmptyForNoBuckets() throws Exception {
     NativeHistogramBuckets buckets =
         (NativeHistogramBuckets)
-            invokePrivateStatic(
+            invokePrivate(
                 "convertExponentialHistogramBuckets",
                 new Class<?>[] {ExponentialHistogramBuckets.class, int.class},
                 ImmutableExponentialHistogramBuckets.create(0, 0, Collections.emptyList()),
@@ -1142,7 +1325,7 @@ class Otel2PrometheusConverterTest {
   @Test
   void typeStringUsesLowerCaseClassName() throws Exception {
     assertThat(
-            invokePrivateStatic(
+            invokePrivate(
                 "typeString", new Class<?>[] {MetricSnapshot.class}, makeInfoSnapshot("a")))
         .isEqualTo("info");
   }
@@ -1233,14 +1416,94 @@ class Otel2PrometheusConverterTest {
                 Labels.of(new String[] {"id"}, new String[] {id}))));
   }
 
-  private static Object invokePrivateStatic(
-      String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
+  private Object invokePrivate(String methodName, Class<?>[] parameterTypes, Object... args)
+      throws Exception {
     Method method = Otel2PrometheusConverter.class.getDeclaredMethod(methodName, parameterTypes);
     method.setAccessible(true);
+    // Support both static and instance methods: static methods receive null, instance methods
+    // receive the converter instance so that instance fields (e.g. throttlingLogger) are available.
+    Object instance = Modifier.isStatic(method.getModifiers()) ? null : converter;
     try {
-      return method.invoke(null, args);
+      return method.invoke(instance, args);
     } catch (InvocationTargetException e) {
       throw e;
+    }
+  }
+
+  private static Labels extractMetricLabels(
+      MetricData metricData,
+      TranslationStrategy translationStrategy,
+      @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            /* otelScopeLabelsEnabled= */ true,
+            /* targetInfoMetricEnabled= */ true,
+            translationStrategy,
+            allowedResourceAttributesFilter);
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    Optional<MetricSnapshot> metricSnapshot =
+        snapshots.stream().filter(snapshot -> !(snapshot instanceof InfoSnapshot)).findFirst();
+    assertThat(metricSnapshot).isPresent();
+    return metricSnapshot.get().getDataPoints().get(0).getLabels();
+  }
+
+  private static List<String> extractLabelNames(Labels labels) {
+    List<String> names = new ArrayList<>();
+    for (int i = 0; i < labels.size(); i++) {
+      names.add(labels.getName(i));
+    }
+    return names;
+  }
+
+  // Use a non-default Attributes implementation so ordering-sensitive collision tests do not rely
+  // on the default SDK storage type.
+  private static Attributes createMapAttributes(String... keyValues) {
+    Map<AttributeKey<?>, Object> map = new LinkedHashMap<>();
+    for (int i = 0; i < keyValues.length; i += 2) {
+      map.put(stringKey(keyValues[i]), keyValues[i + 1]);
+    }
+    return new MapAttributes(map);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static final class MapAttributes implements Attributes {
+
+    private final LinkedHashMap<AttributeKey<?>, Object> map;
+
+    private MapAttributes(Map<AttributeKey<?>, Object> map) {
+      this.map = new LinkedHashMap<>(map);
+    }
+
+    @Nullable
+    @Override
+    public <T> T get(AttributeKey<T> key) {
+      return (T) map.get(key);
+    }
+
+    @Override
+    public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
+      map.forEach(consumer);
+    }
+
+    @Override
+    public int size() {
+      return map.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return map.isEmpty();
+    }
+
+    @Override
+    public Map<AttributeKey<?>, Object> asMap() {
+      return map;
+    }
+
+    @Override
+    public AttributesBuilder toBuilder() {
+      throw new UnsupportedOperationException("not supported");
     }
   }
 }

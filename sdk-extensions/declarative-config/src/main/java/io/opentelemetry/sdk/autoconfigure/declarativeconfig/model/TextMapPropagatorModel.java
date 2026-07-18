@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -21,65 +20,76 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class TextMapPropagatorModel {
 
-  @JsonProperty("tracecontext")
-  @Nullable
-  private TraceContextPropagatorModel tracecontext;
-
-  @JsonProperty("baggage")
-  @Nullable
-  private BaggagePropagatorModel baggage;
-
-  @JsonProperty("b3")
-  @Nullable
-  private B3PropagatorModel b3;
-
-  @JsonProperty("b3multi")
-  @Nullable
-  private B3MultiPropagatorModel b3multi;
-
-  @JsonIgnore
+  @Nullable private TraceContextPropagatorModel tracecontext;
+  @Nullable private BaggagePropagatorModel baggage;
+  @Nullable private B3PropagatorModel b3;
+  @Nullable private B3MultiPropagatorModel b3multi;
   private Map<String, TextMapPropagatorPropertyModel> additionalProperties =
       new LinkedHashMap<String, TextMapPropagatorPropertyModel>();
 
+  /**
+   * Include the w3c trace context propagator.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("tracecontext")
   @Nullable
   public TraceContextPropagatorModel getTracecontext() {
     return tracecontext;
   }
 
+  @JsonProperty("tracecontext")
   public TextMapPropagatorModel withTracecontext(TraceContextPropagatorModel tracecontext) {
     this.tracecontext = tracecontext;
     return this;
   }
 
+  /**
+   * Include the w3c baggage propagator.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("baggage")
   @Nullable
   public BaggagePropagatorModel getBaggage() {
     return baggage;
   }
 
+  @JsonProperty("baggage")
   public TextMapPropagatorModel withBaggage(BaggagePropagatorModel baggage) {
     this.baggage = baggage;
     return this;
   }
 
+  /**
+   * Include the zipkin b3 propagator.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("b3")
   @Nullable
   public B3PropagatorModel getB3() {
     return b3;
   }
 
+  @JsonProperty("b3")
   public TextMapPropagatorModel withB3(B3PropagatorModel b3) {
     this.b3 = b3;
     return this;
   }
 
+  /**
+   * Include the zipkin b3 multi propagator.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("b3multi")
   @Nullable
   public B3MultiPropagatorModel getB3multi() {
     return b3multi;
   }
 
+  @JsonProperty("b3multi")
   public TextMapPropagatorModel withB3multi(B3MultiPropagatorModel b3multi) {
     this.b3multi = b3multi;
     return this;
@@ -91,10 +101,6 @@ public class TextMapPropagatorModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, TextMapPropagatorPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public TextMapPropagatorModel withAdditionalProperty(
       String name, TextMapPropagatorPropertyModel value) {
     this.additionalProperties.put(name, value);

@@ -23,93 +23,128 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class AggregationModel {
 
-  @JsonProperty("default")
-  @Nullable
-  private DefaultAggregationModel _default;
+  @Nullable private DefaultAggregationModel _default;
+  @Nullable private DropAggregationModel drop;
+  @Nullable private ExplicitBucketHistogramAggregationModel explicitBucketHistogram;
+  @Nullable private Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram;
+  @Nullable private LastValueAggregationModel lastValue;
+  @Nullable private SumAggregationModel sum;
 
-  @JsonProperty("drop")
-  @Nullable
-  private DropAggregationModel drop;
-
-  @JsonProperty("explicit_bucket_histogram")
-  @Nullable
-  private ExplicitBucketHistogramAggregationModel explicitBucketHistogram;
-
-  @JsonProperty("base2_exponential_bucket_histogram")
-  @Nullable
-  private Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram;
-
-  @JsonProperty("last_value")
-  @Nullable
-  private LastValueAggregationModel lastValue;
-
-  @JsonProperty("sum")
-  @Nullable
-  private SumAggregationModel sum;
-
+  /**
+   * Configures the stream to use the instrument kind to select an aggregation and advisory
+   * parameters to influence aggregation configuration parameters. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#default-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("default")
   @Nullable
   public DefaultAggregationModel getDefault() {
     return _default;
   }
 
+  @JsonProperty("default")
   public AggregationModel withDefault(DefaultAggregationModel _default) {
     this._default = _default;
     return this;
   }
 
+  /**
+   * Configures the stream to ignore/drop all instrument measurements. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#drop-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("drop")
   @Nullable
   public DropAggregationModel getDrop() {
     return drop;
   }
 
+  @JsonProperty("drop")
   public AggregationModel withDrop(DropAggregationModel drop) {
     this.drop = drop;
     return this;
   }
 
+  /**
+   * Configures the stream to collect data for the histogram metric point using a set of explicit
+   * boundary values for histogram bucketing. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#explicit-bucket-histogram-aggregation
+   * for details
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("explicit_bucket_histogram")
   @Nullable
   public ExplicitBucketHistogramAggregationModel getExplicitBucketHistogram() {
     return explicitBucketHistogram;
   }
 
+  @JsonProperty("explicit_bucket_histogram")
   public AggregationModel withExplicitBucketHistogram(
       ExplicitBucketHistogramAggregationModel explicitBucketHistogram) {
     this.explicitBucketHistogram = explicitBucketHistogram;
     return this;
   }
 
+  /**
+   * Configures the stream to collect data for the exponential histogram metric point, which uses a
+   * base-2 exponential formula to determine bucket boundaries and an integer scale parameter to
+   * control resolution. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#base2-exponential-bucket-histogram-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("base2_exponential_bucket_histogram")
   @Nullable
   public Base2ExponentialBucketHistogramAggregationModel getBase2ExponentialBucketHistogram() {
     return base2ExponentialBucketHistogram;
   }
 
+  @JsonProperty("base2_exponential_bucket_histogram")
   public AggregationModel withBase2ExponentialBucketHistogram(
       Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram) {
     this.base2ExponentialBucketHistogram = base2ExponentialBucketHistogram;
     return this;
   }
 
+  /**
+   * Configures the stream to collect data using the last measurement. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#last-value-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("last_value")
   @Nullable
   public LastValueAggregationModel getLastValue() {
     return lastValue;
   }
 
+  @JsonProperty("last_value")
   public AggregationModel withLastValue(LastValueAggregationModel lastValue) {
     this.lastValue = lastValue;
     return this;
   }
 
+  /**
+   * Configures the stream to collect the arithmetic sum of measurement values. See
+   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/sdk.md#sum-aggregation
+   * for details.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("sum")
   @Nullable
   public SumAggregationModel getSum() {
     return sum;
   }
 
+  @JsonProperty("sum")
   public AggregationModel withSum(SumAggregationModel sum) {
     this.sum = sum;
     return this;

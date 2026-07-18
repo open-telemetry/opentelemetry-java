@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import javax.annotation.Generated;
@@ -18,38 +17,17 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class PropagatorModel {
 
-  /**
-   * Configure the propagators in the composite text map propagator. Entries from .composite_list
-   * are appended to the list here with duplicates filtered out. Built-in propagator keys include:
-   * tracecontext, baggage, b3, b3multi. Known third party keys include: xray. If omitted, and
-   * .composite_list is omitted or null, a noop propagator is used.
-   */
-  @JsonProperty("composite")
-  @JsonPropertyDescription(
-      "Configure the propagators in the composite text map propagator. Entries from .composite_list are appended to the list here with duplicates filtered out.\nBuilt-in propagator keys include: tracecontext, baggage, b3, b3multi. Known third party keys include: xray.\nIf omitted, and .composite_list is omitted or null, a noop propagator is used.\n")
-  @Nullable
-  private List<TextMapPropagatorModel> composite;
-
-  /**
-   * Configure the propagators in the composite text map propagator. Entries are appended to
-   * .composite with duplicates filtered out. The value is a comma separated list of propagator
-   * identifiers matching the format of OTEL_PROPAGATORS. See
-   * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#general-sdk-configuration
-   * for details. Built-in propagator identifiers include: tracecontext, baggage, b3, b3multi. Known
-   * third party identifiers include: xray. If omitted or null, and .composite is omitted or null, a
-   * noop propagator is used.
-   */
-  @JsonProperty("composite_list")
-  @JsonPropertyDescription(
-      "Configure the propagators in the composite text map propagator. Entries are appended to .composite with duplicates filtered out.\nThe value is a comma separated list of propagator identifiers matching the format of OTEL_PROPAGATORS. See https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#general-sdk-configuration for details.\nBuilt-in propagator identifiers include: tracecontext, baggage, b3, b3multi. Known third party identifiers include: xray.\nIf omitted or null, and .composite is omitted or null, a noop propagator is used.\n")
-  @Nullable
-  private String compositeList;
+  @Nullable private List<TextMapPropagatorModel> composite;
+  @Nullable private String compositeList;
 
   /**
    * Configure the propagators in the composite text map propagator. Entries from .composite_list
-   * are appended to the list here with duplicates filtered out. Built-in propagator keys include:
-   * tracecontext, baggage, b3, b3multi. Known third party keys include: xray. If omitted, and
-   * .composite_list is omitted or null, a noop propagator is used.
+   * are appended to the list here with duplicates filtered out.
+   *
+   * <p>Built-in propagator keys include: tracecontext, baggage, b3, b3multi. Known third party keys
+   * include: xray.
+   *
+   * <p>If omitted, and .composite_list is omitted or null, a noop propagator is used.
    */
   @JsonProperty("composite")
   @Nullable
@@ -57,6 +35,7 @@ public class PropagatorModel {
     return composite;
   }
 
+  @JsonProperty("composite")
   public PropagatorModel withComposite(List<TextMapPropagatorModel> composite) {
     this.composite = composite;
     return this;
@@ -64,12 +43,17 @@ public class PropagatorModel {
 
   /**
    * Configure the propagators in the composite text map propagator. Entries are appended to
-   * .composite with duplicates filtered out. The value is a comma separated list of propagator
-   * identifiers matching the format of OTEL_PROPAGATORS. See
+   * .composite with duplicates filtered out.
+   *
+   * <p>The value is a comma separated list of propagator identifiers matching the format of
+   * OTEL_PROPAGATORS. See
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#general-sdk-configuration
-   * for details. Built-in propagator identifiers include: tracecontext, baggage, b3, b3multi. Known
-   * third party identifiers include: xray. If omitted or null, and .composite is omitted or null, a
-   * noop propagator is used.
+   * for details.
+   *
+   * <p>Built-in propagator identifiers include: tracecontext, baggage, b3, b3multi. Known third
+   * party identifiers include: xray.
+   *
+   * <p>If omitted or null, and .composite is omitted or null, a noop propagator is used.
    */
   @JsonProperty("composite_list")
   @Nullable
@@ -77,6 +61,7 @@ public class PropagatorModel {
     return compositeList;
   }
 
+  @JsonProperty("composite_list")
   public PropagatorModel withCompositeList(String compositeList) {
     this.compositeList = compositeList;
     return this;

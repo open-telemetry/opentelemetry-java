@@ -30,7 +30,7 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
     ExtendedGrpcSenderConfig extendedSenderConfig = (ExtendedGrpcSenderConfig) grpcSenderConfig;
 
     boolean shutdownChannel = false;
-    Object configManagedChannel = extendedSenderConfig.getMangedChannel();
+    Object configManagedChannel = extendedSenderConfig.getManagedChannel();
     ManagedChannel managedChannel;
     if (configManagedChannel != null) {
       if (!(configManagedChannel instanceof ManagedChannel)) {

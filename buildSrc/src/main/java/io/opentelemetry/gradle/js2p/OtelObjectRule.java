@@ -25,22 +25,28 @@ import org.jsonschema2pojo.util.ParcelableHelper;
 import org.jsonschema2pojo.util.ReflectionHelper;
 
 /**
- * An {@link ObjectRule} that replaces jsonschema2pojo's generated {@code toString}/{@code
- * equals}/{@code hashCode} with implementations that mirror AutoValue's style.
+ * An {@link ObjectRule} that routes experimental classes into the {@code internal} sub-package and
+ * replaces jsonschema2pojo's generated {@code toString}/{@code equals}/{@code hashCode} with
+ * implementations that mirror AutoValue's style.
  */
 public class OtelObjectRule extends ObjectRule {
+
+  private final RuleFactory ruleFactory;
 
   public OtelObjectRule(
       RuleFactory ruleFactory,
       ParcelableHelper parcelableHelper,
       ReflectionHelper reflectionHelper) {
     super(ruleFactory, parcelableHelper, reflectionHelper);
+    this.ruleFactory = ruleFactory;
   }
 
   @Override
   public JType apply(
       String nodeName, JsonNode node, JsonNode parent, JPackage pkg, Schema schema) {
-    JType type = super.apply(nodeName, node, parent, pkg, schema);
+    // Route experimental types into the internal sub-package before the class is created.
+    JPackage targetPackage = ExperimentalPackages.resolve(ruleFactory, nodeName, node, pkg);
+    JType type = super.apply(nodeName, node, parent, targetPackage, schema);
     if (type instanceof JDefinedClass
         && ((JDefinedClass) type).getClassType() == ClassType.CLASS) {
       addValueMethods((JDefinedClass) type);

@@ -11,9 +11,9 @@ import javax.annotation.Nullable;
 
 /**
  * A {@link TextMapSetter} that injects context into a map carrier, intended for use with
- * environment variables when spawning child processes.
+ * environment variables when applications spawn child processes.
  *
- * <p>This is useful when an application needs to propagate context to sub-processes via their
+ * <p>This is useful when an application needs to propagate context to a child process via its
  * environment. For example, when using {@link ProcessBuilder}:
  *
  * <pre>{@code
@@ -23,20 +23,18 @@ import javax.annotation.Nullable;
  * processBuilder.environment().putAll(env);
  * }</pre>
  *
- * <p>This setter automatically sanitizes keys to be compatible with environment variable naming
- * conventions:
+ * <p>This setter automatically normalizes keys as environment variable names:
  *
  * <ul>
+ *   <li>An empty key is replaced with a single underscore ({@code _})
  *   <li>ASCII letters are converted to uppercase
  *   <li>Any character that is not an ASCII letter, digit, or underscore is replaced with an
  *       underscore
  *   <li>If the result would start with a digit, an underscore is prepended
  * </ul>
  *
- * <p>Values are validated to contain only characters valid in HTTP header fields per <a
- * href="https://datatracker.ietf.org/doc/html/rfc9110#section-5.5">RFC 9110</a> (visible ASCII
- * characters, space, and horizontal tab). Values containing invalid characters are silently
- * skipped.
+ * <p>Values are treated as opaque strings. Any propagation-format-specific validation or parsing is
+ * the responsibility of the propagator, not this carrier.
  *
  * <p><strong>Size limitations:</strong> Environment variable sizes are platform-dependent (e.g.,
  * Windows limits name=value pairs to 32,767 characters). Callers are responsible for being aware of
@@ -67,9 +65,10 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
   }
 
   /**
-   * Determine if a key is a valid normalized environment variable name. Returns {@code true} if
-   * {@code key} is non-empty, contains only uppercase ASCII letters, digits, and underscores, and
-   * does not start with a digit.
+   * Returns {@code true} if {@code key} is already a normalized environment variable name.
+   *
+   * <p>A normalized name is non-empty, contains only uppercase ASCII letters, digits, and
+   * underscores, and does not start with a digit.
    */
   static boolean isNormalizedKey(String key) {
     if (key.isEmpty()) {
@@ -89,9 +88,10 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
   }
 
   /**
-   * Normalizes a key to be a valid environment variable name.
+   * Normalizes a key as an environment variable name.
    *
    * <ul>
+   *   <li>An empty key is replaced with a single underscore ({@code _})
    *   <li>ASCII letters are converted to uppercase
    *   <li>Any character that is not an ASCII letter, digit, or underscore is replaced with an
    *       underscore (including {@code .}, {@code -}, whitespace, and control characters)
@@ -101,6 +101,9 @@ public final class EnvironmentSetter implements TextMapSetter<Map<String, String
   static String normalizeKey(String key) {
     if (isNormalizedKey(key)) {
       return key;
+    }
+    if (key.isEmpty()) {
+      return "_";
     }
     StringBuilder sb = new StringBuilder(key.length() + 1);
     for (int i = 0; i < key.length(); i++) {

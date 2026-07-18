@@ -54,7 +54,9 @@ import io.prometheus.metrics.model.snapshots.Unit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -71,7 +73,7 @@ import javax.annotation.Nullable;
 final class Otel2PrometheusConverter {
 
   private static final Logger LOGGER = Logger.getLogger(Otel2PrometheusConverter.class.getName());
-  private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(LOGGER);
   // Prometheus limits the total UTF-8 character count across all exemplar label names and values
   // to 128. See https://github.com/open-telemetry/opentelemetry-java/issues/6770
   private static final int EXEMPLAR_MAX_LABEL_SET_LENGTH = 128;
@@ -161,7 +163,7 @@ final class Otel2PrometheusConverter {
     try {
       return doConvert(metricData);
     } catch (IllegalArgumentException e) {
-      THROTTLING_LOGGER.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Failed to convert metric " + metricData.getName() + ". Dropping metric.",
           e);
@@ -338,7 +340,7 @@ final class Otel2PrometheusConverter {
     for (ExponentialHistogramPointData histogramData : dataPoints) {
       int scale = histogramData.getScale();
       if (scale < -4) {
-        THROTTLING_LOGGER.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Dropping histogram "
                 + metadata.getName()
@@ -461,7 +463,7 @@ final class Otel2PrometheusConverter {
       if (labelSetLength(labels) > EXEMPLAR_MAX_LABEL_SET_LENGTH) {
         // Drop filtered attributes to stay within Prometheus 128-char exemplar label limit,
         // keeping trace_id and span_id which are the most valuable for correlation.
-        THROTTLING_LOGGER.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Exemplar attributes exceeded Prometheus limit of "
                 + EXEMPLAR_MAX_LABEL_SET_LENGTH
@@ -484,7 +486,7 @@ final class Otel2PrometheusConverter {
               null, // scope attributes are only needed for point's attributes
               exemplar.getFilteredAttributes());
       if (labelSetLength(labels) > EXEMPLAR_MAX_LABEL_SET_LENGTH) {
-        THROTTLING_LOGGER.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Exemplar attributes exceeded Prometheus limit of "
                 + EXEMPLAR_MAX_LABEL_SET_LENGTH
@@ -536,11 +538,7 @@ final class Otel2PrometheusConverter {
             ? filterAllowedResourceAttributeKeys(resource)
             : Collections.emptyList();
 
-    Map<String, String> labelNameToValue = new HashMap<>();
-    attributes.forEach(
-        (key, value) ->
-            labelNameToValue.put(
-                convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+    Map<String, String> labelNameToValue = buildAttributeLabels(attributes);
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
@@ -561,18 +559,12 @@ final class Otel2PrometheusConverter {
           .forEach(
               (key, value) ->
                   labelNameToValue.putIfAbsent(
-                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(), value.toString()));
+                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(),
+                      toLabelValue(key.getType(), value)));
     }
 
     if (resource != null) {
-      Attributes resourceAttributes = resource.getAttributes();
-      for (AttributeKey attributeKey : allowedAttributeKeys) {
-        Object attributeValue = resourceAttributes.get(attributeKey);
-        if (attributeValue != null) {
-          labelNameToValue.putIfAbsent(
-              convertLabelName(attributeKey.getKey()), attributeValue.toString());
-        }
-      }
+      addResourceAttributeLabels(labelNameToValue, resource.getAttributes(), allowedAttributeKeys);
     }
 
     String[] names = new String[labelNameToValue.size()];
@@ -586,6 +578,121 @@ final class Otel2PrometheusConverter {
         });
 
     return Labels.of(names, values);
+  }
+
+  /**
+   * Builds a label map from metric attributes.
+   *
+   * <p>In the common (no-collision) case, inserts directly with no extra allocation. When
+   * normalization maps two attribute keys to the same label name, their values are joined with ";"
+   * in lexicographic order of the original key names.
+   */
+  private Map<String, String> buildAttributeLabels(Attributes attributes) {
+    Map<String, String> labels = new LinkedHashMap<>();
+    if (!shouldEscape(translationStrategy)) {
+      attributes.forEach(
+          (key, value) ->
+              labels.put(convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+      return labels;
+    }
+
+    // Fast path: insert directly. Stop inserting on first detected collision but finish
+    // iterating so forEach can complete.
+    boolean[] hasCollision = {false};
+    attributes.forEach(
+        (key, value) -> {
+          if (hasCollision[0]) {
+            return;
+          }
+          String labelName = convertLabelName(key.getKey());
+          if (labels.containsKey(labelName)) {
+            hasCollision[0] = true;
+          } else {
+            labels.put(labelName, toLabelValue(key.getType(), value));
+          }
+        });
+
+    if (!hasCollision[0]) {
+      return labels; // common case: done, no extra allocation
+    }
+
+    // Collision path: discard partial state and rebuild with merged values.
+    labels.clear();
+    Map<String, List<OriginalLabelKeyValue>> groups = new LinkedHashMap<>();
+    attributes.forEach(
+        (key, value) ->
+            groups
+                .computeIfAbsent(convertLabelName(key.getKey()), ignored -> new ArrayList<>())
+                .add(new OriginalLabelKeyValue(key.getKey(), toLabelValue(key.getType(), value))));
+    groups.forEach((labelName, entries) -> labels.put(labelName, mergeValues(entries)));
+    return labels;
+  }
+
+  /**
+   * Adds resource attribute labels into dest using putIfAbsent, so metric attributes take
+   * precedence. When normalization maps two resource attribute keys to the same label name, their
+   * values are joined with ";" in lexicographic order of the original key names.
+   */
+  private void addResourceAttributeLabels(
+      Map<String, String> dest,
+      Attributes resourceAttributes,
+      List<AttributeKey<?>> allowedAttributeKeys) {
+    if (allowedAttributeKeys.isEmpty()) {
+      return;
+    }
+
+    if (!shouldEscape(translationStrategy)) {
+      for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+        Object attributeValue = resourceAttributes.get(attributeKey);
+        if (attributeValue != null) {
+          dest.putIfAbsent(
+              convertLabelName(attributeKey.getKey()),
+              toLabelValue(attributeKey.getType(), attributeValue));
+        }
+      }
+      return;
+    }
+
+    // Fast path: build resource labels into a temp map to detect within-source collisions
+    // before applying them to dest with putIfAbsent.
+    Map<String, String> resourceLabels = new LinkedHashMap<>();
+    boolean hasCollision = false;
+    for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+      Object attributeValue = resourceAttributes.get(attributeKey);
+      if (attributeValue != null) {
+        String labelName = convertLabelName(attributeKey.getKey());
+        if (resourceLabels.containsKey(labelName)) {
+          hasCollision = true;
+          break;
+        }
+        resourceLabels.put(labelName, toLabelValue(attributeKey.getType(), attributeValue));
+      }
+    }
+
+    if (!hasCollision) {
+      resourceLabels.forEach(dest::putIfAbsent);
+      return;
+    }
+
+    // Collision path: rebuild with merged values.
+    Map<String, List<OriginalLabelKeyValue>> groups = new LinkedHashMap<>();
+    for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+      Object attributeValue = resourceAttributes.get(attributeKey);
+      if (attributeValue != null) {
+        groups
+            .computeIfAbsent(convertLabelName(attributeKey.getKey()), ignored -> new ArrayList<>())
+            .add(
+                new OriginalLabelKeyValue(
+                    attributeKey.getKey(), toLabelValue(attributeKey.getType(), attributeValue)));
+      }
+    }
+    groups.forEach((labelName, entries) -> dest.putIfAbsent(labelName, mergeValues(entries)));
+  }
+
+  /** Sorts entries by original key name and joins their values with ";". */
+  private static String mergeValues(List<OriginalLabelKeyValue> entries) {
+    entries.sort(Comparator.comparing(OriginalLabelKeyValue::originalKey));
+    return entries.stream().map(OriginalLabelKeyValue::value).collect(Collectors.joining(";"));
   }
 
   private List<AttributeKey<?>> filterAllowedResourceAttributeKeys(@Nullable Resource resource) {
@@ -822,7 +929,7 @@ final class Otel2PrometheusConverter {
    * type. If the type differs, we log a message and drop one of them.
    */
   @Nullable
-  private static MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
+  private MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
     MetricMetadata metadata = mergeMetadata(a.getMetadata(), b.getMetadata());
     if (metadata == null) {
       return null;
@@ -854,7 +961,7 @@ final class Otel2PrometheusConverter {
       dataPoints.addAll(((InfoSnapshot) b).getDataPoints());
       return new InfoSnapshot(metadata, dataPoints);
     } else {
-      THROTTLING_LOGGER.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Conflicting metric name "
               + a.getMetadata().getPrometheusName()
@@ -870,7 +977,7 @@ final class Otel2PrometheusConverter {
   }
 
   @Nullable
-  private static MetricMetadata mergeMetadata(MetricMetadata a, MetricMetadata b) {
+  private MetricMetadata mergeMetadata(MetricMetadata a, MetricMetadata b) {
     String name = a.getPrometheusName();
     if (a.getName().equals(b.getName())) {
       name = a.getName();
@@ -881,7 +988,7 @@ final class Otel2PrometheusConverter {
     }
     Unit unit = a.getUnit();
     if (unit != null && !unit.equals(b.getUnit())) {
-      THROTTLING_LOGGER.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Conflicting metrics: Multiple metrics with name "
               + name
@@ -970,5 +1077,24 @@ final class Otel2PrometheusConverter {
     }
     sb.append('"');
     return sb.toString();
+  }
+
+  /** Stores the original attribute key and rendered value for one normalized label collision. */
+  private static final class OriginalLabelKeyValue {
+    private final String originalKey;
+    private final String value;
+
+    private OriginalLabelKeyValue(String originalKey, String value) {
+      this.originalKey = originalKey;
+      this.value = value;
+    }
+
+    private String originalKey() {
+      return originalKey;
+    }
+
+    private String value() {
+      return value;
+    }
   }
 }

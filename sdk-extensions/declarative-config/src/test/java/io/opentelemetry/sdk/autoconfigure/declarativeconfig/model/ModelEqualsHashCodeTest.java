@@ -6,6 +6,9 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.google.common.reflect.ClassPath;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableAlwaysOffSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableParentThresholdSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.stream.Stream;
@@ -23,6 +26,8 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 class ModelEqualsHashCodeTest {
 
+  // Experimental (unstable) models live in the MODEL_PACKAGE.internal sub-package, so the class
+  // scan below is recursive to cover both stable and experimental POJOs.
   private static final String MODEL_PACKAGE =
       "io.opentelemetry.sdk.autoconfigure.declarativeconfig.model";
 
@@ -60,7 +65,7 @@ class ModelEqualsHashCodeTest {
 
   static Stream<Arguments> modelClasses() throws IOException {
     return ClassPath.from(ModelEqualsHashCodeTest.class.getClassLoader())
-        .getTopLevelClasses(MODEL_PACKAGE)
+        .getTopLevelClassesRecursive(MODEL_PACKAGE)
         .stream()
         .map(ClassPath.ClassInfo::load)
         // The "Model" suffix (jsonschema2pojo classNameSuffix) selects the generated POJOs and

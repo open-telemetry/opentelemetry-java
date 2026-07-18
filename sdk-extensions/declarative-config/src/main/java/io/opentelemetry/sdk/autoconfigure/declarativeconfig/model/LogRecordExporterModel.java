@@ -7,10 +7,10 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileExporterModel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
@@ -21,66 +21,77 @@ import javax.annotation.Nullable;
 @Generated("jsonschema2pojo")
 public class LogRecordExporterModel {
 
-  @JsonProperty("otlp_http")
-  @Nullable
-  private OtlpHttpExporterModel otlpHttp;
-
-  @JsonProperty("otlp_grpc")
-  @Nullable
-  private OtlpGrpcExporterModel otlpGrpc;
-
-  @JsonProperty("otlp_file/development")
-  @Nullable
-  private ExperimentalOtlpFileExporterModel otlpFileDevelopment;
-
-  @JsonProperty("console")
-  @Nullable
-  private ConsoleExporterModel console;
-
-  @JsonIgnore
+  @Nullable private OtlpHttpExporterModel otlpHttp;
+  @Nullable private OtlpGrpcExporterModel otlpGrpc;
+  @Nullable private ExperimentalOtlpFileExporterModel otlpFileDevelopment;
+  @Nullable private ConsoleExporterModel console;
   private Map<String, LogRecordExporterPropertyModel> additionalProperties =
       new LinkedHashMap<String, LogRecordExporterPropertyModel>();
 
+  /**
+   * Configure exporter to be OTLP with HTTP transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_http")
   @Nullable
   public OtlpHttpExporterModel getOtlpHttp() {
     return otlpHttp;
   }
 
+  @JsonProperty("otlp_http")
   public LogRecordExporterModel withOtlpHttp(OtlpHttpExporterModel otlpHttp) {
     this.otlpHttp = otlpHttp;
     return this;
   }
 
+  /**
+   * Configure exporter to be OTLP with gRPC transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_grpc")
   @Nullable
   public OtlpGrpcExporterModel getOtlpGrpc() {
     return otlpGrpc;
   }
 
+  @JsonProperty("otlp_grpc")
   public LogRecordExporterModel withOtlpGrpc(OtlpGrpcExporterModel otlpGrpc) {
     this.otlpGrpc = otlpGrpc;
     return this;
   }
 
+  /**
+   * Configure exporter to be OTLP with file transport.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("otlp_file/development")
   @Nullable
   public ExperimentalOtlpFileExporterModel getOtlpFileDevelopment() {
     return otlpFileDevelopment;
   }
 
+  @JsonProperty("otlp_file/development")
   public LogRecordExporterModel withOtlpFileDevelopment(
       ExperimentalOtlpFileExporterModel otlpFileDevelopment) {
     this.otlpFileDevelopment = otlpFileDevelopment;
     return this;
   }
 
+  /**
+   * Configure exporter to be console.
+   *
+   * <p>If omitted, ignore.
+   */
   @JsonProperty("console")
   @Nullable
   public ConsoleExporterModel getConsole() {
     return console;
   }
 
+  @JsonProperty("console")
   public LogRecordExporterModel withConsole(ConsoleExporterModel console) {
     this.console = console;
     return this;
@@ -92,10 +103,6 @@ public class LogRecordExporterModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, LogRecordExporterPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public LogRecordExporterModel withAdditionalProperty(
       String name, LogRecordExporterPropertyModel value) {
     this.additionalProperties.put(name, value);
