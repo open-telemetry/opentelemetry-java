@@ -33,6 +33,22 @@ class ComposableAnnotatingSamplerTest {
   }
 
   @Test
+  void descriptionInComposedSampler() {
+    // The annotating sampler must override toString() so that samplers composing it (which build
+    // their description by concatenating the nested sampler) surface its real description instead
+    // of
+    // an Object hash.
+    String description =
+        ComposableSampler.parentThreshold(
+                ComposableSampler.annotating(ComposableSampler.alwaysOn(), Attributes.empty()))
+            .getDescription();
+    assertThat(description)
+        .isEqualTo(
+            "ComposableParentThresholdSampler{rootSampler=ComposableAnnotatingSampler{ComposableAlwaysOnSampler,{}}}");
+    assertThat(description).doesNotContain("@");
+  }
+
+  @Test
   void setsAttributes() {
     SamplingIntent intent =
         ComposableSampler.annotating(ComposableSampler.alwaysOn(), ATTRIBUTES)

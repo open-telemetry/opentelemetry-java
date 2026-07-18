@@ -44,4 +44,9 @@ final class ComposableAnnotatingSampler implements ComposableSampler {
   public String getDescription() {
     return description;
   }
+
+  @Override
+  public String toString() {
+    return getDescription();
+  }
 }
