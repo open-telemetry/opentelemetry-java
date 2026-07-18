@@ -31,6 +31,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -176,6 +177,35 @@ class RetryInterceptorTest {
     for (int i = 0; i < 2; i++) {
       server.takeRequest(0, TimeUnit.NANOSECONDS);
     }
+  }
+
+  @Test
+  void retryDelayOverride() throws Exception {
+    succeedOnAttempt(2);
+    doNothing().when(sleeper).sleep(anyLong());
+
+    RetryInterceptor retryInterceptor =
+        new RetryInterceptor(
+            RetryPolicy.builder()
+                .setBackoffMultiplier(1.6)
+                .setInitialBackoff(Duration.ofSeconds(1))
+                .setMaxBackoff(Duration.ofSeconds(2))
+                .setMaxAttempts(5)
+                .setRetryExceptionPredicate(retryExceptionPredicate)
+                .build(),
+            r -> !r.isSuccessful(),
+            retryExceptionPredicate,
+            sleeper,
+            random,
+            response -> OptionalLong.of(123L));
+    client = new OkHttpClient.Builder().addInterceptor(retryInterceptor).build();
+
+    try (Response response = sendRequest()) {
+      assertThat(response.isSuccessful()).isTrue();
+    }
+
+    verify(sleeper).sleep(123L);
+    verifyNoInteractions(random);
   }
 
   @Test
