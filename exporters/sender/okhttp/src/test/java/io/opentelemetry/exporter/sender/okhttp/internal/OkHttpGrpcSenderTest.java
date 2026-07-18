@@ -305,6 +305,24 @@ class OkHttpGrpcSenderTest {
         "Shutdown should succeed even when interrupted");
   }
 
+  @Test
+  void enabledProtocols() {
+    OkHttpGrpcSender defaultSender =
+        new OkHttpGrpcSender(
+            URI.create("https://localhost"),
+            null,
+            Duration.ofNanos(1),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null,
+            Long.MAX_VALUE,
+            Collections.singletonList("TLSv1.2"));
+    assertThat(defaultSender).isNotNull();
+  }
+
   /** Simple test marshaler for testing purposes. */
   private static class TestMessageWriter implements MessageWriter {
     @Override

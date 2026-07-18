@@ -287,4 +287,24 @@ class OkHttpHttpSenderTest {
       Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
     }
   }
+
+  @Test
+  void enabledProtocols() {
+    OkHttpHttpSender defaultSender =
+        new OkHttpHttpSender(
+            URI.create("https://localhost"),
+            "text/plain",
+            null,
+            Duration.ofNanos(1),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null,
+            null,
+            Long.MAX_VALUE,
+            Collections.singletonList("TLSv1.2"));
+    assertThat(defaultSender).isNotNull();
+  }
 }
