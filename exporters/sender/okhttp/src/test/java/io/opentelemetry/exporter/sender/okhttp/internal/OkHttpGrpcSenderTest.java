@@ -309,7 +309,7 @@ class OkHttpGrpcSenderTest {
   void enabledProtocols() {
     OkHttpGrpcSender defaultSender =
         new OkHttpGrpcSender(
-            URI.create("https://localhost"),
+            "https://localhost",
             null,
             Duration.ofNanos(1),
             Duration.ofSeconds(10),

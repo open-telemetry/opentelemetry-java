@@ -250,7 +250,8 @@ class OkHttpHttpSenderTest {
                     sslContext,
                     null,
                     null,
-                    Long.MAX_VALUE))
+                    Long.MAX_VALUE,
+                    null))
         .doesNotThrowAnyException();
   }
 
@@ -278,7 +279,8 @@ class OkHttpHttpSenderTest {
                       sslContext,
                       null,
                       null,
-                      Long.MAX_VALUE))
+                      Long.MAX_VALUE,
+                      null))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("Unable to initialize default trust manager")
           .hasCauseInstanceOf(SSLException.class);
