@@ -291,7 +291,11 @@ public final class JaegerPropagator implements TextMapPropagator {
         }
       }
     }
-    return builder == null ? null : builder.build();
+    if (builder == null) {
+      return null;
+    }
+    Baggage baggage = builder.build();
+    return baggage.isEmpty() ? null : baggage;
   }
 
   /** Returns a two-element array of {@code [entriesAdded, bytesAdded]}. */

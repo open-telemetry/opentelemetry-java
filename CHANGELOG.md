@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### API
+
+#### Extensions
+
+* Trace propagators: Fix `JaegerPropagator` overwriting existing baggage when the `jaeger-baggage`
+  header has no parsable entries
+  ([#8632](https://github.com/open-telemetry/opentelemetry-java/pull/8632))
+
 ### SDK
 
 #### Exporters
