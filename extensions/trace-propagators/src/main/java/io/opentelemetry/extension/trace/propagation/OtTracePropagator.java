@@ -109,7 +109,6 @@ public final class OtTracePropagator implements TextMapPropagator {
   }
 
   @Override
-  @SuppressWarnings("deprecation") // OT trace baggage extraction requires enumerating carrier keys.
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
       return Context.root();

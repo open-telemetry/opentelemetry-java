@@ -6,6 +6,7 @@
 package io.opentelemetry.context.propagation;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.context.propagation.internal.ExtendedTextMapGetter;
@@ -46,12 +47,13 @@ class TextMapGetterTest {
       };
 
   @Test
-  @SuppressWarnings("deprecation") // Verifies the default behavior of deprecated keys().
   void canBeImplementedAsLambda() {
     TextMapGetter<Void> getter = (carrier, key) -> "value";
 
     assertThat(getter.get(null, "key")).isEqualTo("value");
-    assertThat(getter.keys(null)).isEqualTo(Collections.emptyList());
+    assertThatThrownBy(() -> getter.keys(null))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage("keys() is not implemented");
   }
 
   @Test

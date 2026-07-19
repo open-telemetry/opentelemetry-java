@@ -22,16 +22,12 @@ public interface TextMapGetter<C> {
   /**
    * Returns all the keys in the given carrier.
    *
-   * <p>The default method returns an empty {@link Iterable}.
-   *
    * @param carrier carrier of propagation fields, such as an http request.
+   * @throws UnsupportedOperationException if this operation is not implemented
    * @since 0.10.0
-   * @deprecated Propagators should use {@link #get(Object, String)} or {@link #getAll(Object,
-   *     String)} with known fields instead.
    */
-  @Deprecated
   default Iterable<String> keys(C carrier) {
-    return Collections.emptyList();
+    throw new UnsupportedOperationException("keys() is not implemented");
   }
 
   /**

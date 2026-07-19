@@ -245,7 +245,6 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   @Nullable
-  @SuppressWarnings("deprecation") // Jaeger baggage extraction requires enumerating carrier keys.
   private static <C> Baggage getBaggageFromHeader(@Nullable C carrier, TextMapGetter<C> getter) {
     BaggageBuilder builder = null;
     int entriesAdded = 0;
