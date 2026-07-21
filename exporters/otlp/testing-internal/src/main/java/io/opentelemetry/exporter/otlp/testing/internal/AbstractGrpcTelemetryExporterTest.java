@@ -220,13 +220,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           sb.http(0);
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
-          sb.tlsCustomizer(
-              ssl -> {
-                ssl.trustManager(clientCertificate.certificate());
-                // Restrict server to TLS 1.2+ so enabledProtocols tests are meaningful
-                // regardless of SSL backend (JDK TLS or BoringSSL via netty-tcnative).
-                ssl.protocols("TLSv1.2", "TLSv1.3");
-              });
+          sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
           // Uncomment for detailed request / response logs from server
           // sb.decorator(LoggingService.newDecorator());
         }
@@ -658,8 +652,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void enabledProtocols_restrictedProtocolsFail() throws Exception {
-    // UpstreamGrpcSender delegates TLS entirely to the ManagedChannel supplied by the user;
-    // enabledProtocols is intentionally not applied for that sender.
     assumeThat(System.getProperty("io.opentelemetry.sdk.common.export.GrpcSenderProvider"))
         .as("enabledProtocols is not supported by UpstreamGrpcSenderProvider")
         .isNotEqualTo(

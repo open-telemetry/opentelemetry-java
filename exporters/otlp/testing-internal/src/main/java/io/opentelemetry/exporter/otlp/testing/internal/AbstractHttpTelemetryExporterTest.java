@@ -153,13 +153,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           sb.http(0);
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
-          sb.tlsCustomizer(
-              ssl -> {
-                ssl.trustManager(clientCertificate.certificate());
-                // Restrict server to TLS 1.2+ so enabledProtocols tests are meaningful
-                // regardless of SSL backend (JDK TLS or BoringSSL via netty-tcnative).
-                ssl.protocols("TLSv1.2", "TLSv1.3");
-              });
+          sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
           // Uncomment for detailed request / response logs from server
           // sb.decorator(LoggingService.newDecorator());
         }
@@ -446,8 +440,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(HttpExporter.class)
   void enabledProtocols_restrictedProtocolsFail() throws Exception {
-    // Restrict to TLSv1.1 only. The test server requires TLS 1.2+, so the handshake fails.
-    // Even on permissive JVMs, TLSv1.1 is not offered by Armeria's default TLS configuration.
     try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpsUri() + path)
