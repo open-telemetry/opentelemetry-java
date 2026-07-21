@@ -6,6 +6,8 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,6 +22,7 @@ import java.net.ServerSocket;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.security.Security;
 import java.security.cert.Certificate;
 import java.time.Duration;
 import java.util.Collections;
@@ -33,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -333,6 +337,65 @@ class OkHttpHttpSenderTest {
     @Override
     public int getContentLength() {
       return 0;
+    }
+  }
+
+  @Test
+  void constructor_usesDefaultTrustManagerWhenTrustManagerIsNull() throws Exception {
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(null, null, null);
+
+    assertThatCode(
+            () ->
+                new OkHttpHttpSender(
+                    URI.create("https://localhost"),
+                    "text/plain",
+                    null,
+                    Duration.ofSeconds(10),
+                    Duration.ofSeconds(10),
+                    Collections::emptyMap,
+                    null,
+                    null,
+                    sslContext,
+                    null,
+                    null,
+                    Long.MAX_VALUE,
+                    null))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void constructor_wrapsDefaultTrustManagerFailure() throws Exception {
+    String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
+
+    try {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", "invalid");
+
+      SSLContext sslContext = SSLContext.getInstance("TLS");
+      sslContext.init(null, null, null);
+
+      assertThatThrownBy(
+              () ->
+                  new OkHttpHttpSender(
+                      URI.create("https://localhost"),
+                      "text/plain",
+                      null,
+                      Duration.ofSeconds(10),
+                      Duration.ofSeconds(10),
+                      Collections::emptyMap,
+                      null,
+                      null,
+                      sslContext,
+                      null,
+                      null,
+                      Long.MAX_VALUE,
+                      null))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessage("Unable to initialize default trust manager")
+          .hasCauseInstanceOf(SSLException.class);
+
+    } finally {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
     }
   }
 }

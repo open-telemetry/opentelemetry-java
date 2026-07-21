@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### SDK
+
+#### Exporters
+
+* Logging: Output event name in `SystemOutLogRecordExporter`
+  ([#8609](https://github.com/open-telemetry/opentelemetry-java/pull/8609))
+
 ## Version 1.64.0 (2026-07-10)
 
 ### API

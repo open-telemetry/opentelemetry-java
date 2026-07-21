@@ -20,6 +20,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -107,6 +108,18 @@ class PeriodicMetricReaderTest {
     reader.register(collectionRegistration);
 
     verify(scheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
+  }
+
+  @Test
+  void build_withInternalTelemetryVersion() {
+    WaitingMetricExporter exporter = new WaitingMetricExporter();
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(exporter)
+            .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+            .build();
+
+    assertThat(reader).isNotNull();
   }
 
   @Test

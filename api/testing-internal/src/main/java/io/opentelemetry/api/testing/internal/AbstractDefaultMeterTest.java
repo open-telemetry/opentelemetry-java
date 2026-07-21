@@ -72,6 +72,15 @@ public abstract class AbstractDefaultMeterTest {
     counter.add(1);
     counter.add(1, Attributes.of(stringKey("thing"), "car"));
     counter.add(1, Attributes.of(stringKey("thing"), "car"), Context.current());
+
+    ObservableLongMeasurement measurement =
+        meter
+            .counterBuilder("size")
+            .setDescription("The size I'm measuring")
+            .setUnit("1")
+            .buildObserver();
+    measurement.record(1);
+    measurement.record(1, Attributes.of(stringKey("thing"), "car"));
   }
 
   @Test
@@ -86,6 +95,16 @@ public abstract class AbstractDefaultMeterTest {
     counter.add(1.2);
     counter.add(2.5, Attributes.of(stringKey("thing"), "car"));
     counter.add(2.5, Attributes.of(stringKey("thing"), "car"), Context.current());
+
+    ObservableDoubleMeasurement measurement =
+        meter
+            .counterBuilder("size")
+            .ofDoubles()
+            .setDescription("The size I'm measuring")
+            .setUnit("1")
+            .buildObserver();
+    measurement.record(1.2);
+    measurement.record(2.5, Attributes.of(stringKey("thing"), "car"));
   }
 
   @Test
@@ -99,6 +118,15 @@ public abstract class AbstractDefaultMeterTest {
     counter.add(-1);
     counter.add(1, Attributes.of(stringKey("thing"), "car"));
     counter.add(1, Attributes.of(stringKey("thing"), "car"), Context.current());
+
+    ObservableLongMeasurement measurement =
+        meter
+            .upDownCounterBuilder("size")
+            .setDescription("The size I'm measuring")
+            .setUnit("1")
+            .buildObserver();
+    measurement.record(-1);
+    measurement.record(1, Attributes.of(stringKey("thing"), "car"));
   }
 
   @Test
@@ -113,6 +141,16 @@ public abstract class AbstractDefaultMeterTest {
     counter.add(-2e4);
     counter.add(1.0e-1, Attributes.of(stringKey("thing"), "car"));
     counter.add(1.0e-1, Attributes.of(stringKey("thing"), "car"), Context.current());
+
+    ObservableDoubleMeasurement measurement =
+        meter
+            .upDownCounterBuilder("size")
+            .ofDoubles()
+            .setDescription("The size I'm measuring")
+            .setUnit("1")
+            .buildObserver();
+    measurement.record(-2e4);
+    measurement.record(1.0e-1, Attributes.of(stringKey("thing"), "car"));
   }
 
   @Test
