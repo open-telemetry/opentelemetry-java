@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
   "last_value",
   "sum"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class AggregationModel {
 
   @Nullable private DefaultAggregationModel _default;

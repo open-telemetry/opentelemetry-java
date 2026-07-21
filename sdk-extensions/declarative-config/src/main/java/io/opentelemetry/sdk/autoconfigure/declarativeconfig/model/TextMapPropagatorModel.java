@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"tracecontext", "baggage", "b3", "b3multi"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class TextMapPropagatorModel {
 
   @Nullable private TraceContextPropagatorModel tracecontext;

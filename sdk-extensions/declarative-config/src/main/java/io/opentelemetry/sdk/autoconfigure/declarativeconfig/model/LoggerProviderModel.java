@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"processors", "limits", "logger_configurator/development"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class LoggerProviderModel {
 
   @Nullable private List<LogRecordProcessorModel> processors;

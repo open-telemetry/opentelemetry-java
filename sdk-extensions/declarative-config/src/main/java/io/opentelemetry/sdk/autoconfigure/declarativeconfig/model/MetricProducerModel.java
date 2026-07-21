@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"opencensus"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class MetricProducerModel {
 
   @Nullable private OpenCensusMetricProducerModel opencensus;

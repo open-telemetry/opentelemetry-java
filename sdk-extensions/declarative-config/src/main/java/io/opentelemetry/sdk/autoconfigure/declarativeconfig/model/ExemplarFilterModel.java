@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
+package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -11,22 +11,22 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Generated;
 
-@Generated("jsonschema2pojo")
-public enum ExperimentalSpanParent {
-  NONE("none"),
-  REMOTE("remote"),
-  LOCAL("local");
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
+public enum ExemplarFilterModel {
+  ALWAYS_ON("always_on"),
+  ALWAYS_OFF("always_off"),
+  TRACE_BASED("trace_based");
   private final String value;
-  private static final Map<String, ExperimentalSpanParent> CONSTANTS =
-      new HashMap<String, ExperimentalSpanParent>();
+  private static final Map<String, ExemplarFilterModel> CONSTANTS =
+      new HashMap<String, ExemplarFilterModel>();
 
   static {
-    for (ExperimentalSpanParent c : values()) {
+    for (ExemplarFilterModel c : values()) {
       CONSTANTS.put(c.value, c);
     }
   }
 
-  ExperimentalSpanParent(String value) {
+  ExemplarFilterModel(String value) {
     this.value = value;
   }
 
@@ -41,8 +41,8 @@ public enum ExperimentalSpanParent {
   }
 
   @JsonCreator
-  public static ExperimentalSpanParent fromValue(String value) {
-    ExperimentalSpanParent constant = CONSTANTS.get(value);
+  public static ExemplarFilterModel fromValue(String value) {
+    ExemplarFilterModel constant = CONSTANTS.get(value);
     if (constant == null) {
       throw new IllegalArgumentException(value);
     } else {

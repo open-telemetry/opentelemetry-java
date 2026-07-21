@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"otlp_http", "otlp_grpc", "otlp_file/development", "console"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class PushMetricExporterModel {
 
   @Nullable private OtlpHttpMetricExporterModel otlpHttp;

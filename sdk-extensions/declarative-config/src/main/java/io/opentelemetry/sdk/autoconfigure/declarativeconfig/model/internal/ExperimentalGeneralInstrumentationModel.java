@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
   "sanitization",
   "stability_opt_in_list"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalGeneralInstrumentationModel {
 
   @Nullable private ExperimentalHttpInstrumentationModel http;

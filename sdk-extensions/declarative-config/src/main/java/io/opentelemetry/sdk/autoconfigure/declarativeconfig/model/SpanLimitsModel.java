@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
   "event_attribute_count_limit",
   "link_attribute_count_limit"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class SpanLimitsModel {
 
   @Nullable private Integer attributeValueLengthLimit;
