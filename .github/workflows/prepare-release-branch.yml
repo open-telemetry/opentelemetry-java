@@ -82,6 +82,7 @@ jobs:
           # not using secrets.GITHUB_TOKEN since pull requests from that token do not run workflows
           GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
         run: |
+          gh auth setup-git
           message="Prepare release $VERSION"
           branch="otelbot/prepare-release-${VERSION}"
 
