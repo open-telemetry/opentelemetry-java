@@ -94,9 +94,8 @@ public class InstrumentationConfigUtil {
 
   /**
    * Walk down the {@code segments} of {@link ConfigProvider#getInstrumentationConfig()} and call
-   * {@code accessor} on the terminal node. Returns null if {@link
-   * ConfigProvider#getInstrumentationConfig()} is null, or if null is encountered walking the
-   * {@code segments}, or if {@code accessor} returns null.
+   * {@code accessor} on the terminal node. Returns null if null is encountered walking the {@code
+   * segments}, or if {@code accessor} returns null.
    *
    * <p>See other methods in {@link InstrumentationConfigUtil} for usage examples.
    */
