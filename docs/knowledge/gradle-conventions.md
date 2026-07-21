@@ -23,7 +23,7 @@ Every module applies a base set of convention plugins from `buildSrc/src/main/ko
 | `otel.publish-conventions` | Maven publishing, POM generation | Published (non-internal) modules |
 | `otel.animalsniffer-conventions` | Android API level compatibility checking | Modules targeting Android |
 | `otel.jmh-conventions` | JMH benchmark support | Modules with benchmarks |
-| `otel.japicmp-conventions` | API diff generation against latest release | Published modules (applied by `otel.publish-conventions`) |
+| `otel.japicmp-conventions` | API diff generation against the pinned `apidiffBaselineVersion` release | Published modules (applied by `otel.publish-conventions`) |
 | `otel.protobuf-conventions` | Protobuf code generation | Protobuf modules only |
 
 A typical published module:
