@@ -125,6 +125,16 @@ class DeclarativeConfigPojoGenerator(
       )
     }
 
+    // Enums are only handled when declared as top-level \$defs (see enumDefNames/generateEnumFile);
+    // a \$ref to such a def resolves to its generated *Model enum above. An inline enum here would
+    // otherwise fall through to resolveScalarType and be silently emitted as its base scalar type
+    // (e.g. String), losing type safety.
+    if (propNode.has("enum")) error(
+      "Inline enum encountered during generation. Promote it to a top-level \$defs entry " +
+        "so it generates a typed *Model enum, or update the generator to handle inline enums. " +
+        "Property node: $propNode"
+    )
+
     return resolveScalarType(propNode["type"])
   }
 
