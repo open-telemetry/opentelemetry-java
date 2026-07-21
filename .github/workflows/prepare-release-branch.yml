@@ -74,13 +74,13 @@ jobs:
         with:
           client-id: ${{ vars.OTELBOT_CLIENT_ID }}
           private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
-          permission-contents: write
           permission-pull-requests: write
 
       - name: Create pull request against the release branch
         env:
-          # not using secrets.GITHUB_TOKEN since pull requests from that token do not run workflows
-          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # pull requests from secrets.GITHUB_TOKEN do not run workflows
+          OTELBOT_TOKEN: ${{ steps.otelbot-token.outputs.token }}
         run: |
           gh auth setup-git
           message="Prepare release $VERSION"
@@ -89,9 +89,10 @@ jobs:
           git checkout -b $branch
           git commit -a -m "$message"
           git push --set-upstream origin $branch
-          gh pr create --title "[$RELEASE_BRANCH_NAME] $message" \
-                       --body "$message." \
-                       --base $RELEASE_BRANCH_NAME
+          GH_TOKEN="$OTELBOT_TOKEN" gh pr create \
+            --title "[$RELEASE_BRANCH_NAME] $message" \
+            --body "$message." \
+            --base $RELEASE_BRANCH_NAME
 
   create-pull-request-against-main:
     permissions:
@@ -139,8 +140,9 @@ jobs:
 
       - name: Create pull request against main
         env:
-          # not using secrets.GITHUB_TOKEN since pull requests from that token do not run workflows
-          GH_TOKEN: ${{ steps.otelbot-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # pull requests from secrets.GITHUB_TOKEN do not run workflows
+          OTELBOT_TOKEN: ${{ steps.otelbot-token.outputs.token }}
         run: |
           gh auth setup-git
           message="Update version to $NEXT_VERSION"
@@ -150,6 +152,7 @@ jobs:
           git checkout -b $branch
           git commit -a -m "$message"
           git push --set-upstream origin $branch
-          gh pr create --title "$message" \
-                       --body "$body" \
-                       --base main
+          GH_TOKEN="$OTELBOT_TOKEN" gh pr create \
+            --title "$message" \
+            --body "$body" \
+            --base main
