@@ -4,10 +4,9 @@ on:
   # pull_request_target is used instead of pull_request so that the workflow has write access
   # (to post comments and apply labels) even when triggered by fork PRs.
   #
-  # SECURITY: this workflow must never checkout or execute any code from the PR branch.
-  # Doing so would allow malicious PRs to exfiltrate secrets. All we use from the PR
-  # is github.event.pull_request.number (an integer), which is safe.
-  pull_request_target:
+  # Required to label and comment on fork PRs; no PR code is checked out, and
+  # the PR number and head ref are passed through env and treated only as data.
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions: {}
@@ -23,6 +22,8 @@ jobs:
         with:
           client-id: ${{ vars.OTELBOT_CLIENT_ID }}
           private-key: ${{ secrets.OTELBOT_PRIVATE_KEY }}
+          permission-issues: write
+          permission-pull-requests: read
 
       - name: Check for API changes and update PR
         env:

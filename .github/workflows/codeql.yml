@@ -40,7 +40,8 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Set up gradle
+      # This analyzes release branches but does not build or publish release artifacts.
+      - name: Set up gradle # zizmor: ignore[cache-poisoning]
         if: matrix.language == 'java'
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
 
