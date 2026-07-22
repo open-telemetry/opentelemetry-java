@@ -367,9 +367,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
    * io.opentelemetry.sdk.logs.LogRecordProcessor}s. The return value of the {@link BiFunction} will
    * replace the passed-in argument. In contrast to {@link
-   * #addLogRecordExporterCustomizer(BiFunction)} (BiFunction)} this allows modifications to happen
-   * before batching occurs. As a result, it is possible to efficiently filter logs, add artificial
-   * logs or delay logs for enhancing them with external, delayed data.
+   * #addLogRecordExporterCustomizer(BiFunction)} this allows modifications to happen before
+   * batching occurs. As a result, it is possible to efficiently filter logs, add artificial logs or
+   * delay logs for enhancing them with external, delayed data.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
