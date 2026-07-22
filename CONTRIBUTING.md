@@ -28,6 +28,11 @@ Contributors without an official project role are encouraged to review PRs. This
 useful signal for maintainers and is a requirement if you are interested in joining the project
 in an official capacity.
 
+This repository sits at the base of a large ecosystem: widely deployed, a target for attackers,
+and sensitive to performance regressions. Expect a high level of scrutiny on API surface,
+security, performance, and maintainability, including on small changes. This reflects the
+project's position, not distrust of contributors. Back-and-forth during review is normal.
+
 ### Draft PRs
 
 Draft PRs are welcome, especially when exploring new ideas or experimenting with a hypothesis.
@@ -35,6 +40,26 @@ However, draft PRs may not receive the same degree of attention, feedback, or sc
 requested directly. In order to help keep the PR backlog maintainable, drafts older than 6 months
 will be closed by the project maintainers. This should not be interpreted as a rejection. Closed
 PRs may be reopened by the author when time or interest allows.
+
+### Test coverage
+
+CI reports a code coverage delta on every PR. The threshold is a signal for reviewer attention,
+not a merge gate. Above it, coverage is not something reviewers will dwell on. Below it,
+reviewers will look more closely at what is uncovered, and the outcome may be adding tests,
+agreeing that more coverage is impractical, or restructuring the code for testability. A red
+coverage check alone does not block a PR.
+
+### Build failures
+
+Transient CI failures happen on a build matrix this size. A red check does not, by itself,
+affect how your PR is reviewed.
+
+* Failing across all Java versions and operating systems: likely a real issue in the change,
+  worth fixing before requesting review.
+* Only one or a handful of jobs failing: probably transient. Most required jobs cannot be
+  re-run by contributors, so a maintainer will re-run them, and these failures are not held
+  against the contribution.
+* If re-runs are slow, a friendly ping on the PR is welcome.
 
 ## Project scope
 
