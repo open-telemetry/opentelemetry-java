@@ -4,7 +4,8 @@ on:
   # pull_request_target is used instead of pull_request so that the workflow has write access
   # (to post comments and apply labels) even when triggered by fork PRs.
   #
-  # Required to label and comment on fork PRs; no PR code is checked out, and
+  # zizmor dangerous-triggers suppression rationale: required to label and comment on fork PRs;
+  # no PR code is checked out, and
   # the PR number and head ref are passed through env and treated only as data.
   pull_request_target: # zizmor: ignore[dangerous-triggers]
     types: [opened, synchronize, reopened, ready_for_review]
