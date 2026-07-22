@@ -107,8 +107,12 @@ val syncPojoModelsToSrc = tasks.register("syncPojoModelsToSrc") {
   val modelSrcDir = File(projectDir, "src/main/java")
   doLast {
     val modelDir = File(modelSrcDir, modelPackage.replace('.', '/'))
-    // Delete first so schema type removals don't leave stale classes.
-    modelDir.deleteRecursively()
+    // Delete only @Generated files so hand-written files (ModelMapper, ExtensionPropertyUtil)
+    // in model.internal survive the regeneration cycle.
+    modelDir.walkTopDown()
+      .filter { it.isFile && it.extension == "java" }
+      .filter { it.readText().contains("@Generated(") }
+      .forEach { it.delete() }
     DeclarativeConfigPojoGenerator(schemaFile, modelSrcDir, modelPackage).generate()
   }
 }

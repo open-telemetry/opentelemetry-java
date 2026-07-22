@@ -26,8 +26,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.NameStringValu
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.SpanExporterModelAccessor;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -163,8 +164,8 @@ class SpanExporterFactoryTest {
             LoggingSpanExporter.create()),
         Arguments.argumentSet(
             "otlp_file/development",
-            new SpanExporterModel()
-                .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
+            SpanExporterModelAccessor.withOtlpFile(
+                new SpanExporterModel(), new ExperimentalOtlpFileExporterModel()),
             OtlpStdoutSpanExporter.builder().build()));
   }
 
@@ -181,9 +182,7 @@ class SpanExporterFactoryTest {
         Arguments.argumentSet(
             "unknown component provider",
             new SpanExporterModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new SpanExporterPropertyModel().withAdditionalProperty("key1", "value1")),
+                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\"."));
   }
 
@@ -193,9 +192,7 @@ class SpanExporterFactoryTest {
         SpanExporterFactory.getInstance()
             .create(
                 new SpanExporterModel()
-                    .withAdditionalProperty(
-                        "test",
-                        new SpanExporterPropertyModel().withAdditionalProperty("key1", "value1")),
+                    .withExtensionProperty("test", Collections.singletonMap("key1", "value1")),
                 context);
     assertThat(spanExporter).isInstanceOf(SpanExporterComponentProvider.TestSpanExporter.class);
     assertThat(

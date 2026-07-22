@@ -5,19 +5,43 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordLimitsModel.ATTRIBUTE_COUNT_LIMIT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordLimitsModel.ATTRIBUTE_VALUE_LENGTH_LIMIT;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"attribute_value_length_limit", "attribute_count_limit"})
+@JsonPropertyOrder({ATTRIBUTE_VALUE_LENGTH_LIMIT, ATTRIBUTE_COUNT_LIMIT})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class LogRecordLimitsModel {
 
+  static final String ATTRIBUTE_VALUE_LENGTH_LIMIT = "attribute_value_length_limit";
+  static final String ATTRIBUTE_COUNT_LIMIT = "attribute_count_limit";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(ATTRIBUTE_VALUE_LENGTH_LIMIT, Integer.class);
+    STABLE_PROPERTIES.put(ATTRIBUTE_COUNT_LIMIT, Integer.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
+
   @Nullable private Integer attributeValueLengthLimit;
   @Nullable private Integer attributeCountLimit;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit.
@@ -26,13 +50,17 @@ public class LogRecordLimitsModel {
    *
    * <p>If omitted or null, there is no limit.
    */
-  @JsonProperty("attribute_value_length_limit")
+  @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
   @Nullable
   public Integer getAttributeValueLengthLimit() {
+    if (attributeValueLengthLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ATTRIBUTE_VALUE_LENGTH_LIMIT, extensionProperties, Integer.class);
+    }
     return attributeValueLengthLimit;
   }
 
-  @JsonProperty("attribute_value_length_limit")
+  @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
   public LogRecordLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
     return this;
@@ -45,15 +73,36 @@ public class LogRecordLimitsModel {
    *
    * <p>If omitted or null, 128 is used.
    */
-  @JsonProperty("attribute_count_limit")
+  @JsonProperty(ATTRIBUTE_COUNT_LIMIT)
   @Nullable
   public Integer getAttributeCountLimit() {
+    if (attributeCountLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ATTRIBUTE_COUNT_LIMIT, extensionProperties, Integer.class);
+    }
     return attributeCountLimit;
   }
 
-  @JsonProperty("attribute_count_limit")
+  @JsonProperty(ATTRIBUTE_COUNT_LIMIT)
   public LogRecordLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
+    return this;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
+  }
+
+  @JsonAnySetter
+  public LogRecordLimitsModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -64,6 +113,8 @@ public class LogRecordLimitsModel {
         + attributeValueLengthLimit
         + ", attributeCountLimit="
         + attributeCountLimit
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -74,6 +125,8 @@ public class LogRecordLimitsModel {
     h ^= (this.attributeValueLengthLimit == null) ? 0 : this.attributeValueLengthLimit.hashCode();
     h *= 1000003;
     h ^= (this.attributeCountLimit == null) ? 0 : this.attributeCountLimit.hashCode();
+    h *= 1000003;
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -89,7 +142,10 @@ public class LogRecordLimitsModel {
               : this.attributeValueLengthLimit.equals(that.attributeValueLengthLimit))
           && (this.attributeCountLimit == null
               ? that.attributeCountLimit == null
-              : this.attributeCountLimit.equals(that.attributeCountLimit));
+              : this.attributeCountLimit.equals(that.attributeCountLimit))
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

@@ -13,9 +13,9 @@ import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.IdGeneratorComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IdGeneratorModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IdGeneratorPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.RandomIdGeneratorModel;
 import io.opentelemetry.sdk.trace.IdGenerator;
+import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -51,7 +51,7 @@ class IdGeneratorFactoryTest {
             IdGenerator.random()),
         Arguments.argumentSet(
             "SPI id generator",
-            new IdGeneratorModel().withAdditionalProperty("test", new IdGeneratorPropertyModel()),
+            new IdGeneratorModel().withExtensionProperty("test", null),
             IdGeneratorComponentProvider.TestIdGenerator.create()));
   }
 
@@ -68,9 +68,7 @@ class IdGeneratorFactoryTest {
         Arguments.argumentSet(
             "unknown SPI id generator",
             new IdGeneratorModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new IdGeneratorPropertyModel().withAdditionalProperty("key1", "value")),
+                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value")),
             "No component provider detected for io.opentelemetry.sdk.trace.IdGenerator with name \"unknown_key\"."));
   }
 }

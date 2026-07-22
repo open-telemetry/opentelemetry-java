@@ -5,23 +5,58 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.ATTRIBUTE_COUNT_LIMIT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.ATTRIBUTE_VALUE_LENGTH_LIMIT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.EVENT_ATTRIBUTE_COUNT_LIMIT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.EVENT_COUNT_LIMIT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.LINK_ATTRIBUTE_COUNT_LIMIT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel.LINK_COUNT_LIMIT;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-  "attribute_value_length_limit",
-  "attribute_count_limit",
-  "event_count_limit",
-  "link_count_limit",
-  "event_attribute_count_limit",
-  "link_attribute_count_limit"
+  ATTRIBUTE_VALUE_LENGTH_LIMIT,
+  ATTRIBUTE_COUNT_LIMIT,
+  EVENT_COUNT_LIMIT,
+  LINK_COUNT_LIMIT,
+  EVENT_ATTRIBUTE_COUNT_LIMIT,
+  LINK_ATTRIBUTE_COUNT_LIMIT
 })
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class SpanLimitsModel {
+
+  static final String ATTRIBUTE_VALUE_LENGTH_LIMIT = "attribute_value_length_limit";
+  static final String ATTRIBUTE_COUNT_LIMIT = "attribute_count_limit";
+  static final String EVENT_COUNT_LIMIT = "event_count_limit";
+  static final String LINK_COUNT_LIMIT = "link_count_limit";
+  static final String EVENT_ATTRIBUTE_COUNT_LIMIT = "event_attribute_count_limit";
+  static final String LINK_ATTRIBUTE_COUNT_LIMIT = "link_attribute_count_limit";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(ATTRIBUTE_VALUE_LENGTH_LIMIT, Integer.class);
+    STABLE_PROPERTIES.put(ATTRIBUTE_COUNT_LIMIT, Integer.class);
+    STABLE_PROPERTIES.put(EVENT_COUNT_LIMIT, Integer.class);
+    STABLE_PROPERTIES.put(LINK_COUNT_LIMIT, Integer.class);
+    STABLE_PROPERTIES.put(EVENT_ATTRIBUTE_COUNT_LIMIT, Integer.class);
+    STABLE_PROPERTIES.put(LINK_ATTRIBUTE_COUNT_LIMIT, Integer.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
   @Nullable private Integer attributeValueLengthLimit;
   @Nullable private Integer attributeCountLimit;
@@ -29,6 +64,7 @@ public class SpanLimitsModel {
   @Nullable private Integer linkCountLimit;
   @Nullable private Integer eventAttributeCountLimit;
   @Nullable private Integer linkAttributeCountLimit;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure max attribute value size. Overrides .attribute_limits.attribute_value_length_limit.
@@ -37,13 +73,17 @@ public class SpanLimitsModel {
    *
    * <p>If omitted or null, there is no limit.
    */
-  @JsonProperty("attribute_value_length_limit")
+  @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
   @Nullable
   public Integer getAttributeValueLengthLimit() {
+    if (attributeValueLengthLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ATTRIBUTE_VALUE_LENGTH_LIMIT, extensionProperties, Integer.class);
+    }
     return attributeValueLengthLimit;
   }
 
-  @JsonProperty("attribute_value_length_limit")
+  @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
   public SpanLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
     return this;
@@ -56,13 +96,17 @@ public class SpanLimitsModel {
    *
    * <p>If omitted or null, 128 is used.
    */
-  @JsonProperty("attribute_count_limit")
+  @JsonProperty(ATTRIBUTE_COUNT_LIMIT)
   @Nullable
   public Integer getAttributeCountLimit() {
+    if (attributeCountLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ATTRIBUTE_COUNT_LIMIT, extensionProperties, Integer.class);
+    }
     return attributeCountLimit;
   }
 
-  @JsonProperty("attribute_count_limit")
+  @JsonProperty(ATTRIBUTE_COUNT_LIMIT)
   public SpanLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
     return this;
@@ -75,13 +119,17 @@ public class SpanLimitsModel {
    *
    * <p>If omitted or null, 128 is used.
    */
-  @JsonProperty("event_count_limit")
+  @JsonProperty(EVENT_COUNT_LIMIT)
   @Nullable
   public Integer getEventCountLimit() {
+    if (eventCountLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          EVENT_COUNT_LIMIT, extensionProperties, Integer.class);
+    }
     return eventCountLimit;
   }
 
-  @JsonProperty("event_count_limit")
+  @JsonProperty(EVENT_COUNT_LIMIT)
   public SpanLimitsModel withEventCountLimit(Integer eventCountLimit) {
     this.eventCountLimit = eventCountLimit;
     return this;
@@ -94,13 +142,17 @@ public class SpanLimitsModel {
    *
    * <p>If omitted or null, 128 is used.
    */
-  @JsonProperty("link_count_limit")
+  @JsonProperty(LINK_COUNT_LIMIT)
   @Nullable
   public Integer getLinkCountLimit() {
+    if (linkCountLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          LINK_COUNT_LIMIT, extensionProperties, Integer.class);
+    }
     return linkCountLimit;
   }
 
-  @JsonProperty("link_count_limit")
+  @JsonProperty(LINK_COUNT_LIMIT)
   public SpanLimitsModel withLinkCountLimit(Integer linkCountLimit) {
     this.linkCountLimit = linkCountLimit;
     return this;
@@ -113,13 +165,17 @@ public class SpanLimitsModel {
    *
    * <p>If omitted or null, 128 is used.
    */
-  @JsonProperty("event_attribute_count_limit")
+  @JsonProperty(EVENT_ATTRIBUTE_COUNT_LIMIT)
   @Nullable
   public Integer getEventAttributeCountLimit() {
+    if (eventAttributeCountLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          EVENT_ATTRIBUTE_COUNT_LIMIT, extensionProperties, Integer.class);
+    }
     return eventAttributeCountLimit;
   }
 
-  @JsonProperty("event_attribute_count_limit")
+  @JsonProperty(EVENT_ATTRIBUTE_COUNT_LIMIT)
   public SpanLimitsModel withEventAttributeCountLimit(Integer eventAttributeCountLimit) {
     this.eventAttributeCountLimit = eventAttributeCountLimit;
     return this;
@@ -132,15 +188,36 @@ public class SpanLimitsModel {
    *
    * <p>If omitted or null, 128 is used.
    */
-  @JsonProperty("link_attribute_count_limit")
+  @JsonProperty(LINK_ATTRIBUTE_COUNT_LIMIT)
   @Nullable
   public Integer getLinkAttributeCountLimit() {
+    if (linkAttributeCountLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          LINK_ATTRIBUTE_COUNT_LIMIT, extensionProperties, Integer.class);
+    }
     return linkAttributeCountLimit;
   }
 
-  @JsonProperty("link_attribute_count_limit")
+  @JsonProperty(LINK_ATTRIBUTE_COUNT_LIMIT)
   public SpanLimitsModel withLinkAttributeCountLimit(Integer linkAttributeCountLimit) {
     this.linkAttributeCountLimit = linkAttributeCountLimit;
+    return this;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
+  }
+
+  @JsonAnySetter
+  public SpanLimitsModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -159,6 +236,8 @@ public class SpanLimitsModel {
         + eventAttributeCountLimit
         + ", linkAttributeCountLimit="
         + linkAttributeCountLimit
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -177,6 +256,8 @@ public class SpanLimitsModel {
     h ^= (this.eventAttributeCountLimit == null) ? 0 : this.eventAttributeCountLimit.hashCode();
     h *= 1000003;
     h ^= (this.linkAttributeCountLimit == null) ? 0 : this.linkAttributeCountLimit.hashCode();
+    h *= 1000003;
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -204,7 +285,10 @@ public class SpanLimitsModel {
               : this.eventAttributeCountLimit.equals(that.eventAttributeCountLimit))
           && (this.linkAttributeCountLimit == null
               ? that.linkAttributeCountLimit == null
-              : this.linkAttributeCountLimit.equals(that.linkAttributeCountLimit));
+              : this.linkAttributeCountLimit.equals(that.linkAttributeCountLimit))
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

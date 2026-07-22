@@ -22,17 +22,18 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ConsoleExporte
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.GrpcTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.HttpTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.NameStringValuePairModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LogRecordExporterModelAccessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -156,8 +157,8 @@ class LogRecordExporterFactoryTest {
                 .build()),
         Arguments.argumentSet(
             "otlp_file/development",
-            new LogRecordExporterModel()
-                .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
+            LogRecordExporterModelAccessor.withOtlpFile(
+                new LogRecordExporterModel(), new ExperimentalOtlpFileExporterModel()),
             OtlpStdoutLogRecordExporter.builder().build()));
   }
 
@@ -174,9 +175,7 @@ class LogRecordExporterFactoryTest {
         Arguments.argumentSet(
             "unknown component provider",
             new LogRecordExporterModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new LogRecordExporterPropertyModel().withAdditionalProperty("key1", "value1")),
+                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"unknown_key\"."));
   }
 
@@ -186,10 +185,7 @@ class LogRecordExporterFactoryTest {
         LogRecordExporterFactory.getInstance()
             .create(
                 new LogRecordExporterModel()
-                    .withAdditionalProperty(
-                        "test",
-                        new LogRecordExporterPropertyModel()
-                            .withAdditionalProperty("key1", "value1")),
+                    .withExtensionProperty("test", Collections.singletonMap("key1", "value1")),
                 context);
     assertThat(logRecordExporter)
         .isInstanceOf(LogRecordExporterComponentProvider.TestLogRecordExporter.class);

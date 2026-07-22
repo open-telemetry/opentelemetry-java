@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
@@ -19,30 +21,37 @@ import javax.annotation.Nullable;
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class DistributionModel {
 
-  private Map<String, DistributionPropertyModel> additionalProperties =
-      new LinkedHashMap<String, DistributionPropertyModel>();
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = true;
+
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   @JsonAnyGetter
-  public Map<String, DistributionPropertyModel> getAdditionalProperties() {
-    return this.additionalProperties;
+  public Map<String, Object> getExtensionProperties() {
+    return extensionProperties;
   }
 
   @JsonAnySetter
-  public DistributionModel withAdditionalProperty(String name, DistributionPropertyModel value) {
-    this.additionalProperties.put(name, value);
+  public DistributionModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        Collections.emptyMap(),
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
   @Override
   public String toString() {
-    return "DistributionModel{" + "additionalProperties=" + additionalProperties + "}";
+    return "DistributionModel{" + "extensionProperties=" + extensionProperties + "}";
   }
 
   @Override
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -53,9 +62,9 @@ public class DistributionModel {
     }
     if (o instanceof DistributionModel) {
       DistributionModel that = (DistributionModel) o;
-      return (this.additionalProperties == null
-          ? that.additionalProperties == null
-          : this.additionalProperties.equals(that.additionalProperties));
+      return (this.extensionProperties == null
+          ? that.extensionProperties == null
+          : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

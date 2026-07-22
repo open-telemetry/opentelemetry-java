@@ -5,36 +5,59 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel.EXEMPLAR_FILTER;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel.READERS;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel.VIEWS;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.MeterProviderModelAccessor.EXPERIMENTAL_PROPERTIES;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"readers", "views", "exemplar_filter", "meter_configurator/development"})
+@JsonPropertyOrder({READERS, VIEWS, EXEMPLAR_FILTER})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class MeterProviderModel {
+
+  static final String READERS = "readers";
+  static final String VIEWS = "views";
+  static final String EXEMPLAR_FILTER = "exemplar_filter";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(EXEMPLAR_FILTER, ExemplarFilterModel.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
   @Nullable private List<MetricReaderModel> readers;
   @Nullable private List<ViewModel> views;
   @Nullable private ExemplarFilterModel exemplarFilter;
-  @Nullable private ExperimentalMeterConfiguratorModel meterConfiguratorDevelopment;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure metric readers.
    *
    * <p>Property is required and must be non-null.
    */
-  @JsonProperty("readers")
+  @JsonProperty(READERS)
   @Nullable
   public List<MetricReaderModel> getReaders() {
     return readers;
   }
 
-  @JsonProperty("readers")
+  @JsonProperty(READERS)
   public MeterProviderModel withReaders(List<MetricReaderModel> readers) {
     this.readers = readers;
     return this;
@@ -48,13 +71,13 @@ public class MeterProviderModel {
    *
    * <p>If omitted, no views are registered.
    */
-  @JsonProperty("views")
+  @JsonProperty(VIEWS)
   @Nullable
   public List<ViewModel> getViews() {
     return views;
   }
 
-  @JsonProperty("views")
+  @JsonProperty(VIEWS)
   public MeterProviderModel withViews(List<ViewModel> views) {
     this.views = views;
     return this;
@@ -74,33 +97,36 @@ public class MeterProviderModel {
    *
    * <p>If omitted, trace_based is used.
    */
-  @JsonProperty("exemplar_filter")
+  @JsonProperty(EXEMPLAR_FILTER)
   @Nullable
   public ExemplarFilterModel getExemplarFilter() {
+    if (exemplarFilter == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          EXEMPLAR_FILTER, extensionProperties, ExemplarFilterModel.class);
+    }
     return exemplarFilter;
   }
 
-  @JsonProperty("exemplar_filter")
+  @JsonProperty(EXEMPLAR_FILTER)
   public MeterProviderModel withExemplarFilter(ExemplarFilterModel exemplarFilter) {
     this.exemplarFilter = exemplarFilter;
     return this;
   }
 
-  /**
-   * Configure meters.
-   *
-   * <p>If omitted, all meters use default values as described in ExperimentalMeterConfig.
-   */
-  @JsonProperty("meter_configurator/development")
-  @Nullable
-  public ExperimentalMeterConfiguratorModel getMeterConfiguratorDevelopment() {
-    return meterConfiguratorDevelopment;
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
   }
 
-  @JsonProperty("meter_configurator/development")
-  public MeterProviderModel withMeterConfiguratorDevelopment(
-      ExperimentalMeterConfiguratorModel meterConfiguratorDevelopment) {
-    this.meterConfiguratorDevelopment = meterConfiguratorDevelopment;
+  @JsonAnySetter
+  public MeterProviderModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        EXPERIMENTAL_PROPERTIES,
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -113,8 +139,8 @@ public class MeterProviderModel {
         + views
         + ", exemplarFilter="
         + exemplarFilter
-        + ", meterConfiguratorDevelopment="
-        + meterConfiguratorDevelopment
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -128,10 +154,7 @@ public class MeterProviderModel {
     h *= 1000003;
     h ^= (this.exemplarFilter == null) ? 0 : this.exemplarFilter.hashCode();
     h *= 1000003;
-    h ^=
-        (this.meterConfiguratorDevelopment == null)
-            ? 0
-            : this.meterConfiguratorDevelopment.hashCode();
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -147,9 +170,9 @@ public class MeterProviderModel {
           && (this.exemplarFilter == null
               ? that.exemplarFilter == null
               : this.exemplarFilter.equals(that.exemplarFilter))
-          && (this.meterConfiguratorDevelopment == null
-              ? that.meterConfiguratorDevelopment == null
-              : this.meterConfiguratorDevelopment.equals(that.meterConfiguratorDevelopment));
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }
