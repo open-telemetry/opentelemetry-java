@@ -174,6 +174,16 @@ class ConfigPropertiesTest {
   }
 
   @Test
+  void invalidMapWithHyphenatedName() {
+    assertThatThrownBy(
+            () ->
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("test-map", "a=1,b"))
+                    .getMap("test-map"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid map property: test-map=a=1,b");
+  }
+
+  @Test
   void invalidDuration() {
     assertThatThrownBy(
             () ->

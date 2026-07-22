@@ -226,7 +226,10 @@ public final class DefaultConfigProperties implements ConfigProperties {
               String[] split = entry.split("=", 2);
               if (split.length != 2 || StringUtils.isNullOrEmpty(split[0])) {
                 throw new ConfigurationException(
-                    "Invalid map property: " + name + "=" + config.get(name));
+                    "Invalid map property: "
+                        + name
+                        + "="
+                        + config.get(ConfigUtil.normalizePropertyKey(name)));
               }
               return filterBlanksAndNulls(split);
             })
