@@ -35,5 +35,4 @@ class ReadOnlyArrayMapTest {
     assertThat(map.containsValue(null)).isTrue();
     assertThat(map.containsValue("b")).isFalse();
   }
-
 }
