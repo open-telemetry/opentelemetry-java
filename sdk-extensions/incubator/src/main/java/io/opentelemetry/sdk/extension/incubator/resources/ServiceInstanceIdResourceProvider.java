@@ -14,8 +14,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.UUID;
 
 /**
- * does not implement {@link ResourceProvider}, because it depends on all attributes discovered by
- * the other providers.
+ * A {@link ConditionalResourceProvider} for {@code service.instance.id}. It implements {@link
+ * ConditionalResourceProvider} rather than a plain {@link ResourceProvider} because it depends on
+ * the attributes discovered by the other providers.
  */
 public final class ServiceInstanceIdResourceProvider implements ConditionalResourceProvider {
 
