@@ -96,7 +96,7 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
-  /** Set if the {@code otel_target_info} metric is generated. Default is {@code true}. */
+  /** Set if the {@code target_info} metric is generated. Default is {@code true}. */
   public PrometheusHttpServerBuilder setTargetInfoMetricEnabled(boolean targetInfoMetricEnabled) {
     metricReaderBuilder.setTargetInfoMetricEnabled(targetInfoMetricEnabled);
     return this;
