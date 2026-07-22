@@ -31,8 +31,10 @@ class ReadOnlyArrayMapTest {
   @Test
   void containsValueNull() {
     Map<String, String> map = ReadOnlyArrayMap.wrap(Arrays.asList("a", null));
+    Map<String, String> mapWithoutNull = ReadOnlyArrayMap.wrap(Arrays.asList("a", "b"));
 
     assertThat(map.containsValue(null)).isTrue();
     assertThat(map.containsValue("b")).isFalse();
+    assertThat(mapWithoutNull.containsValue(null)).isFalse();
   }
 }
