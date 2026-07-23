@@ -13,17 +13,11 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"temporality_preference", "default_histogram_aggregation"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ConsoleMetricExporterModel {
 
-  @JsonProperty("temporality_preference")
-  @Nullable
-  private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
-
-  @JsonProperty("default_histogram_aggregation")
-  @Nullable
-  private OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
-      defaultHistogramAggregation;
+  @Nullable private ExporterTemporalityPreferenceModel temporalityPreference;
+  @Nullable private ExporterDefaultHistogramAggregationModel defaultHistogramAggregation;
 
   /**
    * Configure temporality preference.
@@ -42,12 +36,13 @@ public class ConsoleMetricExporterModel {
    */
   @JsonProperty("temporality_preference")
   @Nullable
-  public OtlpHttpMetricExporterModel.ExporterTemporalityPreference getTemporalityPreference() {
+  public ExporterTemporalityPreferenceModel getTemporalityPreference() {
     return temporalityPreference;
   }
 
+  @JsonProperty("temporality_preference")
   public ConsoleMetricExporterModel withTemporalityPreference(
-      OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference) {
+      ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
   }
@@ -67,13 +62,13 @@ public class ConsoleMetricExporterModel {
    */
   @JsonProperty("default_histogram_aggregation")
   @Nullable
-  public OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
-      getDefaultHistogramAggregation() {
+  public ExporterDefaultHistogramAggregationModel getDefaultHistogramAggregation() {
     return defaultHistogramAggregation;
   }
 
+  @JsonProperty("default_histogram_aggregation")
   public ConsoleMetricExporterModel withDefaultHistogramAggregation(
-      OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation defaultHistogramAggregation) {
+      ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
     return this;
   }

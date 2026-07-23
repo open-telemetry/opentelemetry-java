@@ -14,20 +14,12 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"request_captured_headers", "response_captured_headers", "known_methods"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalHttpServerInstrumentationModel {
 
-  @JsonProperty("request_captured_headers")
-  @Nullable
-  private List<String> requestCapturedHeaders;
-
-  @JsonProperty("response_captured_headers")
-  @Nullable
-  private List<String> responseCapturedHeaders;
-
-  @JsonProperty("known_methods")
-  @Nullable
-  private List<String> knownMethods;
+  @Nullable private List<String> requestCapturedHeaders;
+  @Nullable private List<String> responseCapturedHeaders;
+  @Nullable private List<String> knownMethods;
 
   /**
    * Configure headers to capture for inbound http requests.
@@ -40,6 +32,7 @@ public class ExperimentalHttpServerInstrumentationModel {
     return requestCapturedHeaders;
   }
 
+  @JsonProperty("request_captured_headers")
   public ExperimentalHttpServerInstrumentationModel withRequestCapturedHeaders(
       List<String> requestCapturedHeaders) {
     this.requestCapturedHeaders = requestCapturedHeaders;
@@ -57,6 +50,7 @@ public class ExperimentalHttpServerInstrumentationModel {
     return responseCapturedHeaders;
   }
 
+  @JsonProperty("response_captured_headers")
   public ExperimentalHttpServerInstrumentationModel withResponseCapturedHeaders(
       List<String> responseCapturedHeaders) {
     this.responseCapturedHeaders = responseCapturedHeaders;
@@ -80,6 +74,7 @@ public class ExperimentalHttpServerInstrumentationModel {
     return knownMethods;
   }
 
+  @JsonProperty("known_methods")
   public ExperimentalHttpServerInstrumentationModel withKnownMethods(List<String> knownMethods) {
     this.knownMethods = knownMethods;
     return this;

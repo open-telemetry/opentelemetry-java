@@ -20,32 +20,15 @@ import javax.annotation.Nullable;
   "last_value",
   "sum"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class AggregationModel {
 
-  @JsonProperty("default")
-  @Nullable
-  private DefaultAggregationModel _default;
-
-  @JsonProperty("drop")
-  @Nullable
-  private DropAggregationModel drop;
-
-  @JsonProperty("explicit_bucket_histogram")
-  @Nullable
-  private ExplicitBucketHistogramAggregationModel explicitBucketHistogram;
-
-  @JsonProperty("base2_exponential_bucket_histogram")
-  @Nullable
-  private Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram;
-
-  @JsonProperty("last_value")
-  @Nullable
-  private LastValueAggregationModel lastValue;
-
-  @JsonProperty("sum")
-  @Nullable
-  private SumAggregationModel sum;
+  @Nullable private DefaultAggregationModel _default;
+  @Nullable private DropAggregationModel drop;
+  @Nullable private ExplicitBucketHistogramAggregationModel explicitBucketHistogram;
+  @Nullable private Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram;
+  @Nullable private LastValueAggregationModel lastValue;
+  @Nullable private SumAggregationModel sum;
 
   /**
    * Configures the stream to use the instrument kind to select an aggregation and advisory
@@ -61,6 +44,7 @@ public class AggregationModel {
     return _default;
   }
 
+  @JsonProperty("default")
   public AggregationModel withDefault(DefaultAggregationModel _default) {
     this._default = _default;
     return this;
@@ -79,6 +63,7 @@ public class AggregationModel {
     return drop;
   }
 
+  @JsonProperty("drop")
   public AggregationModel withDrop(DropAggregationModel drop) {
     this.drop = drop;
     return this;
@@ -98,6 +83,7 @@ public class AggregationModel {
     return explicitBucketHistogram;
   }
 
+  @JsonProperty("explicit_bucket_histogram")
   public AggregationModel withExplicitBucketHistogram(
       ExplicitBucketHistogramAggregationModel explicitBucketHistogram) {
     this.explicitBucketHistogram = explicitBucketHistogram;
@@ -119,6 +105,7 @@ public class AggregationModel {
     return base2ExponentialBucketHistogram;
   }
 
+  @JsonProperty("base2_exponential_bucket_histogram")
   public AggregationModel withBase2ExponentialBucketHistogram(
       Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram) {
     this.base2ExponentialBucketHistogram = base2ExponentialBucketHistogram;
@@ -138,6 +125,7 @@ public class AggregationModel {
     return lastValue;
   }
 
+  @JsonProperty("last_value")
   public AggregationModel withLastValue(LastValueAggregationModel lastValue) {
     this.lastValue = lastValue;
     return this;
@@ -156,6 +144,7 @@ public class AggregationModel {
     return sum;
   }
 
+  @JsonProperty("sum")
   public AggregationModel withSum(SumAggregationModel sum) {
     this.sum = sum;
     return this;

@@ -95,8 +95,20 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {
-    if (!enabled) {
+    if (!shouldRecordDouble(value, attributes)) {
       return;
+    }
+    doRecordDouble(value, attributes, context);
+  }
+
+  /**
+   * Returns true if a double {@code value} should be recorded. Returns false (dropping the
+   * measurement) when recording is disabled, or when {@code value} is NaN, logging in the latter
+   * case. Shared by the unbound and bound record paths.
+   */
+  final boolean shouldRecordDouble(double value, Attributes attributes) {
+    if (!enabled) {
+      return false;
     }
     if (Double.isNaN(value)) {
       logger.log(
@@ -106,9 +118,9 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
               + " has recorded measurement Not-a-Number (NaN) value with attributes "
               + attributes
               + ". Dropping measurement.");
-      return;
+      return false;
     }
-    doRecordDouble(value, attributes, context);
+    return true;
   }
 
   abstract void doRecordLong(long value, Attributes attributes, Context context);

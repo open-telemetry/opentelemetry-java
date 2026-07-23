@@ -64,6 +64,8 @@ final class MetricReaderFactory
 
       PeriodicMetricReaderBuilder builder = PeriodicMetricReader.builder(metricExporter);
 
+      context.setInternalTelemetry(unused -> {}, builder::setInternalTelemetryVersion);
+
       if (model.getInterval() != null) {
         builder.setInterval(Duration.ofMillis(model.getInterval()));
       }

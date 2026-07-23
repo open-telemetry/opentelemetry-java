@@ -39,6 +39,7 @@ dependencies {
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:8.8.0")
   implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.5.0")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.22.1")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
@@ -49,7 +50,6 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:5.1.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:3.1.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21")
-  implementation("org.jsonschema2pojo:jsonschema2pojo-core:1.3.3")
   implementation("org.sonatype.gradle.plugins:scan-gradle-plugin:3.1.6")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
 }

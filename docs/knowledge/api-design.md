@@ -86,8 +86,9 @@ Rules:
 ## japicmp
 
 `otel.japicmp-conventions` runs the `jApiCmp` task as part of `check` for every published module.
-It compares the locally-built jar against the latest release to detect breaking changes, and writes
-a human-readable diff to `docs/apidiffs/current_vs_latest/<artifact>.txt`.
+It compares the locally-built jar against the release pinned by `apidiffBaselineVersion` in
+`version.gradle.kts` to detect breaking changes, and writes a human-readable diff to
+`docs/apidiffs/current_vs_latest/<artifact>.txt`.
 
 - Breaking changes in stable modules fail the build.
 - AutoValue classes are exempt from the abstract-method-added check — the generated implementation

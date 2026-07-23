@@ -65,13 +65,18 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
   static void formatLog(StringBuilder stringBuilder, LogRecordData log) {
     InstrumentationScopeInfo instrumentationScopeInfo = log.getInstrumentationScopeInfo();
     Value<?> body = log.getBodyValue();
+    String eventName = log.getEventName();
     stringBuilder
         .append(
             ISO_FORMAT.format(
                 Instant.ofEpochMilli(NANOSECONDS.toMillis(log.getTimestampEpochNanos()))
                     .atZone(ZoneOffset.UTC)))
         .append(" ")
-        .append(log.getSeverity())
+        .append(log.getSeverity());
+    if (eventName != null && !eventName.isEmpty()) {
+      stringBuilder.append(" [eventName: ").append(eventName).append("]");
+    }
+    stringBuilder
         .append(" '")
         .append(body == null ? "" : body.asString())
         .append("' : ")

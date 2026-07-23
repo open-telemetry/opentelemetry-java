@@ -14,11 +14,12 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKindModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableRuleBasedSamplerRuleModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalSpanParent;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalSpanParentModel;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableRuleBasedSamplerBuilder;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
@@ -54,7 +55,7 @@ final class ComposableRuleBasedSamplerFactory
           rule -> {
             AttributeMatcher valueMatcher = attributeValuesMatcher(rule.getAttributeValues());
             AttributeMatcher patternMatcher = attributePatternsMatcher(rule.getAttributePatterns());
-            Set<ExperimentalSpanParent> matchingParents =
+            Set<ExperimentalSpanParentModel> matchingParents =
                 rule.getParent() != null && !rule.getParent().isEmpty()
                     ? new HashSet<>(rule.getParent())
                     : null;
@@ -118,13 +119,13 @@ final class ComposableRuleBasedSamplerFactory
   static final class DeclarativeConfigSamplingPredicate implements SamplingPredicate {
     @Nullable private final AttributeMatcher attributeValuesMatcher;
     @Nullable private final AttributeMatcher attributePatternsMatcher;
-    @Nullable private final Set<ExperimentalSpanParent> matchingParents;
+    @Nullable private final Set<ExperimentalSpanParentModel> matchingParents;
     @Nullable private final Set<SpanKind> matchingSpanKinds;
 
     DeclarativeConfigSamplingPredicate(
         @Nullable AttributeMatcher attributeValuesMatcher,
         @Nullable AttributeMatcher attributePatternsMatcher,
-        @Nullable Set<ExperimentalSpanParent> matchingParents,
+        @Nullable Set<ExperimentalSpanParentModel> matchingParents,
         @Nullable Set<SpanKind> matchingSpanKinds) {
       this.attributeValuesMatcher = attributeValuesMatcher;
       this.attributePatternsMatcher = attributePatternsMatcher;
@@ -135,7 +136,6 @@ final class ComposableRuleBasedSamplerFactory
     @Override
     public boolean matches(
         Context parentContext,
-        String traceId,
         String name,
         SpanKind spanKind,
         Attributes attributes,
@@ -190,8 +190,7 @@ final class ComposableRuleBasedSamplerFactory
       return joiner.toString();
     }
 
-    private static SpanKind toSpanKind(
-        io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKind spanKind) {
+    private static SpanKind toSpanKind(SpanKindModel spanKind) {
       switch (spanKind) {
         case INTERNAL:
           return SpanKind.INTERNAL;
@@ -208,14 +207,14 @@ final class ComposableRuleBasedSamplerFactory
     }
 
     // Visible for testing
-    static ExperimentalSpanParent toSpanParent(SpanContext parentSpanContext) {
+    static ExperimentalSpanParentModel toSpanParent(SpanContext parentSpanContext) {
       if (!parentSpanContext.isValid()) {
-        return ExperimentalSpanParent.NONE;
+        return ExperimentalSpanParentModel.NONE;
       }
       if (parentSpanContext.isRemote()) {
-        return ExperimentalSpanParent.REMOTE;
+        return ExperimentalSpanParentModel.REMOTE;
       }
-      return ExperimentalSpanParent.LOCAL;
+      return ExperimentalSpanParentModel.LOCAL;
     }
   }
 

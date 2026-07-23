@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -18,30 +17,14 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"always_off", "always_on", "parent_threshold", "probability", "rule_based"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalComposableSamplerModel {
 
-  @JsonProperty("always_off")
-  @Nullable
-  private ExperimentalComposableAlwaysOffSamplerModel alwaysOff;
-
-  @JsonProperty("always_on")
-  @Nullable
-  private ExperimentalComposableAlwaysOnSamplerModel alwaysOn;
-
-  @JsonProperty("parent_threshold")
-  @Nullable
-  private ExperimentalComposableParentThresholdSamplerModel parentThreshold;
-
-  @JsonProperty("probability")
-  @Nullable
-  private ExperimentalComposableProbabilitySamplerModel probability;
-
-  @JsonProperty("rule_based")
-  @Nullable
-  private ExperimentalComposableRuleBasedSamplerModel ruleBased;
-
-  @JsonIgnore
+  @Nullable private ExperimentalComposableAlwaysOffSamplerModel alwaysOff;
+  @Nullable private ExperimentalComposableAlwaysOnSamplerModel alwaysOn;
+  @Nullable private ExperimentalComposableParentThresholdSamplerModel parentThreshold;
+  @Nullable private ExperimentalComposableProbabilitySamplerModel probability;
+  @Nullable private ExperimentalComposableRuleBasedSamplerModel ruleBased;
   private Map<String, ExperimentalComposableSamplerPropertyModel> additionalProperties =
       new LinkedHashMap<String, ExperimentalComposableSamplerPropertyModel>();
 
@@ -56,6 +39,7 @@ public class ExperimentalComposableSamplerModel {
     return alwaysOff;
   }
 
+  @JsonProperty("always_off")
   public ExperimentalComposableSamplerModel withAlwaysOff(
       ExperimentalComposableAlwaysOffSamplerModel alwaysOff) {
     this.alwaysOff = alwaysOff;
@@ -73,6 +57,7 @@ public class ExperimentalComposableSamplerModel {
     return alwaysOn;
   }
 
+  @JsonProperty("always_on")
   public ExperimentalComposableSamplerModel withAlwaysOn(
       ExperimentalComposableAlwaysOnSamplerModel alwaysOn) {
     this.alwaysOn = alwaysOn;
@@ -90,6 +75,7 @@ public class ExperimentalComposableSamplerModel {
     return parentThreshold;
   }
 
+  @JsonProperty("parent_threshold")
   public ExperimentalComposableSamplerModel withParentThreshold(
       ExperimentalComposableParentThresholdSamplerModel parentThreshold) {
     this.parentThreshold = parentThreshold;
@@ -107,6 +93,7 @@ public class ExperimentalComposableSamplerModel {
     return probability;
   }
 
+  @JsonProperty("probability")
   public ExperimentalComposableSamplerModel withProbability(
       ExperimentalComposableProbabilitySamplerModel probability) {
     this.probability = probability;
@@ -124,6 +111,7 @@ public class ExperimentalComposableSamplerModel {
     return ruleBased;
   }
 
+  @JsonProperty("rule_based")
   public ExperimentalComposableSamplerModel withRuleBased(
       ExperimentalComposableRuleBasedSamplerModel ruleBased) {
     this.ruleBased = ruleBased;
@@ -136,10 +124,6 @@ public class ExperimentalComposableSamplerModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, ExperimentalComposableSamplerPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public ExperimentalComposableSamplerModel withAdditionalProperty(
       String name, ExperimentalComposableSamplerPropertyModel value) {
     this.additionalProperties.put(name, value);

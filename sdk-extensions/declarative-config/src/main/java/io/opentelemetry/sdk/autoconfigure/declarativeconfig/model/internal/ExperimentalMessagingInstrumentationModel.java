@@ -13,12 +13,10 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"semconv"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalMessagingInstrumentationModel {
 
-  @JsonProperty("semconv")
-  @Nullable
-  private ExperimentalSemconvConfigModel semconv;
+  @Nullable private ExperimentalSemconvConfigModel semconv;
 
   /**
    * Configure messaging semantic convention version and migration behavior.
@@ -37,6 +35,7 @@ public class ExperimentalMessagingInstrumentationModel {
     return semconv;
   }
 
+  @JsonProperty("semconv")
   public ExperimentalMessagingInstrumentationModel withSemconv(
       ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;

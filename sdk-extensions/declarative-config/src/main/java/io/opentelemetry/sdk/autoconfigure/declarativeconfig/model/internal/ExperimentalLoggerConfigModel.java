@@ -8,27 +8,18 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SeverityNumberModel;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"enabled", "minimum_severity", "trace_based"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalLoggerConfigModel {
 
-  @JsonProperty("enabled")
-  @Nullable
-  private Boolean enabled;
-
-  @JsonProperty("minimum_severity")
-  @Nullable
-  private io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel
-          .SeverityNumber
-      minimumSeverity;
-
-  @JsonProperty("trace_based")
-  @Nullable
-  private Boolean traceBased;
+  @Nullable private Boolean enabled;
+  @Nullable private SeverityNumberModel minimumSeverity;
+  @Nullable private Boolean traceBased;
 
   /**
    * Configure if the logger is enabled or not.
@@ -41,6 +32,7 @@ public class ExperimentalLoggerConfigModel {
     return enabled;
   }
 
+  @JsonProperty("enabled")
   public ExperimentalLoggerConfigModel withEnabled(Boolean enabled) {
     this.enabled = enabled;
     return this;
@@ -106,16 +98,12 @@ public class ExperimentalLoggerConfigModel {
    */
   @JsonProperty("minimum_severity")
   @Nullable
-  public io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel
-          .SeverityNumber
-      getMinimumSeverity() {
+  public SeverityNumberModel getMinimumSeverity() {
     return minimumSeverity;
   }
 
-  public ExperimentalLoggerConfigModel withMinimumSeverity(
-      io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel
-              .SeverityNumber
-          minimumSeverity) {
+  @JsonProperty("minimum_severity")
+  public ExperimentalLoggerConfigModel withMinimumSeverity(SeverityNumberModel minimumSeverity) {
     this.minimumSeverity = minimumSeverity;
     return this;
   }
@@ -135,6 +123,7 @@ public class ExperimentalLoggerConfigModel {
     return traceBased;
   }
 
+  @JsonProperty("trace_based")
   public ExperimentalLoggerConfigModel withTraceBased(Boolean traceBased) {
     this.traceBased = traceBased;
     return this;

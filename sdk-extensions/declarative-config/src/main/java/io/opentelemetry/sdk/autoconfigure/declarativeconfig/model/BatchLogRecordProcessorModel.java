@@ -19,28 +19,14 @@ import javax.annotation.Nullable;
   "max_export_batch_size",
   "exporter"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class BatchLogRecordProcessorModel {
 
-  @JsonProperty("schedule_delay")
-  @Nullable
-  private Integer scheduleDelay;
-
-  @JsonProperty("export_timeout")
-  @Nullable
-  private Integer exportTimeout;
-
-  @JsonProperty("max_queue_size")
-  @Nullable
-  private Integer maxQueueSize;
-
-  @JsonProperty("max_export_batch_size")
-  @Nullable
-  private Integer maxExportBatchSize;
-
-  @JsonProperty("exporter")
-  @Nullable
-  private LogRecordExporterModel exporter;
+  @Nullable private Integer scheduleDelay;
+  @Nullable private Integer exportTimeout;
+  @Nullable private Integer maxQueueSize;
+  @Nullable private Integer maxExportBatchSize;
+  @Nullable private LogRecordExporterModel exporter;
 
   /**
    * Configure delay interval (in milliseconds) between two consecutive exports.
@@ -55,6 +41,7 @@ public class BatchLogRecordProcessorModel {
     return scheduleDelay;
   }
 
+  @JsonProperty("schedule_delay")
   public BatchLogRecordProcessorModel withScheduleDelay(Integer scheduleDelay) {
     this.scheduleDelay = scheduleDelay;
     return this;
@@ -73,6 +60,7 @@ public class BatchLogRecordProcessorModel {
     return exportTimeout;
   }
 
+  @JsonProperty("export_timeout")
   public BatchLogRecordProcessorModel withExportTimeout(Integer exportTimeout) {
     this.exportTimeout = exportTimeout;
     return this;
@@ -89,6 +77,7 @@ public class BatchLogRecordProcessorModel {
     return maxQueueSize;
   }
 
+  @JsonProperty("max_queue_size")
   public BatchLogRecordProcessorModel withMaxQueueSize(Integer maxQueueSize) {
     this.maxQueueSize = maxQueueSize;
     return this;
@@ -105,6 +94,7 @@ public class BatchLogRecordProcessorModel {
     return maxExportBatchSize;
   }
 
+  @JsonProperty("max_export_batch_size")
   public BatchLogRecordProcessorModel withMaxExportBatchSize(Integer maxExportBatchSize) {
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
@@ -121,6 +111,7 @@ public class BatchLogRecordProcessorModel {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public BatchLogRecordProcessorModel withExporter(LogRecordExporterModel exporter) {
     this.exporter = exporter;
     return this;

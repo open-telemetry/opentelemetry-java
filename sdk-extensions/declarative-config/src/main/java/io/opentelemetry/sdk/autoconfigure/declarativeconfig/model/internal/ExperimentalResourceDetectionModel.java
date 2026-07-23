@@ -15,16 +15,11 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"attributes", "detectors"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalResourceDetectionModel {
 
-  @JsonProperty("attributes")
-  @Nullable
-  private IncludeExcludeModel attributes;
-
-  @JsonProperty("detectors")
-  @Nullable
-  private List<ExperimentalResourceDetectorModel> detectors;
+  @Nullable private IncludeExcludeModel attributes;
+  @Nullable private List<ExperimentalResourceDetectorModel> detectors;
 
   /**
    * Configure attributes provided by resource detectors.
@@ -37,6 +32,7 @@ public class ExperimentalResourceDetectionModel {
     return attributes;
   }
 
+  @JsonProperty("attributes")
   public ExperimentalResourceDetectionModel withAttributes(IncludeExcludeModel attributes) {
     this.attributes = attributes;
     return this;
@@ -56,6 +52,7 @@ public class ExperimentalResourceDetectionModel {
     return detectors;
   }
 
+  @JsonProperty("detectors")
   public ExperimentalResourceDetectionModel withDetectors(
       List<ExperimentalResourceDetectorModel> detectors) {
     this.detectors = detectors;

@@ -8,40 +8,24 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKind;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanKindModel;
 import java.util.List;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
-/**
- * A rule for ExperimentalComposableRuleBasedSampler. A rule can have multiple match conditions -
- * the sampler will be applied if all match. If no conditions are specified, the rule matches all
- * spans that reach it.
- */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"attribute_values", "attribute_patterns", "span_kinds", "parent", "sampler"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalComposableRuleBasedSamplerRuleModel {
 
-  @JsonProperty("attribute_values")
-  @Nullable
-  private ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues;
+  @Nullable private ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues;
 
-  @JsonProperty("attribute_patterns")
   @Nullable
   private ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns;
 
-  @JsonProperty("span_kinds")
-  @Nullable
-  private List<SpanKind> spanKinds;
-
-  @JsonProperty("parent")
-  @Nullable
-  private List<ExperimentalSpanParent> parent;
-
-  @JsonProperty("sampler")
-  @Nullable
-  private ExperimentalComposableSamplerModel sampler;
+  @Nullable private List<SpanKindModel> spanKinds;
+  @Nullable private List<ExperimentalSpanParentModel> parent;
+  @Nullable private ExperimentalComposableSamplerModel sampler;
 
   /**
    * Values to match against a single attribute. Non-string attributes are matched using their
@@ -60,6 +44,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return attributeValues;
   }
 
+  @JsonProperty("attribute_values")
   public ExperimentalComposableRuleBasedSamplerRuleModel withAttributeValues(
       ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues) {
     this.attributeValues = attributeValues;
@@ -83,6 +68,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return attributePatterns;
   }
 
+  @JsonProperty("attribute_patterns")
   public ExperimentalComposableRuleBasedSamplerRuleModel withAttributePatterns(
       ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns) {
     this.attributePatterns = attributePatterns;
@@ -108,11 +94,13 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
    */
   @JsonProperty("span_kinds")
   @Nullable
-  public List<SpanKind> getSpanKinds() {
+  public List<SpanKindModel> getSpanKinds() {
     return spanKinds;
   }
 
-  public ExperimentalComposableRuleBasedSamplerRuleModel withSpanKinds(List<SpanKind> spanKinds) {
+  @JsonProperty("span_kinds")
+  public ExperimentalComposableRuleBasedSamplerRuleModel withSpanKinds(
+      List<SpanKindModel> spanKinds) {
     this.spanKinds = spanKinds;
     return this;
   }
@@ -132,12 +120,13 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
    */
   @JsonProperty("parent")
   @Nullable
-  public List<ExperimentalSpanParent> getParent() {
+  public List<ExperimentalSpanParentModel> getParent() {
     return parent;
   }
 
+  @JsonProperty("parent")
   public ExperimentalComposableRuleBasedSamplerRuleModel withParent(
-      List<ExperimentalSpanParent> parent) {
+      List<ExperimentalSpanParentModel> parent) {
     this.parent = parent;
     return this;
   }
@@ -153,6 +142,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
     return sampler;
   }
 
+  @JsonProperty("sampler")
   public ExperimentalComposableRuleBasedSamplerRuleModel withSampler(
       ExperimentalComposableSamplerModel sampler) {
     this.sampler = sampler;

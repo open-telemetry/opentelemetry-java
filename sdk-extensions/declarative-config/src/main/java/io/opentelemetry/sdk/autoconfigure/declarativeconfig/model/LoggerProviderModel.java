@@ -15,20 +15,12 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"processors", "limits", "logger_configurator/development"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class LoggerProviderModel {
 
-  @JsonProperty("processors")
-  @Nullable
-  private List<LogRecordProcessorModel> processors;
-
-  @JsonProperty("limits")
-  @Nullable
-  private LogRecordLimitsModel limits;
-
-  @JsonProperty("logger_configurator/development")
-  @Nullable
-  private ExperimentalLoggerConfiguratorModel loggerConfiguratorDevelopment;
+  @Nullable private List<LogRecordProcessorModel> processors;
+  @Nullable private LogRecordLimitsModel limits;
+  @Nullable private ExperimentalLoggerConfiguratorModel loggerConfiguratorDevelopment;
 
   /**
    * Configure log record processors.
@@ -41,6 +33,7 @@ public class LoggerProviderModel {
     return processors;
   }
 
+  @JsonProperty("processors")
   public LoggerProviderModel withProcessors(List<LogRecordProcessorModel> processors) {
     this.processors = processors;
     return this;
@@ -57,6 +50,7 @@ public class LoggerProviderModel {
     return limits;
   }
 
+  @JsonProperty("limits")
   public LoggerProviderModel withLimits(LogRecordLimitsModel limits) {
     this.limits = limits;
     return this;
@@ -73,6 +67,7 @@ public class LoggerProviderModel {
     return loggerConfiguratorDevelopment;
   }
 
+  @JsonProperty("logger_configurator/development")
   public LoggerProviderModel withLoggerConfiguratorDevelopment(
       ExperimentalLoggerConfiguratorModel loggerConfiguratorDevelopment) {
     this.loggerConfiguratorDevelopment = loggerConfiguratorDevelopment;

@@ -22,40 +22,17 @@ import javax.annotation.Nullable;
   "sanitization",
   "stability_opt_in_list"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalGeneralInstrumentationModel {
 
-  @JsonProperty("http")
-  @Nullable
-  private ExperimentalHttpInstrumentationModel http;
-
-  @JsonProperty("code")
-  @Nullable
-  private ExperimentalCodeInstrumentationModel code;
-
-  @JsonProperty("db")
-  @Nullable
-  private ExperimentalDbInstrumentationModel db;
-
-  @JsonProperty("gen_ai")
-  @Nullable
-  private ExperimentalGenAiInstrumentationModel genAi;
-
-  @JsonProperty("messaging")
-  @Nullable
-  private ExperimentalMessagingInstrumentationModel messaging;
-
-  @JsonProperty("rpc")
-  @Nullable
-  private ExperimentalRpcInstrumentationModel rpc;
-
-  @JsonProperty("sanitization")
-  @Nullable
-  private ExperimentalSanitizationModel sanitization;
-
-  @JsonProperty("stability_opt_in_list")
-  @Nullable
-  private String stabilityOptInList;
+  @Nullable private ExperimentalHttpInstrumentationModel http;
+  @Nullable private ExperimentalCodeInstrumentationModel code;
+  @Nullable private ExperimentalDbInstrumentationModel db;
+  @Nullable private ExperimentalGenAiInstrumentationModel genAi;
+  @Nullable private ExperimentalMessagingInstrumentationModel messaging;
+  @Nullable private ExperimentalRpcInstrumentationModel rpc;
+  @Nullable private ExperimentalSanitizationModel sanitization;
+  @Nullable private String stabilityOptInList;
 
   /**
    * Configure instrumentations following the http semantic conventions.
@@ -70,6 +47,7 @@ public class ExperimentalGeneralInstrumentationModel {
     return http;
   }
 
+  @JsonProperty("http")
   public ExperimentalGeneralInstrumentationModel withHttp(
       ExperimentalHttpInstrumentationModel http) {
     this.http = http;
@@ -90,6 +68,7 @@ public class ExperimentalGeneralInstrumentationModel {
     return code;
   }
 
+  @JsonProperty("code")
   public ExperimentalGeneralInstrumentationModel withCode(
       ExperimentalCodeInstrumentationModel code) {
     this.code = code;
@@ -109,6 +88,7 @@ public class ExperimentalGeneralInstrumentationModel {
     return db;
   }
 
+  @JsonProperty("db")
   public ExperimentalGeneralInstrumentationModel withDb(ExperimentalDbInstrumentationModel db) {
     this.db = db;
     return this;
@@ -127,6 +107,7 @@ public class ExperimentalGeneralInstrumentationModel {
     return genAi;
   }
 
+  @JsonProperty("gen_ai")
   public ExperimentalGeneralInstrumentationModel withGenAi(
       ExperimentalGenAiInstrumentationModel genAi) {
     this.genAi = genAi;
@@ -146,6 +127,7 @@ public class ExperimentalGeneralInstrumentationModel {
     return messaging;
   }
 
+  @JsonProperty("messaging")
   public ExperimentalGeneralInstrumentationModel withMessaging(
       ExperimentalMessagingInstrumentationModel messaging) {
     this.messaging = messaging;
@@ -165,6 +147,7 @@ public class ExperimentalGeneralInstrumentationModel {
     return rpc;
   }
 
+  @JsonProperty("rpc")
   public ExperimentalGeneralInstrumentationModel withRpc(ExperimentalRpcInstrumentationModel rpc) {
     this.rpc = rpc;
     return this;
@@ -181,6 +164,7 @@ public class ExperimentalGeneralInstrumentationModel {
     return sanitization;
   }
 
+  @JsonProperty("sanitization")
   public ExperimentalGeneralInstrumentationModel withSanitization(
       ExperimentalSanitizationModel sanitization) {
     this.sanitization = sanitization;
@@ -246,6 +230,7 @@ public class ExperimentalGeneralInstrumentationModel {
     return stabilityOptInList;
   }
 
+  @JsonProperty("stability_opt_in_list")
   public ExperimentalGeneralInstrumentationModel withStabilityOptInList(String stabilityOptInList) {
     this.stabilityOptInList = stabilityOptInList;
     return this;

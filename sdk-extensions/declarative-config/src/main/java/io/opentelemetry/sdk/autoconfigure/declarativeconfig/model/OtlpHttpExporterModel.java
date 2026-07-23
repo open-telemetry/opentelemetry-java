@@ -5,14 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
@@ -26,36 +22,16 @@ import javax.annotation.Nullable;
   "timeout",
   "encoding"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class OtlpHttpExporterModel {
 
-  @JsonProperty("endpoint")
-  @Nullable
-  private String endpoint;
-
-  @JsonProperty("tls")
-  @Nullable
-  private HttpTlsModel tls;
-
-  @JsonProperty("headers")
-  @Nullable
-  private List<NameStringValuePairModel> headers;
-
-  @JsonProperty("headers_list")
-  @Nullable
-  private String headersList;
-
-  @JsonProperty("compression")
-  @Nullable
-  private String compression;
-
-  @JsonProperty("timeout")
-  @Nullable
-  private Integer timeout;
-
-  @JsonProperty("encoding")
-  @Nullable
-  private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
+  @Nullable private String endpoint;
+  @Nullable private HttpTlsModel tls;
+  @Nullable private List<NameStringValuePairModel> headers;
+  @Nullable private String headersList;
+  @Nullable private String compression;
+  @Nullable private Integer timeout;
+  @Nullable private OtlpHttpEncodingModel encoding;
 
   /**
    * Configure endpoint, including the signal specific path.
@@ -69,6 +45,7 @@ public class OtlpHttpExporterModel {
     return endpoint;
   }
 
+  @JsonProperty("endpoint")
   public OtlpHttpExporterModel withEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
@@ -85,6 +62,7 @@ public class OtlpHttpExporterModel {
     return tls;
   }
 
+  @JsonProperty("tls")
   public OtlpHttpExporterModel withTls(HttpTlsModel tls) {
     this.tls = tls;
     return this;
@@ -103,6 +81,7 @@ public class OtlpHttpExporterModel {
     return headers;
   }
 
+  @JsonProperty("headers")
   public OtlpHttpExporterModel withHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
@@ -124,6 +103,7 @@ public class OtlpHttpExporterModel {
     return headersList;
   }
 
+  @JsonProperty("headers_list")
   public OtlpHttpExporterModel withHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
@@ -142,6 +122,7 @@ public class OtlpHttpExporterModel {
     return compression;
   }
 
+  @JsonProperty("compression")
   public OtlpHttpExporterModel withCompression(String compression) {
     this.compression = compression;
     return this;
@@ -160,6 +141,7 @@ public class OtlpHttpExporterModel {
     return timeout;
   }
 
+  @JsonProperty("timeout")
   public OtlpHttpExporterModel withTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
@@ -180,11 +162,12 @@ public class OtlpHttpExporterModel {
    */
   @JsonProperty("encoding")
   @Nullable
-  public OtlpHttpExporterModel.OtlpHttpEncoding getEncoding() {
+  public OtlpHttpEncodingModel getEncoding() {
     return encoding;
   }
 
-  public OtlpHttpExporterModel withEncoding(OtlpHttpExporterModel.OtlpHttpEncoding encoding) {
+  @JsonProperty("encoding")
+  public OtlpHttpExporterModel withEncoding(OtlpHttpEncodingModel encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -249,44 +232,5 @@ public class OtlpHttpExporterModel {
           && (this.encoding == null ? that.encoding == null : this.encoding.equals(that.encoding));
     }
     return false;
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum OtlpHttpEncoding {
-    PROTOBUF("protobuf"),
-    JSON("json");
-    private final String value;
-    private static final Map<String, OtlpHttpExporterModel.OtlpHttpEncoding> CONSTANTS =
-        new HashMap<String, OtlpHttpExporterModel.OtlpHttpEncoding>();
-
-    static {
-      for (OtlpHttpExporterModel.OtlpHttpEncoding c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    OtlpHttpEncoding(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static OtlpHttpExporterModel.OtlpHttpEncoding fromValue(String value) {
-      OtlpHttpExporterModel.OtlpHttpEncoding constant = CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
   }
 }

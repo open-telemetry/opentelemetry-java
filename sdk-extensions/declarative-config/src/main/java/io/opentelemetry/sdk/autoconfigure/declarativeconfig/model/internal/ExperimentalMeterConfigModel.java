@@ -13,12 +13,10 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"enabled"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalMeterConfigModel {
 
-  @JsonProperty("enabled")
-  @Nullable
-  private Boolean enabled;
+  @Nullable private Boolean enabled;
 
   /**
    * Configure if the meter is enabled or not.
@@ -31,6 +29,7 @@ public class ExperimentalMeterConfigModel {
     return enabled;
   }
 
+  @JsonProperty("enabled")
   public ExperimentalMeterConfigModel withEnabled(Boolean enabled) {
     this.enabled = enabled;
     return this;

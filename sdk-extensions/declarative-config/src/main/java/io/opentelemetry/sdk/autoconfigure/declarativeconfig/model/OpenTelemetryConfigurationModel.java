@@ -7,24 +7,15 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalInstrumentationModel;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
-/**
- * OpenTelemetryConfiguration
- *
- * <p>
- */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
   "file_format",
@@ -39,54 +30,20 @@ import javax.annotation.Nullable;
   "instrumentation/development",
   "distribution"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class OpenTelemetryConfigurationModel {
 
-  @JsonProperty("file_format")
-  @Nullable
-  private String fileFormat;
-
-  @JsonProperty("disabled")
-  @Nullable
-  private Boolean disabled;
-
-  @JsonProperty("log_level")
-  @Nullable
-  private OpenTelemetryConfigurationModel.SeverityNumber logLevel;
-
-  @JsonProperty("attribute_limits")
-  @Nullable
-  private AttributeLimitsModel attributeLimits;
-
-  @JsonProperty("logger_provider")
-  @Nullable
-  private LoggerProviderModel loggerProvider;
-
-  @JsonProperty("meter_provider")
-  @Nullable
-  private MeterProviderModel meterProvider;
-
-  @JsonProperty("propagator")
-  @Nullable
-  private PropagatorModel propagator;
-
-  @JsonProperty("tracer_provider")
-  @Nullable
-  private TracerProviderModel tracerProvider;
-
-  @JsonProperty("resource")
-  @Nullable
-  private ResourceModel resource;
-
-  @JsonProperty("instrumentation/development")
-  @Nullable
-  private ExperimentalInstrumentationModel instrumentationDevelopment;
-
-  @JsonProperty("distribution")
-  @Nullable
-  private DistributionModel distribution;
-
-  @JsonIgnore
+  @Nullable private String fileFormat;
+  @Nullable private Boolean disabled;
+  @Nullable private SeverityNumberModel logLevel;
+  @Nullable private AttributeLimitsModel attributeLimits;
+  @Nullable private LoggerProviderModel loggerProvider;
+  @Nullable private MeterProviderModel meterProvider;
+  @Nullable private PropagatorModel propagator;
+  @Nullable private TracerProviderModel tracerProvider;
+  @Nullable private ResourceModel resource;
+  @Nullable private ExperimentalInstrumentationModel instrumentationDevelopment;
+  @Nullable private DistributionModel distribution;
   private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
   /**
@@ -109,6 +66,7 @@ public class OpenTelemetryConfigurationModel {
     return fileFormat;
   }
 
+  @JsonProperty("file_format")
   public OpenTelemetryConfigurationModel withFileFormat(String fileFormat) {
     this.fileFormat = fileFormat;
     return this;
@@ -125,6 +83,7 @@ public class OpenTelemetryConfigurationModel {
     return disabled;
   }
 
+  @JsonProperty("disabled")
   public OpenTelemetryConfigurationModel withDisabled(Boolean disabled) {
     this.disabled = disabled;
     return this;
@@ -187,12 +146,12 @@ public class OpenTelemetryConfigurationModel {
    */
   @JsonProperty("log_level")
   @Nullable
-  public OpenTelemetryConfigurationModel.SeverityNumber getLogLevel() {
+  public SeverityNumberModel getLogLevel() {
     return logLevel;
   }
 
-  public OpenTelemetryConfigurationModel withLogLevel(
-      OpenTelemetryConfigurationModel.SeverityNumber logLevel) {
+  @JsonProperty("log_level")
+  public OpenTelemetryConfigurationModel withLogLevel(SeverityNumberModel logLevel) {
     this.logLevel = logLevel;
     return this;
   }
@@ -208,6 +167,7 @@ public class OpenTelemetryConfigurationModel {
     return attributeLimits;
   }
 
+  @JsonProperty("attribute_limits")
   public OpenTelemetryConfigurationModel withAttributeLimits(AttributeLimitsModel attributeLimits) {
     this.attributeLimits = attributeLimits;
     return this;
@@ -224,6 +184,7 @@ public class OpenTelemetryConfigurationModel {
     return loggerProvider;
   }
 
+  @JsonProperty("logger_provider")
   public OpenTelemetryConfigurationModel withLoggerProvider(LoggerProviderModel loggerProvider) {
     this.loggerProvider = loggerProvider;
     return this;
@@ -240,6 +201,7 @@ public class OpenTelemetryConfigurationModel {
     return meterProvider;
   }
 
+  @JsonProperty("meter_provider")
   public OpenTelemetryConfigurationModel withMeterProvider(MeterProviderModel meterProvider) {
     this.meterProvider = meterProvider;
     return this;
@@ -256,6 +218,7 @@ public class OpenTelemetryConfigurationModel {
     return propagator;
   }
 
+  @JsonProperty("propagator")
   public OpenTelemetryConfigurationModel withPropagator(PropagatorModel propagator) {
     this.propagator = propagator;
     return this;
@@ -272,6 +235,7 @@ public class OpenTelemetryConfigurationModel {
     return tracerProvider;
   }
 
+  @JsonProperty("tracer_provider")
   public OpenTelemetryConfigurationModel withTracerProvider(TracerProviderModel tracerProvider) {
     this.tracerProvider = tracerProvider;
     return this;
@@ -288,6 +252,7 @@ public class OpenTelemetryConfigurationModel {
     return resource;
   }
 
+  @JsonProperty("resource")
   public OpenTelemetryConfigurationModel withResource(ResourceModel resource) {
     this.resource = resource;
     return this;
@@ -304,6 +269,7 @@ public class OpenTelemetryConfigurationModel {
     return instrumentationDevelopment;
   }
 
+  @JsonProperty("instrumentation/development")
   public OpenTelemetryConfigurationModel withInstrumentationDevelopment(
       ExperimentalInstrumentationModel instrumentationDevelopment) {
     this.instrumentationDevelopment = instrumentationDevelopment;
@@ -327,6 +293,7 @@ public class OpenTelemetryConfigurationModel {
     return distribution;
   }
 
+  @JsonProperty("distribution")
   public OpenTelemetryConfigurationModel withDistribution(DistributionModel distribution) {
     this.distribution = distribution;
     return this;
@@ -338,10 +305,6 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public OpenTelemetryConfigurationModel withAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);
     return this;
@@ -446,66 +409,5 @@ public class OpenTelemetryConfigurationModel {
               : this.additionalProperties.equals(that.additionalProperties));
     }
     return false;
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum SeverityNumber {
-    TRACE("trace"),
-    TRACE_2("trace2"),
-    TRACE_3("trace3"),
-    TRACE_4("trace4"),
-    DEBUG("debug"),
-    DEBUG_2("debug2"),
-    DEBUG_3("debug3"),
-    DEBUG_4("debug4"),
-    INFO("info"),
-    INFO_2("info2"),
-    INFO_3("info3"),
-    INFO_4("info4"),
-    WARN("warn"),
-    WARN_2("warn2"),
-    WARN_3("warn3"),
-    WARN_4("warn4"),
-    ERROR("error"),
-    ERROR_2("error2"),
-    ERROR_3("error3"),
-    ERROR_4("error4"),
-    FATAL("fatal"),
-    FATAL_2("fatal2"),
-    FATAL_3("fatal3"),
-    FATAL_4("fatal4");
-    private final String value;
-    private static final Map<String, OpenTelemetryConfigurationModel.SeverityNumber> CONSTANTS =
-        new HashMap<String, OpenTelemetryConfigurationModel.SeverityNumber>();
-
-    static {
-      for (OpenTelemetryConfigurationModel.SeverityNumber c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    SeverityNumber(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static OpenTelemetryConfigurationModel.SeverityNumber fromValue(String value) {
-      OpenTelemetryConfigurationModel.SeverityNumber constant = CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
   }
 }

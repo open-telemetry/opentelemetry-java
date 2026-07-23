@@ -5,13 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.HashMap;
-import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
@@ -24,32 +20,15 @@ import javax.annotation.Nullable;
   "meter_version",
   "meter_schema_url"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ViewSelectorModel {
 
-  @JsonProperty("instrument_name")
-  @Nullable
-  private String instrumentName;
-
-  @JsonProperty("instrument_type")
-  @Nullable
-  private ViewSelectorModel.InstrumentType instrumentType;
-
-  @JsonProperty("unit")
-  @Nullable
-  private String unit;
-
-  @JsonProperty("meter_name")
-  @Nullable
-  private String meterName;
-
-  @JsonProperty("meter_version")
-  @Nullable
-  private String meterVersion;
-
-  @JsonProperty("meter_schema_url")
-  @Nullable
-  private String meterSchemaUrl;
+  @Nullable private String instrumentName;
+  @Nullable private InstrumentTypeModel instrumentType;
+  @Nullable private String unit;
+  @Nullable private String meterName;
+  @Nullable private String meterVersion;
+  @Nullable private String meterSchemaUrl;
 
   /**
    * Configure instrument name selection criteria.
@@ -62,6 +41,7 @@ public class ViewSelectorModel {
     return instrumentName;
   }
 
+  @JsonProperty("instrument_name")
   public ViewSelectorModel withInstrumentName(String instrumentName) {
     this.instrumentName = instrumentName;
     return this;
@@ -90,11 +70,12 @@ public class ViewSelectorModel {
    */
   @JsonProperty("instrument_type")
   @Nullable
-  public ViewSelectorModel.InstrumentType getInstrumentType() {
+  public InstrumentTypeModel getInstrumentType() {
     return instrumentType;
   }
 
-  public ViewSelectorModel withInstrumentType(ViewSelectorModel.InstrumentType instrumentType) {
+  @JsonProperty("instrument_type")
+  public ViewSelectorModel withInstrumentType(InstrumentTypeModel instrumentType) {
     this.instrumentType = instrumentType;
     return this;
   }
@@ -110,6 +91,7 @@ public class ViewSelectorModel {
     return unit;
   }
 
+  @JsonProperty("unit")
   public ViewSelectorModel withUnit(String unit) {
     this.unit = unit;
     return this;
@@ -126,6 +108,7 @@ public class ViewSelectorModel {
     return meterName;
   }
 
+  @JsonProperty("meter_name")
   public ViewSelectorModel withMeterName(String meterName) {
     this.meterName = meterName;
     return this;
@@ -142,6 +125,7 @@ public class ViewSelectorModel {
     return meterVersion;
   }
 
+  @JsonProperty("meter_version")
   public ViewSelectorModel withMeterVersion(String meterVersion) {
     this.meterVersion = meterVersion;
     return this;
@@ -158,6 +142,7 @@ public class ViewSelectorModel {
     return meterSchemaUrl;
   }
 
+  @JsonProperty("meter_schema_url")
   public ViewSelectorModel withMeterSchemaUrl(String meterSchemaUrl) {
     this.meterSchemaUrl = meterSchemaUrl;
     return this;
@@ -224,49 +209,5 @@ public class ViewSelectorModel {
               : this.meterSchemaUrl.equals(that.meterSchemaUrl));
     }
     return false;
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum InstrumentType {
-    COUNTER("counter"),
-    GAUGE("gauge"),
-    HISTOGRAM("histogram"),
-    OBSERVABLE_COUNTER("observable_counter"),
-    OBSERVABLE_GAUGE("observable_gauge"),
-    OBSERVABLE_UP_DOWN_COUNTER("observable_up_down_counter"),
-    UP_DOWN_COUNTER("up_down_counter");
-    private final String value;
-    private static final Map<String, ViewSelectorModel.InstrumentType> CONSTANTS =
-        new HashMap<String, ViewSelectorModel.InstrumentType>();
-
-    static {
-      for (ViewSelectorModel.InstrumentType c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    InstrumentType(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static ViewSelectorModel.InstrumentType fromValue(String value) {
-      ViewSelectorModel.InstrumentType constant = CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
   }
 }

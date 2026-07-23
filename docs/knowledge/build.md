@@ -24,9 +24,9 @@ All tasks can be scoped to a single module by prefixing with the module path:
 ```
 
 `./gradlew build` and `./gradlew check` both depend on the `jApiCmp` task, which compares the
-locally-built jars against the latest release and writes diffs to `docs/apidiffs/current_vs_latest/`.
-Include any changes to those files in your PR. See [api-design.md](api-design.md#japicmp)
-for details.
+locally-built jars against the release pinned by `apidiffBaselineVersion` in `version.gradle.kts`
+and writes diffs to `docs/apidiffs/current_vs_latest/`. Include any changes to those files in your
+PR. See [api-design.md](api-design.md#japicmp) for details.
 
 If your branch is not up to date with `main`, `jApiCmp` may produce a diff that reflects changes
 already merged to `main` rather than your own changes. Rebase or merge `main` before treating

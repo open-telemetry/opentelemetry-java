@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.LinkedHashMap;
@@ -17,10 +16,9 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalLanguageSpecificInstrumentationModel {
 
-  @JsonIgnore
   private Map<String, ExperimentalLanguageSpecificInstrumentationPropertyModel>
       additionalProperties =
           new LinkedHashMap<String, ExperimentalLanguageSpecificInstrumentationPropertyModel>();
@@ -32,11 +30,6 @@ public class ExperimentalLanguageSpecificInstrumentationModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(
-      String name, ExperimentalLanguageSpecificInstrumentationPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public ExperimentalLanguageSpecificInstrumentationModel withAdditionalProperty(
       String name, ExperimentalLanguageSpecificInstrumentationPropertyModel value) {
     this.additionalProperties.put(name, value);

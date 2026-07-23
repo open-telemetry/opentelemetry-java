@@ -11,23 +11,21 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Generated;
 
-@Generated("jsonschema2pojo")
-public enum SpanKind {
-  INTERNAL("internal"),
-  SERVER("server"),
-  CLIENT("client"),
-  PRODUCER("producer"),
-  CONSUMER("consumer");
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
+public enum ExporterDefaultHistogramAggregationModel {
+  EXPLICIT_BUCKET_HISTOGRAM("explicit_bucket_histogram"),
+  BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM("base2_exponential_bucket_histogram");
   private final String value;
-  private static final Map<String, SpanKind> CONSTANTS = new HashMap<String, SpanKind>();
+  private static final Map<String, ExporterDefaultHistogramAggregationModel> CONSTANTS =
+      new HashMap<String, ExporterDefaultHistogramAggregationModel>();
 
   static {
-    for (SpanKind c : values()) {
+    for (ExporterDefaultHistogramAggregationModel c : values()) {
       CONSTANTS.put(c.value, c);
     }
   }
 
-  SpanKind(String value) {
+  ExporterDefaultHistogramAggregationModel(String value) {
     this.value = value;
   }
 
@@ -42,8 +40,8 @@ public enum SpanKind {
   }
 
   @JsonCreator
-  public static SpanKind fromValue(String value) {
-    SpanKind constant = CONSTANTS.get(value);
+  public static ExporterDefaultHistogramAggregationModel fromValue(String value) {
+    ExporterDefaultHistogramAggregationModel constant = CONSTANTS.get(value);
     if (constant == null) {
       throw new IllegalArgumentException(value);
     } else {

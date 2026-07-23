@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.impl.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpResponse;
@@ -22,12 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -108,8 +111,17 @@ public final class OkHttpHttpSender implements HttpSender {
     boolean isPlainHttp = endpoint.getScheme().equals("http");
     if (isPlainHttp) {
       builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
-    } else if (sslContext != null && trustManager != null) {
-      builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+    } else if (sslContext != null) {
+      X509TrustManager effectiveTrustManager = trustManager;
+
+      if (effectiveTrustManager == null) {
+        try {
+          effectiveTrustManager = TlsUtil.defaultTrustManager();
+        } catch (SSLException e) {
+          throw new IllegalStateException("Unable to initialize default trust manager", e);
+        }
+      }
+      builder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
     }
 
     this.client = builder.build();
@@ -209,10 +221,39 @@ public final class OkHttpHttpSender implements HttpSender {
   @Override
   public CompletableResultCode shutdown() {
     client.dispatcher().cancelAll();
-    if (managedExecutor) {
-      client.dispatcher().executorService().shutdownNow();
-    }
     client.connectionPool().evictAll();
+
+    if (managedExecutor) {
+      ExecutorService executorService = client.dispatcher().executorService();
+      // Use shutdownNow() to interrupt idle threads immediately since we've cancelled all work
+      executorService.shutdownNow();
+
+      // Wait for threads to terminate in a background thread
+      CompletableResultCode result = new CompletableResultCode();
+      Thread terminationThread =
+          new Thread(
+              () -> {
+                try {
+                  // Wait up to 5 seconds for threads to terminate
+                  // Even if timeout occurs, we succeed since these are daemon threads
+                  boolean terminated = executorService.awaitTermination(5, TimeUnit.SECONDS);
+                  if (!terminated) {
+                    logger.log(
+                        Level.WARNING,
+                        "Executor did not terminate within 5 seconds, proceeding with shutdown since threads are daemon threads.");
+                  }
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                } finally {
+                  result.succeed();
+                }
+              },
+              "okhttp-shutdown");
+      terminationThread.setDaemon(true);
+      terminationThread.start();
+      return result;
+    }
+
     return CompletableResultCode.ofSuccess();
   }
 

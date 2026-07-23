@@ -1,4 +1,5 @@
 import de.undercouch.gradle.tasks.download.Download
+import io.opentelemetry.gradle.DeclarativeConfigPojoGenerator
 
 plugins {
   id("otel.java-conventions")
@@ -7,7 +8,6 @@ plugins {
   id("otel.animalsniffer-conventions")
 
   id("de.undercouch.download")
-  id("org.jsonschema2pojo")
 }
 
 description = "OpenTelemetry SDK Declarative Config"
@@ -50,13 +50,11 @@ dependencies {
   testImplementation("nl.jqno.equalsverifier:equalsverifier")
 }
 
-// The following tasks download the JSON Schema files from open-telemetry/opentelemetry-configuration,
-// generate POJOs, and write the post-processed result into src/main/java for version control.
-// The sequence of tasks is:
+// The following tasks download the JSON Schema files from open-telemetry/opentelemetry-configuration
+// and regenerate the committed model POJOs in src/main/java. The sequence is:
 // 1. downloadConfigurationSchema - download configuration schema from open-telemetry/opentelemetry-configuration
-// 2. unzipConfigurationSchema - unzip the configuration schema archive contents to $buildDir/configuration/
-// 3. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
-// 4. syncPojoModelsToSrc - post-process the generated POJOs and write them to src/main/java
+// 2. unzipConfigurationSchema - unzip the schema archive to $buildDir/configuration/
+// 3. syncPojoModelsToSrc - run PojoGenerator to write Java sources into src/main/java
 // The generated POJOs are committed to src/main/java and are NOT regenerated as part of the normal build.
 // To regenerate (e.g. after a schema update), run: ./gradlew :sdk-extensions:declarative-config:syncPojoModelsToSrc
 
@@ -93,92 +91,25 @@ val unzipConfigurationSchema = tasks.register<Sync>("unzipConfigurationSchema") 
   includeEmptyDirs = false
 }
 
-jsonSchema2Pojo {
-  sourceFiles = setOf(file("$buildDirectory/configuration/opentelemetry_configuration.json"))
-  targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
-  targetPackage = "io.opentelemetry.sdk.autoconfigure.declarativeconfig.model"
-
-  // Clear old source files to avoid contaminated source dir when updating
-  removeOldOutput = true
-
-  // Annotate fields/getters via NullableAnnotator instead of jsonschema2pojo's JSR-305 support. The
-  // built-in support adds @Nonnull to required fields, which NullAway flags as uninitialized (Jackson
-  // populates them reflectively). NullableAnnotator annotates everything @Nullable instead, matching
-  // the getters and letting the model factories validate required-ness at runtime.
-  includeJsr305Annotations = false
-  setCustomAnnotator(io.opentelemetry.gradle.js2p.NullableAnnotator::class.java)
-
-  // Generate AutoValue-style toString/equals/hashCode via OtelObjectRule (wired through
-  // OtelRuleFactory) rather than jsonschema2pojo's defaults. The defaults use a commons-style
-  // toString (System.identityHashCode) and compare boxed fields with == (tripping ErrorProne's
-  // BoxedPrimitiveEquality). Disable the built-in generation so the custom rule can supply its own.
-  includeToString = false
-  includeHashcodeAndEquals = false
-  setCustomRuleFactory(io.opentelemetry.gradle.js2p.OtelRuleFactory::class.java)
-
-  // Prefer builders to setters
-  includeSetters = false
-  generateBuilders = true
-
-  // Use title field to generate class name, instead of default which is based on filename / propertynames
-  useTitleAsClassname = true
-
-  // Force java 9+ @Generated annotation, since java 8 @Generated annotation isn't detected by
-  // jsonSchema2Pojo and annotation is skipped altogether
-  targetVersion = "1.9"
-
-  // Append Model as suffix to the generated classes.
-  classNameSuffix = "Model"
-
-  // Initialize collection fields to null rather than empty collections so that absent YAML
-  // properties deserialize as null (not present) rather than [] (explicitly empty). This lets
-  // factories distinguish between "user omitted the field" and "user provided an empty list",
-  // which is important for validations like IncludeExcludeFactory.
-  initializeCollections = false
-}
-
-val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
-generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
-
-val syncPojoModelsToSrc = tasks.register<Copy>("syncPojoModelsToSrc") {
-  dependsOn(generateJsonSchema2Pojo)
+// Generates POJOs from the configuration schema and writes them to src/main/java.
+// The generated POJOs are committed to src/main/java and are NOT regenerated as part of the normal
+// build. To regenerate (e.g. after a schema update), run:
+//   ./gradlew :sdk-extensions:declarative-config:syncPojoModelsToSrc
+val syncPojoModelsToSrc = tasks.register("syncPojoModelsToSrc") {
+  // This task is only run manually (to regenerate committed model POJOs after a schema update).
+  // It writes into src/main/java, which is outside the normal Gradle output boundary, so it
+  // intentionally doesn't participate in the configuration cache.
+  notCompatibleWithConfigurationCache("Regenerates committed model POJOs in src/main/java")
+  dependsOn(unzipConfigurationSchema)
   finalizedBy("spotlessApply")
+  val schemaFile = File("$buildDirectory/configuration/opentelemetry_configuration.json")
   val modelPackage = "io.opentelemetry.sdk.autoconfigure.declarativeconfig.model"
-  val internalPackage = "$modelPackage.internal"
-  val modelDir = File(projectDir, "src/main/java/${modelPackage.replace('.', '/')}")
-  doFirst {
-    require(JavaVersion.current() == JavaVersion.VERSION_21) {
-      "syncPojoModelsToSrc requires Java 21 (current: ${JavaVersion.current()}). jsonschema2pojo output is JVM-version-sensitive; using the wrong version produces spurious diffs."
-    }
-    // Copy won't remove files that no longer exist in the source. Delete first so schema type removals don't leave stale classes.
-    modelDir.deleteRecursively()
-  }
-
-  from("$buildDirectory/generated/sources/js2p/java/main")
-  into("$projectDir/src/main/java")
-  // Replace java 9+ @Generated annotation with java 8 version (path-independent).
-  filter {
-    it.replace("import javax.annotation.processing.Generated;", "import javax.annotation.Generated;")
-  }
-
+  val modelSrcDir = File(projectDir, "src/main/java")
   doLast {
-    // Experimental types live in the internal sub-package; stable types in the model package.
-    // codemodel emits imports for cross-package top-level references automatically, but always
-    // fully-qualifies nested type references (e.g. OuterModel.NestedEnum) regardless of package.
-    // Shorten only references to a file's OWN package; cross-package FQCNs are left intact and
-    // valid. For model files the prefix must not match the longer internal prefix.
-    val stripModelPrefix = Regex(Regex.escape("$modelPackage.") + "(?!internal\\.)")
-    modelDir.walkTopDown().filter { it.isFile && it.extension == "java" }.forEach { file ->
-      val inInternal = file.parentFile.name == "internal"
-      val text = file.readText()
-      val shortened =
-        if (inInternal) {
-          text.replace("$internalPackage.", "")
-        } else {
-          text.replace(stripModelPrefix, "")
-        }
-      file.writeText(shortened)
-    }
+    val modelDir = File(modelSrcDir, modelPackage.replace('.', '/'))
+    // Delete first so schema type removals don't leave stale classes.
+    modelDir.deleteRecursively()
+    DeclarativeConfigPojoGenerator(schemaFile, modelSrcDir, modelPackage).generate()
   }
 }
 
@@ -207,19 +138,6 @@ sourceSets {
   main {
     java {
       srcDir(generatedResourceConfigDir)
-    }
-  }
-}
-
-afterEvaluate {
-  // The jsonschema2pojo plugin auto-adds its targetDirectory to the main source set. Remove it so
-  // that only the committed model POJOs in src/main/java are compiled, avoiding duplicate classes.
-  val js2pDir = File(buildDirectory, "generated/sources/js2p/java/main")
-  sourceSets {
-    main {
-      java {
-        setSrcDirs(srcDirs.filter { it != js2pDir })
-      }
     }
   }
 }

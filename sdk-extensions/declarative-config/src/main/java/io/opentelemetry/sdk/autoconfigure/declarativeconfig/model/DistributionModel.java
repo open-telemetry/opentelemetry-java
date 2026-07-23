@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.LinkedHashMap;
@@ -17,10 +16,9 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class DistributionModel {
 
-  @JsonIgnore
   private Map<String, DistributionPropertyModel> additionalProperties =
       new LinkedHashMap<String, DistributionPropertyModel>();
 
@@ -30,10 +28,6 @@ public class DistributionModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, DistributionPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public DistributionModel withAdditionalProperty(String name, DistributionPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

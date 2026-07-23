@@ -13,24 +13,13 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"ca_file", "key_file", "cert_file", "insecure"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class GrpcTlsModel {
 
-  @JsonProperty("ca_file")
-  @Nullable
-  private String caFile;
-
-  @JsonProperty("key_file")
-  @Nullable
-  private String keyFile;
-
-  @JsonProperty("cert_file")
-  @Nullable
-  private String certFile;
-
-  @JsonProperty("insecure")
-  @Nullable
-  private Boolean insecure;
+  @Nullable private String caFile;
+  @Nullable private String keyFile;
+  @Nullable private String certFile;
+  @Nullable private Boolean insecure;
 
   /**
    * Configure certificate used to verify a server's TLS credentials.
@@ -45,6 +34,7 @@ public class GrpcTlsModel {
     return caFile;
   }
 
+  @JsonProperty("ca_file")
   public GrpcTlsModel withCaFile(String caFile) {
     this.caFile = caFile;
     return this;
@@ -64,6 +54,7 @@ public class GrpcTlsModel {
     return keyFile;
   }
 
+  @JsonProperty("key_file")
   public GrpcTlsModel withKeyFile(String keyFile) {
     this.keyFile = keyFile;
     return this;
@@ -83,6 +74,7 @@ public class GrpcTlsModel {
     return certFile;
   }
 
+  @JsonProperty("cert_file")
   public GrpcTlsModel withCertFile(String certFile) {
     this.certFile = certFile;
     return this;
@@ -102,6 +94,7 @@ public class GrpcTlsModel {
     return insecure;
   }
 
+  @JsonProperty("insecure")
   public GrpcTlsModel withInsecure(Boolean insecure) {
     this.insecure = insecure;
     return this;

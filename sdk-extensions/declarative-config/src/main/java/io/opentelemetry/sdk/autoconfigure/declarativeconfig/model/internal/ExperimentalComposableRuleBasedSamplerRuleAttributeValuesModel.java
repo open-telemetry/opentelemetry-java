@@ -14,16 +14,11 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"key", "values"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
 
-  @JsonProperty("key")
-  @Nullable
-  private String key;
-
-  @JsonProperty("values")
-  @Nullable
-  private List<String> values;
+  @Nullable private String key;
+  @Nullable private List<String> values;
 
   /**
    * The attribute key to match against.
@@ -36,6 +31,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
     return key;
   }
 
+  @JsonProperty("key")
   public ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel withKey(String key) {
     this.key = key;
     return this;
@@ -53,6 +49,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel {
     return values;
   }
 
+  @JsonProperty("values")
   public ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel withValues(
       List<String> values) {
     this.values = values;

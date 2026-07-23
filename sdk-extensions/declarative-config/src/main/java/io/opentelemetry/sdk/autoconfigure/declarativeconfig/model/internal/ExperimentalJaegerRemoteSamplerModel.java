@@ -14,20 +14,12 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"endpoint", "interval", "initial_sampler"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalJaegerRemoteSamplerModel {
 
-  @JsonProperty("endpoint")
-  @Nullable
-  private String endpoint;
-
-  @JsonProperty("interval")
-  @Nullable
-  private Integer interval;
-
-  @JsonProperty("initial_sampler")
-  @Nullable
-  private SamplerModel initialSampler;
+  @Nullable private String endpoint;
+  @Nullable private Integer interval;
+  @Nullable private SamplerModel initialSampler;
 
   /**
    * Configure the endpoint of the jaeger remote sampling service.
@@ -40,6 +32,7 @@ public class ExperimentalJaegerRemoteSamplerModel {
     return endpoint;
   }
 
+  @JsonProperty("endpoint")
   public ExperimentalJaegerRemoteSamplerModel withEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
@@ -56,6 +49,7 @@ public class ExperimentalJaegerRemoteSamplerModel {
     return interval;
   }
 
+  @JsonProperty("interval")
   public ExperimentalJaegerRemoteSamplerModel withInterval(Integer interval) {
     this.interval = interval;
     return this;
@@ -72,6 +66,7 @@ public class ExperimentalJaegerRemoteSamplerModel {
     return initialSampler;
   }
 
+  @JsonProperty("initial_sampler")
   public ExperimentalJaegerRemoteSamplerModel withInitialSampler(SamplerModel initialSampler) {
     this.initialSampler = initialSampler;
     return this;

@@ -107,7 +107,84 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void add(long value) {}
+
+    @Override
+    public BoundLongCounter bind(Attributes attributes) {
+      return NOOP_BOUND_LONG_COUNTER;
+    }
   }
+
+  private static final BoundLongCounter NOOP_BOUND_LONG_COUNTER =
+      new BoundLongCounter() {
+        @Override
+        public void add(long value) {}
+
+        @Override
+        public void add(long value, Context context) {}
+      };
+
+  private static final BoundDoubleCounter NOOP_BOUND_DOUBLE_COUNTER =
+      new BoundDoubleCounter() {
+        @Override
+        public void add(double value) {}
+
+        @Override
+        public void add(double value, Context context) {}
+      };
+
+  private static final BoundLongUpDownCounter NOOP_BOUND_LONG_UP_DOWN_COUNTER =
+      new BoundLongUpDownCounter() {
+        @Override
+        public void add(long value) {}
+
+        @Override
+        public void add(long value, Context context) {}
+      };
+
+  private static final BoundDoubleUpDownCounter NOOP_BOUND_DOUBLE_UP_DOWN_COUNTER =
+      new BoundDoubleUpDownCounter() {
+        @Override
+        public void add(double value) {}
+
+        @Override
+        public void add(double value, Context context) {}
+      };
+
+  private static final BoundLongHistogram NOOP_BOUND_LONG_HISTOGRAM =
+      new BoundLongHistogram() {
+        @Override
+        public void record(long value) {}
+
+        @Override
+        public void record(long value, Context context) {}
+      };
+
+  private static final BoundDoubleHistogram NOOP_BOUND_DOUBLE_HISTOGRAM =
+      new BoundDoubleHistogram() {
+        @Override
+        public void record(double value) {}
+
+        @Override
+        public void record(double value, Context context) {}
+      };
+
+  private static final BoundLongGauge NOOP_BOUND_LONG_GAUGE =
+      new BoundLongGauge() {
+        @Override
+        public void set(long value) {}
+
+        @Override
+        public void set(long value, Context context) {}
+      };
+
+  private static final BoundDoubleGauge NOOP_BOUND_DOUBLE_GAUGE =
+      new BoundDoubleGauge() {
+        @Override
+        public void set(double value) {}
+
+        @Override
+        public void set(double value, Context context) {}
+      };
 
   private static class NoopDoubleCounter implements ExtendedDoubleCounter {
     @Override
@@ -123,6 +200,11 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
+
+    @Override
+    public BoundDoubleCounter bind(Attributes attributes) {
+      return NOOP_BOUND_DOUBLE_COUNTER;
+    }
   }
 
   private static class NoopLongCounterBuilder implements ExtendedLongCounterBuilder {
@@ -209,6 +291,11 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void add(long value) {}
+
+    @Override
+    public BoundLongUpDownCounter bind(Attributes attributes) {
+      return NOOP_BOUND_LONG_UP_DOWN_COUNTER;
+    }
   }
 
   private static class NoopDoubleUpDownCounter implements ExtendedDoubleUpDownCounter {
@@ -225,6 +312,11 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void add(double value) {}
+
+    @Override
+    public BoundDoubleUpDownCounter bind(Attributes attributes) {
+      return NOOP_BOUND_DOUBLE_UP_DOWN_COUNTER;
+    }
   }
 
   private static class NoopLongUpDownCounterBuilder implements ExtendedLongUpDownCounterBuilder {
@@ -314,6 +406,11 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void record(double value) {}
+
+    @Override
+    public BoundDoubleHistogram bind(Attributes attributes) {
+      return NOOP_BOUND_DOUBLE_HISTOGRAM;
+    }
   }
 
   private static class NoopLongHistogram implements ExtendedLongHistogram {
@@ -330,6 +427,11 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void record(long value) {}
+
+    @Override
+    public BoundLongHistogram bind(Attributes attributes) {
+      return NOOP_BOUND_LONG_HISTOGRAM;
+    }
   }
 
   private static class NoopDoubleHistogramBuilder implements ExtendedDoubleHistogramBuilder {
@@ -428,6 +530,11 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void set(double value, Attributes attributes, Context context) {}
+
+    @Override
+    public BoundDoubleGauge bind(Attributes attributes) {
+      return NOOP_BOUND_DOUBLE_GAUGE;
+    }
   }
 
   private static class NoopLongGaugeBuilder implements ExtendedLongGaugeBuilder {
@@ -474,6 +581,11 @@ class ExtendedDefaultMeter implements Meter {
 
     @Override
     public void set(long value, Attributes attributes, Context context) {}
+
+    @Override
+    public BoundLongGauge bind(Attributes attributes) {
+      return NOOP_BOUND_LONG_GAUGE;
+    }
   }
 
   private static class NoopObservableDoubleMeasurement implements ObservableDoubleMeasurement {

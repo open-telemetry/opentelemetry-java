@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -18,26 +17,13 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"container", "host", "process", "service"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalResourceDetectorModel {
 
-  @JsonProperty("container")
-  @Nullable
-  private ExperimentalContainerResourceDetectorModel container;
-
-  @JsonProperty("host")
-  @Nullable
-  private ExperimentalHostResourceDetectorModel host;
-
-  @JsonProperty("process")
-  @Nullable
-  private ExperimentalProcessResourceDetectorModel process;
-
-  @JsonProperty("service")
-  @Nullable
-  private ExperimentalServiceResourceDetectorModel service;
-
-  @JsonIgnore
+  @Nullable private ExperimentalContainerResourceDetectorModel container;
+  @Nullable private ExperimentalHostResourceDetectorModel host;
+  @Nullable private ExperimentalProcessResourceDetectorModel process;
+  @Nullable private ExperimentalServiceResourceDetectorModel service;
   private Map<String, ExperimentalResourceDetectorPropertyModel> additionalProperties =
       new LinkedHashMap<String, ExperimentalResourceDetectorPropertyModel>();
 
@@ -52,6 +38,7 @@ public class ExperimentalResourceDetectorModel {
     return container;
   }
 
+  @JsonProperty("container")
   public ExperimentalResourceDetectorModel withContainer(
       ExperimentalContainerResourceDetectorModel container) {
     this.container = container;
@@ -69,6 +56,7 @@ public class ExperimentalResourceDetectorModel {
     return host;
   }
 
+  @JsonProperty("host")
   public ExperimentalResourceDetectorModel withHost(ExperimentalHostResourceDetectorModel host) {
     this.host = host;
     return this;
@@ -85,6 +73,7 @@ public class ExperimentalResourceDetectorModel {
     return process;
   }
 
+  @JsonProperty("process")
   public ExperimentalResourceDetectorModel withProcess(
       ExperimentalProcessResourceDetectorModel process) {
     this.process = process;
@@ -103,6 +92,7 @@ public class ExperimentalResourceDetectorModel {
     return service;
   }
 
+  @JsonProperty("service")
   public ExperimentalResourceDetectorModel withService(
       ExperimentalServiceResourceDetectorModel service) {
     this.service = service;
@@ -115,10 +105,6 @@ public class ExperimentalResourceDetectorModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, ExperimentalResourceDetectorPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public ExperimentalResourceDetectorModel withAdditionalProperty(
       String name, ExperimentalResourceDetectorPropertyModel value) {
     this.additionalProperties.put(name, value);

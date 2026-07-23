@@ -14,12 +14,10 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"sensitive_query_parameters"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalUrlSanitizationModel {
 
-  @JsonProperty("sensitive_query_parameters")
-  @Nullable
-  private List<String> sensitiveQueryParameters;
+  @Nullable private List<String> sensitiveQueryParameters;
 
   /**
    * List of query parameter names whose values should be redacted from URLs.
@@ -42,6 +40,7 @@ public class ExperimentalUrlSanitizationModel {
     return sensitiveQueryParameters;
   }
 
+  @JsonProperty("sensitive_query_parameters")
   public ExperimentalUrlSanitizationModel withSensitiveQueryParameters(
       List<String> sensitiveQueryParameters) {
     this.sensitiveQueryParameters = sensitiveQueryParameters;

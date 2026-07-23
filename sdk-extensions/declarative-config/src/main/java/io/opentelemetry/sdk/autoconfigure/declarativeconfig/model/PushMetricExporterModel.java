@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -19,26 +18,13 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"otlp_http", "otlp_grpc", "otlp_file/development", "console"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class PushMetricExporterModel {
 
-  @JsonProperty("otlp_http")
-  @Nullable
-  private OtlpHttpMetricExporterModel otlpHttp;
-
-  @JsonProperty("otlp_grpc")
-  @Nullable
-  private OtlpGrpcMetricExporterModel otlpGrpc;
-
-  @JsonProperty("otlp_file/development")
-  @Nullable
-  private ExperimentalOtlpFileMetricExporterModel otlpFileDevelopment;
-
-  @JsonProperty("console")
-  @Nullable
-  private ConsoleMetricExporterModel console;
-
-  @JsonIgnore
+  @Nullable private OtlpHttpMetricExporterModel otlpHttp;
+  @Nullable private OtlpGrpcMetricExporterModel otlpGrpc;
+  @Nullable private ExperimentalOtlpFileMetricExporterModel otlpFileDevelopment;
+  @Nullable private ConsoleMetricExporterModel console;
   private Map<String, PushMetricExporterPropertyModel> additionalProperties =
       new LinkedHashMap<String, PushMetricExporterPropertyModel>();
 
@@ -53,6 +39,7 @@ public class PushMetricExporterModel {
     return otlpHttp;
   }
 
+  @JsonProperty("otlp_http")
   public PushMetricExporterModel withOtlpHttp(OtlpHttpMetricExporterModel otlpHttp) {
     this.otlpHttp = otlpHttp;
     return this;
@@ -69,6 +56,7 @@ public class PushMetricExporterModel {
     return otlpGrpc;
   }
 
+  @JsonProperty("otlp_grpc")
   public PushMetricExporterModel withOtlpGrpc(OtlpGrpcMetricExporterModel otlpGrpc) {
     this.otlpGrpc = otlpGrpc;
     return this;
@@ -85,6 +73,7 @@ public class PushMetricExporterModel {
     return otlpFileDevelopment;
   }
 
+  @JsonProperty("otlp_file/development")
   public PushMetricExporterModel withOtlpFileDevelopment(
       ExperimentalOtlpFileMetricExporterModel otlpFileDevelopment) {
     this.otlpFileDevelopment = otlpFileDevelopment;
@@ -102,6 +91,7 @@ public class PushMetricExporterModel {
     return console;
   }
 
+  @JsonProperty("console")
   public PushMetricExporterModel withConsole(ConsoleMetricExporterModel console) {
     this.console = console;
     return this;
@@ -113,10 +103,6 @@ public class PushMetricExporterModel {
   }
 
   @JsonAnySetter
-  public void setAdditionalProperty(String name, PushMetricExporterPropertyModel value) {
-    this.additionalProperties.put(name, value);
-  }
-
   public PushMetricExporterModel withAdditionalProperty(
       String name, PushMetricExporterPropertyModel value) {
     this.additionalProperties.put(name, value);

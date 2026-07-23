@@ -13,12 +13,10 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"exporter"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class SimpleSpanProcessorModel {
 
-  @JsonProperty("exporter")
-  @Nullable
-  private SpanExporterModel exporter;
+  @Nullable private SpanExporterModel exporter;
 
   /**
    * Configure exporter.
@@ -31,6 +29,7 @@ public class SimpleSpanProcessorModel {
     return exporter;
   }
 
+  @JsonProperty("exporter")
   public SimpleSpanProcessorModel withExporter(SpanExporterModel exporter) {
     this.exporter = exporter;
     return this;

@@ -14,32 +14,15 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"endpoint", "tls", "headers", "headers_list", "compression", "timeout"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class OtlpGrpcExporterModel {
 
-  @JsonProperty("endpoint")
-  @Nullable
-  private String endpoint;
-
-  @JsonProperty("tls")
-  @Nullable
-  private GrpcTlsModel tls;
-
-  @JsonProperty("headers")
-  @Nullable
-  private List<NameStringValuePairModel> headers;
-
-  @JsonProperty("headers_list")
-  @Nullable
-  private String headersList;
-
-  @JsonProperty("compression")
-  @Nullable
-  private String compression;
-
-  @JsonProperty("timeout")
-  @Nullable
-  private Integer timeout;
+  @Nullable private String endpoint;
+  @Nullable private GrpcTlsModel tls;
+  @Nullable private List<NameStringValuePairModel> headers;
+  @Nullable private String headersList;
+  @Nullable private String compression;
+  @Nullable private Integer timeout;
 
   /**
    * Configure endpoint.
@@ -52,6 +35,7 @@ public class OtlpGrpcExporterModel {
     return endpoint;
   }
 
+  @JsonProperty("endpoint")
   public OtlpGrpcExporterModel withEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
@@ -68,6 +52,7 @@ public class OtlpGrpcExporterModel {
     return tls;
   }
 
+  @JsonProperty("tls")
   public OtlpGrpcExporterModel withTls(GrpcTlsModel tls) {
     this.tls = tls;
     return this;
@@ -86,6 +71,7 @@ public class OtlpGrpcExporterModel {
     return headers;
   }
 
+  @JsonProperty("headers")
   public OtlpGrpcExporterModel withHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
@@ -107,6 +93,7 @@ public class OtlpGrpcExporterModel {
     return headersList;
   }
 
+  @JsonProperty("headers_list")
   public OtlpGrpcExporterModel withHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
@@ -125,6 +112,7 @@ public class OtlpGrpcExporterModel {
     return compression;
   }
 
+  @JsonProperty("compression")
   public OtlpGrpcExporterModel withCompression(String compression) {
     this.compression = compression;
     return this;
@@ -143,6 +131,7 @@ public class OtlpGrpcExporterModel {
     return timeout;
   }
 
+  @JsonProperty("timeout")
   public OtlpGrpcExporterModel withTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;

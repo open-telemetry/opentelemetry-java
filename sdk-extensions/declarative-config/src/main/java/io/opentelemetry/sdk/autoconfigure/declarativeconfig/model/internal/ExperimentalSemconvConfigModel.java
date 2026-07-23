@@ -13,20 +13,12 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"version", "experimental", "dual_emit"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalSemconvConfigModel {
 
-  @JsonProperty("version")
-  @Nullable
-  private Integer version;
-
-  @JsonProperty("experimental")
-  @Nullable
-  private Boolean experimental;
-
-  @JsonProperty("dual_emit")
-  @Nullable
-  private Boolean dualEmit;
+  @Nullable private Integer version;
+  @Nullable private Boolean experimental;
+  @Nullable private Boolean dualEmit;
 
   /**
    * The target semantic convention version for this domain (e.g., 1).
@@ -40,6 +32,7 @@ public class ExperimentalSemconvConfigModel {
     return version;
   }
 
+  @JsonProperty("version")
   public ExperimentalSemconvConfigModel withVersion(Integer version) {
     this.version = version;
     return this;
@@ -57,6 +50,7 @@ public class ExperimentalSemconvConfigModel {
     return experimental;
   }
 
+  @JsonProperty("experimental")
   public ExperimentalSemconvConfigModel withExperimental(Boolean experimental) {
     this.experimental = experimental;
     return this;
@@ -81,6 +75,7 @@ public class ExperimentalSemconvConfigModel {
     return dualEmit;
   }
 
+  @JsonProperty("dual_emit")
   public ExperimentalSemconvConfigModel withDualEmit(Boolean dualEmit) {
     this.dualEmit = dualEmit;
     return this;

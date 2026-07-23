@@ -14,16 +14,11 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"default_config", "tracers"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalTracerConfiguratorModel {
 
-  @JsonProperty("default_config")
-  @Nullable
-  private ExperimentalTracerConfigModel defaultConfig;
-
-  @JsonProperty("tracers")
-  @Nullable
-  private List<ExperimentalTracerMatcherAndConfigModel> tracers;
+  @Nullable private ExperimentalTracerConfigModel defaultConfig;
+  @Nullable private List<ExperimentalTracerMatcherAndConfigModel> tracers;
 
   /**
    * Configure the default tracer config used there is no matching entry in
@@ -37,6 +32,7 @@ public class ExperimentalTracerConfiguratorModel {
     return defaultConfig;
   }
 
+  @JsonProperty("default_config")
   public ExperimentalTracerConfiguratorModel withDefaultConfig(
       ExperimentalTracerConfigModel defaultConfig) {
     this.defaultConfig = defaultConfig;
@@ -54,6 +50,7 @@ public class ExperimentalTracerConfiguratorModel {
     return tracers;
   }
 
+  @JsonProperty("tracers")
   public ExperimentalTracerConfiguratorModel withTracers(
       List<ExperimentalTracerMatcherAndConfigModel> tracers) {
     this.tracers = tracers;

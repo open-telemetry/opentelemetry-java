@@ -6,11 +6,10 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExemplarFilterModel;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
 
-final class ExemplarFilterFactory
-    implements Factory<MeterProviderModel.ExemplarFilter, ExemplarFilter> {
+final class ExemplarFilterFactory implements Factory<ExemplarFilterModel, ExemplarFilter> {
 
   private static final ExemplarFilterFactory INSTANCE = new ExemplarFilterFactory();
 
@@ -21,8 +20,7 @@ final class ExemplarFilterFactory
   }
 
   @Override
-  public ExemplarFilter create(
-      MeterProviderModel.ExemplarFilter model, DeclarativeConfigContext context) {
+  public ExemplarFilter create(ExemplarFilterModel model, DeclarativeConfigContext context) {
     switch (model) {
       case ALWAYS_ON:
         return ExemplarFilter.alwaysOn();

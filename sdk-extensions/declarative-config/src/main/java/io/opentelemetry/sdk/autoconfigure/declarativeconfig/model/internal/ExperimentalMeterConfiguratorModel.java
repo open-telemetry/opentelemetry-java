@@ -14,16 +14,11 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"default_config", "meters"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalMeterConfiguratorModel {
 
-  @JsonProperty("default_config")
-  @Nullable
-  private ExperimentalMeterConfigModel defaultConfig;
-
-  @JsonProperty("meters")
-  @Nullable
-  private List<ExperimentalMeterMatcherAndConfigModel> meters;
+  @Nullable private ExperimentalMeterConfigModel defaultConfig;
+  @Nullable private List<ExperimentalMeterMatcherAndConfigModel> meters;
 
   /**
    * Configure the default meter config used there is no matching entry in
@@ -37,6 +32,7 @@ public class ExperimentalMeterConfiguratorModel {
     return defaultConfig;
   }
 
+  @JsonProperty("default_config")
   public ExperimentalMeterConfiguratorModel withDefaultConfig(
       ExperimentalMeterConfigModel defaultConfig) {
     this.defaultConfig = defaultConfig;
@@ -54,6 +50,7 @@ public class ExperimentalMeterConfiguratorModel {
     return meters;
   }
 
+  @JsonProperty("meters")
   public ExperimentalMeterConfiguratorModel withMeters(
       List<ExperimentalMeterMatcherAndConfigModel> meters) {
     this.meters = meters;
