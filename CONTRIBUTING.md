@@ -51,7 +51,7 @@ coverage check alone does not block a PR.
 
 ### Build failures
 
-Transient CI failures happen on a build matrix this size. A red check does not, by itself,
+Transient CI failures happen on a build matrix of a size this project uses. A red check does not, by itself,
 affect how your PR is reviewed.
 
 * Failing across all Java versions and operating systems: likely a real issue in the change,
