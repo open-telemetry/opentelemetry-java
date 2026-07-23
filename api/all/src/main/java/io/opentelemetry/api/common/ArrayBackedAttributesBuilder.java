@@ -27,26 +27,18 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   /** Max number of unique entries. {@link Integer#MAX_VALUE} means unlimited. */
   private final int countLimit;
 
-  /**
-   * Max length of string / byte-array values. {@link Integer#MAX_VALUE} means unlimited. Only
-   * consulted on the limited put path.
-   */
+  /** Max length of string / byte-array values. {@link Integer#MAX_VALUE} means unlimited. */
   private final int valueLengthLimit;
 
-  /**
-   * Max nesting depth for array / map values. {@link Integer#MAX_VALUE} means unlimited. Only
-   * consulted on the limited put path.
-   */
+  /** Max nesting depth for array / map values. {@link Integer#MAX_VALUE} means unlimited. */
   private final int valueDepthLimit;
 
   /** Count of non-null entries currently stored (excludes null holes from remove). */
   private int size;
 
   /**
-   * Cached {@link #build()} result, invalidated by any mutation. Speeds up repeated read-through
-   * calls (e.g. {@code AttributesBuilder}-as-live-view for SDK span attributes). Only maintained in
-   * the limited configuration since the unlimited path defers dedup to {@link #build()} and has no
-   * need for a live view.
+   * Cached {@link #build()} result; null when unset or after a mutation. Only maintained when
+   * limits are configured.
    */
   @Nullable private Attributes cachedBuild;
 
@@ -124,10 +116,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     return this;
   }
 
-  /**
-   * Store the given key/value pair. In unlimited mode: append. In limited mode: dedup by name
-   * (last-value-wins), truncate over-length values, and drop entries beyond capacity.
-   */
+  /** Append (unlimited) or dedup-by-name / truncate / capacity-check (limited). */
   private void addPair(AttributeKey<?> key, Object value) {
     if (!isLimited()) {
       data.add(key);

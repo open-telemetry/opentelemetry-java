@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.valueKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -104,6 +105,62 @@ class BoundedAttributesBuilderTest {
   }
 
   @Test
+  void valueLengthLimit_zeroTruncatesStringsToEmpty() {
+    Attributes attrs =
+        Attributes.builder(AttributeLimits.builder().setValueLengthLimit(0).build())
+            .put(stringKey("k"), "hello")
+            .build();
+    assertThat(attrs.get(stringKey("k"))).isEqualTo("");
+  }
+
+  @Test
+  void valueLengthLimit_truncatesBytes() {
+    Value<?> bytes = Value.of(new byte[] {1, 2, 3, 4, 5});
+    Attributes attrs =
+        Attributes.builder(AttributeLimits.builder().setValueLengthLimit(3).build())
+            .put(valueKey("k"), bytes)
+            .build();
+    Value<?> result = attrs.get(valueKey("k"));
+    assertThat(result).isNotNull();
+    assertThat(result.getType()).isEqualTo(ValueType.BYTES);
+    ByteBuffer resultBuf = (ByteBuffer) result.getValue();
+    byte[] resultBytes = new byte[resultBuf.remaining()];
+    resultBuf.slice().get(resultBytes);
+    assertThat(resultBytes).containsExactly(1, 2, 3);
+  }
+
+  @Test
+  void valueLengthLimit_truncatesStringsInsideValueArray() {
+    Value<?> array = Value.of(Value.of("short"), Value.of("way-too-long"));
+    Attributes attrs =
+        Attributes.builder(AttributeLimits.builder().setValueLengthLimit(5).build())
+            .put(valueKey("k"), array)
+            .build();
+    Value<?> result = attrs.get(valueKey("k"));
+    assertThat(result).isNotNull();
+    @SuppressWarnings("unchecked")
+    List<Value<?>> elements = (List<Value<?>>) result.getValue();
+    assertThat(elements.get(0).getValue()).isEqualTo("short");
+    assertThat(elements.get(1).getValue()).isEqualTo("way-t");
+  }
+
+  @Test
+  void valueLengthLimit_truncatesStringsInsideValueMap() {
+    Value<?> map =
+        Value.of(KeyValue.of("a", Value.of("ok")), KeyValue.of("b", Value.of("way-too-long")));
+    Attributes attrs =
+        Attributes.builder(AttributeLimits.builder().setValueLengthLimit(3).build())
+            .put(valueKey("k"), map)
+            .build();
+    Value<?> result = attrs.get(valueKey("k"));
+    assertThat(result).isNotNull();
+    @SuppressWarnings("unchecked")
+    List<KeyValue> kvList = (List<KeyValue>) result.getValue();
+    assertThat(kvList.get(0).getValue().getValue()).isEqualTo("ok");
+    assertThat(kvList.get(1).getValue().getValue()).isEqualTo("way");
+  }
+
+  @Test
   void valueLengthLimit_numericArrayUntouched() {
     // Length limit only applies to strings and byte arrays; numeric arrays must not allocate.
     List<Long> input = Arrays.asList(1L, 2L, 3L);
@@ -144,7 +201,6 @@ class BoundedAttributesBuilderTest {
     List<Value<?>> elements = (List<Value<?>>) result.getValue();
     assertThat(elements).hasSize(2);
     assertThat(elements.get(0).getValue()).isEqualTo("x");
-    // Inner (at depth 2) replaced with empty array.
     assertThat(elements.get(1).getType()).isEqualTo(ValueType.ARRAY);
     @SuppressWarnings("unchecked")
     List<Value<?>> innerElements = (List<Value<?>>) elements.get(1).getValue();
@@ -171,6 +227,61 @@ class BoundedAttributesBuilderTest {
     @SuppressWarnings("unchecked")
     List<KeyValue> innerList = (List<KeyValue>) innerResult.getValue();
     assertThat(innerList).isEmpty();
+  }
+
+  @Test
+  void valueDepthLimit_atExactBoundary_kept() {
+    // limit=2 → depth 2 kept (depth > limit replaces), depth 3 would be replaced.
+    Value<?> inner = Value.of(Value.of("x"));
+    Value<?> outer = Value.of(inner);
+    Attributes attrs =
+        Attributes.builder(AttributeLimits.builder().setValueDepthLimit(2).build())
+            .put(valueKey("k"), outer)
+            .build();
+    assertThat(attrs.get(valueKey("k"))).isSameAs(outer);
+  }
+
+  @Test
+  void valueDepthLimit_threeLevelNesting_middleKeptInnermostReplaced() {
+    Value<?> level3 = Value.of(Value.of("deep"));
+    Value<?> level2 = Value.of(level3);
+    Value<?> level1 = Value.of(level2);
+    Attributes attrs =
+        Attributes.builder(AttributeLimits.builder().setValueDepthLimit(2).build())
+            .put(valueKey("k"), level1)
+            .build();
+    Value<?> result = attrs.get(valueKey("k"));
+    assertThat(result).isNotNull();
+    @SuppressWarnings("unchecked")
+    List<Value<?>> outer = (List<Value<?>>) result.getValue();
+    assertThat(outer).hasSize(1);
+    assertThat(outer.get(0).getType()).isEqualTo(ValueType.ARRAY);
+    @SuppressWarnings("unchecked")
+    List<Value<?>> middle = (List<Value<?>>) outer.get(0).getValue();
+    assertThat(middle).hasSize(1);
+    assertThat(middle.get(0).getType()).isEqualTo(ValueType.ARRAY);
+    @SuppressWarnings("unchecked")
+    List<Value<?>> innermost = (List<Value<?>>) middle.get(0).getValue();
+    assertThat(innermost).isEmpty();
+  }
+
+  @Test
+  void valueDepthLimit_emptyArrayAtExcessDepthStillReplaced() {
+    Value<?> emptyInner = Value.of(Collections.<Value<?>>emptyList());
+    Value<?> outer = Value.of(emptyInner);
+    Attributes attrs =
+        Attributes.builder(AttributeLimits.builder().setValueDepthLimit(1).build())
+            .put(valueKey("k"), outer)
+            .build();
+    Value<?> result = attrs.get(valueKey("k"));
+    assertThat(result).isNotNull();
+    @SuppressWarnings("unchecked")
+    List<Value<?>> elements = (List<Value<?>>) result.getValue();
+    assertThat(elements).hasSize(1);
+    assertThat(elements.get(0).getType()).isEqualTo(ValueType.ARRAY);
+    @SuppressWarnings("unchecked")
+    List<Value<?>> inner = (List<Value<?>>) elements.get(0).getValue();
+    assertThat(inner).isEmpty();
   }
 
   @Test

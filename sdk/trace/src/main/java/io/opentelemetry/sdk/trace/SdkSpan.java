@@ -648,8 +648,6 @@ final class SdkSpan implements ReadWriteSpan {
     if (attributes == null) {
       return Attributes.empty();
     }
-    // The builder caches its build() result until the next mutation, so this is cheap on repeated
-    // calls (including when the span has ended and no further mutations can happen).
     return attributes.build();
   }
 

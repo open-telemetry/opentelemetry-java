@@ -222,13 +222,8 @@ public interface Attributes {
   }
 
   /**
-   * Returns a new {@link AttributesBuilder} instance that enforces the given {@link
-   * AttributeLimits}. The returned builder applies last-value-wins semantics on {@link
-   * AttributesBuilder#put put} (by {@link AttributeKey#getKey() key name}, regardless of {@link
-   * AttributeType}), truncates over-length string values, and drops entries added beyond the
-   * configured capacity.
-   *
-   * <p>Passing {@link AttributeLimits#noLimits()} is functionally equivalent to {@link #builder()}.
+   * Returns a new {@link AttributesBuilder} that enforces the given {@link AttributeLimits}.
+   * Passing {@link AttributeLimits#noLimits()} is equivalent to {@link #builder()}.
    *
    * @since 1.64.0
    */

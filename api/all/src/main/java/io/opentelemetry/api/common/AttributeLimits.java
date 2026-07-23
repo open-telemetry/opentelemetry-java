@@ -25,9 +25,6 @@ import javax.annotation.concurrent.Immutable;
  * href="https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/common#attribute-limits">common
  * attribute-limits</a> specification.
  *
- * <p>Use {@link #noLimits()} to represent an unbounded configuration and {@link #builder()} to
- * construct a bounded one.
- *
  * @since 1.64.0
  */
 public abstract class AttributeLimits {
@@ -49,7 +46,6 @@ public abstract class AttributeLimits {
         countLimit, valueLengthLimit, valueDepthLimit);
   }
 
-  /** Package-private constructor to prevent subclassing. */
   AttributeLimits() {}
 
   /**

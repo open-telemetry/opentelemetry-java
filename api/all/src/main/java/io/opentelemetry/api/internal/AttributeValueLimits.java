@@ -15,15 +15,9 @@ import java.util.List;
 
 /**
  * Applies the {@code AttributeValueLengthLimit} and {@code AttributeValueDepthLimit} rules from the
- * OpenTelemetry common attribute-limits specification to a single attribute value.
- *
- * <p>Length limit: strings and byte arrays longer than the limit are truncated. Applies recursively
- * to string and byte-array values within array and map ({@code Value<KEY_VALUE_LIST>}) attributes.
- *
- * <p>Depth limit: the top-level attribute value is at depth 1; depth increments when descending
- * into array elements or map values. Arrays and maps at a depth greater than the limit are replaced
- * with an empty container of the same shape. Non-array/map values pass through unchanged regardless
- * of depth.
+ * OpenTelemetry common attribute-limits <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/common#attribute-limits">specification</a>
+ * to a single attribute value.
  *
  * <p>Both passes are performed in a single traversal. Values that don't require modification pass
  * through by reference; no allocation is performed on the pure fast path.
@@ -50,9 +44,7 @@ public final class AttributeValueLimits {
   }
 
   /**
-   * Length-limit only. Retained for callers that only need value-length truncation (e.g. {@link
-   * io.opentelemetry.api.common.Attributes} count-limit application in the SDK). Equivalent to
-   * {@link #apply(Object, int, int) apply(value, lengthLimit, Integer.MAX_VALUE)}.
+   * Equivalent to {@link #apply(Object, int, int) apply(value, lengthLimit, Integer.MAX_VALUE)}.
    */
   public static Object applyLengthLimit(Object value, int lengthLimit) {
     return apply(value, lengthLimit, Integer.MAX_VALUE);
@@ -60,15 +52,13 @@ public final class AttributeValueLimits {
 
   /**
    * Returns true if {@code value} would be unchanged by {@link #applyLengthLimit(Object, int)} with
-   * the same limit. Used as a fast-path check to avoid materializing an unchanged {@link
-   * io.opentelemetry.api.common.Attributes} copy.
+   * the same limit.
    */
   @SuppressWarnings("ReferenceEquality")
   public static boolean isValidLength(Object value, int lengthLimit) {
     if (lengthLimit == Integer.MAX_VALUE) {
       return true;
     }
-    // apply returns the same instance when nothing needs truncation.
     return apply(value, lengthLimit, Integer.MAX_VALUE) == value;
   }
 
@@ -77,9 +67,7 @@ public final class AttributeValueLimits {
       return applyStringLength((String) value, lengthLimit);
     }
     if (value instanceof List) {
-      // Typed array attribute (List<String>, List<Long>, ...). This is an array in the AnyValue
-      // sense, so depth applies at its own depth; its elements are always scalar so we don't
-      // recurse for depth.
+      // Typed array; elements are always scalar so we don't recurse for depth.
       if (depth > depthLimit) {
         return emptyTypedList((List<?>) value);
       }
@@ -88,7 +76,6 @@ public final class AttributeValueLimits {
     if (value instanceof Value) {
       return applyValueAtDepth((Value<?>) value, depth, lengthLimit, depthLimit);
     }
-    // Long, Double, Boolean and other scalars pass through unchanged.
     return value;
   }
 
@@ -103,9 +90,7 @@ public final class AttributeValueLimits {
     if (lengthLimit == Integer.MAX_VALUE || list.isEmpty()) {
       return list;
     }
-    // Find the first entry that needs truncation. If none, return the input list unchanged
-    // (covers List<Long>, List<Double>, List<Boolean> entirely, and List<String> without
-    // over-long entries).
+    // Two-pass so numeric-only lists (and short-string lists) return unchanged with no allocation.
     int firstChangedIndex = -1;
     int size = list.size();
     for (int i = 0; i < size; i++) {
@@ -166,7 +151,6 @@ public final class AttributeValueLimits {
       case KEY_VALUE_LIST:
         return applyKeyValueListAtDepth(value, depth, lengthLimit, depthLimit);
       default:
-        // BOOLEAN, LONG, DOUBLE, EMPTY - not affected by either limit.
         return value;
     }
   }
