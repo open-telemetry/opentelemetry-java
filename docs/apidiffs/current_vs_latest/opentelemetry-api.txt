@@ -1,2 +1,20 @@
 Comparing source compatibility of opentelemetry-api-1.65.0-SNAPSHOT.jar against opentelemetry-api-1.64.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.AttributeLimits  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.AttributeLimitsBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getCountLimit()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getValueDepthLimit()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getValueLengthLimit()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.AttributeLimits noLimits()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributeLimitsBuilder toBuilder()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.api.common.AttributeLimitsBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributeLimits build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributeLimitsBuilder setCountLimit(int)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributeLimitsBuilder setValueDepthLimit(int)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributeLimitsBuilder setValueLengthLimit(int)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.Attributes  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.AttributesBuilder builder(io.opentelemetry.api.common.AttributeLimits)

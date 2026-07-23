@@ -14,6 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.internal.AttributeValueLimits;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,22 +24,78 @@ import javax.annotation.Nullable;
 class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
 
+  /** Max number of unique entries. {@link Integer#MAX_VALUE} means unlimited. */
+  private final int countLimit;
+
+  /** Max length of string / byte-array values. {@link Integer#MAX_VALUE} means unlimited. */
+  private final int valueLengthLimit;
+
+  /** Max nesting depth for array / map values. {@link Integer#MAX_VALUE} means unlimited. */
+  private final int valueDepthLimit;
+
+  /** Count of non-null entries currently stored (excludes null holes from remove). */
+  private int size;
+
+  /**
+   * Cached {@link #build()} result; null when unset or after a mutation. Only maintained when
+   * limits are configured.
+   */
+  @Nullable private Attributes cachedBuild;
+
   ArrayBackedAttributesBuilder() {
-    data = new ArrayList<>();
+    this(new ArrayList<>(), Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 0);
   }
 
   ArrayBackedAttributesBuilder(List<Object> data) {
+    this(data, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, data.size() / 2);
+  }
+
+  ArrayBackedAttributesBuilder(AttributeLimits limits) {
+    this(
+        new ArrayList<>(),
+        limits.getCountLimit(),
+        limits.getValueLengthLimit(),
+        limits.getValueDepthLimit(),
+        0);
+  }
+
+  private ArrayBackedAttributesBuilder(
+      List<Object> data,
+      int countLimit,
+      int valueLengthLimit,
+      int valueDepthLimit,
+      int initialSize) {
     this.data = data;
+    this.countLimit = countLimit;
+    this.valueLengthLimit = valueLengthLimit;
+    this.valueDepthLimit = valueDepthLimit;
+    this.size = initialSize;
+  }
+
+  private boolean isLimited() {
+    return countLimit != Integer.MAX_VALUE
+        || valueLengthLimit != Integer.MAX_VALUE
+        || valueDepthLimit != Integer.MAX_VALUE;
   }
 
   @Override
   public Attributes build() {
+    Attributes cached = cachedBuild;
+    if (cached != null) {
+      return cached;
+    }
+    Attributes result;
     // If only one key-value pair AND the entry hasn't been set to null (by #remove(AttributeKey<T>)
     // or #removeIf(Predicate<AttributeKey<?>>)), then we can bypass sorting and filtering
     if (data.size() == 2 && data.get(0) != null) {
-      return new ArrayBackedAttributes(data.toArray());
+      result = new ArrayBackedAttributes(data.toArray());
+    } else {
+      result = ArrayBackedAttributes.sortAndFilterToAttributes(data.toArray());
     }
-    return ArrayBackedAttributes.sortAndFilterToAttributes(data.toArray());
+    if (isLimited()) {
+      cachedBuild = result;
+    }
+    return result;
   }
 
   @Override
@@ -55,9 +112,47 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
       putValue(key, (Value<?>) value);
       return this;
     }
-    data.add(key);
-    data.add(value);
+    addPair(key, value);
     return this;
+  }
+
+  /** Append (unlimited) or dedup-by-name / truncate / capacity-check (limited). */
+  private void addPair(AttributeKey<?> key, Object value) {
+    if (!isLimited()) {
+      data.add(key);
+      data.add(value);
+      size++;
+      return;
+    }
+    cachedBuild = null;
+    Object limited = AttributeValueLimits.apply(value, valueLengthLimit, valueDepthLimit);
+    String name = key.getKey();
+    int emptySlot = -1;
+    for (int i = 0; i < data.size(); i += 2) {
+      Object existing = data.get(i);
+      if (existing == null) {
+        if (emptySlot < 0) {
+          emptySlot = i;
+        }
+        continue;
+      }
+      if (((AttributeKey<?>) existing).getKey().equals(name)) {
+        data.set(i, key);
+        data.set(i + 1, limited);
+        return;
+      }
+    }
+    if (size >= countLimit) {
+      return;
+    }
+    if (emptySlot >= 0) {
+      data.set(emptySlot, key);
+      data.set(emptySlot + 1, limited);
+    } else {
+      data.add(key);
+      data.add(limited);
+    }
+    size++;
   }
 
   @SuppressWarnings("unchecked")
@@ -111,8 +206,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
             return;
           case VALUE:
             // Not coercible (empty, non-homogeneous, or unsupported element type)
-            data.add(key);
-            data.add(valueObj);
+            addPair(key, valueObj);
             return;
           default:
             throw new IllegalArgumentException("Unexpected array attribute type: " + attributeType);
@@ -121,8 +215,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
       case BYTES:
       case EMPTY:
         // Keep as VALUE type
-        data.add(key);
-        data.add(valueObj);
+        addPair(key, valueObj);
     }
   }
 
@@ -191,6 +284,8 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
         // null items are filtered out in ArrayBackedAttributes
         data.set(i, null);
         data.set(i + 1, null);
+        size--;
+        cachedBuild = null;
       }
     }
     return this;

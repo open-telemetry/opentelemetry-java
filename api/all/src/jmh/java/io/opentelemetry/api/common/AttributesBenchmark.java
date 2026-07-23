@@ -127,11 +127,31 @@ public class AttributesBenchmark {
   @Measurement(iterations = 15, time = 1)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
+  public Attributes builderOneItem() {
+    return Attributes.builder().put(keys.get(0), values.get(0)).build();
+  }
+
+  @Benchmark
+  @BenchmarkMode({Mode.AverageTime})
+  @Fork(1)
+  @Measurement(iterations = 15, time = 1)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  @Warmup(iterations = 5, time = 1)
   public Attributes builderTenItems() {
     AttributesBuilder attributesBuilder = Attributes.builder();
     for (int i = 0; i < 10; i++) {
       attributesBuilder.put(keys.get(i), values.get(i));
     }
     return attributesBuilder.build();
+  }
+
+  @Benchmark
+  @BenchmarkMode({Mode.AverageTime})
+  @Fork(1)
+  @Measurement(iterations = 15, time = 1)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  @Warmup(iterations = 5, time = 1)
+  public Attributes putAllTenItems() {
+    return Attributes.builder().putAll(attributes.get(9)).build();
   }
 }

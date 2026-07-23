@@ -1119,7 +1119,7 @@ class SdkSpanBuilderTest {
                 + "kind=INTERNAL, "
                 + "startEpochNanos=[0-9]+, "
                 + "endEpochNanos=[0-9]+, "
-                + "attributes=AttributesMap\\{data=\\{[^}]*}, capacity=128, totalAddedValues=2}, "
+                + "attributes=\\{[^}]*}, "
                 + "totalAttributeCount=2, "
                 + "events=\\[], "
                 + "totalRecordedEvents=0, "

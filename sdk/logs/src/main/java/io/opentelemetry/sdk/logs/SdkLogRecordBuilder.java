@@ -6,13 +6,15 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeLimits;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.internal.AttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -32,7 +34,8 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   @Nullable private String severityText;
   @Nullable private Value<?> body;
   @Nullable private String eventName;
-  @Nullable private AttributesMap attributes;
+  @Nullable private AttributesBuilder attributes;
+  private int totalAttributeCount = 0;
 
   SdkLogRecordBuilder(
       LoggerSharedState loggerSharedState,
@@ -128,9 +131,13 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     }
     if (this.attributes == null) {
       this.attributes =
-          AttributesMap.create(
-              logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+          Attributes.builder(
+              AttributeLimits.builder()
+                  .setCountLimit(logLimits.getMaxNumberOfAttributes())
+                  .setValueLengthLimit(logLimits.getMaxAttributeValueLength())
+                  .build());
     }
+    totalAttributeCount++;
     this.attributes.put(key, value);
     return this;
   }
@@ -163,7 +170,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return;
     }
-    if (attributes == null || attributes.get(key) == null) {
+    if (attributes == null || attributes.build().get(key) == null) {
       setAttribute(key, value);
     }
   }
@@ -180,6 +187,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         severityText,
         body,
         attributes,
+        totalAttributeCount,
         eventName);
   }
 }

@@ -11,7 +11,9 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeLimits;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -24,7 +26,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.AttributeUtil;
-import io.opentelemetry.sdk.common.internal.AttributesMap;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -56,7 +57,8 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Nullable private Context parent; // null means: Use current context.
   private SpanKind spanKind = SpanKind.INTERNAL;
-  @Nullable private AttributesMap attributes;
+  @Nullable private AttributesBuilder attributes;
+  private int totalAttributeCount = 0;
   @Nullable private List<LinkData> links;
   private int totalNumberOfLinksAdded = 0;
   private long startEpochNanos = 0;
@@ -164,6 +166,7 @@ class SdkSpanBuilder implements SpanBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
+    totalAttributeCount++;
     attributes().put(key, value);
     return this;
   }
@@ -215,7 +218,7 @@ class SdkSpanBuilder implements SpanBuilder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
-    Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
+    Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes.build();
     SamplingResult samplingResult =
         tracerSharedState
             .getSampler()
@@ -250,13 +253,16 @@ class SdkSpanBuilder implements SpanBuilder {
     }
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
-      samplingAttributes.forEach((key, value) -> attributes().put((AttributeKey) key, value));
+      totalAttributeCount += samplingAttributes.size();
+      attributes().putAll(samplingAttributes);
     }
 
     // Avoid any possibility to modify the attributes by adding attributes to the Builder after the
-    // startSpan is called. If that happens all the attributes will be added in a new map.
-    AttributesMap recordedAttributes = attributes;
+    // startSpan is called. If that happens all the attributes will be added in a new builder.
+    AttributesBuilder recordedAttributes = attributes;
+    int recordedTotalAttributeCount = totalAttributeCount;
     attributes = null;
+    totalAttributeCount = 0;
 
     return SdkSpan.startSpan(
         spanContext,
@@ -271,18 +277,22 @@ class SdkSpanBuilder implements SpanBuilder {
         tracerSharedState.getClock(),
         tracerSharedState.getResource(),
         recordedAttributes,
+        recordedTotalAttributeCount,
         currentLinks,
         totalNumberOfLinksAdded,
         startEpochNanos,
         recordEndSpanMetrics);
   }
 
-  private AttributesMap attributes() {
-    AttributesMap attributes = this.attributes;
+  private AttributesBuilder attributes() {
+    AttributesBuilder attributes = this.attributes;
     if (attributes == null) {
       this.attributes =
-          AttributesMap.create(
-              spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
+          Attributes.builder(
+              AttributeLimits.builder()
+                  .setCountLimit(spanLimits.getMaxNumberOfAttributes())
+                  .setValueLengthLimit(spanLimits.getMaxAttributeValueLength())
+                  .build());
       attributes = this.attributes;
     }
     return attributes;
