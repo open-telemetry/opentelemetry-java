@@ -14,8 +14,10 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
+import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
+import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -42,18 +44,21 @@ public final class GrpcExporter {
   private final String type;
   private final GrpcSender grpcSender;
   private final ExporterInstrumentation exporterMetrics;
+  private final long maxRequestMessageSize;
 
   public GrpcExporter(
       GrpcSender grpcSender,
       InternalTelemetryVersion internalTelemetryVersion,
       StandardComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
-      URI endpoint) {
+      URI endpoint,
+      long maxRequestMessageSize) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
     this.grpcSender = grpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
+    this.maxRequestMessageSize = maxRequestMessageSize;
   }
 
   public CompletableResultCode export(Marshaler exportRequest, int numItems) {
@@ -64,14 +69,38 @@ public final class GrpcExporter {
     ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
+    int requestMessageSize = exportRequest.getBinarySerializedSize();
+    if (requestMessageSize > maxRequestMessageSize) {
+      return failRequestTooLarge(metricRecording, requestMessageSize);
+    }
+
+    MessageWriter messageWriter = exportRequest.toBinaryMessageWriter();
+
     CompletableResultCode result = new CompletableResultCode();
 
     grpcSender.send(
-        exportRequest.toBinaryMessageWriter(),
+        messageWriter,
         grpcResponse -> onResponse(result, metricRecording, grpcResponse),
         throwable -> onError(result, metricRecording, throwable));
 
     return result;
+  }
+
+  private CompletableResultCode failRequestTooLarge(
+      ExporterInstrumentation.Recording metricRecording, long requestMessageSize) {
+    String errorMessage =
+        "Failed to export "
+            + type
+            + "s. Request message size "
+            + requestMessageSize
+            + " exceeded limit of "
+            + maxRequestMessageSize
+            + " bytes";
+    IOException exception = new IOException(errorMessage);
+    metricRecording.finishFailed(exception);
+    logger.log(Level.WARNING, errorMessage);
+    return CompletableResultCode.ofExceptionalFailure(
+        FailedExportException.grpcFailedExceptionally(exception));
   }
 
   private void onResponse(

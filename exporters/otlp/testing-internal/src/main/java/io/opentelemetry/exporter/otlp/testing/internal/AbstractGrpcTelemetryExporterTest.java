@@ -42,6 +42,7 @@ import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.GrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.GrpcExporterBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -922,7 +923,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "s. Server responded with UNIMPLEMENTED. "
                   + "This usually means that your collector is not configured with an otlp "
                   + "receiver in the \"pipelines\" section of the configuration. "
-                  + "If export is not desired and you are using OpenTelemetry autoconfiguration or the javaagent, "
+                  + "If export is not desired and you are using OpenTelemetry autoconfiguration "
+                  + "or the javaagent, "
                   + "disable export by setting "
                   + envVar
                   + "=none. "
@@ -1056,6 +1058,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setMaxRequestSize(1)))
+        .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4317"))
         .doesNotThrowAnyException();
@@ -1166,7 +1170,29 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of:"
+                + " [base64,gzip]");
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxRequestMessageSizeBytes must be positive");
+    assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(-1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxRequestMessageSizeBytes must be positive");
+  }
+
+  @Test
+  void requestMessageSizeLimit() {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setMaxRequestSize(1).build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+      assertThat(result.getFailureThrowable())
+          .hasMessageContaining("Failed to export")
+          .hasMessageContaining("Request message size")
+          .hasMessageContaining("exceeded limit of 1 bytes");
+    }
   }
 
   @Test
@@ -1242,6 +1268,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "compressorEncoding=null, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
+                  + ".*maxRequestMessageSize="
+                  + GrpcExporterBuilder.DEFAULT_MAX_REQUEST_MESSAGE_SIZE
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}");
     }
@@ -1278,7 +1306,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "compressorEncoding=gzip, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
-                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, "
+                  + "maxBackoff=PT3S, backoffMultiplier=1\\.3, "
+                  + "retryExceptionPredicate=null\\}"
+                  + ".*maxRequestMessageSize="
+                  + GrpcExporterBuilder.DEFAULT_MAX_REQUEST_MESSAGE_SIZE
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}");
     }

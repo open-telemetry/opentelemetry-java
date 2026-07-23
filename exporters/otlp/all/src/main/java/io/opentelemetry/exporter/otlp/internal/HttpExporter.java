@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.common.internal.StandardComponentId;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +46,7 @@ public final class HttpExporter {
   private final HttpSender httpSender;
   private final ExporterInstrumentation exporterMetrics;
   private final boolean exportAsJson;
+  private final long maxRequestBodySize;
 
   public HttpExporter(
       StandardComponentId componentId,
@@ -52,13 +54,15 @@ public final class HttpExporter {
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetryVersion internalTelemetryVersion,
       URI endpoint,
-      boolean exportAsJson) {
+      boolean exportAsJson,
+      long maxRequestBodySize) {
     this.type = componentId.getStandardType().signal().logFriendlyName();
     this.httpSender = httpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
     this.exportAsJson = exportAsJson;
+    this.maxRequestBodySize = maxRequestBodySize;
   }
 
   public CompletableResultCode export(Marshaler exportRequest, int numItems) {
@@ -69,9 +73,20 @@ public final class HttpExporter {
     ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
-    CompletableResultCode result = new CompletableResultCode();
     MessageWriter messageWriter =
         exportAsJson ? exportRequest.toJsonMessageWriter() : exportRequest.toBinaryMessageWriter();
+
+    long requestBodySize;
+    try {
+      requestBodySize = getRequestBodySize(messageWriter);
+    } catch (IOException e) {
+      return failRequestBodySizeComputation(metricRecording, e);
+    }
+    if (requestBodySize > maxRequestBodySize) {
+      return failRequestTooLarge(metricRecording, requestBodySize);
+    }
+
+    CompletableResultCode result = new CompletableResultCode();
 
     httpSender.send(
         messageWriter,
@@ -79,6 +94,63 @@ public final class HttpExporter {
         throwable -> onError(result, metricRecording, throwable));
 
     return result;
+  }
+
+  private CompletableResultCode failRequestTooLarge(
+      ExporterInstrumentation.Recording metricRecording, long requestBodySize) {
+    String errorMessage =
+        "Failed to export "
+            + type
+            + "s. Request body size "
+            + requestBodySize
+            + " exceeded limit of "
+            + maxRequestBodySize
+            + " bytes";
+    IOException exception = new IOException(errorMessage);
+    metricRecording.finishFailed(exception);
+    logger.log(Level.WARNING, errorMessage);
+    return CompletableResultCode.ofExceptionalFailure(
+        FailedExportException.httpFailedExceptionally(exception));
+  }
+
+  private CompletableResultCode failRequestBodySizeComputation(
+      ExporterInstrumentation.Recording metricRecording, IOException exception) {
+    metricRecording.finishFailed(exception);
+    logger.log(
+        Level.SEVERE,
+        "Failed to export " + type + "s. The request body size could not be computed.",
+        exception);
+    return CompletableResultCode.ofExceptionalFailure(
+        FailedExportException.httpFailedExceptionally(exception));
+  }
+
+  private static long getRequestBodySize(MessageWriter messageWriter) throws IOException {
+    int contentLength = messageWriter.getContentLength();
+    if (contentLength >= 0) {
+      return contentLength;
+    }
+
+    CountingOutputStream countingOutputStream = new CountingOutputStream();
+    messageWriter.writeMessage(countingOutputStream);
+    return countingOutputStream.getCount();
+  }
+
+  private static final class CountingOutputStream extends OutputStream {
+    private long count;
+
+    @Override
+    public void write(int b) {
+      count++;
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) {
+      count += len;
+    }
+
+    private long getCount() {
+      return count;
+    }
   }
 
   private void onResponse(

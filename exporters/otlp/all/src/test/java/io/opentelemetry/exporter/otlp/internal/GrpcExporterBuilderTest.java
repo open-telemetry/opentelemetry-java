@@ -94,4 +94,11 @@ class GrpcExporterBuilderTest {
     builder.setCompression("none");
     assertThat(builder).extracting("compressor").isNull();
   }
+
+  @Test
+  void maxRequestMessageSize() {
+    builder.setMaxRequestMessageSize(1234);
+
+    assertThat(builder).extracting("maxRequestMessageSize").isEqualTo(1234L);
+  }
 }
