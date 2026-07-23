@@ -24,8 +24,6 @@ import javax.annotation.concurrent.Immutable;
  * OpenTelemetry <a
  * href="https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/common#attribute-limits">common
  * attribute-limits</a> specification.
- *
- * @since 1.64.0
  */
 public abstract class AttributeLimits {
 

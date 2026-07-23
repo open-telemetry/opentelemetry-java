@@ -118,6 +118,11 @@ public final class AttributeValueLimits {
     return result;
   }
 
+  // TODO(jack-berg): convert to iterative traversal (explicit stack) to guarantee no
+  // StackOverflowError on deeply-nested input, regardless of caller configuration. Today the
+  // recursion is bounded by depthLimit + 1 when depth is finite; a caller that sets a length
+  // limit but leaves depth unlimited (Integer.MAX_VALUE) recurses to the input's actual nesting
+  // depth. Pre-existing behavior from AttributeLengthLimits, not introduced by depth support.
   private static Value<?> applyValueAtDepth(
       Value<?> value, int depth, int lengthLimit, int depthLimit) {
     ValueType type = value.getType();

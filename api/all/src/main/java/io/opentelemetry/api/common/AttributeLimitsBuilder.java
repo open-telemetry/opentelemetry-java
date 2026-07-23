@@ -7,15 +7,17 @@ package io.opentelemetry.api.common;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
-/**
- * Builder for {@link AttributeLimits}.
- *
- * @since 1.64.0
- */
+/** Builder for {@link AttributeLimits}. */
 public final class AttributeLimitsBuilder {
 
   private int countLimit = Integer.MAX_VALUE;
   private int valueLengthLimit = Integer.MAX_VALUE;
+
+  // TODO(jack-berg): before merging, decide whether to default this to 64 (spec-recommended,
+  // matches System.Text.Json, provides stack safety when callers set a length limit but forget
+  // depth). Since depth is net new we can pick a non-infinite default without breaking anyone;
+  // count and length must stay at Integer.MAX_VALUE for back-compat. Would diverge builder
+  // defaults from AttributeLimits.noLimits().
   private int valueDepthLimit = Integer.MAX_VALUE;
 
   AttributeLimitsBuilder() {}

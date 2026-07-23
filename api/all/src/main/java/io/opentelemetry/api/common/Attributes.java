@@ -224,8 +224,6 @@ public interface Attributes {
   /**
    * Returns a new {@link AttributesBuilder} that enforces the given {@link AttributeLimits}.
    * Passing {@link AttributeLimits#noLimits()} is equivalent to {@link #builder()}.
-   *
-   * @since 1.64.0
    */
   static AttributesBuilder builder(AttributeLimits limits) {
     return new ArrayBackedAttributesBuilder(limits);
