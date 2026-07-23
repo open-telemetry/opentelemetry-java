@@ -13,6 +13,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.junit.jupiter.api.condition.JRE;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class StringEncoderTest {
 
@@ -55,6 +56,12 @@ class StringEncoderTest {
   @DisabledOnJre(JRE.JAVA_8)
   void testUtf8SizeLatin1_VarHandle() {
     testUtf8SizeLatin1(varHandleStringEncoder);
+  }
+
+  @Test
+  @SetSystemProperty(key = "java.vm.name", value = "Dalvik")
+  void unsafeStringEncoderNotAvailableOnAndroid() {
+    assertThat(StringEncoderHolder.createUnsafeEncoder()).isNull();
   }
 
   @SuppressWarnings("AvoidEscapedUnicodeCharacters")
