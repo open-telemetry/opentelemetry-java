@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
+import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpResponse;
@@ -27,6 +28,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -54,7 +56,7 @@ import javax.net.ssl.SSLException;
  */
 public final class JdkHttpSender implements HttpSender {
 
-  private static final Set<Integer> retryableStatusCodes = Set.of(429, 502, 503, 504);
+  private static final Set<Integer> retryableStatusCodes = RetryUtil.retryableHttpResponseCodes();
 
   private static final ThreadLocal<NoCopyByteArrayOutputStream> threadLocalBaos =
       ThreadLocal.withInitial(NoCopyByteArrayOutputStream::new);
@@ -74,6 +76,8 @@ public final class JdkHttpSender implements HttpSender {
   @Nullable private final RetryPolicy retryPolicy;
   private final Predicate<IOException> retryExceptionPredicate;
   private final long maxResponseBodySize;
+  private final Sleeper sleeper;
+  private final Supplier<Double> randomJitter;
 
   // Visible for testing
   JdkHttpSender(
@@ -86,6 +90,33 @@ public final class JdkHttpSender implements HttpSender {
       @Nullable RetryPolicy retryPolicy,
       @Nullable ExecutorService executorService,
       long maxResponseBodySize) {
+    this(
+        client,
+        endpoint,
+        contentType,
+        compressor,
+        timeout,
+        headerSupplier,
+        retryPolicy,
+        executorService,
+        maxResponseBodySize,
+        TimeUnit.NANOSECONDS::sleep,
+        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d));
+  }
+
+  // Visible for testing
+  JdkHttpSender(
+      HttpClient client,
+      URI endpoint,
+      String contentType,
+      @Nullable Compressor compressor,
+      Duration timeout,
+      Supplier<Map<String, List<String>>> headerSupplier,
+      @Nullable RetryPolicy retryPolicy,
+      @Nullable ExecutorService executorService,
+      long maxResponseBodySize,
+      Sleeper sleeper,
+      Supplier<Double> randomJitter) {
     this.client = client;
     this.endpoint = endpoint;
     this.contentType = contentType;
@@ -105,6 +136,8 @@ public final class JdkHttpSender implements HttpSender {
       this.managedExecutor = false;
     }
     this.maxResponseBodySize = maxResponseBodySize;
+    this.sleeper = sleeper;
+    this.randomJitter = randomJitter;
   }
 
   JdkHttpSender(
@@ -212,23 +245,27 @@ public final class JdkHttpSender implements HttpSender {
 
     // If no retry policy, short circuit
     if (retryPolicy == null) {
-      return sendRequest(requestBuilder, byteBufferPool);
+      return toHttpResponse(sendRequest(requestBuilder, byteBufferPool));
     }
 
     long attempt = 0;
     long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
     HttpResponse httpResponse = null;
     IOException exception = null;
+    OptionalLong retryDelayNanos = OptionalLong.empty();
     do {
       if (attempt > 0) {
         // Compute and sleep for backoff
         long currentBackoffNanos =
             Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
         long backoffNanos =
-            (long) (ThreadLocalRandom.current().nextDouble(0.8d, 1.2d) * currentBackoffNanos);
+            retryDelayNanos.isPresent()
+                ? retryDelayNanos.getAsLong()
+                : (long) (randomJitter.get() * currentBackoffNanos);
         nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
+        retryDelayNanos = OptionalLong.empty();
         try {
-          TimeUnit.NANOSECONDS.sleep(backoffNanos);
+          sleeper.sleep(backoffNanos);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           break; // Break out and return response or throw
@@ -243,8 +280,10 @@ public final class JdkHttpSender implements HttpSender {
       exception = null;
       requestBuilder.timeout(timeout.minusNanos(System.nanoTime() - startTimeNanos));
       try {
-        httpResponse = sendRequest(requestBuilder, byteBufferPool);
-        boolean retryable = retryableStatusCodes.contains(httpResponse.getStatusCode());
+        java.net.http.HttpResponse<InputStream> rawResponse =
+            sendRequest(requestBuilder, byteBufferPool);
+        httpResponse = toHttpResponse(rawResponse);
+        boolean retryable = retryableStatusCodes.contains(rawResponse.statusCode());
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -258,6 +297,7 @@ public final class JdkHttpSender implements HttpSender {
         if (!retryable) {
           return httpResponse;
         }
+        retryDelayNanos = retryDelayNanos(rawResponse);
       } catch (IOException e) {
         exception = e;
         boolean retryable = retryExceptionPredicate.test(exception);
@@ -287,12 +327,10 @@ public final class JdkHttpSender implements HttpSender {
     return "HttpResponse{code=" + response.getStatusCode() + "}";
   }
 
-  private HttpResponse sendRequest(
+  private java.net.http.HttpResponse<InputStream> sendRequest(
       HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
-      java.net.http.HttpResponse<InputStream> response =
-          client.send(requestBuilder.build(), BodyHandlers.ofInputStream());
-      return toHttpResponse(response);
+      return client.send(requestBuilder.build(), BodyHandlers.ofInputStream());
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new IllegalStateException(e);
@@ -410,6 +448,17 @@ public final class JdkHttpSender implements HttpSender {
         buf = out.poll();
       }
     }
+  }
+
+  private static OptionalLong retryDelayNanos(java.net.http.HttpResponse<?> response) {
+    if (!RetryUtil.isOtlpHttpThrottleStatusCode(response.statusCode())) {
+      return OptionalLong.empty();
+    }
+    return RetryUtil.retryAfterNanos(response.headers().firstValue("Retry-After").orElse(null));
+  }
+
+  interface Sleeper {
+    void sleep(long delayNanos) throws InterruptedException;
   }
 
   @Override

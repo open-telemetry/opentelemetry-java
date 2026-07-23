@@ -39,6 +39,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +58,8 @@ class JdkHttpSenderTest {
   private final HttpClient realHttpClient =
       HttpClient.newBuilder().connectTimeout(Duration.ofMillis(10)).build();
   @Mock private HttpClient mockHttpClient;
+  @Mock private JdkHttpSender.Sleeper sleeper;
+  @Mock private Supplier<Double> randomJitter;
   private JdkHttpSender sender;
 
   @BeforeEach
@@ -164,6 +167,89 @@ class JdkHttpSenderTest {
         .hasMessage("error!");
 
     verify(mockHttpClient, times(2)).send(any(), any());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void sendInternal_RetryableResponse_UsesRetryAfterDelay()
+      throws IOException, InterruptedException {
+    java.net.http.HttpResponse<InputStream> throttledResponse =
+        mock(java.net.http.HttpResponse.class);
+    when(throttledResponse.statusCode()).thenReturn(429);
+    when(throttledResponse.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(throttledResponse.headers())
+        .thenReturn(
+            HttpHeaders.of(
+                Collections.singletonMap("Retry-After", Collections.singletonList("30")),
+                (a, b) -> true));
+
+    java.net.http.HttpResponse<InputStream> okResponse = mock(java.net.http.HttpResponse.class);
+    when(okResponse.statusCode()).thenReturn(200);
+    when(okResponse.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(okResponse.headers()).thenReturn(HttpHeaders.of(Collections.emptyMap(), (a, b) -> true));
+
+    doReturn(throttledResponse, okResponse).when(mockHttpClient).send(any(), any());
+
+    sender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
+            null,
+            Long.MAX_VALUE,
+            sleeper,
+            randomJitter);
+
+    HttpResponse response = sender.sendInternal(new NoOpRequestBodyWriter());
+
+    assertThat(response.getStatusCode()).isEqualTo(200);
+    verify(sleeper).sleep(TimeUnit.SECONDS.toNanos(30));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void sendInternal_RetryableResponse_MalformedRetryAfterFallsBack()
+      throws IOException, InterruptedException {
+    java.net.http.HttpResponse<InputStream> throttledResponse =
+        mock(java.net.http.HttpResponse.class);
+    when(throttledResponse.statusCode()).thenReturn(503);
+    when(throttledResponse.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(throttledResponse.headers())
+        .thenReturn(
+            HttpHeaders.of(
+                Collections.singletonMap("Retry-After", Collections.singletonList("bad-value")),
+                (a, b) -> true));
+
+    java.net.http.HttpResponse<InputStream> okResponse = mock(java.net.http.HttpResponse.class);
+    when(okResponse.statusCode()).thenReturn(200);
+    when(okResponse.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(okResponse.headers()).thenReturn(HttpHeaders.of(Collections.emptyMap(), (a, b) -> true));
+
+    doReturn(throttledResponse, okResponse).when(mockHttpClient).send(any(), any());
+    when(randomJitter.get()).thenReturn(1.0d);
+
+    sender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
+            null,
+            Long.MAX_VALUE,
+            sleeper,
+            randomJitter);
+
+    HttpResponse response = sender.sendInternal(new NoOpRequestBodyWriter());
+
+    assertThat(response.getStatusCode()).isEqualTo(200);
+    verify(sleeper).sleep(TimeUnit.MILLISECONDS.toNanos(1));
   }
 
   @Test

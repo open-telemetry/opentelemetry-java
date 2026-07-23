@@ -58,6 +58,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -729,6 +732,52 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThat(attempts).hasValue(2);
   }
 
+  @Test
+  void retryableThrottledError_retryAfterSeconds() {
+    addHttpResponse(429, "0");
+
+    assertThat(
+            exporter
+                .export(Collections.singletonList(generateFakeTelemetry()))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isTrue();
+
+    assertThat(attempts).hasValue(2);
+  }
+
+  @Test
+  void retryableThrottledError_retryAfterDate() {
+    addHttpResponse(
+        503,
+        ZonedDateTime.now(ZoneOffset.UTC)
+            .minusSeconds(1)
+            .format(DateTimeFormatter.RFC_1123_DATE_TIME));
+
+    assertThat(
+            exporter
+                .export(Collections.singletonList(generateFakeTelemetry()))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isTrue();
+
+    assertThat(attempts).hasValue(2);
+  }
+
+  @Test
+  void retryableThrottledError_malformedRetryAfterFallsBack() {
+    addHttpResponse(503, "not-a-retry-after");
+
+    assertThat(
+            exporter
+                .export(Collections.singletonList(generateFakeTelemetry()))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isTrue();
+
+    assertThat(attempts).hasValue(2);
+  }
+
   @ParameterizedTest
   @SuppressLogger(HttpExporter.class)
   @ValueSource(ints = {400, 401, 403, 500, 501})
@@ -1206,6 +1255,14 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   private static void addHttpResponse(int code) {
     httpErrors.add(HttpResponse.of(code));
+  }
+
+  private static void addHttpResponse(int code, String retryAfter) {
+    httpErrors.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.valueOf(code))
+                .add("Retry-After", retryAfter)
+                .build()));
   }
 
   private static void addHttpResponse(int code, AbstractMessageLite<?, ?> bodyMessage) {

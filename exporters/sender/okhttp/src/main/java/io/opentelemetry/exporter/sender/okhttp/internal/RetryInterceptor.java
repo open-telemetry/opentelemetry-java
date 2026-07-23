@@ -13,6 +13,7 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -36,12 +37,21 @@ public final class RetryInterceptor implements Interceptor {
 
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
+  private final Function<Response, OptionalLong> retryDelayNanosExtractor;
   private final Predicate<IOException> retryExceptionPredicate;
   private final Sleeper sleeper;
   private final Supplier<Double> randomJitter;
 
   /** Constructs a new retrier. */
   public RetryInterceptor(RetryPolicy retryPolicy, Function<Response, Boolean> isRetryable) {
+    this(retryPolicy, isRetryable, response -> OptionalLong.empty());
+  }
+
+  /** Constructs a new retrier with an optional server-provided retry delay override. */
+  public RetryInterceptor(
+      RetryPolicy retryPolicy,
+      Function<Response, Boolean> isRetryable,
+      Function<Response, OptionalLong> retryDelayNanosExtractor) {
     this(
         retryPolicy,
         isRetryable,
@@ -49,7 +59,8 @@ public final class RetryInterceptor implements Interceptor {
             ? RetryInterceptor::isRetryableException
             : retryPolicy.getRetryExceptionPredicate(),
         TimeUnit.NANOSECONDS::sleep,
-        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d));
+        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d),
+        retryDelayNanosExtractor);
   }
 
   // Visible for testing
@@ -59,8 +70,26 @@ public final class RetryInterceptor implements Interceptor {
       Predicate<IOException> retryExceptionPredicate,
       Sleeper sleeper,
       Supplier<Double> randomJitter) {
+    this(
+        retryPolicy,
+        isRetryable,
+        retryExceptionPredicate,
+        sleeper,
+        randomJitter,
+        response -> OptionalLong.empty());
+  }
+
+  // Visible for testing
+  RetryInterceptor(
+      RetryPolicy retryPolicy,
+      Function<Response, Boolean> isRetryable,
+      Predicate<IOException> retryExceptionPredicate,
+      Sleeper sleeper,
+      Supplier<Double> randomJitter,
+      Function<Response, OptionalLong> retryDelayNanosExtractor) {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
+    this.retryDelayNanosExtractor = retryDelayNanosExtractor;
     this.retryExceptionPredicate = retryExceptionPredicate;
     this.sleeper = sleeper;
     this.randomJitter = randomJitter;
@@ -72,14 +101,19 @@ public final class RetryInterceptor implements Interceptor {
     IOException exception = null;
     int attempt = 0;
     long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
+    OptionalLong retryDelayNanos = OptionalLong.empty();
     do {
       if (attempt > 0) {
         // Compute and sleep for backoff
         // https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff
         long currentBackoffNanos =
             Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-        long backoffNanos = (long) (randomJitter.get() * currentBackoffNanos);
+        long backoffNanos =
+            retryDelayNanos.isPresent()
+                ? retryDelayNanos.getAsLong()
+                : (long) (randomJitter.get() * currentBackoffNanos);
         nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
+        retryDelayNanos = OptionalLong.empty();
         try {
           sleeper.sleep(backoffNanos);
         } catch (InterruptedException e) {
@@ -109,6 +143,8 @@ public final class RetryInterceptor implements Interceptor {
           if (!retryable) {
             return response;
           }
+          OptionalLong serverRetryDelay = retryDelayNanosExtractor.apply(response);
+          retryDelayNanos = serverRetryDelay == null ? OptionalLong.empty() : serverRetryDelay;
         } else {
           throw new NullPointerException("response cannot be null.");
         }

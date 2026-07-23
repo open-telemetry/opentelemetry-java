@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -105,7 +106,9 @@ public final class OkHttpHttpSender implements HttpSender {
     }
 
     if (retryPolicy != null) {
-      builder.addInterceptor(new RetryInterceptor(retryPolicy, OkHttpHttpSender::isRetryable));
+      builder.addInterceptor(
+          new RetryInterceptor(
+              retryPolicy, OkHttpHttpSender::isRetryable, OkHttpHttpSender::retryDelayNanos));
     }
 
     boolean isPlainHttp = endpoint.getScheme().equals("http");
@@ -130,6 +133,13 @@ public final class OkHttpHttpSender implements HttpSender {
     this.compressor = compressor;
     this.headerSupplier = headerSupplier;
     this.maxResponseBodySize = maxResponseBodySize;
+  }
+
+  private static OptionalLong retryDelayNanos(Response response) {
+    if (!RetryUtil.isOtlpHttpThrottleStatusCode(response.code())) {
+      return OptionalLong.empty();
+    }
+    return RetryUtil.retryAfterNanos(response.header("Retry-After"));
   }
 
   @Override
