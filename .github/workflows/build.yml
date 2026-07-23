@@ -40,6 +40,8 @@ jobs:
             jmh-based-tests: true
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
@@ -57,15 +59,19 @@ jobs:
           java-version: 21
 
       - name: Set up gradle
+        # zizmor: ignore[cache-poisoning] This tests release branches but does not
+        # publish release artifacts.
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - name: Build
+        shell: bash
         run: >
             ./gradlew build
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
-            "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
+            "-Porg.gradle.java.installations.paths=${TEST_JAVA_PATH}"
             "-Porg.gradle.java.installations.auto-download=false"
         env:
+          TEST_JAVA_PATH: ${{ steps.setup-java-test.outputs.path }}
           # JMH-based tests run only if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
@@ -115,6 +121,8 @@ jobs:
           - 25 # renovate(graal-java-version)
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
       - uses: graalvm/setup-graalvm@0def53c0fd8534bc13416c9469f5be45265824fd # v1.6.3
         with:
           java-version: ${{ matrix.test-graal-version }}
