@@ -16,15 +16,16 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.LogRecordP
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalEventToSpanEventBridgeLogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LogRecordProcessorModelAccessor;
 import io.opentelemetry.sdk.extension.incubator.logs.EventToSpanEventBridge;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -95,14 +96,13 @@ class LogRecordProcessorFactoryTest {
                 OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())),
         Arguments.argumentSet(
             "event_to_span_event_bridge/development",
-            new LogRecordProcessorModel()
-                .withEventToSpanEventBridgeDevelopment(
-                    new ExperimentalEventToSpanEventBridgeLogRecordProcessorModel()),
+            LogRecordProcessorModelAccessor.withEventToSpanEventBridge(
+                new LogRecordProcessorModel(),
+                new ExperimentalEventToSpanEventBridgeLogRecordProcessorModel()),
             EventToSpanEventBridge.create()),
         Arguments.argumentSet(
             "spi test processor",
-            new LogRecordProcessorModel()
-                .withAdditionalProperty("test", new LogRecordProcessorPropertyModel()),
+            new LogRecordProcessorModel().withExtensionProperty("test", null),
             LogRecordProcessorComponentProvider.TestLogRecordProcessor.create()));
   }
 
@@ -127,9 +127,7 @@ class LogRecordProcessorFactoryTest {
         Arguments.argumentSet(
             "unknown component provider",
             new LogRecordProcessorModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new LogRecordProcessorPropertyModel().withAdditionalProperty("key1", "value1")),
+                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.logs.LogRecordProcessor with name \"unknown_key\"."));
   }
 }

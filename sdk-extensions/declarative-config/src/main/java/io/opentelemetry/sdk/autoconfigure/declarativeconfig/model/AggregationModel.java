@@ -5,23 +5,59 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel.BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel.DEFAULT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel.DROP;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel.EXPLICIT_BUCKET_HISTOGRAM;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel.LAST_VALUE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AggregationModel.SUM;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-  "default",
-  "drop",
-  "explicit_bucket_histogram",
-  "base2_exponential_bucket_histogram",
-  "last_value",
-  "sum"
+  DEFAULT,
+  DROP,
+  EXPLICIT_BUCKET_HISTOGRAM,
+  BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM,
+  LAST_VALUE,
+  SUM
 })
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class AggregationModel {
+
+  static final String DEFAULT = "default";
+  static final String DROP = "drop";
+  static final String EXPLICIT_BUCKET_HISTOGRAM = "explicit_bucket_histogram";
+  static final String BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM = "base2_exponential_bucket_histogram";
+  static final String LAST_VALUE = "last_value";
+  static final String SUM = "sum";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(DEFAULT, DefaultAggregationModel.class);
+    STABLE_PROPERTIES.put(DROP, DropAggregationModel.class);
+    STABLE_PROPERTIES.put(EXPLICIT_BUCKET_HISTOGRAM, ExplicitBucketHistogramAggregationModel.class);
+    STABLE_PROPERTIES.put(
+        BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM, Base2ExponentialBucketHistogramAggregationModel.class);
+    STABLE_PROPERTIES.put(LAST_VALUE, LastValueAggregationModel.class);
+    STABLE_PROPERTIES.put(SUM, SumAggregationModel.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
   @Nullable private DefaultAggregationModel _default;
   @Nullable private DropAggregationModel drop;
@@ -29,6 +65,7 @@ public class AggregationModel {
   @Nullable private Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram;
   @Nullable private LastValueAggregationModel lastValue;
   @Nullable private SumAggregationModel sum;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configures the stream to use the instrument kind to select an aggregation and advisory
@@ -38,13 +75,17 @@ public class AggregationModel {
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("default")
+  @JsonProperty(DEFAULT)
   @Nullable
   public DefaultAggregationModel getDefault() {
+    if (_default == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          DEFAULT, extensionProperties, DefaultAggregationModel.class);
+    }
     return _default;
   }
 
-  @JsonProperty("default")
+  @JsonProperty(DEFAULT)
   public AggregationModel withDefault(DefaultAggregationModel _default) {
     this._default = _default;
     return this;
@@ -57,13 +98,17 @@ public class AggregationModel {
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("drop")
+  @JsonProperty(DROP)
   @Nullable
   public DropAggregationModel getDrop() {
+    if (drop == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          DROP, extensionProperties, DropAggregationModel.class);
+    }
     return drop;
   }
 
-  @JsonProperty("drop")
+  @JsonProperty(DROP)
   public AggregationModel withDrop(DropAggregationModel drop) {
     this.drop = drop;
     return this;
@@ -77,13 +122,19 @@ public class AggregationModel {
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("explicit_bucket_histogram")
+  @JsonProperty(EXPLICIT_BUCKET_HISTOGRAM)
   @Nullable
   public ExplicitBucketHistogramAggregationModel getExplicitBucketHistogram() {
+    if (explicitBucketHistogram == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          EXPLICIT_BUCKET_HISTOGRAM,
+          extensionProperties,
+          ExplicitBucketHistogramAggregationModel.class);
+    }
     return explicitBucketHistogram;
   }
 
-  @JsonProperty("explicit_bucket_histogram")
+  @JsonProperty(EXPLICIT_BUCKET_HISTOGRAM)
   public AggregationModel withExplicitBucketHistogram(
       ExplicitBucketHistogramAggregationModel explicitBucketHistogram) {
     this.explicitBucketHistogram = explicitBucketHistogram;
@@ -99,13 +150,19 @@ public class AggregationModel {
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("base2_exponential_bucket_histogram")
+  @JsonProperty(BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)
   @Nullable
   public Base2ExponentialBucketHistogramAggregationModel getBase2ExponentialBucketHistogram() {
+    if (base2ExponentialBucketHistogram == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM,
+          extensionProperties,
+          Base2ExponentialBucketHistogramAggregationModel.class);
+    }
     return base2ExponentialBucketHistogram;
   }
 
-  @JsonProperty("base2_exponential_bucket_histogram")
+  @JsonProperty(BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)
   public AggregationModel withBase2ExponentialBucketHistogram(
       Base2ExponentialBucketHistogramAggregationModel base2ExponentialBucketHistogram) {
     this.base2ExponentialBucketHistogram = base2ExponentialBucketHistogram;
@@ -119,13 +176,17 @@ public class AggregationModel {
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("last_value")
+  @JsonProperty(LAST_VALUE)
   @Nullable
   public LastValueAggregationModel getLastValue() {
+    if (lastValue == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          LAST_VALUE, extensionProperties, LastValueAggregationModel.class);
+    }
     return lastValue;
   }
 
-  @JsonProperty("last_value")
+  @JsonProperty(LAST_VALUE)
   public AggregationModel withLastValue(LastValueAggregationModel lastValue) {
     this.lastValue = lastValue;
     return this;
@@ -138,15 +199,36 @@ public class AggregationModel {
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("sum")
+  @JsonProperty(SUM)
   @Nullable
   public SumAggregationModel getSum() {
+    if (sum == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          SUM, extensionProperties, SumAggregationModel.class);
+    }
     return sum;
   }
 
-  @JsonProperty("sum")
+  @JsonProperty(SUM)
   public AggregationModel withSum(SumAggregationModel sum) {
     this.sum = sum;
+    return this;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
+  }
+
+  @JsonAnySetter
+  public AggregationModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -165,6 +247,8 @@ public class AggregationModel {
         + lastValue
         + ", sum="
         + sum
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -186,6 +270,8 @@ public class AggregationModel {
     h ^= (this.lastValue == null) ? 0 : this.lastValue.hashCode();
     h *= 1000003;
     h ^= (this.sum == null) ? 0 : this.sum.hashCode();
+    h *= 1000003;
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -207,7 +293,10 @@ public class AggregationModel {
           && (this.lastValue == null
               ? that.lastValue == null
               : this.lastValue.equals(that.lastValue))
-          && (this.sum == null ? that.sum == null : this.sum.equals(that.sum));
+          && (this.sum == null ? that.sum == null : this.sum.equals(that.sum))
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryC
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalInstrumentationModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLanguageSpecificInstrumentationPropertyModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.OpenTelemetryConfigurationModelAccessor;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -132,9 +133,9 @@ class InstrumentationConfigUtilTest {
     javaConfig.withAdditionalProperty(instrumentationName, instrumentationConfig);
     DeclarativeConfigProperties modelProperties =
         DeclarativeConfiguration.toConfigProperties(
-            new OpenTelemetryConfigurationModel()
-                .withInstrumentationDevelopment(
-                    new ExperimentalInstrumentationModel().withJava(javaConfig)));
+            OpenTelemetryConfigurationModelAccessor.withInstrumentation(
+                new OpenTelemetryConfigurationModel(),
+                new ExperimentalInstrumentationModel().withJava(javaConfig)));
 
     return SdkConfigProvider.create(modelProperties);
   }

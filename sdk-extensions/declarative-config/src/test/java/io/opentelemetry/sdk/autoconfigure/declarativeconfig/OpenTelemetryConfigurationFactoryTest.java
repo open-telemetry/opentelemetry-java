@@ -52,6 +52,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorMo
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ResourceModelAccessor;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
@@ -238,8 +239,8 @@ class OpenTelemetryConfigurationFactoryTest {
             .withPropagator(
                 new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3"))
             .withResource(
-                new ResourceModel()
-                    .withDetectionDevelopment(
+                ResourceModelAccessor.withDetection(
+                        new ResourceModel(),
                         new ExperimentalResourceDetectionModel()
                             .withDetectors(
                                 Arrays.asList(

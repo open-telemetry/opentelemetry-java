@@ -30,6 +30,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PullMetricRead
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalPrometheusTranslationStrategyModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.PeriodicMetricReaderModelAccessor;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.PullMetricExporterModelAccessor;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -117,14 +119,15 @@ class MetricReaderFactoryTest {
                     "periodic configured",
                     new MetricReaderModel()
                         .withPeriodic(
-                            new PeriodicMetricReaderModel()
-                                .withExporter(
-                                    new PushMetricExporterModel()
-                                        .withOtlpHttp(new OtlpHttpMetricExporterModel()))
-                                .withInterval(1)
-                                .withCardinalityLimits(
-                                    new CardinalityLimitsModel().withDefault(100))
-                                .withMaxExportBatchSizeDevelopment(200)),
+                            PeriodicMetricReaderModelAccessor.withMaxExportBatchSize(
+                                new PeriodicMetricReaderModel()
+                                    .withExporter(
+                                        new PushMetricExporterModel()
+                                            .withOtlpHttp(new OtlpHttpMetricExporterModel()))
+                                    .withInterval(1)
+                                    .withCardinalityLimits(
+                                        new CardinalityLimitsModel().withDefault(100)),
+                                200)),
                     SdkMeterProviderUtil.setMaxExportBatchSize(
                             PeriodicMetricReader.builder(
                                     OtlpHttpMetricExporter.builder()
@@ -147,10 +150,10 @@ class MetricReaderFactoryTest {
                 .withPull(
                     new PullMetricReaderModel()
                         .withExporter(
-                            new PullMetricExporterModel()
-                                .withPrometheusDevelopment(
-                                    new ExperimentalPrometheusMetricExporterModel()
-                                        .withPort(prom1Port)))),
+                            PullMetricExporterModelAccessor.withPrometheus(
+                                new PullMetricExporterModel(),
+                                new ExperimentalPrometheusMetricExporterModel()
+                                    .withPort(prom1Port)))),
             prom1Expected,
             null,
             true));
@@ -175,20 +178,20 @@ class MetricReaderFactoryTest {
                     new PullMetricReaderModel()
                         .withCardinalityLimits(new CardinalityLimitsModel().withDefault(100))
                         .withExporter(
-                            new PullMetricExporterModel()
-                                .withPrometheusDevelopment(
-                                    new ExperimentalPrometheusMetricExporterModel()
-                                        .withHost("localhost")
-                                        .withPort(prom2Port)
-                                        .withResourceConstantLabels(
-                                            new IncludeExcludeModel()
-                                                .withIncluded(singletonList("foo"))
-                                                .withExcluded(singletonList("bar")))
-                                        .withScopeInfoEnabled(false)
-                                        .withTargetInfoEnabledDevelopment(false)
-                                        .withTranslationStrategy(
-                                            ExperimentalPrometheusTranslationStrategyModel
-                                                .UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES_DEVELOPMENT)))),
+                            PullMetricExporterModelAccessor.withPrometheus(
+                                new PullMetricExporterModel(),
+                                new ExperimentalPrometheusMetricExporterModel()
+                                    .withHost("localhost")
+                                    .withPort(prom2Port)
+                                    .withResourceConstantLabels(
+                                        new IncludeExcludeModel()
+                                            .withIncluded(singletonList("foo"))
+                                            .withExcluded(singletonList("bar")))
+                                    .withScopeInfoEnabled(false)
+                                    .withTargetInfoEnabledDevelopment(false)
+                                    .withTranslationStrategy(
+                                        ExperimentalPrometheusTranslationStrategyModel
+                                            .UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES_DEVELOPMENT)))),
             prom2Expected,
             100,
             true));
@@ -208,14 +211,14 @@ class MetricReaderFactoryTest {
                 .withPull(
                     new PullMetricReaderModel()
                         .withExporter(
-                            new PullMetricExporterModel()
-                                .withPrometheusDevelopment(
-                                    new ExperimentalPrometheusMetricExporterModel()
-                                        .withHost("localhost")
-                                        .withPort(prom3Port)
-                                        .withTranslationStrategy(
-                                            ExperimentalPrometheusTranslationStrategyModel
-                                                .NO_TRANSLATION_DEVELOPMENT)))),
+                            PullMetricExporterModelAccessor.withPrometheus(
+                                new PullMetricExporterModel(),
+                                new ExperimentalPrometheusMetricExporterModel()
+                                    .withHost("localhost")
+                                    .withPort(prom3Port)
+                                    .withTranslationStrategy(
+                                        ExperimentalPrometheusTranslationStrategyModel
+                                            .NO_TRANSLATION_DEVELOPMENT)))),
             prom3Expected,
             null,
             true));

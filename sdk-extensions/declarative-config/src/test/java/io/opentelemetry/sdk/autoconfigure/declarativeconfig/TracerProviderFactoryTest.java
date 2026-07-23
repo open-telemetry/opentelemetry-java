@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProvider
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.TracerProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -83,35 +84,33 @@ class TracerProviderFactoryTest {
             "full configuration",
             TracerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
-                new TracerProviderModel()
-                    .withLimits(
-                        new SpanLimitsModel()
-                            .withAttributeCountLimit(1)
-                            .withAttributeValueLengthLimit(2)
-                            .withEventCountLimit(3)
-                            .withLinkCountLimit(4)
-                            .withEventAttributeCountLimit(5)
-                            .withLinkAttributeCountLimit(6))
-                    .withSampler(new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
-                    .withProcessors(
-                        Collections.singletonList(
-                            new SpanProcessorModel()
-                                .withBatch(
-                                    new BatchSpanProcessorModel()
-                                        .withExporter(
-                                            new SpanExporterModel()
-                                                .withOtlpHttp(new OtlpHttpExporterModel())))))
-                    .withTracerConfiguratorDevelopment(
-                        new ExperimentalTracerConfiguratorModel()
-                            .withDefaultConfig(
-                                new ExperimentalTracerConfigModel().withEnabled(false))
-                            .withTracers(
-                                Collections.singletonList(
-                                    new ExperimentalTracerMatcherAndConfigModel()
-                                        .withName("foo")
-                                        .withConfig(
-                                            new ExperimentalTracerConfigModel()
-                                                .withEnabled(true)))))),
+                TracerProviderModelAccessor.withTracerConfigurator(
+                    new TracerProviderModel()
+                        .withLimits(
+                            new SpanLimitsModel()
+                                .withAttributeCountLimit(1)
+                                .withAttributeValueLengthLimit(2)
+                                .withEventCountLimit(3)
+                                .withLinkCountLimit(4)
+                                .withEventAttributeCountLimit(5)
+                                .withLinkAttributeCountLimit(6))
+                        .withSampler(new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
+                        .withProcessors(
+                            Collections.singletonList(
+                                new SpanProcessorModel()
+                                    .withBatch(
+                                        new BatchSpanProcessorModel()
+                                            .withExporter(
+                                                new SpanExporterModel()
+                                                    .withOtlpHttp(new OtlpHttpExporterModel()))))),
+                    new ExperimentalTracerConfiguratorModel()
+                        .withDefaultConfig(new ExperimentalTracerConfigModel().withEnabled(false))
+                        .withTracers(
+                            Collections.singletonList(
+                                new ExperimentalTracerMatcherAndConfigModel()
+                                    .withName("foo")
+                                    .withConfig(
+                                        new ExperimentalTracerConfigModel().withEnabled(true)))))),
             addTracerConfigurator(
                     SdkTracerProvider.builder(),
                     ScopeConfigurator.<TracerConfig>builder()

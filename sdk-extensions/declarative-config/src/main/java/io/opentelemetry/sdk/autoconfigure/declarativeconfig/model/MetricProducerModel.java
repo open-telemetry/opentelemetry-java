@@ -5,51 +5,75 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricProducerModel.OPENCENSUS;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"opencensus"})
+@JsonPropertyOrder({OPENCENSUS})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class MetricProducerModel {
 
+  static final String OPENCENSUS = "opencensus";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(OPENCENSUS, OpenCensusMetricProducerModel.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = true;
+
   @Nullable private OpenCensusMetricProducerModel opencensus;
-  private Map<String, MetricProducerPropertyModel> additionalProperties =
-      new LinkedHashMap<String, MetricProducerPropertyModel>();
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure metric producer to be opencensus.
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("opencensus")
+  @JsonProperty(OPENCENSUS)
   @Nullable
   public OpenCensusMetricProducerModel getOpencensus() {
+    if (opencensus == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          OPENCENSUS, extensionProperties, OpenCensusMetricProducerModel.class);
+    }
     return opencensus;
   }
 
-  @JsonProperty("opencensus")
+  @JsonProperty(OPENCENSUS)
   public MetricProducerModel withOpencensus(OpenCensusMetricProducerModel opencensus) {
     this.opencensus = opencensus;
     return this;
   }
 
   @JsonAnyGetter
-  public Map<String, MetricProducerPropertyModel> getAdditionalProperties() {
-    return this.additionalProperties;
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
   }
 
   @JsonAnySetter
-  public MetricProducerModel withAdditionalProperty(
-      String name, MetricProducerPropertyModel value) {
-    this.additionalProperties.put(name, value);
+  public MetricProducerModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -58,8 +82,8 @@ public class MetricProducerModel {
     return "MetricProducerModel{"
         + "opencensus="
         + opencensus
-        + ", additionalProperties="
-        + additionalProperties
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -69,7 +93,7 @@ public class MetricProducerModel {
     h *= 1000003;
     h ^= (this.opencensus == null) ? 0 : this.opencensus.hashCode();
     h *= 1000003;
-    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -83,9 +107,9 @@ public class MetricProducerModel {
       return (this.opencensus == null
               ? that.opencensus == null
               : this.opencensus.equals(that.opencensus))
-          && (this.additionalProperties == null
-              ? that.additionalProperties == null
-              : this.additionalProperties.equals(that.additionalProperties));
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

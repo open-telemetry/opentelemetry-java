@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SeverityNumber
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LoggerProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.LogLimits;
@@ -64,7 +65,7 @@ final class LoggerProviderFactory
     }
 
     ExperimentalLoggerConfiguratorModel loggerConfiguratorModel =
-        loggerProviderModel.getLoggerConfiguratorDevelopment();
+        LoggerProviderModelAccessor.getLoggerConfigurator(loggerProviderModel);
     if (loggerConfiguratorModel != null) {
       ExperimentalLoggerConfigModel defaultConfigModel = loggerConfiguratorModel.getDefaultConfig();
       ScopeConfiguratorBuilder<LoggerConfig> configuratorBuilder = ScopeConfigurator.builder();
