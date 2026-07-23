@@ -14,39 +14,58 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
  */
 public final class AttributeLimitsBuilder {
 
-  private int capacity = Integer.MAX_VALUE;
-  private int lengthLimit = Integer.MAX_VALUE;
+  private int countLimit = Integer.MAX_VALUE;
+  private int valueLengthLimit = Integer.MAX_VALUE;
+  private int valueDepthLimit = Integer.MAX_VALUE;
 
   AttributeLimitsBuilder() {}
 
   /**
-   * Sets the maximum number of unique attribute keys. Additional entries with new key names are
-   * dropped once the capacity is reached. Overwrites of existing keys do not consume capacity.
+   * Sets the maximum number of unique attribute keys ({@code AttributeCountLimit}). Additional
+   * entries with new key names are dropped once the limit is reached. Overwrites of existing keys
+   * do not consume against the limit.
    *
-   * @param capacity the maximum number of unique attribute keys; must be non-negative. Use {@link
-   *     Integer#MAX_VALUE} for no capacity limit.
+   * @param countLimit non-negative maximum, or {@link Integer#MAX_VALUE} for no limit
+   * @throws IllegalArgumentException if {@code countLimit} is negative
    */
-  public AttributeLimitsBuilder setCapacity(int capacity) {
-    checkArgument(capacity >= 0, "capacity must be non-negative");
-    this.capacity = capacity;
+  public AttributeLimitsBuilder setCountLimit(int countLimit) {
+    checkArgument(countLimit >= 0, "countLimit must be non-negative");
+    this.countLimit = countLimit;
     return this;
   }
 
   /**
-   * Sets the maximum length for string and string-array attribute values. Longer values are
-   * truncated. Applies recursively to nested {@link Value}-typed attributes.
+   * Sets the maximum length for string and byte-array attribute values ({@code
+   * AttributeValueLengthLimit}). Applies recursively to string and byte-array values within {@link
+   * Value}-typed and array attributes.
    *
-   * @param lengthLimit the maximum length; must be non-negative. Use {@link Integer#MAX_VALUE} for
-   *     no length limit.
+   * @param valueLengthLimit non-negative maximum, or {@link Integer#MAX_VALUE} for no limit
+   * @throws IllegalArgumentException if {@code valueLengthLimit} is negative
    */
-  public AttributeLimitsBuilder setLengthLimit(int lengthLimit) {
-    checkArgument(lengthLimit >= 0, "lengthLimit must be non-negative");
-    this.lengthLimit = lengthLimit;
+  public AttributeLimitsBuilder setValueLengthLimit(int valueLengthLimit) {
+    checkArgument(valueLengthLimit >= 0, "valueLengthLimit must be non-negative");
+    this.valueLengthLimit = valueLengthLimit;
+    return this;
+  }
+
+  /**
+   * Sets the maximum nesting depth for array and map attribute values ({@code
+   * AttributeValueDepthLimit}). Depth is 1-indexed (top-level attribute value = depth 1); the limit
+   * must therefore be at least 1. Arrays and maps at a depth greater than the limit are replaced
+   * with an empty container of the same shape.
+   *
+   * @param valueDepthLimit maximum nesting depth, minimum 1, or {@link Integer#MAX_VALUE} for no
+   *     limit
+   * @throws IllegalArgumentException if {@code valueDepthLimit} is less than 1
+   */
+  public AttributeLimitsBuilder setValueDepthLimit(int valueDepthLimit) {
+    checkArgument(valueDepthLimit >= 1, "valueDepthLimit must be at least 1");
+    this.valueDepthLimit = valueDepthLimit;
     return this;
   }
 
   /** Builds the {@link AttributeLimits}. */
   public AttributeLimits build() {
-    return AttributeLimits.create(capacity, lengthLimit);
+    return AttributeLimits.create(countLimit, valueLengthLimit, valueDepthLimit);
   }
 }

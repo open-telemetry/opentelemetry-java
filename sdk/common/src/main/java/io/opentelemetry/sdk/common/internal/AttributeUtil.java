@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.common.internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.internal.AttributeLengthLimits;
+import io.opentelemetry.api.internal.AttributeValueLimits;
 import java.util.Map;
 
 /**
@@ -35,7 +35,7 @@ public final class AttributeUtil {
       }
       boolean allValidLength = true;
       for (Object value : attributes.asMap().values()) {
-        if (!AttributeLengthLimits.isValidLength(value, lengthLimit)) {
+        if (!AttributeValueLimits.isValidLength(value, lengthLimit)) {
           allValidLength = false;
           break;
         }
@@ -53,7 +53,7 @@ public final class AttributeUtil {
       }
       result.put(
           (AttributeKey) entry.getKey(),
-          AttributeLengthLimits.applyAttributeLengthLimit(entry.getValue(), lengthLimit));
+          AttributeValueLimits.applyLengthLimit(entry.getValue(), lengthLimit));
       i++;
     }
     return result.build();

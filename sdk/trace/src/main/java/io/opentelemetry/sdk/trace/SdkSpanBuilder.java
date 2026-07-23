@@ -290,8 +290,8 @@ class SdkSpanBuilder implements SpanBuilder {
       this.attributes =
           Attributes.builder(
               AttributeLimits.builder()
-                  .setCapacity(spanLimits.getMaxNumberOfAttributes())
-                  .setLengthLimit(spanLimits.getMaxAttributeValueLength())
+                  .setCountLimit(spanLimits.getMaxNumberOfAttributes())
+                  .setValueLengthLimit(spanLimits.getMaxAttributeValueLength())
                   .build());
       attributes = this.attributes;
     }

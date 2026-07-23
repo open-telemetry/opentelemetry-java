@@ -52,7 +52,8 @@ class ReadWriteLogRecordTest {
   SdkReadWriteLogRecord buildLogRecord() {
     Value<?> body = Value.of("bod");
     AttributesBuilder initialAttributes =
-        Attributes.builder(AttributeLimits.builder().setCapacity(100).setLengthLimit(200).build());
+        Attributes.builder(
+            AttributeLimits.builder().setCountLimit(100).setValueLengthLimit(200).build());
     initialAttributes.put(stringKey("foo"), "aaiosjfjioasdiojfjioasojifja");
     initialAttributes.put(stringKey("untouched"), "yes");
     LogLimits limits = LogLimits.getDefault();

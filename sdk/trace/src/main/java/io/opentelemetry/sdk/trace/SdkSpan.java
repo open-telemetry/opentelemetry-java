@@ -361,8 +361,8 @@ final class SdkSpan implements ReadWriteSpan {
 
   private static AttributeLimits attributeLimits(SpanLimits spanLimits) {
     return AttributeLimits.builder()
-        .setCapacity(spanLimits.getMaxNumberOfAttributes())
-        .setLengthLimit(spanLimits.getMaxAttributeValueLength())
+        .setCountLimit(spanLimits.getMaxNumberOfAttributes())
+        .setValueLengthLimit(spanLimits.getMaxAttributeValueLength())
         .build();
   }
 

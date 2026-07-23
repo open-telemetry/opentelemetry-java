@@ -14,7 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import io.opentelemetry.api.internal.AttributeLengthLimits;
+import io.opentelemetry.api.internal.AttributeValueLimits;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,13 +25,19 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
 
   /** Max number of unique entries. {@link Integer#MAX_VALUE} means unlimited. */
-  private final int capacity;
+  private final int countLimit;
 
   /**
-   * Max length of string / string-array values. {@link Integer#MAX_VALUE} means unlimited. Only
+   * Max length of string / byte-array values. {@link Integer#MAX_VALUE} means unlimited. Only
    * consulted on the limited put path.
    */
-  private final int lengthLimit;
+  private final int valueLengthLimit;
+
+  /**
+   * Max nesting depth for array / map values. {@link Integer#MAX_VALUE} means unlimited. Only
+   * consulted on the limited put path.
+   */
+  private final int valueDepthLimit;
 
   /** Count of non-null entries currently stored (excludes null holes from remove). */
   private int size;
@@ -45,27 +51,39 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
   @Nullable private Attributes cachedBuild;
 
   ArrayBackedAttributesBuilder() {
-    this(new ArrayList<>(), Integer.MAX_VALUE, Integer.MAX_VALUE, 0);
+    this(new ArrayList<>(), Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 0);
   }
 
   ArrayBackedAttributesBuilder(List<Object> data) {
-    this(data, Integer.MAX_VALUE, Integer.MAX_VALUE, data.size() / 2);
+    this(data, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, data.size() / 2);
   }
 
   ArrayBackedAttributesBuilder(AttributeLimits limits) {
-    this(new ArrayList<>(), limits.getCapacity(), limits.getLengthLimit(), 0);
+    this(
+        new ArrayList<>(),
+        limits.getCountLimit(),
+        limits.getValueLengthLimit(),
+        limits.getValueDepthLimit(),
+        0);
   }
 
   private ArrayBackedAttributesBuilder(
-      List<Object> data, int capacity, int lengthLimit, int initialSize) {
+      List<Object> data,
+      int countLimit,
+      int valueLengthLimit,
+      int valueDepthLimit,
+      int initialSize) {
     this.data = data;
-    this.capacity = capacity;
-    this.lengthLimit = lengthLimit;
+    this.countLimit = countLimit;
+    this.valueLengthLimit = valueLengthLimit;
+    this.valueDepthLimit = valueDepthLimit;
     this.size = initialSize;
   }
 
   private boolean isLimited() {
-    return capacity != Integer.MAX_VALUE || lengthLimit != Integer.MAX_VALUE;
+    return countLimit != Integer.MAX_VALUE
+        || valueLengthLimit != Integer.MAX_VALUE
+        || valueDepthLimit != Integer.MAX_VALUE;
   }
 
   @Override
@@ -118,10 +136,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
       return;
     }
     cachedBuild = null;
-    Object limited =
-        lengthLimit == Integer.MAX_VALUE
-            ? value
-            : AttributeLengthLimits.applyAttributeLengthLimit(value, lengthLimit);
+    Object limited = AttributeValueLimits.apply(value, valueLengthLimit, valueDepthLimit);
     String name = key.getKey();
     int emptySlot = -1;
     for (int i = 0; i < data.size(); i += 2) {
@@ -138,7 +153,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
         return;
       }
     }
-    if (size >= capacity) {
+    if (size >= countLimit) {
       return;
     }
     if (emptySlot >= 0) {

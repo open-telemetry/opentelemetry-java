@@ -1410,8 +1410,8 @@ class SdkSpanTest {
             resource,
             Attributes.builder(
                 AttributeLimits.builder()
-                    .setCapacity(spanLimits.getMaxNumberOfAttributes())
-                    .setLengthLimit(spanLimits.getMaxAttributeValueLength())
+                    .setCountLimit(spanLimits.getMaxNumberOfAttributes())
+                    .setValueLengthLimit(spanLimits.getMaxAttributeValueLength())
                     .build()),
             0,
             Collections.emptyList(),
@@ -1493,8 +1493,8 @@ class SdkSpanTest {
     AttributesBuilder builder =
         Attributes.builder(
             AttributeLimits.builder()
-                .setCapacity(spanLimits.getMaxNumberOfAttributes())
-                .setLengthLimit(spanLimits.getMaxAttributeValueLength())
+                .setCountLimit(spanLimits.getMaxNumberOfAttributes())
+                .setValueLengthLimit(spanLimits.getMaxAttributeValueLength())
                 .build());
     @SuppressWarnings("unchecked")
     Map<AttributeKey<?>, Object> raw = (Map<AttributeKey<?>, Object>) (Map<?, ?>) attributes;
@@ -1634,7 +1634,7 @@ class SdkSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     AttributesBuilder attributesWithCapacity =
-        Attributes.builder(AttributeLimits.builder().setCapacity(32).build());
+        Attributes.builder(AttributeLimits.builder().setCountLimit(32).build());
     attributesWithCapacity.putAll(attributes);
     Attributes builtAttributes = attributesWithCapacity.build();
     Attributes event1Attributes = TestUtils.generateRandomAttributes();

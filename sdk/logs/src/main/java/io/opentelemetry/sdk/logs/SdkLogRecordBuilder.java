@@ -133,8 +133,8 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
       this.attributes =
           Attributes.builder(
               AttributeLimits.builder()
-                  .setCapacity(logLimits.getMaxNumberOfAttributes())
-                  .setLengthLimit(logLimits.getMaxAttributeValueLength())
+                  .setCountLimit(logLimits.getMaxNumberOfAttributes())
+                  .setValueLengthLimit(logLimits.getMaxAttributeValueLength())
                   .build());
     }
     totalAttributeCount++;
