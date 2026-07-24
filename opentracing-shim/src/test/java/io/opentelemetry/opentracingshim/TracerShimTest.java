@@ -14,9 +14,15 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -32,9 +38,11 @@ import io.opentracing.tag.IntTag;
 import io.opentracing.tag.StringTag;
 import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -351,6 +359,21 @@ class TracerShimTest {
   }
 
   @Test
+  void extract_invalidButSampledSpanContext() {
+    tracerShim =
+        new TracerShim(provider, new InvalidButSampledPropagator(), TextMapPropagator.noop());
+
+    SpanContext spanContext =
+        tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(new HashMap<>()));
+
+    assertThat(spanContext).isNotNull();
+    SpanContextShim spanContextShim = (SpanContextShim) spanContext;
+    assertThat(spanContextShim.getSpanContext().isValid()).isFalse();
+    assertThat(spanContextShim.getSpanContext().isSampled()).isTrue();
+    assertThat(spanContextShim.getBaggage().isEmpty()).isTrue();
+  }
+
+  @Test
   void extract_emptyCarrier_withActiveSpan_returnsNull() {
     Span span = tracerShim.buildSpan("one").start();
     try (Scope scope = tracerShim.activateSpan(span)) {
@@ -466,5 +489,27 @@ class TracerShimTest {
             .start();
 
     assertThat(((SpanShim) span).getSpan().isRecording()).isFalse();
+  }
+
+  /** Extracts an invalid but sampled {@code SpanContext}, as {@code jaeger-debug-id} headers do. */
+  private static class InvalidButSampledPropagator implements TextMapPropagator {
+    @Override
+    public Collection<String> fields() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {}
+
+    @Override
+    public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+      return context.with(
+          io.opentelemetry.api.trace.Span.wrap(
+              io.opentelemetry.api.trace.SpanContext.create(
+                  TraceId.getInvalid(),
+                  SpanId.getInvalid(),
+                  TraceFlags.getSampled(),
+                  TraceState.getDefault())));
+    }
   }
 }
