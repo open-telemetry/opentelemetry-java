@@ -16,7 +16,7 @@ import javax.annotation.concurrent.Immutable;
  * A summary metric point.
  *
  * <p>See:
- * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#summary
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/data-model.md#summary
  *
  * <p><i>Note: This is called "DoubleSummary" to reflect which primitives are used to record it,
  * however "Summary" is the equivalent OTLP type.</i>
