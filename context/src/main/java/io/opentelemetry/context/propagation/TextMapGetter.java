@@ -16,15 +16,19 @@ import javax.annotation.Nullable;
  *
  * @param <C> carrier of propagation fields, such as an http request.
  */
+@FunctionalInterface
 public interface TextMapGetter<C> {
 
   /**
    * Returns all the keys in the given carrier.
    *
    * @param carrier carrier of propagation fields, such as an http request.
+   * @throws UnsupportedOperationException if this operation is not implemented
    * @since 0.10.0
    */
-  Iterable<String> keys(C carrier);
+  default Iterable<String> keys(C carrier) {
+    throw new UnsupportedOperationException("keys() is not implemented");
+  }
 
   /**
    * Returns the first value of the given propagation {@code key} or returns {@code null}.
