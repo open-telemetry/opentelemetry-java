@@ -220,7 +220,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           sb.http(0);
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
-          sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
+          sb.tlsCustomizer(
+              ssl -> {
+                ssl.trustManager(clientCertificate.certificate());
+                // Restrict server to TLS 1.2+ so enabledProtocols tests are meaningful
+                // regardless of SSL backend (JDK TLS or BoringSSL via netty-tcnative).
+                ssl.protocols("TLSv1.2", "TLSv1.3");
+              });
           // Uncomment for detailed request / response logs from server
           // sb.decorator(LoggingService.newDecorator());
         }
@@ -632,6 +638,42 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    }
+  }
+
+  @Test
+  void enabledProtocols() throws Exception {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri().toString())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    }
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void enabledProtocols_restrictedProtocolsFail() throws Exception {
+    // UpstreamGrpcSender delegates TLS entirely to the ManagedChannel supplied by the user;
+    // enabledProtocols is intentionally not applied for that sender.
+    assumeThat(System.getProperty("io.opentelemetry.sdk.common.export.GrpcSenderProvider"))
+        .as("enabledProtocols is not supported by UpstreamGrpcSenderProvider")
+        .isNotEqualTo(
+            "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider");
+
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri().toString())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setEnabledProtocols(Collections.singletonList("TLSv1.1"))
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
     }
   }
 
@@ -1077,6 +1119,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> exporterBuilder().setTrustedCertificates(certificate.certificate().getEncoded()))
         .doesNotThrowAnyException();
+
+    assertThatCode(() -> exporterBuilder().setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3")))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -1167,6 +1212,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
+
+    assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("enabledProtocols");
+    assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(Collections.emptyList()))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("enabledProtocols must not be empty");
   }
 
   @Test
@@ -1192,6 +1244,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
             .build()) {
       Object unwrapped = exporter.unwrap();
       Field builderField = unwrapped.getClass().getDeclaredField("builder");
@@ -1264,6 +1317,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
             .build(); ) {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
@@ -1280,7 +1334,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
-                  + "\\}");
+                  + "\\}")
+          .contains("enabledProtocols=[TLSv1.2, TLSv1.3]");
     }
   }
 

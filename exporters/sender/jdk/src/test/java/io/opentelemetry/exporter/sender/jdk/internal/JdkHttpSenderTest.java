@@ -191,7 +191,8 @@ class JdkHttpSenderTest {
             null,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     try {
       int expectedMax = Math.max(Runtime.getRuntime().availableProcessors(), 5);
@@ -223,13 +224,33 @@ class JdkHttpSenderTest {
             null,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     assertThat(sender)
         .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
         .satisfies(
             httpClient ->
                 assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
+  }
+
+  @Test
+  void enabledProtocols() {
+    JdkHttpSender defaultSender =
+        new JdkHttpSender(
+            URI.create("https://localhost"),
+            "text/plain",
+            null,
+            Duration.ofNanos(1),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null,
+            Long.MAX_VALUE,
+            Collections.singletonList("TLSv1.2"));
+    assertThat(defaultSender).isNotNull();
   }
 
   @SuppressWarnings("unchecked")
