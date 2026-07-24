@@ -38,8 +38,3 @@ SdkMeterProvider.builder()
     .registerMetricReader(OpenCensusMetrics.attachTo(PeriodicMetricReader.create(metricExporter)))
     .build();
 ```
-
-## Known Problems
-
-* OpenCensus links added after an OpenCensus span is created will not be
-exported, as OpenTelemetry only supports links added when a span is created.
