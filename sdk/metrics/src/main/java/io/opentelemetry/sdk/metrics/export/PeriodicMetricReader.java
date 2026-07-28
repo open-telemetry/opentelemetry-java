@@ -276,9 +276,6 @@ public final class PeriodicMetricReader implements MetricReader {
           try {
             metricData = collectionRegistration.collectAllMetrics();
           } catch (Throwable t) {
-            // Record the failure on the self-observability sample before it propagates to the
-            // outer handler; otherwise error.type is never set and collection failures are
-            // reported as successful collections.
             error = t.getClass().getName();
             throw t;
           } finally {
