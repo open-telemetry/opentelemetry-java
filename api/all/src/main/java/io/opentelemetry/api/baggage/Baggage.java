@@ -68,7 +68,7 @@ public interface Baggage extends ImplicitContextKeyed {
   @Nullable
   static Baggage fromContextOrNull(Context context) {
     if (context == null) {
-      ApiUsageLogger.logNullParam(Context.class, "fromContextOrNull", "context");
+      ApiUsageLogger.logNullParam(Baggage.class, "fromContextOrNull", "context");
       return null;
     }
     return context.get(BaggageContextKey.KEY);
