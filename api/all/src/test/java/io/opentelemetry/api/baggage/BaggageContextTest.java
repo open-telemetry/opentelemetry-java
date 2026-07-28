@@ -54,4 +54,14 @@ class BaggageContextTest {
     Context context = Context.root().with(baggage);
     assertThat(Baggage.fromContextOrNull(context)).isSameAs(baggage);
   }
+
+  @Test
+  void fromContext_null() {
+    assertThat(Baggage.fromContext(null)).isSameAs(Baggage.empty());
+  }
+
+  @Test
+  void fromContextOrNull_null() {
+    assertThat(Baggage.fromContextOrNull(null)).isNull();
+  }
 }
