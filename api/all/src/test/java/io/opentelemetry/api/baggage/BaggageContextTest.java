@@ -43,6 +43,12 @@ class BaggageContextTest {
   }
 
   @Test
+  void fromContext_null() {
+    assertThat(Baggage.fromContext(null)).isEqualTo(Baggage.empty());
+    assertThat(Baggage.fromContextOrNull(null)).isNull();
+  }
+
+  @Test
   void testGetBaggageWithoutDefault_DefaultContext() {
     Baggage baggage = Baggage.fromContextOrNull(Context.root());
     assertThat(baggage).isNull();
