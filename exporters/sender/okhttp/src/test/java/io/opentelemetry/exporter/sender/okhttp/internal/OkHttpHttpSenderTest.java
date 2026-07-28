@@ -53,7 +53,8 @@ class OkHttpHttpSenderTest {
             null,
             null,
             executor,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     AtomicReference<HttpResponse> responseRef = new AtomicReference<>();
     AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -216,7 +217,8 @@ class OkHttpHttpSenderTest {
         null,
         null,
         executorService,
-        Long.MAX_VALUE);
+        Long.MAX_VALUE,
+        null);
   }
 
   private static class NoOpRequestBodyWriter implements MessageWriter {
@@ -248,7 +250,8 @@ class OkHttpHttpSenderTest {
                     sslContext,
                     null,
                     null,
-                    Long.MAX_VALUE))
+                    Long.MAX_VALUE,
+                    null))
         .doesNotThrowAnyException();
   }
 
@@ -276,7 +279,8 @@ class OkHttpHttpSenderTest {
                       sslContext,
                       null,
                       null,
-                      Long.MAX_VALUE))
+                      Long.MAX_VALUE,
+                      null))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("Unable to initialize default trust manager")
           .hasCauseInstanceOf(SSLException.class);
@@ -284,5 +288,25 @@ class OkHttpHttpSenderTest {
     } finally {
       Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
     }
+  }
+
+  @Test
+  void enabledProtocols() {
+    OkHttpHttpSender defaultSender =
+        new OkHttpHttpSender(
+            URI.create("https://localhost"),
+            "text/plain",
+            null,
+            Duration.ofNanos(1),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            null,
+            null,
+            Long.MAX_VALUE,
+            Collections.singletonList("TLSv1.2"));
+    assertThat(defaultSender).isNotNull();
   }
 }
