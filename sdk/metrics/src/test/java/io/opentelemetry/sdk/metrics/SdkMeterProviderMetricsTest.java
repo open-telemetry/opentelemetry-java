@@ -12,10 +12,13 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 
 class SdkMeterProviderMetricsTest {
@@ -57,6 +60,46 @@ class SdkMeterProviderMetricsTest {
                                                 SemConvAttributes.OTEL_COMPONENT_NAME,
                                                 "periodic_metric_reader/0"))));
               });
+    }
+  }
+
+  @Test
+  void collectionFailureIsRecordedWithErrorType() {
+    InMemoryMetricExporter metricExporter = InMemoryMetricExporter.create();
+    AtomicBoolean shouldFail = new AtomicBoolean(true);
+    // Fail the first collection, then succeed so the recorded self-observability sample can be
+    // exported on the following flush.
+    MetricProducer failingProducer =
+        resource -> {
+          if (shouldFail.getAndSet(false)) {
+            throw new IllegalStateException("boom");
+          }
+          return Collections.emptyList();
+        };
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder()
+            .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+            .registerMetricProducer(failingProducer)
+            .build()) {
+
+      meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+      metricExporter.reset();
+      // Export again to export the metric reader's self-observability metric.
+      meterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+
+      assertThat(metricExporter.getFinishedMetricItems())
+          .anySatisfy(
+              m ->
+                  assertThat(m)
+                      .hasName("otel.sdk.metric_reader.collection.duration")
+                      .hasHistogramSatisfying(
+                          h ->
+                              h.hasPointsSatisfying(
+                                  p ->
+                                      p.hasAttributesSatisfying(
+                                          equalTo(
+                                              SemConvAttributes.ERROR_TYPE,
+                                              "java.lang.IllegalStateException")))));
     }
   }
 }
