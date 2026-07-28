@@ -45,6 +45,7 @@ public final class JaegerRemoteSampler implements Sampler {
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final GrpcSender grpcSender;
+  private final int pollingIntervalMs;
 
   JaegerRemoteSampler(
       GrpcSender grpcSender,
@@ -53,6 +54,7 @@ public final class JaegerRemoteSampler implements Sampler {
       Sampler initialSampler) {
     this.serviceName = serviceName != null ? serviceName : "";
     this.grpcSender = grpcSender;
+    this.pollingIntervalMs = pollingIntervalMs;
     this.sampler = initialSampler;
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     pollFuture =
@@ -172,6 +174,11 @@ public final class JaegerRemoteSampler implements Sampler {
   // Visible for testing
   Sampler getSampler() {
     return this.sampler;
+  }
+
+  // Visible for testing
+  int getPollingIntervalMs() {
+    return this.pollingIntervalMs;
   }
 
   public static JaegerRemoteSamplerBuilder builder() {
