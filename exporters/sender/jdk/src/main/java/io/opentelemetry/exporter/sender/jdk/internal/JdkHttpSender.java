@@ -414,9 +414,46 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public CompletableResultCode shutdown() {
-    if (managedExecutor) {
-      executorService.shutdown();
+    if (!managedExecutor) {
+      return closeClient();
     }
+
+    // Use shutdownNow() to interrupt in-flight requests, including retry backoff sleeps
+    executorService.shutdownNow();
+
+    // Wait for threads to terminate in a background thread. Closing the client also blocks until
+    // in-flight requests complete, so it must not run on the caller's thread either.
+    CompletableResultCode result = new CompletableResultCode();
+    Thread terminationThread =
+        new Thread(
+            () -> {
+              try {
+                // Wait up to 5 seconds for threads to terminate
+                // Even if timeout occurs, we proceed since these are daemon threads
+                boolean terminated = executorService.awaitTermination(5, TimeUnit.SECONDS);
+                if (!terminated) {
+                  logger.log(
+                      Level.WARNING,
+                      "Executor did not terminate within 5 seconds, proceeding with shutdown since threads are daemon threads.");
+                }
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+              } finally {
+                CompletableResultCode closeResult = closeClient();
+                if (closeResult.isSuccess()) {
+                  result.succeed();
+                } else {
+                  result.failExceptionally(closeResult.getFailureThrowable());
+                }
+              }
+            },
+            "jdkhttp-shutdown");
+    terminationThread.setDaemon(true);
+    terminationThread.start();
+    return result;
+  }
+
+  private CompletableResultCode closeClient() {
     if (AutoCloseable.class.isInstance(client)) {
       try {
         AutoCloseable.class.cast(client).close();
