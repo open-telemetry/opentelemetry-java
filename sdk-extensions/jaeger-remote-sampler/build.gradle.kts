@@ -33,8 +33,6 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
-  testImplementation(project(":sdk-extensions:declarative-config"))
-  testImplementation(project(":api:incubator"))
   testImplementation("com.google.guava:guava")
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.linecorp.armeria:armeria-junit5")

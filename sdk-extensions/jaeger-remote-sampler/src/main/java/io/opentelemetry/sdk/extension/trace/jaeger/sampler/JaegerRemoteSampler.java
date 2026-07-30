@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,15 +46,18 @@ public final class JaegerRemoteSampler implements Sampler {
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   private final GrpcSender grpcSender;
+  private final URI endpoint;
   private final int pollingIntervalMs;
 
   JaegerRemoteSampler(
       GrpcSender grpcSender,
+      URI endpoint,
       @Nullable String serviceName,
       int pollingIntervalMs,
       Sampler initialSampler) {
     this.serviceName = serviceName != null ? serviceName : "";
     this.grpcSender = grpcSender;
+    this.endpoint = endpoint;
     this.pollingIntervalMs = pollingIntervalMs;
     this.sampler = initialSampler;
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
@@ -163,7 +167,13 @@ public final class JaegerRemoteSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return String.format("JaegerRemoteSampler{%s}", this.sampler);
+    return "JaegerRemoteSampler{sampler="
+        + this.sampler
+        + ", endpoint="
+        + this.endpoint
+        + ", pollingIntervalMs="
+        + this.pollingIntervalMs
+        + "}";
   }
 
   @Override
@@ -174,11 +184,6 @@ public final class JaegerRemoteSampler implements Sampler {
   // Visible for testing
   Sampler getSampler() {
     return this.sampler;
-  }
-
-  // Visible for testing
-  int getPollingIntervalMs() {
-    return this.pollingIntervalMs;
   }
 
   public static JaegerRemoteSamplerBuilder builder() {
