@@ -18,6 +18,8 @@
 
 ### Shims
 
+* OpenTracing: Return the extracted `SpanContext` when it is sampled but invalid
+  ([#8634](https://github.com/open-telemetry/opentelemetry-java/pull/8634))
 * Add OpenCensus links to the OpenTelemetry span instead of logging a warning and dropping them
   ([#8635](https://github.com/open-telemetry/opentelemetry-java/pull/8635))
 
