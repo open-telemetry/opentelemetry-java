@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
   "probability/development",
   "trace_id_ratio_based"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class SamplerModel {
 
   @Nullable private AlwaysOffSamplerModel alwaysOff;

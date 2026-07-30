@@ -12,12 +12,12 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class BaggagePropagatorModel {
 
   @Override
   public String toString() {
-    return "BaggagePropagatorModel{" + "}";
+    return "BaggagePropagatorModel{}";
   }
 
   @Override

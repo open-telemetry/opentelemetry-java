@@ -5,24 +5,20 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.HashMap;
-import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"name", "value", "type"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class AttributeNameValueModel {
 
   @Nullable private String name;
   @Nullable private Object value;
-  @Nullable private AttributeNameValueModel.AttributeType type;
+  @Nullable private AttributeTypeModel type;
 
   /**
    * The attribute name.
@@ -85,12 +81,12 @@ public class AttributeNameValueModel {
    */
   @JsonProperty("type")
   @Nullable
-  public AttributeNameValueModel.AttributeType getType() {
+  public AttributeTypeModel getType() {
     return type;
   }
 
   @JsonProperty("type")
-  public AttributeNameValueModel withType(AttributeNameValueModel.AttributeType type) {
+  public AttributeNameValueModel withType(AttributeTypeModel type) {
     this.type = type;
     return this;
   }
@@ -131,50 +127,5 @@ public class AttributeNameValueModel {
           && (this.type == null ? that.type == null : this.type.equals(that.type));
     }
     return false;
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum AttributeType {
-    STRING("string"),
-    BOOL("bool"),
-    INT("int"),
-    DOUBLE("double"),
-    STRING_ARRAY("string_array"),
-    BOOL_ARRAY("bool_array"),
-    INT_ARRAY("int_array"),
-    DOUBLE_ARRAY("double_array");
-    private final String value;
-    private static final Map<String, AttributeNameValueModel.AttributeType> CONSTANTS =
-        new HashMap<String, AttributeNameValueModel.AttributeType>();
-
-    static {
-      for (AttributeNameValueModel.AttributeType c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    AttributeType(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static AttributeNameValueModel.AttributeType fromValue(String value) {
-      AttributeNameValueModel.AttributeType constant = CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
   }
 }

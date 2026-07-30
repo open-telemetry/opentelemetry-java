@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeTypeModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +31,12 @@ public class TestDeclarativeConfigurationCustomizerProvider
           attributes.add(
               new AttributeNameValueModel()
                   .withName("foo")
-                  .withType(AttributeNameValueModel.AttributeType.STRING)
+                  .withType(AttributeTypeModel.STRING)
                   .withValue("bar"));
           attributes.add(
               new AttributeNameValueModel()
                   .withName("color")
-                  .withType(AttributeNameValueModel.AttributeType.STRING)
+                  .withType(AttributeTypeModel.STRING)
                   .withValue("blue"));
           return model;
         });

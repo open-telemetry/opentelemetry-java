@@ -188,7 +188,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
         compressed = body.source().readByte() != 0;
         body.source().skip(4); // message length — we bound reads by EOF instead
       } catch (IOException e) {
-        logger.log(Level.FINE, "Invalid gRPC response frame");
+        logger.log(Level.FINE, "Invalid gRPC response frame", e);
         onResponse.accept(
             ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
         return;

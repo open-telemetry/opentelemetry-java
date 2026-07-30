@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 @JsonPropertyOrder({
   "general", "cpp", "dotnet", "erlang", "go", "java", "js", "php", "python", "ruby", "rust", "swift"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalInstrumentationModel {
 
   @Nullable private ExperimentalGeneralInstrumentationModel general;

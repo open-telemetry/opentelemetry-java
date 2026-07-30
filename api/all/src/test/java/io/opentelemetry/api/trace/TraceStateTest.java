@@ -17,8 +17,10 @@ import org.junit.jupiter.api.Test;
 class TraceStateTest {
   private static final String FIRST_KEY = "key_1";
   private static final String SECOND_KEY = "key_2";
+  private static final String THIRD_KEY = "key_3";
   private static final String FIRST_VALUE = "value.1";
   private static final String SECOND_VALUE = "value.2";
+  private static final String THIRD_VALUE = "value.3";
 
   private final TraceState firstTraceState =
       TraceState.builder().put(FIRST_KEY, FIRST_VALUE).build();
@@ -301,6 +303,32 @@ class TraceStateTest {
   void removeNotPresent() {
     assertThat(multiValueTraceState.toBuilder().remove("unknown").build())
         .isEqualTo(multiValueTraceState);
+  }
+
+  @Test
+  void removeTwice() {
+    assertThat(firstTraceState.toBuilder().remove(FIRST_KEY).remove(FIRST_KEY).build())
+        .isEqualTo(TraceState.getDefault());
+  }
+
+  @Test
+  void removeTwice_KeepsRemainingEntry() {
+    assertThat(multiValueTraceState.toBuilder().remove(FIRST_KEY).remove(FIRST_KEY).build().asMap())
+        .containsExactly(entry(SECOND_KEY, SECOND_VALUE));
+  }
+
+  @Test
+  void removeTwice_KeepsRemainingEntries() {
+    assertThat(
+            TraceState.builder()
+                .put(FIRST_KEY, FIRST_VALUE)
+                .put(SECOND_KEY, SECOND_VALUE)
+                .put(THIRD_KEY, THIRD_VALUE)
+                .remove(FIRST_KEY)
+                .remove(FIRST_KEY)
+                .build()
+                .asMap())
+        .containsExactly(entry(THIRD_KEY, THIRD_VALUE), entry(SECOND_KEY, SECOND_VALUE));
   }
 
   @Test

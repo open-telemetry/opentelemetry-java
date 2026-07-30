@@ -18,8 +18,11 @@ import javax.annotation.Nullable;
  * this priority order:
  *
  * <ul>
- *   <li>{@code VarHandleStringEncoder} - High-performance Java 9+ implementation using VarHandle
- *   <li>{@code UnsafeStringEncoder} - High-performance Java 8+ implementation using sun.misc.Unsafe
+ *   <li>{@code UnsafeStringEncoder} - High-performance Java 8+ implementation using
+ *       sun.misc.Unsafe. Only attempted when the Java version is detected to be below 23, to avoid
+ *       the JEP 498 deprecation warning.
+ *   <li>{@code VarHandleStringEncoder} - High-performance Java 9+ implementation using VarHandle.
+ *       Requires {@code --add-opens=java.base/java.lang=ALL-UNNAMED}.
  *   <li>{@code FallbackStringEncoder} - Implementation using standard Java operations
  * </ul>
  *
