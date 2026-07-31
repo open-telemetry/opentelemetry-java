@@ -5,8 +5,10 @@
 
 package io.opentelemetry.api.common;
 
-import static io.opentelemetry.api.common.ArrayBackedAttributes.sortAndFilterToAttributes;
+import static io.opentelemetry.api.internal.ArrayBackedAttributes.sortAndFilterToAttributes;
 
+import io.opentelemetry.api.internal.ArrayBackedAttributes;
+import io.opentelemetry.api.internal.ArrayBackedAttributesBuilder;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;

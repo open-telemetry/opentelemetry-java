@@ -1,2 +1,33 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.65.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.64.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.AttributeLimits  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.AttributeLimitsBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getCountLimit()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getValueDepthLimit()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getValueLengthLimit()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.AttributeLimitsBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.AttributeLimits build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.AttributeLimitsBuilder setCountLimit(int)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.AttributeLimitsBuilder setValueDepthLimit(int)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.AttributeLimitsBuilder setValueLengthLimit(int)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.LimitedAttributes  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.api.common.Attributes
+	+++  NEW INTERFACE: io.opentelemetry.api.common.AttributesBuilder
+	+++  NEW SUPERCLASS: io.opentelemetry.api.internal.ArrayBackedAttributesBuilder
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Attributes applyLimits(io.opentelemetry.sdk.common.AttributeLimits, io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) java.util.Map<io.opentelemetry.api.common.AttributeKey<?>,java.lang.Object> asMap()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Attributes build()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.LimitedAttributes builder(io.opentelemetry.sdk.common.AttributeLimits)
+	+++  NEW METHOD: PUBLIC(+) void forEach(java.util.function.BiConsumer<? super io.opentelemetry.api.common.AttributeKey<? super ?>,? super java.lang.Object>)
+	+++  NEW METHOD: PUBLIC(+) java.lang.Object get(io.opentelemetry.api.common.AttributeKey<T>)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) int getTotalAddedValues()
+	+++  NEW METHOD: PUBLIC(+) boolean isEmpty()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributesBuilder removeIf(java.util.function.Predicate<io.opentelemetry.api.common.AttributeKey<?>>)
+	+++  NEW METHOD: PUBLIC(+) int size()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributesBuilder toBuilder()

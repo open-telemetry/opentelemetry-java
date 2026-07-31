@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
@@ -14,20 +14,37 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.common.ValueType;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
-class ArrayBackedAttributesBuilder implements AttributesBuilder {
-  private final List<Object> data;
+/**
+ * Default {@link AttributesBuilder} implementation. Storage is a flat {@link List} of alternating
+ * {@link AttributeKey}/value pairs; {@link #build()} sorts and de-dupes on demand.
+ *
+ * <p>Subclasses may override {@link #addPair(AttributeKey, Object)} to intercept every entry going
+ * into storage (used by SDK code to enforce attribute limits) and {@link #removeIf(Predicate)} to
+ * observe removals.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
-  ArrayBackedAttributesBuilder() {
-    data = new ArrayList<>();
+  protected final List<Object> data;
+
+  public ArrayBackedAttributesBuilder() {
+    this.data = new ArrayList<>();
   }
 
-  ArrayBackedAttributesBuilder(List<Object> data) {
+  public ArrayBackedAttributesBuilder(List<Object> data) {
     this.data = data;
   }
 
@@ -55,9 +72,17 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
       putValue(key, (Value<?>) value);
       return this;
     }
+    addPair(key, value);
+    return this;
+  }
+
+  /**
+   * Extension point: append {@code key}/{@code value} to storage. Default appends without further
+   * processing.
+   */
+  protected void addPair(AttributeKey<?> key, Object value) {
     data.add(key);
     data.add(value);
-    return this;
   }
 
   @SuppressWarnings("unchecked")
@@ -111,8 +136,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
             return;
           case VALUE:
             // Not coercible (empty, non-homogeneous, or unsupported element type)
-            data.add(key);
-            data.add(valueObj);
+            addPair(key, valueObj);
             return;
           default:
             throw new IllegalArgumentException("Unexpected array attribute type: " + attributeType);
@@ -121,8 +145,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
       case BYTES:
       case EMPTY:
         // Keep as VALUE type
-        data.add(key);
-        data.add(valueObj);
+        addPair(key, valueObj);
     }
   }
 
@@ -194,29 +217,5 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
       }
     }
     return this;
-  }
-
-  static List<Double> toList(double... values) {
-    Double[] boxed = new Double[values.length];
-    for (int i = 0; i < values.length; i++) {
-      boxed[i] = values[i];
-    }
-    return Arrays.asList(boxed);
-  }
-
-  static List<Long> toList(long... values) {
-    Long[] boxed = new Long[values.length];
-    for (int i = 0; i < values.length; i++) {
-      boxed[i] = values[i];
-    }
-    return Arrays.asList(boxed);
-  }
-
-  static List<Boolean> toList(boolean... values) {
-    Boolean[] boxed = new Boolean[values.length];
-    for (int i = 0; i < values.length; i++) {
-      boxed[i] = values[i];
-    }
-    return Arrays.asList(boxed);
   }
 }

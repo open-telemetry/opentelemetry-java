@@ -3,9 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.internal;
 
-import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.common.ValueType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,8 +18,14 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Default {@link Attributes} implementation. Not intended for external use.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @Immutable
-final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
+public final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
     implements Attributes {
 
   // We only compare the key name, not type, when constructing, to allow deduping keys with the
@@ -22,7 +33,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
   private static final Comparator<AttributeKey<?>> KEY_COMPARATOR_FOR_CONSTRUCTION =
       Comparator.comparing(AttributeKey::getKey);
 
-  static final Attributes EMPTY = Attributes.builder().build();
+  public static final Attributes EMPTY = Attributes.builder().build();
 
   private ArrayBackedAttributes(Object[] data, Comparator<AttributeKey<?>> keyComparator) {
     super(data, keyComparator);
@@ -34,7 +45,8 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
    *
    * @param data the raw data
    */
-  ArrayBackedAttributes(Object[] data) {
+  @SuppressWarnings("AvoidObjectArrays")
+  public ArrayBackedAttributes(Object[] data) {
     super(data);
   }
 
@@ -158,7 +170,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     return null;
   }
 
-  static Attributes sortAndFilterToAttributes(Object... data) {
+  public static Attributes sortAndFilterToAttributes(Object... data) {
     // null out any empty keys or keys with null values
     // so they will then be removed by the sortAndFilter method.
     for (int i = 0; i < data.length; i += 2) {

@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
+import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.sdk.common.AttributeLimits;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -102,6 +104,25 @@ public abstract class SpanLimits {
     return DEFAULT_SPAN_MAX_ATTRIBUTE_LENGTH;
   }
 
+  AttributeLimits getSpanAttributeLimits() {
+    return deriveAttributeLimits(getMaxNumberOfAttributes());
+  }
+
+  AttributeLimits getEventAttributeLimits() {
+    return deriveAttributeLimits(getMaxNumberOfAttributesPerEvent());
+  }
+
+  AttributeLimits getLinkAttributeLimits() {
+    return deriveAttributeLimits(getMaxNumberOfAttributesPerLink());
+  }
+
+  private AttributeLimits deriveAttributeLimits(int countLimit) {
+    return AttributeLimits.builder()
+        .setCountLimit(countLimit)
+        .setValueLengthLimit(getMaxAttributeValueLength())
+        .build();
+  }
+
   /**
    * Returns a {@link SpanLimitsBuilder} initialized to the same property values as the current
    * instance.
@@ -129,5 +150,23 @@ public abstract class SpanLimits {
      */
     @Override
     public abstract int getMaxAttributeValueLength();
+
+    @Memoized
+    @Override
+    AttributeLimits getSpanAttributeLimits() {
+      return super.getSpanAttributeLimits();
+    }
+
+    @Memoized
+    @Override
+    AttributeLimits getEventAttributeLimits() {
+      return super.getEventAttributeLimits();
+    }
+
+    @Memoized
+    @Override
+    AttributeLimits getLinkAttributeLimits() {
+      return super.getLinkAttributeLimits();
+    }
   }
 }

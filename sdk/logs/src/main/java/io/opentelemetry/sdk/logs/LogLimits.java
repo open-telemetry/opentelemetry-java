@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.logs;
 
 import com.google.auto.value.AutoValue;
+import com.google.auto.value.extension.memoized.Memoized;
+import io.opentelemetry.sdk.common.AttributeLimits;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.function.Supplier;
 import javax.annotation.concurrent.Immutable;
@@ -55,6 +57,14 @@ public abstract class LogLimits {
    * @return the max number of characters for attribute strings.
    */
   public abstract int getMaxAttributeValueLength();
+
+  @Memoized
+  AttributeLimits getAttributeLimits() {
+    return AttributeLimits.builder()
+        .setCountLimit(getMaxNumberOfAttributes())
+        .setValueLengthLimit(getMaxAttributeValueLength())
+        .build();
+  }
 
   /**
    * Returns a {@link LogLimitsBuilder} initialized to the same property values as the current

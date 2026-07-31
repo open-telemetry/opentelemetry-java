@@ -12,7 +12,7 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.internal.AttributesMap;
+import io.opentelemetry.sdk.common.LimitedAttributes;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -35,7 +35,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
   @GuardedBy("lock")
   @Nullable
-  private AttributesMap attributes;
+  private LimitedAttributes attributes;
 
   protected SdkReadWriteLogRecord(
       LogLimits logLimits,
@@ -47,7 +47,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable AttributesMap attributes,
+      @Nullable LimitedAttributes attributes,
       @Nullable String eventName) {
     this.logLimits = logLimits;
     this.resource = resource;
@@ -73,7 +73,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable AttributesMap attributes,
+      @Nullable LimitedAttributes attributes,
       @Nullable String eventName) {
     return new SdkReadWriteLogRecord(
         logLimits,
@@ -96,9 +96,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     }
     synchronized (lock) {
       if (attributes == null) {
-        attributes =
-            AttributesMap.create(
-                logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+        attributes = LimitedAttributes.builder(logLimits.getAttributeLimits());
       }
       attributes.put(key, value);
     }
@@ -110,7 +108,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       if (attributes == null || attributes.isEmpty()) {
         return Attributes.empty();
       }
-      return attributes.immutableCopy();
+      return attributes.build();
     }
   }
 

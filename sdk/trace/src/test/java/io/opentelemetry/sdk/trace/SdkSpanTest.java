@@ -39,8 +39,9 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.AttributeLimits;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.internal.AttributesMap;
+import io.opentelemetry.sdk.common.LimitedAttributes;
 import io.opentelemetry.sdk.common.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.common.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
@@ -1407,8 +1408,11 @@ class SdkSpanTest {
             ExceptionAttributeResolver.getDefault(),
             testClock,
             resource,
-            AttributesMap.create(
-                spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength()),
+            LimitedAttributes.builder(
+                AttributeLimits.builder()
+                    .setCountLimit(spanLimits.getMaxNumberOfAttributes())
+                    .setValueLengthLimit(spanLimits.getMaxAttributeValueLength())
+                    .build()),
             Collections.emptyList(),
             1,
             0,
@@ -1483,17 +1487,18 @@ class SdkSpanTest {
     return spanConsumer;
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private SdkSpan createTestSpanWithAttributes(Map<AttributeKey, Object> attributes) {
     SpanLimits spanLimits = SpanLimits.getDefault();
-    AttributesMap attributesMap =
-        AttributesMap.create(
-            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
-    attributes.forEach(attributesMap::put);
+    LimitedAttributes builder = LimitedAttributes.builder(spanLimits.getSpanAttributeLimits());
+    for (Map.Entry<AttributeKey, Object> entry : attributes.entrySet()) {
+      builder.put(entry.getKey(), entry.getValue());
+    }
     return createTestSpan(
         SpanKind.INTERNAL,
         SpanLimits.getDefault(),
         null,
-        attributesMap,
+        builder,
         singletonList(link),
         ExceptionAttributeResolver.getDefault());
   }
@@ -1532,7 +1537,7 @@ class SdkSpanTest {
       SpanKind kind,
       SpanLimits config,
       @Nullable String parentSpanId,
-      @Nullable AttributesMap attributes,
+      @Nullable LimitedAttributes attributes,
       @Nullable List<LinkData> links,
       ExceptionAttributeResolver exceptionAttributeResolver) {
     List<LinkData> linksCopy = links == null ? new ArrayList<>() : new ArrayList<>(links);
@@ -1618,8 +1623,10 @@ class SdkSpanTest {
     TestClock clock = TestClock.create();
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
-    AttributesMap attributesWithCapacity = AttributesMap.create(32, Integer.MAX_VALUE);
-    attributes.forEach(attributesWithCapacity::put);
+    LimitedAttributes attributesWithCapacity =
+        LimitedAttributes.builder(AttributeLimits.builder().setCountLimit(32).build());
+    attributesWithCapacity.putAll(attributes);
+    Attributes builtAttributes = attributesWithCapacity.build();
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
@@ -1670,7 +1677,7 @@ class SdkSpanTest {
     SpanData result = readableSpan.toSpanData();
     verifySpanData(
         result,
-        attributesWithCapacity,
+        builtAttributes,
         events,
         singletonList(link1),
         name,

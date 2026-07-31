@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.common;
 
-import static io.opentelemetry.api.common.ArrayBackedAttributesBuilder.toList;
 import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
@@ -166,7 +165,11 @@ public interface AttributesBuilder {
     if (value == null) {
       return this;
     }
-    return put(longArrayKey(key), toList(value));
+    Long[] boxed = new Long[value.length];
+    for (int i = 0; i < value.length; i++) {
+      boxed[i] = value[i];
+    }
+    return put(longArrayKey(key), Arrays.asList(boxed));
   }
 
   /**
@@ -181,7 +184,11 @@ public interface AttributesBuilder {
     if (value == null) {
       return this;
     }
-    return put(doubleArrayKey(key), toList(value));
+    Double[] boxed = new Double[value.length];
+    for (int i = 0; i < value.length; i++) {
+      boxed[i] = value[i];
+    }
+    return put(doubleArrayKey(key), Arrays.asList(boxed));
   }
 
   /**
@@ -196,7 +203,11 @@ public interface AttributesBuilder {
     if (value == null) {
       return this;
     }
-    return put(booleanArrayKey(key), toList(value));
+    Boolean[] boxed = new Boolean[value.length];
+    for (int i = 0; i < value.length; i++) {
+      boxed[i] = value[i];
+    }
+    return put(booleanArrayKey(key), Arrays.asList(boxed));
   }
 
   /**

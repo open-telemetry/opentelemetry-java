@@ -12,7 +12,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.internal.AttributesMap;
+import io.opentelemetry.sdk.common.LimitedAttributes;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -32,7 +32,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   @Nullable private String severityText;
   @Nullable private Value<?> body;
   @Nullable private String eventName;
-  @Nullable private AttributesMap attributes;
+  @Nullable private LimitedAttributes attributes;
 
   SdkLogRecordBuilder(
       LoggerSharedState loggerSharedState,
@@ -127,9 +127,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
       return this;
     }
     if (this.attributes == null) {
-      this.attributes =
-          AttributesMap.create(
-              logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+      this.attributes = LimitedAttributes.builder(logLimits.getAttributeLimits());
     }
     this.attributes.put(key, value);
     return this;

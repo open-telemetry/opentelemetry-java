@@ -23,8 +23,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.internal.AttributeUtil;
-import io.opentelemetry.sdk.common.internal.AttributesMap;
+import io.opentelemetry.sdk.common.LimitedAttributes;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -56,7 +55,7 @@ class SdkSpanBuilder implements SpanBuilder {
 
   @Nullable private Context parent; // null means: Use current context.
   private SpanKind spanKind = SpanKind.INTERNAL;
-  @Nullable private AttributesMap attributes;
+  @Nullable private LimitedAttributes attributes;
   @Nullable private List<LinkData> links;
   private int totalNumberOfLinksAdded = 0;
   private long startEpochNanos = 0;
@@ -113,15 +112,11 @@ class SdkSpanBuilder implements SpanBuilder {
     if (attributes == null) {
       attributes = Attributes.empty();
     }
-    int totalAttributeCount = attributes.size();
     addLink(
         LinkData.create(
             spanContext,
-            AttributeUtil.applyAttributesLimit(
-                attributes,
-                spanLimits.getMaxNumberOfAttributesPerLink(),
-                spanLimits.getMaxAttributeValueLength()),
-            totalAttributeCount));
+            LimitedAttributes.applyLimits(spanLimits.getLinkAttributeLimits(), attributes),
+            attributes.size()));
     return this;
   }
 
@@ -215,7 +210,7 @@ class SdkSpanBuilder implements SpanBuilder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
-    Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
+    Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes.build();
     SamplingResult samplingResult =
         tracerSharedState
             .getSampler()
@@ -250,12 +245,12 @@ class SdkSpanBuilder implements SpanBuilder {
     }
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
-      samplingAttributes.forEach((key, value) -> attributes().put((AttributeKey) key, value));
+      attributes().putAll(samplingAttributes);
     }
 
     // Avoid any possibility to modify the attributes by adding attributes to the Builder after the
-    // startSpan is called. If that happens all the attributes will be added in a new map.
-    AttributesMap recordedAttributes = attributes;
+    // startSpan is called. If that happens all the attributes will be added in a new builder.
+    LimitedAttributes recordedAttributes = attributes;
     attributes = null;
 
     return SdkSpan.startSpan(
@@ -277,12 +272,10 @@ class SdkSpanBuilder implements SpanBuilder {
         recordEndSpanMetrics);
   }
 
-  private AttributesMap attributes() {
-    AttributesMap attributes = this.attributes;
+  private LimitedAttributes attributes() {
+    LimitedAttributes attributes = this.attributes;
     if (attributes == null) {
-      this.attributes =
-          AttributesMap.create(
-              spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
+      this.attributes = LimitedAttributes.builder(spanLimits.getSpanAttributeLimits());
       attributes = this.attributes;
     }
     return attributes;
