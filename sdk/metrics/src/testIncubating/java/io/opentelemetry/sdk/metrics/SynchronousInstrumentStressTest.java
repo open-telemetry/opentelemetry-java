@@ -18,6 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.util.concurrent.Uninterruptibles;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogram;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongGauge;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -56,10 +64,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * {@link #stressTest(AggregationTemporality, InstrumentType, Aggregation, MemoryMode,
- * InstrumentValueType)} performs a stress test to confirm simultaneous record and collections do
- * not have concurrency issues like lost writes, partial writes, duplicate writes, etc. All
- * combinations of the following dimensions are tested: aggregation temporality, instrument type
- * (synchronous), memory mode, instrument value type.
+ * InstrumentValueType, boolean)} performs a stress test to confirm simultaneous record and
+ * collections do not have concurrency issues like lost writes, partial writes, duplicate writes,
+ * etc. All combinations of the following dimensions are tested: aggregation temporality, instrument
+ * type (synchronous), memory mode, instrument value type, and whether recording goes through bound
+ * instruments ({@code Extended*#bind(Attributes)}) or unbound instruments.
+ *
+ * <p>Lives in {@code testIncubating} because the bound dimension exercises {@code
+ * opentelemetry-api-incubator}, which the base {@code test} source set is not allowed to depend on.
  */
 class SynchronousInstrumentStressTest {
 
@@ -79,7 +91,7 @@ class SynchronousInstrumentStressTest {
 
   // Can change to a higher value when making changes to internals to improve confidence of
   // correctness.
-  private static final int STRESS_TEST_REPETITIONS = 1;
+  private static final int STRESS_TEST_REPETITIONS = 10;
 
   @ParameterizedTest
   @MethodSource("stressTestArgs")
@@ -88,10 +100,16 @@ class SynchronousInstrumentStressTest {
       InstrumentType instrumentType,
       Aggregation aggregation,
       MemoryMode memoryMode,
-      InstrumentValueType instrumentValueType) {
+      InstrumentValueType instrumentValueType,
+      boolean bound) {
     for (int repetition = 0; repetition < STRESS_TEST_REPETITIONS; repetition++) {
       stressTestOnce(
-          aggregationTemporality, instrumentType, aggregation, memoryMode, instrumentValueType);
+          aggregationTemporality,
+          instrumentType,
+          aggregation,
+          memoryMode,
+          instrumentValueType,
+          bound);
     }
   }
 
@@ -101,7 +119,8 @@ class SynchronousInstrumentStressTest {
       InstrumentType instrumentType,
       Aggregation aggregation,
       MemoryMode memoryMode,
-      InstrumentValueType instrumentValueType) {
+      InstrumentValueType instrumentValueType,
+      boolean bound) {
     // Initialize metric SDK
     DefaultAggregationSelector aggregationSelector =
         DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);
@@ -117,7 +136,16 @@ class SynchronousInstrumentStressTest {
     Meter meter = meterProvider.get("test");
     List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
     Collections.shuffle(attributes);
+    // When unbound, record through `instrument`, looking up the series by attributes on each call.
+    // When bound, bind one instrument per series up front and record straight to those (no
+    // per-record attribute lookup) — the record loop below forks accordingly.
     Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
+    List<BoundInstrument> boundInstruments = new ArrayList<>();
+    if (bound) {
+      for (Attributes attr : attributes) {
+        boundInstruments.add(getBoundInstrument(meter, instrumentType, instrumentValueType, attr));
+      }
+    }
 
     // Define list of measurements to record
     // Later, we'll assert that the data collected matches these measurements, with no lost writes,
@@ -139,11 +167,20 @@ class SynchronousInstrumentStressTest {
           new Thread(
               () -> {
                 Uninterruptibles.awaitUninterruptibly(startSignal);
-                for (Long measurement : measurements) {
-                  for (Attributes attr : attributes) {
-                    instrument.record(measurement, attr);
+                if (bound) {
+                  for (Long measurement : measurements) {
+                    for (BoundInstrument boundInstrument : boundInstruments) {
+                      boundInstrument.record(measurement);
+                    }
+                    Thread.yield();
                   }
-                  Thread.yield();
+                } else {
+                  for (Long measurement : measurements) {
+                    for (Attributes attr : attributes) {
+                      instrument.record(measurement, attr);
+                    }
+                    Thread.yield();
+                  }
                 }
                 latch.countDown();
               }));
@@ -298,20 +335,24 @@ class SynchronousInstrumentStressTest {
           InstrumentTypeAndAggregation.values()) {
         for (MemoryMode memoryMode : MemoryMode.values()) {
           for (InstrumentValueType instrumentValueType : InstrumentValueType.values()) {
-            argumentsList.add(
-                Arguments.argumentSet(
-                    aggregationTemporality
-                        + " "
-                        + instrumentTypeAndAggregation.instrumentType
-                        + " "
-                        + memoryMode
-                        + " "
-                        + instrumentValueType,
-                    aggregationTemporality,
-                    instrumentTypeAndAggregation.instrumentType,
-                    instrumentTypeAndAggregation.aggregation,
-                    memoryMode,
-                    instrumentValueType));
+            for (boolean bound : new boolean[] {false, true}) {
+              argumentsList.add(
+                  Arguments.argumentSet(
+                      aggregationTemporality
+                          + " "
+                          + instrumentTypeAndAggregation.instrumentType
+                          + " "
+                          + memoryMode
+                          + " "
+                          + instrumentValueType
+                          + (bound ? " bound" : " unbound"),
+                      aggregationTemporality,
+                      instrumentTypeAndAggregation.instrumentType,
+                      instrumentTypeAndAggregation.aggregation,
+                      memoryMode,
+                      instrumentValueType,
+                      bound));
+            }
           }
         }
       }
@@ -354,8 +395,72 @@ class SynchronousInstrumentStressTest {
     throw new IllegalArgumentException();
   }
 
+  /**
+   * Builds the instrument for the given type / value type and binds it to {@code attributes},
+   * returning a {@link BoundInstrument} that records straight to that series. Mirrors {@link
+   * #getInstrument} but for the bound API.
+   */
+  private static BoundInstrument getBoundInstrument(
+      Meter meter,
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      Attributes attributes) {
+    boolean isDouble = instrumentValueType == InstrumentValueType.DOUBLE;
+    switch (instrumentType) {
+      case COUNTER:
+        return isDouble
+            ? ((ExtendedDoubleCounter) meter.counterBuilder(INSTRUMENT_NAME).ofDoubles().build())
+                    .bind(attributes)
+                ::add
+            : ((ExtendedLongCounter) meter.counterBuilder(INSTRUMENT_NAME).build()).bind(attributes)
+                ::add;
+      case UP_DOWN_COUNTER:
+        return isDouble
+            ? ((ExtendedDoubleUpDownCounter)
+                        meter.upDownCounterBuilder(INSTRUMENT_NAME).ofDoubles().build())
+                    .bind(attributes)
+                ::add
+            : ((ExtendedLongUpDownCounter) meter.upDownCounterBuilder(INSTRUMENT_NAME).build())
+                    .bind(attributes)
+                ::add;
+      case HISTOGRAM:
+        return isDouble
+            ? ((ExtendedDoubleHistogram)
+                        meter
+                            .histogramBuilder(INSTRUMENT_NAME)
+                            .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                            .build())
+                    .bind(attributes)
+                ::record
+            : ((ExtendedLongHistogram)
+                        meter
+                            .histogramBuilder(INSTRUMENT_NAME)
+                            .setExplicitBucketBoundariesAdvice(BUCKET_BOUNDARIES)
+                            .ofLongs()
+                            .build())
+                    .bind(attributes)
+                ::record;
+      case GAUGE:
+        return isDouble
+            ? ((ExtendedDoubleGauge) meter.gaugeBuilder(INSTRUMENT_NAME).build()).bind(attributes)
+                ::set
+            : ((ExtendedLongGauge) meter.gaugeBuilder(INSTRUMENT_NAME).ofLongs().build())
+                    .bind(attributes)
+                ::set;
+      case OBSERVABLE_COUNTER:
+      case OBSERVABLE_UP_DOWN_COUNTER:
+      case OBSERVABLE_GAUGE:
+    }
+    throw new IllegalArgumentException();
+  }
+
   private interface Instrument {
     void record(long value, Attributes attributes);
+  }
+
+  @FunctionalInterface
+  private interface BoundInstrument {
+    void record(long value);
   }
 
   private static MetricData copy(MetricData m) {

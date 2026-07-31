@@ -115,7 +115,9 @@ class ImmutableBaggageTest {
   void put_keyEmpty() {
     BaggageBuilder builder = ONE_ENTRY.toBuilder();
     builder.put("", "value");
-    assertThat(builder.build().getEntryValue("")).isEqualTo("value");
+    Baggage build = builder.build();
+    assertThat(build.getEntryValue("")).isNull();
+    assertThat(build).isEqualTo(ONE_ENTRY);
   }
 
   @Test

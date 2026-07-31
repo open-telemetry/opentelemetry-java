@@ -41,12 +41,7 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
 
   @Override
   public void record(long value, Attributes attributes, Context context) {
-    if (value < 0) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Histograms can only record non-negative values. Instrument "
-              + getDescriptor().getName()
-              + " has recorded a negative value.");
+    if (!validateNonNegative(value)) {
       return;
     }
     storage.recordLong(value, attributes, context);
@@ -60,6 +55,22 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   @Override
   public void record(long value) {
     record(value, Attributes.empty());
+  }
+
+  /**
+   * Returns true if {@code value} is non-negative, otherwise logs a warning and returns false.
+   * Shared by the unbound and bound ({@link ExtendedSdkLongHistogram}) record paths.
+   */
+  boolean validateNonNegative(long value) {
+    if (value < 0) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Histograms can only record non-negative values. Instrument "
+              + getDescriptor().getName()
+              + " has recorded a negative value.");
+      return false;
+    }
+    return true;
   }
 
   static class SdkLongHistogramBuilder implements LongHistogramBuilder {
