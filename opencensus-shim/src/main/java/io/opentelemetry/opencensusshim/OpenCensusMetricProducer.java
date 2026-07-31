@@ -21,7 +21,11 @@ import java.util.List;
  * both OpenTelemetry and OpenCensus metrics.
  *
  * <p>To use, register with {@link SdkMeterProviderBuilder#registerMetricProducer(MetricProducer)}.
+ *
+ * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification. This shim
+ *     is deprecated accordingly. Migrate OpenCensus instrumentation to the OpenTelemetry APIs.
  */
+@Deprecated
 public final class OpenCensusMetricProducer implements MetricProducer {
   private final MetricProducerManager openCensusMetricStorage;
 
@@ -32,7 +36,11 @@ public final class OpenCensusMetricProducer implements MetricProducer {
   /**
    * Constructs a new {@link OpenCensusMetricProducer} that reports against the given {@link
    * Resource}.
+   *
+   * @deprecated OpenCensus compatibility is deprecated. Migrate OpenCensus instrumentation to the
+   *     OpenTelemetry APIs.
    */
+  @Deprecated
   public static MetricProducer create() {
     return new OpenCensusMetricProducer(Metrics.getExportComponent().getMetricProducerManager());
   }

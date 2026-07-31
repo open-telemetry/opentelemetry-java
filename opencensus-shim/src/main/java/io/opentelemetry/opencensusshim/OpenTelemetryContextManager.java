@@ -16,12 +16,22 @@ import java.util.logging.Logger;
  * {@link io.opencensus.trace.unsafe.ContextManagerImpl}. It is loaded by OpenCensus via reflection
  * automatically in {@link io.opencensus.trace.unsafe.ContextHandleUtils} when the OpenCensus shim
  * library exists as a dependency.
+ *
+ * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification. This shim
+ *     is deprecated accordingly. Migrate OpenCensus instrumentation to the OpenTelemetry APIs.
  */
+@Deprecated
 public final class OpenTelemetryContextManager implements ContextManager {
 
   private static final Logger LOGGER =
       Logger.getLogger(OpenTelemetryContextManager.class.getName());
 
+  /**
+   * Creates the context manager loaded by OpenCensus through reflection.
+   *
+   * @deprecated This constructor is used by the deprecated OpenCensus compatibility shim.
+   */
+  @Deprecated
   @SuppressWarnings("unused") // Loaded via reflection
   public OpenTelemetryContextManager() {}
 
