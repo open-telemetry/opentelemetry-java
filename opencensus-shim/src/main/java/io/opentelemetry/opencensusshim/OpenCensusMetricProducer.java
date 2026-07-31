@@ -22,8 +22,9 @@ import java.util.List;
  *
  * <p>To use, register with {@link SdkMeterProviderBuilder#registerMetricProducer(MetricProducer)}.
  *
- * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification. This shim
- *     is deprecated accordingly. Migrate OpenCensus instrumentation to the OpenTelemetry APIs.
+ * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification (see <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/5138">#5138</a>).
+ *     Expect this artifact to no longer be published after June 2027.
  */
 @Deprecated
 public final class OpenCensusMetricProducer implements MetricProducer {
@@ -37,8 +38,9 @@ public final class OpenCensusMetricProducer implements MetricProducer {
    * Constructs a new {@link OpenCensusMetricProducer} that reports against the given {@link
    * Resource}.
    *
-   * @deprecated OpenCensus compatibility is deprecated. Migrate OpenCensus instrumentation to the
-   *     OpenTelemetry APIs.
+   * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification (see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/5138">#5138</a>).
+   *     Expect this artifact to no longer be published after June 2027.
    */
   @Deprecated
   public static MetricProducer create() {

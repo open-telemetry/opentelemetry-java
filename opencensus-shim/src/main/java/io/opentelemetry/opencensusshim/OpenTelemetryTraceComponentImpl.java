@@ -22,8 +22,9 @@ import io.opencensus.trace.samplers.Samplers;
  * OpenTelemetry migration StartEndHandler. This class is loaded by reflection in {@link
  * io.opencensus.trace.Tracing} and overrides the OpenCensus default implementation when present.
  *
- * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification. This shim
- *     is deprecated accordingly. Migrate OpenCensus instrumentation to the OpenTelemetry APIs.
+ * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification (see <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/5138">#5138</a>).
+ *     Expect this artifact to no longer be published after June 2027.
  */
 @Deprecated
 public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
@@ -37,7 +38,9 @@ public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
   /**
    * Creates the trace component loaded by OpenCensus through reflection.
    *
-   * @deprecated This constructor is used by the deprecated OpenCensus compatibility shim.
+   * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification (see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/5138">#5138</a>).
+   *     Expect this artifact to no longer be published after June 2027.
    */
   @Deprecated
   @SuppressWarnings("unused") // Loaded via reflection
