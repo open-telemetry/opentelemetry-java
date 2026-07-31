@@ -16,6 +16,7 @@ import io.opentelemetry.api.internal.ArrayBackedAttributesBuilder;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -160,6 +161,11 @@ public final class LimitedAttributes extends ArrayBackedAttributesBuilder
 
   // Non-null entry count. Tracked separately because removeIf leaves null holes in data.
   private int size;
+
+  // name -> index of key in {@link #data}. Lazy-init to keep empty builders allocation-free.
+  // Enables O(1) amortized put; kept in sync with data by addPair / removeIf.
+  @Nullable private HashMap<String, Integer> nameIndex;
+
   @Nullable private Attributes cachedBuild;
 
   LimitedAttributes(AttributeLimits limits) {
@@ -180,18 +186,12 @@ public final class LimitedAttributes extends ArrayBackedAttributesBuilder
     totalAddedValues++;
     Object limited = applyValueLimits(value, valueLengthLimit, valueDepthLimit);
     String name = key.getKey();
-    int emptySlot = -1;
-    for (int i = 0; i < data.size(); i += 2) {
-      Object existing = data.get(i);
-      if (existing == null) {
-        if (emptySlot < 0) {
-          emptySlot = i;
-        }
-        continue;
-      }
-      if (((AttributeKey<?>) existing).getKey().equals(name)) {
-        data.set(i, key);
-        data.set(i + 1, limited);
+    HashMap<String, Integer> index = nameIndex;
+    if (index != null) {
+      Integer existingIdx = index.get(name);
+      if (existingIdx != null) {
+        data.set(existingIdx, key);
+        data.set(existingIdx + 1, limited);
         cachedBuild = null;
         return;
       }
@@ -199,13 +199,14 @@ public final class LimitedAttributes extends ArrayBackedAttributesBuilder
     if (size >= countLimit) {
       return;
     }
-    if (emptySlot >= 0) {
-      data.set(emptySlot, key);
-      data.set(emptySlot + 1, limited);
-    } else {
-      data.add(key);
-      data.add(limited);
+    if (index == null) {
+      index = new HashMap<>();
+      nameIndex = index;
     }
+    int slot = data.size();
+    data.add(key);
+    data.add(limited);
+    index.put(name, slot);
     size++;
     cachedBuild = null;
   }
@@ -216,9 +217,13 @@ public final class LimitedAttributes extends ArrayBackedAttributesBuilder
     if (predicate == null) {
       return this;
     }
+    HashMap<String, Integer> index = nameIndex;
     for (int i = 0; i < data.size() - 1; i += 2) {
       Object entry = data.get(i);
       if (entry instanceof AttributeKey && predicate.test((AttributeKey<?>) entry)) {
+        if (index != null) {
+          index.remove(((AttributeKey<?>) entry).getKey());
+        }
         data.set(i, null);
         data.set(i + 1, null);
         size--;
