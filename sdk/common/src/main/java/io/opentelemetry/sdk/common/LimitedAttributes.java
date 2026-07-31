@@ -246,8 +246,24 @@ public final class LimitedAttributes extends ArrayBackedAttributesBuilder
 
   @Override
   @Nullable
+  @SuppressWarnings("unchecked")
   public <T> T get(AttributeKey<T> key) {
-    return build().get(key);
+    if (key == null) {
+      return null;
+    }
+    HashMap<String, Integer> index = nameIndex;
+    if (index == null) {
+      return null;
+    }
+    Integer idx = index.get(key.getKey());
+    if (idx == null) {
+      return null;
+    }
+    Object storedKey = data.get(idx);
+    if (storedKey == null || !storedKey.equals(key)) {
+      return null;
+    }
+    return (T) data.get(idx + 1);
   }
 
   @Override
@@ -288,7 +304,13 @@ public final class LimitedAttributes extends ArrayBackedAttributesBuilder
    */
   // Visible for testing
   static Object applyValueLimits(Object value, int lengthLimit, int depthLimit) {
-    if (lengthLimit == Integer.MAX_VALUE && depthLimit == Integer.MAX_VALUE) {
+    // Depth only applies to nested Value<> structures. For non-Value inputs, length is the only
+    // knob; when length is unlimited we can return immediately.
+    if (value instanceof Value) {
+      if (lengthLimit == Integer.MAX_VALUE && depthLimit == Integer.MAX_VALUE) {
+        return value;
+      }
+    } else if (lengthLimit == Integer.MAX_VALUE) {
       return value;
     }
     return applyAtDepth(value, 1, lengthLimit, depthLimit);
