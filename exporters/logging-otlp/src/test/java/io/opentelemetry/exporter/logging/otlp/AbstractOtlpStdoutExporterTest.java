@@ -363,7 +363,8 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     return Stream.of(
         Arguments.argumentSet("no scheme", "not-a-stream"),
         Arguments.argumentSet("unsupported scheme", "http://example.com/traces.jsonl"),
-        Arguments.argumentSet("relative file uri", "file://traces.jsonl"));
+        Arguments.argumentSet("relative file uri", "file://traces.jsonl"),
+        Arguments.argumentSet("malformed file uri", "file:///with space.jsonl"));
   }
 
   @ParameterizedTest
