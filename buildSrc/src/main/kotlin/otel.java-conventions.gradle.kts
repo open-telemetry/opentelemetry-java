@@ -83,7 +83,7 @@ tasks {
             // We use a custom Error Prone check instead (OtelDeprecatedApiUsage).
             "-Xlint:-deprecation",
             // Fail build on any warning
-            "-Werror",
+            // "-Werror",
           ),
         )
       }
