@@ -146,8 +146,9 @@ class Parser {
     }
     String decodedValue;
     try {
+      // Only baggage entry values are percent-decoded. Metadata is an opaque string and must not
+      // be percent-decoded (W3C baggage properties / OTel metadata).
       decodedValue = decodeValue(value);
-      metadataValue = decodeValue(metadataValue);
     } catch (IllegalArgumentException e) {
       LOGGER.log(Level.WARNING, "Skipping invalid baggage member", e);
       return;
