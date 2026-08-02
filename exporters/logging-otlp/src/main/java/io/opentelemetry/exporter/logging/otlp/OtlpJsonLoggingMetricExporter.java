@@ -19,8 +19,8 @@ import java.util.logging.Logger;
  * A {@link MetricExporter} which writes {@linkplain MetricData metrics} to a {@link Logger} in OTLP
  * JSON format. Each log line will include a single {@code ResourceMetrics}.
  *
- * <p>Note: This class is superseded by {@code OtlpStdoutMetricExporter}, which allows configuring
- * a custom logger or output stream.
+ * <p>Note: This class is superseded by {@code OtlpStdoutMetricExporter}, which allows configuring a
+ * custom logger or output stream.
  */
 public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
