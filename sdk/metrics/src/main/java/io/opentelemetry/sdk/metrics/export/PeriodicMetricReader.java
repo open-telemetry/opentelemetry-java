@@ -214,66 +214,30 @@ public final class PeriodicMetricReader implements MetricReader {
 
     private Scheduled() {}
 
-    private CompletableResultCode withTimeout(CompletableResultCode result) {
-      if (result.isDone() || exporterTimeoutNanos == Long.MAX_VALUE) {
-        return result;
-      }
-      CompletableResultCode timeoutResult = new CompletableResultCode();
-      ScheduledFuture<?> timeoutFuture =
-          scheduler.schedule(timeoutResult::fail, exporterTimeoutNanos, TimeUnit.NANOSECONDS);
-      result.whenComplete(
-          () -> {
-            if (timeoutFuture != null) {
-              timeoutFuture.cancel(false);
-            }
-            if (result.isSuccess()) {
-              timeoutResult.succeed();
-            } else {
-              timeoutResult.fail();
-            }
-          });
-      return timeoutResult;
-    }
-
     private CompletableResultCode exportMetrics(Collection<MetricData> metricData) {
       if (maxExportBatchSize == 0) {
-        return withTimeout(exporter.export(metricData));
+        CompletableResultCode result = exporter.export(metricData);
+        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        return result;
       }
       Collection<Collection<MetricData>> batches =
           MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize);
       CompletableResultCode sequentialResult = new CompletableResultCode();
       AtomicBoolean anyFailed = new AtomicBoolean(false);
       Iterator<Collection<MetricData>> batchIterator = batches.iterator();
-      Runnable exportNext =
-          new Runnable() {
-            @Override
-            public void run() {
-              while (batchIterator.hasNext()) {
-                Collection<MetricData> currentBatch = batchIterator.next();
-                CompletableResultCode currentResult = withTimeout(exporter.export(currentBatch));
-                if (currentResult.isDone()) {
-                  if (!currentResult.isSuccess()) {
-                    anyFailed.set(true);
-                  }
-                } else {
-                  currentResult.whenComplete(
-                      () -> {
-                        if (!currentResult.isSuccess()) {
-                          anyFailed.set(true);
-                        }
-                        this.run();
-                      });
-                  return;
-                }
-              }
-              if (anyFailed.get()) {
-                sequentialResult.fail();
-              } else {
-                sequentialResult.succeed();
-              }
-            }
-          };
-      exportNext.run();
+      while (batchIterator.hasNext()) {
+        Collection<MetricData> currentBatch = batchIterator.next();
+        CompletableResultCode currentResult = exporter.export(currentBatch);
+        currentResult.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        if (!currentResult.isSuccess()) {
+          anyFailed.set(true);
+        }
+      }
+      if (anyFailed.get()) {
+        sequentialResult.fail();
+      } else {
+        sequentialResult.succeed();
+      }
       return sequentialResult;
     }
 
