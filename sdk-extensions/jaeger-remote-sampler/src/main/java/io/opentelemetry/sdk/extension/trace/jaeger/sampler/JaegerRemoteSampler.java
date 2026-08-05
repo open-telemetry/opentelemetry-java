@@ -38,6 +38,7 @@ public final class JaegerRemoteSampler implements Sampler {
   private static final String TYPE = "remoteSampling";
 
   private final String serviceName;
+  private final int pollingIntervalMs;
   private final ScheduledExecutorService pollExecutor;
   private final ScheduledFuture<?> pollFuture;
 
@@ -56,6 +57,7 @@ public final class JaegerRemoteSampler implements Sampler {
       int pollingIntervalMs,
       Sampler initialSampler) {
     this.serviceName = serviceName != null ? serviceName : "";
+    this.pollingIntervalMs = pollingIntervalMs;
     this.grpcSender = grpcSender;
     this.endpoint = endpoint;
     this.pollingIntervalMs = pollingIntervalMs;
@@ -184,6 +186,11 @@ public final class JaegerRemoteSampler implements Sampler {
   // Visible for testing
   Sampler getSampler() {
     return this.sampler;
+  }
+
+  // Visible for testing
+  int getPollingIntervalMs() {
+    return this.pollingIntervalMs;
   }
 
   public static JaegerRemoteSamplerBuilder builder() {

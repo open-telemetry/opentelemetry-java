@@ -235,4 +235,45 @@ class SamplerFactoryTest {
     assertThat(((SamplerComponentProvider.TestSampler) sampler).config.getString("key1"))
         .isEqualTo("value1");
   }
+
+  @Test
+  void create_JaegerRemote_interval() {
+    Sampler sampler =
+        SamplerFactory.getInstance()
+            .create(
+                new SamplerModel()
+                    .withJaegerRemoteDevelopment(
+                        new ExperimentalJaegerRemoteSamplerModel()
+                            .withEndpoint("http://jaeger-remote-endpoint")
+                            .withInterval(10_000)
+                            .withInitialSampler(
+                                new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel()))),
+                context);
+    cleanup.addCloseable(sampler);
+
+    assertThat(sampler)
+        .isInstanceOf(JaegerRemoteSampler.class)
+        .extracting("pollingIntervalMs")
+        .isEqualTo(10_000);
+  }
+
+  @Test
+  void create_JaegerRemote_intervalDefault() {
+    Sampler sampler =
+        SamplerFactory.getInstance()
+            .create(
+                new SamplerModel()
+                    .withJaegerRemoteDevelopment(
+                        new ExperimentalJaegerRemoteSamplerModel()
+                            .withEndpoint("http://jaeger-remote-endpoint")
+                            .withInitialSampler(
+                                new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel()))),
+                context);
+    cleanup.addCloseable(sampler);
+
+    assertThat(sampler)
+        .isInstanceOf(JaegerRemoteSampler.class)
+        .extracting("pollingIntervalMs")
+        .isEqualTo(60_000);
+  }
 }
