@@ -4,18 +4,24 @@
 
 ### API
 
-#### Extensions
-
-* Trace propagators: Fix `JaegerPropagator` overwriting existing baggage when the `jaeger-baggage`
-  header has no parsable entries
-  ([#8632](https://github.com/open-telemetry/opentelemetry-java/pull/8632))
+* Fix `TraceStateBuilder.remove` corrupting the builder when the same key is removed twice
+  ([#8613](https://github.com/open-telemetry/opentelemetry-java/pull/8613))
 
 ### SDK
 
 #### Exporters
 
+* Prometheus: Fix `PrometheusHttpServer.toBuilder()` dropping the configured default handler
+  ([#8619](https://github.com/open-telemetry/opentelemetry-java/pull/8619))
 * Logging: Output event name in `SystemOutLogRecordExporter`
   ([#8609](https://github.com/open-telemetry/opentelemetry-java/pull/8609))
+
+### Shims
+
+* OpenTracing: Return the extracted `SpanContext` when it is sampled but invalid
+  ([#8634](https://github.com/open-telemetry/opentelemetry-java/pull/8634))
+* Add OpenCensus links to the OpenTelemetry span instead of logging a warning and dropping them
+  ([#8635](https://github.com/open-telemetry/opentelemetry-java/pull/8635))
 
 ## Version 1.64.0 (2026-07-10)
 

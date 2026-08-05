@@ -11,6 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExemplarFilterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricReaderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel;
@@ -100,7 +101,7 @@ class MeterProviderFactoryTest {
                                     .withName("foo")
                                     .withConfig(
                                         new ExperimentalMeterConfigModel().withEnabled(true)))))
-                .withExemplarFilter(MeterProviderModel.ExemplarFilter.ALWAYS_ON),
+                .withExemplarFilter(ExemplarFilterModel.ALWAYS_ON),
             setMeterConfigurator(
                     SdkMeterProvider.builder(),
                     ScopeConfigurator.<MeterConfig>builder()

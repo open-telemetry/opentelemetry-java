@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
   "local_parent_sampled",
   "local_parent_not_sampled"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ParentBasedSamplerModel {
 
   @Nullable private SamplerModel root;

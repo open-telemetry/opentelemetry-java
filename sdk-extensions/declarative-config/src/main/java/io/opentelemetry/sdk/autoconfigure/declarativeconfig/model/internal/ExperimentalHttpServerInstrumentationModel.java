@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"request_captured_headers", "response_captured_headers", "known_methods"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalHttpServerInstrumentationModel {
 
   @Nullable private List<String> requestCapturedHeaders;
