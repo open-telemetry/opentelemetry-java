@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.common.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.entry;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -144,6 +146,30 @@ class AttributesMapTest {
     map.put(stringKey("k"), "hello");
 
     assertThat(map.get(stringKey("k"))).isEqualTo("hel");
+  }
+
+  @Test
+  void lengthLimit_failureDoesNotInsertPartialEntry() {
+    AttributesMap map = AttributesMap.create(10, 3);
+
+    assertThatThrownBy(() -> map.put(stringArrayKey("k"), throwingList()))
+        .isInstanceOf(IllegalStateException.class);
+
+    assertThat(map.isEmpty()).isTrue();
+    assertThat(map.asMap()).isEmpty();
+  }
+
+  @Test
+  void lengthLimit_failureDoesNotPartiallyOverwriteEntry() {
+    AttributesMap map = AttributesMap.create(10, 3);
+    map.put(stringKey("k"), "old");
+
+    assertThatThrownBy(() -> map.put(stringArrayKey("k"), throwingList()))
+        .isInstanceOf(IllegalStateException.class);
+
+    assertThat(map.size()).isEqualTo(1);
+    assertThat(map.get(stringKey("k"))).isEqualTo("old");
+    assertThat(map.get(stringArrayKey("k"))).isNull();
   }
 
   // ---- forEach ----
@@ -316,5 +342,29 @@ class AttributesMapTest {
     mapV2.put(stringKey("k"), "v2");
 
     new EqualsTester().addEqualityGroup(mapV1a, mapV1b).addEqualityGroup(mapV2).testEquals();
+  }
+
+  @Test
+  void equals_isSymmetricWithOtherAttributesImplementations() {
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(stringKey("k"), "v");
+    Attributes attributes = Attributes.of(stringKey("k"), "v");
+
+    assertThat(map).isNotEqualTo(attributes);
+    assertThat(attributes).isNotEqualTo(map);
+  }
+
+  private static List<String> throwingList() {
+    return new AbstractList<String>() {
+      @Override
+      public String get(int index) {
+        throw new IllegalStateException("test");
+      }
+
+      @Override
+      public int size() {
+        return 1;
+      }
+    };
   }
 }

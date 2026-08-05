@@ -124,14 +124,15 @@ public final class AttributesMap implements Attributes {
     String name = key.getKey();
     int slot = findSlot(name);
     int stored = hashTable[slot];
+    if (stored == EMPTY && size >= capacity) {
+      // Drop new entry per spec. totalAddedValues++ above captures the drop for
+      // getTotalAddedValues() / downstream drop-count metrics.
+      return null;
+    }
+    Object limitedValue = AttributeUtil.applyAttributeLengthLimit(value, lengthLimit);
     int idx;
     Object old;
     if (stored == EMPTY) {
-      if (size >= capacity) {
-        // Drop new entry per spec. totalAddedValues++ above captures the drop for
-        // getTotalAddedValues() / downstream drop-count metrics.
-        return null;
-      }
       if (size == entryNames.length) {
         grow();
         slot = findSlot(name); // grow() rebuilt hashTable
@@ -147,7 +148,7 @@ public final class AttributesMap implements Attributes {
     }
     modCount++;
     entryKeys[idx] = key;
-    entryValues[idx] = AttributeUtil.applyAttributeLengthLimit(value, lengthLimit);
+    entryValues[idx] = limitedValue;
     return old;
   }
 
@@ -216,10 +217,10 @@ public final class AttributesMap implements Attributes {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Attributes)) {
+    if (!(o instanceof AttributesMap)) {
       return false;
     }
-    return asMap().equals(((Attributes) o).asMap());
+    return asMap().equals(((AttributesMap) o).asMap());
   }
 
   @Override
