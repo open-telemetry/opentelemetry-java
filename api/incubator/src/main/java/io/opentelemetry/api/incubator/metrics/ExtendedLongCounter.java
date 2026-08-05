@@ -6,10 +6,9 @@
 package io.opentelemetry.api.incubator.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 
-/** Extended {@link DoubleCounter} with experimental APIs. */
+/** Extended {@link LongCounter} with experimental APIs. */
 public interface ExtendedLongCounter extends LongCounter {
 
   /**
