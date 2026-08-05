@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -26,15 +27,25 @@ import javax.annotation.Nullable;
  * load factor ≤ 0.5). Avoids per-entry object allocation; {@code forEach} is a tight sequential
  * array loop with no pointer chasing.
  *
+ * <p><b>Not thread-safe.</b> Callers sharing an instance across threads must externally
+ * synchronize. Concurrent mutation is undefined behavior and may throw {@link
+ * ArrayIndexOutOfBoundsException} as readers observe the parallel arrays and hash table in
+ * inconsistent states. {@link #forEach}'s {@link ConcurrentModificationException} on structural
+ * modification is a same-thread misuse detector, not a synchronization primitive.
+ *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
 public final class AttributesMap implements Attributes {
 
   /**
-   * Sentinel value meaning "slot is empty" in the hash table. Using 0 lets {@code new int[n]} (JVM
-   * zero-initialization) serve as the initial fill, eliminating explicit {@code Arrays.fill} calls.
-   * Occupied slots store {@code entryIndex + 1} so that index 0 is distinguishable from EMPTY.
+   * Sentinel meaning "slot is empty" in the hash table. This is a value stored in {@code
+   * hashTable[slot]}, not a slot address; a name whose {@link String#hashCode()} is 0 simply hashes
+   * to slot 0 like any other slot address, and occupancy is decided by comparing the stored value.
+   *
+   * <p>Using 0 lets {@code new int[n]} (JVM zero-initialization) serve as the initial fill,
+   * eliminating explicit {@code Arrays.fill} calls. Occupied slots store {@code entryIndex + 1} so
+   * that entry index 0 is distinguishable from EMPTY.
    */
   private static final int EMPTY = 0;
 
@@ -52,11 +63,29 @@ public final class AttributesMap implements Attributes {
   /** Cached {@code hashTable.length - 1}; kept in sync with {@link #hashTable}. */
   private int mask;
 
-  /** Parallel entry arrays. Index {@code i} holds the i-th inserted entry. */
+  /**
+   * Parallel entry arrays. For entry {@code i} (in insertion order):
+   *
+   * <ul>
+   *   <li>{@link #entryNames}{@code [i]} is the attribute name (cached from {@code
+   *       entryKeys[i].getKey()} to avoid an extra dereference on every probe step).
+   *   <li>{@link #entryKeys}{@code [i]} is the last-put {@link AttributeKey} for that name,
+   *       preserving the caller's type at query time via {@link #get}.
+   *   <li>{@link #entryValues}{@code [i]} is the last-put value, post-length-limit application.
+   * </ul>
+   *
+   * <p>All three are reallocated together in {@link #grow}; entry positions never change.
+   */
   private String[] entryNames;
 
   private AttributeKey<?>[] entryKeys;
   private Object[] entryValues;
+
+  /**
+   * Incremented on every mutation that changes observable state (insert or overwrite). Snapshotted
+   * by {@link #forEach} to detect same-thread structural modification during iteration.
+   */
+  private int modCount = 0;
 
   private AttributesMap(long capacity, int lengthLimit) {
     this.capacity = (int) Math.min(capacity, Integer.MAX_VALUE);
@@ -94,25 +123,29 @@ public final class AttributesMap implements Attributes {
     totalAddedValues++;
     String name = key.getKey();
     int slot = findSlot(name);
-    int stored = hashTable[slot]; // EMPTY or 1-based index
+    int stored = hashTable[slot];
+    int idx;
+    Object old;
     if (stored == EMPTY) {
       if (size >= capacity) {
+        // Drop new entry per spec. totalAddedValues++ above captures the drop for
+        // getTotalAddedValues() / downstream drop-count metrics.
         return null;
       }
-      Object limited = AttributeUtil.applyAttributeLengthLimit(value, lengthLimit);
       if (size == entryNames.length) {
         grow();
-        slot = findSlot(name); // hashTable was rebuilt by grow()
+        slot = findSlot(name); // grow() rebuilt hashTable
       }
-      entryNames[size] = name;
-      entryKeys[size] = key;
-      entryValues[size] = limited;
-      hashTable[slot] = size + 1; // 1-based
+      idx = size;
+      entryNames[idx] = name;
+      hashTable[slot] = idx + 1;
       size++;
-      return null;
+      old = null;
+    } else {
+      idx = stored - 1;
+      old = entryValues[idx];
     }
-    int idx = stored - 1;
-    Object old = entryValues[idx];
+    modCount++;
     entryKeys[idx] = key;
     entryValues[idx] = AttributeUtil.applyAttributeLengthLimit(value, lengthLimit);
     return old;
@@ -169,8 +202,12 @@ public final class AttributesMap implements Attributes {
 
   @Override
   public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> action) {
+    int expectedModCount = modCount;
     for (int i = 0; i < size; i++) {
       action.accept(entryKeys[i], entryValues[i]);
+    }
+    if (modCount != expectedModCount) {
+      throw new ConcurrentModificationException();
     }
   }
 
@@ -213,6 +250,8 @@ public final class AttributesMap implements Attributes {
    * and {@code grow}. Slots store {@code entryIndex + 1}; 0 ({@link #EMPTY}) means unoccupied.
    */
   private int findSlot(String name) {
+    // Linear probe: stop on empty slot (name absent; insertion point) or matching-name slot (name
+    // found). `& mask` wraps at the end of the table.
     int slot = name.hashCode() & mask;
     int stored;
     while ((stored = hashTable[slot]) != EMPTY && !entryNames[stored - 1].equals(name)) {
@@ -229,9 +268,10 @@ public final class AttributesMap implements Attributes {
     entryValues = Arrays.copyOf(entryValues, newLen);
     hashTable = new int[tableSizeFor(newLen)]; // JVM zero-init == EMPTY
     mask = hashTable.length - 1;
+    // Rehash: entry positions in the arrays don't change, but their slot addresses do (new mask).
     for (int i = 0; i < size; i++) {
       int slot = findSlot(entryNames[i]);
-      hashTable[slot] = i + 1; // 1-based
+      hashTable[slot] = i + 1;
     }
   }
 

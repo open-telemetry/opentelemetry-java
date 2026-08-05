@@ -9,12 +9,19 @@ import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
 import com.google.common.testing.EqualsTester;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 class AttributesMapTest {
@@ -176,6 +183,127 @@ class AttributesMapTest {
 
     assertThat(copy.get(stringKey("a"))).isEqualTo("v1");
     assertThat(copy.get(longKey("b"))).isEqualTo(42L);
+  }
+
+  // ---- hash collisions ----
+
+  @Test
+  void hashCollision_bothEntriesStoredAndRetrievable() {
+    // "Aa".hashCode() == "BB".hashCode() == 2112: collide in any table size.
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(stringKey("Aa"), "v-Aa");
+    map.put(stringKey("BB"), "v-BB");
+
+    assertThat(map.size()).isEqualTo(2);
+    assertThat(map.get(stringKey("Aa"))).isEqualTo("v-Aa");
+    assertThat(map.get(stringKey("BB"))).isEqualTo("v-BB");
+  }
+
+  @Test
+  void findSlot_wrapsAroundEndOfTable() {
+    // capacity=4 => mask=7. "o" (111) and "w" (119) both hash to slot 7; the second wraps to 0.
+    AttributesMap map = AttributesMap.create(4, Integer.MAX_VALUE);
+    map.put(stringKey("o"), "v-o");
+    map.put(stringKey("w"), "v-w");
+
+    assertThat(map.size()).isEqualTo(2);
+    assertThat(map.get(stringKey("o"))).isEqualTo("v-o");
+    assertThat(map.get(stringKey("w"))).isEqualTo("v-w");
+  }
+
+  @Test
+  void grow_preservesEntriesIncludingPreExistingCollision() {
+    // capacity=20 => init=16 => grow triggers on 17th insert. "Aa"/"BB" collide at slot 0 both
+    // before and after grow (2112 & 31 == 2112 & 63 == 0), so rehash must preserve the probe path.
+    AttributesMap map = AttributesMap.create(20, Integer.MAX_VALUE);
+    map.put(stringKey("Aa"), "v-Aa");
+    map.put(stringKey("BB"), "v-BB");
+    for (int i = 0; i < 18; i++) {
+      map.put(stringKey("k" + i), "v" + i);
+    }
+
+    assertThat(map.size()).isEqualTo(20);
+    assertThat(map.get(stringKey("Aa"))).isEqualTo("v-Aa");
+    assertThat(map.get(stringKey("BB"))).isEqualTo("v-BB");
+    for (int i = 0; i < 18; i++) {
+      assertThat(map.get(stringKey("k" + i))).isEqualTo("v" + i);
+    }
+  }
+
+  // ---- concurrent modification detection ----
+
+  @Test
+  void forEach_throwsCmeOnConcurrentModification() {
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(stringKey("a"), "v1");
+    map.put(stringKey("b"), "v2");
+
+    assertThatThrownBy(() -> map.forEach((k, v) -> map.put(stringKey("c"), "v3")))
+        .isInstanceOf(ConcurrentModificationException.class);
+  }
+
+  @Test
+  void forEach_overwriteDuringIterationThrowsCme() {
+    // Overwrite (no size change) still bumps modCount.
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(stringKey("a"), "v1");
+
+    assertThatThrownBy(() -> map.forEach((k, v) -> map.put(stringKey("a"), "v2")))
+        .isInstanceOf(ConcurrentModificationException.class);
+  }
+
+  @Test
+  void forEach_noModification_doesNotThrow() {
+    AttributesMap map = AttributesMap.create(10, Integer.MAX_VALUE);
+    map.put(stringKey("a"), "v1");
+    map.put(stringKey("b"), "v2");
+
+    map.forEach((k, v) -> {});
+  }
+
+  // ---- fuzz ----
+
+  @Test
+  void fuzz_matchesReferenceHashMap() {
+    // Random puts vs reference HashMap. Exercises grow, overwrites, and type-varying puts to
+    // the same name. Fixed seed for reproducibility.
+    long seed = 0xC0FFEEL;
+    Random r = new Random(seed);
+    int capacity = 1000;
+    int ops = 5000;
+    int namePoolSize = 200; // ~25 overwrites per name on average
+
+    AttributesMap map = AttributesMap.create(capacity, Integer.MAX_VALUE);
+    Map<String, Map.Entry<AttributeKey<?>, Object>> reference = new HashMap<>();
+
+    for (int i = 0; i < ops; i++) {
+      String name = "key" + r.nextInt(namePoolSize);
+      AttributeKey<?> key;
+      Object value;
+      switch (r.nextInt(3)) {
+        case 0:
+          key = stringKey(name);
+          value = "s" + i;
+          break;
+        case 1:
+          key = longKey(name);
+          value = (long) i;
+          break;
+        default:
+          key = booleanKey(name);
+          value = (i & 1) == 0;
+          break;
+      }
+      map.put(key, value);
+      reference.put(name, new AbstractMap.SimpleImmutableEntry<>(key, value));
+    }
+
+    assertThat(map.size()).isEqualTo(reference.size());
+    for (Map.Entry<String, Map.Entry<AttributeKey<?>, Object>> refEntry : reference.entrySet()) {
+      AttributeKey<?> expectedKey = refEntry.getValue().getKey();
+      Object expectedValue = refEntry.getValue().getValue();
+      assertThat(map.get(expectedKey)).as("key=%s", expectedKey).isEqualTo(expectedValue);
+    }
   }
 
   @Test
