@@ -443,6 +443,26 @@ class JaegerPropagatorTest {
         .isEqualTo(Baggage.empty());
   }
 
+  @ParameterizedTest
+  @MethodSource
+  void extract_baggageOnly_withHeader_invalid_keepsExistingBaggage(String headerValue) {
+    Baggage existingBaggage = Baggage.builder().put("user", "alice").build();
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, headerValue);
+
+    Context context = Context.root().with(existingBaggage);
+    assertThat(fromContext(jaegerPropagator.extract(context, carrier, getter)))
+        .isEqualTo(existingBaggage);
+  }
+
+  static Stream<Arguments> extract_baggageOnly_withHeader_invalid_keepsExistingBaggage() {
+    return Stream.of(
+        Arguments.argumentSet("no separator", "nometa+novalue"),
+        Arguments.argumentSet("empty value", "user="),
+        Arguments.argumentSet("empty header", ""),
+        Arguments.argumentSet("too many separators", "a=b=c"));
+  }
+
   @Test
   void extract_baggageOnly_withHeader_andPrefix() {
     Map<String, String> carrier = new LinkedHashMap<>();
