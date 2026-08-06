@@ -102,7 +102,7 @@ class SdkLoggerProviderMetricsTest {
                                                 OTEL_COMPONENT_TYPE,
                                                 "simple_log_processor")))));
 
-    // Logs rejected after to call to shutdown, regardless of completion so no join.
+    // Logs rejected after the call to shutdown, regardless of completion so no join.
     processor.shutdown();
     logger.logRecordBuilder().emit();
 
@@ -300,7 +300,7 @@ class SdkLoggerProviderMetricsTest {
                         s -> s.hasPointsSatisfying(p -> p.hasValue(3).hasAttributes())));
 
     lenient().when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    // Logs rejected after to call to shutdown, regardless of completion so no join.
+    // Logs rejected after the call to shutdown, regardless of completion so no join.
     processor.shutdown();
 
     logger.logRecordBuilder().emit();
