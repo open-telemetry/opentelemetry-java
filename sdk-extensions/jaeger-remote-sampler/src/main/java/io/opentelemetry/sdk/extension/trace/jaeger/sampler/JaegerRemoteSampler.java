@@ -190,6 +190,11 @@ public final class JaegerRemoteSampler implements Sampler {
     return new JaegerRemoteSamplerBuilder();
   }
 
+  /**
+   * Shuts down the sampler, cancelling the polling task and shutting down the gRPC sender.
+   *
+   * @since 1.65.0
+   */
   @Override
   @SuppressWarnings("Interruption")
   public CompletableResultCode shutdown() {
