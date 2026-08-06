@@ -77,9 +77,12 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
             return;
           }
           String encodedValue = encodeValue(baggageEntry.getValue());
-          // Metadata is an opaque string (OTel baggage API) / W3C properties blob. Neither the
-          // W3C baggage nor OTel specs require percent-encoding metadata; leave it untouched so
-          // property structure (e.g. "name = value") is preserved for other implementations.
+          // OTel metadata is an opaque string (baggage API Set Value / Propagation): append as-is
+          // so W3C property structure (keys, '=', OWS) is preserved. Do not percent-encode the
+          // whole blob - that would break property key-value form (see #6771). W3C requires
+          // percent-encoding of list-member values and of property *values* only
+          // (https://w3c.github.io/baggage/#property); callers must supply wire-correct metadata
+          // because OTel does not parse property structure.
           String metadataValue = baggageEntry.getMetadata().getValue();
           String metadata =
               (metadataValue != null && !metadataValue.isEmpty()) ? metadataValue : null;
@@ -115,7 +118,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
    * Returns the length of the serialized entry as it would appear in the baggage header, including
    * the trailing comma used by the trailing-comma pattern in {@link #baggageToString}. The length
    * accounts for {@code "key=encodedValue,"} plus {@code ";metadata"} when metadata is present.
-   * Metadata is not percent-encoded.
+   * Metadata is treated as an opaque properties blob and is not percent-encoded as a unit.
    */
   private static int encodedEntryLength(
       String key, String encodedValue, @Nullable String metadata) {

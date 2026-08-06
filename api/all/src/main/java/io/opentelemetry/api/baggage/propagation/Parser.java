@@ -146,8 +146,12 @@ class Parser {
     }
     String decodedValue;
     try {
-      // Only baggage entry values are percent-decoded. Metadata is an opaque string and must not
-      // be percent-decoded (W3C baggage properties / OTel metadata).
+      // Only list-member values are percent-decoded. OTel metadata is an opaque string
+      // (https://opentelemetry.io/docs/specs/otel/baggage/api/#set-value) stored as a single
+      // instance on extract (https://opentelemetry.io/docs/specs/otel/baggage/api/#propagation);
+      // do not percent-decode the properties blob. W3C decoding rules apply to list-member
+      // values and to property *values* only (https://w3c.github.io/baggage/#property), not to
+      // the entire metadata string as one unit.
       decodedValue = decodeValue(value);
     } catch (IllegalArgumentException e) {
       LOGGER.log(Level.WARNING, "Skipping invalid baggage member", e);
