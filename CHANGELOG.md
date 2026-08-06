@@ -33,6 +33,10 @@ receiver.
 
 ### SDK
 
+* Update SDK attributes implementation (`AttributesMap`) to enforce last-value-win semantics based
+  on string value of `AttributeKey.getKey()`
+  ([#8548](https://github.com/open-telemetry/opentelemetry-java/pull/8548))
+
 #### Traces
 
 * Add `Sampler` shutdown lifecycle: `Sampler` now extends `Closeable` and exposes a default
