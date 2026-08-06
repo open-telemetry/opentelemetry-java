@@ -159,6 +159,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private final AtomicInteger logsNeeded = new AtomicInteger(Integer.MAX_VALUE);
     private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
+    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
     private volatile boolean continueWork = true;
     private final ArrayList<LogRecordData> batch;
     private final long maxQueueSize;
@@ -186,9 +187,13 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     }
 
     private void addLog(ReadWriteLogRecord logData) {
+      if (isShutdown.get()) {
+        logProcessorInstrumentation.dropLogsAlreadyShutdown(1);
+        return;
+      }
       logProcessorInstrumentation.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(logData)) {
-        logProcessorInstrumentation.dropLogs(1);
+        logProcessorInstrumentation.dropLogsQueueFull(1);
       } else {
         if (queue.size() >= logsNeeded.get()) {
           signal.offer(true);
@@ -251,6 +256,9 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     }
 
     private CompletableResultCode shutdown() {
+      if (isShutdown.getAndSet(true)) {
+        return CompletableResultCode.ofSuccess();
+      }
       CompletableResultCode result = new CompletableResultCode();
 
       CompletableResultCode flushResult = forceFlush();
@@ -289,25 +297,18 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
         return;
       }
 
-      String error = null;
       try {
+        logProcessorInstrumentation.finishLogs(batch.size());
         CompletableResultCode result =
             logRecordExporter.export(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (!result.isSuccess()) {
           logger.log(Level.FINE, "Exporter failed");
-          if (result.getFailureThrowable() != null) {
-            error = result.getFailureThrowable().getClass().getName();
-          } else {
-            error = "export_failed";
-          }
         }
       } catch (Throwable t) {
         ThrowableUtil.propagateIfFatal(t);
         logger.log(Level.WARNING, "Exporter threw an Exception", t);
-        error = t.getClass().getName();
       } finally {
-        logProcessorInstrumentation.finishLogs(batch.size(), error);
         batch.clear();
       }
     }
