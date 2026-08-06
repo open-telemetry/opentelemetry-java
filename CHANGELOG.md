@@ -10,7 +10,7 @@
 #### Extensions
 
 * Trace propagators: Stop parsing a `jaeger-baggage` header after 64 tokens, including malformed
-  tokens ([#PR](https://github.com/open-telemetry/opentelemetry-java/pull/PR))
+  tokens ([#8702](https://github.com/open-telemetry/opentelemetry-java/pull/8702))
 
 ### SDK
 
