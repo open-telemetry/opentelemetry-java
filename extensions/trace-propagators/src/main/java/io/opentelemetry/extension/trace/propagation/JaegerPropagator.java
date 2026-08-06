@@ -298,15 +298,24 @@ public final class JaegerPropagator implements TextMapPropagator {
     return baggage.isEmpty() ? null : baggage;
   }
 
-  /** Returns a two-element array of {@code [entriesAdded, bytesAdded]}. */
+  /**
+   * Parses a single {@code jaeger-baggage} header, stopping after {@code maxEntries} tokens or once
+   * {@code maxBytes} is exceeded. The token bound is per header and counts malformed tokens, so a
+   * header of entirely malformed tokens cannot keep the loop running to the end of the input.
+   *
+   * <p>Returns a two-element array of {@code [entriesAdded, bytesAdded]}, reflecting what was
+   * actually added to {@code builder}.
+   */
   private static int[] parseBaggageHeader(
       String header, BaggageBuilder builder, int maxEntries, int maxBytes) {
     int entriesAdded = 0;
     int bytesAdded = 0;
+    int tokensParsed = 0;
     for (String part : header.split("\\s*,\\s*")) {
-      if (entriesAdded >= maxEntries || bytesAdded > maxBytes) {
+      if (tokensParsed >= maxEntries || bytesAdded > maxBytes) {
         break;
       }
+      tokensParsed++;
       String[] kv = part.split("\\s*=\\s*");
       if (kv.length == 2) {
         if (bytesAdded + kv[0].length() + kv[1].length() > maxBytes) {
@@ -315,7 +324,7 @@ public final class JaegerPropagator implements TextMapPropagator {
         builder.put(kv[0], kv[1]);
         entriesAdded++;
         bytesAdded += kv[0].length() + kv[1].length();
-      } else {
+      } else if (logger.isLoggable(Level.FINE)) {
         logger.fine("malformed token in " + BAGGAGE_HEADER + " header: " + part);
       }
     }

@@ -7,6 +7,11 @@
 * Fix `TraceStateBuilder.remove` corrupting the builder when the same key is removed twice
   ([#8613](https://github.com/open-telemetry/opentelemetry-java/pull/8613))
 
+#### Extensions
+
+* Trace propagators: Stop parsing a `jaeger-baggage` header after 64 tokens, including malformed
+  tokens ([#PR](https://github.com/open-telemetry/opentelemetry-java/pull/PR))
+
 ### SDK
 
 #### Exporters
