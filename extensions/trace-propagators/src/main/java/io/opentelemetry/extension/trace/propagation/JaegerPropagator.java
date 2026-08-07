@@ -78,6 +78,10 @@ public final class JaegerPropagator implements TextMapPropagator {
   private static final int MAX_BAGGAGE_ENTRIES = 64;
   private static final int MAX_BAGGAGE_BYTES = 8192;
 
+  // Bounds the parse work for a single jaeger-baggage header. Counts malformed tokens, which are
+  // not bounded by MAX_BAGGAGE_ENTRIES because they add no entry.
+  private static final int MAX_BAGGAGE_HEADER_TOKENS = MAX_BAGGAGE_ENTRIES;
+
   private static final Collection<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
   private static final JaegerPropagator INSTANCE = new JaegerPropagator();
 
@@ -284,6 +288,7 @@ public final class JaegerPropagator implements TextMapPropagator {
               parseBaggageHeader(
                   value,
                   builder,
+                  MAX_BAGGAGE_HEADER_TOKENS,
                   MAX_BAGGAGE_ENTRIES - entriesAdded,
                   MAX_BAGGAGE_BYTES - bytesAdded);
           entriesAdded += counts[0];
@@ -299,21 +304,25 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   /**
-   * Parses a single {@code jaeger-baggage} header, stopping after {@code maxTokens} tokens or once
-   * the next entry would exceed {@code maxBytes}. The token bound is per header and counts
-   * malformed tokens, so a header of entirely malformed tokens cannot keep the loop running to the
-   * end of the input.
+   * Parses a single {@code jaeger-baggage} header, stopping after {@code maxTokens} tokens, after
+   * {@code maxEntries} entries have been added, or once the next entry would exceed {@code
+   * maxBytes}.
+   *
+   * <p>{@code maxTokens} bounds the parse work and counts malformed tokens, so a header of entirely
+   * malformed tokens cannot keep the loop running to the end of the input. {@code maxEntries} is a
+   * separate acceptance bound, so malformed tokens do not consume the caller's remaining entry
+   * budget.
    *
    * <p>Returns a two-element array of {@code [entriesAdded, bytesAdded]}, reflecting what was
    * actually added to {@code builder}.
    */
   private static int[] parseBaggageHeader(
-      String header, BaggageBuilder builder, int maxTokens, int maxBytes) {
+      String header, BaggageBuilder builder, int maxTokens, int maxEntries, int maxBytes) {
     int entriesAdded = 0;
     int bytesAdded = 0;
     int tokensParsed = 0;
     for (String part : header.split("\\s*,\\s*")) {
-      if (tokensParsed >= maxTokens) {
+      if (tokensParsed >= maxTokens || entriesAdded >= maxEntries) {
         break;
       }
       tokensParsed++;

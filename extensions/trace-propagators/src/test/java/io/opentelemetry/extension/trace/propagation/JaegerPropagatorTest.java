@@ -555,6 +555,13 @@ class JaegerPropagatorTest {
     malformedCarrier.put(BAGGAGE_HEADER, malformedTokens(64) + "k0=v0");
     Map<String, String> malformedUnderLimitCarrier = new LinkedHashMap<>();
     malformedUnderLimitCarrier.put(BAGGAGE_HEADER, malformedTokens(63) + "k0=v0");
+    // Malformed tokens consume the per-header token budget, not the remaining entry budget, so the
+    // trailing valid entry still fills the last of the 64 entry slots.
+    Map<String, String> prefixThenMalformedCarrier = new LinkedHashMap<>();
+    for (int i = 0; i < 63; i++) {
+      prefixThenMalformedCarrier.put(BAGGAGE_PREFIX + "k" + i, "v" + i);
+    }
+    prefixThenMalformedCarrier.put(BAGGAGE_HEADER, malformedTokens(1) + "k63=v63");
     return Stream.of(
         Arguments.argumentSet(
             "65 prefix keys truncated to 64", prefixCarrier, baggageWithEntries(0, 64)),
@@ -566,7 +573,11 @@ class JaegerPropagatorTest {
         Arguments.argumentSet(
             "63 malformed tokens leave room for one entry",
             malformedUnderLimitCarrier,
-            baggageWithEntries(0, 1)));
+            baggageWithEntries(0, 1)),
+        Arguments.argumentSet(
+            "malformed token does not consume the remaining entry budget",
+            prefixThenMalformedCarrier,
+            baggageWithEntries(0, 64)));
   }
 
   /** Returns {@code count} malformed (no {@code =}) comma-terminated baggage tokens. */
