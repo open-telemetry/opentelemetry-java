@@ -1,2 +1,9 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.65.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.64.0.jar
-No changes.
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.common.export.GrpcSenderConfig  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.util.List<java.lang.String> getEnabledProtocols()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.common.export.HttpSenderConfig  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.util.List<java.lang.String> getEnabledProtocols()
+		+++  NEW ANNOTATION: javax.annotation.Nullable

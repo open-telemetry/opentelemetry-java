@@ -79,7 +79,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             executor,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
     AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -123,7 +124,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     CompletableResultCode sendResult = new CompletableResultCode();
     sender.send(
@@ -167,7 +169,8 @@ class OkHttpGrpcSenderTest {
               null,
               null,
               customExecutor, // Pass custom executor -> managedExecutor = false
-              Long.MAX_VALUE);
+              Long.MAX_VALUE,
+              null);
 
       CompletableResultCode shutdownResult = sender.shutdown();
 
@@ -205,7 +208,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null, // null executor = managed
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     // Start multiple requests to ensure threads are busy
     CountDownLatch blockCallbacks = new CountDownLatch(1);
@@ -268,7 +272,8 @@ class OkHttpGrpcSenderTest {
             null,
             null,
             null,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE,
+            null);
 
     // Trigger some activity
     sender.send(new TestMessageWriter(), response -> {}, error -> {});

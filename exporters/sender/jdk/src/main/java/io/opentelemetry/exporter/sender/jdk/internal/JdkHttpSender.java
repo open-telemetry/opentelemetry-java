@@ -45,6 +45,7 @@ import java.util.zip.GZIPInputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLParameters;
 
 /**
  * {@link HttpSender} which is backed by JDK {@link HttpClient}.
@@ -118,9 +119,10 @@ public final class JdkHttpSender implements HttpSender {
       @Nullable ProxyOptions proxyOptions,
       @Nullable SSLContext sslContext,
       @Nullable ExecutorService executorService,
-      long maxResponseBodySize) {
+      long maxResponseBodySize,
+      @Nullable List<String> enabledProtocols) {
     this(
-        configureClient(sslContext, connectTimeout, proxyOptions),
+        configureClient(sslContext, connectTimeout, proxyOptions, enabledProtocols),
         endpoint,
         contentType,
         compressor,
@@ -144,13 +146,19 @@ public final class JdkHttpSender implements HttpSender {
   private static HttpClient configureClient(
       @Nullable SSLContext sslContext,
       Duration connectTimeout,
-      @Nullable ProxyOptions proxyOptions) {
+      @Nullable ProxyOptions proxyOptions,
+      @Nullable List<String> enabledProtocols) {
     HttpClient.Builder builder = HttpClient.newBuilder().connectTimeout(connectTimeout);
     if (sslContext != null) {
       builder.sslContext(sslContext);
     }
     if (proxyOptions != null) {
       builder.proxy(proxyOptions.getProxySelector());
+    }
+    if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
+      SSLParameters params = new SSLParameters();
+      params.setProtocols(enabledProtocols.toArray(new String[0]));
+      builder.sslParameters(params);
     }
     return builder.build();
   }
