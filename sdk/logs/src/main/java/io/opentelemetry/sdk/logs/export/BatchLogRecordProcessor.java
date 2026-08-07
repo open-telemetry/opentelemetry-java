@@ -49,7 +49,6 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       BatchLogRecordProcessor.class.getSimpleName() + "_WorkerThread";
 
   private final Worker worker;
-  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
    * Returns a new Builder for {@link BatchLogRecordProcessor}.
@@ -94,9 +93,6 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-    if (isShutdown.getAndSet(true)) {
-      return CompletableResultCode.ofSuccess();
-    }
     return worker.shutdown();
   }
 
@@ -298,6 +294,8 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       }
 
       try {
+        // We always increment for every export invocation, so we increment before the export call
+        // to make sure thrown errors don't affect it.
         logProcessorInstrumentation.finishLogs(batch.size());
         CompletableResultCode result =
             logRecordExporter.export(Collections.unmodifiableList(batch));

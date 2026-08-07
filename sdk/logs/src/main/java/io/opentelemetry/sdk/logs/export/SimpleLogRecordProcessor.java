@@ -95,6 +95,8 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
       CompletableResultCode result;
 
       synchronized (exporterLock) {
+        // We always increment for every export invocation, so we increment before the export call
+        // to make sure thrown errors don't affect it.
         logProcessorInstrumentation.finishLogs(1);
         result = logRecordExporter.export(logs);
       }
