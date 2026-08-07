@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.65.0 (2026-08-07)
+
 **NOTE:** The `opentelemetry-exporter-zipkin` artifact has stopped being published. It was
 deprecated in a prior release. Users should migrate to OTLP or use a Zipkin-compatible collector
 exporter.
