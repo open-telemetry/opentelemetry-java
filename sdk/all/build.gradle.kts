@@ -24,6 +24,7 @@ dependencies {
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
+  testImplementation("org.apache.groovy:groovy:4.0.25")
   testImplementation(project(":sdk:testing"))
 
   jmh(project(":sdk:testing"))
