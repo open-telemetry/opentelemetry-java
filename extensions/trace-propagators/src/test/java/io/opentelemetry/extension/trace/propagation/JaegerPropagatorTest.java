@@ -562,7 +562,7 @@ class JaegerPropagatorTest {
             "65 header entries truncated to 64", headerCarrier, baggageWithEntries(0, 64)),
         Arguments.argumentSet("large value exceeds byte limit", bigValueCarrier, Baggage.empty()),
         Arguments.argumentSet(
-            "64 malformed tokens exhaust the entry limit", malformedCarrier, Baggage.empty()),
+            "64 malformed tokens exhaust the token budget", malformedCarrier, Baggage.empty()),
         Arguments.argumentSet(
             "63 malformed tokens leave room for one entry",
             malformedUnderLimitCarrier,

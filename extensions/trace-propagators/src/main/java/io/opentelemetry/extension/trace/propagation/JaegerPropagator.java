@@ -299,20 +299,21 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   /**
-   * Parses a single {@code jaeger-baggage} header, stopping after {@code maxEntries} tokens or once
-   * {@code maxBytes} is exceeded. The token bound is per header and counts malformed tokens, so a
-   * header of entirely malformed tokens cannot keep the loop running to the end of the input.
+   * Parses a single {@code jaeger-baggage} header, stopping after {@code maxTokens} tokens or once
+   * the next entry would exceed {@code maxBytes}. The token bound is per header and counts
+   * malformed tokens, so a header of entirely malformed tokens cannot keep the loop running to the
+   * end of the input.
    *
    * <p>Returns a two-element array of {@code [entriesAdded, bytesAdded]}, reflecting what was
    * actually added to {@code builder}.
    */
   private static int[] parseBaggageHeader(
-      String header, BaggageBuilder builder, int maxEntries, int maxBytes) {
+      String header, BaggageBuilder builder, int maxTokens, int maxBytes) {
     int entriesAdded = 0;
     int bytesAdded = 0;
     int tokensParsed = 0;
     for (String part : header.split("\\s*,\\s*")) {
-      if (tokensParsed >= maxEntries || bytesAdded > maxBytes) {
+      if (tokensParsed >= maxTokens) {
         break;
       }
       tokensParsed++;
