@@ -30,6 +30,8 @@ exporter.
   ([#8632](https://github.com/open-telemetry/opentelemetry-java/pull/8632))
 * Trace propagators: Skip empty baggage keys in `OtTracePropagator` extract
   ([#8631](https://github.com/open-telemetry/opentelemetry-java/pull/8631))
+* Trace propagators: Stop parsing a `jaeger-baggage` header after 64 tokens, including malformed
+  tokens ([#8702](https://github.com/open-telemetry/opentelemetry-java/pull/8702))
 
 ### SDK
 
