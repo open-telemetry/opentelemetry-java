@@ -5,19 +5,44 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ConsoleMetricExporterModel.DEFAULT_HISTOGRAM_AGGREGATION;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ConsoleMetricExporterModel.TEMPORALITY_PREFERENCE;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"temporality_preference", "default_histogram_aggregation"})
+@JsonPropertyOrder({TEMPORALITY_PREFERENCE, DEFAULT_HISTOGRAM_AGGREGATION})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ConsoleMetricExporterModel {
 
+  static final String TEMPORALITY_PREFERENCE = "temporality_preference";
+  static final String DEFAULT_HISTOGRAM_AGGREGATION = "default_histogram_aggregation";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(TEMPORALITY_PREFERENCE, ExporterTemporalityPreferenceModel.class);
+    STABLE_PROPERTIES.put(
+        DEFAULT_HISTOGRAM_AGGREGATION, ExporterDefaultHistogramAggregationModel.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
+
   @Nullable private ExporterTemporalityPreferenceModel temporalityPreference;
   @Nullable private ExporterDefaultHistogramAggregationModel defaultHistogramAggregation;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure temporality preference.
@@ -34,13 +59,17 @@ public class ConsoleMetricExporterModel {
    *
    * <p>If omitted, cumulative is used.
    */
-  @JsonProperty("temporality_preference")
+  @JsonProperty(TEMPORALITY_PREFERENCE)
   @Nullable
   public ExporterTemporalityPreferenceModel getTemporalityPreference() {
+    if (temporalityPreference == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          TEMPORALITY_PREFERENCE, extensionProperties, ExporterTemporalityPreferenceModel.class);
+    }
     return temporalityPreference;
   }
 
-  @JsonProperty("temporality_preference")
+  @JsonProperty(TEMPORALITY_PREFERENCE)
   public ConsoleMetricExporterModel withTemporalityPreference(
       ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
@@ -60,16 +89,39 @@ public class ConsoleMetricExporterModel {
    *
    * <p>If omitted, explicit_bucket_histogram is used.
    */
-  @JsonProperty("default_histogram_aggregation")
+  @JsonProperty(DEFAULT_HISTOGRAM_AGGREGATION)
   @Nullable
   public ExporterDefaultHistogramAggregationModel getDefaultHistogramAggregation() {
+    if (defaultHistogramAggregation == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          DEFAULT_HISTOGRAM_AGGREGATION,
+          extensionProperties,
+          ExporterDefaultHistogramAggregationModel.class);
+    }
     return defaultHistogramAggregation;
   }
 
-  @JsonProperty("default_histogram_aggregation")
+  @JsonProperty(DEFAULT_HISTOGRAM_AGGREGATION)
   public ConsoleMetricExporterModel withDefaultHistogramAggregation(
       ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
+    return this;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
+  }
+
+  @JsonAnySetter
+  public ConsoleMetricExporterModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -80,6 +132,8 @@ public class ConsoleMetricExporterModel {
         + temporalityPreference
         + ", defaultHistogramAggregation="
         + defaultHistogramAggregation
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -93,6 +147,8 @@ public class ConsoleMetricExporterModel {
         (this.defaultHistogramAggregation == null)
             ? 0
             : this.defaultHistogramAggregation.hashCode();
+    h *= 1000003;
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -108,7 +164,10 @@ public class ConsoleMetricExporterModel {
               : this.temporalityPreference.equals(that.temporalityPreference))
           && (this.defaultHistogramAggregation == null
               ? that.defaultHistogramAggregation == null
-              : this.defaultHistogramAggregation.equals(that.defaultHistogramAggregation));
+              : this.defaultHistogramAggregation.equals(that.defaultHistogramAggregation))
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

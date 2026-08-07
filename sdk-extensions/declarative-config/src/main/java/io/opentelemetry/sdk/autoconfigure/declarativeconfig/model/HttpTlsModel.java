@@ -5,20 +5,47 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.HttpTlsModel.CA_FILE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.HttpTlsModel.CERT_FILE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.HttpTlsModel.KEY_FILE;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"ca_file", "key_file", "cert_file"})
+@JsonPropertyOrder({CA_FILE, KEY_FILE, CERT_FILE})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class HttpTlsModel {
+
+  static final String CA_FILE = "ca_file";
+  static final String KEY_FILE = "key_file";
+  static final String CERT_FILE = "cert_file";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(CA_FILE, String.class);
+    STABLE_PROPERTIES.put(KEY_FILE, String.class);
+    STABLE_PROPERTIES.put(CERT_FILE, String.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
   @Nullable private String caFile;
   @Nullable private String keyFile;
   @Nullable private String certFile;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure certificate used to verify a server's TLS credentials.
@@ -27,13 +54,16 @@ public class HttpTlsModel {
    *
    * <p>If omitted or null, system default certificate verification is used for secure connections.
    */
-  @JsonProperty("ca_file")
+  @JsonProperty(CA_FILE)
   @Nullable
   public String getCaFile() {
+    if (caFile == null) {
+      return ExtensionPropertyUtil.getGraduated(CA_FILE, extensionProperties, String.class);
+    }
     return caFile;
   }
 
-  @JsonProperty("ca_file")
+  @JsonProperty(CA_FILE)
   public HttpTlsModel withCaFile(String caFile) {
     this.caFile = caFile;
     return this;
@@ -47,13 +77,16 @@ public class HttpTlsModel {
    *
    * <p>If omitted or null, mTLS is not used.
    */
-  @JsonProperty("key_file")
+  @JsonProperty(KEY_FILE)
   @Nullable
   public String getKeyFile() {
+    if (keyFile == null) {
+      return ExtensionPropertyUtil.getGraduated(KEY_FILE, extensionProperties, String.class);
+    }
     return keyFile;
   }
 
-  @JsonProperty("key_file")
+  @JsonProperty(KEY_FILE)
   public HttpTlsModel withKeyFile(String keyFile) {
     this.keyFile = keyFile;
     return this;
@@ -67,15 +100,35 @@ public class HttpTlsModel {
    *
    * <p>If omitted or null, mTLS is not used.
    */
-  @JsonProperty("cert_file")
+  @JsonProperty(CERT_FILE)
   @Nullable
   public String getCertFile() {
+    if (certFile == null) {
+      return ExtensionPropertyUtil.getGraduated(CERT_FILE, extensionProperties, String.class);
+    }
     return certFile;
   }
 
-  @JsonProperty("cert_file")
+  @JsonProperty(CERT_FILE)
   public HttpTlsModel withCertFile(String certFile) {
     this.certFile = certFile;
+    return this;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
+  }
+
+  @JsonAnySetter
+  public HttpTlsModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -88,6 +141,8 @@ public class HttpTlsModel {
         + keyFile
         + ", certFile="
         + certFile
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -100,6 +155,8 @@ public class HttpTlsModel {
     h ^= (this.keyFile == null) ? 0 : this.keyFile.hashCode();
     h *= 1000003;
     h ^= (this.certFile == null) ? 0 : this.certFile.hashCode();
+    h *= 1000003;
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -112,7 +169,10 @@ public class HttpTlsModel {
       HttpTlsModel that = (HttpTlsModel) o;
       return (this.caFile == null ? that.caFile == null : this.caFile.equals(that.caFile))
           && (this.keyFile == null ? that.keyFile == null : this.keyFile.equals(that.keyFile))
-          && (this.certFile == null ? that.certFile == null : this.certFile.equals(that.certFile));
+          && (this.certFile == null ? that.certFile == null : this.certFile.equals(that.certFile))
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

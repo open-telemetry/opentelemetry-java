@@ -5,41 +5,64 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel.CONSOLE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel.OTLP_GRPC;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel.OTLP_HTTP;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.PushMetricExporterModelAccessor.EXPERIMENTAL_PROPERTIES;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"otlp_http", "otlp_grpc", "otlp_file/development", "console"})
+@JsonPropertyOrder({OTLP_HTTP, OTLP_GRPC, CONSOLE})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class PushMetricExporterModel {
 
+  static final String OTLP_HTTP = "otlp_http";
+  static final String OTLP_GRPC = "otlp_grpc";
+  static final String CONSOLE = "console";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(OTLP_HTTP, OtlpHttpMetricExporterModel.class);
+    STABLE_PROPERTIES.put(OTLP_GRPC, OtlpGrpcMetricExporterModel.class);
+    STABLE_PROPERTIES.put(CONSOLE, ConsoleMetricExporterModel.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = true;
+
   @Nullable private OtlpHttpMetricExporterModel otlpHttp;
   @Nullable private OtlpGrpcMetricExporterModel otlpGrpc;
-  @Nullable private ExperimentalOtlpFileMetricExporterModel otlpFileDevelopment;
   @Nullable private ConsoleMetricExporterModel console;
-  private Map<String, PushMetricExporterPropertyModel> additionalProperties =
-      new LinkedHashMap<String, PushMetricExporterPropertyModel>();
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure exporter to be OTLP with HTTP transport.
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("otlp_http")
+  @JsonProperty(OTLP_HTTP)
   @Nullable
   public OtlpHttpMetricExporterModel getOtlpHttp() {
+    if (otlpHttp == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          OTLP_HTTP, extensionProperties, OtlpHttpMetricExporterModel.class);
+    }
     return otlpHttp;
   }
 
-  @JsonProperty("otlp_http")
+  @JsonProperty(OTLP_HTTP)
   public PushMetricExporterModel withOtlpHttp(OtlpHttpMetricExporterModel otlpHttp) {
     this.otlpHttp = otlpHttp;
     return this;
@@ -50,33 +73,19 @@ public class PushMetricExporterModel {
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("otlp_grpc")
+  @JsonProperty(OTLP_GRPC)
   @Nullable
   public OtlpGrpcMetricExporterModel getOtlpGrpc() {
+    if (otlpGrpc == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          OTLP_GRPC, extensionProperties, OtlpGrpcMetricExporterModel.class);
+    }
     return otlpGrpc;
   }
 
-  @JsonProperty("otlp_grpc")
+  @JsonProperty(OTLP_GRPC)
   public PushMetricExporterModel withOtlpGrpc(OtlpGrpcMetricExporterModel otlpGrpc) {
     this.otlpGrpc = otlpGrpc;
-    return this;
-  }
-
-  /**
-   * Configure exporter to be OTLP with file transport.
-   *
-   * <p>If omitted, ignore.
-   */
-  @JsonProperty("otlp_file/development")
-  @Nullable
-  public ExperimentalOtlpFileMetricExporterModel getOtlpFileDevelopment() {
-    return otlpFileDevelopment;
-  }
-
-  @JsonProperty("otlp_file/development")
-  public PushMetricExporterModel withOtlpFileDevelopment(
-      ExperimentalOtlpFileMetricExporterModel otlpFileDevelopment) {
-    this.otlpFileDevelopment = otlpFileDevelopment;
     return this;
   }
 
@@ -85,27 +94,36 @@ public class PushMetricExporterModel {
    *
    * <p>If omitted, ignore.
    */
-  @JsonProperty("console")
+  @JsonProperty(CONSOLE)
   @Nullable
   public ConsoleMetricExporterModel getConsole() {
+    if (console == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          CONSOLE, extensionProperties, ConsoleMetricExporterModel.class);
+    }
     return console;
   }
 
-  @JsonProperty("console")
+  @JsonProperty(CONSOLE)
   public PushMetricExporterModel withConsole(ConsoleMetricExporterModel console) {
     this.console = console;
     return this;
   }
 
   @JsonAnyGetter
-  public Map<String, PushMetricExporterPropertyModel> getAdditionalProperties() {
-    return this.additionalProperties;
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
   }
 
   @JsonAnySetter
-  public PushMetricExporterModel withAdditionalProperty(
-      String name, PushMetricExporterPropertyModel value) {
-    this.additionalProperties.put(name, value);
+  public PushMetricExporterModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        EXPERIMENTAL_PROPERTIES,
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -116,12 +134,10 @@ public class PushMetricExporterModel {
         + otlpHttp
         + ", otlpGrpc="
         + otlpGrpc
-        + ", otlpFileDevelopment="
-        + otlpFileDevelopment
         + ", console="
         + console
-        + ", additionalProperties="
-        + additionalProperties
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -133,11 +149,9 @@ public class PushMetricExporterModel {
     h *= 1000003;
     h ^= (this.otlpGrpc == null) ? 0 : this.otlpGrpc.hashCode();
     h *= 1000003;
-    h ^= (this.otlpFileDevelopment == null) ? 0 : this.otlpFileDevelopment.hashCode();
-    h *= 1000003;
     h ^= (this.console == null) ? 0 : this.console.hashCode();
     h *= 1000003;
-    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -150,13 +164,10 @@ public class PushMetricExporterModel {
       PushMetricExporterModel that = (PushMetricExporterModel) o;
       return (this.otlpHttp == null ? that.otlpHttp == null : this.otlpHttp.equals(that.otlpHttp))
           && (this.otlpGrpc == null ? that.otlpGrpc == null : this.otlpGrpc.equals(that.otlpGrpc))
-          && (this.otlpFileDevelopment == null
-              ? that.otlpFileDevelopment == null
-              : this.otlpFileDevelopment.equals(that.otlpFileDevelopment))
           && (this.console == null ? that.console == null : this.console.equals(that.console))
-          && (this.additionalProperties == null
-              ? that.additionalProperties == null
-              : this.additionalProperties.equals(that.additionalProperties));
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

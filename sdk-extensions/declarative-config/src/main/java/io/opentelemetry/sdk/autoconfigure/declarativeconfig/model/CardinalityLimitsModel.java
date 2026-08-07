@@ -5,25 +5,66 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel.COUNTER;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel.DEFAULT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel.GAUGE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel.HISTOGRAM;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel.OBSERVABLE_COUNTER;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel.OBSERVABLE_GAUGE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel.OBSERVABLE_UP_DOWN_COUNTER;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.CardinalityLimitsModel.UP_DOWN_COUNTER;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-  "default",
-  "counter",
-  "gauge",
-  "histogram",
-  "observable_counter",
-  "observable_gauge",
-  "observable_up_down_counter",
-  "up_down_counter"
+  DEFAULT,
+  COUNTER,
+  GAUGE,
+  HISTOGRAM,
+  OBSERVABLE_COUNTER,
+  OBSERVABLE_GAUGE,
+  OBSERVABLE_UP_DOWN_COUNTER,
+  UP_DOWN_COUNTER
 })
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class CardinalityLimitsModel {
+
+  static final String DEFAULT = "default";
+  static final String COUNTER = "counter";
+  static final String GAUGE = "gauge";
+  static final String HISTOGRAM = "histogram";
+  static final String OBSERVABLE_COUNTER = "observable_counter";
+  static final String OBSERVABLE_GAUGE = "observable_gauge";
+  static final String OBSERVABLE_UP_DOWN_COUNTER = "observable_up_down_counter";
+  static final String UP_DOWN_COUNTER = "up_down_counter";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(DEFAULT, Integer.class);
+    STABLE_PROPERTIES.put(COUNTER, Integer.class);
+    STABLE_PROPERTIES.put(GAUGE, Integer.class);
+    STABLE_PROPERTIES.put(HISTOGRAM, Integer.class);
+    STABLE_PROPERTIES.put(OBSERVABLE_COUNTER, Integer.class);
+    STABLE_PROPERTIES.put(OBSERVABLE_GAUGE, Integer.class);
+    STABLE_PROPERTIES.put(OBSERVABLE_UP_DOWN_COUNTER, Integer.class);
+    STABLE_PROPERTIES.put(UP_DOWN_COUNTER, Integer.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
   @Nullable private Integer _default;
   @Nullable private Integer counter;
@@ -33,6 +74,7 @@ public class CardinalityLimitsModel {
   @Nullable private Integer observableGauge;
   @Nullable private Integer observableUpDownCounter;
   @Nullable private Integer upDownCounter;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure default cardinality limit for all instrument types.
@@ -41,13 +83,16 @@ public class CardinalityLimitsModel {
    *
    * <p>If omitted or null, 2000 is used.
    */
-  @JsonProperty("default")
+  @JsonProperty(DEFAULT)
   @Nullable
   public Integer getDefault() {
+    if (_default == null) {
+      return ExtensionPropertyUtil.getGraduated(DEFAULT, extensionProperties, Integer.class);
+    }
     return _default;
   }
 
-  @JsonProperty("default")
+  @JsonProperty(DEFAULT)
   public CardinalityLimitsModel withDefault(Integer _default) {
     this._default = _default;
     return this;
@@ -58,13 +103,16 @@ public class CardinalityLimitsModel {
    *
    * <p>If omitted or null, the value from .default is used.
    */
-  @JsonProperty("counter")
+  @JsonProperty(COUNTER)
   @Nullable
   public Integer getCounter() {
+    if (counter == null) {
+      return ExtensionPropertyUtil.getGraduated(COUNTER, extensionProperties, Integer.class);
+    }
     return counter;
   }
 
-  @JsonProperty("counter")
+  @JsonProperty(COUNTER)
   public CardinalityLimitsModel withCounter(Integer counter) {
     this.counter = counter;
     return this;
@@ -75,13 +123,16 @@ public class CardinalityLimitsModel {
    *
    * <p>If omitted or null, the value from .default is used.
    */
-  @JsonProperty("gauge")
+  @JsonProperty(GAUGE)
   @Nullable
   public Integer getGauge() {
+    if (gauge == null) {
+      return ExtensionPropertyUtil.getGraduated(GAUGE, extensionProperties, Integer.class);
+    }
     return gauge;
   }
 
-  @JsonProperty("gauge")
+  @JsonProperty(GAUGE)
   public CardinalityLimitsModel withGauge(Integer gauge) {
     this.gauge = gauge;
     return this;
@@ -92,13 +143,16 @@ public class CardinalityLimitsModel {
    *
    * <p>If omitted or null, the value from .default is used.
    */
-  @JsonProperty("histogram")
+  @JsonProperty(HISTOGRAM)
   @Nullable
   public Integer getHistogram() {
+    if (histogram == null) {
+      return ExtensionPropertyUtil.getGraduated(HISTOGRAM, extensionProperties, Integer.class);
+    }
     return histogram;
   }
 
-  @JsonProperty("histogram")
+  @JsonProperty(HISTOGRAM)
   public CardinalityLimitsModel withHistogram(Integer histogram) {
     this.histogram = histogram;
     return this;
@@ -109,13 +163,17 @@ public class CardinalityLimitsModel {
    *
    * <p>If omitted or null, the value from .default is used.
    */
-  @JsonProperty("observable_counter")
+  @JsonProperty(OBSERVABLE_COUNTER)
   @Nullable
   public Integer getObservableCounter() {
+    if (observableCounter == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          OBSERVABLE_COUNTER, extensionProperties, Integer.class);
+    }
     return observableCounter;
   }
 
-  @JsonProperty("observable_counter")
+  @JsonProperty(OBSERVABLE_COUNTER)
   public CardinalityLimitsModel withObservableCounter(Integer observableCounter) {
     this.observableCounter = observableCounter;
     return this;
@@ -126,13 +184,17 @@ public class CardinalityLimitsModel {
    *
    * <p>If omitted or null, the value from .default is used.
    */
-  @JsonProperty("observable_gauge")
+  @JsonProperty(OBSERVABLE_GAUGE)
   @Nullable
   public Integer getObservableGauge() {
+    if (observableGauge == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          OBSERVABLE_GAUGE, extensionProperties, Integer.class);
+    }
     return observableGauge;
   }
 
-  @JsonProperty("observable_gauge")
+  @JsonProperty(OBSERVABLE_GAUGE)
   public CardinalityLimitsModel withObservableGauge(Integer observableGauge) {
     this.observableGauge = observableGauge;
     return this;
@@ -143,13 +205,17 @@ public class CardinalityLimitsModel {
    *
    * <p>If omitted or null, the value from .default is used.
    */
-  @JsonProperty("observable_up_down_counter")
+  @JsonProperty(OBSERVABLE_UP_DOWN_COUNTER)
   @Nullable
   public Integer getObservableUpDownCounter() {
+    if (observableUpDownCounter == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          OBSERVABLE_UP_DOWN_COUNTER, extensionProperties, Integer.class);
+    }
     return observableUpDownCounter;
   }
 
-  @JsonProperty("observable_up_down_counter")
+  @JsonProperty(OBSERVABLE_UP_DOWN_COUNTER)
   public CardinalityLimitsModel withObservableUpDownCounter(Integer observableUpDownCounter) {
     this.observableUpDownCounter = observableUpDownCounter;
     return this;
@@ -160,15 +226,36 @@ public class CardinalityLimitsModel {
    *
    * <p>If omitted or null, the value from .default is used.
    */
-  @JsonProperty("up_down_counter")
+  @JsonProperty(UP_DOWN_COUNTER)
   @Nullable
   public Integer getUpDownCounter() {
+    if (upDownCounter == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          UP_DOWN_COUNTER, extensionProperties, Integer.class);
+    }
     return upDownCounter;
   }
 
-  @JsonProperty("up_down_counter")
+  @JsonProperty(UP_DOWN_COUNTER)
   public CardinalityLimitsModel withUpDownCounter(Integer upDownCounter) {
     this.upDownCounter = upDownCounter;
+    return this;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
+  }
+
+  @JsonAnySetter
+  public CardinalityLimitsModel withExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -191,6 +278,8 @@ public class CardinalityLimitsModel {
         + observableUpDownCounter
         + ", upDownCounter="
         + upDownCounter
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -213,6 +302,8 @@ public class CardinalityLimitsModel {
     h ^= (this.observableUpDownCounter == null) ? 0 : this.observableUpDownCounter.hashCode();
     h *= 1000003;
     h ^= (this.upDownCounter == null) ? 0 : this.upDownCounter.hashCode();
+    h *= 1000003;
+    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
     return h;
   }
 
@@ -240,7 +331,10 @@ public class CardinalityLimitsModel {
               : this.observableUpDownCounter.equals(that.observableUpDownCounter))
           && (this.upDownCounter == null
               ? that.upDownCounter == null
-              : this.upDownCounter.equals(that.upDownCounter));
+              : this.upDownCounter.equals(that.upDownCounter))
+          && (this.extensionProperties == null
+              ? that.extensionProperties == null
+              : this.extensionProperties.equals(that.extensionProperties));
     }
     return false;
   }

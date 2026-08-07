@@ -27,8 +27,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.NameStringValu
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.PushMetricExporterModelAccessor;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -186,8 +187,8 @@ class MetricExporterFactoryTest {
             LoggingMetricExporter.create()),
         Arguments.argumentSet(
             "otlp_file/development",
-            new PushMetricExporterModel()
-                .withOtlpFileDevelopment(new ExperimentalOtlpFileMetricExporterModel()),
+            PushMetricExporterModelAccessor.withOtlpFile(
+                new PushMetricExporterModel(), new ExperimentalOtlpFileMetricExporterModel()),
             OtlpStdoutMetricExporter.builder().build()));
   }
 
@@ -204,9 +205,7 @@ class MetricExporterFactoryTest {
         Arguments.argumentSet(
             "unknown component provider",
             new PushMetricExporterModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new PushMetricExporterPropertyModel().withAdditionalProperty("key1", "value1")),
+                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\"."));
   }
 
@@ -216,10 +215,7 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new PushMetricExporterModel()
-                    .withAdditionalProperty(
-                        "test",
-                        new PushMetricExporterPropertyModel()
-                            .withAdditionalProperty("key1", "value1")),
+                    .withExtensionProperty("test", Collections.singletonMap("key1", "value1")),
                 context);
     assertThat(metricExporter)
         .isInstanceOf(MetricExporterComponentProvider.TestMetricExporter.class);
