@@ -89,4 +89,11 @@ class HttpExporterBuilderTest {
     builder.setCompression("none");
     assertThat(builder).extracting("compressor").isNull();
   }
+
+  @Test
+  void maxRequestBodySize() {
+    builder.setMaxRequestBodySize(1234);
+
+    assertThat(builder).extracting("maxRequestBodySize").isEqualTo(1234L);
+  }
 }

@@ -13,6 +13,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.internal.GrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.GrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.HttpExporter;
 import io.opentelemetry.exporter.otlp.internal.HttpExporterBuilder;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
@@ -95,7 +96,8 @@ public class OltpExporterBenchmark {
             InternalTelemetryVersion.LATEST,
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
-            URI.create("http://localhost"));
+            URI.create("http://localhost"),
+            GrpcExporterBuilder.DEFAULT_MAX_REQUEST_MESSAGE_SIZE);
 
     okhttpGrpcSender =
         new GrpcExporter(
@@ -115,7 +117,8 @@ public class OltpExporterBenchmark {
             InternalTelemetryVersion.LATEST,
             ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
-            URI.create("http://localhost"));
+            URI.create("http://localhost"),
+            GrpcExporterBuilder.DEFAULT_MAX_REQUEST_MESSAGE_SIZE);
 
     httpExporter =
         new HttpExporterBuilder(
