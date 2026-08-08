@@ -95,6 +95,8 @@ exporter.
   ([#8609](https://github.com/open-telemetry/opentelemetry-java/pull/8609))
 * Logging: Include aggregation temporality in `LoggingMetricExporter` `toString`
   ([#8623](https://github.com/open-telemetry/opentelemetry-java/pull/8623))
+* Logging: Support the `output_stream` option when declaratively configuring `otlp_file/development`
+  ([#8676](https://github.com/open-telemetry/opentelemetry-java/pull/8676))
 
 #### Extensions
 

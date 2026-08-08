@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -30,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
@@ -300,6 +302,92 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     assertThat(exporterFromComponentProvider(properties))
         .extracting("memoryMode")
         .isEqualTo(MemoryMode.REUSABLE_DATA);
+  }
+
+  static Stream<Arguments> outputStreamStdoutTestCases() {
+    return Stream.of(
+        Arguments.argumentSet("stdout", "stdout"), Arguments.argumentSet("upper case", "STDOUT"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("outputStreamStdoutTestCases")
+  void componentProviderConfigOutputStreamStdout(String value) {
+    DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
+    when(properties.getString("output_stream")).thenReturn(value);
+
+    assertThat(exporterFromComponentProvider(properties))
+        .extracting("jsonWriter")
+        .extracting(Object::toString)
+        .isEqualTo("StreamJsonWriter{outputStream=stdout}");
+  }
+
+  static Stream<Arguments> outputStreamFileTestCases() {
+    return Stream.of(
+        Arguments.argumentSet("file uri", "test.jsonl", (UnaryOperator<String>) uri -> uri),
+        Arguments.argumentSet(
+            "authority-less file uri with upper case scheme",
+            "test.jsonl",
+            (UnaryOperator<String>) uri -> uri.replaceFirst("^file://", "FILE:")),
+        Arguments.argumentSet(
+            "missing parent directory", "missing/test.jsonl", (UnaryOperator<String>) uri -> uri));
+  }
+
+  @ParameterizedTest
+  @MethodSource("outputStreamFileTestCases")
+  void componentProviderConfigOutputStreamFile(String relativePath, UnaryOperator<String> uriForm)
+      throws Exception {
+    Path file = tempDir.resolve(relativePath);
+    DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
+    when(properties.getString("output_stream")).thenReturn(uriForm.apply(file.toUri().toString()));
+
+    T exporter = exporterFromComponentProvider(properties);
+    testDataExporter.export(exporter);
+
+    String output = new String(Files.readAllBytes(file), StandardCharsets.UTF_8).trim();
+    JSONAssert.assertEquals(
+        "Got \n" + output,
+        testDataExporter.getExpectedJson(/* withWrapper= */ true),
+        output,
+        false);
+
+    // an exporter created later for the same path appends instead of truncating
+    testDataExporter.shutdown(exporter);
+    T secondExporter = exporterFromComponentProvider(properties);
+    testDataExporter.export(secondExporter);
+    testDataExporter.shutdown(secondExporter);
+    assertThat(new String(Files.readAllBytes(file), StandardCharsets.UTF_8).trim().split("\n"))
+        .hasSize(2);
+  }
+
+  static Stream<Arguments> outputStreamUnrecognizedTestCases() {
+    return Stream.of(
+        Arguments.argumentSet("no scheme", "not-a-stream"),
+        Arguments.argumentSet("unsupported scheme", "http://example.com/traces.jsonl"),
+        Arguments.argumentSet("relative file uri", "file://traces.jsonl"),
+        Arguments.argumentSet("malformed file uri", "file:///with space.jsonl"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("outputStreamUnrecognizedTestCases")
+  void componentProviderConfigOutputStreamUnrecognized(String value) {
+    DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
+    when(properties.getString("output_stream")).thenReturn(value);
+
+    assertThatExceptionOfType(ConfigurationException.class)
+        .isThrownBy(() -> exporterFromComponentProvider(properties))
+        .withMessage("Unrecognized output_stream: " + value);
+  }
+
+  @Test
+  void componentProviderConfigOutputStreamNotOpenable() {
+    DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
+    // the path exists but is a directory, so it cannot be opened for writing
+    when(properties.getString("output_stream")).thenReturn(tempDir.toUri().toString());
+
+    assertThatExceptionOfType(ConfigurationException.class)
+        .isThrownBy(() -> exporterFromComponentProvider(properties))
+        .withMessageStartingWith("Unable to open output_stream: ")
+        .withCauseInstanceOf(IOException.class);
   }
 
   @SuppressWarnings("unchecked")

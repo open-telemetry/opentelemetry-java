@@ -96,6 +96,11 @@ class DeclarativeConfigurationCreateTest {
                 "cert_file: "
                     + clientCertificatePath.replace("\\", "\\\\")
                     + System.lineSeparator())
+            // Snippets write to file:///var/log/*.jsonl, which is not writable in tests. The
+            // value can be the last line of the file, so the line terminator is not matched.
+            .replaceAll(
+                "output_stream: file:.*",
+                "output_stream: " + tempDir.resolve("output.jsonl").toUri())
             // A snippet references a custom id generator named my_custom_id_generator. Replace with
             // one named test, which we provide via SPI
             .replace("my_custom_id_generator", "test");

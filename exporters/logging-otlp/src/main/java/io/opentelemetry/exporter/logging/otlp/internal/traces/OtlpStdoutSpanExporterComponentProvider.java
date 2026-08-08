@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.logging.otlp.internal.traces;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
+import io.opentelemetry.exporter.logging.otlp.internal.OutputStreamConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
@@ -32,6 +33,7 @@ public final class OtlpStdoutSpanExporterComponentProvider implements ComponentP
   public SpanExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutSpanExporterBuilder builder = OtlpStdoutSpanExporter.builder();
     IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
+    OutputStreamConfigUtil.configureOutputStream(config, builder::setOutput);
     return builder.build();
   }
 }
