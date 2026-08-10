@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -107,6 +108,15 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   /** Returns the {@link SpanLimits} that are currently applied to created spans. */
   public SpanLimits getSpanLimits() {
     return sharedState.getSpanLimits();
+  }
+
+  /**
+   * Updates the sampler used for new spans.
+   *
+   * @param sampler the sampler to use for sampling new spans.
+   */
+  public void setSampler(Sampler sampler) {
+    sharedState.setSampler(Objects.requireNonNull(sampler, "sampler"));
   }
 
   /** Returns the configured {@link Sampler}. */

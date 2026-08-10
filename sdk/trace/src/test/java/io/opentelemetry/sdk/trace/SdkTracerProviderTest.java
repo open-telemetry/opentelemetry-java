@@ -88,6 +88,45 @@ class SdkTracerProviderTest {
   }
 
   @Test
+  void setSampler() {
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build();
+
+    assertThat(tracerProvider.getSampler()).isEqualTo(Sampler.alwaysOn());
+
+    tracerProvider.setSampler(Sampler.alwaysOff());
+
+    assertThat(tracerProvider.getSampler()).isEqualTo(Sampler.alwaysOff());
+  }
+
+  @Test
+  void setSampler_null() {
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+
+    assertThatThrownBy(() -> tracerProvider.setSampler(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("sampler");
+  }
+
+  @Test
+  void setSampler_affectsExistingTracer() {
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().setSampler(Sampler.alwaysOff()).build();
+
+    Tracer tracer = tracerProvider.get("test");
+
+    Span firstSpan = tracer.spanBuilder("first").startSpan();
+    assertThat(firstSpan.getSpanContext().isSampled()).isFalse();
+    firstSpan.end();
+
+    tracerProvider.setSampler(Sampler.alwaysOn());
+
+    Span secondSpan = tracer.spanBuilder("second").startSpan();
+    assertThat(secondSpan.getSpanContext().isSampled()).isTrue();
+    secondSpan.end();
+  }
+
+  @Test
   void builder_serviceNameProvided() {
     Resource resource =
         Resource.create(Attributes.of(stringKey("service.name"), "mySpecialService"));

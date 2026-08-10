@@ -26,7 +26,7 @@ final class TracerSharedState {
   private final Resource resource;
 
   private final Supplier<SpanLimits> spanLimitsSupplier;
-  private final Sampler sampler;
+  private volatile Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
   private final SdkTracerInstrumentation tracerInstrumentation;
@@ -74,9 +74,13 @@ final class TracerSharedState {
     return spanLimitsSupplier.get();
   }
 
-  /** Returns the configured {@link Sampler}. */
+  /** Returns the currently configured {@link Sampler}. */
   Sampler getSampler() {
     return sampler;
+  }
+
+  void setSampler(Sampler sampler) {
+    this.sampler = sampler;
   }
 
   /**
