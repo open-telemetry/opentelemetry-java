@@ -65,6 +65,7 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
   static void formatLog(StringBuilder stringBuilder, LogRecordData log) {
     InstrumentationScopeInfo instrumentationScopeInfo = log.getInstrumentationScopeInfo();
     Value<?> body = log.getBodyValue();
+    String severityText = log.getSeverityText();
     String eventName = log.getEventName();
     stringBuilder
         .append(
@@ -73,6 +74,9 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
                     .atZone(ZoneOffset.UTC)))
         .append(" ")
         .append(log.getSeverity());
+    if (severityText != null && !severityText.isEmpty()) {
+      stringBuilder.append(" [severityText: ").append(severityText).append("]");
+    }
     if (eventName != null && !eventName.isEmpty()) {
       stringBuilder.append(" [eventName: ").append(eventName).append("]");
     }
