@@ -113,6 +113,9 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   /**
    * Updates the sampler used for new spans.
    *
+   * <p>The sampler must be thread-safe and return immediately because it is called on the span
+   * creation hot path.
+   *
    * @param sampler the sampler to use for sampling new spans.
    */
   public void setSampler(Sampler sampler) {

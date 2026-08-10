@@ -80,7 +80,16 @@ final class TracerSharedState {
   }
 
   void setSampler(Sampler sampler) {
-    this.sampler = sampler;
+    synchronized (lock) {
+      if (shutdownResult != null) {
+        sampler.shutdown();
+        return;
+      }
+
+      Sampler previousSampler = this.sampler;
+      this.sampler = sampler;
+      previousSampler.shutdown();
+    }
   }
 
   /**

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -124,6 +125,46 @@ class SdkTracerProviderTest {
     Span secondSpan = tracer.spanBuilder("second").startSpan();
     assertThat(secondSpan.getSpanContext().isSampled()).isTrue();
     secondSpan.end();
+  }
+
+  @Test
+  void setSampler_shutsDownPreviousSampler() {
+    Sampler firstSampler = mock(Sampler.class);
+    Sampler secondSampler = mock(Sampler.class);
+
+    when(firstSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(secondSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().setSampler(firstSampler).build();
+
+    tracerProvider.setSampler(secondSampler);
+
+    verify(firstSampler).shutdown();
+    verify(secondSampler, never()).shutdown();
+
+    tracerProvider.shutdown();
+
+    verify(secondSampler).shutdown();
+  }
+
+  @Test
+  void setSampler_afterShutdown_shutsDownNewSampler() {
+    Sampler initialSampler = mock(Sampler.class);
+    Sampler newSampler = mock(Sampler.class);
+
+    when(initialSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(newSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().setSampler(initialSampler).build();
+
+    tracerProvider.shutdown();
+    verify(initialSampler).shutdown();
+
+    tracerProvider.setSampler(newSampler);
+
+    verify(newSampler).shutdown();
   }
 
   @Test
