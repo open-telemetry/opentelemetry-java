@@ -48,7 +48,7 @@ final class ExtendedSdkDoubleCounter extends SdkDoubleCounter
 
   @Override
   public void add(double value) {
-    add(value, Context.current());
+    add(value, currentOrRootContext());
   }
 
   @Override

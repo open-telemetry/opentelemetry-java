@@ -5,20 +5,33 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import javax.annotation.Nullable;
 
 abstract class AbstractInstrument {
 
   private final InstrumentDescriptor descriptor;
+  final boolean exemplarsAlwaysOff;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
-  AbstractInstrument(InstrumentDescriptor descriptor) {
+  AbstractInstrument(InstrumentDescriptor descriptor, SdkMeter sdkMeter) {
     this.descriptor = descriptor;
+    this.exemplarsAlwaysOff = sdkMeter.isExemplarsAlwaysOff();
   }
 
   final InstrumentDescriptor getDescriptor() {
     return descriptor;
+  }
+
+  /**
+   * Returns {@link Context#current()}, or {@link Context#root()} when exemplars are known-off and
+   * the caller doesn't otherwise care about propagating a specific context. Used by parameterless
+   * record overloads on synchronous instruments to skip a thread-local lookup when the resulting
+   * context is only consulted by the exemplar path.
+   */
+  final Context currentOrRootContext() {
+    return exemplarsAlwaysOff ? Context.root() : Context.current();
   }
 
   @Override
