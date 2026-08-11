@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PullMetricExpo
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalPrometheusMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalPrometheusTranslationStrategyModel;
 import io.opentelemetry.sdk.common.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -186,8 +187,7 @@ class MetricReaderFactoryTest {
                                         .withScopeInfoEnabled(false)
                                         .withTargetInfoEnabledDevelopment(false)
                                         .withTranslationStrategy(
-                                            ExperimentalPrometheusMetricExporterModel
-                                                .ExperimentalPrometheusTranslationStrategy
+                                            ExperimentalPrometheusTranslationStrategyModel
                                                 .UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES_DEVELOPMENT)))),
             prom2Expected,
             100,
@@ -214,8 +214,7 @@ class MetricReaderFactoryTest {
                                         .withHost("localhost")
                                         .withPort(prom3Port)
                                         .withTranslationStrategy(
-                                            ExperimentalPrometheusMetricExporterModel
-                                                .ExperimentalPrometheusTranslationStrategy
+                                            ExperimentalPrometheusTranslationStrategyModel
                                                 .NO_TRANSLATION_DEVELOPMENT)))),
             prom3Expected,
             null,

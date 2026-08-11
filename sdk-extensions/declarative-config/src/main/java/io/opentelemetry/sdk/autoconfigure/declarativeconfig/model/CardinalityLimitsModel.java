@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
   "observable_up_down_counter",
   "up_down_counter"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class CardinalityLimitsModel {
 
   @Nullable private Integer _default;

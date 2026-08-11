@@ -16,8 +16,9 @@ See [ExtendedLogsBridgeApiUsageTest](./src/test/java/io/opentelemetry/api/incuba
 Features:
 
 * Attributes advice
+* Bound instruments
 
-See [ExtendedMetricsApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/ExtendedMetricsApiUsageTest.java).
+See [ExtendedMetricsApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/ExtendedMetricsApiUsageTest.java), [BoundInstrumentUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/BoundInstrumentUsageTest.java).
 
 ## Extended ContextPropagator APIs
 

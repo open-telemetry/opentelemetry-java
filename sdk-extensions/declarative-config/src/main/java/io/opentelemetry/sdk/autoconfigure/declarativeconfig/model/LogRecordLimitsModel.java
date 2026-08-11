@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"attribute_value_length_limit", "attribute_count_limit"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class LogRecordLimitsModel {
 
   @Nullable private Integer attributeValueLengthLimit;

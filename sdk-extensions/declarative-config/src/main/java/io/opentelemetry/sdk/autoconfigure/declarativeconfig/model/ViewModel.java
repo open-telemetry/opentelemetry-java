@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"selector", "stream"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ViewModel {
 
   @Nullable private ViewSelectorModel selector;

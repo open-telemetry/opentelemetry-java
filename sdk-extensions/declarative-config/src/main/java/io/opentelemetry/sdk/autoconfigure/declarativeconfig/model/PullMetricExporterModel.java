@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"prometheus/development"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class PullMetricExporterModel {
 
   @Nullable private ExperimentalPrometheusMetricExporterModel prometheusDevelopment;

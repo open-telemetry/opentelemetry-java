@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
   "aggregation_cardinality_limit",
   "attribute_keys"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ViewStreamModel {
 
   @Nullable private String name;

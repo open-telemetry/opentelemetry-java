@@ -5,14 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
@@ -28,7 +24,7 @@ import javax.annotation.Nullable;
   "temporality_preference",
   "default_histogram_aggregation"
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class OtlpHttpMetricExporterModel {
 
   @Nullable private String endpoint;
@@ -37,12 +33,9 @@ public class OtlpHttpMetricExporterModel {
   @Nullable private String headersList;
   @Nullable private String compression;
   @Nullable private Integer timeout;
-  @Nullable private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
-  @Nullable private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
-
-  @Nullable
-  private OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
-      defaultHistogramAggregation;
+  @Nullable private OtlpHttpEncodingModel encoding;
+  @Nullable private ExporterTemporalityPreferenceModel temporalityPreference;
+  @Nullable private ExporterDefaultHistogramAggregationModel defaultHistogramAggregation;
 
   /**
    * Configure endpoint.
@@ -172,12 +165,12 @@ public class OtlpHttpMetricExporterModel {
    */
   @JsonProperty("encoding")
   @Nullable
-  public OtlpHttpExporterModel.OtlpHttpEncoding getEncoding() {
+  public OtlpHttpEncodingModel getEncoding() {
     return encoding;
   }
 
   @JsonProperty("encoding")
-  public OtlpHttpMetricExporterModel withEncoding(OtlpHttpExporterModel.OtlpHttpEncoding encoding) {
+  public OtlpHttpMetricExporterModel withEncoding(OtlpHttpEncodingModel encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -199,13 +192,13 @@ public class OtlpHttpMetricExporterModel {
    */
   @JsonProperty("temporality_preference")
   @Nullable
-  public OtlpHttpMetricExporterModel.ExporterTemporalityPreference getTemporalityPreference() {
+  public ExporterTemporalityPreferenceModel getTemporalityPreference() {
     return temporalityPreference;
   }
 
   @JsonProperty("temporality_preference")
   public OtlpHttpMetricExporterModel withTemporalityPreference(
-      OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference) {
+      ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
   }
@@ -225,14 +218,13 @@ public class OtlpHttpMetricExporterModel {
    */
   @JsonProperty("default_histogram_aggregation")
   @Nullable
-  public OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
-      getDefaultHistogramAggregation() {
+  public ExporterDefaultHistogramAggregationModel getDefaultHistogramAggregation() {
     return defaultHistogramAggregation;
   }
 
   @JsonProperty("default_histogram_aggregation")
   public OtlpHttpMetricExporterModel withDefaultHistogramAggregation(
-      OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation defaultHistogramAggregation) {
+      ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
     return this;
   }
@@ -314,90 +306,5 @@ public class OtlpHttpMetricExporterModel {
               : this.defaultHistogramAggregation.equals(that.defaultHistogramAggregation));
     }
     return false;
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum ExporterDefaultHistogramAggregation {
-    EXPLICIT_BUCKET_HISTOGRAM("explicit_bucket_histogram"),
-    BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM("base2_exponential_bucket_histogram");
-    private final String value;
-    private static final Map<
-            String, OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation>
-        CONSTANTS =
-            new HashMap<String, OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation>();
-
-    static {
-      for (OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    ExporterDefaultHistogramAggregation(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation fromValue(
-        String value) {
-      OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation constant =
-          CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum ExporterTemporalityPreference {
-    CUMULATIVE("cumulative"),
-    DELTA("delta"),
-    LOW_MEMORY("low_memory");
-    private final String value;
-    private static final Map<String, OtlpHttpMetricExporterModel.ExporterTemporalityPreference>
-        CONSTANTS =
-            new HashMap<String, OtlpHttpMetricExporterModel.ExporterTemporalityPreference>();
-
-    static {
-      for (OtlpHttpMetricExporterModel.ExporterTemporalityPreference c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    ExporterTemporalityPreference(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static OtlpHttpMetricExporterModel.ExporterTemporalityPreference fromValue(
-        String value) {
-      OtlpHttpMetricExporterModel.ExporterTemporalityPreference constant = CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
   }
 }

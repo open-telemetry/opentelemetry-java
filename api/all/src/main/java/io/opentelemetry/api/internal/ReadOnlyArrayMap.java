@@ -72,7 +72,8 @@ public final class ReadOnlyArrayMap<K, V> extends AbstractMap<K, V> {
   @Override
   public boolean containsValue(Object o) {
     for (int i = 0; i < array.size(); i += 2) {
-      if (value(i + 1).equals(o)) {
+      V value = value(i + 1);
+      if (o == null ? value == null : o.equals(value)) {
         return true;
       }
     }
