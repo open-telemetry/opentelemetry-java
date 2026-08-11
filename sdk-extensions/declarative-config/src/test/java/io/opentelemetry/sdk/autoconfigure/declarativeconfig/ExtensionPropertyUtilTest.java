@@ -129,6 +129,19 @@ class ExtensionPropertyUtilTest {
   }
 
   @Test
+  void graduatedValue_isEqualToDirectlySetValue() {
+    LogRecordLimitsModel limits = new LogRecordLimitsModel();
+
+    LoggerProviderModel viaStableSetter = new LoggerProviderModel().withLimits(limits);
+    LoggerProviderModel viaGraduatedKey = new LoggerProviderModel();
+    viaGraduatedKey.withExtensionProperty("limits/development", limits);
+
+    assertThat(viaStableSetter.getLimits()).isEqualTo(viaGraduatedKey.getLimits());
+    assertThat(viaStableSetter).isEqualTo(viaGraduatedKey);
+    assertThat(viaStableSetter.hashCode()).isEqualTo(viaGraduatedKey.hashCode());
+  }
+
+  @Test
   void filterSerializable_noStableProperties_returnsInputUnchanged() {
     Map<String, Object> props = new LinkedHashMap<>();
     props.put("anything/development", "x");

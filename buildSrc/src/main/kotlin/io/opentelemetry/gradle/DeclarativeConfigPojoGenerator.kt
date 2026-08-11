@@ -493,11 +493,23 @@ class DeclarativeConfigPojoGenerator(
       (if (additionalPropsType != null) listOf("additionalProperties") else emptyList()) +
       (if (needsExtensionProperties) listOf("extensionProperties") else emptyList())
 
+    // equals/hashCode compare observable state (getter output), not raw storage: a graduated
+    // property set via the legacy "x/development" key and the same property set directly via its
+    // stable setter must compare equal, even though one lives in the real field and the other in
+    // extensionProperties. getGraduated()'s fallback and getExtensionProperties()'s filtering
+    // already collapse both representations to the same value; toString keeps showing raw storage
+    // (more useful for debugging which representation is actually in play).
+    val equalityFields = fields.map { f ->
+      if (needsExtensionProperties && !f.typeExpr.startsWith("List<")) "${f.getter}()" else f.javaField
+    } +
+      (if (additionalPropsType != null) listOf("additionalProperties") else emptyList()) +
+      (if (needsExtensionProperties) listOf("getExtensionProperties()") else emptyList())
+
     appendToString(className, allFields)
     append("\n")
-    appendHashCode(allFields)
+    appendHashCode(equalityFields)
     append("\n")
-    appendEquals(className, allFields)
+    appendEquals(className, equalityFields)
     append("}\n")
   }
 

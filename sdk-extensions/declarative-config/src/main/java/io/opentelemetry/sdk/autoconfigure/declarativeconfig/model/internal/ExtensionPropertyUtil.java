@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -75,10 +76,16 @@ public final class ExtensionPropertyUtil {
    * generated accessor builders enforce the type at the call site. A {@link ClassCastException}
    * here indicates a contract violation (e.g. writing directly to the extension properties map with
    * the wrong type).
+   *
+   * <p>Tolerates a null {@code extensionProperties} map (returning null) even though the generated
+   * field is always initialized: generated equals/hashCode call through the getters that call this
+   * method, and EqualsVerifier's null-safety check reflectively nulls every field, including {@code
+   * extensionProperties}, to prove equals/hashCode never throw.
    */
   @Nullable
-  public static <T> T get(String key, Map<String, Object> extensionProperties, Class<T> type) {
-    Object raw = extensionProperties.get(key);
+  public static <T> T get(
+      String key, @Nullable Map<String, Object> extensionProperties, Class<T> type) {
+    Object raw = extensionProperties == null ? null : extensionProperties.get(key);
     return raw == null ? null : type.cast(raw);
   }
 
@@ -88,7 +95,7 @@ public final class ExtensionPropertyUtil {
    */
   @Nullable
   public static <T> T getGraduated(
-      String stableKey, Map<String, Object> extensionProperties, Class<T> type) {
+      String stableKey, @Nullable Map<String, Object> extensionProperties, Class<T> type) {
     return get(stableKey + DEV_SUFFIX, extensionProperties, type);
   }
 
@@ -98,9 +105,15 @@ public final class ExtensionPropertyUtil {
    * to avoid emitting graduated values twice: once under the stable {@code @JsonProperty} key via
    * the getter's {@link #getGraduated} fallback, and once under {@code /development} via the raw
    * map.
+   *
+   * <p>Tolerates a null {@code extensionProperties} map, returning an empty map; see {@link #get}
+   * for why.
    */
   public static Map<String, Object> filterSerializable(
-      Map<String, Object> extensionProperties, Map<String, Class<?>> stableProperties) {
+      @Nullable Map<String, Object> extensionProperties, Map<String, Class<?>> stableProperties) {
+    if (extensionProperties == null) {
+      return Collections.emptyMap();
+    }
     if (stableProperties.isEmpty() || extensionProperties.isEmpty()) {
       return extensionProperties;
     }
