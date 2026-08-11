@@ -36,8 +36,7 @@ class ComposableAnnotatingSamplerTest {
   void descriptionInComposedSampler() {
     // The annotating sampler must override toString() so that samplers composing it (which build
     // their description by concatenating the nested sampler) surface its real description instead
-    // of
-    // an Object hash.
+    // of an Object hash.
     String description =
         ComposableSampler.parentThreshold(
                 ComposableSampler.annotating(ComposableSampler.alwaysOn(), Attributes.empty()))
