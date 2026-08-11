@@ -152,9 +152,9 @@ public class MeterProviderModel {
     h *= 1000003;
     h ^= (this.views == null) ? 0 : this.views.hashCode();
     h *= 1000003;
-    h ^= (this.exemplarFilter == null) ? 0 : this.exemplarFilter.hashCode();
+    h ^= (this.getExemplarFilter() == null) ? 0 : this.getExemplarFilter().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -167,12 +167,12 @@ public class MeterProviderModel {
       MeterProviderModel that = (MeterProviderModel) o;
       return (this.readers == null ? that.readers == null : this.readers.equals(that.readers))
           && (this.views == null ? that.views == null : this.views.equals(that.views))
-          && (this.exemplarFilter == null
-              ? that.exemplarFilter == null
-              : this.exemplarFilter.equals(that.exemplarFilter))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+          && (this.getExemplarFilter() == null
+              ? that.getExemplarFilter() == null
+              : this.getExemplarFilter().equals(that.getExemplarFilter()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

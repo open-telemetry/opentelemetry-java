@@ -116,9 +116,9 @@ public class LoggerProviderModel {
     h *= 1000003;
     h ^= (this.processors == null) ? 0 : this.processors.hashCode();
     h *= 1000003;
-    h ^= (this.limits == null) ? 0 : this.limits.hashCode();
+    h ^= (this.getLimits() == null) ? 0 : this.getLimits().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -132,10 +132,12 @@ public class LoggerProviderModel {
       return (this.processors == null
               ? that.processors == null
               : this.processors.equals(that.processors))
-          && (this.limits == null ? that.limits == null : this.limits.equals(that.limits))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+          && (this.getLimits() == null
+              ? that.getLimits() == null
+              : this.getLimits().equals(that.getLimits()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

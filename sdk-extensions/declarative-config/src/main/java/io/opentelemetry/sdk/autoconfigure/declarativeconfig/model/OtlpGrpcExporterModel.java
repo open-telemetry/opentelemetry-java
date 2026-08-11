@@ -228,19 +228,19 @@ public class OtlpGrpcExporterModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.endpoint == null) ? 0 : this.endpoint.hashCode();
+    h ^= (this.getEndpoint() == null) ? 0 : this.getEndpoint().hashCode();
     h *= 1000003;
-    h ^= (this.tls == null) ? 0 : this.tls.hashCode();
+    h ^= (this.getTls() == null) ? 0 : this.getTls().hashCode();
     h *= 1000003;
     h ^= (this.headers == null) ? 0 : this.headers.hashCode();
     h *= 1000003;
-    h ^= (this.headersList == null) ? 0 : this.headersList.hashCode();
+    h ^= (this.getHeadersList() == null) ? 0 : this.getHeadersList().hashCode();
     h *= 1000003;
-    h ^= (this.compression == null) ? 0 : this.compression.hashCode();
+    h ^= (this.getCompression() == null) ? 0 : this.getCompression().hashCode();
     h *= 1000003;
-    h ^= (this.timeout == null) ? 0 : this.timeout.hashCode();
+    h ^= (this.getTimeout() == null) ? 0 : this.getTimeout().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -251,19 +251,23 @@ public class OtlpGrpcExporterModel {
     }
     if (o instanceof OtlpGrpcExporterModel) {
       OtlpGrpcExporterModel that = (OtlpGrpcExporterModel) o;
-      return (this.endpoint == null ? that.endpoint == null : this.endpoint.equals(that.endpoint))
-          && (this.tls == null ? that.tls == null : this.tls.equals(that.tls))
+      return (this.getEndpoint() == null
+              ? that.getEndpoint() == null
+              : this.getEndpoint().equals(that.getEndpoint()))
+          && (this.getTls() == null ? that.getTls() == null : this.getTls().equals(that.getTls()))
           && (this.headers == null ? that.headers == null : this.headers.equals(that.headers))
-          && (this.headersList == null
-              ? that.headersList == null
-              : this.headersList.equals(that.headersList))
-          && (this.compression == null
-              ? that.compression == null
-              : this.compression.equals(that.compression))
-          && (this.timeout == null ? that.timeout == null : this.timeout.equals(that.timeout))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+          && (this.getHeadersList() == null
+              ? that.getHeadersList() == null
+              : this.getHeadersList().equals(that.getHeadersList()))
+          && (this.getCompression() == null
+              ? that.getCompression() == null
+              : this.getCompression().equals(that.getCompression()))
+          && (this.getTimeout() == null
+              ? that.getTimeout() == null
+              : this.getTimeout().equals(that.getTimeout()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

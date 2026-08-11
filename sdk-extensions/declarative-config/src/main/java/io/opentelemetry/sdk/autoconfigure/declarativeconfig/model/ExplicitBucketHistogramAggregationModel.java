@@ -117,9 +117,9 @@ public class ExplicitBucketHistogramAggregationModel {
     h *= 1000003;
     h ^= (this.boundaries == null) ? 0 : this.boundaries.hashCode();
     h *= 1000003;
-    h ^= (this.recordMinMax == null) ? 0 : this.recordMinMax.hashCode();
+    h ^= (this.getRecordMinMax() == null) ? 0 : this.getRecordMinMax().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -133,12 +133,12 @@ public class ExplicitBucketHistogramAggregationModel {
       return (this.boundaries == null
               ? that.boundaries == null
               : this.boundaries.equals(that.boundaries))
-          && (this.recordMinMax == null
-              ? that.recordMinMax == null
-              : this.recordMinMax.equals(that.recordMinMax))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+          && (this.getRecordMinMax() == null
+              ? that.getRecordMinMax() == null
+              : this.getRecordMinMax().equals(that.getRecordMinMax()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

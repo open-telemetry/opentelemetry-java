@@ -91,9 +91,9 @@ public class IdGeneratorModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.random == null) ? 0 : this.random.hashCode();
+    h ^= (this.getRandom() == null) ? 0 : this.getRandom().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -104,10 +104,12 @@ public class IdGeneratorModel {
     }
     if (o instanceof IdGeneratorModel) {
       IdGeneratorModel that = (IdGeneratorModel) o;
-      return (this.random == null ? that.random == null : this.random.equals(that.random))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getRandom() == null
+              ? that.getRandom() == null
+              : this.getRandom().equals(that.getRandom()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

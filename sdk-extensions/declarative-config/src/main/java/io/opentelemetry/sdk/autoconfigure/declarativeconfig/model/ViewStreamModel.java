@@ -197,20 +197,20 @@ public class ViewStreamModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.name == null) ? 0 : this.name.hashCode();
+    h ^= (this.getName() == null) ? 0 : this.getName().hashCode();
     h *= 1000003;
-    h ^= (this.description == null) ? 0 : this.description.hashCode();
+    h ^= (this.getDescription() == null) ? 0 : this.getDescription().hashCode();
     h *= 1000003;
-    h ^= (this.aggregation == null) ? 0 : this.aggregation.hashCode();
+    h ^= (this.getAggregation() == null) ? 0 : this.getAggregation().hashCode();
     h *= 1000003;
     h ^=
-        (this.aggregationCardinalityLimit == null)
+        (this.getAggregationCardinalityLimit() == null)
             ? 0
-            : this.aggregationCardinalityLimit.hashCode();
+            : this.getAggregationCardinalityLimit().hashCode();
     h *= 1000003;
-    h ^= (this.attributeKeys == null) ? 0 : this.attributeKeys.hashCode();
+    h ^= (this.getAttributeKeys() == null) ? 0 : this.getAttributeKeys().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -221,22 +221,24 @@ public class ViewStreamModel {
     }
     if (o instanceof ViewStreamModel) {
       ViewStreamModel that = (ViewStreamModel) o;
-      return (this.name == null ? that.name == null : this.name.equals(that.name))
-          && (this.description == null
-              ? that.description == null
-              : this.description.equals(that.description))
-          && (this.aggregation == null
-              ? that.aggregation == null
-              : this.aggregation.equals(that.aggregation))
-          && (this.aggregationCardinalityLimit == null
-              ? that.aggregationCardinalityLimit == null
-              : this.aggregationCardinalityLimit.equals(that.aggregationCardinalityLimit))
-          && (this.attributeKeys == null
-              ? that.attributeKeys == null
-              : this.attributeKeys.equals(that.attributeKeys))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getName() == null
+              ? that.getName() == null
+              : this.getName().equals(that.getName()))
+          && (this.getDescription() == null
+              ? that.getDescription() == null
+              : this.getDescription().equals(that.getDescription()))
+          && (this.getAggregation() == null
+              ? that.getAggregation() == null
+              : this.getAggregation().equals(that.getAggregation()))
+          && (this.getAggregationCardinalityLimit() == null
+              ? that.getAggregationCardinalityLimit() == null
+              : this.getAggregationCardinalityLimit().equals(that.getAggregationCardinalityLimit()))
+          && (this.getAttributeKeys() == null
+              ? that.getAttributeKeys() == null
+              : this.getAttributeKeys().equals(that.getAttributeKeys()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

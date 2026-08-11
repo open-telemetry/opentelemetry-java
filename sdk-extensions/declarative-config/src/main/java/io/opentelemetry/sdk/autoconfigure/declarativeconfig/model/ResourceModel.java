@@ -148,11 +148,11 @@ public class ResourceModel {
     h *= 1000003;
     h ^= (this.attributes == null) ? 0 : this.attributes.hashCode();
     h *= 1000003;
-    h ^= (this.schemaUrl == null) ? 0 : this.schemaUrl.hashCode();
+    h ^= (this.getSchemaUrl() == null) ? 0 : this.getSchemaUrl().hashCode();
     h *= 1000003;
-    h ^= (this.attributesList == null) ? 0 : this.attributesList.hashCode();
+    h ^= (this.getAttributesList() == null) ? 0 : this.getAttributesList().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -166,15 +166,15 @@ public class ResourceModel {
       return (this.attributes == null
               ? that.attributes == null
               : this.attributes.equals(that.attributes))
-          && (this.schemaUrl == null
-              ? that.schemaUrl == null
-              : this.schemaUrl.equals(that.schemaUrl))
-          && (this.attributesList == null
-              ? that.attributesList == null
-              : this.attributesList.equals(that.attributesList))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+          && (this.getSchemaUrl() == null
+              ? that.getSchemaUrl() == null
+              : this.getSchemaUrl().equals(that.getSchemaUrl()))
+          && (this.getAttributesList() == null
+              ? that.getAttributesList() == null
+              : this.getAttributesList().equals(that.getAttributesList()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

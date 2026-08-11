@@ -204,17 +204,20 @@ public class ParentBasedSamplerModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.root == null) ? 0 : this.root.hashCode();
+    h ^= (this.getRoot() == null) ? 0 : this.getRoot().hashCode();
     h *= 1000003;
-    h ^= (this.remoteParentSampled == null) ? 0 : this.remoteParentSampled.hashCode();
+    h ^= (this.getRemoteParentSampled() == null) ? 0 : this.getRemoteParentSampled().hashCode();
     h *= 1000003;
-    h ^= (this.remoteParentNotSampled == null) ? 0 : this.remoteParentNotSampled.hashCode();
+    h ^=
+        (this.getRemoteParentNotSampled() == null)
+            ? 0
+            : this.getRemoteParentNotSampled().hashCode();
     h *= 1000003;
-    h ^= (this.localParentSampled == null) ? 0 : this.localParentSampled.hashCode();
+    h ^= (this.getLocalParentSampled() == null) ? 0 : this.getLocalParentSampled().hashCode();
     h *= 1000003;
-    h ^= (this.localParentNotSampled == null) ? 0 : this.localParentNotSampled.hashCode();
+    h ^= (this.getLocalParentNotSampled() == null) ? 0 : this.getLocalParentNotSampled().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -225,22 +228,24 @@ public class ParentBasedSamplerModel {
     }
     if (o instanceof ParentBasedSamplerModel) {
       ParentBasedSamplerModel that = (ParentBasedSamplerModel) o;
-      return (this.root == null ? that.root == null : this.root.equals(that.root))
-          && (this.remoteParentSampled == null
-              ? that.remoteParentSampled == null
-              : this.remoteParentSampled.equals(that.remoteParentSampled))
-          && (this.remoteParentNotSampled == null
-              ? that.remoteParentNotSampled == null
-              : this.remoteParentNotSampled.equals(that.remoteParentNotSampled))
-          && (this.localParentSampled == null
-              ? that.localParentSampled == null
-              : this.localParentSampled.equals(that.localParentSampled))
-          && (this.localParentNotSampled == null
-              ? that.localParentNotSampled == null
-              : this.localParentNotSampled.equals(that.localParentNotSampled))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getRoot() == null
+              ? that.getRoot() == null
+              : this.getRoot().equals(that.getRoot()))
+          && (this.getRemoteParentSampled() == null
+              ? that.getRemoteParentSampled() == null
+              : this.getRemoteParentSampled().equals(that.getRemoteParentSampled()))
+          && (this.getRemoteParentNotSampled() == null
+              ? that.getRemoteParentNotSampled() == null
+              : this.getRemoteParentNotSampled().equals(that.getRemoteParentNotSampled()))
+          && (this.getLocalParentSampled() == null
+              ? that.getLocalParentSampled() == null
+              : this.getLocalParentSampled().equals(that.getLocalParentSampled()))
+          && (this.getLocalParentNotSampled() == null
+              ? that.getLocalParentNotSampled() == null
+              : this.getLocalParentNotSampled().equals(that.getLocalParentNotSampled()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

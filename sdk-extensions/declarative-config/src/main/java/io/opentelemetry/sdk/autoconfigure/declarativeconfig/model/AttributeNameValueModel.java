@@ -163,13 +163,13 @@ public class AttributeNameValueModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.name == null) ? 0 : this.name.hashCode();
+    h ^= (this.getName() == null) ? 0 : this.getName().hashCode();
     h *= 1000003;
-    h ^= (this.value == null) ? 0 : this.value.hashCode();
+    h ^= (this.getValue() == null) ? 0 : this.getValue().hashCode();
     h *= 1000003;
-    h ^= (this.type == null) ? 0 : this.type.hashCode();
+    h ^= (this.getType() == null) ? 0 : this.getType().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -180,12 +180,18 @@ public class AttributeNameValueModel {
     }
     if (o instanceof AttributeNameValueModel) {
       AttributeNameValueModel that = (AttributeNameValueModel) o;
-      return (this.name == null ? that.name == null : this.name.equals(that.name))
-          && (this.value == null ? that.value == null : this.value.equals(that.value))
-          && (this.type == null ? that.type == null : this.type.equals(that.type))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getName() == null
+              ? that.getName() == null
+              : this.getName().equals(that.getName()))
+          && (this.getValue() == null
+              ? that.getValue() == null
+              : this.getValue().equals(that.getValue()))
+          && (this.getType() == null
+              ? that.getType() == null
+              : this.getType().equals(that.getType()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

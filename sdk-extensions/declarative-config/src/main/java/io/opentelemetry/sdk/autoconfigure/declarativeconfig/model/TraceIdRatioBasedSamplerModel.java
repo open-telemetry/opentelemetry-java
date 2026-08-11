@@ -90,9 +90,9 @@ public class TraceIdRatioBasedSamplerModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.ratio == null) ? 0 : this.ratio.hashCode();
+    h ^= (this.getRatio() == null) ? 0 : this.getRatio().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -103,10 +103,12 @@ public class TraceIdRatioBasedSamplerModel {
     }
     if (o instanceof TraceIdRatioBasedSamplerModel) {
       TraceIdRatioBasedSamplerModel that = (TraceIdRatioBasedSamplerModel) o;
-      return (this.ratio == null ? that.ratio == null : this.ratio.equals(that.ratio))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getRatio() == null
+              ? that.getRatio() == null
+              : this.getRatio().equals(that.getRatio()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

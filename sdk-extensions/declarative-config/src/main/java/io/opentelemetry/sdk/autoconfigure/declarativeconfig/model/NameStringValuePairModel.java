@@ -116,11 +116,11 @@ public class NameStringValuePairModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.name == null) ? 0 : this.name.hashCode();
+    h ^= (this.getName() == null) ? 0 : this.getName().hashCode();
     h *= 1000003;
-    h ^= (this.value == null) ? 0 : this.value.hashCode();
+    h ^= (this.getValue() == null) ? 0 : this.getValue().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -131,11 +131,15 @@ public class NameStringValuePairModel {
     }
     if (o instanceof NameStringValuePairModel) {
       NameStringValuePairModel that = (NameStringValuePairModel) o;
-      return (this.name == null ? that.name == null : this.name.equals(that.name))
-          && (this.value == null ? that.value == null : this.value.equals(that.value))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getName() == null
+              ? that.getName() == null
+              : this.getName().equals(that.getName()))
+          && (this.getValue() == null
+              ? that.getValue() == null
+              : this.getValue().equals(that.getValue()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

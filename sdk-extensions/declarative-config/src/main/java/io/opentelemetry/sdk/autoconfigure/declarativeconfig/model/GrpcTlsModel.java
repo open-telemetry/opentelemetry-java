@@ -179,15 +179,15 @@ public class GrpcTlsModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.caFile == null) ? 0 : this.caFile.hashCode();
+    h ^= (this.getCaFile() == null) ? 0 : this.getCaFile().hashCode();
     h *= 1000003;
-    h ^= (this.keyFile == null) ? 0 : this.keyFile.hashCode();
+    h ^= (this.getKeyFile() == null) ? 0 : this.getKeyFile().hashCode();
     h *= 1000003;
-    h ^= (this.certFile == null) ? 0 : this.certFile.hashCode();
+    h ^= (this.getCertFile() == null) ? 0 : this.getCertFile().hashCode();
     h *= 1000003;
-    h ^= (this.insecure == null) ? 0 : this.insecure.hashCode();
+    h ^= (this.getInsecure() == null) ? 0 : this.getInsecure().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -198,13 +198,21 @@ public class GrpcTlsModel {
     }
     if (o instanceof GrpcTlsModel) {
       GrpcTlsModel that = (GrpcTlsModel) o;
-      return (this.caFile == null ? that.caFile == null : this.caFile.equals(that.caFile))
-          && (this.keyFile == null ? that.keyFile == null : this.keyFile.equals(that.keyFile))
-          && (this.certFile == null ? that.certFile == null : this.certFile.equals(that.certFile))
-          && (this.insecure == null ? that.insecure == null : this.insecure.equals(that.insecure))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getCaFile() == null
+              ? that.getCaFile() == null
+              : this.getCaFile().equals(that.getCaFile()))
+          && (this.getKeyFile() == null
+              ? that.getKeyFile() == null
+              : this.getKeyFile().equals(that.getKeyFile()))
+          && (this.getCertFile() == null
+              ? that.getCertFile() == null
+              : this.getCertFile().equals(that.getCertFile()))
+          && (this.getInsecure() == null
+              ? that.getInsecure() == null
+              : this.getInsecure().equals(that.getInsecure()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

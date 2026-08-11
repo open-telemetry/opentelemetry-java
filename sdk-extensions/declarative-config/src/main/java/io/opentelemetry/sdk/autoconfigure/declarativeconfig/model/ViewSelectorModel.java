@@ -245,19 +245,19 @@ public class ViewSelectorModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.instrumentName == null) ? 0 : this.instrumentName.hashCode();
+    h ^= (this.getInstrumentName() == null) ? 0 : this.getInstrumentName().hashCode();
     h *= 1000003;
-    h ^= (this.instrumentType == null) ? 0 : this.instrumentType.hashCode();
+    h ^= (this.getInstrumentType() == null) ? 0 : this.getInstrumentType().hashCode();
     h *= 1000003;
-    h ^= (this.unit == null) ? 0 : this.unit.hashCode();
+    h ^= (this.getUnit() == null) ? 0 : this.getUnit().hashCode();
     h *= 1000003;
-    h ^= (this.meterName == null) ? 0 : this.meterName.hashCode();
+    h ^= (this.getMeterName() == null) ? 0 : this.getMeterName().hashCode();
     h *= 1000003;
-    h ^= (this.meterVersion == null) ? 0 : this.meterVersion.hashCode();
+    h ^= (this.getMeterVersion() == null) ? 0 : this.getMeterVersion().hashCode();
     h *= 1000003;
-    h ^= (this.meterSchemaUrl == null) ? 0 : this.meterSchemaUrl.hashCode();
+    h ^= (this.getMeterSchemaUrl() == null) ? 0 : this.getMeterSchemaUrl().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -268,25 +268,27 @@ public class ViewSelectorModel {
     }
     if (o instanceof ViewSelectorModel) {
       ViewSelectorModel that = (ViewSelectorModel) o;
-      return (this.instrumentName == null
-              ? that.instrumentName == null
-              : this.instrumentName.equals(that.instrumentName))
-          && (this.instrumentType == null
-              ? that.instrumentType == null
-              : this.instrumentType.equals(that.instrumentType))
-          && (this.unit == null ? that.unit == null : this.unit.equals(that.unit))
-          && (this.meterName == null
-              ? that.meterName == null
-              : this.meterName.equals(that.meterName))
-          && (this.meterVersion == null
-              ? that.meterVersion == null
-              : this.meterVersion.equals(that.meterVersion))
-          && (this.meterSchemaUrl == null
-              ? that.meterSchemaUrl == null
-              : this.meterSchemaUrl.equals(that.meterSchemaUrl))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getInstrumentName() == null
+              ? that.getInstrumentName() == null
+              : this.getInstrumentName().equals(that.getInstrumentName()))
+          && (this.getInstrumentType() == null
+              ? that.getInstrumentType() == null
+              : this.getInstrumentType().equals(that.getInstrumentType()))
+          && (this.getUnit() == null
+              ? that.getUnit() == null
+              : this.getUnit().equals(that.getUnit()))
+          && (this.getMeterName() == null
+              ? that.getMeterName() == null
+              : this.getMeterName().equals(that.getMeterName()))
+          && (this.getMeterVersion() == null
+              ? that.getMeterVersion() == null
+              : this.getMeterVersion().equals(that.getMeterVersion()))
+          && (this.getMeterSchemaUrl() == null
+              ? that.getMeterSchemaUrl() == null
+              : this.getMeterSchemaUrl().equals(that.getMeterSchemaUrl()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

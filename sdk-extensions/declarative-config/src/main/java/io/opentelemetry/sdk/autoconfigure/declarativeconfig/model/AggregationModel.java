@@ -256,22 +256,25 @@ public class AggregationModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this._default == null) ? 0 : this._default.hashCode();
+    h ^= (this.getDefault() == null) ? 0 : this.getDefault().hashCode();
     h *= 1000003;
-    h ^= (this.drop == null) ? 0 : this.drop.hashCode();
-    h *= 1000003;
-    h ^= (this.explicitBucketHistogram == null) ? 0 : this.explicitBucketHistogram.hashCode();
+    h ^= (this.getDrop() == null) ? 0 : this.getDrop().hashCode();
     h *= 1000003;
     h ^=
-        (this.base2ExponentialBucketHistogram == null)
+        (this.getExplicitBucketHistogram() == null)
             ? 0
-            : this.base2ExponentialBucketHistogram.hashCode();
+            : this.getExplicitBucketHistogram().hashCode();
     h *= 1000003;
-    h ^= (this.lastValue == null) ? 0 : this.lastValue.hashCode();
+    h ^=
+        (this.getBase2ExponentialBucketHistogram() == null)
+            ? 0
+            : this.getBase2ExponentialBucketHistogram().hashCode();
     h *= 1000003;
-    h ^= (this.sum == null) ? 0 : this.sum.hashCode();
+    h ^= (this.getLastValue() == null) ? 0 : this.getLastValue().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getSum() == null) ? 0 : this.getSum().hashCode();
+    h *= 1000003;
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -282,21 +285,26 @@ public class AggregationModel {
     }
     if (o instanceof AggregationModel) {
       AggregationModel that = (AggregationModel) o;
-      return (this._default == null ? that._default == null : this._default.equals(that._default))
-          && (this.drop == null ? that.drop == null : this.drop.equals(that.drop))
-          && (this.explicitBucketHistogram == null
-              ? that.explicitBucketHistogram == null
-              : this.explicitBucketHistogram.equals(that.explicitBucketHistogram))
-          && (this.base2ExponentialBucketHistogram == null
-              ? that.base2ExponentialBucketHistogram == null
-              : this.base2ExponentialBucketHistogram.equals(that.base2ExponentialBucketHistogram))
-          && (this.lastValue == null
-              ? that.lastValue == null
-              : this.lastValue.equals(that.lastValue))
-          && (this.sum == null ? that.sum == null : this.sum.equals(that.sum))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getDefault() == null
+              ? that.getDefault() == null
+              : this.getDefault().equals(that.getDefault()))
+          && (this.getDrop() == null
+              ? that.getDrop() == null
+              : this.getDrop().equals(that.getDrop()))
+          && (this.getExplicitBucketHistogram() == null
+              ? that.getExplicitBucketHistogram() == null
+              : this.getExplicitBucketHistogram().equals(that.getExplicitBucketHistogram()))
+          && (this.getBase2ExponentialBucketHistogram() == null
+              ? that.getBase2ExponentialBucketHistogram() == null
+              : this.getBase2ExponentialBucketHistogram()
+                  .equals(that.getBase2ExponentialBucketHistogram()))
+          && (this.getLastValue() == null
+              ? that.getLastValue() == null
+              : this.getLastValue().equals(that.getLastValue()))
+          && (this.getSum() == null ? that.getSum() == null : this.getSum().equals(that.getSum()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

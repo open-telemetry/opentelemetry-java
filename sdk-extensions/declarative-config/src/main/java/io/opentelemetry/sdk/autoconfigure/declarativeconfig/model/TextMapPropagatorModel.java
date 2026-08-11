@@ -171,15 +171,15 @@ public class TextMapPropagatorModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.tracecontext == null) ? 0 : this.tracecontext.hashCode();
+    h ^= (this.getTracecontext() == null) ? 0 : this.getTracecontext().hashCode();
     h *= 1000003;
-    h ^= (this.baggage == null) ? 0 : this.baggage.hashCode();
+    h ^= (this.getBaggage() == null) ? 0 : this.getBaggage().hashCode();
     h *= 1000003;
-    h ^= (this.b3 == null) ? 0 : this.b3.hashCode();
+    h ^= (this.getB3() == null) ? 0 : this.getB3().hashCode();
     h *= 1000003;
-    h ^= (this.b3multi == null) ? 0 : this.b3multi.hashCode();
+    h ^= (this.getB3multi() == null) ? 0 : this.getB3multi().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -190,15 +190,19 @@ public class TextMapPropagatorModel {
     }
     if (o instanceof TextMapPropagatorModel) {
       TextMapPropagatorModel that = (TextMapPropagatorModel) o;
-      return (this.tracecontext == null
-              ? that.tracecontext == null
-              : this.tracecontext.equals(that.tracecontext))
-          && (this.baggage == null ? that.baggage == null : this.baggage.equals(that.baggage))
-          && (this.b3 == null ? that.b3 == null : this.b3.equals(that.b3))
-          && (this.b3multi == null ? that.b3multi == null : this.b3multi.equals(that.b3multi))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getTracecontext() == null
+              ? that.getTracecontext() == null
+              : this.getTracecontext().equals(that.getTracecontext()))
+          && (this.getBaggage() == null
+              ? that.getBaggage() == null
+              : this.getBaggage().equals(that.getBaggage()))
+          && (this.getB3() == null ? that.getB3() == null : this.getB3().equals(that.getB3()))
+          && (this.getB3multi() == null
+              ? that.getB3multi() == null
+              : this.getB3multi().equals(that.getB3multi()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

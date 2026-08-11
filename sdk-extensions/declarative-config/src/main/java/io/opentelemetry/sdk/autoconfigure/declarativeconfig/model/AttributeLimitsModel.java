@@ -122,11 +122,14 @@ public class AttributeLimitsModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.attributeValueLengthLimit == null) ? 0 : this.attributeValueLengthLimit.hashCode();
+    h ^=
+        (this.getAttributeValueLengthLimit() == null)
+            ? 0
+            : this.getAttributeValueLengthLimit().hashCode();
     h *= 1000003;
-    h ^= (this.attributeCountLimit == null) ? 0 : this.attributeCountLimit.hashCode();
+    h ^= (this.getAttributeCountLimit() == null) ? 0 : this.getAttributeCountLimit().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -137,15 +140,15 @@ public class AttributeLimitsModel {
     }
     if (o instanceof AttributeLimitsModel) {
       AttributeLimitsModel that = (AttributeLimitsModel) o;
-      return (this.attributeValueLengthLimit == null
-              ? that.attributeValueLengthLimit == null
-              : this.attributeValueLengthLimit.equals(that.attributeValueLengthLimit))
-          && (this.attributeCountLimit == null
-              ? that.attributeCountLimit == null
-              : this.attributeCountLimit.equals(that.attributeCountLimit))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getAttributeValueLengthLimit() == null
+              ? that.getAttributeValueLengthLimit() == null
+              : this.getAttributeValueLengthLimit().equals(that.getAttributeValueLengthLimit()))
+          && (this.getAttributeCountLimit() == null
+              ? that.getAttributeCountLimit() == null
+              : this.getAttributeCountLimit().equals(that.getAttributeCountLimit()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

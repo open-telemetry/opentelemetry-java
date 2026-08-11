@@ -172,15 +172,15 @@ public class SamplerModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.alwaysOff == null) ? 0 : this.alwaysOff.hashCode();
+    h ^= (this.getAlwaysOff() == null) ? 0 : this.getAlwaysOff().hashCode();
     h *= 1000003;
-    h ^= (this.alwaysOn == null) ? 0 : this.alwaysOn.hashCode();
+    h ^= (this.getAlwaysOn() == null) ? 0 : this.getAlwaysOn().hashCode();
     h *= 1000003;
-    h ^= (this.parentBased == null) ? 0 : this.parentBased.hashCode();
+    h ^= (this.getParentBased() == null) ? 0 : this.getParentBased().hashCode();
     h *= 1000003;
-    h ^= (this.traceIdRatioBased == null) ? 0 : this.traceIdRatioBased.hashCode();
+    h ^= (this.getTraceIdRatioBased() == null) ? 0 : this.getTraceIdRatioBased().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -191,19 +191,21 @@ public class SamplerModel {
     }
     if (o instanceof SamplerModel) {
       SamplerModel that = (SamplerModel) o;
-      return (this.alwaysOff == null
-              ? that.alwaysOff == null
-              : this.alwaysOff.equals(that.alwaysOff))
-          && (this.alwaysOn == null ? that.alwaysOn == null : this.alwaysOn.equals(that.alwaysOn))
-          && (this.parentBased == null
-              ? that.parentBased == null
-              : this.parentBased.equals(that.parentBased))
-          && (this.traceIdRatioBased == null
-              ? that.traceIdRatioBased == null
-              : this.traceIdRatioBased.equals(that.traceIdRatioBased))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getAlwaysOff() == null
+              ? that.getAlwaysOff() == null
+              : this.getAlwaysOff().equals(that.getAlwaysOff()))
+          && (this.getAlwaysOn() == null
+              ? that.getAlwaysOn() == null
+              : this.getAlwaysOn().equals(that.getAlwaysOn()))
+          && (this.getParentBased() == null
+              ? that.getParentBased() == null
+              : this.getParentBased().equals(that.getParentBased()))
+          && (this.getTraceIdRatioBased() == null
+              ? that.getTraceIdRatioBased() == null
+              : this.getTraceIdRatioBased().equals(that.getTraceIdRatioBased()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

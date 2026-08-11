@@ -144,13 +144,13 @@ public class Base2ExponentialBucketHistogramAggregationModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.maxScale == null) ? 0 : this.maxScale.hashCode();
+    h ^= (this.getMaxScale() == null) ? 0 : this.getMaxScale().hashCode();
     h *= 1000003;
-    h ^= (this.maxSize == null) ? 0 : this.maxSize.hashCode();
+    h ^= (this.getMaxSize() == null) ? 0 : this.getMaxSize().hashCode();
     h *= 1000003;
-    h ^= (this.recordMinMax == null) ? 0 : this.recordMinMax.hashCode();
+    h ^= (this.getRecordMinMax() == null) ? 0 : this.getRecordMinMax().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -162,14 +162,18 @@ public class Base2ExponentialBucketHistogramAggregationModel {
     if (o instanceof Base2ExponentialBucketHistogramAggregationModel) {
       Base2ExponentialBucketHistogramAggregationModel that =
           (Base2ExponentialBucketHistogramAggregationModel) o;
-      return (this.maxScale == null ? that.maxScale == null : this.maxScale.equals(that.maxScale))
-          && (this.maxSize == null ? that.maxSize == null : this.maxSize.equals(that.maxSize))
-          && (this.recordMinMax == null
-              ? that.recordMinMax == null
-              : this.recordMinMax.equals(that.recordMinMax))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getMaxScale() == null
+              ? that.getMaxScale() == null
+              : this.getMaxScale().equals(that.getMaxScale()))
+          && (this.getMaxSize() == null
+              ? that.getMaxSize() == null
+              : this.getMaxSize().equals(that.getMaxSize()))
+          && (this.getRecordMinMax() == null
+              ? that.getRecordMinMax() == null
+              : this.getRecordMinMax().equals(that.getRecordMinMax()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

@@ -245,19 +245,28 @@ public class SpanLimitsModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.attributeValueLengthLimit == null) ? 0 : this.attributeValueLengthLimit.hashCode();
+    h ^=
+        (this.getAttributeValueLengthLimit() == null)
+            ? 0
+            : this.getAttributeValueLengthLimit().hashCode();
     h *= 1000003;
-    h ^= (this.attributeCountLimit == null) ? 0 : this.attributeCountLimit.hashCode();
+    h ^= (this.getAttributeCountLimit() == null) ? 0 : this.getAttributeCountLimit().hashCode();
     h *= 1000003;
-    h ^= (this.eventCountLimit == null) ? 0 : this.eventCountLimit.hashCode();
+    h ^= (this.getEventCountLimit() == null) ? 0 : this.getEventCountLimit().hashCode();
     h *= 1000003;
-    h ^= (this.linkCountLimit == null) ? 0 : this.linkCountLimit.hashCode();
+    h ^= (this.getLinkCountLimit() == null) ? 0 : this.getLinkCountLimit().hashCode();
     h *= 1000003;
-    h ^= (this.eventAttributeCountLimit == null) ? 0 : this.eventAttributeCountLimit.hashCode();
+    h ^=
+        (this.getEventAttributeCountLimit() == null)
+            ? 0
+            : this.getEventAttributeCountLimit().hashCode();
     h *= 1000003;
-    h ^= (this.linkAttributeCountLimit == null) ? 0 : this.linkAttributeCountLimit.hashCode();
+    h ^=
+        (this.getLinkAttributeCountLimit() == null)
+            ? 0
+            : this.getLinkAttributeCountLimit().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -268,27 +277,27 @@ public class SpanLimitsModel {
     }
     if (o instanceof SpanLimitsModel) {
       SpanLimitsModel that = (SpanLimitsModel) o;
-      return (this.attributeValueLengthLimit == null
-              ? that.attributeValueLengthLimit == null
-              : this.attributeValueLengthLimit.equals(that.attributeValueLengthLimit))
-          && (this.attributeCountLimit == null
-              ? that.attributeCountLimit == null
-              : this.attributeCountLimit.equals(that.attributeCountLimit))
-          && (this.eventCountLimit == null
-              ? that.eventCountLimit == null
-              : this.eventCountLimit.equals(that.eventCountLimit))
-          && (this.linkCountLimit == null
-              ? that.linkCountLimit == null
-              : this.linkCountLimit.equals(that.linkCountLimit))
-          && (this.eventAttributeCountLimit == null
-              ? that.eventAttributeCountLimit == null
-              : this.eventAttributeCountLimit.equals(that.eventAttributeCountLimit))
-          && (this.linkAttributeCountLimit == null
-              ? that.linkAttributeCountLimit == null
-              : this.linkAttributeCountLimit.equals(that.linkAttributeCountLimit))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getAttributeValueLengthLimit() == null
+              ? that.getAttributeValueLengthLimit() == null
+              : this.getAttributeValueLengthLimit().equals(that.getAttributeValueLengthLimit()))
+          && (this.getAttributeCountLimit() == null
+              ? that.getAttributeCountLimit() == null
+              : this.getAttributeCountLimit().equals(that.getAttributeCountLimit()))
+          && (this.getEventCountLimit() == null
+              ? that.getEventCountLimit() == null
+              : this.getEventCountLimit().equals(that.getEventCountLimit()))
+          && (this.getLinkCountLimit() == null
+              ? that.getLinkCountLimit() == null
+              : this.getLinkCountLimit().equals(that.getLinkCountLimit()))
+          && (this.getEventAttributeCountLimit() == null
+              ? that.getEventAttributeCountLimit() == null
+              : this.getEventAttributeCountLimit().equals(that.getEventAttributeCountLimit()))
+          && (this.getLinkAttributeCountLimit() == null
+              ? that.getLinkAttributeCountLimit() == null
+              : this.getLinkAttributeCountLimit().equals(that.getLinkAttributeCountLimit()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

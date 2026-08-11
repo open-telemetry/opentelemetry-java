@@ -51,7 +51,7 @@ public class DistributionModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -62,9 +62,9 @@ public class DistributionModel {
     }
     if (o instanceof DistributionModel) {
       DistributionModel that = (DistributionModel) o;
-      return (this.extensionProperties == null
-          ? that.extensionProperties == null
-          : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getExtensionProperties() == null
+          ? that.getExtensionProperties() == null
+          : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

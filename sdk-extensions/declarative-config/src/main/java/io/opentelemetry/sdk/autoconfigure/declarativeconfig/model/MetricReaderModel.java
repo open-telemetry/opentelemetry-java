@@ -118,11 +118,11 @@ public class MetricReaderModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.periodic == null) ? 0 : this.periodic.hashCode();
+    h ^= (this.getPeriodic() == null) ? 0 : this.getPeriodic().hashCode();
     h *= 1000003;
-    h ^= (this.pull == null) ? 0 : this.pull.hashCode();
+    h ^= (this.getPull() == null) ? 0 : this.getPull().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -133,11 +133,15 @@ public class MetricReaderModel {
     }
     if (o instanceof MetricReaderModel) {
       MetricReaderModel that = (MetricReaderModel) o;
-      return (this.periodic == null ? that.periodic == null : this.periodic.equals(that.periodic))
-          && (this.pull == null ? that.pull == null : this.pull.equals(that.pull))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getPeriodic() == null
+              ? that.getPeriodic() == null
+              : this.getPeriodic().equals(that.getPeriodic()))
+          && (this.getPull() == null
+              ? that.getPull() == null
+              : this.getPull().equals(that.getPull()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

@@ -141,14 +141,14 @@ public class ConsoleMetricExporterModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.temporalityPreference == null) ? 0 : this.temporalityPreference.hashCode();
+    h ^= (this.getTemporalityPreference() == null) ? 0 : this.getTemporalityPreference().hashCode();
     h *= 1000003;
     h ^=
-        (this.defaultHistogramAggregation == null)
+        (this.getDefaultHistogramAggregation() == null)
             ? 0
-            : this.defaultHistogramAggregation.hashCode();
+            : this.getDefaultHistogramAggregation().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -159,15 +159,15 @@ public class ConsoleMetricExporterModel {
     }
     if (o instanceof ConsoleMetricExporterModel) {
       ConsoleMetricExporterModel that = (ConsoleMetricExporterModel) o;
-      return (this.temporalityPreference == null
-              ? that.temporalityPreference == null
-              : this.temporalityPreference.equals(that.temporalityPreference))
-          && (this.defaultHistogramAggregation == null
-              ? that.defaultHistogramAggregation == null
-              : this.defaultHistogramAggregation.equals(that.defaultHistogramAggregation))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getTemporalityPreference() == null
+              ? that.getTemporalityPreference() == null
+              : this.getTemporalityPreference().equals(that.getTemporalityPreference()))
+          && (this.getDefaultHistogramAggregation() == null
+              ? that.getDefaultHistogramAggregation() == null
+              : this.getDefaultHistogramAggregation().equals(that.getDefaultHistogramAggregation()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

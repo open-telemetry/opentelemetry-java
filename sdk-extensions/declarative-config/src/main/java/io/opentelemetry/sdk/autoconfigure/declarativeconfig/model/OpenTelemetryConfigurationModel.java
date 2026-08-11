@@ -408,27 +408,27 @@ public class OpenTelemetryConfigurationModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.fileFormat == null) ? 0 : this.fileFormat.hashCode();
+    h ^= (this.getFileFormat() == null) ? 0 : this.getFileFormat().hashCode();
     h *= 1000003;
-    h ^= (this.disabled == null) ? 0 : this.disabled.hashCode();
+    h ^= (this.getDisabled() == null) ? 0 : this.getDisabled().hashCode();
     h *= 1000003;
-    h ^= (this.logLevel == null) ? 0 : this.logLevel.hashCode();
+    h ^= (this.getLogLevel() == null) ? 0 : this.getLogLevel().hashCode();
     h *= 1000003;
-    h ^= (this.attributeLimits == null) ? 0 : this.attributeLimits.hashCode();
+    h ^= (this.getAttributeLimits() == null) ? 0 : this.getAttributeLimits().hashCode();
     h *= 1000003;
-    h ^= (this.loggerProvider == null) ? 0 : this.loggerProvider.hashCode();
+    h ^= (this.getLoggerProvider() == null) ? 0 : this.getLoggerProvider().hashCode();
     h *= 1000003;
-    h ^= (this.meterProvider == null) ? 0 : this.meterProvider.hashCode();
+    h ^= (this.getMeterProvider() == null) ? 0 : this.getMeterProvider().hashCode();
     h *= 1000003;
-    h ^= (this.propagator == null) ? 0 : this.propagator.hashCode();
+    h ^= (this.getPropagator() == null) ? 0 : this.getPropagator().hashCode();
     h *= 1000003;
-    h ^= (this.tracerProvider == null) ? 0 : this.tracerProvider.hashCode();
+    h ^= (this.getTracerProvider() == null) ? 0 : this.getTracerProvider().hashCode();
     h *= 1000003;
-    h ^= (this.resource == null) ? 0 : this.resource.hashCode();
+    h ^= (this.getResource() == null) ? 0 : this.getResource().hashCode();
     h *= 1000003;
-    h ^= (this.distribution == null) ? 0 : this.distribution.hashCode();
+    h ^= (this.getDistribution() == null) ? 0 : this.getDistribution().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -439,33 +439,39 @@ public class OpenTelemetryConfigurationModel {
     }
     if (o instanceof OpenTelemetryConfigurationModel) {
       OpenTelemetryConfigurationModel that = (OpenTelemetryConfigurationModel) o;
-      return (this.fileFormat == null
-              ? that.fileFormat == null
-              : this.fileFormat.equals(that.fileFormat))
-          && (this.disabled == null ? that.disabled == null : this.disabled.equals(that.disabled))
-          && (this.logLevel == null ? that.logLevel == null : this.logLevel.equals(that.logLevel))
-          && (this.attributeLimits == null
-              ? that.attributeLimits == null
-              : this.attributeLimits.equals(that.attributeLimits))
-          && (this.loggerProvider == null
-              ? that.loggerProvider == null
-              : this.loggerProvider.equals(that.loggerProvider))
-          && (this.meterProvider == null
-              ? that.meterProvider == null
-              : this.meterProvider.equals(that.meterProvider))
-          && (this.propagator == null
-              ? that.propagator == null
-              : this.propagator.equals(that.propagator))
-          && (this.tracerProvider == null
-              ? that.tracerProvider == null
-              : this.tracerProvider.equals(that.tracerProvider))
-          && (this.resource == null ? that.resource == null : this.resource.equals(that.resource))
-          && (this.distribution == null
-              ? that.distribution == null
-              : this.distribution.equals(that.distribution))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getFileFormat() == null
+              ? that.getFileFormat() == null
+              : this.getFileFormat().equals(that.getFileFormat()))
+          && (this.getDisabled() == null
+              ? that.getDisabled() == null
+              : this.getDisabled().equals(that.getDisabled()))
+          && (this.getLogLevel() == null
+              ? that.getLogLevel() == null
+              : this.getLogLevel().equals(that.getLogLevel()))
+          && (this.getAttributeLimits() == null
+              ? that.getAttributeLimits() == null
+              : this.getAttributeLimits().equals(that.getAttributeLimits()))
+          && (this.getLoggerProvider() == null
+              ? that.getLoggerProvider() == null
+              : this.getLoggerProvider().equals(that.getLoggerProvider()))
+          && (this.getMeterProvider() == null
+              ? that.getMeterProvider() == null
+              : this.getMeterProvider().equals(that.getMeterProvider()))
+          && (this.getPropagator() == null
+              ? that.getPropagator() == null
+              : this.getPropagator().equals(that.getPropagator()))
+          && (this.getTracerProvider() == null
+              ? that.getTracerProvider() == null
+              : this.getTracerProvider().equals(that.getTracerProvider()))
+          && (this.getResource() == null
+              ? that.getResource() == null
+              : this.getResource().equals(that.getResource()))
+          && (this.getDistribution() == null
+              ? that.getDistribution() == null
+              : this.getDistribution().equals(that.getDistribution()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

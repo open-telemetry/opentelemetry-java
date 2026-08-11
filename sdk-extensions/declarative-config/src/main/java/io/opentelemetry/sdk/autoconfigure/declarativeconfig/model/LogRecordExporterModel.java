@@ -145,13 +145,13 @@ public class LogRecordExporterModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.otlpHttp == null) ? 0 : this.otlpHttp.hashCode();
+    h ^= (this.getOtlpHttp() == null) ? 0 : this.getOtlpHttp().hashCode();
     h *= 1000003;
-    h ^= (this.otlpGrpc == null) ? 0 : this.otlpGrpc.hashCode();
+    h ^= (this.getOtlpGrpc() == null) ? 0 : this.getOtlpGrpc().hashCode();
     h *= 1000003;
-    h ^= (this.console == null) ? 0 : this.console.hashCode();
+    h ^= (this.getConsole() == null) ? 0 : this.getConsole().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -162,12 +162,18 @@ public class LogRecordExporterModel {
     }
     if (o instanceof LogRecordExporterModel) {
       LogRecordExporterModel that = (LogRecordExporterModel) o;
-      return (this.otlpHttp == null ? that.otlpHttp == null : this.otlpHttp.equals(that.otlpHttp))
-          && (this.otlpGrpc == null ? that.otlpGrpc == null : this.otlpGrpc.equals(that.otlpGrpc))
-          && (this.console == null ? that.console == null : this.console.equals(that.console))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getOtlpHttp() == null
+              ? that.getOtlpHttp() == null
+              : this.getOtlpHttp().equals(that.getOtlpHttp()))
+          && (this.getOtlpGrpc() == null
+              ? that.getOtlpGrpc() == null
+              : this.getOtlpGrpc().equals(that.getOtlpGrpc()))
+          && (this.getConsole() == null
+              ? that.getConsole() == null
+              : this.getConsole().equals(that.getConsole()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

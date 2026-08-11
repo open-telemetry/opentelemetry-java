@@ -141,13 +141,13 @@ public class PullMetricReaderModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.exporter == null) ? 0 : this.exporter.hashCode();
+    h ^= (this.getExporter() == null) ? 0 : this.getExporter().hashCode();
     h *= 1000003;
     h ^= (this.producers == null) ? 0 : this.producers.hashCode();
     h *= 1000003;
-    h ^= (this.cardinalityLimits == null) ? 0 : this.cardinalityLimits.hashCode();
+    h ^= (this.getCardinalityLimits() == null) ? 0 : this.getCardinalityLimits().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -158,16 +158,18 @@ public class PullMetricReaderModel {
     }
     if (o instanceof PullMetricReaderModel) {
       PullMetricReaderModel that = (PullMetricReaderModel) o;
-      return (this.exporter == null ? that.exporter == null : this.exporter.equals(that.exporter))
+      return (this.getExporter() == null
+              ? that.getExporter() == null
+              : this.getExporter().equals(that.getExporter()))
           && (this.producers == null
               ? that.producers == null
               : this.producers.equals(that.producers))
-          && (this.cardinalityLimits == null
-              ? that.cardinalityLimits == null
-              : this.cardinalityLimits.equals(that.cardinalityLimits))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+          && (this.getCardinalityLimits() == null
+              ? that.getCardinalityLimits() == null
+              : this.getCardinalityLimits().equals(that.getCardinalityLimits()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

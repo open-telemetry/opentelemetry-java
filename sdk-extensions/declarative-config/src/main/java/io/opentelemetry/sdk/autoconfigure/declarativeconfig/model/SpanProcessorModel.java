@@ -118,11 +118,11 @@ public class SpanProcessorModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.batch == null) ? 0 : this.batch.hashCode();
+    h ^= (this.getBatch() == null) ? 0 : this.getBatch().hashCode();
     h *= 1000003;
-    h ^= (this.simple == null) ? 0 : this.simple.hashCode();
+    h ^= (this.getSimple() == null) ? 0 : this.getSimple().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -133,11 +133,15 @@ public class SpanProcessorModel {
     }
     if (o instanceof SpanProcessorModel) {
       SpanProcessorModel that = (SpanProcessorModel) o;
-      return (this.batch == null ? that.batch == null : this.batch.equals(that.batch))
-          && (this.simple == null ? that.simple == null : this.simple.equals(that.simple))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getBatch() == null
+              ? that.getBatch() == null
+              : this.getBatch().equals(that.getBatch()))
+          && (this.getSimple() == null
+              ? that.getSimple() == null
+              : this.getSimple().equals(that.getSimple()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

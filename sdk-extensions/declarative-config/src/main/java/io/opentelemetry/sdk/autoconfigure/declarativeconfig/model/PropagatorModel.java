@@ -128,9 +128,9 @@ public class PropagatorModel {
     h *= 1000003;
     h ^= (this.composite == null) ? 0 : this.composite.hashCode();
     h *= 1000003;
-    h ^= (this.compositeList == null) ? 0 : this.compositeList.hashCode();
+    h ^= (this.getCompositeList() == null) ? 0 : this.getCompositeList().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -144,12 +144,12 @@ public class PropagatorModel {
       return (this.composite == null
               ? that.composite == null
               : this.composite.equals(that.composite))
-          && (this.compositeList == null
-              ? that.compositeList == null
-              : this.compositeList.equals(that.compositeList))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+          && (this.getCompositeList() == null
+              ? that.getCompositeList() == null
+              : this.getCompositeList().equals(that.getCompositeList()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

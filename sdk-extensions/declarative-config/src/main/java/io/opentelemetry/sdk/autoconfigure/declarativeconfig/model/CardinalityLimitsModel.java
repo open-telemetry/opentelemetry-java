@@ -287,23 +287,26 @@ public class CardinalityLimitsModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this._default == null) ? 0 : this._default.hashCode();
+    h ^= (this.getDefault() == null) ? 0 : this.getDefault().hashCode();
     h *= 1000003;
-    h ^= (this.counter == null) ? 0 : this.counter.hashCode();
+    h ^= (this.getCounter() == null) ? 0 : this.getCounter().hashCode();
     h *= 1000003;
-    h ^= (this.gauge == null) ? 0 : this.gauge.hashCode();
+    h ^= (this.getGauge() == null) ? 0 : this.getGauge().hashCode();
     h *= 1000003;
-    h ^= (this.histogram == null) ? 0 : this.histogram.hashCode();
+    h ^= (this.getHistogram() == null) ? 0 : this.getHistogram().hashCode();
     h *= 1000003;
-    h ^= (this.observableCounter == null) ? 0 : this.observableCounter.hashCode();
+    h ^= (this.getObservableCounter() == null) ? 0 : this.getObservableCounter().hashCode();
     h *= 1000003;
-    h ^= (this.observableGauge == null) ? 0 : this.observableGauge.hashCode();
+    h ^= (this.getObservableGauge() == null) ? 0 : this.getObservableGauge().hashCode();
     h *= 1000003;
-    h ^= (this.observableUpDownCounter == null) ? 0 : this.observableUpDownCounter.hashCode();
+    h ^=
+        (this.getObservableUpDownCounter() == null)
+            ? 0
+            : this.getObservableUpDownCounter().hashCode();
     h *= 1000003;
-    h ^= (this.upDownCounter == null) ? 0 : this.upDownCounter.hashCode();
+    h ^= (this.getUpDownCounter() == null) ? 0 : this.getUpDownCounter().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -314,27 +317,33 @@ public class CardinalityLimitsModel {
     }
     if (o instanceof CardinalityLimitsModel) {
       CardinalityLimitsModel that = (CardinalityLimitsModel) o;
-      return (this._default == null ? that._default == null : this._default.equals(that._default))
-          && (this.counter == null ? that.counter == null : this.counter.equals(that.counter))
-          && (this.gauge == null ? that.gauge == null : this.gauge.equals(that.gauge))
-          && (this.histogram == null
-              ? that.histogram == null
-              : this.histogram.equals(that.histogram))
-          && (this.observableCounter == null
-              ? that.observableCounter == null
-              : this.observableCounter.equals(that.observableCounter))
-          && (this.observableGauge == null
-              ? that.observableGauge == null
-              : this.observableGauge.equals(that.observableGauge))
-          && (this.observableUpDownCounter == null
-              ? that.observableUpDownCounter == null
-              : this.observableUpDownCounter.equals(that.observableUpDownCounter))
-          && (this.upDownCounter == null
-              ? that.upDownCounter == null
-              : this.upDownCounter.equals(that.upDownCounter))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getDefault() == null
+              ? that.getDefault() == null
+              : this.getDefault().equals(that.getDefault()))
+          && (this.getCounter() == null
+              ? that.getCounter() == null
+              : this.getCounter().equals(that.getCounter()))
+          && (this.getGauge() == null
+              ? that.getGauge() == null
+              : this.getGauge().equals(that.getGauge()))
+          && (this.getHistogram() == null
+              ? that.getHistogram() == null
+              : this.getHistogram().equals(that.getHistogram()))
+          && (this.getObservableCounter() == null
+              ? that.getObservableCounter() == null
+              : this.getObservableCounter().equals(that.getObservableCounter()))
+          && (this.getObservableGauge() == null
+              ? that.getObservableGauge() == null
+              : this.getObservableGauge().equals(that.getObservableGauge()))
+          && (this.getObservableUpDownCounter() == null
+              ? that.getObservableUpDownCounter() == null
+              : this.getObservableUpDownCounter().equals(that.getObservableUpDownCounter()))
+          && (this.getUpDownCounter() == null
+              ? that.getUpDownCounter() == null
+              : this.getUpDownCounter().equals(that.getUpDownCounter()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

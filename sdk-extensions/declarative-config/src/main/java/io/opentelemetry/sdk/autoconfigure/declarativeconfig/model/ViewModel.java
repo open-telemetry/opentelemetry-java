@@ -120,11 +120,11 @@ public class ViewModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.selector == null) ? 0 : this.selector.hashCode();
+    h ^= (this.getSelector() == null) ? 0 : this.getSelector().hashCode();
     h *= 1000003;
-    h ^= (this.stream == null) ? 0 : this.stream.hashCode();
+    h ^= (this.getStream() == null) ? 0 : this.getStream().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -135,11 +135,15 @@ public class ViewModel {
     }
     if (o instanceof ViewModel) {
       ViewModel that = (ViewModel) o;
-      return (this.selector == null ? that.selector == null : this.selector.equals(that.selector))
-          && (this.stream == null ? that.stream == null : this.stream.equals(that.stream))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getSelector() == null
+              ? that.getSelector() == null
+              : this.getSelector().equals(that.getSelector()))
+          && (this.getStream() == null
+              ? that.getStream() == null
+              : this.getStream().equals(that.getStream()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

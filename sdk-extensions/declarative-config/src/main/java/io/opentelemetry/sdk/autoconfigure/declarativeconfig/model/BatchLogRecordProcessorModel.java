@@ -206,17 +206,17 @@ public class BatchLogRecordProcessorModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.scheduleDelay == null) ? 0 : this.scheduleDelay.hashCode();
+    h ^= (this.getScheduleDelay() == null) ? 0 : this.getScheduleDelay().hashCode();
     h *= 1000003;
-    h ^= (this.exportTimeout == null) ? 0 : this.exportTimeout.hashCode();
+    h ^= (this.getExportTimeout() == null) ? 0 : this.getExportTimeout().hashCode();
     h *= 1000003;
-    h ^= (this.maxQueueSize == null) ? 0 : this.maxQueueSize.hashCode();
+    h ^= (this.getMaxQueueSize() == null) ? 0 : this.getMaxQueueSize().hashCode();
     h *= 1000003;
-    h ^= (this.maxExportBatchSize == null) ? 0 : this.maxExportBatchSize.hashCode();
+    h ^= (this.getMaxExportBatchSize() == null) ? 0 : this.getMaxExportBatchSize().hashCode();
     h *= 1000003;
-    h ^= (this.exporter == null) ? 0 : this.exporter.hashCode();
+    h ^= (this.getExporter() == null) ? 0 : this.getExporter().hashCode();
     h *= 1000003;
-    h ^= (this.extensionProperties == null) ? 0 : this.extensionProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -227,22 +227,24 @@ public class BatchLogRecordProcessorModel {
     }
     if (o instanceof BatchLogRecordProcessorModel) {
       BatchLogRecordProcessorModel that = (BatchLogRecordProcessorModel) o;
-      return (this.scheduleDelay == null
-              ? that.scheduleDelay == null
-              : this.scheduleDelay.equals(that.scheduleDelay))
-          && (this.exportTimeout == null
-              ? that.exportTimeout == null
-              : this.exportTimeout.equals(that.exportTimeout))
-          && (this.maxQueueSize == null
-              ? that.maxQueueSize == null
-              : this.maxQueueSize.equals(that.maxQueueSize))
-          && (this.maxExportBatchSize == null
-              ? that.maxExportBatchSize == null
-              : this.maxExportBatchSize.equals(that.maxExportBatchSize))
-          && (this.exporter == null ? that.exporter == null : this.exporter.equals(that.exporter))
-          && (this.extensionProperties == null
-              ? that.extensionProperties == null
-              : this.extensionProperties.equals(that.extensionProperties));
+      return (this.getScheduleDelay() == null
+              ? that.getScheduleDelay() == null
+              : this.getScheduleDelay().equals(that.getScheduleDelay()))
+          && (this.getExportTimeout() == null
+              ? that.getExportTimeout() == null
+              : this.getExportTimeout().equals(that.getExportTimeout()))
+          && (this.getMaxQueueSize() == null
+              ? that.getMaxQueueSize() == null
+              : this.getMaxQueueSize().equals(that.getMaxQueueSize()))
+          && (this.getMaxExportBatchSize() == null
+              ? that.getMaxExportBatchSize() == null
+              : this.getMaxExportBatchSize().equals(that.getMaxExportBatchSize()))
+          && (this.getExporter() == null
+              ? that.getExporter() == null
+              : this.getExporter().equals(that.getExporter()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }
