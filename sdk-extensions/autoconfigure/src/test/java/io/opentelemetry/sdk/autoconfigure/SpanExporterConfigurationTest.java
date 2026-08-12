@@ -45,11 +45,6 @@ class SpanExporterConfigurationTest {
         .hasMessage(
             "otel.traces.exporter set to \"otlp\" but opentelemetry-exporter-otlp"
                 + " not found on classpath. Make sure to add it as a dependency.");
-    assertThatThrownBy(() -> configureExporter("zipkin", spiExportersManager))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage(
-            "otel.traces.exporter set to \"zipkin\" but opentelemetry-exporter-zipkin"
-                + " not found on classpath. Make sure to add it as a dependency.");
 
     // Unrecognized exporter
     assertThatThrownBy(() -> configureExporter("foo", spiExportersManager))

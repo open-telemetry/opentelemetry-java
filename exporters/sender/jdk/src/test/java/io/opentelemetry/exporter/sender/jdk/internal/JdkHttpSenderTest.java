@@ -34,6 +34,8 @@ import java.net.http.HttpHeaders;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -106,6 +108,43 @@ class JdkHttpSenderTest {
     assertThat(result.isSuccess()).isFalse();
     assertThat(result.getFailureThrowable()).isInstanceOf(RuntimeException.class);
     assertThat(result.getFailureThrowable().getMessage()).isEqualTo("testShutdownException");
+  }
+
+  @Test
+  void shutdown_managedExecutor_awaitsTermination() {
+    CompletableResultCode result = sender.shutdown();
+    result.join(10, TimeUnit.SECONDS);
+
+    assertThat(result.isSuccess()).isTrue();
+    assertThat(sender)
+        .extracting("executorService", as(InstanceOfAssertFactories.type(ExecutorService.class)))
+        .satisfies(executor -> assertThat(executor.isTerminated()).isTrue());
+  }
+
+  @Test
+  void shutdown_nonManagedExecutor_doesNotShutDownExecutor() {
+    ExecutorService customExecutor = Executors.newSingleThreadExecutor();
+    try {
+      JdkHttpSender testSender =
+          new JdkHttpSender(
+              mockHttpClient,
+              URI.create("http://localhost"),
+              "text/plain",
+              null,
+              Duration.ofSeconds(10),
+              Collections::emptyMap,
+              null,
+              customExecutor,
+              Long.MAX_VALUE);
+
+      CompletableResultCode result = testSender.shutdown();
+
+      assertThat(result.isDone()).isTrue();
+      assertThat(result.isSuccess()).isTrue();
+      assertThat(customExecutor.isShutdown()).isFalse();
+    } finally {
+      customExecutor.shutdownNow();
+    }
   }
 
   @Test

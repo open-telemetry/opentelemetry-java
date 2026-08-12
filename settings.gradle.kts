@@ -1,11 +1,10 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "9.6.0"
+    id("com.gradleup.shadow") version "9.6.1"
     id("com.gradle.develocity") version "4.5.0"
     id("de.undercouch.download") version "5.7.0"
-    id("org.jsonschema2pojo") version "1.3.3"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("org.graalvm.buildtools.native") version "1.1.4"
+    id("org.graalvm.buildtools.native") version "1.1.7"
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
   }
 }
@@ -48,7 +47,6 @@ include(":exporters:otlp:common")
 include(":exporters:otlp:profiles")
 include(":exporters:otlp:testing-internal")
 include(":exporters:prometheus")
-include(":exporters:zipkin")
 include(":integration-tests")
 include(":integration-tests:otlp")
 include(":integration-tests:tracecontext")

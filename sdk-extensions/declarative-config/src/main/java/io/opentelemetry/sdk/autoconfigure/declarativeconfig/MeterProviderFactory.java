@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.FileConfigUtil.requireNonNull;
 
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExemplarFilterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricReaderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewModel;
@@ -95,7 +96,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
       SdkMeterProviderUtil.setMeterConfigurator(builder, configuratorBuilder.build());
     }
 
-    MeterProviderModel.ExemplarFilter exemplarFilterModel = model.getExemplarFilter();
+    ExemplarFilterModel exemplarFilterModel = model.getExemplarFilter();
     if (exemplarFilterModel != null) {
       builder.setExemplarFilter(
           ExemplarFilterFactory.getInstance().create(exemplarFilterModel, context));

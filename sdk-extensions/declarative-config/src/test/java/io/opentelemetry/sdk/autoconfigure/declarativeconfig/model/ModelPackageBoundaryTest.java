@@ -18,9 +18,9 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Experimental (unstable) types must live in {@code MODEL_PACKAGE.internal} (exempt from the
  * stability guarantees in {@code VERSIONING.md}) and stable types in {@code MODEL_PACKAGE}. The
- * generator enforces this by routing types whose name starts with {@code Experimental} (see {@code
- * io.opentelemetry.gradle.js2p.ExperimentalPackages}). This test fails if a schema update or rename
- * ever breaks that invariant — e.g. leaking a mutable experimental type into the stable public API.
+ * generator enforces this by routing types whose name starts with {@code Experimental} into the
+ * internal sub-package. This test fails if a schema update or rename ever breaks that invariant
+ * &mdash; e.g. leaking a mutable experimental type into the stable public API.
  */
 class ModelPackageBoundaryTest {
 

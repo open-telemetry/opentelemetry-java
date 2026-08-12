@@ -40,12 +40,7 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
 
   @Override
   public void add(double increment, Attributes attributes, Context context) {
-    if (increment < 0) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Counters can only increase. Instrument "
-              + getDescriptor().getName()
-              + " has recorded a negative value.");
+    if (!validateNonNegative(increment)) {
       return;
     }
     storage.recordDouble(increment, attributes, context);
@@ -59,6 +54,22 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
   @Override
   public void add(double increment) {
     add(increment, Attributes.empty());
+  }
+
+  /**
+   * Returns true if {@code increment} is non-negative, otherwise logs a warning and returns false.
+   * Shared by the unbound and bound ({@link ExtendedSdkDoubleCounter}) record paths.
+   */
+  boolean validateNonNegative(double increment) {
+    if (increment < 0) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Counters can only increase. Instrument "
+              + getDescriptor().getName()
+              + " has recorded a negative value.");
+      return false;
+    }
+    return true;
   }
 
   static class SdkDoubleCounterBuilder implements DoubleCounterBuilder {
