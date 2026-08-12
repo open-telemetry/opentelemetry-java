@@ -291,7 +291,6 @@ class DeclarativeConfigPojoGenerator(
   ) = buildString {
     val allProperties = defNode["properties"]?.properties()?.toList() ?: emptyList()
     val isStable = !isExperimental(defKey)
-    val hasAnyAdditional = isExtensible || hasOpenAdditionalProperties
 
     val stablePropertyPairs = if (isStable) allProperties.filter { !isExperimentalProperty(it.key) } else allProperties
     val experimentalPropPairs = if (isStable) allProperties.filter { isExperimentalProperty(it.key) } else emptyList<Map.Entry<String, JsonNode>>()
