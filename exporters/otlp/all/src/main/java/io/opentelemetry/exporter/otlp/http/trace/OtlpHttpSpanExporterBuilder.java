@@ -277,8 +277,9 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the TLS protocol versions to enable when connecting to an HTTPS endpoint. Pass {@code
-   * null} to defer to the sender implementation's default.
+   * Sets the TLS protocol versions to enable when connecting to an HTTPS endpoint. By default, OTLP
+   * exporters use the sender implementation's default protocol versions. Omit this call to use that
+   * default.
    *
    * <p>Protocol names follow the JSSE convention: {@code "TLSv1.2"}, {@code "TLSv1.3"}, etc.
    *
