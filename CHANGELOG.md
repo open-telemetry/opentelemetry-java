@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### SDK
+
+#### Exporters
+
+* Prometheus: Remove the log warning about the default host change from `0.0.0.0` to `localhost`
+  ([#8720](https://github.com/open-telemetry/opentelemetry-java/pull/8720))
+
 ## Version 1.65.0 (2026-08-07)
 
 **NOTE:** The `opentelemetry-exporter-zipkin` artifact has stopped being published. It was
