@@ -33,7 +33,7 @@ final class ComposableProbabilitySampler implements ComposableSampler {
       this.intent =
           SamplingIntent.create(
               ImmutableSamplingIntent.INVALID_THRESHOLD,
-              /* thresholdReliable= */ false,
+              /* adjustedCountReliable= */ false,
               Attributes.empty(),
               Function.identity());
     } else {
@@ -43,7 +43,10 @@ final class ComposableProbabilitySampler implements ComposableSampler {
 
       this.intent =
           SamplingIntent.create(
-              threshold, /* thresholdReliable= */ true, Attributes.empty(), Function.identity());
+              threshold,
+              /* adjustedCountReliable= */ true,
+              Attributes.empty(),
+              Function.identity());
     }
     this.description =
         "ComposableTraceIdRatioBasedSampler{threshold=" + thresholdStr + ", ratio=" + ratio + "}";
@@ -52,7 +55,6 @@ final class ComposableProbabilitySampler implements ComposableSampler {
   @Override
   public SamplingIntent getSamplingIntent(
       Context parentContext,
-      String traceId,
       String name,
       SpanKind spanKind,
       Attributes attributes,

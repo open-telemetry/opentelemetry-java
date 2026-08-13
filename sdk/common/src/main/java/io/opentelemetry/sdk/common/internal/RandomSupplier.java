@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
 /**
- * Provides random number generater constructor utilities.
+ * Provides random number generator constructor utilities.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

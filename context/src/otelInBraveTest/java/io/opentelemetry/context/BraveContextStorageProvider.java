@@ -74,6 +74,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
       this.delegate = delegate;
     }
 
+    @SuppressWarnings("ReferenceEquality")
     TraceContext toBraveContext() {
       if (fromBraveContext(baseBraveContext) == delegate) {
         return baseBraveContext;

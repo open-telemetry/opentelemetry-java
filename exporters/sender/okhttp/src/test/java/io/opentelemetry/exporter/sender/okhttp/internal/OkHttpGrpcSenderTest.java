@@ -5,11 +5,13 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.IOException;
@@ -21,7 +23,10 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -55,6 +60,34 @@ class OkHttpGrpcSenderTest {
     Response response = createResponse(503, nonRetryableGrpcStatus, "Non-retryable");
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertFalse(isRetryable);
+  }
+
+  @Test
+  void send_rejectedExecution_callsOnError() {
+    ThreadPoolExecutor executor =
+        new ThreadPoolExecutor(0, 1, 0, TimeUnit.SECONDS, new SynchronousQueue<>());
+    executor.shutdown();
+
+    OkHttpGrpcSender sender =
+        new OkHttpGrpcSender(
+            "http://localhost",
+            null,
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            null,
+            null,
+            executor,
+            Long.MAX_VALUE);
+
+    AtomicReference<GrpcResponse> responseRef = new AtomicReference<>();
+    AtomicReference<Throwable> errorRef = new AtomicReference<>();
+
+    sender.send(new TestMessageWriter(), responseRef::set, errorRef::set);
+
+    assertThat(errorRef.get()).isNotNull();
+    assertThat(responseRef.get()).isNull();
   }
 
   private static Response createResponse(int httpCode, String grpcStatus, String message) {

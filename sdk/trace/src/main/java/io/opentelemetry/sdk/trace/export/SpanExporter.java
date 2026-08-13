@@ -56,6 +56,15 @@ public interface SpanExporter extends Closeable {
   }
 
   /**
+   * Returns a {@link SpanExporter} that does nothing. All exported Spans are ignored.
+   *
+   * @since 1.63.0
+   */
+  static SpanExporter noop() {
+    return NoopSpanExporter.getInstance();
+  }
+
+  /**
    * Called to export sampled {@code Span}s. Note that export operations can be performed
    * simultaneously depending on the type of span processor being used. However, the {@link
    * BatchSpanProcessor} will ensure that only one export can occur at a time.

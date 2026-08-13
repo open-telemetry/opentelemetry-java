@@ -17,7 +17,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
- * A Marshaler of key value pairs. See {@link AnyValueMarshaler}.
+ * A Marshaler of {@link Value}. See {@link AnyValueMarshaler}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

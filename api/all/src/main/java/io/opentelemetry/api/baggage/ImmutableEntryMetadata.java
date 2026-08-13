@@ -6,7 +6,7 @@
 package io.opentelemetry.api.baggage;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.internal.ApiUsageLogger;
+import io.opentelemetry.common.impl.ApiUsageLogger;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -25,7 +25,7 @@ abstract class ImmutableEntryMetadata implements BaggageEntryMetadata {
    */
   static ImmutableEntryMetadata create(String metadata) {
     if (metadata == null) {
-      ApiUsageLogger.log("metadata is null");
+      ApiUsageLogger.logNullParam(BaggageEntryMetadata.class, "create", "metadata");
       return EMPTY;
     }
     return new AutoValue_ImmutableEntryMetadata(metadata);

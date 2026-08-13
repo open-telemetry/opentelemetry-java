@@ -32,7 +32,7 @@ public class OtelPrivateConstructorForUtilityClass extends BugChecker
   @Override
   public Description matchClass(ClassTree tree, VisitorState state) {
     Description description = delegate.matchClass(tree, state);
-    if (description == NO_MATCH) {
+    if (description.equals(NO_MATCH)) {
       return description;
     }
     return describeMatch(tree);

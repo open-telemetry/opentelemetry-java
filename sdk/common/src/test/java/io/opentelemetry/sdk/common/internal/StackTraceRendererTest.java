@@ -64,14 +64,12 @@ class StackTraceRendererTest {
     withKitchenSink.addSuppressed(withNestedSuppressed);
 
     return Stream.of(
-        // simple
-        Arguments.of(new Exception()),
-        Arguments.of(new Exception("error")),
-        // with cause
-        Arguments.of(new Exception(new Exception("cause"))),
-        Arguments.of(new Exception("error", new Exception("cause"))),
-        // with nested causes
-        Arguments.of(
+        Arguments.argumentSet("no message", new Exception()),
+        Arguments.argumentSet("with message", new Exception("error")),
+        Arguments.argumentSet("cause only", new Exception(new Exception("cause"))),
+        Arguments.argumentSet("message and cause", new Exception("error", new Exception("cause"))),
+        Arguments.argumentSet(
+            "nested causes",
             new Exception(
                 "error",
                 new Exception(
@@ -80,14 +78,12 @@ class StackTraceRendererTest {
                         "cause2",
                         new Exception(
                             "cause3", new Exception("cause4", new Exception("cause5"))))))),
-        // with cause with circular reference
-        Arguments.of(withCycle),
-        // with suppressed
-        Arguments.of(withSuppressed),
-        Arguments.of(withMultipleSuppressed),
-        Arguments.of(withNestedSuppressed),
+        Arguments.argumentSet("circular reference", withCycle),
+        Arguments.argumentSet("with suppressed", withSuppressed),
+        Arguments.argumentSet("with multiple suppressed", withMultipleSuppressed),
+        Arguments.argumentSet("with nested suppressed", withNestedSuppressed),
         // with cause, cycle, and suppressed!
-        Arguments.of(withKitchenSink));
+        Arguments.argumentSet("kitchen sink", withKitchenSink));
   }
 
   private static String jdkStackTrace(Throwable exception, int limit) {

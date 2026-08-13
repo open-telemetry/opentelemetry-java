@@ -198,6 +198,11 @@ class DeclarativeConfigContext implements ComponentLoader {
   }
 
   @Override
+  public String toString() {
+    return "DeclarativeConfigContext{componentLoader=" + componentLoader + '}';
+  }
+
+  @Override
   public <T> Iterable<T> load(Class<T> spiClass) {
     List<T> result = ComponentLoader.loadList(componentLoader, spiClass);
     result.forEach(

@@ -13,7 +13,7 @@
  *
  * <p>Attribute keys, and attribute values MUST contain only printable ASCII (codes between 32 and
  * 126, inclusive) and less than 256 characters. Type and attribute keys MUST have a length greater
- * than zero. They SHOULD start with a domain name and separate hierarchies with / characters, e.g.
+ * than zero. They should start with a domain name and separate hierarchies with / characters, e.g.
  * k8s.io/namespace/name.
  */
 @ParametersAreNonnullByDefault

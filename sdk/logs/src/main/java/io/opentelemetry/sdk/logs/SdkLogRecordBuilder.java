@@ -20,18 +20,18 @@ import javax.annotation.Nullable;
 /** SDK implementation of {@link LogRecordBuilder}. */
 class SdkLogRecordBuilder implements LogRecordBuilder {
 
-  protected final LoggerSharedState loggerSharedState;
-  protected final LogLimits logLimits;
-  protected final SdkLogger logger;
+  private final LoggerSharedState loggerSharedState;
+  private final LogLimits logLimits;
+  private final SdkLogger logger;
 
-  protected final InstrumentationScopeInfo instrumentationScopeInfo;
-  protected long timestampEpochNanos;
-  protected long observedTimestampEpochNanos;
-  @Nullable protected Context context;
-  protected Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
-  @Nullable protected String severityText;
-  @Nullable protected Value<?> body;
-  @Nullable protected String eventName;
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
+  private long timestampEpochNanos;
+  private long observedTimestampEpochNanos;
+  @Nullable private Context context;
+  private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
+  @Nullable private String severityText;
+  @Nullable private Value<?> body;
+  @Nullable private String eventName;
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(

@@ -27,6 +27,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * executed concurrently in different threads which are reused (common pool). Therefore we cannot
  * use current active span and activate span. So one issue here is setting correct parent span.
  */
+@SuppressWarnings("deprecation") // testing deprecated shim API
 class HandlerTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();

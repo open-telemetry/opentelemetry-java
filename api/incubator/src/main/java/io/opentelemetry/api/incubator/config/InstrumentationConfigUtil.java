@@ -6,7 +6,6 @@
 package io.opentelemetry.api.incubator.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -17,39 +16,6 @@ import javax.annotation.Nullable;
  * ConfigProvider#getInstrumentationConfig()}.
  */
 public class InstrumentationConfigUtil {
-
-  /**
-   * Return a map representation of the peer service map entries in {@code
-   * .instrumentation.general.peer.service_mapping}, or null if none is configured.
-   *
-   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
-   * @deprecated Peer service mapping was removed from the general instrumentation configuration
-   *     schema. See <a
-   *     href="https://github.com/open-telemetry/opentelemetry-configuration/pull/526">opentelemetry-configuration#526</a>.
-   */
-  @Deprecated
-  @Nullable
-  public static Map<String, String> peerServiceMapping(ConfigProvider configProvider) {
-    List<DeclarativeConfigProperties> serviceMappingList =
-        getOrNull(
-            configProvider,
-            config -> config.getStructuredList("service_mapping"),
-            "general",
-            "peer");
-    if (serviceMappingList == null) {
-      return null;
-    }
-    Map<String, String> serviceMapping = new LinkedHashMap<>();
-    serviceMappingList.forEach(
-        entry -> {
-          String peer = entry.getString("peer");
-          String service = entry.getString("service");
-          if (peer != null && service != null) {
-            serviceMapping.put(peer, service);
-          }
-        });
-    return serviceMapping.isEmpty() ? null : serviceMapping;
-  }
 
   /**
    * Return {@code .instrumentation.general.http.client.request_captured_headers}, or null if none
@@ -128,9 +94,8 @@ public class InstrumentationConfigUtil {
 
   /**
    * Walk down the {@code segments} of {@link ConfigProvider#getInstrumentationConfig()} and call
-   * {@code accessor} on the terminal node. Returns null if {@link
-   * ConfigProvider#getInstrumentationConfig()} is null, or if null is encountered walking the
-   * {@code segments}, or if {@code accessor} returns null.
+   * {@code accessor} on the terminal node. Returns null if null is encountered walking the {@code
+   * segments}, or if {@code accessor} returns null.
    *
    * <p>See other methods in {@link InstrumentationConfigUtil} for usage examples.
    */

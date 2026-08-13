@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableSamplerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -16,6 +17,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.Closeable;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -64,16 +67,18 @@ public class TracerProviderConfigurationTest {
   }
 
   @Test
-  void configureSampler_JaegerRemoteSampler() {
-    assertThat(
-            TracerProviderConfiguration.configureSampler(
-                "parentbased_jaeger_remote",
-                DefaultConfigProperties.createFromMap(Collections.emptyMap()),
-                spiHelper))
-        .satisfies(
-            sampler -> {
-              assertThat(sampler.getClass().getSimpleName()).isEqualTo("ParentBasedSampler");
-              assertThat(sampler).extracting("root").isInstanceOf(JaegerRemoteSampler.class);
-            });
+  @SuppressLogger(JaegerRemoteSampler.class)
+  void configureSampler_JaegerRemoteSampler() throws Exception {
+    Sampler sampler =
+        TracerProviderConfiguration.configureSampler(
+            "parentbased_jaeger_remote",
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()),
+            spiHelper);
+    assertThat(sampler.getClass().getSimpleName()).isEqualTo("ParentBasedSampler");
+    assertThat(sampler).extracting("root").isInstanceOf(JaegerRemoteSampler.class);
+    // Close the inner JaegerRemoteSampler to shut down its background thread.
+    Field rootField = sampler.getClass().getDeclaredField("root");
+    rootField.setAccessible(true);
+    ((Closeable) rootField.get(sampler)).close();
   }
 }

@@ -27,77 +27,68 @@ class PrometheusUnitsHelperTest {
     }
   }
 
+  @ParameterizedTest
+  @MethodSource("reservedSuffixUnitArgs")
+  void convertUnit_reservedSuffixHandling(String otlpUnit, String expectedPrometheusUnit) {
+    Unit actualPrometheusUnit = PrometheusUnitsHelper.convertUnit(otlpUnit);
+    if (expectedPrometheusUnit == null) {
+      assertNull(actualPrometheusUnit);
+    } else {
+      assertEquals(expectedPrometheusUnit, actualPrometheusUnit.toString());
+    }
+  }
+
+  private static Stream<Arguments> reservedSuffixUnitArgs() {
+    return Stream.of(
+        Arguments.argumentSet("reserved suffix only", "total", null),
+        Arguments.argumentSet("reserved created suffix only", "created", null),
+        Arguments.argumentSet("reserved bucket suffix only", "bucket", null),
+        Arguments.argumentSet("reserved info suffix only", "info", null),
+        Arguments.argumentSet("reserved suffix stripped", "widgets_total", "widgets"),
+        Arguments.argumentSet(
+            "repeated reserved suffixes stripped", "widgets_total_info", "widgets"),
+        Arguments.argumentSet(
+            "trailing punctuation removed after suffix stripping", "widgets_total_", "widgets"),
+        Arguments.argumentSet("leading and trailing punctuation trimmed", "._widgets_.", "widgets"),
+        Arguments.argumentSet("only punctuation becomes null", "._", null));
+  }
+
   private static Stream<Arguments> providePrometheusOTelUnitEquivalentPairs() {
     return Stream.of(
-        // Simple expansion - storage Bytes
-        Arguments.of("By", "bytes"),
-        // Simple expansion - storage KBy
-        Arguments.of("KBy", "kilobytes"),
-        // Simple expansion - storage MBy
-        Arguments.of("MBy", "megabytes"),
-        // Simple expansion - storage GBy
-        Arguments.of("GBy", "gigabytes"),
-        // Simple expansion - storage TBy
-        Arguments.of("TBy", "terabytes"),
-        // Simple expansion - storage KiBy
-        Arguments.of("KiBy", "kibibytes"),
-        // Simple expansion - storage MiBy
-        Arguments.of("MiBy", "mebibytes"),
-        // Simple expansion - storage GiBy
-        Arguments.of("GiBy", "gibibytes"),
-        // Simple expansion - storage TiBy
-        Arguments.of("TiBy", "tibibytes"),
-        // Simple expansion - Time unit d
-        Arguments.of("d", "days"),
-        // Simple expansion - Time unit h
-        Arguments.of("h", "hours"),
-        // Simple expansion - Time unit s
-        Arguments.of("s", "seconds"),
-        // Simple expansion - Time unit ms
-        Arguments.of("ms", "milliseconds"),
-        // Simple expansion - Time unit us
-        Arguments.of("us", "microseconds"),
-        // Simple expansion - Time unit ns
-        Arguments.of("ns", "nanoseconds"),
-        // Simple expansion - Time unit min
-        Arguments.of("min", "minutes"),
-        // Simple expansion - special symbol - %
-        Arguments.of("%", "percent"),
-        // Simple expansion - frequency
-        Arguments.of("Hz", "hertz"),
-        // Simple expansion - temperature
-        Arguments.of("Cel", "celsius"),
-        // Unit not found - Case sensitive
-        Arguments.of("S", "S"),
-        // Special case - 1 is unitless
-        Arguments.of("1", null),
-        // Special Case - Drop metric units in {}
-        Arguments.of("{packets}", null),
-        // Special Case - Dropped metric units only in {}
-        Arguments.of("{packets}V", "volts"),
-        // Special Case - Dropped metric units with 'per' unit handling applicable
-        Arguments.of("{scanned}/{returned}", null),
-        // Special Case - Dropped metric units with 'per' unit handling applicable
-        Arguments.of("{objects}/s", "per_second"),
-        // Units expressing rate - 'per' units, both units expanded
-        Arguments.of("m/s", "meters_per_second"),
-        // Units expressing rate - per minute
-        Arguments.of("m/min", "meters_per_minute"),
-        // Units expressing rate - per day
-        Arguments.of("A/d", "amperes_per_day"),
-        // Units expressing rate - per week
-        Arguments.of("W/wk", "watts_per_week"),
-        // Units expressing rate - per month
-        Arguments.of("J/mo", "joules_per_month"),
-        // Units expressing rate - per year
-        Arguments.of("TBy/a", "terabytes_per_year"),
-        // Units expressing rate - 'per' units, both units unknown
-        Arguments.of("v/v", "v_per_v"),
-        // Units expressing rate - 'per' units, first unit unknown
-        Arguments.of("km/h", "km_per_hour"),
-        // Units expressing rate - 'per' units, 'per' unit unknown
-        Arguments.of("g/x", "grams_per_x"),
-        // Misc - unit containing known abbreviations improperly formatted
-        Arguments.of("watts_W", "watts_W"));
+        Arguments.argumentSet("bytes", "By", "bytes"),
+        Arguments.argumentSet("kilobytes", "KBy", "kilobytes"),
+        Arguments.argumentSet("megabytes", "MBy", "megabytes"),
+        Arguments.argumentSet("gigabytes", "GBy", "gigabytes"),
+        Arguments.argumentSet("terabytes", "TBy", "terabytes"),
+        Arguments.argumentSet("kibibytes", "KiBy", "kibibytes"),
+        Arguments.argumentSet("mebibytes", "MiBy", "mebibytes"),
+        Arguments.argumentSet("gibibytes", "GiBy", "gibibytes"),
+        Arguments.argumentSet("tibibytes", "TiBy", "tibibytes"),
+        Arguments.argumentSet("days", "d", "days"),
+        Arguments.argumentSet("hours", "h", "hours"),
+        Arguments.argumentSet("seconds", "s", "seconds"),
+        Arguments.argumentSet("milliseconds", "ms", "milliseconds"),
+        Arguments.argumentSet("microseconds", "us", "microseconds"),
+        Arguments.argumentSet("nanoseconds", "ns", "nanoseconds"),
+        Arguments.argumentSet("minutes", "min", "minutes"),
+        Arguments.argumentSet("percent", "%", "percent"),
+        Arguments.argumentSet("hertz", "Hz", "hertz"),
+        Arguments.argumentSet("celsius", "Cel", "celsius"),
+        Arguments.argumentSet("unknown unit S (case sensitive)", "S", "S"),
+        Arguments.argumentSet("unitless 1", "1", null),
+        Arguments.argumentSet("curly braces dropped", "{packets}", null),
+        Arguments.argumentSet("curly braces with suffix", "{packets}V", "volts"),
+        Arguments.argumentSet("both units in curly braces", "{scanned}/{returned}", null),
+        Arguments.argumentSet("curly braces per second", "{objects}/s", "per_second"),
+        Arguments.argumentSet("meters per second", "m/s", "meters_per_second"),
+        Arguments.argumentSet("meters per minute", "m/min", "meters_per_minute"),
+        Arguments.argumentSet("amperes per day", "A/d", "amperes_per_day"),
+        Arguments.argumentSet("watts per week", "W/wk", "watts_per_week"),
+        Arguments.argumentSet("joules per month", "J/mo", "joules_per_month"),
+        Arguments.argumentSet("terabytes per year", "TBy/a", "terabytes_per_year"),
+        Arguments.argumentSet("unknown per unknown", "v/v", "v_per_v"),
+        Arguments.argumentSet("km per hour (first unit unknown)", "km/h", "km_per_hour"),
+        Arguments.argumentSet("grams per unknown", "g/x", "grams_per_x"),
+        Arguments.argumentSet("improperly formatted", "watts_W", "watts_W"));
   }
 }

@@ -1,5 +1,4 @@
 import org.gradle.api.JavaVersion
-
 plugins {
   id("otel.java-conventions")
   id("org.graalvm.buildtools.native")
@@ -7,6 +6,7 @@ plugins {
 
 description = "OpenTelemetry Graal Integration Tests (Incubating)"
 otelJava.moduleName.set("io.opentelemetry.graal.integration.tests.incubating")
+otelJava.osgiEnabled.set(false)
 otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_17)
 
 sourceSets {

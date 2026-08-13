@@ -21,7 +21,12 @@ import io.opencensus.trace.samplers.Samplers;
  * Implementation of the {@link TraceComponent} for OpenTelemetry migration, which uses the
  * OpenTelemetry migration StartEndHandler. This class is loaded by reflection in {@link
  * io.opencensus.trace.Tracing} and overrides the OpenCensus default implementation when present.
+ *
+ * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification (see <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/5138">#5138</a>).
+ *     Expect this artifact to no longer be published after June 2027.
  */
+@Deprecated
 public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
   private final PropagationComponent propagationComponent =
       new OpenTelemetryPropagationComponentImpl();
@@ -30,6 +35,14 @@ public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
   private final TraceConfig traceConfig = makeTraceConfig();
   private final Tracer tracer;
 
+  /**
+   * Creates the trace component loaded by OpenCensus through reflection.
+   *
+   * @deprecated OpenCensus compatibility is deprecated in the OpenTelemetry specification (see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/pull/5138">#5138</a>).
+   *     Expect this artifact to no longer be published after June 2027.
+   */
+  @Deprecated
   @SuppressWarnings("unused") // Loaded via reflection
   public OpenTelemetryTraceComponentImpl() {
     clock = MillisClock.getInstance();

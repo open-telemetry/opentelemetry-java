@@ -21,16 +21,16 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
-  protected final LogLimits logLimits;
-  protected final Resource resource;
-  protected final InstrumentationScopeInfo instrumentationScopeInfo;
-  protected final long timestampEpochNanos;
-  protected final long observedTimestampEpochNanos;
-  protected final SpanContext spanContext;
-  protected final Severity severity;
-  @Nullable protected final String severityText;
-  @Nullable protected final Value<?> body;
-  @Nullable protected String eventName;
+  private final LogLimits logLimits;
+  private final Resource resource;
+  private final InstrumentationScopeInfo instrumentationScopeInfo;
+  private final long timestampEpochNanos;
+  private final long observedTimestampEpochNanos;
+  private final SpanContext spanContext;
+  private final Severity severity;
+  @Nullable private final String severityText;
+  @Nullable private final Value<?> body;
+  @Nullable private final String eventName;
   private final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -105,7 +105,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     return this;
   }
 
-  private Attributes getImmutableAttributes() {
+  protected Attributes getImmutableAttributes() {
     synchronized (lock) {
       if (attributes == null || attributes.isEmpty()) {
         return Attributes.empty();

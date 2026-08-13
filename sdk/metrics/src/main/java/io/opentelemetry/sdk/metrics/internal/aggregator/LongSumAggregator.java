@@ -130,7 +130,7 @@ public final class LongSumAggregator
     }
 
     @Override
-    public void doRecordLong(long value) {
+    protected void doRecordLong(long value) {
       current.add(value);
     }
   }

@@ -260,7 +260,7 @@ public class MetricAdviceBenchmark {
       this.instrument = instrument;
     }
 
-    Instrument instrument() {
+    private Instrument instrument() {
       return instrument;
     }
   }

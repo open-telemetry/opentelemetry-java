@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
 import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -25,11 +26,17 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link JaegerPropagator}. */
 @SuppressWarnings("deprecation")
@@ -436,6 +443,26 @@ class JaegerPropagatorTest {
         .isEqualTo(Baggage.empty());
   }
 
+  @ParameterizedTest
+  @MethodSource
+  void extract_baggageOnly_withHeader_invalid_keepsExistingBaggage(String headerValue) {
+    Baggage existingBaggage = Baggage.builder().put("user", "alice").build();
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, headerValue);
+
+    Context context = Context.root().with(existingBaggage);
+    assertThat(fromContext(jaegerPropagator.extract(context, carrier, getter)))
+        .isEqualTo(existingBaggage);
+  }
+
+  static Stream<Arguments> extract_baggageOnly_withHeader_invalid_keepsExistingBaggage() {
+    return Stream.of(
+        Arguments.argumentSet("no separator", "nometa+novalue"),
+        Arguments.argumentSet("empty value", "user="),
+        Arguments.argumentSet("empty header", ""),
+        Arguments.argumentSet("too many separators", "a=b=c"));
+  }
+
   @Test
   void extract_baggageOnly_withHeader_andPrefix() {
     Map<String, String> carrier = new LinkedHashMap<>();
@@ -452,6 +479,23 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void extract_baggageOnly_capitalizedHeaders() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    // Some TextMapGetters return header keys in their original case (e.g. undertow 1.7), so baggage
+    // matching must be case insensitive.
+    carrier.put(BAGGAGE_PREFIX.toUpperCase(Locale.ROOT) + "some-key", "value");
+    carrier.put(BAGGAGE_HEADER.toUpperCase(Locale.ROOT), "nometa=nometa-value,meta=meta-value");
+
+    assertThat(fromContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            Baggage.builder()
+                .put("some-key", "value")
+                .put("nometa", "nometa-value")
+                .put("meta", "meta-value")
+                .build());
+  }
+
+  @Test
   void extract_nullContext() {
     assertThat(jaegerPropagator.extract(null, Collections.emptyMap(), getter))
         .isSameAs(Context.root());
@@ -464,6 +508,104 @@ class JaegerPropagatorTest {
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
             Context.current());
     assertThat(jaegerPropagator.extract(context, Collections.emptyMap(), null)).isSameAs(context);
+  }
+
+  @Test
+  void inject_baggageLimit_maxEntries() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    jaegerPropagator.inject(Context.root().with(baggageWithEntries(0, 65)), carrier, Map::put);
+    long count = carrier.keySet().stream().filter(k -> k.startsWith(BAGGAGE_PREFIX)).count();
+    assertThat(count).isEqualTo(64);
+  }
+
+  @Test
+  void inject_baggageLimit_maxBytes() {
+    Baggage baggage = Baggage.builder().put("k", fillChars('v', 8192)).build();
+    Map<String, String> carrier = new LinkedHashMap<>();
+    jaegerPropagator.inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier).doesNotContainKey(BAGGAGE_PREFIX + "k");
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  void extract_baggageLimit(Map<String, String> carrier, Baggage expectedBaggage) {
+    assertThat(fromContext(jaegerPropagator.extract(Context.root(), carrier, getter)))
+        .isEqualTo(expectedBaggage);
+  }
+
+  static Stream<Arguments> extract_baggageLimit() {
+    Map<String, String> prefixCarrier = new LinkedHashMap<>();
+    for (int i = 0; i < 65; i++) {
+      prefixCarrier.put(BAGGAGE_PREFIX + "k" + i, "v" + i);
+    }
+    StringBuilder jaegerHeader = new StringBuilder();
+    for (int i = 0; i < 65; i++) {
+      if (i > 0) {
+        jaegerHeader.append(",");
+      }
+      jaegerHeader.append("k").append(i).append("=v").append(i);
+    }
+    Map<String, String> headerCarrier = new LinkedHashMap<>();
+    headerCarrier.put(BAGGAGE_HEADER, jaegerHeader.toString());
+    Map<String, String> bigValueCarrier = new LinkedHashMap<>();
+    bigValueCarrier.put(BAGGAGE_PREFIX + "k", fillChars('v', 8192));
+    // 64 malformed tokens exhaust the per-header parse budget, so the trailing valid entry is not
+    // extracted. With 63, the budget still has room for it.
+    Map<String, String> malformedCarrier = new LinkedHashMap<>();
+    malformedCarrier.put(BAGGAGE_HEADER, malformedTokens(64) + "k0=v0");
+    Map<String, String> malformedUnderLimitCarrier = new LinkedHashMap<>();
+    malformedUnderLimitCarrier.put(BAGGAGE_HEADER, malformedTokens(63) + "k0=v0");
+    // Malformed tokens consume the per-header token budget, not the remaining entry budget, so the
+    // trailing valid entry still fills the last of the 64 entry slots.
+    Map<String, String> prefixThenMalformedCarrier = new LinkedHashMap<>();
+    for (int i = 0; i < 63; i++) {
+      prefixThenMalformedCarrier.put(BAGGAGE_PREFIX + "k" + i, "v" + i);
+    }
+    prefixThenMalformedCarrier.put(BAGGAGE_HEADER, malformedTokens(1) + "k63=v63");
+    return Stream.of(
+        Arguments.argumentSet(
+            "65 prefix keys truncated to 64", prefixCarrier, baggageWithEntries(0, 64)),
+        Arguments.argumentSet(
+            "65 header entries truncated to 64", headerCarrier, baggageWithEntries(0, 64)),
+        Arguments.argumentSet("large value exceeds byte limit", bigValueCarrier, Baggage.empty()),
+        Arguments.argumentSet(
+            "64 malformed tokens exhaust the token budget", malformedCarrier, Baggage.empty()),
+        Arguments.argumentSet(
+            "63 malformed tokens leave room for one entry",
+            malformedUnderLimitCarrier,
+            baggageWithEntries(0, 1)),
+        Arguments.argumentSet(
+            "malformed token does not consume the remaining entry budget",
+            prefixThenMalformedCarrier,
+            baggageWithEntries(0, 64)));
+  }
+
+  /** Returns {@code count} malformed (no {@code =}) comma-terminated baggage tokens. */
+  private static String malformedTokens(int count) {
+    StringBuilder header = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      header.append("malformed").append(i).append(",");
+    }
+    return header.toString();
+  }
+
+  /**
+   * Builds a {@link Baggage} with entries {@code k{start}=v{start}} through {@code
+   * k{start+count-1}=v{start+count-1}}.
+   */
+  private static Baggage baggageWithEntries(int start, int count) {
+    BaggageBuilder builder = Baggage.builder();
+    for (int i = start; i < start + count; i++) {
+      builder.put("k" + i, "v" + i);
+    }
+    return builder.build();
+  }
+
+  /** Returns a string of {@code count} repetitions of {@code c}. */
+  private static String fillChars(char c, int count) {
+    char[] chars = new char[count];
+    Arrays.fill(chars, c);
+    return new String(chars);
   }
 
   @Test

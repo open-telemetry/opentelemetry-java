@@ -92,6 +92,8 @@ public final class LongSumAssert extends AbstractAssert<LongSumAssert, SumData<L
    * Asserts that for each given assertion, at least one point in the sum satisfies it. Extra points
    * that match none of the assertions are allowed, and a single point may satisfy multiple
    * assertions.
+   *
+   * @since 1.62.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -103,6 +105,8 @@ public final class LongSumAssert extends AbstractAssert<LongSumAssert, SumData<L
    * Asserts that for each given assertion, at least one point in the sum satisfies it. Extra points
    * that match none of the assertions are allowed, and a single point may satisfy multiple
    * assertions.
+   *
+   * @since 1.62.0
    */
   public LongSumAssert containsPointsSatisfying(
       Iterable<? extends Consumer<LongPointAssert>> assertions) {

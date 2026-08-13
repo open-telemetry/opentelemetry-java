@@ -39,44 +39,18 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
     return new PrometheusMetricReaderBuilder();
   }
 
-  /**
-   * Deprecated. Use {@link #builder()}.
-   *
-   * @deprecated use {@link #builder()}.
-   */
-  @Deprecated
-  @SuppressWarnings({"unused", "InconsistentOverloads"})
-  public PrometheusMetricReader(
-      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
-    // otelScopeEnabled parameter was used to control the scope info metric, not scope labels.
-    this(
-        allowedResourceAttributesFilter,
-        /* otelScopeLabelsEnabled= */ true,
-        /* targetInfoMetricEnabled= */ true);
-  }
-
-  /**
-   * Deprecated. Use {@link #builder()}.
-   *
-   * @deprecated use {@link #builder()}.
-   */
-  @Deprecated
-  public PrometheusMetricReader(@Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this(
-        allowedResourceAttributesFilter,
-        /* otelScopeLabelsEnabled= */ true,
-        /* targetInfoMetricEnabled= */ true);
-  }
-
   // Package-private constructor used by builder
-  @SuppressWarnings("InconsistentOverloads")
   PrometheusMetricReader(
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       boolean otelScopeLabelsEnabled,
-      boolean targetInfoMetricEnabled) {
+      boolean targetInfoMetricEnabled,
+      TranslationStrategy translationStrategy) {
     this.converter =
         new Otel2PrometheusConverter(
-            otelScopeLabelsEnabled, targetInfoMetricEnabled, allowedResourceAttributesFilter);
+            otelScopeLabelsEnabled,
+            targetInfoMetricEnabled,
+            translationStrategy,
+            allowedResourceAttributesFilter);
   }
 
   @Override
@@ -109,6 +83,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
     StringJoiner joiner = new StringJoiner(",", "PrometheusMetricReader{", "}");
     joiner.add("otelScopeLabelsEnabled=" + converter.isOtelScopeLabelsEnabled());
     joiner.add("targetInfoMetricEnabled=" + converter.isTargetInfoMetricEnabled());
+    joiner.add("translationStrategy=" + converter.getTranslationStrategy());
     joiner.add("allowedResourceAttributesFilter=" + converter.getAllowedResourceAttributesFilter());
     return joiner.toString();
   }

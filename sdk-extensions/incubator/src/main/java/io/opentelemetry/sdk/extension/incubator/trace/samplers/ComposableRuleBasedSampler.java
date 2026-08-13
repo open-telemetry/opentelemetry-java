@@ -41,16 +41,14 @@ final class ComposableRuleBasedSampler implements ComposableSampler {
   @Override
   public SamplingIntent getSamplingIntent(
       Context parentContext,
-      String traceId,
       String name,
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
     for (SamplingRule rule : rules) {
-      if (rule.predicate()
-          .matches(parentContext, traceId, name, spanKind, attributes, parentLinks)) {
+      if (rule.predicate().matches(parentContext, name, spanKind, attributes, parentLinks)) {
         return rule.sampler()
-            .getSamplingIntent(parentContext, traceId, name, spanKind, attributes, parentLinks);
+            .getSamplingIntent(parentContext, name, spanKind, attributes, parentLinks);
       }
     }
     return NON_SAMPLING_INTENT;

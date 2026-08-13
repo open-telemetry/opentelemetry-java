@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel;
 import javax.annotation.Nullable;
 
 @AutoValue

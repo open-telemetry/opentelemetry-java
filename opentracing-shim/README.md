@@ -1,5 +1,10 @@
 # OpenTelemetry - OpenTracing Shim
 
+> [!WARNING]
+> OpenTracing is deprecated, and this shim is deprecated accordingly. It remains available for
+> legacy compatibility, but users should migrate to the OpenTelemetry API directly. See the
+> [OpenTelemetry specification guidance on OpenTracing compatibility](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/opentracing.md#opentracing-compatibility).
+
 The OpenTracing shim is a bridge layer from OpenTelemetry to the OpenTracing API.
 It takes OpenTelemetry Tracer and exposes it as an implementation of an OpenTracing Tracer.
 

@@ -28,6 +28,7 @@ final class ExemplarStatelessMarshaler implements StatelessMarshaler<ExemplarDat
   private ExemplarStatelessMarshaler() {}
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public void writeTo(Serializer output, ExemplarData exemplar, MarshalerContext context)
       throws IOException {
     output.serializeFixed64(Exemplar.TIME_UNIX_NANO, exemplar.getEpochNanos());
@@ -50,6 +51,7 @@ final class ExemplarStatelessMarshaler implements StatelessMarshaler<ExemplarDat
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public int getBinarySerializedSize(ExemplarData exemplar, MarshalerContext context) {
     int size = 0;
     size += MarshalerUtil.sizeFixed64(Exemplar.TIME_UNIX_NANO, exemplar.getEpochNanos());

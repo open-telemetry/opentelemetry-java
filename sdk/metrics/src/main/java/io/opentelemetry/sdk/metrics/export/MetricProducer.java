@@ -19,7 +19,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Alternative {@link MetricProducer} implementations can be used to bridge aggregated metrics
  * from other frameworks, and are registered with {@link
  * SdkMeterProviderBuilder#registerMetricProducer(MetricProducer)}. NOTE: When possible, metrics
- * from other frameworks SHOULD be bridged using the metric API, normally with asynchronous
+ * from other frameworks should be bridged using the metric API, normally with asynchronous
  * instruments which observe the aggregated state of the other framework. However, {@link
  * MetricProducer} exists to accommodate scenarios where the metric API is insufficient. It should
  * be used with caution as it requires the bridge to take a dependency on {@code

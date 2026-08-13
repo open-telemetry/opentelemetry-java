@@ -5,19 +5,18 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.common.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ModelMapper;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.internal.YamlDeclarativeConfigProperties;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
@@ -57,27 +56,8 @@ import org.snakeyaml.engine.v2.schema.CoreSchema;
  * <h2>For Implementers</h2>
  *
  * <p>External consumers needing to parse OpenTelemetry YAML configuration files should use the same
- * Jackson ObjectMapper configuration for compatibility. This configuration is intentionally not
- * exposed as API to avoid coupling. Instead, copy the following setup:
- *
- * <pre>{@code
- * ObjectMapper mapper = new ObjectMapper()
- *     // Create empty object instances for keys which are present but have null values
- *     .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
- * // Boxed primitives which are present but have null values should be set to null,
- * // rather than empty instances
- * mapper.configOverride(String.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
- * mapper.configOverride(Integer.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
- * mapper.configOverride(Double.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
- * mapper.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
- * }</pre>
- *
- * <p><b>Why this configuration:</b>
- *
- * <ul>
- *   <li>Default behavior creates empty objects for null values to match YAML schema expectations
- *   <li>Boxed primitives remain null to distinguish between absent and explicitly null values
- * </ul>
+ * Jackson {@code ObjectMapper} configuration for compatibility. See {@link
+ * io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ModelMapper#MAPPER}.
  */
 public final class DeclarativeConfiguration {
 
@@ -88,34 +68,8 @@ public final class DeclarativeConfiguration {
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
 
-  /**
-   * ObjectMapper configured for YAML declarative configuration parsing.
-   *
-   * <p>Configuration:
-   *
-   * <ul>
-   *   <li>Default: Creates empty objects for present keys with null values
-   *   <li>Boxed primitives (String, Integer, Double, Boolean): Remain null when null
-   * </ul>
-   *
-   * <p>External consumers needing compatible parsing should copy this configuration. See class
-   * javadoc for details and code example.
-   */
   // Visible for testing
-  static final ObjectMapper MAPPER;
-
-  static {
-    MAPPER =
-        new ObjectMapper()
-            // Create empty object instances for keys which are present but have null values
-            .setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
-    // Boxed primitives which are present but have null values should be set to null, rather than
-    // empty instances
-    MAPPER.configOverride(String.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
-    MAPPER.configOverride(Integer.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
-    MAPPER.configOverride(Double.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
-    MAPPER.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
-  }
+  static final ObjectMapper MAPPER = ModelMapper.MAPPER;
 
   private DeclarativeConfiguration() {}
 

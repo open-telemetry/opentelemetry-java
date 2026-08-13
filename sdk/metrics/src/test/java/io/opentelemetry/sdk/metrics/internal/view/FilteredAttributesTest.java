@@ -99,16 +99,23 @@ class FilteredAttributesTest {
 
   private static Stream<Arguments> mapArgs() {
     return Stream.of(
-        Arguments.of(FILTERED_ATTRIBUTES_ONE, ImmutableMap.of(KEY1, "value1")),
-        Arguments.of(FILTERED_ATTRIBUTES_TWO, ImmutableMap.of(KEY1, "value1", KEY2_LONG, 222L)),
-        Arguments.of(
+        Arguments.argumentSet(
+            "one attribute", FILTERED_ATTRIBUTES_ONE, ImmutableMap.of(KEY1, "value1")),
+        Arguments.argumentSet(
+            "two attributes",
+            FILTERED_ATTRIBUTES_TWO,
+            ImmutableMap.of(KEY1, "value1", KEY2_LONG, 222L)),
+        Arguments.argumentSet(
+            "three attributes",
             FILTERED_ATTRIBUTES_THREE,
             ImmutableMap.of(KEY1, "value1", KEY2_LONG, 222L, KEY3, "value3")),
-        Arguments.of(
+        Arguments.argumentSet(
+            "four attributes filtered to three",
             FILTERED_ATTRIBUTES_FOUR,
             ImmutableMap.of(KEY1, "value1", KEY2_LONG, 222L, KEY3, "value3")),
-        Arguments.of(FILTERED_ATTRIBUTES_EMPTY_SOURCE, Collections.emptyMap()),
-        Arguments.of(FILTERED_ATTRIBUTES_EMPTY, Collections.emptyMap()));
+        Arguments.argumentSet(
+            "empty source", FILTERED_ATTRIBUTES_EMPTY_SOURCE, Collections.emptyMap()),
+        Arguments.argumentSet("empty filtered", FILTERED_ATTRIBUTES_EMPTY, Collections.emptyMap()));
   }
 
   @Test

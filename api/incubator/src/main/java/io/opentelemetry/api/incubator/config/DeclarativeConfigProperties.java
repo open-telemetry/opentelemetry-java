@@ -160,8 +160,8 @@ public interface DeclarativeConfigProperties {
   <T> List<T> getScalarList(String name, Class<T> scalarType);
 
   /**
-   * Returns a {@link List} configuration property. Entries which are not strings are converted to
-   * their string representation.
+   * Returns a {@link List} configuration property. Empty values and values which do not map to the
+   * {@code scalarType} will be removed.
    *
    * @param name the property name
    * @param scalarType the scalar type, one of {@link String}, {@link Boolean}, {@link Long} or
@@ -183,7 +183,7 @@ public interface DeclarativeConfigProperties {
   DeclarativeConfigProperties getStructured(String name);
 
   /**
-   * Returns a list of {@link DeclarativeConfigProperties} configuration property.
+   * Returns a {@link DeclarativeConfigProperties} configuration property.
    *
    * @return a map-valued configuration property, or {@code defaultValue} if {@code name} has not
    *     been configured or is not a mapping

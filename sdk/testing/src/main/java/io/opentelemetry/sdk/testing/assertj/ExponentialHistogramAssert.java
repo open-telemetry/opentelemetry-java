@@ -79,6 +79,8 @@ public final class ExponentialHistogramAssert
    * Asserts that for each given assertion, at least one point in the exponential histogram
    * satisfies it. Extra points that match none of the assertions are allowed, and a single point
    * may satisfy multiple assertions.
+   *
+   * @since 1.62.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -91,6 +93,8 @@ public final class ExponentialHistogramAssert
    * Asserts that for each given assertion, at least one point in the exponential histogram
    * satisfies it. Extra points that match none of the assertions are allowed, and a single point
    * may satisfy multiple assertions.
+   *
+   * @since 1.62.0
    */
   public ExponentialHistogramAssert containsPointsSatisfying(
       Iterable<? extends Consumer<ExponentialHistogramPointAssert>> assertions) {

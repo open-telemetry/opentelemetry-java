@@ -35,7 +35,7 @@ public interface Ordered {
   static <T extends Ordered> List<T> loadOrderedList(
       ComponentLoader componentLoader, Class<T> spiClass) {
     List<T> result = new ArrayList<>(ComponentLoader.loadList(componentLoader, spiClass));
-    result.sort(Comparator.comparing(Ordered::order));
+    result.sort(Comparator.comparingInt(Ordered::order));
     return Collections.unmodifiableList(result);
   }
 }

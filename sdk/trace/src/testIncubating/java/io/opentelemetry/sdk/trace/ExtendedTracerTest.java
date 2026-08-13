@@ -53,15 +53,16 @@ class ExtendedTracerTest {
     tracerProvider2.shutdown();
 
     return Stream.of(
-        // Simple case
-        Arguments.of(spanBuilderSupplier(() -> tracerA.spanBuilder("span"))),
-        // Disabled tracer
-        Arguments.of(spanBuilderSupplier(() -> tracerB.spanBuilder("span"))),
-        // Invalid span name
-        Arguments.of(spanBuilderSupplier(() -> tracerB.spanBuilder(null))),
-        Arguments.of(spanBuilderSupplier(() -> tracerB.spanBuilder(" "))),
-        // Shutdown tracer provider
-        Arguments.of(spanBuilderSupplier(() -> tracerC.spanBuilder("span"))));
+        Arguments.argumentSet(
+            "enabled tracer", spanBuilderSupplier(() -> tracerA.spanBuilder("span"))),
+        Arguments.argumentSet(
+            "disabled tracer", spanBuilderSupplier(() -> tracerB.spanBuilder("span"))),
+        Arguments.argumentSet(
+            "null span name", spanBuilderSupplier(() -> tracerB.spanBuilder(null))),
+        Arguments.argumentSet(
+            "blank span name", spanBuilderSupplier(() -> tracerB.spanBuilder(" "))),
+        Arguments.argumentSet(
+            "shutdown provider", spanBuilderSupplier(() -> tracerC.spanBuilder("span"))));
   }
 
   private static Supplier<ExtendedSpanBuilder> spanBuilderSupplier(

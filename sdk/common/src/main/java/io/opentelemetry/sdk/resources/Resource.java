@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * {@link Resource} represents a resource, which capture identifying information about the entities
+ * {@link Resource} represents a resource, which captures identifying information about the entities
  * for which signals (stats or traces) are reported.
  */
 @Immutable
@@ -146,7 +146,7 @@ public abstract class Resource {
    * @return the newly merged {@code Resource}.
    */
   public Resource merge(@Nullable Resource other) {
-    if (other == null || other == EMPTY) {
+    if (other == null || other.equals(EMPTY)) {
       return this;
     }
 

@@ -20,10 +20,11 @@ import javax.annotation.Nullable;
 /** Base for fixed-size reservoir sampling of Exemplars. */
 class FixedSizeExemplarReservoir implements DoubleExemplarReservoir, LongExemplarReservoir {
 
-  @Nullable private ReservoirCell[] storage;
+  @Nullable private volatile ReservoirCell[] storage;
   private final ReservoirCellSelector reservoirCellSelector;
   private final int size;
   private final Clock clock;
+  private final Object storageLock = new Object();
   private volatile boolean hasMeasurements = false;
 
   /** Instantiates an exemplar reservoir of fixed size. */
@@ -36,12 +37,10 @@ class FixedSizeExemplarReservoir implements DoubleExemplarReservoir, LongExempla
 
   @Override
   public void offerLongMeasurement(long value, Attributes attributes, Context context) {
-    if (storage == null) {
-      storage = initStorage();
-    }
+    ReservoirCell[] storage = getOrInitStorage();
     int bucket = reservoirCellSelector.reservoirCellIndexFor(storage, value, attributes, context);
     if (bucket != -1) {
-      this.storage[bucket].recordLongMeasurement(value, attributes, context);
+      storage[bucket].recordLongMeasurement(value, attributes, context);
       this.hasMeasurements = true;
     }
   }
@@ -58,14 +57,26 @@ class FixedSizeExemplarReservoir implements DoubleExemplarReservoir, LongExempla
 
   @Override
   public void offerDoubleMeasurement(double value, Attributes attributes, Context context) {
-    if (storage == null) {
-      storage = initStorage();
-    }
+    ReservoirCell[] storage = getOrInitStorage();
     int bucket = reservoirCellSelector.reservoirCellIndexFor(storage, value, attributes, context);
     if (bucket != -1) {
-      this.storage[bucket].recordDoubleMeasurement(value, attributes, context);
+      storage[bucket].recordDoubleMeasurement(value, attributes, context);
       this.hasMeasurements = true;
     }
+  }
+
+  private ReservoirCell[] getOrInitStorage() {
+    ReservoirCell[] storage = this.storage;
+    if (storage == null) {
+      synchronized (storageLock) {
+        storage = this.storage;
+        if (storage == null) {
+          storage = initStorage();
+          this.storage = storage;
+        }
+      }
+    }
+    return storage;
   }
 
   private ReservoirCell[] initStorage() {
@@ -78,13 +89,14 @@ class FixedSizeExemplarReservoir implements DoubleExemplarReservoir, LongExempla
 
   public <T extends ExemplarData> List<T> doCollectAndReset(
       Attributes pointAttributes, BiFunction<ReservoirCell, Attributes, T> mapAndResetCell) {
+    ReservoirCell[] storage = this.storage;
     if (!hasMeasurements || storage == null) {
       return Collections.emptyList();
     }
     // Note: we are collecting exemplars from buckets piecemeal, but we
     // could still be sampling exemplars during this process.
     List<T> results = new ArrayList<>();
-    for (ReservoirCell reservoirCell : this.storage) {
+    for (ReservoirCell reservoirCell : storage) {
       T result = mapAndResetCell.apply(reservoirCell, pointAttributes);
       if (result != null) {
         results.add(result);

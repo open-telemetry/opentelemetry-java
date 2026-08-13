@@ -11,18 +11,18 @@ is the signal.
 
 ## Topics
 
-| File                                           | Load when                                                                                      |
-|------------------------------------------------|------------------------------------------------------------------------------------------------|
-| [build.md](build.md)                           | Always — build requirements and common tasks                                                   |
-| [general-patterns.md](general-patterns.md)     | Always — style, nullability, visibility, AutoValue, locking, logging, internal & impl packages |
-| [api-stability.md](api-stability.md)           | Public API additions, removals, renames, or deprecations, stable vs alpha compatibility        |
-| [gradle-conventions.md](gradle-conventions.md) | `build.gradle.kts` or `settings.gradle.kts` changes; new modules                               |
-| [testing-patterns.md](testing-patterns.md)     | Test files in scope — assertions, test utilities, test suites                                  |
-| [other-tasks.md](other-tasks.md)               | Dev environment setup, benchmarks, composite builds, native image tests, OTLP protobuf updates |
+| File                                           | Load when                                                                                                               |
+|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| [build.md](build.md)                           | Always — build requirements and common tasks                                                                            |
+| [general-patterns.md](general-patterns.md)     | Always — style, nullability, visibility, AutoValue, locking, logging, internal & impl packages                          |
+| [api-design.md](api-design.md)                 | Public API additions, removals, renames, or deprecations or implementations; configuration changes; null guards; stable vs alpha compatibility |
+| [gradle-conventions.md](gradle-conventions.md) | `build.gradle.kts` or `settings.gradle.kts` changes; new modules                                                        |
+| [testing-patterns.md](testing-patterns.md)     | Test files in scope — assertions, test utilities, test suites                                                           |
+| [other-tasks.md](other-tasks.md)               | Dev environment setup, benchmarks, composite builds, native image tests, OTLP protobuf updates                          |
 
 ## Conventions
 
 - File names are kebab-cased and topic-oriented. Most follow a `<domain>-<focus>.md` pattern
-  (e.g. `api-stability.md`, `testing-patterns.md`).
+  (e.g. `api-design.md`, `testing-patterns.md`).
 - Sections within each document are ordered alphabetically, with the exception of any
   introductory content placed directly under the document title.

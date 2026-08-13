@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/** OpenTelemetry exporters which writes spans or metrics to log using OTLP JSON format. */
+/** OpenTelemetry exporters which write spans, metrics, or logs to a logger in OTLP JSON format. */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.exporter.logging.otlp;
 

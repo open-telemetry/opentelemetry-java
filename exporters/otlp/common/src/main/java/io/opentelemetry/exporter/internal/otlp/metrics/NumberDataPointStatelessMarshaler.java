@@ -27,6 +27,7 @@ final class NumberDataPointStatelessMarshaler implements StatelessMarshaler<Poin
   private NumberDataPointStatelessMarshaler() {}
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public void writeTo(Serializer output, PointData point, MarshalerContext context)
       throws IOException {
     output.serializeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
@@ -50,6 +51,7 @@ final class NumberDataPointStatelessMarshaler implements StatelessMarshaler<Poin
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public int getBinarySerializedSize(PointData point, MarshalerContext context) {
     int size = 0;
     size +=

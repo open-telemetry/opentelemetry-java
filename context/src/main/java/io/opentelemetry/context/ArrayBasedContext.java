@@ -53,6 +53,7 @@ final class ArrayBasedContext implements Context {
 
   @Override
   @Nullable
+  @SuppressWarnings("ReferenceEquality")
   public <V> V get(ContextKey<V> key) {
     for (int i = 0; i < entries.length; i += 2) {
       if (entries[i] == key) {
@@ -65,6 +66,7 @@ final class ArrayBasedContext implements Context {
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public <V> Context with(ContextKey<V> key, V value) {
     for (int i = 0; i < entries.length; i += 2) {
       if (entries[i] == key) {

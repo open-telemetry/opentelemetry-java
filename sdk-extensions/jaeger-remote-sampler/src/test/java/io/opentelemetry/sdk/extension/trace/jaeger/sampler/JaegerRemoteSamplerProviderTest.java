@@ -10,6 +10,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
 
+@SuppressLogger(JaegerRemoteSampler.class)
 public class JaegerRemoteSamplerProviderTest {
 
   @Test

@@ -170,4 +170,54 @@ class SdkObservableLongUpDownCounterTest {
                                             .hasValue(0)
                                             .hasAttributes(attributeEntry("k", "v")))));
   }
+
+  @Test
+  void collectMetrics_DefaultExemplarFilter_NoExemplars() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
+    sdkMeterProvider
+        .get(getClass().getName())
+        .upDownCounterBuilder("testObserver")
+        .buildWithCallback(result -> result.record(12, Attributes.empty()));
+
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("testObserver")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(point -> point.hasValue(12).hasExemplars())));
+  }
+
+  @Test
+  void collectMetrics_AlwaysOnExemplarFilter_CollectsExemplars() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .registerMetricReader(sdkMeterReader)
+            .build();
+    sdkMeterProvider
+        .get(getClass().getName())
+        .upDownCounterBuilder("testObserver")
+        .buildWithCallback(result -> result.record(12, Attributes.empty()));
+
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("testObserver")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12)
+                                        .hasExemplarsSatisfying(
+                                            exemplar -> exemplar.hasValue(12)))));
+  }
 }

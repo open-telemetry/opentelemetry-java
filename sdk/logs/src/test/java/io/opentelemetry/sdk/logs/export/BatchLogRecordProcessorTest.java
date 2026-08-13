@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.logs.export;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -374,6 +375,35 @@ class BatchLogRecordProcessorTest {
     exported = waitingLogRecordExporter.waitForExport();
     assertThat(exported)
         .satisfiesExactly(logRecordData -> assertThat(logRecordData).hasBody(LOG_MESSAGE_2));
+  }
+
+  @Test
+  @Timeout(5)
+  @SuppressLogger(BatchLogRecordProcessor.class)
+  @SuppressLogger(loggerName = "io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor$Worker")
+  void exporterThrowsNonRuntimeException() {
+    AtomicInteger exportCount = new AtomicInteger();
+    doAnswer(
+            invocation -> {
+              if (exportCount.incrementAndGet() == 1) {
+                throw new Exception("simulated non-RuntimeException");
+              }
+              return CompletableResultCode.ofSuccess();
+            })
+        .when(mockLogRecordExporter)
+        .export(anyList());
+    BatchLogRecordProcessor processor =
+        BatchLogRecordProcessor.builder(mockLogRecordExporter)
+            .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
+            .build();
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(processor).build();
+
+    emitLog(loggerProvider, LOG_MESSAGE_1);
+    await().untilAsserted(() -> assertThat(exportCount.get()).isGreaterThanOrEqualTo(1));
+    // Confirm worker is still alive after the non-RuntimeException
+    emitLog(loggerProvider, LOG_MESSAGE_2);
+    await().untilAsserted(() -> assertThat(exportCount.get()).isGreaterThanOrEqualTo(2));
   }
 
   @Test

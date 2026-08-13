@@ -16,6 +16,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/** A Metric Exporter that logs every metric at INFO level using java.util.logging. */
 public final class LoggingMetricExporter implements MetricExporter {
   private static final Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
 
@@ -106,6 +107,6 @@ public final class LoggingMetricExporter implements MetricExporter {
 
   @Override
   public String toString() {
-    return "LoggingMetricExporter{}";
+    return "LoggingMetricExporter{aggregationTemporality=" + aggregationTemporality + "}";
   }
 }

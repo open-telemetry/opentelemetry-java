@@ -17,7 +17,7 @@ import java.io.StringWriter;
  * guarantees are made.
  *
  * @see ExceptionAttributeResolver#getDefault()
- * @see ExceptionAttributeResolver#getDefault(boolean) ()
+ * @see ExceptionAttributeResolver#getDefault(boolean)
  */
 final class DefaultExceptionAttributeResolver implements ExceptionAttributeResolver {
 

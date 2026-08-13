@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit;
 import jdk.jfr.consumer.RecordedEvent;
 
 /**
- * Converter for batching a steam of recorded jfr.ExecutionSample events into a format suitable for
+ * Converter for batching a stream of recorded jfr.ExecutionSample events into a format suitable for
  * consumption in a ProfileData i.e. for OTLP export. Similar converters, or a more generalized
- * converter, are need for each JFR event type.
+ * converter, are needed for each JFR event type.
  */
 public class JfrExecutionSampleEventConverter {
 

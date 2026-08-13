@@ -18,14 +18,13 @@ enum ComposableAlwaysOnSampler implements ComposableSampler {
   private static final SamplingIntent INTENT =
       SamplingIntent.create(
           ImmutableSamplingIntent.MIN_THRESHOLD,
-          /* thresholdReliable= */ true,
+          /* adjustedCountReliable= */ true,
           Attributes.empty(),
           Function.identity());
 
   @Override
   public SamplingIntent getSamplingIntent(
       Context parentContext,
-      String traceId,
       String name,
       SpanKind spanKind,
       Attributes attributes,

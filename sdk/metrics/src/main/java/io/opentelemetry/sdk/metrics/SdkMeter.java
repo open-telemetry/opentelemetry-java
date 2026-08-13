@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
@@ -267,6 +268,7 @@ final class SdkMeter implements Meter {
   }
 
   /** Registers new synchronous storage associated with a given instrument. */
+  @SuppressWarnings("ReferenceEquality")
   WriteableMetricStorage registerSynchronousMetricStorage(InstrumentDescriptor instrument) {
 
     List<SynchronousMetricStorage> registeredStorages = new ArrayList<>();
@@ -299,6 +301,7 @@ final class SdkMeter implements Meter {
   }
 
   /** Register new asynchronous storage associated with a given instrument. */
+  @SuppressWarnings("ReferenceEquality")
   SdkObservableMeasurement registerObservableMeasurement(
       InstrumentDescriptor instrumentDescriptor) {
     List<AsynchronousMetricStorage<?>> registeredStorages = new ArrayList<>();
@@ -318,6 +321,7 @@ final class SdkMeter implements Meter {
                     registeredView,
                     meterProviderSharedState.getClock(),
                     instrumentDescriptor,
+                    meterProviderSharedState.getExemplarFilter(),
                     meterEnabled)));
       }
     }
@@ -371,6 +375,15 @@ final class SdkMeter implements Meter {
     }
 
     @Override
+    public BoundStorageHandle bind(Attributes attributes) {
+      List<BoundStorageHandle> handles = new ArrayList<>(storages.size());
+      for (WriteableMetricStorage storage : storages) {
+        handles.add(storage.bind(attributes));
+      }
+      return new MultiBoundStorageHandle(handles);
+    }
+
+    @Override
     public boolean isEnabled() {
       for (WriteableMetricStorage storage : storages) {
         if (storage.isEnabled()) {
@@ -378,6 +391,28 @@ final class SdkMeter implements Meter {
         }
       }
       return false;
+    }
+  }
+
+  private static class MultiBoundStorageHandle implements BoundStorageHandle {
+    private final List<BoundStorageHandle> handles;
+
+    private MultiBoundStorageHandle(List<BoundStorageHandle> handles) {
+      this.handles = handles;
+    }
+
+    @Override
+    public void recordLong(long value, Context context) {
+      for (BoundStorageHandle handle : handles) {
+        handle.recordLong(value, context);
+      }
+    }
+
+    @Override
+    public void recordDouble(double value, Context context) {
+      for (BoundStorageHandle handle : handles) {
+        handle.recordDouble(value, context);
+      }
     }
   }
 }

@@ -17,7 +17,7 @@ rootProject.subprojects.forEach { subproject ->
 }
 val otelBom = extensions.create<OtelBomExtension>("otelBom")
 
-val generateBuildSubstitutions by tasks.registering {
+val generateBuildSubstitutions = tasks.register("generateBuildSubstitutions") {
   group = "publishing"
   description = "Generate a code snippet that can be copy-pasted for use in composite builds."
 }
@@ -38,7 +38,7 @@ afterEvaluate {
     .filter(otelBom.projectFilter.get()::test)
     .filter { it.plugins.hasPlugin("maven-publish") }
 
-  generateBuildSubstitutions {
+  generateBuildSubstitutions.configure {
     val outputFile = File(layout.buildDirectory.asFile.get(), "substitutions.gradle.kts")
     outputs.file(outputFile)
     val substitutionSnippet = bomProjects.joinToString(

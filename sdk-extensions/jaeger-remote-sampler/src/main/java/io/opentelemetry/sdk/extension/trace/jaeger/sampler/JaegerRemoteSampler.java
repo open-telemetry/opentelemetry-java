@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.GrpcResponse;
 import io.opentelemetry.sdk.common.export.GrpcSender;
 import io.opentelemetry.sdk.common.export.GrpcStatusCode;
@@ -16,19 +17,20 @@ import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import java.io.Closeable;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
-public final class JaegerRemoteSampler implements Sampler, Closeable {
+public final class JaegerRemoteSampler implements Sampler {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
   private static final String WORKER_THREAD_NAME =
@@ -41,15 +43,22 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   private volatile Sampler sampler;
 
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
+
   private final GrpcSender grpcSender;
+  private final URI endpoint;
+  private final int pollingIntervalMs;
 
   JaegerRemoteSampler(
       GrpcSender grpcSender,
+      URI endpoint,
       @Nullable String serviceName,
       int pollingIntervalMs,
       Sampler initialSampler) {
     this.serviceName = serviceName != null ? serviceName : "";
     this.grpcSender = grpcSender;
+    this.endpoint = endpoint;
+    this.pollingIntervalMs = pollingIntervalMs;
     this.sampler = initialSampler;
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     pollFuture =
@@ -158,7 +167,13 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
 
   @Override
   public String getDescription() {
-    return String.format("JaegerRemoteSampler{%s}", this.sampler);
+    return "JaegerRemoteSampler{sampler="
+        + this.sampler
+        + ", endpoint="
+        + this.endpoint
+        + ", pollingIntervalMs="
+        + this.pollingIntervalMs
+        + "}";
   }
 
   @Override
@@ -175,11 +190,26 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
     return new JaegerRemoteSamplerBuilder();
   }
 
+  /**
+   * Shuts down the sampler, cancelling the polling task and shutting down the gRPC sender.
+   *
+   * @since 1.65.0
+   */
   @Override
   @SuppressWarnings("Interruption")
-  public void close() {
+  public CompletableResultCode shutdown() {
+    if (isShutdown.getAndSet(true)) {
+      return CompletableResultCode.ofSuccess();
+    }
+
     pollFuture.cancel(true);
     pollExecutor.shutdownNow();
-    grpcSender.shutdown().join(10, TimeUnit.SECONDS);
+    return grpcSender.shutdown();
+  }
+
+  @Override
+  @Deprecated
+  public void close() {
+    shutdown();
   }
 }

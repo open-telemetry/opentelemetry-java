@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.ComponentId;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.internal.ThrowableUtil;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -48,7 +49,6 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       BatchLogRecordProcessor.class.getSimpleName() + "_WorkerThread";
 
   private final Worker worker;
-  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
    * Returns a new Builder for {@link BatchLogRecordProcessor}.
@@ -93,9 +93,6 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-    if (isShutdown.getAndSet(true)) {
-      return CompletableResultCode.ofSuccess();
-    }
     return worker.shutdown();
   }
 
@@ -158,6 +155,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private final AtomicInteger logsNeeded = new AtomicInteger(Integer.MAX_VALUE);
     private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
+    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
     private volatile boolean continueWork = true;
     private final ArrayList<LogRecordData> batch;
     private final long maxQueueSize;
@@ -185,9 +183,13 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     }
 
     private void addLog(ReadWriteLogRecord logData) {
+      if (isShutdown.get()) {
+        logProcessorInstrumentation.dropLogsAlreadyShutdown(1);
+        return;
+      }
       logProcessorInstrumentation.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(logData)) {
-        logProcessorInstrumentation.dropLogs(1);
+        logProcessorInstrumentation.dropLogsQueueFull(1);
       } else {
         if (queue.size() >= logsNeeded.get()) {
           signal.offer(true);
@@ -250,6 +252,9 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     }
 
     private CompletableResultCode shutdown() {
+      if (isShutdown.getAndSet(true)) {
+        return CompletableResultCode.ofSuccess();
+      }
       CompletableResultCode result = new CompletableResultCode();
 
       CompletableResultCode flushResult = forceFlush();
@@ -288,24 +293,20 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
         return;
       }
 
-      String error = null;
       try {
+        // We always increment for every export invocation, so we increment before the export call
+        // to make sure thrown errors don't affect it.
+        logProcessorInstrumentation.finishLogs(batch.size());
         CompletableResultCode result =
             logRecordExporter.export(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (!result.isSuccess()) {
           logger.log(Level.FINE, "Exporter failed");
-          if (result.getFailureThrowable() != null) {
-            error = result.getFailureThrowable().getClass().getName();
-          } else {
-            error = "export_failed";
-          }
         }
-      } catch (RuntimeException e) {
-        logger.log(Level.WARNING, "Exporter threw an Exception", e);
-        error = e.getClass().getName();
+      } catch (Throwable t) {
+        ThrowableUtil.propagateIfFatal(t);
+        logger.log(Level.WARNING, "Exporter threw an Exception", t);
       } finally {
-        logProcessorInstrumentation.finishLogs(batch.size(), error);
         batch.clear();
       }
     }

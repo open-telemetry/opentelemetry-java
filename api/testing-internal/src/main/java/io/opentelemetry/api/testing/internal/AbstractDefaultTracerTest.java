@@ -20,6 +20,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -124,6 +125,7 @@ public abstract class AbstractDefaultTracerTest {
 
   @Test
   @SuppressWarnings("NullAway")
+  @SuppressLogger(loggerName = "io.opentelemetry.usage")
   void doNotCrash_NoopImplementation() {
     assertThatCode(
             () -> {

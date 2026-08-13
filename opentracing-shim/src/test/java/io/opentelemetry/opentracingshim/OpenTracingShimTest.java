@@ -20,6 +20,7 @@ import io.opentracing.propagation.Format;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // testing deprecated shim API
 class OpenTracingShimTest {
 
   @AfterEach

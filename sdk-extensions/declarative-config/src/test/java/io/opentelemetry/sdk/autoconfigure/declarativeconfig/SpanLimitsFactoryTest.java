@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,18 +27,24 @@ class SpanLimitsFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(SpanLimitsAndAttributeLimits.create(null, null), SpanLimits.getDefault()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "null limits",
+            SpanLimitsAndAttributeLimits.create(null, null),
+            SpanLimits.getDefault()),
+        Arguments.argumentSet(
+            "empty models",
             SpanLimitsAndAttributeLimits.create(new AttributeLimitsModel(), new SpanLimitsModel()),
             SpanLimits.getDefault()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "attribute limits only",
             SpanLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
                     .withAttributeCountLimit(1)
                     .withAttributeValueLengthLimit(2),
                 new SpanLimitsModel()),
             SpanLimits.builder().setMaxNumberOfAttributes(1).setMaxAttributeValueLength(2).build()),
-        Arguments.of(
+        Arguments.argumentSet(
+            "span limits override attribute limits",
             SpanLimitsAndAttributeLimits.create(
                 new AttributeLimitsModel()
                     .withAttributeCountLimit(1)

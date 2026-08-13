@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.GrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.GrpcExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.profiles.ProfileExporter;
 import io.opentelemetry.sdk.profiles.data.ProfileData;
@@ -89,7 +89,7 @@ public class OtlpGrpcProfileExporter implements ProfileExporter {
 
   @Override
   public String toString() {
-    StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcProfilesExporter{", "}");
+    StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcProfileExporter{", "}");
     joiner.add(builder.toString(false));
     return joiner.toString();
   }

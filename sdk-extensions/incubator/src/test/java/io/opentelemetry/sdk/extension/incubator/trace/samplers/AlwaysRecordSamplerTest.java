@@ -54,9 +54,14 @@ class AlwaysRecordSamplerTest {
 
   private static Stream<Arguments> expectedSamplingDecisionArgs() {
     return Stream.of(
-        Arguments.of(SamplingDecision.RECORD_AND_SAMPLE, SamplingDecision.RECORD_AND_SAMPLE),
-        Arguments.of(SamplingDecision.RECORD_ONLY, SamplingDecision.RECORD_ONLY),
-        Arguments.of(SamplingDecision.DROP, SamplingDecision.RECORD_ONLY));
+        Arguments.argumentSet(
+            "RECORD_AND_SAMPLE",
+            SamplingDecision.RECORD_AND_SAMPLE,
+            SamplingDecision.RECORD_AND_SAMPLE),
+        Arguments.argumentSet(
+            "RECORD_ONLY", SamplingDecision.RECORD_ONLY, SamplingDecision.RECORD_ONLY),
+        Arguments.argumentSet(
+            "DROP becomes RECORD_ONLY", SamplingDecision.DROP, SamplingDecision.RECORD_ONLY));
   }
 
   @ParameterizedTest

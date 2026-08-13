@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
@@ -27,6 +28,8 @@ class IdentityTest {
 
   @RegisterExtension
   LogCapturer viewRegistryLogs = LogCapturer.create().captureForType(ViewRegistry.class);
+
+  @RegisterExtension LogCapturer sdkMeterLogs = LogCapturer.create().captureForType(SdkMeter.class);
 
   private InMemoryMetricReader reader;
   private SdkMeterProviderBuilder builder;
@@ -1089,6 +1092,55 @@ class IdentityTest {
                 assertThat(logEvent.getMessage())
                     .contains(
                         "View aggregation explicit_bucket_histogram is incompatible with instrument counter1 of type OBSERVABLE_COUNTER"))
+        .hasSize(1);
+  }
+
+  @Test
+  void viewNameNotValidated() {
+    // View names are not validated against the instrument name pattern. When a view sets a name
+    // that would be rejected if used directly as an instrument name (e.g. starts with a digit),
+    // the SDK accepts it and produces a metric with the invalid name without logging a warning.
+    SdkMeterProvider meterProvider =
+        builder
+            .registerView(
+                InstrumentSelector.builder().setType(InstrumentType.COUNTER).build(),
+                View.builder().setName("1invalid-name").build())
+            .build();
+
+    LongCounter counter = meterProvider.get("meter1").counterBuilder("counter1").build();
+    counter.add(10);
+
+    assertThat(counter.isEnabled()).isTrue();
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("1invalid-name")
+                    .hasLongSumSatisfying(
+                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
+
+    assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
+    assertThat(viewRegistryLogs.getEvents()).hasSize(0);
+  }
+
+  @Test
+  @SuppressLogger(SdkMeter.class)
+  void instrumentWithInvalidName() {
+    // When an instrument is initialized with an invalid name, a noop instrument is returned
+    // and a warning is logged. No metric data is produced.
+    SdkMeterProvider meterProvider = builder.build();
+
+    LongCounter counter = meterProvider.get("meter1").counterBuilder("1invalid-name").build();
+    counter.add(10);
+
+    assertThat(counter.isEnabled()).isFalse();
+    assertThat(reader.collectAllMetrics()).isEmpty();
+    assertThat(sdkMeterLogs.getEvents())
+        .allSatisfy(
+            logEvent ->
+                assertThat(logEvent.getMessage())
+                    .contains("Instrument name \"1invalid-name\" is invalid"))
         .hasSize(1);
   }
 

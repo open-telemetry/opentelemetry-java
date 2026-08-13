@@ -32,7 +32,11 @@ public final class LongPointAssert extends AbstractPointAssert<LongPointAssert, 
     return this;
   }
 
-  /** Asserts the point's value satisfies the given assertion. */
+  /**
+   * Asserts the point's value satisfies the given assertion.
+   *
+   * @since 1.62.0
+   */
   public LongPointAssert hasValueSatisfying(Consumer<AbstractLongAssert<?>> valueAssertion) {
     isNotNull();
     valueAssertion.accept(assertThat(actual.getValue()).as("value"));

@@ -32,10 +32,10 @@ final class SpanExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
-    EXPORTER_ARTIFACT_ID_BY_NAME.put("zipkin", "opentelemetry-exporter-zipkin");
   }
 
   // Visible for testing
+  @SuppressWarnings("ReferenceEquality")
   static Map<String, SpanExporter> configureSpanExporters(
       ConfigProperties config,
       SpiHelper spiHelper,

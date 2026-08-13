@@ -99,7 +99,8 @@ class MarshalerTest {
         new ThrowingMarshaler2<>(new IOException("error"));
 
     return Stream.of(
-        Arguments.of(
+        Arguments.argumentSet(
+            "repeated message collection",
             asWriter(
                 output ->
                     output.serializeRepeatedMessageWithContext(
@@ -108,7 +109,8 @@ class MarshalerTest {
                         throwingMarshaler,
                         context,
                         MarshalerContext.key()))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "repeated message map",
             asWriter(
                 output ->
                     output.serializeRepeatedMessageWithContext(
@@ -117,7 +119,8 @@ class MarshalerTest {
                         throwingMarshaler2,
                         context,
                         MarshalerContext.key()))),
-        Arguments.of(
+        Arguments.argumentSet(
+            "repeated message attributes",
             asWriter(
                 output ->
                     output.serializeRepeatedMessageWithContext(

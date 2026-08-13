@@ -21,7 +21,7 @@ public interface ConfigProvider {
 
   /**
    * Returns the {@link DeclarativeConfigProperties} corresponding to <a
-   * href="https://github.com/open-telemetry/opentelemetry-configuration/blob/main/schema/instrumentation.json">instrumentation
+   * href="https://github.com/open-telemetry/opentelemetry-configuration/blob/main/schema/instrumentation.yaml">instrumentation
    * config</a>, or {@link DeclarativeConfigProperties#empty()} if unavailable.
    *
    * @return the instrumentation {@link DeclarativeConfigProperties}

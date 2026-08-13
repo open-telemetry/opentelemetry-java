@@ -9,10 +9,10 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LoggerProviderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MeterProviderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LoggerProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
@@ -27,8 +27,9 @@ final class OpenTelemetryConfigurationFactory
 
   private static final Logger logger =
       Logger.getLogger(OpenTelemetryConfigurationFactory.class.getName());
-  private static final Pattern SUPPORTED_FILE_FORMATS = Pattern.compile("^(0.4)|(1.0(-rc.\\d*)?)$");
-  private static final String EXPECTED_FILE_FORMAT = "1.0";
+  private static final Pattern SUPPORTED_FILE_FORMATS =
+      Pattern.compile("^(0.4)|(1.\\d+(-rc.\\d+)?)$");
+  private static final String EXPECTED_FILE_FORMAT = "1.1";
 
   private static final OpenTelemetryConfigurationFactory INSTANCE =
       new OpenTelemetryConfigurationFactory();
@@ -52,7 +53,7 @@ final class OpenTelemetryConfigurationFactory
     String fileFormat = model.getFileFormat();
     if (fileFormat == null || !SUPPORTED_FILE_FORMATS.matcher(fileFormat).matches()) {
       throw new DeclarativeConfigException(
-          "Unsupported file format '" + fileFormat + "'. Supported formats include 0.4, 1.0*");
+          "Unsupported file format '" + fileFormat + "'. Supported formats include 0.4, 1.*");
     }
     if (!EXPECTED_FILE_FORMAT.equals(fileFormat)) {
       logger.warning(

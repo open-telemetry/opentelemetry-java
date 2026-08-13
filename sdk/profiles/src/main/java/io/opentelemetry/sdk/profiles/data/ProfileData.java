@@ -39,7 +39,7 @@ public interface ProfileData {
       ValueTypeData periodType,
       long period,
       String profileId,
-      int droppedAttributesCount,
+      int totalAttributeCount,
       String originalPayloadFormat,
       ByteBuffer originalPayload,
       List<Integer> attributeIndices) {
@@ -54,7 +54,7 @@ public interface ProfileData {
         periodType,
         period,
         profileId,
-        droppedAttributesCount,
+        totalAttributeCount,
         originalPayloadFormat,
         originalPayload,
         attributeIndices);
@@ -121,7 +121,7 @@ public interface ProfileData {
   /**
    * Returns the original payload, in a profiler-native format e.g. JFR. Optional. Default behavior
    * should be to not include the original payload. If the original payload is in pprof format, it
-   * SHOULD not be included in this field.
+   * should not be included in this field.
    */
   ByteBuffer getOriginalPayload();
 

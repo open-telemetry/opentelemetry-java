@@ -23,7 +23,6 @@ public interface SamplingPredicate {
   /** Returns whether this {@link SamplingPredicate} matches the given sampling arguments. */
   boolean matches(
       Context parentContext,
-      String traceId,
       String name,
       SpanKind spanKind,
       Attributes attributes,

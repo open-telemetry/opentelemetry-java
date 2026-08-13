@@ -20,6 +20,8 @@ import okhttp3.Dispatcher;
  * at any time.
  */
 public final class OkHttpUtil {
+  private static final int DEFAULT_MAX_REQUESTS_PER_HOST = 5;
+
   @SuppressWarnings("NonFinalStaticField")
   private static boolean propagateContextForTestingInDispatcher = false;
 
@@ -30,14 +32,19 @@ public final class OkHttpUtil {
 
   /** Returns a {@link Dispatcher} using daemon threads, otherwise matching the OkHttp default. */
   public static Dispatcher newDispatcher() {
-    return new Dispatcher(
-        new ThreadPoolExecutor(
-            0,
-            Integer.MAX_VALUE,
-            60,
-            TimeUnit.SECONDS,
-            new SynchronousQueue<>(),
-            createThreadFactory("okhttp-dispatch")));
+    int maxRequests = Math.max(Runtime.getRuntime().availableProcessors(), 5);
+    Dispatcher dispatcher =
+        new Dispatcher(
+            new ThreadPoolExecutor(
+                0,
+                maxRequests,
+                60,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                createThreadFactory("okhttp-dispatch")));
+    dispatcher.setMaxRequests(maxRequests);
+    dispatcher.setMaxRequestsPerHost(DEFAULT_MAX_REQUESTS_PER_HOST);
+    return dispatcher;
   }
 
   private static DaemonThreadFactory createThreadFactory(String namePrefix) {

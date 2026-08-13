@@ -34,7 +34,6 @@ public class ComposableParentThresholdSamplerTest {
             ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
                 .getSamplingIntent(
                     Context.root(),
-                    TraceId.getInvalid(),
                     "span",
                     SpanKind.SERVER,
                     Attributes.empty(),
@@ -57,7 +56,6 @@ public class ComposableParentThresholdSamplerTest {
             ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
                 .getSamplingIntent(
                     Context.root().with(Span.wrap(parentSpanContext)),
-                    parentSpanContext.getTraceId(),
                     "span",
                     SpanKind.SERVER,
                     Attributes.empty(),
@@ -78,13 +76,12 @@ public class ComposableParentThresholdSamplerTest {
         ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
             .getSamplingIntent(
                 Context.root().with(Span.wrap(parentSpanContext)),
-                parentSpanContext.getTraceId(),
                 "span",
                 SpanKind.SERVER,
                 Attributes.empty(),
                 Collections.emptyList());
     assertThat(intent.getThreshold()).isZero();
-    assertThat(intent.isThresholdReliable()).isFalse();
+    assertThat(intent.isAdjustedCountReliable()).isFalse();
   }
 
   @Test
@@ -99,12 +96,11 @@ public class ComposableParentThresholdSamplerTest {
         ComposableSampler.parentThreshold(ComposableSampler.alwaysOn())
             .getSamplingIntent(
                 Context.root().with(Span.wrap(parentSpanContext)),
-                parentSpanContext.getTraceId(),
                 "span",
                 SpanKind.SERVER,
                 Attributes.empty(),
                 Collections.emptyList());
     assertThat(intent.getThreshold()).isEqualTo(-1);
-    assertThat(intent.isThresholdReliable()).isFalse();
+    assertThat(intent.isAdjustedCountReliable()).isFalse();
   }
 }

@@ -10,6 +10,7 @@ apply<OtelVersionClassPlugin>()
 
 description = "OpenTelemetry SDK Common"
 otelJava.moduleName.set("io.opentelemetry.sdk.common")
+otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
 dependencies {
   api(project(":api:all"))
@@ -19,7 +20,6 @@ dependencies {
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":api:incubator")) // for ExtendedAttributesValueTest
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava-testlib")
   testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")

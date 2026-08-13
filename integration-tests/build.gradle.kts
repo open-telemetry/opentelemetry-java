@@ -4,6 +4,7 @@ plugins {
 
 description = "OpenTelemetry Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.integration.tests")
+otelJava.osgiEnabled.set(false)
 
 dependencies {
   testImplementation(project(":sdk:all"))

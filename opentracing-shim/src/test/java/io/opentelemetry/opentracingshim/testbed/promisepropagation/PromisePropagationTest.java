@@ -32,6 +32,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * <p>For improved readability, ignore the phaser lines as those are there to ensure deterministic
  * execution for the tests without sleeps.
  */
+@SuppressWarnings("deprecation") // testing deprecated shim API
 class PromisePropagationTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();

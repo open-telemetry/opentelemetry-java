@@ -34,7 +34,11 @@ public final class DoublePointAssert
     return this;
   }
 
-  /** Asserts the point's value satisfies the given assertion. */
+  /**
+   * Asserts the point's value satisfies the given assertion.
+   *
+   * @since 1.62.0
+   */
   public DoublePointAssert hasValueSatisfying(Consumer<AbstractDoubleAssert<?>> valueAssertion) {
     isNotNull();
     valueAssertion.accept(Assertions.assertThat(actual.getValue()).as("value"));

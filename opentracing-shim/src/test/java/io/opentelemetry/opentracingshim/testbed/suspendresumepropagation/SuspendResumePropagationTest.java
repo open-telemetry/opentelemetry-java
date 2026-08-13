@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * These tests are intended to simulate the kind of async models that are common in java async
  * frameworks.
  */
+@SuppressWarnings("deprecation") // testing deprecated shim API
 class SuspendResumePropagationTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();

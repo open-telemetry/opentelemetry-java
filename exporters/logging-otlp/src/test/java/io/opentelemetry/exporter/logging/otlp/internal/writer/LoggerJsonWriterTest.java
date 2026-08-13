@@ -9,11 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -34,9 +34,7 @@ class LoggerJsonWriterTest {
   @Test
   void error() throws IOException {
     Marshaler marshaler = mock(Marshaler.class);
-    Mockito.doThrow(new IOException("test"))
-        .when(marshaler)
-        .writeJsonToGenerator(any(JsonGenerator.class));
+    Mockito.doThrow(new IOException("test")).when(marshaler).writeJsonTo(any(OutputStream.class));
 
     Logger logger = Logger.getLogger(LoggerJsonWriter.class.getName());
 

@@ -8,6 +8,8 @@ package io.opentelemetry.api.baggage.propagation;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -20,6 +22,8 @@ import javax.annotation.Nullable;
  */
 class Parser {
 
+  private static final Logger LOGGER = Logger.getLogger(Parser.class.getName());
+
   private enum State {
     KEY,
     VALUE,
@@ -27,6 +31,7 @@ class Parser {
   }
 
   private final String baggageHeader;
+  private final int maxEntries;
 
   private final Element key = Element.createKeyElement();
   private final Element value = Element.createValueElement();
@@ -36,14 +41,19 @@ class Parser {
   private int metaStart;
 
   private boolean skipToNext;
+  private int entriesAdded;
 
-  Parser(String baggageHeader) {
+  Parser(String baggageHeader, int maxEntries) {
     this.baggageHeader = baggageHeader;
+    this.maxEntries = maxEntries;
     reset(0);
   }
 
-  void parseInto(BaggageBuilder baggageBuilder) {
+  int parseInto(BaggageBuilder baggageBuilder) {
     for (int i = 0, n = baggageHeader.length(); i < n; i++) {
+      if (entriesAdded >= maxEntries) {
+        break;
+      }
       char current = baggageHeader.charAt(i);
 
       if (skipToNext) {
@@ -123,21 +133,32 @@ class Parser {
           }
         }
     }
+    return entriesAdded;
   }
 
-  private static void putBaggage(
+  private void putBaggage(
       BaggageBuilder baggage,
       @Nullable String key,
       @Nullable String value,
       @Nullable String metadataValue) {
-    String decodedValue = decodeValue(value);
-    metadataValue = decodeValue(metadataValue);
+    if (entriesAdded >= maxEntries) {
+      return;
+    }
+    String decodedValue;
+    try {
+      decodedValue = decodeValue(value);
+      metadataValue = decodeValue(metadataValue);
+    } catch (IllegalArgumentException e) {
+      LOGGER.log(Level.WARNING, "Skipping invalid baggage member", e);
+      return;
+    }
     BaggageEntryMetadata baggageEntryMetadata =
         metadataValue != null
             ? BaggageEntryMetadata.create(metadataValue)
             : BaggageEntryMetadata.empty();
     if (key != null && decodedValue != null) {
       baggage.put(key, decodedValue, baggageEntryMetadata);
+      entriesAdded++;
     }
   }
 

@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.ThrottlingLogger;
-import io.opentelemetry.sdk.metrics.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -106,6 +105,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
       RegisteredView registeredView,
       Clock clock,
       InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilterInternal exemplarFilter,
       boolean enabled) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
@@ -117,9 +117,7 @@ public abstract class AsynchronousMetricStorage<T extends PointData> implements 
     Aggregator<T> aggregator =
         ((AggregatorFactory) view.getAggregation())
             .createAggregator(
-                instrumentDescriptor,
-                ExemplarFilterInternal.asExemplarFilterInternal(ExemplarFilter.alwaysOff()),
-                registeredReader.getReader().getMemoryMode());
+                instrumentDescriptor, exemplarFilter, registeredReader.getReader().getMemoryMode());
     AttributesProcessor attributesProcessor = registeredView.getViewAttributesProcessor();
     int cardinalityLimit = registeredView.getCardinalityLimit();
     return aggregationTemporality == AggregationTemporality.DELTA

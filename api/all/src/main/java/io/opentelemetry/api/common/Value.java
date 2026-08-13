@@ -22,7 +22,7 @@ import java.util.Map;
  *   <li>String-keyed maps (i.e. associative arrays, dictionaries) via {@link #of(KeyValue...)},
  *       {@link #of(Map)}. Note, because map values are type {@link Value}, maps can be nested
  *       within other maps.
- *   <li>Arrays (heterogeneous or homogenous) via {@link #of(Value[])}. Note, because array values
+ *   <li>Arrays (heterogeneous or homogeneous) via {@link #of(Value[])}. Note, because array values
  *       are type {@link Value}, arrays can contain primitives, complex types like maps or arrays,
  *       or any combination.
  *   <li>Raw bytes via {@link #of(byte[])}

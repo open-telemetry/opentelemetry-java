@@ -31,6 +31,7 @@ class Element {
   }
 
   private final BitSet excluded;
+  private final boolean allowEmpty;
 
   private boolean leadingSpace;
   private boolean readingValue;
@@ -40,11 +41,11 @@ class Element {
   @Nullable private String value;
 
   static Element createKeyElement() {
-    return new Element(EXCLUDED_KEY_CHARS);
+    return new Element(EXCLUDED_KEY_CHARS, /* allowEmpty= */ false);
   }
 
   static Element createValueElement() {
-    return new Element(EXCLUDED_VALUE_CHARS);
+    return new Element(EXCLUDED_VALUE_CHARS, /* allowEmpty= */ true);
   }
 
   /**
@@ -52,8 +53,9 @@ class Element {
    *
    * @param excluded characters that are not allowed for this type of an element
    */
-  private Element(BitSet excluded) {
+  private Element(BitSet excluded, boolean allowEmpty) {
     this.excluded = excluded;
+    this.allowEmpty = allowEmpty;
     reset(0);
   }
 
@@ -77,8 +79,11 @@ class Element {
     if (this.trailingSpace) {
       setValue(header);
       return true;
+    } else if (allowEmpty) {
+      // no content: empty value is valid (e.g. "key=" or "key=   "), empty key is not
+      this.value = "";
+      return true;
     } else {
-      // leading spaces - no content, invalid
       return false;
     }
   }

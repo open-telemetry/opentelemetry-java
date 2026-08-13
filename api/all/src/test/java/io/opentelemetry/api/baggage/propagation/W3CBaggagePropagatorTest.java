@@ -11,17 +11,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class W3CBaggagePropagatorTest {
 
@@ -202,7 +209,8 @@ class W3CBaggagePropagatorTest {
     Context result =
         propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1="), getter);
 
-    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+    Baggage expectedBaggage = Baggage.builder().put("key1", "").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test
@@ -213,7 +221,9 @@ class W3CBaggagePropagatorTest {
         propagator.extract(
             Context.root(), ImmutableMap.of("baggage", "key1=;metakey=metaval"), getter);
 
-    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+    Baggage expectedBaggage =
+        Baggage.builder().put("key1", "", BaggageEntryMetadata.create("metakey=metaval")).build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test
@@ -223,7 +233,8 @@ class W3CBaggagePropagatorTest {
     Context result =
         propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1=     "), getter);
 
-    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+    Baggage expectedBaggage = Baggage.builder().put("key1", "").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test
@@ -433,6 +444,41 @@ class W3CBaggagePropagatorTest {
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
+  @ParameterizedTest
+  @MethodSource
+  @SuppressLogger(Parser.class)
+  void extract_member_invalidPercentEncoding_preservesValidMembers(
+      String header, Baggage expectedBaggage) {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result = propagator.extract(Context.root(), ImmutableMap.of("baggage", header), getter);
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  static Stream<Arguments> extract_member_invalidPercentEncoding_preservesValidMembers() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "invalid entry at beginning",
+            "bad=va%lue,key1=value1,encoded=value%202",
+            Baggage.builder().put("key1", "value1").put("encoded", "value 2").build()),
+        Arguments.argumentSet(
+            "invalid entry in middle",
+            "key1=value1,bad=va%lue,encoded=value%202,key2=value2",
+            Baggage.builder()
+                .put("key1", "value1")
+                .put("encoded", "value 2")
+                .put("key2", "value2")
+                .build()),
+        Arguments.argumentSet(
+            "invalid entry at end",
+            "key1=value1,encoded=value%202,bad=va%lue",
+            Baggage.builder().put("key1", "value1").put("encoded", "value 2").build()),
+        Arguments.argumentSet(
+            "multiple invalid entries",
+            "bad1=va%lue,key1=value1,bad2=value%GG,encoded=value%202,bad3=value;meta=%GG",
+            Baggage.builder().put("key1", "value1").put("encoded", "value 2").build()));
+  }
+
   @Test
   void extract_nullContext() {
     assertThat(W3CBaggagePropagator.getInstance().extract(null, Collections.emptyMap(), getter))
@@ -514,6 +560,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(Parser.class)
   void extract_multiple_headers_all_invalid() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
@@ -528,6 +575,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(Parser.class)
   void extract_multiple_headers_some_invalid() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
@@ -593,6 +641,118 @@ class W3CBaggagePropagatorTest {
     Context context = Context.current().with(Baggage.builder().put("cat", "meow").build());
     W3CBaggagePropagator.getInstance().inject(context, carrier, null);
     assertThat(carrier).isEmpty();
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  void extract_limit_maxEntries(List<String> headers, Baggage expectedBaggage) {
+    Context result =
+        W3CBaggagePropagator.getInstance()
+            .extract(Context.root(), ImmutableMap.of("baggage", headers), multiGetter);
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  static Stream<Arguments> extract_limit_maxEntries() {
+    return Stream.of(
+        Arguments.argumentSet(
+            "exactly at limit, all 64 extracted",
+            ImmutableList.of(baggageHeader(0, 64)),
+            baggageWithEntries(0, 64)),
+        Arguments.argumentSet(
+            "one over limit, only first 64 extracted",
+            ImmutableList.of(baggageHeader(0, 65)),
+            baggageWithEntries(0, 64)),
+        Arguments.argumentSet(
+            "split across two headers, first 64 total extracted",
+            ImmutableList.of(baggageHeader(0, 32), baggageHeader(32, 33)),
+            baggageWithEntries(0, 64)));
+  }
+
+  /**
+   * Builds a {@link Baggage} with entries {@code k{start}=v{start}} through {@code
+   * k{start+count-1}=v{start+count-1}}.
+   */
+  private static Baggage baggageWithEntries(int start, int count) {
+    BaggageBuilder builder = Baggage.builder();
+    for (int i = start; i < start + count; i++) {
+      builder.put("k" + i, "v" + i);
+    }
+    return builder.build();
+  }
+
+  /** Builds {@code "k{start}=v{start},...,k{start+count-1}=v{start+count-1}"}. */
+  private static String baggageHeader(int start, int count) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = start; i < start + count; i++) {
+      if (i > start) {
+        sb.append(",");
+      }
+      sb.append("k").append(i).append("=v").append(i);
+    }
+    return sb.toString();
+  }
+
+  @Test
+  void extract_limit_maxBytes_exceedsLimit() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    // Single header over 8192 bytes — dropped entirely; partial values must not be extracted
+    String header = "k=" + fillChars('v', 8192); // 8194 bytes
+    Context result = propagator.extract(Context.root(), ImmutableMap.of("baggage", header), getter);
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_limit_maxBytes_acrossMultipleHeaders() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    // First header just under 8192 bytes is extracted; second header pushes total over the limit
+    String almostMax = "k=" + fillChars('v', 8189); // "k=vvv..."
+    String second = "k2=v2";
+    Context result =
+        propagator.extract(
+            Context.root(),
+            ImmutableMap.of("baggage", ImmutableList.of(almostMax, second)),
+            multiGetter);
+    // Only the first header should have been extracted
+    assertThat(Baggage.fromContext(result).size()).isEqualTo(1);
+    assertThat(Baggage.fromContext(result).getEntryValue("k2")).isNull();
+  }
+
+  @Test
+  void inject_limit_maxEntries() {
+    Map<String, String> carrier = new HashMap<>();
+    W3CBaggagePropagator.getInstance()
+        .inject(Context.root().with(baggageWithEntries(0, 74)), carrier, Map::put);
+    String header = carrier.get("baggage");
+    assertThat(header).isNotNull();
+    long count = header.chars().filter(c -> c == '=').count();
+    assertThat(count).isEqualTo(64);
+  }
+
+  @Test
+  void inject_limit_maxBytes() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    // One entry whose encoded form alone exceeds the byte limit — should produce empty header
+    Baggage baggage = Baggage.builder().put("k", fillChars('v', 8192)).build();
+    Map<String, String> carrier = new HashMap<>();
+    propagator.inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier).doesNotContainKey("baggage");
+  }
+
+  @Test
+  void inject_limit_maxBytes_metadata() {
+    // Value alone fits easily (k=v is 3 bytes), but k=v;{metadata} exceeds 8192 bytes.
+    // Verifies that metadata length is included in the byte limit check.
+    Baggage baggage =
+        Baggage.builder().put("k", "v", BaggageEntryMetadata.create(fillChars('x', 8190))).build();
+    Map<String, String> carrier = new HashMap<>();
+    W3CBaggagePropagator.getInstance().inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier).doesNotContainKey("baggage");
+  }
+
+  private static String fillChars(char c, int count) {
+    char[] chars = new char[count];
+    Arrays.fill(chars, c);
+    return new String(chars);
   }
 
   @Test

@@ -18,6 +18,9 @@ import java.util.logging.Logger;
 /**
  * A {@link MetricExporter} which writes {@linkplain MetricData metrics} to a {@link Logger} in OTLP
  * JSON format. Each log line will include a single {@code ResourceMetrics}.
+ *
+ * <p>Note: This class is superseded by {@link OtlpStdoutMetricExporter}, which allows configuring a
+ * custom logger or output stream.
  */
 public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
@@ -29,7 +32,7 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
   private final OtlpStdoutMetricExporter delegate;
 
   /**
-   * Returns a new {@link OtlpJsonLoggingMetricExporter} with a aggregation temporality of {@link
+   * Returns a new {@link OtlpJsonLoggingMetricExporter} with an aggregation temporality of {@link
    * AggregationTemporality#CUMULATIVE}.
    */
   public static MetricExporter create() {

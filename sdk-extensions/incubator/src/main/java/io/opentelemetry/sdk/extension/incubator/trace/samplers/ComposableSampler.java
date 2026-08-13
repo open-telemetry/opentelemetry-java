@@ -56,7 +56,6 @@ public interface ComposableSampler {
   /** Returns the {@link SamplingIntent} to use to make a sampling decision. */
   SamplingIntent getSamplingIntent(
       Context parentContext,
-      String traceId,
       String name,
       SpanKind spanKind,
       Attributes attributes,

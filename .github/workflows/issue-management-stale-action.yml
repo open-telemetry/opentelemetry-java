@@ -17,7 +17,7 @@ jobs:
       pull-requests: write  # for actions/stale to close stale PRs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10.2.0
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           days-before-stale: 7
@@ -31,3 +31,13 @@ jobs:
             This has been automatically marked as stale because it has been marked
             as needing author feedback and has not had any activity for 7 days.
             It will be closed if no further activity occurs within 7 days of this comment.
+
+  workflow-notification:
+    permissions:
+      issues: write
+    needs:
+      - stale
+    if: always()
+    uses: open-telemetry/shared-workflows/.github/workflows/workflow-failure-issue.yml@62d5939b47144252763c5ff9fffe8c20d76cd806 # v0.4.0
+    with:
+      success: ${{ needs.stale.result == 'success' }}

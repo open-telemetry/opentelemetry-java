@@ -202,4 +202,57 @@ class SdkObservableDoubleCounterTest {
                                             .hasValue(0)
                                             .hasAttributes(attributeEntry("k", "v")))));
   }
+
+  @Test
+  void collectMetrics_DefaultExemplarFilter_NoExemplars() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
+    sdkMeterProvider
+        .get(getClass().getName())
+        .counterBuilder("testObserver")
+        .ofDoubles()
+        .buildWithCallback(result -> result.record(12.1d, Attributes.empty()));
+
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("testObserver")
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point -> point.hasValue(12.1d).hasExemplars())));
+  }
+
+  @Test
+  void collectMetrics_AlwaysOnExemplarFilter_CollectsExemplars() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder
+            .setExemplarFilter(ExemplarFilter.alwaysOn())
+            .registerMetricReader(sdkMeterReader)
+            .build();
+    sdkMeterProvider
+        .get(getClass().getName())
+        .counterBuilder("testObserver")
+        .ofDoubles()
+        .buildWithCallback(result -> result.record(12.1d, Attributes.empty()));
+
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(sdkMeterReader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("testObserver")
+                    .hasDoubleSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12.1d)
+                                        .hasExemplarsSatisfying(
+                                            exemplar -> exemplar.hasValue(12.1d)))));
+  }
 }

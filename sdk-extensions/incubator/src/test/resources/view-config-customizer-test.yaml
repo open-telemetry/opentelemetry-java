@@ -1,6 +1,0 @@
-- selector:
-    instrument_type: OBSERVABLE_COUNTER
-  view:
-    attribute_keys:
-      - foo
-      - bar

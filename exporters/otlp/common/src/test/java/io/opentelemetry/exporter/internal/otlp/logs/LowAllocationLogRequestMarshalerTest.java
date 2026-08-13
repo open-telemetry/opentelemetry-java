@@ -69,8 +69,12 @@ class LowAllocationLogRequestMarshalerTest {
       InstrumentationScopeInfo.create("name");
   private static final String TRACE_ID = "7b2e170db4df2d593ddb4ddf2ddf2d59";
   private static final String SPAN_ID = "170d3ddb4d23e81f";
+  // Use a trace flags value with the high bit set (0x80) so the relative comparisons below catch
+  // sign extension of the byte flags into the OTLP fixed32 field. With a low value like 0x01 the
+  // sign-extension bug would be hidden.
   private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
+      SpanContext.create(
+          TRACE_ID, SPAN_ID, TraceFlags.fromByte((byte) 0x80), TraceState.getDefault());
 
   private final List<LogRecordData> logRecordDataList = createLogRecordDataList();
 

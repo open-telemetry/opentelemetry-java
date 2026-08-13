@@ -37,7 +37,7 @@ public final class JcTools {
    * Remove up to <i>limit</i> elements from the {@link Queue} and hand to consume.
    *
    * @throws IllegalArgumentException consumer is {@code null}
-   * @throws IllegalArgumentException if maxExportBatchSize is negative
+   * @throws IllegalArgumentException if limit is negative
    */
   @SuppressWarnings("unchecked")
   public static <T> int drain(Queue<T> queue, int limit, Consumer<T> consumer) {

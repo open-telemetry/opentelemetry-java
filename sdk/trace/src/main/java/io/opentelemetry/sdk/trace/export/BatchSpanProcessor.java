@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -53,6 +55,23 @@ public final class BatchSpanProcessor implements SpanProcessor {
   private final boolean exportUnsampledSpans;
   private final Worker worker;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+
+  /**
+   * Returns a new {@link BatchSpanProcessor} with default configuration which batches spans
+   * exported by the SDK then pushes them to the {@code spanExporter}.
+   *
+   * <p>This is a convenience method equivalent to {@code
+   * BatchSpanProcessor.builder(spanExporter).build()}. Use {@link #builder(SpanExporter)} if you
+   * need to customize the configuration.
+   *
+   * @param spanExporter the {@link SpanExporter} to which the Spans are pushed.
+   * @return a new {@link BatchSpanProcessor}.
+   * @since 1.64.0
+   */
+  public static BatchSpanProcessor create(SpanExporter spanExporter) {
+    requireNonNull(spanExporter, "spanExporter");
+    return builder(spanExporter).build();
+  }
 
   /**
    * Returns a new Builder for {@link BatchSpanProcessor}.

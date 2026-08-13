@@ -1,7 +1,6 @@
 plugins {
   id("otel.java-conventions")
-  // TODO (jack-berg): uncomment when ready to publish
-  // id("otel.publish-conventions")
+  id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
 }
@@ -9,7 +8,7 @@ plugins {
 description = "OpenTelemetry - Profiles Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.profiles")
 
-val versions: Map<String, String> by project
+val versions = project.property("versions") as Map<*, *>
 
 dependencies {
   api(project(":sdk:common"))
@@ -21,7 +20,6 @@ dependencies {
   compileOnly("io.grpc:grpc-stub")
 
   testCompileOnly("com.google.guava:guava")
-  testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation(project(":exporters:otlp:testing-internal"))

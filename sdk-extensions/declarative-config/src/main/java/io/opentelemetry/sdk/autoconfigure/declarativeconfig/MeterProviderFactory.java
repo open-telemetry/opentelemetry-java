@@ -7,16 +7,18 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.FileConfigUtil.requireNonNull;
 
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ExemplarFilterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricReaderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.MeterProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalMeterConfigModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalMeterConfiguratorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalMeterMatcherAndConfigModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MeterProviderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MetricReaderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewSelectorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
@@ -69,7 +71,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
     }
 
     ExperimentalMeterConfiguratorModel meterConfiguratorModel =
-        model.getMeterConfiguratorDevelopment();
+        MeterProviderModelAccessor.getMeterConfigurator(model);
     if (meterConfiguratorModel != null) {
       ExperimentalMeterConfigModel defaultConfigModel = meterConfiguratorModel.getDefaultConfig();
       ScopeConfiguratorBuilder<MeterConfig> configuratorBuilder = ScopeConfigurator.builder();
@@ -95,7 +97,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
       SdkMeterProviderUtil.setMeterConfigurator(builder, configuratorBuilder.build());
     }
 
-    MeterProviderModel.ExemplarFilter exemplarFilterModel = model.getExemplarFilter();
+    ExemplarFilterModel exemplarFilterModel = model.getExemplarFilter();
     if (exemplarFilterModel != null) {
       builder.setExemplarFilter(
           ExemplarFilterFactory.getInstance().create(exemplarFilterModel, context));

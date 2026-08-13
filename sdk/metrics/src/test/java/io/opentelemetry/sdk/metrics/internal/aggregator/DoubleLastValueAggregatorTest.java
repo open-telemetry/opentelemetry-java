@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -274,14 +273,5 @@ class DoubleLastValueAggregatorTest {
         handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ true);
 
     assertThat(pointData).isSameAs(pointDataWithReset);
-  }
-
-  @Test
-  void testNullPointerExceptionWhenUnset() {
-    init(MemoryMode.REUSABLE_DATA);
-    AggregatorHandle<DoublePointData> handle = aggregator.createHandle(0);
-    assertThatThrownBy(
-            () -> handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ true))
-        .isInstanceOf(NullPointerException.class);
   }
 }

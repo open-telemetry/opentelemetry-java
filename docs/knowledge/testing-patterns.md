@@ -59,6 +59,28 @@ void logsWarning() {
 
 `logunit-jul` is included in all test suites via `otel.java-conventions`.
 
+## Parameterized tests
+
+Prefer `@ParameterizedTest` with `@MethodSource` when testing the same logic across multiple
+inputs. This keeps assertions in one place and gives each case a distinct name in the test report.
+
+Use `Arguments.argumentSet(String name, Object... args)` to name each case. This requires no
+changes to the test method signature and no `name =` attribute on the annotation:
+
+```java
+@ParameterizedTest
+@MethodSource("createTestCases")
+void create(MyModel model, MyResult expected) {
+  assertThat(factory.create(model)).isEqualTo(expected);
+}
+
+static Stream<Arguments> createTestCases() {
+  return Stream.of(
+      Arguments.argumentSet("http default", new MyModel().withHttp(...), expectedHttp),
+      Arguments.argumentSet("grpc default", new MyModel().withGrpc(...), expectedGrpc));
+}
+```
+
 ## Mocking
 
 Mockito is available in all test suites via `otel.java-conventions`. Use

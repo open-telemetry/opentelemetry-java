@@ -28,6 +28,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.BenchmarkParams;
 
 /*
  * Run this along with a profiler to measure the CPU usage of BatchSpanProcessor's exporter thread.
@@ -47,7 +48,8 @@ public class BatchSpanProcessorCpuBenchmark {
     private long droppedSpans;
 
     @Setup(Level.Iteration)
-    public final void setup() {
+    public final void setup(BenchmarkParams params) {
+      numThreads = params.getThreads();
       metricReader = InMemoryMetricReader.create();
       MeterProvider meterProvider =
           SdkMeterProvider.builder().registerMetricReader(metricReader).build();
@@ -110,7 +112,6 @@ public class BatchSpanProcessorCpuBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_01Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 1;
     doWork(benchmarkState);
   }
 
@@ -123,7 +124,6 @@ public class BatchSpanProcessorCpuBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_02Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 2;
     doWork(benchmarkState);
   }
 
@@ -136,7 +136,6 @@ public class BatchSpanProcessorCpuBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_05Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 5;
     doWork(benchmarkState);
   }
 
@@ -149,7 +148,6 @@ public class BatchSpanProcessorCpuBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_10Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 10;
     doWork(benchmarkState);
   }
 
@@ -162,7 +160,6 @@ public class BatchSpanProcessorCpuBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public void export_20Thread(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
-    benchmarkState.numThreads = 20;
     doWork(benchmarkState);
   }
 }

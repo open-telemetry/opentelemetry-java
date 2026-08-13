@@ -49,6 +49,8 @@ public final class LongGaugeAssert
    * Asserts that for each given assertion, at least one point in the gauge satisfies it. Extra
    * points that match none of the assertions are allowed, and a single point may satisfy multiple
    * assertions.
+   *
+   * @since 1.62.0
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
@@ -60,6 +62,8 @@ public final class LongGaugeAssert
    * Asserts that for each given assertion, at least one point in the gauge satisfies it. Extra
    * points that match none of the assertions are allowed, and a single point may satisfy multiple
    * assertions.
+   *
+   * @since 1.62.0
    */
   public LongGaugeAssert containsPointsSatisfying(
       Iterable<? extends Consumer<LongPointAssert>> assertions) {

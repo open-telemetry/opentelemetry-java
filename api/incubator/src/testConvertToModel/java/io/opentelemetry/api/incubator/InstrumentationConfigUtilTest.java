@@ -15,10 +15,11 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.DeclarativeConfiguration;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalInstrumentationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalLanguageSpecificInstrumentationPropertyModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalInstrumentationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLanguageSpecificInstrumentationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLanguageSpecificInstrumentationPropertyModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.OpenTelemetryConfigurationModelAccessor;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -129,12 +130,12 @@ class InstrumentationConfigUtilTest {
       ExperimentalLanguageSpecificInstrumentationPropertyModel instrumentationConfig) {
     ExperimentalLanguageSpecificInstrumentationModel javaConfig =
         new ExperimentalLanguageSpecificInstrumentationModel();
-    javaConfig.setAdditionalProperty(instrumentationName, instrumentationConfig);
+    javaConfig.withAdditionalProperty(instrumentationName, instrumentationConfig);
     DeclarativeConfigProperties modelProperties =
         DeclarativeConfiguration.toConfigProperties(
-            new OpenTelemetryConfigurationModel()
-                .withInstrumentationDevelopment(
-                    new ExperimentalInstrumentationModel().withJava(javaConfig)));
+            OpenTelemetryConfigurationModelAccessor.withInstrumentation(
+                new OpenTelemetryConfigurationModel(),
+                new ExperimentalInstrumentationModel().withJava(javaConfig)));
 
     return SdkConfigProvider.create(modelProperties);
   }

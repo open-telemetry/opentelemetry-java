@@ -12,6 +12,7 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.lang.syntax.elements.ClassesShouldConjunction;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,6 +28,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressLogger(NoSharedInternalCodeTest.class)
 class NoSharedInternalCodeTest {
 
   private static final Set<String> exemptions =
@@ -36,12 +38,12 @@ class NoSharedInternalCodeTest {
           "opentelemetry-exporter-logging",
           "opentelemetry-exporter-logging-otlp",
           "opentelemetry-exporter-prometheus",
-          "opentelemetry-exporter-zipkin",
           "opentelemetry-extension-trace-propagators",
           "opentelemetry-opencensus-shim",
           "opentelemetry-sdk-common",
           "opentelemetry-sdk-logs",
           "opentelemetry-sdk-metrics",
+          "opentelemetry-sdk-profiles",
           "opentelemetry-sdk-testing",
           "opentelemetry-sdk-trace",
           "opentelemetry-sdk-extension-autoconfigure",
@@ -51,6 +53,7 @@ class NoSharedInternalCodeTest {
           "opentelemetry-sdk-extension-jaeger-remote-sampler",
           "opentelemetry-exporter-otlp",
           "opentelemetry-exporter-otlp-common",
+          "opentelemetry-exporter-otlp-profiles",
           "opentelemetry-exporter-sender-grpc-managed-channel",
           "opentelemetry-exporter-sender-jdk",
           "opentelemetry-exporter-sender-okhttp");
@@ -113,7 +116,7 @@ class NoSharedInternalCodeTest {
         .map(
             line -> {
               String[] parts = line.split(":", 2);
-              return Arguments.of(parts[0], parts[1]);
+              return Arguments.argumentSet(parts[0], parts[0], parts[1]);
             });
   }
 }

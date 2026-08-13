@@ -45,7 +45,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *     openTelemetry.getTracer("instrumentation-library-name", "1.0.0");
  *   void doWork(Span parent) {
  *     Span childSpan = tracer.spanBuilder("MyChildSpan")
- *         setParent(parent).startSpan();
+ *         .setParent(Context.current().with(parent))
+ *         .startSpan();
  *     childSpan.addEvent("Starting the work.");
  *     try {
  *       doSomeWork(childSpan); // Manually propagate the new span down the stack.

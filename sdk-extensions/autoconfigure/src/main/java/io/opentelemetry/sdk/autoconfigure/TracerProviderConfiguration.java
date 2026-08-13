@@ -38,6 +38,7 @@ final class TracerProviderConfiguration {
   private static final List<String> simpleProcessorExporterNames =
       Arrays.asList("console", "logging");
 
+  @SuppressWarnings("ReferenceEquality")
   static void configureTracerProvider(
       SdkTracerProviderBuilder tracerProviderBuilder,
       ConfigProperties config,

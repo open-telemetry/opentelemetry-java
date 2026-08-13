@@ -8,6 +8,7 @@ package io.opentelemetry.api.internal;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.opentelemetry.api.impl.InstrumentationUtil;
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 

@@ -23,7 +23,7 @@ abstract class ImmutableSamplingIntent implements SamplingIntent {
   static final SamplingIntent NON_SAMPLING_INTENT =
       create(
           ImmutableSamplingIntent.INVALID_THRESHOLD,
-          /* thresholdReliable= */ false,
+          /* adjustedCountReliable= */ false,
           Attributes.empty(),
           Function.identity());
 
@@ -37,10 +37,10 @@ abstract class ImmutableSamplingIntent implements SamplingIntent {
 
   static ImmutableSamplingIntent create(
       long threshold,
-      boolean thresholdReliable,
+      boolean adjustedCountReliable,
       Attributes attributes,
       Function<TraceState, TraceState> traceStateUpdater) {
     return new AutoValue_ImmutableSamplingIntent(
-        threshold, thresholdReliable, attributes, traceStateUpdater);
+        threshold, adjustedCountReliable, attributes, traceStateUpdater);
   }
 }

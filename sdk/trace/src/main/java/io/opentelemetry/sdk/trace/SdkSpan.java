@@ -351,6 +351,7 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
+  @SuppressWarnings("ReferenceEquality")
   private boolean isModifiableByCurrentThread() {
     return hasEnded == EndState.NOT_ENDED
         || (hasEnded == EndState.ENDING && Thread.currentThread() == spanEndingThread);

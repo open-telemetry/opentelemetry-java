@@ -156,17 +156,22 @@ class OtlpConfigUtilTest {
 
   private static Stream<Arguments> misalignedOtlpPortArgs() {
     return Stream.of(
-        Arguments.of("http/protobuf", "http://localhost:4318/path", null),
-        Arguments.of("http/protobuf", "http://localhost:8080/path", null),
-        Arguments.of("http/protobuf", "http://localhost/path", null),
-        Arguments.of(
+        Arguments.argumentSet(
+            "http/protobuf port 4318 no warn", "http/protobuf", "http://localhost:4318/path", null),
+        Arguments.argumentSet(
+            "http/protobuf port 8080 no warn", "http/protobuf", "http://localhost:8080/path", null),
+        Arguments.argumentSet(
+            "http/protobuf no port no warn", "http/protobuf", "http://localhost/path", null),
+        Arguments.argumentSet(
+            "http/protobuf port 4317 warn",
             "http/protobuf",
             "http://localhost:4317/path",
             "OTLP exporter endpoint port is likely incorrect for protocol version \"http/protobuf\". The endpoint http://localhost:4317/path has port 4317. Typically, the \"http/protobuf\" version of OTLP uses port 4318."),
-        Arguments.of("grpc", "http://localhost:4317/", null),
-        Arguments.of("grpc", "http://localhost:8080/", null),
-        Arguments.of("grpc", "http://localhost/", null),
-        Arguments.of(
+        Arguments.argumentSet("grpc port 4317 no warn", "grpc", "http://localhost:4317/", null),
+        Arguments.argumentSet("grpc port 8080 no warn", "grpc", "http://localhost:8080/", null),
+        Arguments.argumentSet("grpc no port no warn", "grpc", "http://localhost/", null),
+        Arguments.argumentSet(
+            "grpc port 4318 warn",
             "grpc",
             "http://localhost:4318/",
             "OTLP exporter endpoint port is likely incorrect for protocol version \"grpc\". The endpoint http://localhost:4318/ has port 4318. Typically, the \"grpc\" version of OTLP uses port 4317."));

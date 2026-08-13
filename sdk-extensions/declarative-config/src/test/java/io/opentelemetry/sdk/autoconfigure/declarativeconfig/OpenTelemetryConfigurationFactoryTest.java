@@ -24,34 +24,35 @@ import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AlwaysOnSamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.AttributeNameValueModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.BatchLogRecordProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.BatchSpanProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalResourceDetectionModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ExperimentalResourceDetectorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LogRecordExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LogRecordLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LogRecordProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.LoggerProviderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MeterProviderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.MetricReaderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.OtlpHttpExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.OtlpHttpMetricExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.PeriodicMetricReaderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.PropagatorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.PushMetricExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ResourceModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SimpleLogRecordProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanExporterModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanLimitsModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.SpanProcessorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.TracerProviderModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewSelectorModel;
-import io.opentelemetry.sdk.declarativeconfig.internal.model.ViewStreamModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysOnSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchLogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchSpanProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LoggerProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MeterProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricReaderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PeriodicMetricReaderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PropagatorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ResourceModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleLogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanLimitsModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProviderModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectionModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ResourceModelAccessor;
 import io.opentelemetry.sdk.internal.ExtendedOpenTelemetrySdk;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
 import io.opentelemetry.sdk.internal.SdkConfigProvider;
@@ -113,31 +114,35 @@ class OpenTelemetryConfigurationFactoryTest {
               () -> OpenTelemetryConfigurationFactory.getInstance().create(model, context))
           .isInstanceOf(DeclarativeConfigException.class)
           .hasMessageMatching(
-              "Unsupported file format '.+'\\. Supported formats include 0\\.4, 1\\.0\\*");
+              "Unsupported file format '.+'\\. Supported formats include 0\\.4, 1\\.\\*");
     }
   }
 
   private static Stream<Arguments> fileFormatArgs() {
     return Stream.of(
-        // Invalid file formats
-        Arguments.of(null, false),
-        Arguments.of("0.3", false),
-        Arguments.of("a0.4", false),
-        Arguments.of("0.4a", false),
-        Arguments.of("foo", false),
-        Arguments.of("1.0-rc.a", false),
-        Arguments.of("1.0.0", false),
-        Arguments.of("1.0.3", false),
-        Arguments.of("1.0.0-rc.3", false),
-        // Valid file formats
-        Arguments.of("0.4", true),
-        Arguments.of("1.0-rc.1", true),
-        Arguments.of("1.0-rc.2", true),
-        Arguments.of("1.0-rc.3", true),
-        Arguments.of("1.0", true));
+        Arguments.argumentSet("null invalid", null, false),
+        Arguments.argumentSet("0.3 invalid", "0.3", false),
+        Arguments.argumentSet("a0.4 invalid", "a0.4", false),
+        Arguments.argumentSet("0.4a invalid", "0.4a", false),
+        Arguments.argumentSet("foo invalid", "foo", false),
+        Arguments.argumentSet("1.0-rc.a invalid", "1.0-rc.a", false),
+        Arguments.argumentSet("1.0.0 invalid", "1.0.0", false),
+        Arguments.argumentSet("1.0.3 invalid", "1.0.3", false),
+        Arguments.argumentSet("1.0.0-rc.3 invalid", "1.0.0-rc.3", false),
+        Arguments.argumentSet("1.1.0 invalid", "1.1.0", false),
+        Arguments.argumentSet("1.a invalid", "1.a", false),
+        Arguments.argumentSet("0.4 valid", "0.4", true),
+        Arguments.argumentSet("1.0-rc.1 valid", "1.0-rc.1", true),
+        Arguments.argumentSet("1.0-rc.2 valid", "1.0-rc.2", true),
+        Arguments.argumentSet("1.0-rc.3 valid", "1.0-rc.3", true),
+        Arguments.argumentSet("1.0 valid", "1.0", true),
+        Arguments.argumentSet("1.2 valid", "1.2", true),
+        Arguments.argumentSet("1.12 valid", "1.12", true),
+        Arguments.argumentSet("1.1 valid", "1.1", true));
   }
 
   @Test
+  @SuppressLogger(OpenTelemetryConfigurationFactory.class)
   void create_FileFormatVersionMismatch_LogsWarning() {
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
@@ -147,13 +152,13 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(sdk);
 
     logCapturer.assertContains(
-        "Configuration file_format '1.0-rc.3' does not exactly match expected version '1.0'");
+        "Configuration file_format '1.0-rc.3' does not exactly match expected version '1.1'");
   }
 
   @Test
   void create_FileFormatExactMatch_NoWarning() {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0");
+        new OpenTelemetryConfigurationModel().withFileFormat("1.1");
 
     ExtendedOpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
@@ -166,7 +171,7 @@ class OpenTelemetryConfigurationFactoryTest {
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0");
+        new OpenTelemetryConfigurationModel().withFileFormat("1.1");
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder(),
@@ -187,7 +192,7 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .withFileFormat("1.0")
+            .withFileFormat("1.1")
             .withDisabled(true)
             // Logger provider configuration should be ignored since SDK is disabled
             .withLoggerProvider(
@@ -230,12 +235,12 @@ class OpenTelemetryConfigurationFactoryTest {
 
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .withFileFormat("1.0")
+            .withFileFormat("1.1")
             .withPropagator(
                 new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3"))
             .withResource(
-                new ResourceModel()
-                    .withDetectionDevelopment(
+                ResourceModelAccessor.withDetection(
+                        new ResourceModel(),
                         new ExperimentalResourceDetectionModel()
                             .withDetectors(
                                 Arrays.asList(

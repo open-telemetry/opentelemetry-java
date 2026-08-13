@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.export;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import java.time.Duration;
 import java.util.concurrent.Executors;
@@ -26,9 +27,13 @@ public final class PeriodicMetricReaderBuilder {
 
   private final MetricExporter metricExporter;
 
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LATEST;
+
   private long intervalNanos = TimeUnit.MINUTES.toNanos(DEFAULT_SCHEDULE_DELAY_MINUTES);
 
   @Nullable private ScheduledExecutorService executor;
+
+  private int maxExportBatchSize;
 
   PeriodicMetricReaderBuilder(MetricExporter metricExporter) {
     this.metricExporter = metricExporter;
@@ -59,6 +64,20 @@ public final class PeriodicMetricReaderBuilder {
     return this;
   }
 
+  /**
+   * Sets the maximum number of data points to include in a single export batch. If unset, no
+   * batching will be performed. The maximum number of data points is considered across MetricData
+   * objects scheduled for export.
+   *
+   * @param maxExportBatchSize The maximum number of data points to include in a single export
+   *     batch.
+   */
+  PeriodicMetricReaderBuilder setMaxExportBatchSize(int maxExportBatchSize) {
+    checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive");
+    this.maxExportBatchSize = maxExportBatchSize;
+    return this;
+  }
+
   /** Build a {@link PeriodicMetricReader} with the configuration of this builder. */
   public PeriodicMetricReader build() {
     ScheduledExecutorService executor = this.executor;
@@ -66,6 +85,18 @@ public final class PeriodicMetricReaderBuilder {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReader(metricExporter, intervalNanos, executor);
+    return new PeriodicMetricReader(
+        metricExporter, intervalNanos, executor, maxExportBatchSize, internalTelemetryVersion);
+  }
+
+  /**
+   * Sets the internal telemetry version used to control self-observability metrics.
+   *
+   * @since 1.65.0
+   */
+  public PeriodicMetricReaderBuilder setInternalTelemetryVersion(InternalTelemetryVersion version) {
+    requireNonNull(version, "version");
+    this.internalTelemetryVersion = version;
+    return this;
   }
 }

@@ -34,6 +34,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -393,7 +394,7 @@ class SdkSpanBuilderTest {
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(10);
     span.end();
-    span.setAttribute("emptyString", null);
+    span.setAttribute("emptyString", (String) null);
     span.setAttribute(stringKey("emptyStringAttributeValue"), null);
     span.setAttribute(longKey("longAttribute"), null);
     span.setAttribute(booleanKey("boolAttribute"), null);
@@ -1129,6 +1130,7 @@ class SdkSpanBuilderTest {
   }
 
   @Test
+  @SuppressLogger(loggerName = "io.opentelemetry.usage")
   void doNotCrash() {
     assertThatCode(
             () -> {
@@ -1169,5 +1171,26 @@ class SdkSpanBuilderTest {
               assertThat(spanBuilder.startSpan().getSpanContext().isValid()).isTrue();
             })
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  void setAttribute_sameKeyDifferentType_lastValueWins() {
+    // Regression test for https://github.com/open-telemetry/opentelemetry-java/issues/7897
+    // Setting the same string key with different types must overwrite, not accumulate.
+    SdkSpan span =
+        (SdkSpan)
+            sdkTracer
+                .spanBuilder("test")
+                .setAttribute("key", "string_value")
+                .setAttribute("key", false)
+                .startSpan();
+    try {
+      Attributes attributes = span.toSpanData().getAttributes();
+      assertThat(attributes.size()).isEqualTo(1);
+      assertThat(attributes.get(booleanKey("key"))).isEqualTo(false);
+      assertThat(attributes.get(stringKey("key"))).isNull();
+    } finally {
+      span.end();
+    }
   }
 }

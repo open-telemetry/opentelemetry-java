@@ -5,6 +5,9 @@ plugins {
 
 description = "OpenTelemetry SDK Testing utilities"
 otelJava.moduleName.set("io.opentelemetry.sdk.testing")
+otelJava.osgiServiceLoaderProvides.set(listOf(
+  "io.opentelemetry.context.ContextStorageProvider",
+))
 
 dependencies {
   api(project(":api:all"))

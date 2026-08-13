@@ -9,7 +9,11 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class EnvironmentSetterTest {
 
@@ -26,13 +30,15 @@ class EnvironmentSetterTest {
   }
 
   @Test
-  void set_sanitization() {
+  void set_normalization() {
     Map<String, String> carrier = new HashMap<>();
     EnvironmentSetter.getInstance().set(carrier, "otel.trace.id", "val1");
     EnvironmentSetter.getInstance().set(carrier, "otel-baggage-key", "val2");
+    EnvironmentSetter.getInstance().set(carrier, "", "val3");
 
     assertThat(carrier).containsEntry("OTEL_TRACE_ID", "val1");
     assertThat(carrier).containsEntry("OTEL_BAGGAGE_KEY", "val2");
+    assertThat(carrier).containsEntry("_", "val3");
   }
 
   @Test
@@ -53,6 +59,7 @@ class EnvironmentSetterTest {
     EnvironmentSetter.getInstance().set(carrier, "key4", "value\u0000with\u0001control");
     EnvironmentSetter.getInstance().set(carrier, "key5", "value\nwith\nnewlines");
     EnvironmentSetter.getInstance().set(carrier, "key6", "value\u0080non-ascii");
+    EnvironmentSetter.getInstance().set(carrier, "key7", "");
 
     assertThat(carrier).containsEntry("KEY1", "simple-value");
     assertThat(carrier).containsEntry("KEY2", "value with spaces");
@@ -60,6 +67,29 @@ class EnvironmentSetterTest {
     assertThat(carrier).containsEntry("KEY4", "value\u0000with\u0001control");
     assertThat(carrier).containsEntry("KEY5", "value\nwith\nnewlines");
     assertThat(carrier).containsEntry("KEY6", "value\u0080non-ascii");
+    assertThat(carrier).containsEntry("KEY7", "");
+  }
+
+  @ParameterizedTest
+  @MethodSource("isNormalizedKeyCases")
+  void isNormalizedKey(String key, boolean expected) {
+    assertThat(EnvironmentSetter.isNormalizedKey(key)).isEqualTo(expected);
+  }
+
+  static Stream<Arguments> isNormalizedKeyCases() {
+    return Stream.of(
+        Arguments.argumentSet("uppercase letters", "TRACEPARENT", true),
+        Arguments.argumentSet("uppercase with underscores", "OTEL_TRACE_ID", true),
+        Arguments.argumentSet("single underscore", "_", true),
+        Arguments.argumentSet("single letter", "A", true),
+        Arguments.argumentSet("letter then digit", "A0", true),
+        Arguments.argumentSet("mixed uppercase digits underscores", "A_B_0", true),
+        Arguments.argumentSet("empty string", "", false),
+        Arguments.argumentSet("starts with digit", "0ABC", false),
+        Arguments.argumentSet("lowercase letters", "traceparent", false),
+        Arguments.argumentSet("dots", "otel.trace.id", false),
+        Arguments.argumentSet("hyphens", "otel-baggage-key", false),
+        Arguments.argumentSet("space", "OTEL TRACE", false));
   }
 
   @Test

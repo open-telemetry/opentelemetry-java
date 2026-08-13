@@ -21,9 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 /**
@@ -89,8 +86,9 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData> 
   }
 
   static final class Handle extends AggregatorHandle<LongPointData> {
-    private final AtomicReference<AtomicLong> current = new AtomicReference<>(null);
-    private final AtomicLong value = new AtomicLong();
+    // AggregatorHandle#valuesRecorded records whether any values have been recorded so this field
+    // never needs to be reset on collect. Stale values are never observed.
+    private volatile long currentValue;
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableLongPointData reusablePoint;
@@ -112,22 +110,19 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData> 
         Attributes attributes,
         List<LongExemplarData> exemplars,
         boolean reset) {
-      AtomicLong value =
-          Objects.requireNonNull(reset ? this.current.getAndSet(null) : this.current.get());
-      long currentValue = value.get();
+      long value = this.currentValue;
       if (reusablePoint != null) {
-        reusablePoint.set(startEpochNanos, epochNanos, attributes, currentValue, exemplars);
+        reusablePoint.set(startEpochNanos, epochNanos, attributes, value, exemplars);
         return reusablePoint;
       } else {
         return ImmutableLongPointData.create(
-            startEpochNanos, epochNanos, attributes, currentValue, exemplars);
+            startEpochNanos, epochNanos, attributes, value, exemplars);
       }
     }
 
     @Override
     protected void doRecordLong(long value) {
-      this.value.set(value);
-      this.current.compareAndSet(null, this.value);
+      this.currentValue = value;
     }
   }
 }

@@ -66,6 +66,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public void writeTo(Serializer output) throws IOException {
     output.serializeFixed64(Exemplar.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == Exemplar.AS_INT) {
@@ -80,6 +81,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(Exemplar.FILTERED_ATTRIBUTES, filteredAttributeMarshalers);
   }
 
+  @SuppressWarnings("ReferenceEquality")
   private static int calculateSize(
       long timeUnixNano,
       ProtoFieldInfo valueField,

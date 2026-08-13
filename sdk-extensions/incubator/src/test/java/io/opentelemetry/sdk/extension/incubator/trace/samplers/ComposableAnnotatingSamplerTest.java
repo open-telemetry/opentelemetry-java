@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -34,12 +33,26 @@ class ComposableAnnotatingSamplerTest {
   }
 
   @Test
+  void descriptionInComposedSampler() {
+    // The annotating sampler must override toString() so that samplers composing it (which build
+    // their description by concatenating the nested sampler) surface its real description instead
+    // of an Object hash.
+    String description =
+        ComposableSampler.parentThreshold(
+                ComposableSampler.annotating(ComposableSampler.alwaysOn(), Attributes.empty()))
+            .getDescription();
+    assertThat(description)
+        .isEqualTo(
+            "ComposableParentThresholdSampler{rootSampler=ComposableAnnotatingSampler{ComposableAlwaysOnSampler,{}}}");
+    assertThat(description).doesNotContain("@");
+  }
+
+  @Test
   void setsAttributes() {
     SamplingIntent intent =
         ComposableSampler.annotating(ComposableSampler.alwaysOn(), ATTRIBUTES)
             .getSamplingIntent(
                 Context.root(),
-                TraceId.getInvalid(),
                 "span",
                 SpanKind.SERVER,
                 Attributes.empty(),
@@ -66,7 +79,6 @@ class ComposableAnnotatingSamplerTest {
         ComposableSampler.annotating(baseSampler, ATTRIBUTES)
             .getSamplingIntent(
                 Context.root(),
-                TraceId.getInvalid(),
                 "span",
                 SpanKind.SERVER,
                 Attributes.empty(),

@@ -222,12 +222,14 @@ public final class PooledHashMap<K, V> implements Map<K, V> {
     size = 0;
   }
 
+  // Walks each bucket back-to-front so the action can remove the entry it's currently on (as metric
+  // collection does to drop stale series) without the next entry being skipped.
   @Override
   public void forEach(BiConsumer<? super K, ? super V> action) {
     for (int j = 0; j < table.length; j++) {
       ArrayList<Entry<K, V>> bucket = table[j];
       if (bucket != null) {
-        for (int i = 0; i < bucket.size(); i++) {
+        for (int i = bucket.size() - 1; i >= 0; i--) {
           Entry<K, V> entry = bucket.get(i);
           action.accept(entry.key, entry.value);
         }

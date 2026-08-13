@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -33,7 +32,6 @@ class ComposableAlwaysOffSamplerTest {
             ComposableSampler.alwaysOff()
                 .getSamplingIntent(
                     Context.root(),
-                    TraceId.getInvalid(),
                     "span",
                     SpanKind.SERVER,
                     Attributes.empty(),

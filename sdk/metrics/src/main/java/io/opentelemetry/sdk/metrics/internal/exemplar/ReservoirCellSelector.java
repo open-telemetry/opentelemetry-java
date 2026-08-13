@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import java.util.function.BiFunction;
 
 /** Selects which {@link FixedSizeExemplarReservoir} {@link ReservoirCell} receives measurements. */
 interface ReservoirCellSelector {
@@ -19,6 +20,6 @@ interface ReservoirCellSelector {
   int reservoirCellIndexFor(
       ReservoirCell[] cells, double value, Attributes attributes, Context context);
 
-  /** Called when {@link FixedSizeExemplarReservoir#collectAndReset(Attributes)}. */
+  /** Called when {@link FixedSizeExemplarReservoir#doCollectAndReset(Attributes, BiFunction)}. */
   void reset();
 }

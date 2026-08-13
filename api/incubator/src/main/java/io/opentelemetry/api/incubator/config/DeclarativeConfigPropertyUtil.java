@@ -31,7 +31,6 @@ final class DeclarativeConfigPropertyUtil {
               DeclarativeConfigPropertyUtil::getBooleanList,
               DeclarativeConfigPropertyUtil::getLongList,
               DeclarativeConfigPropertyUtil::getDoubleList,
-              DeclarativeConfigPropertyUtil::getStringList,
               DeclarativeConfigPropertyUtil::getStructuredList,
               DeclarativeConfigPropertyUtil::getStructured);
 

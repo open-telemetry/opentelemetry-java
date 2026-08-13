@@ -5,13 +5,11 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.writer;
 
-import static io.opentelemetry.exporter.logging.otlp.internal.writer.JsonUtil.JSON_FACTORY;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,23 +27,25 @@ public class LoggerJsonWriter implements JsonWriter {
     this.type = type;
   }
 
+  // toString(String) decodes straight from the internal buffer, avoiding the array copy that
+  // new String(bos.toByteArray(), UTF_8) makes. The toString(Charset) overload errorprone wants is
+  // Java 10+, but this module targets Java 8.
+  @SuppressWarnings("JdkObsolete")
   @Override
   public CompletableResultCode write(Marshaler exportRequest) {
-    SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
-    try (JsonGenerator gen = JsonUtil.create(sw)) {
-      exportRequest.writeJsonToGenerator(gen);
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    String json;
+    try {
+      exportRequest.writeJsonTo(bos);
+      // UTF-8 is always available; the declared UnsupportedEncodingException cannot occur.
+      json = bos.toString(StandardCharsets.UTF_8.name());
     } catch (IOException e) {
       logger.log(Level.WARNING, "Unable to write OTLP JSON " + type, e);
       return CompletableResultCode.ofFailure();
     }
 
-    try {
-      logger.log(Level.INFO, sw.getAndClear());
-      return CompletableResultCode.ofSuccess();
-    } catch (IOException e) {
-      logger.log(Level.WARNING, "Unable to write OTLP JSON " + type, e);
-      return CompletableResultCode.ofFailure();
-    }
+    logger.log(Level.INFO, json);
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override

@@ -35,6 +35,7 @@ final class LogRecordExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
   }
 
+  @SuppressWarnings("ReferenceEquality")
   static Map<String, LogRecordExporter> configureLogRecordExporters(
       ConfigProperties config,
       SpiHelper spiHelper,

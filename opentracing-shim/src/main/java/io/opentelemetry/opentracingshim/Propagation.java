@@ -42,11 +42,13 @@ final class Propagation {
       carrierMap.put(entry.getKey(), entry.getValue());
     }
 
-    Context context = getPropagator(format).extract(Context.current(), carrierMap, GETTER_INSTANCE);
+    Context context = getPropagator(format).extract(Context.root(), carrierMap, GETTER_INSTANCE);
 
     Span span = Span.fromContext(context);
     Baggage baggage = Baggage.fromContext(context);
-    if (!span.getSpanContext().isValid() && baggage.isEmpty()) {
+    if (!span.getSpanContext().isValid()
+        && !span.getSpanContext().isSampled()
+        && baggage.isEmpty()) {
       return null;
     }
 
@@ -54,6 +56,7 @@ final class Propagation {
   }
 
   // Visible for testing
+  @SuppressWarnings("ReferenceEquality")
   <C> TextMapPropagator getPropagator(Format<C> format) {
     if (format == Format.Builtin.HTTP_HEADERS) {
       return httpPropagator;

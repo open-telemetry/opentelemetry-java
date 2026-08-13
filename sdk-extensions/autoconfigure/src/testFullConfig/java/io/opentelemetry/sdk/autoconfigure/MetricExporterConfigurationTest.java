@@ -120,9 +120,9 @@ class MetricExporterConfigurationTest {
 
   private static Stream<Arguments> knownExporters() {
     return Stream.of(
-        Arguments.of("logging", LoggingMetricExporter.class),
-        Arguments.of("logging-otlp", OtlpJsonLoggingMetricExporter.class),
-        Arguments.of("otlp", OtlpGrpcMetricExporter.class));
+        Arguments.argumentSet("logging", "logging", LoggingMetricExporter.class),
+        Arguments.argumentSet("logging-otlp", "logging-otlp", OtlpJsonLoggingMetricExporter.class),
+        Arguments.argumentSet("otlp", "otlp", OtlpGrpcMetricExporter.class));
   }
 
   @ParameterizedTest
@@ -140,7 +140,7 @@ class MetricExporterConfigurationTest {
   }
 
   private static Stream<Arguments> knownReaders() {
-    return Stream.of(Arguments.of("prometheus", PrometheusHttpServer.class));
+    return Stream.of(Arguments.argumentSet("prometheus", "prometheus", PrometheusHttpServer.class));
   }
 
   @Test

@@ -24,12 +24,8 @@ public final class SenderUtil {
 
   private static final Logger LOGGER = Logger.getLogger(SenderUtil.class.getName());
 
-  private static final String OLD_GRPC_SPI_PROPERTY =
-      "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider";
   private static final String GRPC_SPI_PROPERTY =
       "io.opentelemetry.sdk.common.export.GrpcSenderProvider";
-  private static final String OLD_HTTP_SPI_PROPERTY =
-      "io.opentelemetry.exporter.internal.http.HttpSenderProvider";
   private static final String HTTP_SPI_PROPERTY =
       "io.opentelemetry.sdk.common.export.HttpSenderProvider";
 
@@ -71,20 +67,6 @@ public final class SenderUtil {
 
     // If we've reached here, there are multiple GrpcSenderProviders
     String configuredSender = ConfigUtil.getString(GRPC_SPI_PROPERTY, "");
-    // TODO: remove support for reading OLD_SPI_PROPERTY after 1.61.0
-    if (configuredSender.isEmpty()) {
-      configuredSender = ConfigUtil.getString(OLD_GRPC_SPI_PROPERTY, "");
-      if (!configuredSender.isEmpty()) {
-        LOGGER.log(
-            Level.WARNING,
-            OLD_GRPC_SPI_PROPERTY
-                + " was used to set GrpcSenderProvider. Please use "
-                + GRPC_SPI_PROPERTY
-                + " instead. "
-                + OLD_GRPC_SPI_PROPERTY
-                + " will be removed after 1.61.0");
-      }
-    }
 
     // Multiple providers but none configured, use first we find and log a warning
     if (configuredSender.isEmpty()) {
@@ -143,20 +125,6 @@ public final class SenderUtil {
 
     // If we've reached here, there are multiple HttpSenderProviders
     String configuredSender = ConfigUtil.getString(HTTP_SPI_PROPERTY, "");
-    // TODO: remove support for reading OLD_SPI_PROPERTY after 1.61.0
-    if (configuredSender.isEmpty()) {
-      configuredSender = ConfigUtil.getString(OLD_HTTP_SPI_PROPERTY, "");
-      if (!configuredSender.isEmpty()) {
-        LOGGER.log(
-            Level.WARNING,
-            OLD_HTTP_SPI_PROPERTY
-                + " was used to set HttpSenderProvider. Please use "
-                + HTTP_SPI_PROPERTY
-                + " instead. "
-                + OLD_HTTP_SPI_PROPERTY
-                + " will be removed after 1.61.0");
-      }
-    }
 
     // Multiple providers but none configured, use first we find and log a warning
     if (configuredSender.isEmpty()) {

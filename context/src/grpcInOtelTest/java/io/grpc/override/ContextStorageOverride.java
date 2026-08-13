@@ -19,7 +19,7 @@ public class ContextStorageOverride extends Context.Storage {
   private static final ContextKey<Context> GRPC_CONTEXT = ContextKey.named("grpc-context");
   private static final Context.Key<Scope> OTEL_SCOPE = Context.key("otel-scope");
 
-  @SuppressWarnings("MustBeClosedChecker")
+  @SuppressWarnings({"MustBeClosedChecker", "ReferenceEquality"})
   @Override
   public Context doAttach(Context toAttach) {
     io.opentelemetry.context.Context otelContext = io.opentelemetry.context.Context.current();
@@ -39,6 +39,7 @@ public class ContextStorageOverride extends Context.Storage {
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality")
   public void detach(Context toDetach, Context toRestore) {
     if (current() != toDetach) {
       // Log a severe message instead of throwing an exception as the context to attach is assumed

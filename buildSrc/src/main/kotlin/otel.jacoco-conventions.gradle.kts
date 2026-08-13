@@ -5,7 +5,7 @@ plugins {
 }
 
 jacoco {
-  toolVersion = "0.8.14"
+  toolVersion = "0.8.15"
 }
 
 // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
@@ -16,7 +16,7 @@ tasks.named("jacocoTestReport") {
 }
 
 configurations {
-  val implementation by getting
+  val implementation = getByName("implementation")
 
   create("transitiveSourceElements") {
     isCanBeResolved = false

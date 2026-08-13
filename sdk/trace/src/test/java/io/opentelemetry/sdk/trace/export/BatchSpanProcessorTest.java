@@ -72,6 +72,8 @@ class BatchSpanProcessorTest {
   void setUp() {
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockSpanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
+
+    when(mockSampler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @AfterEach
@@ -102,6 +104,21 @@ class BatchSpanProcessorTest {
     assertThat(builder.getExporterTimeoutNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
+  }
+
+  @Test
+  void createDefaults() {
+    BatchSpanProcessor processor =
+        BatchSpanProcessor.create(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()));
+    assertThat(processor).isNotNull();
+    processor.shutdown().join(10, TimeUnit.SECONDS);
+  }
+
+  @Test
+  void createNull() {
+    assertThatThrownBy(() -> BatchSpanProcessor.create(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("spanExporter");
   }
 
   @Test
@@ -241,6 +258,7 @@ class BatchSpanProcessorTest {
 
   @Test
   @SuppressLogger(BatchSpanProcessor.class)
+  @SuppressLogger(BatchSpanProcessorBuilder.class)
   void droppedSpanIsLogged() {
     sdkTracerProvider =
         SdkTracerProvider.builder()

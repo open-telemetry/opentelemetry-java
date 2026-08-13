@@ -37,6 +37,6 @@ public abstract class MeterProviderSharedState {
   /** Returns the {@link Resource} to attach telemetry to. */
   public abstract Resource getResource();
 
-  /** Returns the {@link ExemplarFilterInternal} for remembering synchronous measurements. */
+  /** Returns the {@link ExemplarFilterInternal} for remembering measurements. */
   public abstract ExemplarFilterInternal getExemplarFilter();
 }

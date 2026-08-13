@@ -5,9 +5,6 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.prometheusName;
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLabelName;
-import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -57,7 +54,9 @@ import io.prometheus.metrics.model.snapshots.Unit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,7 +73,10 @@ import javax.annotation.Nullable;
 final class Otel2PrometheusConverter {
 
   private static final Logger LOGGER = Logger.getLogger(Otel2PrometheusConverter.class.getName());
-  private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
+  private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(LOGGER);
+  // Prometheus limits the total UTF-8 character count across all exemplar label names and values
+  // to 128. See https://github.com/open-telemetry/opentelemetry-java/issues/6770
+  private static final int EXEMPLAR_MAX_LABEL_SET_LENGTH = 128;
   private static final String OTEL_SCOPE_NAME = "otel_scope_name";
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
   private static final String OTEL_SCOPE_SCHEMA_URL = "otel_scope_schema_url";
@@ -84,6 +86,7 @@ final class Otel2PrometheusConverter {
 
   private final boolean otelScopeLabelsEnabled;
   private final boolean targetInfoMetricEnabled;
+  private final TranslationStrategy translationStrategy;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -104,9 +107,11 @@ final class Otel2PrometheusConverter {
   Otel2PrometheusConverter(
       boolean otelScopeLabelsEnabled,
       boolean targetInfoMetricEnabled,
+      TranslationStrategy translationStrategy,
       @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.otelScopeLabelsEnabled = otelScopeLabelsEnabled;
     this.targetInfoMetricEnabled = targetInfoMetricEnabled;
+    this.translationStrategy = translationStrategy;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
@@ -120,6 +125,10 @@ final class Otel2PrometheusConverter {
 
   boolean isTargetInfoMetricEnabled() {
     return targetInfoMetricEnabled;
+  }
+
+  TranslationStrategy getTranslationStrategy() {
+    return translationStrategy;
   }
 
   @Nullable
@@ -151,11 +160,24 @@ final class Otel2PrometheusConverter {
 
   @Nullable
   private MetricSnapshot convert(MetricData metricData) {
+    try {
+      return doConvert(metricData);
+    } catch (IllegalArgumentException e) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Failed to convert metric " + metricData.getName() + ". Dropping metric.",
+          e);
+      return null;
+    }
+  }
 
+  @Nullable
+  private MetricSnapshot doConvert(MetricData metricData) {
     // Note that AggregationTemporality.DELTA should never happen
     // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
 
-    MetricMetadata metadata = convertMetadata(metricData);
+    boolean isCounter = isMonotonicSum(metricData);
+    MetricMetadata metadata = convertMetadata(metricData, isCounter);
     InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
     switch (metricData.getType()) {
       case LONG_GAUGE:
@@ -208,6 +230,17 @@ final class Otel2PrometheusConverter {
             metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
     }
     return null;
+  }
+
+  private static boolean isMonotonicSum(MetricData metricData) {
+    switch (metricData.getType()) {
+      case LONG_SUM:
+        return metricData.getLongSumData().isMonotonic();
+      case DOUBLE_SUM:
+        return metricData.getDoubleSumData().isMonotonic();
+      default:
+        return false;
+    }
   }
 
   private GaugeSnapshot convertLongGauge(
@@ -307,7 +340,7 @@ final class Otel2PrometheusConverter {
     for (ExponentialHistogramPointData histogramData : dataPoints) {
       int scale = histogramData.getScale();
       if (scale < -4) {
-        THROTTLING_LOGGER.log(
+        throttlingLogger.log(
             Level.WARNING,
             "Dropping histogram "
                 + metadata.getName()
@@ -418,8 +451,7 @@ final class Otel2PrometheusConverter {
   private Exemplar convertExemplar(double value, ExemplarData exemplar) {
     SpanContext spanContext = exemplar.getSpanContext();
     if (spanContext.isValid()) {
-      return new Exemplar(
-          value,
+      Labels labels =
           convertAttributes(
               null, // resource attributes are only copied for point's attributes
               null, // scope attributes are only needed for point's attributes
@@ -427,22 +459,57 @@ final class Otel2PrometheusConverter {
               "trace_id",
               spanContext.getTraceId(),
               "span_id",
-              spanContext.getSpanId()),
-          exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
+              spanContext.getSpanId());
+      if (labelSetLength(labels) > EXEMPLAR_MAX_LABEL_SET_LENGTH) {
+        // Drop filtered attributes to stay within Prometheus 128-char exemplar label limit,
+        // keeping trace_id and span_id which are the most valuable for correlation.
+        throttlingLogger.log(
+            Level.WARNING,
+            "Exemplar attributes exceeded Prometheus limit of "
+                + EXEMPLAR_MAX_LABEL_SET_LENGTH
+                + " UTF-8 characters; dropping filtered attributes.");
+        labels =
+            convertAttributes(
+                null, // resource attributes are only copied for point's attributes
+                null, // scope attributes are only needed for point's attributes
+                Attributes.empty(),
+                "trace_id",
+                spanContext.getTraceId(),
+                "span_id",
+                spanContext.getSpanId());
+      }
+      return new Exemplar(value, labels, exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
     } else {
-      return new Exemplar(
-          value,
+      Labels labels =
           convertAttributes(
               null, // resource attributes are only copied for point's attributes
               null, // scope attributes are only needed for point's attributes
-              exemplar.getFilteredAttributes()),
-          exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
+              exemplar.getFilteredAttributes());
+      if (labelSetLength(labels) > EXEMPLAR_MAX_LABEL_SET_LENGTH) {
+        throttlingLogger.log(
+            Level.WARNING,
+            "Exemplar attributes exceeded Prometheus limit of "
+                + EXEMPLAR_MAX_LABEL_SET_LENGTH
+                + " UTF-8 characters; dropping filtered attributes.");
+        labels = Labels.EMPTY;
+      }
+      return new Exemplar(value, labels, exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
     }
+  }
+
+  private static int labelSetLength(Labels labels) {
+    int length = 0;
+    for (int i = 0; i < labels.size(); i++) {
+      length +=
+          labels.getName(i).codePointCount(0, labels.getName(i).length())
+              + labels.getValue(i).codePointCount(0, labels.getValue(i).length());
+    }
+    return length;
   }
 
   private InfoSnapshot makeTargetInfo(Resource resource) {
     return new InfoSnapshot(
-        new MetricMetadata("target"),
+        MetricMetadata.builder().name("target").build(),
         Collections.singletonList(
             new InfoDataPointSnapshot(
                 convertAttributes(
@@ -471,11 +538,7 @@ final class Otel2PrometheusConverter {
             ? filterAllowedResourceAttributeKeys(resource)
             : Collections.emptyList();
 
-    Map<String, String> labelNameToValue = new HashMap<>();
-    attributes.forEach(
-        (key, value) ->
-            labelNameToValue.put(
-                convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+    Map<String, String> labelNameToValue = buildAttributeLabels(attributes);
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
@@ -496,18 +559,12 @@ final class Otel2PrometheusConverter {
           .forEach(
               (key, value) ->
                   labelNameToValue.putIfAbsent(
-                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(), value.toString()));
+                      OTEL_SCOPE_ATTRIBUTE_PREFIX + key.getKey(),
+                      toLabelValue(key.getType(), value)));
     }
 
     if (resource != null) {
-      Attributes resourceAttributes = resource.getAttributes();
-      for (AttributeKey attributeKey : allowedAttributeKeys) {
-        Object attributeValue = resourceAttributes.get(attributeKey);
-        if (attributeValue != null) {
-          labelNameToValue.putIfAbsent(
-              convertLabelName(attributeKey.getKey()), attributeValue.toString());
-        }
-      }
+      addResourceAttributeLabels(labelNameToValue, resource.getAttributes(), allowedAttributeKeys);
     }
 
     String[] names = new String[labelNameToValue.size()];
@@ -521,6 +578,121 @@ final class Otel2PrometheusConverter {
         });
 
     return Labels.of(names, values);
+  }
+
+  /**
+   * Builds a label map from metric attributes.
+   *
+   * <p>In the common (no-collision) case, inserts directly with no extra allocation. When
+   * normalization maps two attribute keys to the same label name, their values are joined with ";"
+   * in lexicographic order of the original key names.
+   */
+  private Map<String, String> buildAttributeLabels(Attributes attributes) {
+    Map<String, String> labels = new LinkedHashMap<>();
+    if (!shouldEscape(translationStrategy)) {
+      attributes.forEach(
+          (key, value) ->
+              labels.put(convertLabelName(key.getKey()), toLabelValue(key.getType(), value)));
+      return labels;
+    }
+
+    // Fast path: insert directly. Stop inserting on first detected collision but finish
+    // iterating so forEach can complete.
+    boolean[] hasCollision = {false};
+    attributes.forEach(
+        (key, value) -> {
+          if (hasCollision[0]) {
+            return;
+          }
+          String labelName = convertLabelName(key.getKey());
+          if (labels.containsKey(labelName)) {
+            hasCollision[0] = true;
+          } else {
+            labels.put(labelName, toLabelValue(key.getType(), value));
+          }
+        });
+
+    if (!hasCollision[0]) {
+      return labels; // common case: done, no extra allocation
+    }
+
+    // Collision path: discard partial state and rebuild with merged values.
+    labels.clear();
+    Map<String, List<OriginalLabelKeyValue>> groups = new LinkedHashMap<>();
+    attributes.forEach(
+        (key, value) ->
+            groups
+                .computeIfAbsent(convertLabelName(key.getKey()), ignored -> new ArrayList<>())
+                .add(new OriginalLabelKeyValue(key.getKey(), toLabelValue(key.getType(), value))));
+    groups.forEach((labelName, entries) -> labels.put(labelName, mergeValues(entries)));
+    return labels;
+  }
+
+  /**
+   * Adds resource attribute labels into dest using putIfAbsent, so metric attributes take
+   * precedence. When normalization maps two resource attribute keys to the same label name, their
+   * values are joined with ";" in lexicographic order of the original key names.
+   */
+  private void addResourceAttributeLabels(
+      Map<String, String> dest,
+      Attributes resourceAttributes,
+      List<AttributeKey<?>> allowedAttributeKeys) {
+    if (allowedAttributeKeys.isEmpty()) {
+      return;
+    }
+
+    if (!shouldEscape(translationStrategy)) {
+      for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+        Object attributeValue = resourceAttributes.get(attributeKey);
+        if (attributeValue != null) {
+          dest.putIfAbsent(
+              convertLabelName(attributeKey.getKey()),
+              toLabelValue(attributeKey.getType(), attributeValue));
+        }
+      }
+      return;
+    }
+
+    // Fast path: build resource labels into a temp map to detect within-source collisions
+    // before applying them to dest with putIfAbsent.
+    Map<String, String> resourceLabels = new LinkedHashMap<>();
+    boolean hasCollision = false;
+    for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+      Object attributeValue = resourceAttributes.get(attributeKey);
+      if (attributeValue != null) {
+        String labelName = convertLabelName(attributeKey.getKey());
+        if (resourceLabels.containsKey(labelName)) {
+          hasCollision = true;
+          break;
+        }
+        resourceLabels.put(labelName, toLabelValue(attributeKey.getType(), attributeValue));
+      }
+    }
+
+    if (!hasCollision) {
+      resourceLabels.forEach(dest::putIfAbsent);
+      return;
+    }
+
+    // Collision path: rebuild with merged values.
+    Map<String, List<OriginalLabelKeyValue>> groups = new LinkedHashMap<>();
+    for (AttributeKey<?> attributeKey : allowedAttributeKeys) {
+      Object attributeValue = resourceAttributes.get(attributeKey);
+      if (attributeValue != null) {
+        groups
+            .computeIfAbsent(convertLabelName(attributeKey.getKey()), ignored -> new ArrayList<>())
+            .add(
+                new OriginalLabelKeyValue(
+                    attributeKey.getKey(), toLabelValue(attributeKey.getType(), attributeValue)));
+      }
+    }
+    groups.forEach((labelName, entries) -> dest.putIfAbsent(labelName, mergeValues(entries)));
+  }
+
+  /** Sorts entries by original key name and joins their values with ";". */
+  private static String mergeValues(List<OriginalLabelKeyValue> entries) {
+    entries.sort(Comparator.comparing(OriginalLabelKeyValue::originalKey));
+    return entries.stream().map(OriginalLabelKeyValue::value).collect(Collectors.joining(";"));
   }
 
   private List<AttributeKey<?>> filterAllowedResourceAttributeKeys(@Nullable Resource resource) {
@@ -545,34 +717,181 @@ final class Otel2PrometheusConverter {
     return allowedAttributeKeys;
   }
 
-  /**
-   * Convert an attribute key to a legacy Prometheus label name. {@code prometheusName} converts
-   * non-standard characters (dots, dashes, etc.) to underscores, and {@code sanitizeLabelName}
-   * strips invalid leading prefixes.
-   */
-  private static String convertLabelName(String key) {
-    return sanitizeLabelName(prometheusName(key));
+  private String convertLabelName(String key) {
+    if (shouldEscape(translationStrategy)) {
+      return convertLegacyLabelName(key);
+    }
+    return key;
   }
 
-  private static MetricMetadata convertMetadata(MetricData metricData) {
-    String name = sanitizeMetricName(prometheusName(metricData.getName()));
+  /**
+   * Normalize an attribute name to the legacy Prometheus label scheme.
+   *
+   * <p>This mirrors {@code prometheus/otlptranslator}'s invalid-character collapsing rules, but we
+   * intentionally do not preserve {@code __...__} names because Prometheus Java rejects user label
+   * names that begin with {@code __}.
+   */
+  private static String convertLegacyLabelName(String key) {
+    if (key.isEmpty()) {
+      throw new IllegalArgumentException("label name is empty");
+    }
+
+    // OTel owns OTLP-to-Prometheus translation. Prometheus Java validates and serializes names,
+    // but no longer owns this naming mangling. The OTel compatibility spec requires invalid
+    // attribute-name characters and repeated underscores to collapse to a single "_". Prometheus
+    // label names beginning with "__" are reserved for internal labels like "__name__" and
+    // scrape/relabel labels, and Prometheus Java rejects them as user labels, so do not preserve
+    // "__...__" reserved-looking names here.
+    StringBuilder result = new StringBuilder(key.length());
+    boolean previousWasUnderscore = false;
+    for (int i = 0; i < key.length(); ) {
+      int codePoint = key.codePointAt(i);
+      if (isValidLegacyLabelChar(codePoint)) {
+        result.appendCodePoint(codePoint);
+        previousWasUnderscore = false;
+      } else if (!previousWasUnderscore) {
+        result.append('_');
+        previousWasUnderscore = true;
+      }
+      i += Character.charCount(codePoint);
+    }
+
+    String normalized = result.toString();
+    if (Character.isDigit(normalized.charAt(0))) {
+      normalized = "key_" + normalized;
+    }
+    if (containsOnlyUnderscores(normalized)) {
+      throw new IllegalArgumentException(
+          "normalization for label name \""
+              + key
+              + "\" resulted in invalid name \""
+              + normalized
+              + "\"");
+    }
+    return normalized;
+  }
+
+  private static boolean isValidLegacyLabelChar(int codePoint) {
+    return (codePoint >= 'a' && codePoint <= 'z')
+        || (codePoint >= 'A' && codePoint <= 'Z')
+        || (codePoint >= '0' && codePoint <= '9');
+  }
+
+  private static boolean containsOnlyUnderscores(String value) {
+    for (int i = 0; i < value.length(); i++) {
+      if (value.charAt(i) != '_') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static String convertLegacyMetricName(String name) {
+    if (name.isEmpty()) {
+      throw new IllegalArgumentException("metric name is empty");
+    }
+
+    StringBuilder result = new StringBuilder(name.length());
+    boolean previousWasUnderscore = false;
+    for (int i = 0; i < name.length(); ) {
+      int codePoint = name.codePointAt(i);
+      if (isValidLegacyMetricChar(codePoint, i) && codePoint != '_') {
+        result.appendCodePoint(codePoint);
+        previousWasUnderscore = false;
+      } else if (!previousWasUnderscore) {
+        result.append('_');
+        previousWasUnderscore = true;
+      }
+      i += Character.charCount(codePoint);
+    }
+    return result.toString();
+  }
+
+  private static boolean isValidLegacyMetricChar(int codePoint, int index) {
+    return (codePoint >= 'a' && codePoint <= 'z')
+        || (codePoint >= 'A' && codePoint <= 'Z')
+        || codePoint == '_'
+        || codePoint == ':'
+        || (codePoint >= '0' && codePoint <= '9' && index > 0);
+  }
+
+  private MetricMetadata convertMetadata(MetricData metricData, boolean isCounter) {
+    switch (translationStrategy) {
+      case UNDERSCORE_ESCAPING_WITH_SUFFIXES:
+        return convertMetadataEscapedWithSuffixes(metricData);
+      case UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES:
+        return convertMetadataEscapedWithoutSuffixes(metricData);
+      case NO_UTF8_ESCAPING_WITH_SUFFIXES:
+        return convertMetadataUtf8WithSuffixes(metricData, isCounter);
+      case NO_TRANSLATION:
+        return convertMetadataNoTranslation(metricData);
+    }
+    throw new IllegalStateException("Unknown strategy: " + translationStrategy);
+  }
+
+  private static MetricMetadata convertMetadataEscapedWithSuffixes(MetricData metricData) {
+    String originalName = metricData.getName();
+    String name = stripReservedMetricSuffixes(convertLegacyMetricName(originalName));
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
       name = name + "_" + unit;
     }
-    // Repeated __ are discouraged according to spec, although this is allowed in prometheus, see
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/prometheus_and_openmetrics.md#metric-metadata-1
-    while (name.contains("__")) {
-      name = name.replace("__", "_");
-    }
-
-    return new MetricMetadata(name, help, unit);
+    validateNormalizedMetricName(originalName, name);
+    return MetricMetadata.builder().name(name).help(help).unit(unit).build();
   }
 
-  private static void putOrMerge(
-      Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
-    String name = snapshot.getMetadata().getPrometheusName();
+  private static MetricMetadata convertMetadataEscapedWithoutSuffixes(MetricData metricData) {
+    String originalName = metricData.getName();
+    String name = stripReservedMetricSuffixes(convertLegacyMetricName(originalName));
+    String help = metricData.getDescription();
+    validateNormalizedMetricName(originalName, name);
+    return MetricMetadata.builder().name(name).help(help).build();
+  }
+
+  private static MetricMetadata convertMetadataUtf8WithSuffixes(
+      MetricData metricData, boolean isCounter) {
+    String name = metricData.getName();
+    String help = metricData.getDescription();
+    Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
+    if (unit != null && !name.endsWith(unit.toString())) {
+      name = name + "_" + unit;
+    }
+    return MetricMetadata.builder()
+        .name(stripReservedMetricSuffixes(name))
+        .help(help)
+        .unit(unit)
+        .counterSuffix(isCounter)
+        .build();
+  }
+
+  private static MetricMetadata convertMetadataNoTranslation(MetricData metricData) {
+    String name = stripReservedMetricSuffixes(metricData.getName());
+    String help = metricData.getDescription();
+    return MetricMetadata.builder().name(name).help(help).build();
+  }
+
+  private static String stripReservedMetricSuffixes(String name) {
+    boolean modified = true;
+    while (modified) {
+      modified = false;
+      for (String suffix : PrometheusUnitsHelper.RESERVED_SUFFIXES) {
+        if (name.equals(suffix)) {
+          return name.substring(1);
+        }
+        if (name.endsWith(suffix)) {
+          name = name.substring(0, name.length() - suffix.length());
+          modified = true;
+        }
+      }
+    }
+    return name;
+  }
+
+  private void putOrMerge(Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
+    MetricMetadata metadata = snapshot.getMetadata();
+    String name =
+        shouldEscape(translationStrategy) ? metadata.getPrometheusName() : metadata.getName();
     if (snapshotsByName.containsKey(name)) {
       MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {
@@ -583,6 +902,26 @@ final class Otel2PrometheusConverter {
     }
   }
 
+  private static boolean shouldEscape(TranslationStrategy translationStrategy) {
+    return translationStrategy == TranslationStrategy.UNDERSCORE_ESCAPING_WITH_SUFFIXES
+        || translationStrategy == TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES;
+  }
+
+  private static void validateNormalizedMetricName(String originalName, String normalizedName) {
+    if (normalizedName.isEmpty()) {
+      throw new IllegalArgumentException(
+          "normalization for metric \"" + originalName + "\" resulted in empty name");
+    }
+    if (containsOnlyUnderscores(normalizedName)) {
+      throw new IllegalArgumentException(
+          "normalization for metric \""
+              + originalName
+              + "\" resulted in invalid name \""
+              + normalizedName
+              + "\"");
+    }
+  }
+
   /**
    * OpenTelemetry may use the same metric name multiple times but in different instrumentation
    * scopes. In that case, we try to merge the metrics. They will have different {@code
@@ -590,7 +929,7 @@ final class Otel2PrometheusConverter {
    * type. If the type differs, we log a message and drop one of them.
    */
   @Nullable
-  private static MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
+  private MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
     MetricMetadata metadata = mergeMetadata(a.getMetadata(), b.getMetadata());
     if (metadata == null) {
       return null;
@@ -622,7 +961,7 @@ final class Otel2PrometheusConverter {
       dataPoints.addAll(((InfoSnapshot) b).getDataPoints());
       return new InfoSnapshot(metadata, dataPoints);
     } else {
-      THROTTLING_LOGGER.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Conflicting metric name "
               + a.getMetadata().getPrometheusName()
@@ -638,7 +977,7 @@ final class Otel2PrometheusConverter {
   }
 
   @Nullable
-  private static MetricMetadata mergeMetadata(MetricMetadata a, MetricMetadata b) {
+  private MetricMetadata mergeMetadata(MetricMetadata a, MetricMetadata b) {
     String name = a.getPrometheusName();
     if (a.getName().equals(b.getName())) {
       name = a.getName();
@@ -649,7 +988,7 @@ final class Otel2PrometheusConverter {
     }
     Unit unit = a.getUnit();
     if (unit != null && !unit.equals(b.getUnit())) {
-      THROTTLING_LOGGER.log(
+      throttlingLogger.log(
           Level.WARNING,
           "Conflicting metrics: Multiple metrics with name "
               + name
@@ -658,7 +997,7 @@ final class Otel2PrometheusConverter {
               + ".");
       return null;
     }
-    return new MetricMetadata(name, help, unit);
+    return MetricMetadata.builder().name(name).help(help).unit(unit).build();
   }
 
   private static String typeString(MetricSnapshot snapshot) {
@@ -738,5 +1077,24 @@ final class Otel2PrometheusConverter {
     }
     sb.append('"');
     return sb.toString();
+  }
+
+  /** Stores the original attribute key and rendered value for one normalized label collision. */
+  private static final class OriginalLabelKeyValue {
+    private final String originalKey;
+    private final String value;
+
+    private OriginalLabelKeyValue(String originalKey, String value) {
+      this.originalKey = originalKey;
+      this.value = value;
+    }
+
+    private String originalKey() {
+      return originalKey;
+    }
+
+    private String value() {
+      return value;
+    }
   }
 }
