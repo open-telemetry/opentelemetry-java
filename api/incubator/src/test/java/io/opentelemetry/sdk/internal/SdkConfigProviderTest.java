@@ -164,6 +164,52 @@ class SdkConfigProviderTest {
   }
 
   @Test
+  void addConfigChangeListener_closeOnlyRemovesThatRegistration() {
+    SdkConfigProvider provider = SdkConfigProvider.create(config(mapOf()));
+    AtomicInteger firstCallbackCount = new AtomicInteger();
+    AtomicInteger secondCallbackCount = new AtomicInteger();
+    ConfigChangeRegistration firstRegistration =
+        provider.addConfigChangeListener(
+            " . ", (path, newConfig) -> firstCallbackCount.incrementAndGet());
+    ConfigChangeRegistration secondRegistration =
+        provider.addConfigChangeListener(
+            ".", (path, newConfig) -> secondCallbackCount.incrementAndGet());
+
+    firstRegistration.close();
+    provider.setConfig(".value", "updated");
+
+    assertThat(firstCallbackCount).hasValue(0);
+    assertThat(secondCallbackCount).hasValue(1);
+    secondRegistration.close();
+  }
+
+  @Test
+  void addConfigChangeListener_afterShutdownReturnsNoopRegistration() {
+    SdkConfigProvider provider = SdkConfigProvider.create(config(mapOf()));
+    provider.shutdown();
+    provider.shutdown();
+
+    ConfigChangeRegistration registration =
+        provider.addConfigChangeListener(".", (path, newConfig) -> {});
+
+    registration.close();
+    provider.setConfig(".value", "ignored");
+    assertThat(provider.getInstrumentationConfig().getPropertyKeys()).isEmpty();
+  }
+
+  @Test
+  void createAndAddConfigChangeListener_requireNonNullArguments() {
+    SdkConfigProvider provider = SdkConfigProvider.create(config(mapOf()));
+
+    assertThatThrownBy(() -> SdkConfigProvider.create(null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> provider.addConfigChangeListener(".", null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> provider.addConfigChangeListener(null, (path, newConfig) -> {}))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
   void setConfig_replacesSubtreeAndNotifiesListener() {
     SdkConfigProvider provider =
         SdkConfigProvider.create(
@@ -270,6 +316,100 @@ class SdkConfigProviderTest {
     provider.setConfig(".instrumentation/development.general.http.enabled", "true");
 
     assertThat(callbackCount).hasValue(0);
+  }
+
+  @Test
+  void setConfig_supportsAllValueTypes() {
+    SdkConfigProvider provider = emptyProvider();
+    provider.setConfig(".instrumentation/development.string", "value");
+    assertThat(provider.getInstrumentationConfig().getString("string")).isEqualTo("value");
+
+    provider = emptyProvider();
+    provider.setConfig(".instrumentation/development.boolean", true);
+    assertThat(provider.getInstrumentationConfig().getBoolean("boolean")).isTrue();
+
+    provider = emptyProvider();
+    provider.setConfig(".instrumentation/development.long", 1L);
+    assertThat(provider.getInstrumentationConfig().getLong("long")).isEqualTo(1L);
+
+    provider = emptyProvider();
+    provider.setConfig(".instrumentation/development.double", 1.5);
+    assertThat(provider.getInstrumentationConfig().getDouble("double")).isEqualTo(1.5);
+
+    provider = emptyProvider();
+    provider.setConfig(".instrumentation/development.integer", 2);
+    assertThat(provider.getInstrumentationConfig().getInt("integer")).isEqualTo(2);
+
+    provider = emptyProvider();
+    provider.setConfig(".instrumentation/development.structured", config(mapOf("key", "nested")));
+    assertThat(provider.getInstrumentationConfig().getStructured("structured").getString("key"))
+        .isEqualTo("nested");
+
+    provider = emptyProvider();
+    provider.setConfig(".instrumentation/development.strings", Collections.singletonList("entry"));
+    assertThat(provider.getInstrumentationConfig().getScalarList("strings", String.class))
+        .containsExactly("entry");
+
+    provider = emptyProvider();
+    provider.setConfig(
+        ".instrumentation/development.structuredList",
+        Collections.singletonList(config(mapOf("key", "nestedList"))));
+    assertThat(provider.getInstrumentationConfig().getStructuredList("structuredList"))
+        .singleElement()
+        .satisfies(config -> assertThat(config.getString("key")).isEqualTo("nestedList"));
+  }
+
+  @Test
+  void setConfig_rejectsNullAndUnsupportedValues() {
+    SdkConfigProvider provider = SdkConfigProvider.create(config(mapOf()));
+
+    assertThatThrownBy(() -> provider.setConfig(".value", null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> provider.setConfig(".value", new Object()))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining(Object.class.getName());
+    assertThatThrownBy(() -> provider.setConfig(".value", Collections.singletonList(new Object())))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining(Object.class.getName());
+    assertThatThrownBy(() -> provider.setConfig(".value", Collections.singletonList(null)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("null");
+  }
+
+  @Test
+  void setConfig_rejectsTypeChanges() {
+    SdkConfigProvider provider =
+        SdkConfigProvider.create(
+            config(
+                mapOf(
+                    "mapping",
+                    mapOf("key", "value"),
+                    "list",
+                    Collections.singletonList("value"),
+                    "scalar",
+                    "value")));
+
+    assertThatThrownBy(() -> provider.setConfig(".mapping", "value"))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessageContaining("mapping")
+        .hasMessageContaining("String");
+    assertThatThrownBy(() -> provider.setConfig(".list", "value"))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessageContaining("list")
+        .hasMessageContaining("String");
+    assertThatThrownBy(() -> provider.setConfig(".scalar", true))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessageContaining("String")
+        .hasMessageContaining("Boolean");
+  }
+
+  @Test
+  void toString_includesInstrumentationConfig() {
+    SdkConfigProvider provider =
+        SdkConfigProvider.create(
+            config(mapOf("instrumentation/development", mapOf("enabled", true))));
+
+    assertThat(provider.toString()).startsWith("SdkConfigProvider{instrumentationConfig=");
   }
 
   @Test
@@ -388,6 +528,10 @@ class SdkConfigProviderTest {
 
   private static DeclarativeConfigProperties config(Map<String, Object> root) {
     return new MapBackedDeclarativeConfigProperties(root);
+  }
+
+  private static SdkConfigProvider emptyProvider() {
+    return SdkConfigProvider.create(config(mapOf("instrumentation/development", mapOf())));
   }
 
   private static Map<String, Object> mapOf(Object... entries) {
