@@ -64,6 +64,13 @@ public final class SdkConfigProvider implements ConfigProvider {
     return openTelemetryConfigModel.get("instrumentation/development");
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Callbacks for the same registration are never invoked concurrently. They are invoked in the
+   * order that the corresponding configuration updates are accepted, without holding an internal
+   * synchronization lock.
+   */
   @Override
   public ConfigChangeRegistration addConfigChangeListener(
       String path, ConfigChangeListener listener) {
