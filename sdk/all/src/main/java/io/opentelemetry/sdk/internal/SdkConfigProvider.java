@@ -12,6 +12,7 @@ import io.opentelemetry.api.incubator.config.ConfigChangeRegistration;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +39,9 @@ public final class SdkConfigProvider implements ConfigProvider {
   private volatile DeclarativeConfigProperties openTelemetryConfigModel;
   private final ConcurrentMap<String, CopyOnWriteArrayList<ListenerRegistration>> listenersByPath =
       new ConcurrentHashMap<>();
+  private final ArrayDeque<PendingNotification> pendingNotifications = new ArrayDeque<>();
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+  private boolean isDrainingNotifications;
 
   private SdkConfigProvider(DeclarativeConfigProperties openTelemetryConfigModel) {
     this.openTelemetryConfigModel = requireNonNull(openTelemetryConfigModel);
@@ -115,6 +118,7 @@ public final class SdkConfigProvider implements ConfigProvider {
     if (isShutdown.get()) {
       return;
     }
+    boolean shouldDrainNotifications;
     synchronized (lock) {
       DeclarativeConfigProperties current = openTelemetryConfigModel;
       Map<String, Object> currentRootMap = DeclarativeConfigProperties.toMap(current);
@@ -123,11 +127,20 @@ public final class SdkConfigProvider implements ConfigProvider {
           withValueAtPath(currentRootMap, parentPath, key, normalizedValue, normalizedPath);
       openTelemetryConfigModel =
           YamlDeclarativeConfigProperties.create(newRootMap, current.getComponentLoader());
-      notifyListeners(current, openTelemetryConfigModel);
+      enqueueNotifications(current, openTelemetryConfigModel);
+      shouldDrainNotifications =
+          !isDrainingNotifications && !pendingNotifications.isEmpty() && !isShutdown.get();
+      if (shouldDrainNotifications) {
+        isDrainingNotifications = true;
+      }
+    }
+    if (shouldDrainNotifications) {
+      drainNotifications();
     }
   }
 
-  private void notifyListeners(
+  // Must be called with lock held.
+  private void enqueueNotifications(
       DeclarativeConfigProperties previous, DeclarativeConfigProperties updated) {
     if (isShutdown.get()) {
       return;
@@ -143,8 +156,26 @@ public final class SdkConfigProvider implements ConfigProvider {
       }
 
       for (ListenerRegistration registration : entry.getValue()) {
-        registration.notifyChange(watchedPath, updatedConfigAtPath);
+        pendingNotifications.add(
+            new PendingNotification(registration, watchedPath, updatedConfigAtPath));
       }
+    }
+  }
+
+  private void drainNotifications() {
+    while (true) {
+      PendingNotification notification;
+      synchronized (lock) {
+        do {
+          notification = pendingNotifications.poll();
+        } while (notification != null && notification.registration.closed);
+        if (notification == null) {
+          isDrainingNotifications = false;
+          return;
+        }
+      }
+      notification.registration.notifyChange(
+          notification.changedPath, notification.updatedConfigAtPath);
     }
   }
 
@@ -154,6 +185,7 @@ public final class SdkConfigProvider implements ConfigProvider {
         return;
       }
       listenersByPath.clear();
+      pendingNotifications.clear();
     }
   }
 
@@ -367,6 +399,8 @@ public final class SdkConfigProvider implements ConfigProvider {
   private final class ListenerRegistration implements ConfigChangeRegistration {
     private final String watchedPath;
     private final ConfigChangeListener listener;
+    // Guarded by lock.
+    private boolean closed;
 
     private ListenerRegistration(String watchedPath, ConfigChangeListener listener) {
       this.watchedPath = watchedPath;
@@ -376,6 +410,10 @@ public final class SdkConfigProvider implements ConfigProvider {
     @Override
     public void close() {
       synchronized (lock) {
+        if (closed) {
+          return;
+        }
+        closed = true;
         CopyOnWriteArrayList<ListenerRegistration> registrations = listenersByPath.get(watchedPath);
         if (registrations == null) {
           return;
@@ -396,6 +434,21 @@ public final class SdkConfigProvider implements ConfigProvider {
             "Config change listener threw while handling path " + changedPath,
             throwable);
       }
+    }
+  }
+
+  private static final class PendingNotification {
+    private final ListenerRegistration registration;
+    private final String changedPath;
+    private final DeclarativeConfigProperties updatedConfigAtPath;
+
+    private PendingNotification(
+        ListenerRegistration registration,
+        String changedPath,
+        DeclarativeConfigProperties updatedConfigAtPath) {
+      this.registration = registration;
+      this.changedPath = changedPath;
+      this.updatedConfigAtPath = updatedConfigAtPath;
     }
   }
 

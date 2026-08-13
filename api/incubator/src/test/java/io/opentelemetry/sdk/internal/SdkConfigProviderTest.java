@@ -164,6 +164,41 @@ class SdkConfigProviderTest {
   }
 
   @Test
+  void addConfigChangeListener_callbackDoesNotHoldConfigLock() throws Exception {
+    SdkConfigProvider provider =
+        SdkConfigProvider.create(config(mapOf("watched", mapOf("enabled", "false"))));
+    CountDownLatch callbackStarted = new CountDownLatch(1);
+    CountDownLatch releaseCallback = new CountDownLatch(1);
+    provider.addConfigChangeListener(
+        ".watched",
+        (path, newConfig) -> {
+          callbackStarted.countDown();
+          try {
+            releaseCallback.await();
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError(e);
+          }
+        });
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    Future<?> callbackUpdate =
+        executor.submit(() -> provider.setConfig(".watched", config(mapOf("enabled", "true"))));
+
+    try {
+      assertThat(callbackStarted.await(5, TimeUnit.SECONDS)).isTrue();
+      Future<?> concurrentUpdate =
+          executor.submit(() -> provider.setConfig(".other", config(mapOf("enabled", "true"))));
+
+      concurrentUpdate.get(1, TimeUnit.SECONDS);
+      releaseCallback.countDown();
+      callbackUpdate.get(5, TimeUnit.SECONDS);
+    } finally {
+      releaseCallback.countDown();
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
   void addConfigChangeListener_closeOnlyRemovesThatRegistration() {
     SdkConfigProvider provider = SdkConfigProvider.create(config(mapOf()));
     AtomicInteger firstCallbackCount = new AtomicInteger();
