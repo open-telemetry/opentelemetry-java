@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.incubator.config;
 
+import javax.annotation.Nullable;
+
 /** Listener notified when declarative configuration changes. */
 @FunctionalInterface
 public interface ConfigChangeListener {
@@ -16,11 +18,11 @@ public interface ConfigChangeListener {
    * .instrumentation/development.general.http} or {@code
    * .instrumentation/development.java.methods}.
    *
-   * <p>{@code newConfig} is never null. If the watched node is unset or cleared, {@code newConfig}
-   * is {@link DeclarativeConfigProperties#empty()}.
+   * <p>If the watched node is unset, cleared, or no longer resolves to a mapping node, {@code
+   * newConfig} is null.
    *
    * @param path the declarative configuration path that changed
    * @param newConfig the updated configuration for the changed path
    */
-  void onChange(String path, DeclarativeConfigProperties newConfig);
+  void onChange(String path, @Nullable DeclarativeConfigProperties newConfig);
 }

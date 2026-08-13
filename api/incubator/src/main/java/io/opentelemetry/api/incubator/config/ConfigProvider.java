@@ -74,7 +74,7 @@ public interface ConfigProvider {
    *
    * <p>When a watched path changes, {@link ConfigChangeListener#onChange(String,
    * DeclarativeConfigProperties)} is invoked with the changed path and updated configuration for
-   * that path.
+   * that path, or null if the path is unset, cleared, or no longer resolves to a mapping node.
    *
    * <p>The default implementation performs no registration and returns a no-op handle.
    *

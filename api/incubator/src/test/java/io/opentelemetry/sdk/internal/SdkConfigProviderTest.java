@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.internal;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -42,7 +43,8 @@ class SdkConfigProviderTest {
     ConfigChangeRegistration registration =
         provider.addConfigChangeListener(
             ".instrumentation/development.general.http",
-            (path, newConfig) -> notifications.add(path + "=" + newConfig.getString("enabled")));
+            (path, newConfig) ->
+                notifications.add(path + "=" + requireNonNull(newConfig).getString("enabled")));
 
     provider.setConfig(
         ".instrumentation/development",
@@ -90,21 +92,51 @@ class SdkConfigProviderTest {
   }
 
   @Test
-  void addConfigChangeListener_returnsEmptyNodeWhenWatchedPathCleared() {
+  void addConfigChangeListener_returnsNullWhenWatchedPathCleared() {
     SdkConfigProvider provider =
         SdkConfigProvider.create(
             config(
                 mapOf(
                     "instrumentation/development",
                     mapOf("general", mapOf("http", mapOf("enabled", "true"))))));
-    List<Set<String>> propertyKeysSeen = new ArrayList<>();
+    List<Boolean> configsWereNull = new ArrayList<>();
     provider.addConfigChangeListener(
         ".instrumentation/development.general.http",
-        (path, newConfig) -> propertyKeysSeen.add(newConfig.getPropertyKeys()));
+        (path, newConfig) -> configsWereNull.add(newConfig == null));
 
     provider.setConfig(".instrumentation/development", config(mapOf("general", mapOf())));
 
-    assertThat(propertyKeysSeen).containsExactly(Collections.emptySet());
+    assertThat(configsWereNull).containsExactly(true);
+  }
+
+  @Test
+  void addConfigChangeListener_returnsNullWhenWatchedPathIsNoLongerMapping() {
+    SdkConfigProvider provider =
+        SdkConfigProvider.create(
+            config(mapOf("parent", mapOf("watched", mapOf("enabled", "true")))));
+    List<Boolean> configsWereNull = new ArrayList<>();
+    provider.addConfigChangeListener(
+        ".parent.watched", (path, newConfig) -> configsWereNull.add(newConfig == null));
+
+    provider.setConfig(".parent", config(mapOf("watched", "disabled")));
+
+    assertThat(configsWereNull).containsExactly(true);
+  }
+
+  @Test
+  void addConfigChangeListener_returnsConfigForExplicitlyEmptyMapping() {
+    SdkConfigProvider provider =
+        SdkConfigProvider.create(config(mapOf("watched", mapOf("enabled", "true"))));
+    List<Boolean> configsWereEmpty = new ArrayList<>();
+    provider.addConfigChangeListener(
+        ".watched",
+        (path, newConfig) ->
+            configsWereEmpty.add(
+                newConfig != null && newConfig.getPropertyKeys().equals(Collections.emptySet())));
+
+    provider.setConfig(".watched", config(mapOf()));
+
+    assertThat(configsWereEmpty).containsExactly(true);
   }
 
   @Test
@@ -255,7 +287,8 @@ class SdkConfigProviderTest {
     List<String> notifications = new ArrayList<>();
     provider.addConfigChangeListener(
         ".instrumentation/development.general.http",
-        (path, newConfig) -> notifications.add(path + "=" + newConfig.getString("enabled")));
+        (path, newConfig) ->
+            notifications.add(path + "=" + requireNonNull(newConfig).getString("enabled")));
 
     provider.setConfig(
         ".instrumentation/development.general.http", config(mapOf("enabled", "true")));
@@ -288,7 +321,8 @@ class SdkConfigProviderTest {
     List<String> notifications = new ArrayList<>();
     provider.addConfigChangeListener(
         ".instrumentation/development.general.http",
-        (path, newConfig) -> notifications.add(path + "=" + newConfig.getString("enabled")));
+        (path, newConfig) ->
+            notifications.add(path + "=" + requireNonNull(newConfig).getString("enabled")));
 
     provider.setConfig(
         ".instrumentation/development.general.http", config(mapOf("enabled", "true")));
@@ -328,7 +362,8 @@ class SdkConfigProviderTest {
     List<String> notifications = new ArrayList<>();
     provider.addConfigChangeListener(
         ".instrumentation/development.general.http",
-        (path, newConfig) -> notifications.add(path + "=" + newConfig.getString("enabled")));
+        (path, newConfig) ->
+            notifications.add(path + "=" + requireNonNull(newConfig).getString("enabled")));
 
     provider.setConfig(".instrumentation/development.general.http.enabled", "true");
 
@@ -458,7 +493,7 @@ class SdkConfigProviderTest {
     List<String> notifications = new CopyOnWriteArrayList<>();
     provider.addConfigChangeListener(
         ".instrumentation/development.general.http",
-        (path, newConfig) -> notifications.add(newConfig.getString("count")));
+        (path, newConfig) -> notifications.add(requireNonNull(newConfig).getString("count")));
 
     int threadCount = 10;
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);

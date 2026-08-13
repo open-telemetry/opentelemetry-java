@@ -23,6 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * SDK implementation of {@link ConfigProvider}.
@@ -149,8 +150,9 @@ public final class SdkConfigProvider implements ConfigProvider {
     for (Map.Entry<String, CopyOnWriteArrayList<ListenerRegistration>> entry :
         listenersByPath.entrySet()) {
       String watchedPath = entry.getKey();
+      @Nullable
       DeclarativeConfigProperties previousConfigAtPath = resolvePath(previous, watchedPath);
-      DeclarativeConfigProperties updatedConfigAtPath = resolvePath(updated, watchedPath);
+      @Nullable DeclarativeConfigProperties updatedConfigAtPath = resolvePath(updated, watchedPath);
       if (hasSameContents(previousConfigAtPath, updatedConfigAtPath)) {
         continue;
       }
@@ -268,10 +270,18 @@ public final class SdkConfigProvider implements ConfigProvider {
   // But note that we only do this on a mutation, and these are expected to be infrquent
   // so maybe acceptable
   private static boolean hasSameContents(
-      DeclarativeConfigProperties left, DeclarativeConfigProperties right) {
+      @Nullable DeclarativeConfigProperties left, @Nullable DeclarativeConfigProperties right) {
+    if (left == null) {
+      return right == null;
+    }
+    if (right == null) {
+      return false;
+    }
     return DeclarativeConfigProperties.toMap(left).equals(DeclarativeConfigProperties.toMap(right));
   }
 
+  @SuppressWarnings("unchecked")
+  @Nullable
   private static DeclarativeConfigProperties resolvePath(
       DeclarativeConfigProperties root, String watchedPath) {
     String relativePath = watchedPath.substring(1);
@@ -279,15 +289,19 @@ public final class SdkConfigProvider implements ConfigProvider {
       return root;
     }
 
-    DeclarativeConfigProperties current = root;
+    @Nullable Object current = DeclarativeConfigProperties.toMap(root);
     String[] segments = relativePath.split("\\.");
     for (String segment : segments) {
-      if (segment.isEmpty()) {
-        return DeclarativeConfigProperties.empty();
+      if (!(current instanceof Map)) {
+        return null;
       }
-      current = current.get(segment);
+      current = ((Map<String, Object>) current).get(segment);
     }
-    return current;
+    if (!(current instanceof Map)) {
+      return null;
+    }
+    return YamlDeclarativeConfigProperties.create(
+        (Map<String, Object>) current, root.getComponentLoader());
   }
 
   private static void validateTypeUnchanged(
@@ -425,7 +439,8 @@ public final class SdkConfigProvider implements ConfigProvider {
       }
     }
 
-    private void notifyChange(String changedPath, DeclarativeConfigProperties updatedConfigAtPath) {
+    private void notifyChange(
+        String changedPath, @Nullable DeclarativeConfigProperties updatedConfigAtPath) {
       try {
         listener.onChange(changedPath, updatedConfigAtPath);
       } catch (Throwable throwable) {
@@ -440,12 +455,12 @@ public final class SdkConfigProvider implements ConfigProvider {
   private static final class PendingNotification {
     private final ListenerRegistration registration;
     private final String changedPath;
-    private final DeclarativeConfigProperties updatedConfigAtPath;
+    @Nullable private final DeclarativeConfigProperties updatedConfigAtPath;
 
     private PendingNotification(
         ListenerRegistration registration,
         String changedPath,
-        DeclarativeConfigProperties updatedConfigAtPath) {
+        @Nullable DeclarativeConfigProperties updatedConfigAtPath) {
       this.registration = registration;
       this.changedPath = changedPath;
       this.updatedConfigAtPath = updatedConfigAtPath;
