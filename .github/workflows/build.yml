@@ -59,6 +59,11 @@ jobs:
 
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          # Keep one writer per OS because Gradle User Home caches are platform-specific.
+          cache-read-only: ${{ github.ref_name != github.event.repository.default_branch || matrix.test-java-version != 25 }}
+          gradle-home-cache-excludes: >-
+            ${{ secrets.DEVELOCITY_ACCESS_KEY != '' && github.ref_name == github.event.repository.default_branch && matrix.test-java-version == 25 && 'caches/build-cache-1' || '' }}
       - name: Build
         run: >
             ./gradlew build

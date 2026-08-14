@@ -78,6 +78,10 @@ val develocityServer = "https://develocity.opentelemetry.io"
 val isCI = System.getenv("CI") != null
 val develocityAccessKey = System.getenv("DEVELOCITY_ACCESS_KEY") ?: ""
 val disableRemoteBuildCache = System.getenv("DISABLE_REMOTE_BUILD_CACHE") != null
+val isRemoteBuildCachePushEnabled =
+  isCI && develocityAccessKey.isNotEmpty() && !disableRemoteBuildCache
+val shouldDisableLocalBuildCache =
+  isRemoteBuildCachePushEnabled && System.getenv("GITHUB_REF_NAME") == "main"
 
 develocity {
   if (develocityAccessKey.isNotEmpty()) {
@@ -111,9 +115,15 @@ develocity {
 }
 
 buildCache {
-  remote(HttpBuildCache::class) {
-    url = uri("$develocityServer/cache/")
+  // Tasks loaded from the local cache are not pushed to the remote cache. Disable the local cache
+  // on default-branch CI builds so executed tasks populate the authenticated Develocity cache.
+  local {
+    isEnabled = !shouldDisableLocalBuildCache
+  }
+
+  remote(develocity.buildCache) {
+    server = develocityServer
     isEnabled = !disableRemoteBuildCache
-    isPush = isCI && develocityAccessKey.isNotEmpty()
+    isPush = isRemoteBuildCachePushEnabled
   }
 }
