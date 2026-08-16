@@ -52,4 +52,9 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
   }
+
+  @Override
+  public String toString() {
+    return "OtlpJsonLoggingSpanExporter{}";
+  }
 }

@@ -84,4 +84,9 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     return aggregationTemporality;
   }
+
+  @Override
+  public String toString() {
+    return "OtlpJsonLoggingMetricExporter{aggregationTemporality=" + aggregationTemporality + "}";
+  }
 }
