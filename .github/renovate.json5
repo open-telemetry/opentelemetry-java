@@ -14,7 +14,8 @@
     // ── Scheduling & grouping ──────────────────────────────────────────
 
     {
-      // group all patch updates into a single weekly PR
+      // group all patch and minor updates into a single weekly PR
+      // (OpenTelemetry artifacts are excluded so that dogfooding and cascaded releases land individually)
       groupName: 'all patch and minor versions',
       matchUpdateTypes: [
         'patch',
@@ -22,6 +23,10 @@
       ],
       schedule: [
         '* 0-7 * * 2', // weekly, before 8am on Tuesday
+      ],
+      matchPackageNames: [
+        '!io.opentelemetry**',
+        '!open-telemetry/**',
       ],
     },
     {
