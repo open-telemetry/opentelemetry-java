@@ -71,7 +71,7 @@ public final class StringEncoderHolder {
     if (!proactivelyAvoidUnsafe()) {
       StringEncoder unsafeImpl = createUnsafeEncoder();
       if (unsafeImpl != null) {
-        logger.log(Level.FINE, "Using UnsafeStringEncoder for optimized Java 8+ performance");
+        logger.log(Level.FINE, "Using UnsafeStringEncoder for optimized Java 9+ performance");
         return unsafeImpl;
       }
     }
