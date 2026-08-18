@@ -1,5 +1,11 @@
 # OpenTelemetry OpenCensus Shim
 
+> [!WARNING]
+> OpenCensus compatibility is deprecated in the OpenTelemetry specification, and this shim is
+> deprecated accordingly. It remains available for legacy compatibility, but users should migrate
+> OpenCensus instrumentation to the OpenTelemetry APIs. See the
+> [OpenTelemetry specification guidance on OpenCensus compatibility](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/compatibility/opencensus.md).
+
 The OpenCensus shim allows applications and libraries that are instrumented
 with OpenTelemetry, but depend on other libraries instrumented with OpenCensus,
 to export trace spans from both OpenTelemetry and OpenCensus with the correct

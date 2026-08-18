@@ -13,7 +13,6 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.internal.OtlpSpanExporterProvider;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -164,14 +163,14 @@ class ConfigurableSpanExporterTest {
 
   @Test
   void configureSpanProcessors_batchSpanProcessor() {
-    String exporterName = "zipkin";
+    String exporterName = "noop";
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
         TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
-            ImmutableMap.of(exporterName, ZipkinSpanExporter.builder().build()),
+            ImmutableMap.of(exporterName, SpanExporter.noop()),
             InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
@@ -188,12 +187,9 @@ class ConfigurableSpanExporterTest {
     List<SpanProcessor> spanProcessors =
         TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
-                Collections.singletonMap("otel.traces.exporter", "otlp,zipkin")),
+                Collections.singletonMap("otel.traces.exporter", "otlp,noop")),
             ImmutableMap.of(
-                "otlp",
-                OtlpGrpcSpanExporter.builder().build(),
-                "zipkin",
-                ZipkinSpanExporter.builder().build()),
+                "otlp", OtlpGrpcSpanExporter.builder().build(), "noop", SpanExporter.noop()),
             InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);
@@ -217,7 +213,7 @@ class ConfigurableSpanExporterTest {
                       spanExporters -> {
                         assertThat(spanExporters.length).isEqualTo(2);
                         assertThat(spanExporters)
-                            .hasAtLeastOneElementOfType(ZipkinSpanExporter.class)
+                            .hasAtLeastOneElementOfType(SpanExporter.noop().getClass())
                             .hasAtLeastOneElementOfType(OtlpGrpcSpanExporter.class);
                       });
             });
@@ -231,12 +227,8 @@ class ConfigurableSpanExporterTest {
     List<SpanProcessor> spanProcessors =
         TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
-                Collections.singletonMap("otel.traces.exporter", "logging,zipkin")),
-            ImmutableMap.of(
-                "logging",
-                LoggingSpanExporter.create(),
-                "zipkin",
-                ZipkinSpanExporter.builder().build()),
+                Collections.singletonMap("otel.traces.exporter", "logging,noop")),
+            ImmutableMap.of("logging", LoggingSpanExporter.create(), "noop", SpanExporter.noop()),
             InternalTelemetryVersion.LEGACY,
             MeterProvider.noop(),
             closeables);

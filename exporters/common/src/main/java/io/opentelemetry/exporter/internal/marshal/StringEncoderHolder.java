@@ -39,6 +39,12 @@ public final class StringEncoderHolder {
    */
   @Nullable
   public static StringEncoder createUnsafeEncoder() {
+    // Android exposes sun.misc.Unsafe, but String does not have the OpenJDK internal fields used by
+    // UnsafeStringEncoder. ART logs an error when these missing fields are queried, even though the
+    // exception is caught.
+    if ("Dalvik".equals(System.getProperty("java.vm.name"))) {
+      return null;
+    }
     return UnsafeStringEncoder.createIfAvailable();
   }
 

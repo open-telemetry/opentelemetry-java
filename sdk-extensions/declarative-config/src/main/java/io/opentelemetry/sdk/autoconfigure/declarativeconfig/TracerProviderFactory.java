@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TracerProvider
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalTracerMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.TracerProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -72,7 +73,7 @@ final class TracerProviderFactory
     }
 
     ExperimentalTracerConfiguratorModel tracerConfiguratorModel =
-        tracerProviderModel.getTracerConfiguratorDevelopment();
+        TracerProviderModelAccessor.getTracerConfigurator(tracerProviderModel);
     if (tracerConfiguratorModel != null) {
       ExperimentalTracerConfigModel defaultConfigModel = tracerConfiguratorModel.getDefaultConfig();
       ScopeConfiguratorBuilder<TracerConfig> configuratorBuilder = ScopeConfigurator.builder();

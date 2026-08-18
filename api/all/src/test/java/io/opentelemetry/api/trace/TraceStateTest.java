@@ -306,29 +306,29 @@ class TraceStateTest {
   }
 
   @Test
-  void removeTwice() {
+  void removeSameKeyTwice() {
     assertThat(firstTraceState.toBuilder().remove(FIRST_KEY).remove(FIRST_KEY).build())
         .isEqualTo(TraceState.getDefault());
   }
 
   @Test
-  void removeTwice_KeepsRemainingEntry() {
+  void removeSameKeyTwice_KeepsRemainingEntry() {
     assertThat(multiValueTraceState.toBuilder().remove(FIRST_KEY).remove(FIRST_KEY).build().asMap())
         .containsExactly(entry(SECOND_KEY, SECOND_VALUE));
   }
 
   @Test
-  void removeTwice_KeepsRemainingEntries() {
+  void removeSameKeyTwice_KeepsRemainingEntries() {
     assertThat(
             TraceState.builder()
                 .put(FIRST_KEY, FIRST_VALUE)
                 .put(SECOND_KEY, SECOND_VALUE)
                 .put(THIRD_KEY, THIRD_VALUE)
-                .remove(FIRST_KEY)
-                .remove(FIRST_KEY)
+                .remove(SECOND_KEY)
+                .remove(SECOND_KEY)
                 .build()
                 .asMap())
-        .containsExactly(entry(THIRD_KEY, THIRD_VALUE), entry(SECOND_KEY, SECOND_VALUE));
+        .containsExactly(entry(THIRD_KEY, THIRD_VALUE), entry(FIRST_KEY, FIRST_VALUE));
   }
 
   @Test

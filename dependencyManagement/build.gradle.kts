@@ -31,11 +31,9 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:33.6.0-jre",
   "com.google.protobuf:protobuf-bom:4.35.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
-  "com.squareup.okio:okio-bom:3.18.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.83.0",
+  "com.squareup.okio:okio-bom:3.18.1", // applies to transitive dependencies of okhttp
+  "io.grpc:grpc-bom:1.83.1",
   "io.netty:netty-bom:4.2.16.Final",
-  "io.zipkin.brave:brave-bom:6.3.1",
-  "io.zipkin.reporter2:zipkin-reporter-bom:3.5.3",
   "org.assertj:assertj-bom:3.27.7",
   "org.osgi:org.osgi.test.bom:1.3.0",
   "org.testcontainers:testcontainers-bom:2.0.5",
@@ -74,12 +72,12 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.73.0",
+  "com.google.api.grpc:proto-google-common-protos:2.74.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.squareup.okhttp3:okhttp:$okhttpVersion",
-  "com.tngtech.archunit:archunit-junit5:1.4.2",
+  "com.tngtech.archunit:archunit-junit5:1.5.0",
   "com.uber.nullaway:nullaway:0.13.8",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.11",
@@ -92,10 +90,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:1.11.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
-  // zipkin-reporter-bom depends on zipkin v2.x for java 6 compatibility
-  // we only need java 8 compatibility. upgrade to 3.x to avoid problematic shaded gson dependency version
-  // See: https://github.com/open-telemetry/opentelemetry-java/issues/8427
-  "io.zipkin.zipkin2:zipkin:3.6.1",
+  "io.zipkin.brave:brave:6.3.1",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.19.4",
   "org.apache.aries.spifly:org.apache.aries.spifly.dynamic.bundle:1.3.7",

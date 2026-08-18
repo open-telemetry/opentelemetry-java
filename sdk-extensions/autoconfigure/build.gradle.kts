@@ -76,7 +76,6 @@ testing {
         implementation("io.prometheus:prometheus-metrics-exporter-httpserver") {
           exclude(group = "io.prometheus", module = "prometheus-metrics-exposition-formats")
         }
-        implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
         implementation(project(":sdk-extensions:jaeger-remote-sampler"))

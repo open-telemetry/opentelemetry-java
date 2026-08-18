@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel.EXCLUDED;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.IncludeExcludeModel.INCLUDED;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -13,9 +16,12 @@ import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"included", "excluded"})
+@JsonPropertyOrder({INCLUDED, EXCLUDED})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class IncludeExcludeModel {
+
+  static final String INCLUDED = "included";
+  static final String EXCLUDED = "excluded";
 
   @Nullable private List<String> included;
   @Nullable private List<String> excluded;
@@ -32,13 +38,13 @@ public class IncludeExcludeModel {
    *
    * <p>If omitted, all values are included.
    */
-  @JsonProperty("included")
+  @JsonProperty(INCLUDED)
   @Nullable
   public List<String> getIncluded() {
     return included;
   }
 
-  @JsonProperty("included")
+  @JsonProperty(INCLUDED)
   public IncludeExcludeModel withIncluded(List<String> included) {
     this.included = included;
     return this;
@@ -57,13 +63,13 @@ public class IncludeExcludeModel {
    *
    * <p>If omitted, .included attributes are included.
    */
-  @JsonProperty("excluded")
+  @JsonProperty(EXCLUDED)
   @Nullable
   public List<String> getExcluded() {
     return excluded;
   }
 
-  @JsonProperty("excluded")
+  @JsonProperty(EXCLUDED)
   public IncludeExcludeModel withExcluded(List<String> excluded) {
     this.excluded = excluded;
     return this;
