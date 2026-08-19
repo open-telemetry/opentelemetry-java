@@ -63,6 +63,11 @@ jobs:
         # zizmor: ignore[cache-poisoning] This tests release branches but does not
         # publish release artifacts.
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          # Keep one writer per OS because Gradle User Home caches are platform-specific.
+          cache-read-only: ${{ github.ref_name != github.event.repository.default_branch || matrix.test-java-version != 25 }}
+          gradle-home-cache-excludes: >-
+            ${{ secrets.DEVELOCITY_ACCESS_KEY != '' && github.ref_name == github.event.repository.default_branch && matrix.test-java-version == 25 && 'caches/build-cache-1' || '' }}
       - name: Build
         shell: bash
         run: >
@@ -124,7 +129,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: graalvm/setup-graalvm@0def53c0fd8534bc13416c9469f5be45265824fd # v1.6.3
+      - uses: graalvm/setup-graalvm@5298d94fb55a4f185c602eeac5de1b553882abe2 # v1.6.4
         with:
           java-version: ${{ matrix.test-graal-version }}
           distribution: 'graalvm'
