@@ -27,7 +27,8 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
 
   private final Supplier<MeterProvider> meterProvider;
   private final Attributes standardAttrs;
-  private final Attributes droppedAttrs;
+  private final Attributes queueFullAttrs;
+  private final Attributes shutdownAttrs;
 
   @Nullable private Meter meter;
   @Nullable private volatile LongCounter processedSpans;
@@ -42,7 +43,7 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
             componentId.getTypeName(),
             SemConvAttributes.OTEL_COMPONENT_NAME,
             componentId.getComponentName());
-    droppedAttrs =
+    queueFullAttrs =
         Attributes.of(
             SemConvAttributes.OTEL_COMPONENT_TYPE,
             componentId.getTypeName(),
@@ -50,23 +51,29 @@ final class SemConvSpanProcessorInstrumentation implements SpanProcessorInstrume
             componentId.getComponentName(),
             SemConvAttributes.ERROR_TYPE,
             "queue_full");
+    shutdownAttrs =
+        Attributes.of(
+            SemConvAttributes.OTEL_COMPONENT_TYPE,
+            componentId.getTypeName(),
+            SemConvAttributes.OTEL_COMPONENT_NAME,
+            componentId.getComponentName(),
+            SemConvAttributes.ERROR_TYPE,
+            "already_shutdown");
   }
 
   @Override
-  public void dropSpans(int count) {
-    processedSpans().add(count, droppedAttrs);
+  public void dropSpansQueueFull(int count) {
+    processedSpans().add(count, queueFullAttrs);
   }
 
   @Override
-  public void finishSpans(int count, @Nullable String error) {
-    if (error == null) {
-      processedSpans().add(count, standardAttrs);
-      return;
-    }
+  public void dropSpansAlreadyShutdown(int count) {
+    processedSpans().add(count, shutdownAttrs);
+  }
 
-    Attributes attributes =
-        standardAttrs.toBuilder().put(SemConvAttributes.ERROR_TYPE, error).build();
-    processedSpans().add(count, attributes);
+  @Override
+  public void finishSpans(int count) {
+    processedSpans().add(count, standardAttrs);
   }
 
   @Override
