@@ -54,4 +54,9 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
   }
+
+  @Override
+  public String toString() {
+    return "OtlpJsonLoggingLogRecordExporter{}";
+  }
 }
