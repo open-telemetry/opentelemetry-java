@@ -771,9 +771,7 @@ class PeriodicMetricReaderTest {
     // and ensuring it completes successfully
     SlowMetricExporter slowExporter = new SlowMetricExporter(100); // 100ms delay
     PeriodicMetricReader reader =
-        PeriodicMetricReader.builder(slowExporter)
-            .setInterval(Duration.ofMillis(50))
-            .build();
+        PeriodicMetricReader.builder(slowExporter).setInterval(Duration.ofMillis(50)).build();
 
     reader.register(collectionRegistration);
     try {
