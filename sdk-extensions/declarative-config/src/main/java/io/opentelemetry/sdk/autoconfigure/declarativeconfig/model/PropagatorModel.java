@@ -59,7 +59,7 @@ public class PropagatorModel {
   }
 
   @JsonProperty(COMPOSITE)
-  public PropagatorModel withComposite(List<TextMapPropagatorModel> composite) {
+  public PropagatorModel setComposite(List<TextMapPropagatorModel> composite) {
     this.composite = composite;
     return this;
   }
@@ -88,7 +88,7 @@ public class PropagatorModel {
   }
 
   @JsonProperty(COMPOSITE_LIST)
-  public PropagatorModel withCompositeList(String compositeList) {
+  public PropagatorModel setCompositeList(String compositeList) {
     this.compositeList = compositeList;
     return this;
   }
@@ -99,7 +99,7 @@ public class PropagatorModel {
   }
 
   @JsonAnySetter
-  public PropagatorModel withExtensionProperty(String name, @Nullable Object value) {
+  public PropagatorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

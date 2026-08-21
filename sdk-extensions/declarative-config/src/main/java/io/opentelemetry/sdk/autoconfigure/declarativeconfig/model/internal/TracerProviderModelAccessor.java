@@ -41,10 +41,10 @@ public final class TracerProviderModelAccessor {
         ExperimentalTracerConfiguratorModel.class);
   }
 
-  public static TracerProviderModel withTracerConfigurator(
+  public static TracerProviderModel setTracerConfigurator(
       TracerProviderModel model, ExperimentalTracerConfiguratorModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(TRACER_CONFIGURATOR, value);
+    model.setExtensionProperty(TRACER_CONFIGURATOR, value);
     return model;
   }
 }

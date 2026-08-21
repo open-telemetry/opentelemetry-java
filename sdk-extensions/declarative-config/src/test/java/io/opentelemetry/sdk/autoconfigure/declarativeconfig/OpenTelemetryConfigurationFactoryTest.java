@@ -104,7 +104,7 @@ class OpenTelemetryConfigurationFactoryTest {
   @SuppressLogger(OpenTelemetryConfigurationFactory.class)
   void create_FileFormat(String fileFormat, boolean isValid) {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat(fileFormat);
+        new OpenTelemetryConfigurationModel().setFileFormat(fileFormat);
 
     if (isValid) {
       assertThatCode(() -> OpenTelemetryConfigurationFactory.getInstance().create(model, context))
@@ -145,7 +145,7 @@ class OpenTelemetryConfigurationFactoryTest {
   @SuppressLogger(OpenTelemetryConfigurationFactory.class)
   void create_FileFormatVersionMismatch_LogsWarning() {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.3");
+        new OpenTelemetryConfigurationModel().setFileFormat("1.0-rc.3");
 
     ExtendedOpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
@@ -158,7 +158,7 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_FileFormatExactMatch_NoWarning() {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.1");
+        new OpenTelemetryConfigurationModel().setFileFormat("1.1");
 
     ExtendedOpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
@@ -171,7 +171,7 @@ class OpenTelemetryConfigurationFactoryTest {
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().withFileFormat("1.1");
+        new OpenTelemetryConfigurationModel().setFileFormat("1.1");
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder(),
@@ -192,19 +192,19 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .withFileFormat("1.1")
-            .withDisabled(true)
+            .setFileFormat("1.1")
+            .setDisabled(true)
             // Logger provider configuration should be ignored since SDK is disabled
-            .withLoggerProvider(
+            .setLoggerProvider(
                 new LoggerProviderModel()
-                    .withProcessors(
+                    .setProcessors(
                         Collections.singletonList(
                             new LogRecordProcessorModel()
-                                .withSimple(
+                                .setSimple(
                                     new SimpleLogRecordProcessorModel()
-                                        .withExporter(
+                                        .setExporter(
                                             new LogRecordExporterModel()
-                                                .withOtlpHttp(new OtlpHttpExporterModel()))))));
+                                                .setOtlpHttp(new OtlpHttpExporterModel()))))));
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder(),
@@ -235,79 +235,79 @@ class OpenTelemetryConfigurationFactoryTest {
 
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .withFileFormat("1.1")
-            .withPropagator(
-                new PropagatorModel().withCompositeList("tracecontext,baggage,b3multi,b3"))
-            .withResource(
-                ResourceModelAccessor.withDetection(
+            .setFileFormat("1.1")
+            .setPropagator(
+                new PropagatorModel().setCompositeList("tracecontext,baggage,b3multi,b3"))
+            .setResource(
+                ResourceModelAccessor.setDetection(
                         new ResourceModel(),
                         new ExperimentalResourceDetectionModel()
-                            .withDetectors(
+                            .setDetectors(
                                 Arrays.asList(
                                     new ExperimentalResourceDetectorModel()
-                                        .withAdditionalProperty("order_first", null),
+                                        .setAdditionalProperty("order_first", null),
                                     new ExperimentalResourceDetectorModel()
-                                        .withAdditionalProperty("order_second", null),
+                                        .setAdditionalProperty("order_second", null),
                                     new ExperimentalResourceDetectorModel()
-                                        .withAdditionalProperty("shape_color", null))))
-                    .withAttributes(
+                                        .setAdditionalProperty("shape_color", null))))
+                    .setAttributes(
                         Arrays.asList(
                             new AttributeNameValueModel()
-                                .withName("service.name")
-                                .withValue("my-service"),
-                            new AttributeNameValueModel().withName("key").withValue("val"))))
-            .withLoggerProvider(
+                                .setName("service.name")
+                                .setValue("my-service"),
+                            new AttributeNameValueModel().setName("key").setValue("val"))))
+            .setLoggerProvider(
                 new LoggerProviderModel()
-                    .withLimits(
+                    .setLimits(
                         new LogRecordLimitsModel()
-                            .withAttributeValueLengthLimit(1)
-                            .withAttributeCountLimit(2))
-                    .withProcessors(
+                            .setAttributeValueLengthLimit(1)
+                            .setAttributeCountLimit(2))
+                    .setProcessors(
                         Collections.singletonList(
                             new LogRecordProcessorModel()
-                                .withBatch(
+                                .setBatch(
                                     new BatchLogRecordProcessorModel()
-                                        .withExporter(
+                                        .setExporter(
                                             new LogRecordExporterModel()
-                                                .withOtlpHttp(new OtlpHttpExporterModel()))))))
-            .withTracerProvider(
+                                                .setOtlpHttp(new OtlpHttpExporterModel()))))))
+            .setTracerProvider(
                 new TracerProviderModel()
-                    .withLimits(
+                    .setLimits(
                         new SpanLimitsModel()
-                            .withAttributeCountLimit(1)
-                            .withAttributeValueLengthLimit(2)
-                            .withEventCountLimit(3)
-                            .withLinkCountLimit(4)
-                            .withEventAttributeCountLimit(5)
-                            .withLinkAttributeCountLimit(6))
-                    .withSampler(new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
-                    .withProcessors(
+                            .setAttributeCountLimit(1)
+                            .setAttributeValueLengthLimit(2)
+                            .setEventCountLimit(3)
+                            .setLinkCountLimit(4)
+                            .setEventAttributeCountLimit(5)
+                            .setLinkAttributeCountLimit(6))
+                    .setSampler(new SamplerModel().setAlwaysOn(new AlwaysOnSamplerModel()))
+                    .setProcessors(
                         Collections.singletonList(
                             new SpanProcessorModel()
-                                .withBatch(
+                                .setBatch(
                                     new BatchSpanProcessorModel()
-                                        .withExporter(
+                                        .setExporter(
                                             new SpanExporterModel()
-                                                .withOtlpHttp(new OtlpHttpExporterModel()))))))
-            .withMeterProvider(
+                                                .setOtlpHttp(new OtlpHttpExporterModel()))))))
+            .setMeterProvider(
                 new MeterProviderModel()
-                    .withReaders(
+                    .setReaders(
                         Collections.singletonList(
                             new MetricReaderModel()
-                                .withPeriodic(
+                                .setPeriodic(
                                     new PeriodicMetricReaderModel()
-                                        .withExporter(
+                                        .setExporter(
                                             new PushMetricExporterModel()
-                                                .withOtlpHttp(new OtlpHttpMetricExporterModel())))))
-                    .withViews(
+                                                .setOtlpHttp(new OtlpHttpMetricExporterModel())))))
+                    .setViews(
                         Collections.singletonList(
                             new ViewModel()
-                                .withSelector(
-                                    new ViewSelectorModel().withInstrumentName("instrument-name"))
-                                .withStream(
+                                .setSelector(
+                                    new ViewSelectorModel().setInstrumentName("instrument-name"))
+                                .setStream(
                                     new ViewStreamModel()
-                                        .withName("stream-name")
-                                        .withAttributeKeys(null)))));
+                                        .setName("stream-name")
+                                        .setAttributeKeys(null)))));
 
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(

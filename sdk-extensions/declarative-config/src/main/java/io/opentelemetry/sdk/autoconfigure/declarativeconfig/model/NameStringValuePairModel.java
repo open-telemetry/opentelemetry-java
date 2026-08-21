@@ -58,7 +58,7 @@ public class NameStringValuePairModel {
   }
 
   @JsonProperty(NAME)
-  public NameStringValuePairModel withName(String name) {
+  public NameStringValuePairModel setName(String name) {
     this.name = name;
     return this;
   }
@@ -78,7 +78,7 @@ public class NameStringValuePairModel {
   }
 
   @JsonProperty(VALUE)
-  public NameStringValuePairModel withValue(String value) {
+  public NameStringValuePairModel setValue(String value) {
     this.value = value;
     return this;
   }
@@ -89,7 +89,7 @@ public class NameStringValuePairModel {
   }
 
   @JsonAnySetter
-  public NameStringValuePairModel withExtensionProperty(String name, @Nullable Object value) {
+  public NameStringValuePairModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

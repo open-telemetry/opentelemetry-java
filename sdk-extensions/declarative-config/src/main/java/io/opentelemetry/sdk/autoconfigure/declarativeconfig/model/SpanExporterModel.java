@@ -63,7 +63,7 @@ public class SpanExporterModel {
   }
 
   @JsonProperty(OTLP_HTTP)
-  public SpanExporterModel withOtlpHttp(OtlpHttpExporterModel otlpHttp) {
+  public SpanExporterModel setOtlpHttp(OtlpHttpExporterModel otlpHttp) {
     this.otlpHttp = otlpHttp;
     return this;
   }
@@ -84,7 +84,7 @@ public class SpanExporterModel {
   }
 
   @JsonProperty(OTLP_GRPC)
-  public SpanExporterModel withOtlpGrpc(OtlpGrpcExporterModel otlpGrpc) {
+  public SpanExporterModel setOtlpGrpc(OtlpGrpcExporterModel otlpGrpc) {
     this.otlpGrpc = otlpGrpc;
     return this;
   }
@@ -105,7 +105,7 @@ public class SpanExporterModel {
   }
 
   @JsonProperty(CONSOLE)
-  public SpanExporterModel withConsole(ConsoleExporterModel console) {
+  public SpanExporterModel setConsole(ConsoleExporterModel console) {
     this.console = console;
     return this;
   }
@@ -116,7 +116,7 @@ public class SpanExporterModel {
   }
 
   @JsonAnySetter
-  public SpanExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public SpanExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -74,7 +74,7 @@ public class OtlpGrpcExporterModel {
   }
 
   @JsonProperty(ENDPOINT)
-  public OtlpGrpcExporterModel withEndpoint(String endpoint) {
+  public OtlpGrpcExporterModel setEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
@@ -94,7 +94,7 @@ public class OtlpGrpcExporterModel {
   }
 
   @JsonProperty(TLS)
-  public OtlpGrpcExporterModel withTls(GrpcTlsModel tls) {
+  public OtlpGrpcExporterModel setTls(GrpcTlsModel tls) {
     this.tls = tls;
     return this;
   }
@@ -113,7 +113,7 @@ public class OtlpGrpcExporterModel {
   }
 
   @JsonProperty(HEADERS)
-  public OtlpGrpcExporterModel withHeaders(List<NameStringValuePairModel> headers) {
+  public OtlpGrpcExporterModel setHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
   }
@@ -138,7 +138,7 @@ public class OtlpGrpcExporterModel {
   }
 
   @JsonProperty(HEADERS_LIST)
-  public OtlpGrpcExporterModel withHeadersList(String headersList) {
+  public OtlpGrpcExporterModel setHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
   }
@@ -160,7 +160,7 @@ public class OtlpGrpcExporterModel {
   }
 
   @JsonProperty(COMPRESSION)
-  public OtlpGrpcExporterModel withCompression(String compression) {
+  public OtlpGrpcExporterModel setCompression(String compression) {
     this.compression = compression;
     return this;
   }
@@ -182,7 +182,7 @@ public class OtlpGrpcExporterModel {
   }
 
   @JsonProperty(TIMEOUT)
-  public OtlpGrpcExporterModel withTimeout(Integer timeout) {
+  public OtlpGrpcExporterModel setTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
@@ -193,7 +193,7 @@ public class OtlpGrpcExporterModel {
   }
 
   @JsonAnySetter
-  public OtlpGrpcExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public OtlpGrpcExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

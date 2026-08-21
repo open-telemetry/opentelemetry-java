@@ -101,29 +101,27 @@ class MetricExporterFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "otlp_http default",
-            new PushMetricExporterModel().withOtlpHttp(new OtlpHttpMetricExporterModel()),
+            new PushMetricExporterModel().setOtlpHttp(new OtlpHttpMetricExporterModel()),
             OtlpHttpMetricExporter.getDefault().toBuilder().setComponentLoader(context).build()),
         Arguments.argumentSet(
             "otlp_http with options",
             new PushMetricExporterModel()
-                .withOtlpHttp(
+                .setOtlpHttp(
                     new OtlpHttpMetricExporterModel()
-                        .withEndpoint("http://example:4318/v1/metrics")
-                        .withHeaders(
+                        .setEndpoint("http://example:4318/v1/metrics")
+                        .setHeaders(
                             Arrays.asList(
-                                new NameStringValuePairModel().withName("key1").withValue("value1"),
-                                new NameStringValuePairModel()
-                                    .withName("key2")
-                                    .withValue("value2")))
-                        .withCompression("gzip")
-                        .withTimeout(15_000)
-                        .withTls(
+                                new NameStringValuePairModel().setName("key1").setValue("value1"),
+                                new NameStringValuePairModel().setName("key2").setValue("value2")))
+                        .setCompression("gzip")
+                        .setTimeout(15_000)
+                        .setTls(
                             new HttpTlsModel()
-                                .withCaFile(certificatePath)
-                                .withKeyFile(clientKeyPath)
-                                .withCertFile(clientCertificatePath))
-                        .withTemporalityPreference(ExporterTemporalityPreferenceModel.DELTA)
-                        .withDefaultHistogramAggregation(
+                                .setCaFile(certificatePath)
+                                .setKeyFile(clientKeyPath)
+                                .setCertFile(clientCertificatePath))
+                        .setTemporalityPreference(ExporterTemporalityPreferenceModel.DELTA)
+                        .setDefaultHistogramAggregation(
                             ExporterDefaultHistogramAggregationModel
                                 .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
             OtlpHttpMetricExporter.builder()
@@ -142,29 +140,27 @@ class MetricExporterFactoryTest {
                 .build()),
         Arguments.argumentSet(
             "otlp_grpc default",
-            new PushMetricExporterModel().withOtlpGrpc(new OtlpGrpcMetricExporterModel()),
+            new PushMetricExporterModel().setOtlpGrpc(new OtlpGrpcMetricExporterModel()),
             OtlpGrpcMetricExporter.getDefault().toBuilder().setComponentLoader(context).build()),
         Arguments.argumentSet(
             "otlp_grpc with options",
             new PushMetricExporterModel()
-                .withOtlpGrpc(
+                .setOtlpGrpc(
                     new OtlpGrpcMetricExporterModel()
-                        .withEndpoint("http://example:4317")
-                        .withHeaders(
+                        .setEndpoint("http://example:4317")
+                        .setHeaders(
                             Arrays.asList(
-                                new NameStringValuePairModel().withName("key1").withValue("value1"),
-                                new NameStringValuePairModel()
-                                    .withName("key2")
-                                    .withValue("value2")))
-                        .withCompression("gzip")
-                        .withTimeout(15_000)
-                        .withTls(
+                                new NameStringValuePairModel().setName("key1").setValue("value1"),
+                                new NameStringValuePairModel().setName("key2").setValue("value2")))
+                        .setCompression("gzip")
+                        .setTimeout(15_000)
+                        .setTls(
                             new GrpcTlsModel()
-                                .withCaFile(certificatePath)
-                                .withKeyFile(clientKeyPath)
-                                .withCertFile(clientCertificatePath))
-                        .withTemporalityPreference(ExporterTemporalityPreferenceModel.DELTA)
-                        .withDefaultHistogramAggregation(
+                                .setCaFile(certificatePath)
+                                .setKeyFile(clientKeyPath)
+                                .setCertFile(clientCertificatePath))
+                        .setTemporalityPreference(ExporterTemporalityPreferenceModel.DELTA)
+                        .setDefaultHistogramAggregation(
                             ExporterDefaultHistogramAggregationModel
                                 .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
             OtlpGrpcMetricExporter.builder()
@@ -183,11 +179,11 @@ class MetricExporterFactoryTest {
                 .build()),
         Arguments.argumentSet(
             "console",
-            new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+            new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
             LoggingMetricExporter.create()),
         Arguments.argumentSet(
             "otlp_file/development",
-            PushMetricExporterModelAccessor.withOtlpFile(
+            PushMetricExporterModelAccessor.setOtlpFile(
                 new PushMetricExporterModel(), new ExperimentalOtlpFileMetricExporterModel()),
             OtlpStdoutMetricExporter.builder().build()));
   }
@@ -205,7 +201,7 @@ class MetricExporterFactoryTest {
         Arguments.argumentSet(
             "unknown component provider",
             new PushMetricExporterModel()
-                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
+                .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\"."));
   }
 
@@ -215,7 +211,7 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new PushMetricExporterModel()
-                    .withExtensionProperty("test", Collections.singletonMap("key1", "value1")),
+                    .setExtensionProperty("test", Collections.singletonMap("key1", "value1")),
                 context);
     assertThat(metricExporter)
         .isInstanceOf(MetricExporterComponentProvider.TestMetricExporter.class);
@@ -236,7 +232,7 @@ class MetricExporterFactoryTest {
     MetricExporter result =
         MetricExporterFactory.getInstance()
             .create(
-                new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+                new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
                 context);
     cleanup.addCloseable(result);
 
@@ -256,7 +252,7 @@ class MetricExporterFactoryTest {
     MetricExporter result =
         MetricExporterFactory.getInstance()
             .create(
-                new PushMetricExporterModel().withOtlpGrpc(new OtlpGrpcMetricExporterModel()),
+                new PushMetricExporterModel().setOtlpGrpc(new OtlpGrpcMetricExporterModel()),
                 context);
     cleanup.addCloseable(result);
 
@@ -280,7 +276,7 @@ class MetricExporterFactoryTest {
     MetricExporter result =
         MetricExporterFactory.getInstance()
             .create(
-                new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+                new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
                 context);
     cleanup.addCloseable(result);
 
@@ -298,7 +294,7 @@ class MetricExporterFactoryTest {
             () ->
                 MetricExporterFactory.getInstance()
                     .create(
-                        new PushMetricExporterModel().withConsole(new ConsoleMetricExporterModel()),
+                        new PushMetricExporterModel().setConsole(new ConsoleMetricExporterModel()),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for MetricExporter: console");

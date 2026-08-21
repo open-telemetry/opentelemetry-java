@@ -23,7 +23,7 @@ class ModelJacksonRoundTripTest {
   void deserializesThroughBuilderWithSnakeCaseNames() throws Exception {
     // @JsonProperty is on the getter and withX, not the field, so Jackson binds through the
     // builder using the snake_case name.
-    BatchSpanProcessorModel model = new BatchSpanProcessorModel().withScheduleDelay(5000);
+    BatchSpanProcessorModel model = new BatchSpanProcessorModel().setScheduleDelay(5000);
 
     String json = mapper.writeValueAsString(model);
     assertThat(json).isEqualTo("{\"schedule_delay\":5000}");
@@ -36,7 +36,7 @@ class ModelJacksonRoundTripTest {
     // additionalProperties contents flatten to top-level keys via @JsonAnyGetter/@JsonAnySetter
     // rather than serializing under an "additionalProperties" key.
     ExperimentalComposableSamplerPropertyModel model =
-        new ExperimentalComposableSamplerPropertyModel().withAdditionalProperty("foo", "bar");
+        new ExperimentalComposableSamplerPropertyModel().setAdditionalProperty("foo", "bar");
 
     String json = mapper.writeValueAsString(model);
     assertThat(json).isEqualTo("{\"foo\":\"bar\"}");

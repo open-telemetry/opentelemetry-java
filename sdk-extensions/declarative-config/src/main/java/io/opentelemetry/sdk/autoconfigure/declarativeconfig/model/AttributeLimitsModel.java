@@ -61,7 +61,7 @@ public class AttributeLimitsModel {
   }
 
   @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
-  public AttributeLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
+  public AttributeLimitsModel setAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
     return this;
   }
@@ -84,7 +84,7 @@ public class AttributeLimitsModel {
   }
 
   @JsonProperty(ATTRIBUTE_COUNT_LIMIT)
-  public AttributeLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
+  public AttributeLimitsModel setAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
     return this;
   }
@@ -95,7 +95,7 @@ public class AttributeLimitsModel {
   }
 
   @JsonAnySetter
-  public AttributeLimitsModel withExtensionProperty(String name, @Nullable Object value) {
+  public AttributeLimitsModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

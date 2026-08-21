@@ -105,11 +105,11 @@ class MetricReaderFactoryTest {
                 Arguments.argumentSet(
                     "periodic defaults",
                     new MetricReaderModel()
-                        .withPeriodic(
+                        .setPeriodic(
                             new PeriodicMetricReaderModel()
-                                .withExporter(
+                                .setExporter(
                                     new PushMetricExporterModel()
-                                        .withOtlpHttp(new OtlpHttpMetricExporterModel()))),
+                                        .setOtlpHttp(new OtlpHttpMetricExporterModel()))),
                     PeriodicMetricReader.builder(
                             OtlpHttpMetricExporter.builder().setComponentLoader(context).build())
                         .build(),
@@ -118,15 +118,15 @@ class MetricReaderFactoryTest {
                 Arguments.argumentSet(
                     "periodic configured",
                     new MetricReaderModel()
-                        .withPeriodic(
-                            PeriodicMetricReaderModelAccessor.withMaxExportBatchSize(
+                        .setPeriodic(
+                            PeriodicMetricReaderModelAccessor.setMaxExportBatchSize(
                                 new PeriodicMetricReaderModel()
-                                    .withExporter(
+                                    .setExporter(
                                         new PushMetricExporterModel()
-                                            .withOtlpHttp(new OtlpHttpMetricExporterModel()))
-                                    .withInterval(1)
-                                    .withCardinalityLimits(
-                                        new CardinalityLimitsModel().withDefault(100)),
+                                            .setOtlpHttp(new OtlpHttpMetricExporterModel()))
+                                    .setInterval(1)
+                                    .setCardinalityLimits(
+                                        new CardinalityLimitsModel().setDefault(100)),
                                 200)),
                     SdkMeterProviderUtil.setMaxExportBatchSize(
                             PeriodicMetricReader.builder(
@@ -147,13 +147,13 @@ class MetricReaderFactoryTest {
         Arguments.argumentSet(
             "pull prometheus defaults",
             new MetricReaderModel()
-                .withPull(
+                .setPull(
                     new PullMetricReaderModel()
-                        .withExporter(
-                            PullMetricExporterModelAccessor.withPrometheus(
+                        .setExporter(
+                            PullMetricExporterModelAccessor.setPrometheus(
                                 new PullMetricExporterModel(),
                                 new ExperimentalPrometheusMetricExporterModel()
-                                    .withPort(prom1Port)))),
+                                    .setPort(prom1Port)))),
             prom1Expected,
             null,
             true));
@@ -174,22 +174,22 @@ class MetricReaderFactoryTest {
         Arguments.argumentSet(
             "pull prometheus configured",
             new MetricReaderModel()
-                .withPull(
+                .setPull(
                     new PullMetricReaderModel()
-                        .withCardinalityLimits(new CardinalityLimitsModel().withDefault(100))
-                        .withExporter(
-                            PullMetricExporterModelAccessor.withPrometheus(
+                        .setCardinalityLimits(new CardinalityLimitsModel().setDefault(100))
+                        .setExporter(
+                            PullMetricExporterModelAccessor.setPrometheus(
                                 new PullMetricExporterModel(),
                                 new ExperimentalPrometheusMetricExporterModel()
-                                    .withHost("localhost")
-                                    .withPort(prom2Port)
-                                    .withResourceConstantLabels(
+                                    .setHost("localhost")
+                                    .setPort(prom2Port)
+                                    .setResourceConstantLabels(
                                         new IncludeExcludeModel()
-                                            .withIncluded(singletonList("foo"))
-                                            .withExcluded(singletonList("bar")))
-                                    .withScopeInfoEnabled(false)
-                                    .withTargetInfoEnabledDevelopment(false)
-                                    .withTranslationStrategy(
+                                            .setIncluded(singletonList("foo"))
+                                            .setExcluded(singletonList("bar")))
+                                    .setScopeInfoEnabled(false)
+                                    .setTargetInfoEnabledDevelopment(false)
+                                    .setTranslationStrategy(
                                         ExperimentalPrometheusTranslationStrategyModel
                                             .UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES_DEVELOPMENT)))),
             prom2Expected,
@@ -208,15 +208,15 @@ class MetricReaderFactoryTest {
         Arguments.argumentSet(
             "pull prometheus no translation",
             new MetricReaderModel()
-                .withPull(
+                .setPull(
                     new PullMetricReaderModel()
-                        .withExporter(
-                            PullMetricExporterModelAccessor.withPrometheus(
+                        .setExporter(
+                            PullMetricExporterModelAccessor.setPrometheus(
                                 new PullMetricExporterModel(),
                                 new ExperimentalPrometheusMetricExporterModel()
-                                    .withHost("localhost")
-                                    .withPort(prom3Port)
-                                    .withTranslationStrategy(
+                                    .setHost("localhost")
+                                    .setPort(prom3Port)
+                                    .setTranslationStrategy(
                                         ExperimentalPrometheusTranslationStrategyModel
                                             .NO_TRANSLATION_DEVELOPMENT)))),
             prom3Expected,
@@ -238,16 +238,16 @@ class MetricReaderFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "null periodic reader exporter",
-            new MetricReaderModel().withPeriodic(new PeriodicMetricReaderModel()),
+            new MetricReaderModel().setPeriodic(new PeriodicMetricReaderModel()),
             "periodic metric reader exporter is required but is null"),
         Arguments.argumentSet(
             "null pull reader",
-            new MetricReaderModel().withPull(new PullMetricReaderModel()),
+            new MetricReaderModel().setPull(new PullMetricReaderModel()),
             "pull metric reader exporter is required but is null"),
         Arguments.argumentSet(
             "null pull reader exporter",
             new MetricReaderModel()
-                .withPull(new PullMetricReaderModel().withExporter(new PullMetricExporterModel())),
+                .setPull(new PullMetricReaderModel().setExporter(new PullMetricExporterModel())),
             "metric reader must have exactly one entry but has 0"));
   }
 

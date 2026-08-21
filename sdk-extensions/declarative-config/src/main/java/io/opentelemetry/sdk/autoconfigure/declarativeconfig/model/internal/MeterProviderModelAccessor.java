@@ -40,10 +40,10 @@ public final class MeterProviderModelAccessor {
         ExperimentalMeterConfiguratorModel.class);
   }
 
-  public static MeterProviderModel withMeterConfigurator(
+  public static MeterProviderModel setMeterConfigurator(
       MeterProviderModel model, ExperimentalMeterConfiguratorModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(METER_CONFIGURATOR, value);
+    model.setExtensionProperty(METER_CONFIGURATOR, value);
     return model;
   }
 }

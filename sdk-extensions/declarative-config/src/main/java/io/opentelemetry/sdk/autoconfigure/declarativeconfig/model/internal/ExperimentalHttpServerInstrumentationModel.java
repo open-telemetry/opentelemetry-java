@@ -33,7 +33,7 @@ public class ExperimentalHttpServerInstrumentationModel {
   }
 
   @JsonProperty("request_captured_headers")
-  public ExperimentalHttpServerInstrumentationModel withRequestCapturedHeaders(
+  public ExperimentalHttpServerInstrumentationModel setRequestCapturedHeaders(
       List<String> requestCapturedHeaders) {
     this.requestCapturedHeaders = requestCapturedHeaders;
     return this;
@@ -51,7 +51,7 @@ public class ExperimentalHttpServerInstrumentationModel {
   }
 
   @JsonProperty("response_captured_headers")
-  public ExperimentalHttpServerInstrumentationModel withResponseCapturedHeaders(
+  public ExperimentalHttpServerInstrumentationModel setResponseCapturedHeaders(
       List<String> responseCapturedHeaders) {
     this.responseCapturedHeaders = responseCapturedHeaders;
     return this;
@@ -75,7 +75,7 @@ public class ExperimentalHttpServerInstrumentationModel {
   }
 
   @JsonProperty("known_methods")
-  public ExperimentalHttpServerInstrumentationModel withKnownMethods(List<String> knownMethods) {
+  public ExperimentalHttpServerInstrumentationModel setKnownMethods(List<String> knownMethods) {
     this.knownMethods = knownMethods;
     return this;
   }

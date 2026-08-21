@@ -48,7 +48,7 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   @JsonProperty("http")
-  public ExperimentalGeneralInstrumentationModel withHttp(
+  public ExperimentalGeneralInstrumentationModel setHttp(
       ExperimentalHttpInstrumentationModel http) {
     this.http = http;
     return this;
@@ -69,7 +69,7 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   @JsonProperty("code")
-  public ExperimentalGeneralInstrumentationModel withCode(
+  public ExperimentalGeneralInstrumentationModel setCode(
       ExperimentalCodeInstrumentationModel code) {
     this.code = code;
     return this;
@@ -89,7 +89,7 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   @JsonProperty("db")
-  public ExperimentalGeneralInstrumentationModel withDb(ExperimentalDbInstrumentationModel db) {
+  public ExperimentalGeneralInstrumentationModel setDb(ExperimentalDbInstrumentationModel db) {
     this.db = db;
     return this;
   }
@@ -108,7 +108,7 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   @JsonProperty("gen_ai")
-  public ExperimentalGeneralInstrumentationModel withGenAi(
+  public ExperimentalGeneralInstrumentationModel setGenAi(
       ExperimentalGenAiInstrumentationModel genAi) {
     this.genAi = genAi;
     return this;
@@ -128,7 +128,7 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   @JsonProperty("messaging")
-  public ExperimentalGeneralInstrumentationModel withMessaging(
+  public ExperimentalGeneralInstrumentationModel setMessaging(
       ExperimentalMessagingInstrumentationModel messaging) {
     this.messaging = messaging;
     return this;
@@ -148,7 +148,7 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   @JsonProperty("rpc")
-  public ExperimentalGeneralInstrumentationModel withRpc(ExperimentalRpcInstrumentationModel rpc) {
+  public ExperimentalGeneralInstrumentationModel setRpc(ExperimentalRpcInstrumentationModel rpc) {
     this.rpc = rpc;
     return this;
   }
@@ -165,7 +165,7 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   @JsonProperty("sanitization")
-  public ExperimentalGeneralInstrumentationModel withSanitization(
+  public ExperimentalGeneralInstrumentationModel setSanitization(
       ExperimentalSanitizationModel sanitization) {
     this.sanitization = sanitization;
     return this;
@@ -231,7 +231,7 @@ public class ExperimentalGeneralInstrumentationModel {
   }
 
   @JsonProperty("stability_opt_in_list")
-  public ExperimentalGeneralInstrumentationModel withStabilityOptInList(String stabilityOptInList) {
+  public ExperimentalGeneralInstrumentationModel setStabilityOptInList(String stabilityOptInList) {
     this.stabilityOptInList = stabilityOptInList;
     return this;
   }

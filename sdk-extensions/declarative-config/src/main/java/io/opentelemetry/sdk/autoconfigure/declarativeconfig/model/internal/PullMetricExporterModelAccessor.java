@@ -41,10 +41,10 @@ public final class PullMetricExporterModelAccessor {
         ExperimentalPrometheusMetricExporterModel.class);
   }
 
-  public static PullMetricExporterModel withPrometheus(
+  public static PullMetricExporterModel setPrometheus(
       PullMetricExporterModel model, ExperimentalPrometheusMetricExporterModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(PROMETHEUS, value);
+    model.setExtensionProperty(PROMETHEUS, value);
     return model;
   }
 }
