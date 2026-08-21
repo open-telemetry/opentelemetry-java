@@ -7,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry OkHttp Senders"
 otelJava.moduleName.set("io.opentelemetry.exporter.sender.okhttp.internal")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
   "io.opentelemetry.sdk.common.export.HttpSenderProvider"
