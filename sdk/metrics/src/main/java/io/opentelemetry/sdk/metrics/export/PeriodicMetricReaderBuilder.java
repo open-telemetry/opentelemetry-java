@@ -61,8 +61,7 @@ public final class PeriodicMetricReaderBuilder {
   }
 
   /**
-   * Sets the timeout for the underlying exporter. If unset, defaults to {@value
-   * DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
+   * Sets the timeout for the underlying exporter. If unset, defaults to {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
    */
   public PeriodicMetricReaderBuilder setExporterTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -72,8 +71,7 @@ public final class PeriodicMetricReaderBuilder {
   }
 
   /**
-   * Sets the timeout for the underlying exporter. If unset, defaults to {@value
-   * DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
+   * Sets the timeout for the underlying exporter. If unset, defaults to {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
    */
   public PeriodicMetricReaderBuilder setExporterTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
