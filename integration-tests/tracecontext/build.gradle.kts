@@ -6,6 +6,7 @@ plugins {
 
 description = "OpenTelemetry W3C Context Propagation Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.tracecontext.integration.tests")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 dependencies {
   implementation(project(":sdk:all"))

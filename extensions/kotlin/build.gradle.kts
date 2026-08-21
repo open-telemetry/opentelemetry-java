@@ -13,6 +13,7 @@ plugins {
 
 description = "OpenTelemetry Kotlin Extensions"
 otelJava.moduleName.set("io.opentelemetry.extension.kotlin")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 dependencies {
   implementation(platform("org.jetbrains.kotlin:kotlin-bom"))

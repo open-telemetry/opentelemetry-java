@@ -7,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry API Common"
 otelJava.moduleName.set("io.opentelemetry.common")
+otelJava.requireSuppressWarningsExplanation.set(false)
 // ServiceLoaderComponentLoader (this bundle) is the ServiceLoader.load() call site for all
 // ComponentLoader.forClassLoader() usage; requires the processor extender to weave it.
 otelJava.osgiServiceLoaderProcessor.set(true)

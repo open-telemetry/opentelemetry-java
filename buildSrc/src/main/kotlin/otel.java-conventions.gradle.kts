@@ -1,4 +1,6 @@
 import io.opentelemetry.gradle.OtelJavaExtension
+import net.ltgt.gradle.errorprone.CheckSeverity
+import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.JavaVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
@@ -62,6 +64,13 @@ val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersi
 tasks {
   withType<JavaCompile>().configureEach {
     with(options) {
+      errorprone.check(
+        "SuppressWarningsWithoutExplanation",
+        otelJava.requireSuppressWarningsExplanation.map {
+          if (it) CheckSeverity.ERROR else CheckSeverity.OFF
+        },
+      )
+
       release.set(otelJava.minJavaVersionSupported.map { it.majorVersion.toInt() })
 
       if (name != "jmhCompileGeneratedClasses") {
