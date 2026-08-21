@@ -106,7 +106,7 @@ public final class PeriodicMetricReaderBuilder {
     ScheduledExecutorService executor = this.executor;
     if (executor == null) {
       executor =
-          Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
+          Executors.newScheduledThreadPool(2, new DaemonThreadFactory("PeriodicMetricReader"));
     }
     return new PeriodicMetricReader(
         metricExporter,

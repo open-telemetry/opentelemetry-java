@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.ComponentId;
-import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -20,7 +19,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +49,6 @@ public final class PeriodicMetricReader implements MetricReader {
   private final long intervalNanos;
   private final long exporterTimeoutNanos;
   private final ScheduledExecutorService scheduler;
-  private final ScheduledExecutorService timeoutExecutor;
   private final Scheduled scheduled;
   private final Object lock = new Object();
   private final InternalTelemetryVersion internalTelemetryVersion;
@@ -84,9 +82,6 @@ public final class PeriodicMetricReader implements MetricReader {
     this.intervalNanos = intervalNanos;
     this.exporterTimeoutNanos = exporterTimeoutNanos;
     this.scheduler = scheduler;
-    this.timeoutExecutor =
-        Executors.newSingleThreadScheduledExecutor(
-            new DaemonThreadFactory("PeriodicMetricReader-timeout"));
     this.maxExportBatchSize = maxExportBatchSize;
     this.scheduled = new Scheduled();
     this.internalTelemetryVersion = internalTelemetryVersion;
@@ -154,13 +149,6 @@ public final class PeriodicMetricReader implements MetricReader {
       // reset the interrupted status
       Thread.currentThread().interrupt();
     } finally {
-      timeoutExecutor.shutdown();
-      try {
-        timeoutExecutor.awaitTermination(5, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        timeoutExecutor.shutdownNow();
-        Thread.currentThread().interrupt();
-      }
       CompletableResultCode shutdownResult = scheduled.shutdown();
       shutdownResult.whenComplete(
           () -> {
@@ -275,34 +263,35 @@ public final class PeriodicMetricReader implements MetricReader {
       if (exporterTimeoutNanos == Long.MAX_VALUE) {
         return result;
       }
-      CompletableResultCode timeoutResult = new CompletableResultCode();
-      AtomicBoolean timedOut = new AtomicBoolean(false);
-      ScheduledFuture<?> timeoutFuture =
-          timeoutExecutor.schedule(
-              () -> {
-                if (!result.isDone()) {
-                  timedOut.set(true);
+
+      try {
+        CompletableResultCode timeoutResult = new CompletableResultCode();
+
+        ScheduledFuture<?> timeoutFuture =
+            scheduler.schedule(
+                () -> {
                   logger.log(
                       Level.WARNING, "Export timed out after " + exporterTimeoutNanos + "ns");
                   timeoutResult.fail();
-                }
-              },
-              exporterTimeoutNanos,
-              TimeUnit.NANOSECONDS);
-      result.whenComplete(
-          () -> {
-            if (timeoutFuture != null) {
+                },
+                exporterTimeoutNanos,
+                TimeUnit.NANOSECONDS);
+
+        result.whenComplete(
+            () -> {
               timeoutFuture.cancel(false);
-            }
-            if (!timedOut.get()) {
               if (result.isSuccess()) {
                 timeoutResult.succeed();
               } else {
                 timeoutResult.fail();
               }
-            }
-          });
-      return timeoutResult;
+            });
+
+        return timeoutResult;
+      } catch (RejectedExecutionException e) {
+        // Scheduler is shutting down, return original result without timeout enforcement
+        return result;
+      }
     }
 
     void setMeterProvider(MeterProvider meterProvider) {
