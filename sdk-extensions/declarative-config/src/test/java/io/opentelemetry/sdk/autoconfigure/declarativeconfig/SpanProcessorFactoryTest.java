@@ -18,11 +18,11 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExport
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanProcessorPropertyModel;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -113,9 +113,7 @@ class SpanProcessorFactoryTest {
         Arguments.argumentSet(
             "unknown component provider",
             new SpanProcessorModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new SpanProcessorPropertyModel().withAdditionalProperty("key1", "value1")),
+                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.trace.SpanProcessor with name \"unknown_key\"."));
   }
 
@@ -125,9 +123,7 @@ class SpanProcessorFactoryTest {
         SpanProcessorFactory.getInstance()
             .create(
                 new SpanProcessorModel()
-                    .withAdditionalProperty(
-                        "test",
-                        new SpanProcessorPropertyModel().withAdditionalProperty("key1", "value1")),
+                    .withExtensionProperty("test", Collections.singletonMap("key1", "value1")),
                 context);
     assertThat(spanProcessor).isInstanceOf(SpanProcessorComponentProvider.TestSpanProcessor.class);
     assertThat(

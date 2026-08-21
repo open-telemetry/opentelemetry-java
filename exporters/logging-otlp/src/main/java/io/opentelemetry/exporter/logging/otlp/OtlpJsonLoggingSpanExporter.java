@@ -16,6 +16,9 @@ import java.util.logging.Logger;
 /**
  * A {@link SpanExporter} which writes {@linkplain SpanData spans} to a {@link Logger} in OTLP JSON
  * format. Each log line will include a single {@code ResourceSpans}.
+ *
+ * <p>Note: This class is superseded by {@link OtlpStdoutSpanExporter}, which allows configuring a
+ * custom logger or output stream.
  */
 public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
@@ -48,5 +51,10 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
+  }
+
+  @Override
+  public String toString() {
+    return "OtlpJsonLoggingSpanExporter{}";
   }
 }

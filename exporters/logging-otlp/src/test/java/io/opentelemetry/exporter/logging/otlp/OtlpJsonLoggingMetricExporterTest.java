@@ -78,4 +78,12 @@ class OtlpJsonLoggingMetricExporterTest {
     assertThat(exporter.shutdown().isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(OtlpJsonLoggingMetricExporter.create().toString())
+        .isEqualTo("OtlpJsonLoggingMetricExporter{aggregationTemporality=CUMULATIVE}");
+    assertThat(OtlpJsonLoggingMetricExporter.create(AggregationTemporality.DELTA).toString())
+        .isEqualTo("OtlpJsonLoggingMetricExporter{aggregationTemporality=DELTA}");
+  }
 }

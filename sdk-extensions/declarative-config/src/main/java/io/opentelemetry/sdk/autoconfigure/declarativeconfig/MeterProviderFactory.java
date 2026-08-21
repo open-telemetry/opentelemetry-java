@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamMode
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.MeterProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -70,7 +71,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
     }
 
     ExperimentalMeterConfiguratorModel meterConfiguratorModel =
-        model.getMeterConfiguratorDevelopment();
+        MeterProviderModelAccessor.getMeterConfigurator(model);
     if (meterConfiguratorModel != null) {
       ExperimentalMeterConfigModel defaultConfigModel = meterConfiguratorModel.getDefaultConfig();
       ScopeConfiguratorBuilder<MeterConfig> configuratorBuilder = ScopeConfigurator.builder();

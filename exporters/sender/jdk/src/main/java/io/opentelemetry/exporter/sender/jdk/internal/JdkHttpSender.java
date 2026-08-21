@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
+import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
 import io.opentelemetry.sdk.common.export.HttpResponse;
@@ -27,6 +28,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -54,7 +56,7 @@ import javax.net.ssl.SSLException;
  */
 public final class JdkHttpSender implements HttpSender {
 
-  private static final Set<Integer> retryableStatusCodes = Set.of(429, 502, 503, 504);
+  private static final Set<Integer> retryableStatusCodes = RetryUtil.retryableHttpResponseCodes();
 
   private static final ThreadLocal<NoCopyByteArrayOutputStream> threadLocalBaos =
       ThreadLocal.withInitial(NoCopyByteArrayOutputStream::new);
@@ -212,21 +214,30 @@ public final class JdkHttpSender implements HttpSender {
 
     // If no retry policy, short circuit
     if (retryPolicy == null) {
-      return sendRequest(requestBuilder, byteBufferPool);
+      return toHttpResponse(sendRequest(requestBuilder, byteBufferPool));
     }
 
     long attempt = 0;
     long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
     HttpResponse httpResponse = null;
     IOException exception = null;
+    OptionalLong retryDelayNanos = OptionalLong.empty();
     do {
       if (attempt > 0) {
+        long remainingNanos = timeout.toNanos() - (System.nanoTime() - startTimeNanos);
+        if (remainingNanos <= 0) {
+          break;
+        }
         // Compute and sleep for backoff
         long currentBackoffNanos =
             Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-        long backoffNanos =
-            (long) (ThreadLocalRandom.current().nextDouble(0.8d, 1.2d) * currentBackoffNanos);
+        long requestedBackoffNanos =
+            retryDelayNanos.isPresent()
+                ? retryDelayNanos.getAsLong()
+                : (long) (ThreadLocalRandom.current().nextDouble(0.8d, 1.2d) * currentBackoffNanos);
+        long backoffNanos = Math.min(requestedBackoffNanos, remainingNanos);
         nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
+        retryDelayNanos = OptionalLong.empty();
         try {
           TimeUnit.NANOSECONDS.sleep(backoffNanos);
         } catch (InterruptedException e) {
@@ -243,8 +254,10 @@ public final class JdkHttpSender implements HttpSender {
       exception = null;
       requestBuilder.timeout(timeout.minusNanos(System.nanoTime() - startTimeNanos));
       try {
-        httpResponse = sendRequest(requestBuilder, byteBufferPool);
-        boolean retryable = retryableStatusCodes.contains(httpResponse.getStatusCode());
+        java.net.http.HttpResponse<InputStream> rawResponse =
+            sendRequest(requestBuilder, byteBufferPool);
+        httpResponse = toHttpResponse(rawResponse);
+        boolean retryable = retryableStatusCodes.contains(rawResponse.statusCode());
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -258,6 +271,7 @@ public final class JdkHttpSender implements HttpSender {
         if (!retryable) {
           return httpResponse;
         }
+        retryDelayNanos = retryDelayNanos(rawResponse);
       } catch (IOException e) {
         exception = e;
         boolean retryable = retryExceptionPredicate.test(exception);
@@ -287,12 +301,10 @@ public final class JdkHttpSender implements HttpSender {
     return "HttpResponse{code=" + response.getStatusCode() + "}";
   }
 
-  private HttpResponse sendRequest(
+  private java.net.http.HttpResponse<InputStream> sendRequest(
       HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
-      java.net.http.HttpResponse<InputStream> response =
-          client.send(requestBuilder.build(), BodyHandlers.ofInputStream());
-      return toHttpResponse(response);
+      return client.send(requestBuilder.build(), BodyHandlers.ofInputStream());
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new IllegalStateException(e);
@@ -412,11 +424,52 @@ public final class JdkHttpSender implements HttpSender {
     }
   }
 
+  private static OptionalLong retryDelayNanos(java.net.http.HttpResponse<?> response) {
+    return RetryUtil.retryAfterNanos(response.headers().firstValue("Retry-After").orElse(null));
+  }
+
   @Override
   public CompletableResultCode shutdown() {
-    if (managedExecutor) {
-      executorService.shutdown();
+    if (!managedExecutor) {
+      return closeClient();
     }
+
+    // Use shutdownNow() to interrupt in-flight requests, including retry backoff sleeps
+    executorService.shutdownNow();
+
+    // Wait for threads to terminate in a background thread. Closing the client also blocks until
+    // in-flight requests complete, so it must not run on the caller's thread either.
+    CompletableResultCode result = new CompletableResultCode();
+    Thread terminationThread =
+        new Thread(
+            () -> {
+              try {
+                // Wait up to 5 seconds for threads to terminate
+                // Even if timeout occurs, we proceed since these are daemon threads
+                boolean terminated = executorService.awaitTermination(5, TimeUnit.SECONDS);
+                if (!terminated) {
+                  logger.log(
+                      Level.WARNING,
+                      "Executor did not terminate within 5 seconds, proceeding with shutdown since threads are daemon threads.");
+                }
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+              } finally {
+                CompletableResultCode closeResult = closeClient();
+                if (closeResult.isSuccess()) {
+                  result.succeed();
+                } else {
+                  result.failExceptionally(closeResult.getFailureThrowable());
+                }
+              }
+            },
+            "jdkhttp-shutdown");
+    terminationThread.setDaemon(true);
+    terminationThread.start();
+    return result;
+  }
+
+  private CompletableResultCode closeClient() {
     if (AutoCloseable.class.isInstance(client)) {
       try {
         AutoCloseable.class.cast(client).close();

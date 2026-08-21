@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -116,7 +117,8 @@ public final class OkHttpGrpcSender implements GrpcSender {
             .connectTimeout(Duration.ofMillis(connectTimeoutMillis));
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
-          new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
+          new RetryInterceptor(
+              retryPolicy, OkHttpGrpcSender::isRetryable, response -> OptionalLong.empty()));
     }
 
     boolean isPlainHttp = endpoint.startsWith("http://");
@@ -188,7 +190,7 @@ public final class OkHttpGrpcSender implements GrpcSender {
         compressed = body.source().readByte() != 0;
         body.source().skip(4); // message length — we bound reads by EOF instead
       } catch (IOException e) {
-        logger.log(Level.FINE, "Invalid gRPC response frame");
+        logger.log(Level.FINE, "Invalid gRPC response frame", e);
         onResponse.accept(
             ImmutableGrpcResponse.create(grpcStatus(response), grpcMessage(response), new byte[0]));
         return;

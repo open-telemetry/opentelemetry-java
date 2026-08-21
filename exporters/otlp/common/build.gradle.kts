@@ -55,6 +55,12 @@ testing {
   }
 }
 
+tasks {
+  check {
+    dependsOn(testing.suites)
+  }
+}
+
 wire {
   root(
     "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",

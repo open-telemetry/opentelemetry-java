@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewStreamMode
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalMeterMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.MeterProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.ExemplarFilter;
@@ -74,25 +75,27 @@ class MeterProviderFactoryTest {
             "defaults", new MeterProviderModel(), SdkMeterProvider.builder().build()),
         Arguments.argumentSet(
             "with reader view and meter configurator",
-            new MeterProviderModel()
-                .withReaders(
-                    Collections.singletonList(
-                        new MetricReaderModel()
-                            .withPeriodic(
-                                new PeriodicMetricReaderModel()
-                                    .withExporter(
-                                        new PushMetricExporterModel()
-                                            .withOtlpHttp(new OtlpHttpMetricExporterModel())))))
-                .withViews(
-                    Collections.singletonList(
-                        new ViewModel()
-                            .withSelector(
-                                new ViewSelectorModel().withInstrumentName("instrument-name"))
-                            .withStream(
-                                new ViewStreamModel()
-                                    .withName("stream-name")
-                                    .withAttributeKeys(null))))
-                .withMeterConfiguratorDevelopment(
+            MeterProviderModelAccessor.withMeterConfigurator(
+                    new MeterProviderModel()
+                        .withReaders(
+                            Collections.singletonList(
+                                new MetricReaderModel()
+                                    .withPeriodic(
+                                        new PeriodicMetricReaderModel()
+                                            .withExporter(
+                                                new PushMetricExporterModel()
+                                                    .withOtlpHttp(
+                                                        new OtlpHttpMetricExporterModel())))))
+                        .withViews(
+                            Collections.singletonList(
+                                new ViewModel()
+                                    .withSelector(
+                                        new ViewSelectorModel()
+                                            .withInstrumentName("instrument-name"))
+                                    .withStream(
+                                        new ViewStreamModel()
+                                            .withName("stream-name")
+                                            .withAttributeKeys(null)))),
                     new ExperimentalMeterConfiguratorModel()
                         .withDefaultConfig(new ExperimentalMeterConfigModel().withEnabled(false))
                         .withMeters(

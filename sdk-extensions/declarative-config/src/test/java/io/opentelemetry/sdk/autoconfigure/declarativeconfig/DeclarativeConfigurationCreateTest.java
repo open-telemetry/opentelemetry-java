@@ -175,7 +175,7 @@ class DeclarativeConfigurationCreateTest {
         new TracerProviderModel()
             .withProcessors(
                 Collections.singletonList(
-                    new SpanProcessorModel().withAdditionalProperty("test", null))));
+                    new SpanProcessorModel().withExtensionProperty("test", null))));
     ExtendedOpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
                 model,

@@ -1,10 +1,10 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "9.6.0"
+    id("com.gradleup.shadow") version "9.6.1"
     id("com.gradle.develocity") version "4.5.0"
     id("de.undercouch.download") version "5.7.0"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("org.graalvm.buildtools.native") version "1.1.4"
+    id("org.graalvm.buildtools.native") version "1.1.9"
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
   }
 }
@@ -47,7 +47,6 @@ include(":exporters:otlp:common")
 include(":exporters:otlp:profiles")
 include(":exporters:otlp:testing-internal")
 include(":exporters:prometheus")
-include(":exporters:zipkin")
 include(":integration-tests")
 include(":integration-tests:otlp")
 include(":integration-tests:tracecontext")
@@ -79,6 +78,10 @@ val develocityServer = "https://develocity.opentelemetry.io"
 val isCI = System.getenv("CI") != null
 val develocityAccessKey = System.getenv("DEVELOCITY_ACCESS_KEY") ?: ""
 val disableRemoteBuildCache = System.getenv("DISABLE_REMOTE_BUILD_CACHE") != null
+val isRemoteBuildCachePushEnabled =
+  isCI && develocityAccessKey.isNotEmpty() && !disableRemoteBuildCache
+val shouldDisableLocalBuildCache =
+  isRemoteBuildCachePushEnabled && System.getenv("GITHUB_REF_NAME") == "main"
 
 develocity {
   if (develocityAccessKey.isNotEmpty()) {
@@ -112,9 +115,15 @@ develocity {
 }
 
 buildCache {
-  remote(HttpBuildCache::class) {
-    url = uri("$develocityServer/cache/")
+  // Tasks loaded from the local cache are not pushed to the remote cache. Disable the local cache
+  // on default-branch CI builds so executed tasks populate the authenticated Develocity cache.
+  local {
+    isEnabled = !shouldDisableLocalBuildCache
+  }
+
+  remote(develocity.buildCache) {
+    server = develocityServer
     isEnabled = !disableRemoteBuildCache
-    isPush = isCI && develocityAccessKey.isNotEmpty()
+    isPush = isRemoteBuildCachePushEnabled
   }
 }
