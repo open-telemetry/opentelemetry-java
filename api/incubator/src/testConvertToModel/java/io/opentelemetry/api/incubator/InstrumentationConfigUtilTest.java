@@ -90,16 +90,16 @@ class InstrumentationConfigUtilTest {
         withInstrumentationConfig(
             "my_instrumentation_library",
             new ExperimentalLanguageSpecificInstrumentationPropertyModel()
-                .withAdditionalProperty("string_property", "value")
-                .withAdditionalProperty("boolean_property", true)
-                .withAdditionalProperty("long_property", 1L)
-                .withAdditionalProperty("double_property", 1.1d)
-                .withAdditionalProperty("string_list_property", Arrays.asList("val1", "val2"))
-                .withAdditionalProperty("boolean_list_property", Arrays.asList(true, false))
-                .withAdditionalProperty("long_list_property", Arrays.asList(1L, 2L))
-                .withAdditionalProperty("double_list_property", Arrays.asList(1.1d, 2.2d))
-                .withAdditionalProperty("map_property", Collections.singletonMap("childKey", "val"))
-                .withAdditionalProperty(
+                .setAdditionalProperty("string_property", "value")
+                .setAdditionalProperty("boolean_property", true)
+                .setAdditionalProperty("long_property", 1L)
+                .setAdditionalProperty("double_property", 1.1d)
+                .setAdditionalProperty("string_list_property", Arrays.asList("val1", "val2"))
+                .setAdditionalProperty("boolean_list_property", Arrays.asList(true, false))
+                .setAdditionalProperty("long_list_property", Arrays.asList(1L, 2L))
+                .setAdditionalProperty("double_list_property", Arrays.asList(1.1d, 2.2d))
+                .setAdditionalProperty("map_property", Collections.singletonMap("childKey", "val"))
+                .setAdditionalProperty(
                     "structured_list_property",
                     Collections.singletonList(
                         ImmutableMap.of("key", "the_key", "value", "the_value"))));
@@ -130,12 +130,12 @@ class InstrumentationConfigUtilTest {
       ExperimentalLanguageSpecificInstrumentationPropertyModel instrumentationConfig) {
     ExperimentalLanguageSpecificInstrumentationModel javaConfig =
         new ExperimentalLanguageSpecificInstrumentationModel();
-    javaConfig.withAdditionalProperty(instrumentationName, instrumentationConfig);
+    javaConfig.setAdditionalProperty(instrumentationName, instrumentationConfig);
     DeclarativeConfigProperties modelProperties =
         DeclarativeConfiguration.toConfigProperties(
-            OpenTelemetryConfigurationModelAccessor.withInstrumentation(
+            OpenTelemetryConfigurationModelAccessor.setInstrumentation(
                 new OpenTelemetryConfigurationModel(),
-                new ExperimentalInstrumentationModel().withJava(javaConfig)));
+                new ExperimentalInstrumentationModel().setJava(javaConfig)));
 
     return SdkConfigProvider.create(modelProperties);
   }

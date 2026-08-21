@@ -63,7 +63,7 @@ public class LogRecordExporterModel {
   }
 
   @JsonProperty(OTLP_HTTP)
-  public LogRecordExporterModel withOtlpHttp(OtlpHttpExporterModel otlpHttp) {
+  public LogRecordExporterModel setOtlpHttp(OtlpHttpExporterModel otlpHttp) {
     this.otlpHttp = otlpHttp;
     return this;
   }
@@ -84,7 +84,7 @@ public class LogRecordExporterModel {
   }
 
   @JsonProperty(OTLP_GRPC)
-  public LogRecordExporterModel withOtlpGrpc(OtlpGrpcExporterModel otlpGrpc) {
+  public LogRecordExporterModel setOtlpGrpc(OtlpGrpcExporterModel otlpGrpc) {
     this.otlpGrpc = otlpGrpc;
     return this;
   }
@@ -105,7 +105,7 @@ public class LogRecordExporterModel {
   }
 
   @JsonProperty(CONSOLE)
-  public LogRecordExporterModel withConsole(ConsoleExporterModel console) {
+  public LogRecordExporterModel setConsole(ConsoleExporterModel console) {
     this.console = console;
     return this;
   }
@@ -116,7 +116,7 @@ public class LogRecordExporterModel {
   }
 
   @JsonAnySetter
-  public LogRecordExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public LogRecordExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

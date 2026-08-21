@@ -70,7 +70,7 @@ public class ConsoleMetricExporterModel {
   }
 
   @JsonProperty(TEMPORALITY_PREFERENCE)
-  public ConsoleMetricExporterModel withTemporalityPreference(
+  public ConsoleMetricExporterModel setTemporalityPreference(
       ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
@@ -102,7 +102,7 @@ public class ConsoleMetricExporterModel {
   }
 
   @JsonProperty(DEFAULT_HISTOGRAM_AGGREGATION)
-  public ConsoleMetricExporterModel withDefaultHistogramAggregation(
+  public ConsoleMetricExporterModel setDefaultHistogramAggregation(
       ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
     return this;
@@ -114,7 +114,7 @@ public class ConsoleMetricExporterModel {
   }
 
   @JsonAnySetter
-  public ConsoleMetricExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public ConsoleMetricExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

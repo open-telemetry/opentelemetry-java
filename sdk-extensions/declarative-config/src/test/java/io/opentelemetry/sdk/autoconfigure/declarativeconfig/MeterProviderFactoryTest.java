@@ -75,36 +75,36 @@ class MeterProviderFactoryTest {
             "defaults", new MeterProviderModel(), SdkMeterProvider.builder().build()),
         Arguments.argumentSet(
             "with reader view and meter configurator",
-            MeterProviderModelAccessor.withMeterConfigurator(
+            MeterProviderModelAccessor.setMeterConfigurator(
                     new MeterProviderModel()
-                        .withReaders(
+                        .setReaders(
                             Collections.singletonList(
                                 new MetricReaderModel()
-                                    .withPeriodic(
+                                    .setPeriodic(
                                         new PeriodicMetricReaderModel()
-                                            .withExporter(
+                                            .setExporter(
                                                 new PushMetricExporterModel()
-                                                    .withOtlpHttp(
+                                                    .setOtlpHttp(
                                                         new OtlpHttpMetricExporterModel())))))
-                        .withViews(
+                        .setViews(
                             Collections.singletonList(
                                 new ViewModel()
-                                    .withSelector(
+                                    .setSelector(
                                         new ViewSelectorModel()
-                                            .withInstrumentName("instrument-name"))
-                                    .withStream(
+                                            .setInstrumentName("instrument-name"))
+                                    .setStream(
                                         new ViewStreamModel()
-                                            .withName("stream-name")
-                                            .withAttributeKeys(null)))),
+                                            .setName("stream-name")
+                                            .setAttributeKeys(null)))),
                     new ExperimentalMeterConfiguratorModel()
-                        .withDefaultConfig(new ExperimentalMeterConfigModel().withEnabled(false))
-                        .withMeters(
+                        .setDefaultConfig(new ExperimentalMeterConfigModel().setEnabled(false))
+                        .setMeters(
                             Collections.singletonList(
                                 new ExperimentalMeterMatcherAndConfigModel()
-                                    .withName("foo")
-                                    .withConfig(
-                                        new ExperimentalMeterConfigModel().withEnabled(true)))))
-                .withExemplarFilter(ExemplarFilterModel.ALWAYS_ON),
+                                    .setName("foo")
+                                    .setConfig(
+                                        new ExperimentalMeterConfigModel().setEnabled(true)))))
+                .setExemplarFilter(ExemplarFilterModel.ALWAYS_ON),
             setMeterConfigurator(
                     SdkMeterProvider.builder(),
                     ScopeConfigurator.<MeterConfig>builder()

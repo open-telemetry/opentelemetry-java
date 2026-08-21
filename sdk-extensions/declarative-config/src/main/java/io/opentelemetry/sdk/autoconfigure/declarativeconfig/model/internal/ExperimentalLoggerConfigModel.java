@@ -33,7 +33,7 @@ public class ExperimentalLoggerConfigModel {
   }
 
   @JsonProperty("enabled")
-  public ExperimentalLoggerConfigModel withEnabled(Boolean enabled) {
+  public ExperimentalLoggerConfigModel setEnabled(Boolean enabled) {
     this.enabled = enabled;
     return this;
   }
@@ -103,7 +103,7 @@ public class ExperimentalLoggerConfigModel {
   }
 
   @JsonProperty("minimum_severity")
-  public ExperimentalLoggerConfigModel withMinimumSeverity(SeverityNumberModel minimumSeverity) {
+  public ExperimentalLoggerConfigModel setMinimumSeverity(SeverityNumberModel minimumSeverity) {
     this.minimumSeverity = minimumSeverity;
     return this;
   }
@@ -124,7 +124,7 @@ public class ExperimentalLoggerConfigModel {
   }
 
   @JsonProperty("trace_based")
-  public ExperimentalLoggerConfigModel withTraceBased(Boolean traceBased) {
+  public ExperimentalLoggerConfigModel setTraceBased(Boolean traceBased) {
     this.traceBased = traceBased;
     return this;
   }

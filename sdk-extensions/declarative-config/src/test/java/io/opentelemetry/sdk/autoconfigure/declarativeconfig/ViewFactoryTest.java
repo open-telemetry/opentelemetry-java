@@ -35,14 +35,14 @@ class ViewFactoryTest {
   private static Stream<Arguments> createArguments() {
     return Stream.of(
         Arguments.argumentSet(
-            "defaults", new ViewStreamModel().withAttributeKeys(null), View.builder().build()),
+            "defaults", new ViewStreamModel().setAttributeKeys(null), View.builder().build()),
         // https://github.com/open-telemetry/opentelemetry-java/issues/8337
         Arguments.argumentSet(
             "included only no excluded",
             new ViewStreamModel()
-                .withAttributeKeys(
+                .setAttributeKeys(
                     new IncludeExcludeModel()
-                        .withIncluded(
+                        .setIncluded(
                             Arrays.asList(
                                 "url.full", "http.request.method", "http.response.status_code"))),
             View.builder()
@@ -55,17 +55,17 @@ class ViewFactoryTest {
         Arguments.argumentSet(
             "full configuration",
             new ViewStreamModel()
-                .withName("name")
-                .withDescription("description")
-                .withAttributeKeys(
+                .setName("name")
+                .setDescription("description")
+                .setAttributeKeys(
                     new IncludeExcludeModel()
-                        .withIncluded(Arrays.asList("foo", "bar"))
-                        .withExcluded(Collections.singletonList("baz")))
-                .withAggregation(
+                        .setIncluded(Arrays.asList("foo", "bar"))
+                        .setExcluded(Collections.singletonList("baz")))
+                .setAggregation(
                     new AggregationModel()
-                        .withExplicitBucketHistogram(
+                        .setExplicitBucketHistogram(
                             new ExplicitBucketHistogramAggregationModel()
-                                .withBoundaries(Arrays.asList(1.0, 2.0)))),
+                                .setBoundaries(Arrays.asList(1.0, 2.0)))),
             View.builder()
                 .setName("name")
                 .setDescription("description")

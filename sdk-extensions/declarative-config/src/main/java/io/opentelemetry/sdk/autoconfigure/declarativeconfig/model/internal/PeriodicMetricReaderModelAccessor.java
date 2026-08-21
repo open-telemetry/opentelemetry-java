@@ -38,10 +38,10 @@ public final class PeriodicMetricReaderModelAccessor {
         MAX_EXPORT_BATCH_SIZE, model.getExtensionProperties(), Integer.class);
   }
 
-  public static PeriodicMetricReaderModel withMaxExportBatchSize(
+  public static PeriodicMetricReaderModel setMaxExportBatchSize(
       PeriodicMetricReaderModel model, Integer value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(MAX_EXPORT_BATCH_SIZE, value);
+    model.setExtensionProperty(MAX_EXPORT_BATCH_SIZE, value);
     return model;
   }
 }

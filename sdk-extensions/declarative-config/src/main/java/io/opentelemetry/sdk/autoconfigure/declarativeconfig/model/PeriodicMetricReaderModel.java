@@ -72,7 +72,7 @@ public class PeriodicMetricReaderModel {
   }
 
   @JsonProperty(INTERVAL)
-  public PeriodicMetricReaderModel withInterval(Integer interval) {
+  public PeriodicMetricReaderModel setInterval(Integer interval) {
     this.interval = interval;
     return this;
   }
@@ -94,7 +94,7 @@ public class PeriodicMetricReaderModel {
   }
 
   @JsonProperty(TIMEOUT)
-  public PeriodicMetricReaderModel withTimeout(Integer timeout) {
+  public PeriodicMetricReaderModel setTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
@@ -115,7 +115,7 @@ public class PeriodicMetricReaderModel {
   }
 
   @JsonProperty(EXPORTER)
-  public PeriodicMetricReaderModel withExporter(PushMetricExporterModel exporter) {
+  public PeriodicMetricReaderModel setExporter(PushMetricExporterModel exporter) {
     this.exporter = exporter;
     return this;
   }
@@ -132,7 +132,7 @@ public class PeriodicMetricReaderModel {
   }
 
   @JsonProperty(PRODUCERS)
-  public PeriodicMetricReaderModel withProducers(List<MetricProducerModel> producers) {
+  public PeriodicMetricReaderModel setProducers(List<MetricProducerModel> producers) {
     this.producers = producers;
     return this;
   }
@@ -153,7 +153,7 @@ public class PeriodicMetricReaderModel {
   }
 
   @JsonProperty(CARDINALITY_LIMITS)
-  public PeriodicMetricReaderModel withCardinalityLimits(CardinalityLimitsModel cardinalityLimits) {
+  public PeriodicMetricReaderModel setCardinalityLimits(CardinalityLimitsModel cardinalityLimits) {
     this.cardinalityLimits = cardinalityLimits;
     return this;
   }
@@ -164,7 +164,7 @@ public class PeriodicMetricReaderModel {
   }
 
   @JsonAnySetter
-  public PeriodicMetricReaderModel withExtensionProperty(String name, @Nullable Object value) {
+  public PeriodicMetricReaderModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -39,10 +39,10 @@ public final class OpenTelemetryConfigurationModelAccessor {
         INSTRUMENTATION, model.getExtensionProperties(), ExperimentalInstrumentationModel.class);
   }
 
-  public static OpenTelemetryConfigurationModel withInstrumentation(
+  public static OpenTelemetryConfigurationModel setInstrumentation(
       OpenTelemetryConfigurationModel model, ExperimentalInstrumentationModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(INSTRUMENTATION, value);
+    model.setExtensionProperty(INSTRUMENTATION, value);
     return model;
   }
 }

@@ -30,7 +30,7 @@ public class ExperimentalSanitizationModel {
   }
 
   @JsonProperty("url")
-  public ExperimentalSanitizationModel withUrl(ExperimentalUrlSanitizationModel url) {
+  public ExperimentalSanitizationModel setUrl(ExperimentalUrlSanitizationModel url) {
     this.url = url;
     return this;
   }

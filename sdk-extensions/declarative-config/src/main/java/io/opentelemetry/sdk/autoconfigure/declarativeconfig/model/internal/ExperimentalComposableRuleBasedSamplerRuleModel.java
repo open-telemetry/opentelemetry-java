@@ -45,7 +45,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   @JsonProperty("attribute_values")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withAttributeValues(
+  public ExperimentalComposableRuleBasedSamplerRuleModel setAttributeValues(
       ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel attributeValues) {
     this.attributeValues = attributeValues;
     return this;
@@ -69,7 +69,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   @JsonProperty("attribute_patterns")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withAttributePatterns(
+  public ExperimentalComposableRuleBasedSamplerRuleModel setAttributePatterns(
       ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel attributePatterns) {
     this.attributePatterns = attributePatterns;
     return this;
@@ -99,7 +99,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   @JsonProperty("span_kinds")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withSpanKinds(
+  public ExperimentalComposableRuleBasedSamplerRuleModel setSpanKinds(
       List<SpanKindModel> spanKinds) {
     this.spanKinds = spanKinds;
     return this;
@@ -125,7 +125,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   @JsonProperty("parent")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withParent(
+  public ExperimentalComposableRuleBasedSamplerRuleModel setParent(
       List<ExperimentalSpanParentModel> parent) {
     this.parent = parent;
     return this;
@@ -143,7 +143,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleModel {
   }
 
   @JsonProperty("sampler")
-  public ExperimentalComposableRuleBasedSamplerRuleModel withSampler(
+  public ExperimentalComposableRuleBasedSamplerRuleModel setSampler(
       ExperimentalComposableSamplerModel sampler) {
     this.sampler = sampler;
     return this;

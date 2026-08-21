@@ -39,7 +39,7 @@ public class ExperimentalHttpInstrumentationModel {
   }
 
   @JsonProperty("semconv")
-  public ExperimentalHttpInstrumentationModel withSemconv(ExperimentalSemconvConfigModel semconv) {
+  public ExperimentalHttpInstrumentationModel setSemconv(ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;
     return this;
   }
@@ -56,7 +56,7 @@ public class ExperimentalHttpInstrumentationModel {
   }
 
   @JsonProperty("client")
-  public ExperimentalHttpInstrumentationModel withClient(
+  public ExperimentalHttpInstrumentationModel setClient(
       ExperimentalHttpClientInstrumentationModel client) {
     this.client = client;
     return this;
@@ -74,7 +74,7 @@ public class ExperimentalHttpInstrumentationModel {
   }
 
   @JsonProperty("server")
-  public ExperimentalHttpInstrumentationModel withServer(
+  public ExperimentalHttpInstrumentationModel setServer(
       ExperimentalHttpServerInstrumentationModel server) {
     this.server = server;
     return this;

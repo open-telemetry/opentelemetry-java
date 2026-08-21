@@ -79,7 +79,7 @@ public class OtlpHttpExporterModel {
   }
 
   @JsonProperty(ENDPOINT)
-  public OtlpHttpExporterModel withEndpoint(String endpoint) {
+  public OtlpHttpExporterModel setEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
@@ -99,7 +99,7 @@ public class OtlpHttpExporterModel {
   }
 
   @JsonProperty(TLS)
-  public OtlpHttpExporterModel withTls(HttpTlsModel tls) {
+  public OtlpHttpExporterModel setTls(HttpTlsModel tls) {
     this.tls = tls;
     return this;
   }
@@ -118,7 +118,7 @@ public class OtlpHttpExporterModel {
   }
 
   @JsonProperty(HEADERS)
-  public OtlpHttpExporterModel withHeaders(List<NameStringValuePairModel> headers) {
+  public OtlpHttpExporterModel setHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
   }
@@ -143,7 +143,7 @@ public class OtlpHttpExporterModel {
   }
 
   @JsonProperty(HEADERS_LIST)
-  public OtlpHttpExporterModel withHeadersList(String headersList) {
+  public OtlpHttpExporterModel setHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
   }
@@ -165,7 +165,7 @@ public class OtlpHttpExporterModel {
   }
 
   @JsonProperty(COMPRESSION)
-  public OtlpHttpExporterModel withCompression(String compression) {
+  public OtlpHttpExporterModel setCompression(String compression) {
     this.compression = compression;
     return this;
   }
@@ -187,7 +187,7 @@ public class OtlpHttpExporterModel {
   }
 
   @JsonProperty(TIMEOUT)
-  public OtlpHttpExporterModel withTimeout(Integer timeout) {
+  public OtlpHttpExporterModel setTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
@@ -216,7 +216,7 @@ public class OtlpHttpExporterModel {
   }
 
   @JsonProperty(ENCODING)
-  public OtlpHttpExporterModel withEncoding(OtlpHttpEncodingModel encoding) {
+  public OtlpHttpExporterModel setEncoding(OtlpHttpEncodingModel encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -227,7 +227,7 @@ public class OtlpHttpExporterModel {
   }
 
   @JsonAnySetter
-  public OtlpHttpExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public OtlpHttpExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

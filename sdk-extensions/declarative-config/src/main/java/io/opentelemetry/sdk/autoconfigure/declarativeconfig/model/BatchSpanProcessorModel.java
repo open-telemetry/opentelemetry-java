@@ -78,7 +78,7 @@ public class BatchSpanProcessorModel {
   }
 
   @JsonProperty(SCHEDULE_DELAY)
-  public BatchSpanProcessorModel withScheduleDelay(Integer scheduleDelay) {
+  public BatchSpanProcessorModel setScheduleDelay(Integer scheduleDelay) {
     this.scheduleDelay = scheduleDelay;
     return this;
   }
@@ -100,7 +100,7 @@ public class BatchSpanProcessorModel {
   }
 
   @JsonProperty(EXPORT_TIMEOUT)
-  public BatchSpanProcessorModel withExportTimeout(Integer exportTimeout) {
+  public BatchSpanProcessorModel setExportTimeout(Integer exportTimeout) {
     this.exportTimeout = exportTimeout;
     return this;
   }
@@ -120,7 +120,7 @@ public class BatchSpanProcessorModel {
   }
 
   @JsonProperty(MAX_QUEUE_SIZE)
-  public BatchSpanProcessorModel withMaxQueueSize(Integer maxQueueSize) {
+  public BatchSpanProcessorModel setMaxQueueSize(Integer maxQueueSize) {
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -141,7 +141,7 @@ public class BatchSpanProcessorModel {
   }
 
   @JsonProperty(MAX_EXPORT_BATCH_SIZE)
-  public BatchSpanProcessorModel withMaxExportBatchSize(Integer maxExportBatchSize) {
+  public BatchSpanProcessorModel setMaxExportBatchSize(Integer maxExportBatchSize) {
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
@@ -162,7 +162,7 @@ public class BatchSpanProcessorModel {
   }
 
   @JsonProperty(EXPORTER)
-  public BatchSpanProcessorModel withExporter(SpanExporterModel exporter) {
+  public BatchSpanProcessorModel setExporter(SpanExporterModel exporter) {
     this.exporter = exporter;
     return this;
   }
@@ -173,7 +173,7 @@ public class BatchSpanProcessorModel {
   }
 
   @JsonAnySetter
-  public BatchSpanProcessorModel withExtensionProperty(String name, @Nullable Object value) {
+  public BatchSpanProcessorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

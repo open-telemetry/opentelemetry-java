@@ -27,7 +27,7 @@ public class ExperimentalLanguageSpecificInstrumentationPropertyModel {
   }
 
   @JsonAnySetter
-  public ExperimentalLanguageSpecificInstrumentationPropertyModel withAdditionalProperty(
+  public ExperimentalLanguageSpecificInstrumentationPropertyModel setAdditionalProperty(
       String name, Object value) {
     this.additionalProperties.put(name, value);
     return this;
