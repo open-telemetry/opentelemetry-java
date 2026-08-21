@@ -216,7 +216,9 @@ public final class PeriodicMetricReader implements MetricReader {
     private CompletableResultCode exportMetrics(Collection<MetricData> metricData) {
       if (maxExportBatchSize == 0) {
         CompletableResultCode result = exporter.export(metricData);
-        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        if (exporterTimeoutNanos != Long.MAX_VALUE) {
+          result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        }
         return result;
       }
       Collection<Collection<MetricData>> batches =
@@ -225,7 +227,9 @@ public final class PeriodicMetricReader implements MetricReader {
       boolean anyFailed = false;
       for (Collection<MetricData> currentBatch : batches) {
         CompletableResultCode currentResult = exporter.export(currentBatch);
-        currentResult.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        if (exporterTimeoutNanos != Long.MAX_VALUE) {
+          currentResult.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+        }
         if (!currentResult.isSuccess()) {
           anyFailed = true;
         }

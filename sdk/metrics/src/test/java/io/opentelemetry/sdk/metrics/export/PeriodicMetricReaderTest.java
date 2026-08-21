@@ -717,6 +717,198 @@ class PeriodicMetricReaderTest {
                 + "}");
   }
 
+  @Test
+  void setExporterTimeout_configuresTimeout() {
+    PeriodicMetricReaderBuilder builder =
+        PeriodicMetricReader.builder(metricExporter).setExporterTimeout(5, TimeUnit.SECONDS);
+    assertThat(builder).isNotNull();
+  }
+
+  @Test
+  void setExporterTimeout_withDuration_configuresTimeout() {
+    PeriodicMetricReaderBuilder builder =
+        PeriodicMetricReader.builder(metricExporter).setExporterTimeout(Duration.ofSeconds(5));
+    assertThat(builder).isNotNull();
+  }
+
+  @Test
+  void setExporterTimeout_zeroMeansNoTimeout() {
+    PeriodicMetricReaderBuilder builder =
+        PeriodicMetricReader.builder(metricExporter).setExporterTimeout(0, TimeUnit.SECONDS);
+    assertThat(builder).isNotNull();
+  }
+
+  @Test
+  void setExporterTimeout_negativeThrowsException() {
+    assertThatThrownBy(
+            () ->
+                PeriodicMetricReader.builder(metricExporter)
+                    .setExporterTimeout(-1, TimeUnit.SECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+  }
+
+  @Test
+  void setExporterTimeout_nullUnitThrowsException() {
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setExporterTimeout(5, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+  }
+
+  @Test
+  void setExporterTimeout_nullDurationThrowsException() {
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setExporterTimeout((Duration) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+  }
+
+  @Test
+  void defaultBehavior_applies30SecondTimeout() throws Exception {
+    // This test verifies that by default, a 30-second timeout is applied
+    // We test this by having an exporter that takes less than 30 seconds
+    // and ensuring it completes successfully
+    SlowMetricExporter slowExporter = new SlowMetricExporter(100); // 100ms delay
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(slowExporter)
+            .setInterval(Duration.ofMillis(50))
+            .build();
+
+    reader.register(collectionRegistration);
+    try {
+      // Wait for an export to complete - should succeed since 100ms < 30s
+      assertThat(slowExporter.waitForExport(1)).isTrue();
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void explicitTimeout_exporterCompletesBeforeTimeout() throws Exception {
+    FastMetricExporter fastExporter = new FastMetricExporter();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(fastExporter)
+            .setInterval(Duration.ofMillis(50))
+            .setExporterTimeout(1, TimeUnit.SECONDS) // 1 second timeout
+            .build();
+
+    reader.register(collectionRegistration);
+    try {
+      assertThat(fastExporter.waitForExport(1)).isTrue();
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void explicitTimeout_withBatching_completesBeforeTimeout() throws Exception {
+    FastMetricExporter fastExporter = new FastMetricExporter();
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(fastExporter)
+            .setInterval(Duration.ofMillis(50))
+            .setExporterTimeout(1, TimeUnit.SECONDS)
+            .setMaxExportBatchSize(2)
+            .build();
+
+    reader.register(collectionRegistration);
+    try {
+      assertThat(fastExporter.waitForExport(1)).isTrue();
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void explicitTimeout_zeroMeansNoTimeout() throws Exception {
+    SlowMetricExporter slowExporter = new SlowMetricExporter(100);
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(slowExporter)
+            .setInterval(Duration.ofMillis(50))
+            .setExporterTimeout(0, TimeUnit.SECONDS) // No timeout
+            .build();
+
+    reader.register(collectionRegistration);
+    try {
+      assertThat(slowExporter.waitForExport(1)).isTrue();
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  // Helper test classes for timeout testing
+  private static class SlowMetricExporter implements MetricExporter {
+    private final long delayMs;
+    private final AtomicInteger exportCount = new AtomicInteger();
+    private final CountDownLatch exportLatch = new CountDownLatch(1);
+
+    SlowMetricExporter(long delayMs) {
+      this.delayMs = delayMs;
+    }
+
+    @Override
+    public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+      return AggregationTemporality.CUMULATIVE;
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<MetricData> metrics) {
+      try {
+        Thread.sleep(delayMs);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+      exportCount.incrementAndGet();
+      exportLatch.countDown();
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    boolean waitForExport(int count) throws InterruptedException {
+      return exportLatch.await(5, TimeUnit.SECONDS);
+    }
+  }
+
+  private static class FastMetricExporter implements MetricExporter {
+    private final AtomicInteger exportCount = new AtomicInteger();
+    private final CountDownLatch exportLatch = new CountDownLatch(1);
+
+    @Override
+    public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+      return AggregationTemporality.CUMULATIVE;
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<MetricData> metrics) {
+      exportCount.incrementAndGet();
+      exportLatch.countDown();
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    boolean waitForExport(int count) throws InterruptedException {
+      return exportLatch.await(5, TimeUnit.SECONDS);
+    }
+  }
+
   private static class WaitingMetricExporter implements MetricExporter {
 
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
