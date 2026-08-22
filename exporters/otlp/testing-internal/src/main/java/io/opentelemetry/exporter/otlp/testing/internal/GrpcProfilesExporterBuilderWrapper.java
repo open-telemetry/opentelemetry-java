@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.profiles.data.ProfileData;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -132,6 +133,12 @@ final class GrpcProfilesExporterBuilderWrapper implements TelemetryExporterBuild
   @Override
   public TelemetryExporterBuilder<ProfileData> setExecutorService(ExecutorService executorService) {
     builder.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<ProfileData> setEnabledProtocols(List<String> enabledProtocols) {
+    builder.setEnabledProtocols(enabledProtocols);
     return this;
   }
 
