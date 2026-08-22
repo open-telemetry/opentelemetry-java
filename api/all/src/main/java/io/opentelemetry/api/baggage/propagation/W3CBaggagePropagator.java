@@ -77,21 +77,25 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
             return;
           }
           String encodedValue = encodeValue(baggageEntry.getValue());
+          // OTel metadata is an opaque string (baggage API Set Value / Propagation): append as-is
+          // so W3C property structure (keys, '=', OWS) is preserved. Do not percent-encode the
+          // whole blob - that would break property key-value form (see #6771). W3C requires
+          // percent-encoding of list-member values and of property *values* only
+          // (https://w3c.github.io/baggage/#property); callers must supply wire-correct metadata
+          // because OTel does not parse property structure.
           String metadataValue = baggageEntry.getMetadata().getValue();
-          String encodedMetadata =
-              (metadataValue != null && !metadataValue.isEmpty())
-                  ? encodeValue(metadataValue)
-                  : null;
+          String metadata =
+              (metadataValue != null && !metadataValue.isEmpty()) ? metadataValue : null;
           // Exit early if adding this entry causes the total length to exceed the limit
           // encodedEntryLength includes a trailing comma; the final string trims exactly one,
           // so the net contribution to the final length is entryLength - 1.
-          if (headerContent.length() + encodedEntryLength(key, encodedValue, encodedMetadata) - 1
+          if (headerContent.length() + encodedEntryLength(key, encodedValue, metadata) - 1
               > MAX_BAGGAGE_BYTES) {
             return;
           }
           headerContent.append(key).append("=").append(encodedValue);
-          if (encodedMetadata != null) {
-            headerContent.append(";").append(encodedMetadata);
+          if (metadata != null) {
+            headerContent.append(";").append(metadata);
           }
           headerContent.append(",");
           entryCount[0]++;
@@ -113,14 +117,14 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   /**
    * Returns the length of the serialized entry as it would appear in the baggage header, including
    * the trailing comma used by the trailing-comma pattern in {@link #baggageToString}. The length
-   * accounts for {@code "key=encodedValue,"} plus {@code ";encodedMetadata"} when metadata is
-   * present.
+   * accounts for {@code "key=encodedValue,"} plus {@code ";metadata"} when metadata is present.
+   * Metadata is treated as an opaque properties blob and is not percent-encoded as a unit.
    */
   private static int encodedEntryLength(
-      String key, String encodedValue, @Nullable String encodedMetadata) {
+      String key, String encodedValue, @Nullable String metadata) {
     int length = key.length() + 1 + encodedValue.length() + 1; // "key=value,"
-    if (encodedMetadata != null) {
-      length += 1 + encodedMetadata.length(); // ";metadata"
+    if (metadata != null) {
+      length += 1 + metadata.length(); // ";metadata"
     }
     return length;
   }

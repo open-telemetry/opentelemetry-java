@@ -36,11 +36,12 @@ class W3CBaggagePropagatorFuzzTest {
     private final W3CBaggagePropagator baggagePropagator = W3CBaggagePropagator.getInstance();
 
     @Fuzz
-    public void roundTripRandomValues(String baggageValue, String metadataBlob) {
+    public void roundTripRandomValues(
+        String baggageValue, @From(MetadataGenerator.class) String metadataBlob) {
+      // Extract trims OWS around the metadata blob; match that so round-trip compares equal.
+      String metadata = metadataBlob.trim();
       Baggage baggage =
-          Baggage.builder()
-              .put("b", baggageValue, BaggageEntryMetadata.create(metadataBlob))
-              .build();
+          Baggage.builder().put("b", baggageValue, BaggageEntryMetadata.create(metadata)).build();
       Map<String, String> carrier = new HashMap<>();
       baggagePropagator.inject(Context.root().with(baggage), carrier, Map::put);
       Context extractedContext =
@@ -53,11 +54,10 @@ class W3CBaggagePropagatorFuzzTest {
     @Fuzz
     public void roundTripAsciiValues(
         @From(AsciiGenerator.class) String baggageValue,
-        @From(AsciiGenerator.class) String metadataBlob) {
+        @From(MetadataGenerator.class) String metadataBlob) {
+      String metadata = metadataBlob.trim();
       Baggage baggage =
-          Baggage.builder()
-              .put("b", baggageValue, BaggageEntryMetadata.create(metadataBlob))
-              .build();
+          Baggage.builder().put("b", baggageValue, BaggageEntryMetadata.create(metadata)).build();
       Map<String, String> carrier = new HashMap<>();
       baggagePropagator.inject(Context.root().with(baggage), carrier, Map::put);
       Context extractedContext =
@@ -114,6 +114,28 @@ class W3CBaggagePropagatorFuzzTest {
     @Override
     protected boolean codePointInRange(int codePoint) {
       return codePoint >= ' ' && codePoint <= '~';
+    }
+  }
+
+  /**
+   * Generates opaque metadata that is safe to round-trip without percent-encoding. Excludes {@code
+   * ','} which is the W3C list-member separator and would split the header on extract.
+   */
+  public static class MetadataGenerator extends AbstractStringGenerator {
+
+    @Override
+    protected int nextCodePoint(SourceOfRandomness random) {
+      while (true) {
+        char c = random.nextChar(' ', '~');
+        if (c != ',') {
+          return c;
+        }
+      }
+    }
+
+    @Override
+    protected boolean codePointInRange(int codePoint) {
+      return codePoint >= ' ' && codePoint <= '~' && codePoint != ',';
     }
   }
 
