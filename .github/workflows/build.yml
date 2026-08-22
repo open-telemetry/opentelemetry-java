@@ -41,6 +41,8 @@ jobs:
             jmh-based-tests: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - id: setup-java-test
         name: Set up Java ${{ matrix.test-java-version }} for tests
@@ -58,6 +60,8 @@ jobs:
           java-version: 21
 
       - name: Set up gradle
+        # zizmor: ignore[cache-poisoning] This tests release branches but does not
+        # publish release artifacts.
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
           # Keep one writer per OS because Gradle User Home caches are platform-specific.
@@ -65,13 +69,15 @@ jobs:
           gradle-home-cache-excludes: >-
             ${{ secrets.DEVELOCITY_ACCESS_KEY != '' && github.ref_name == github.event.repository.default_branch && matrix.test-java-version == 25 && 'caches/build-cache-1' || '' }}
       - name: Build
+        shell: bash
         run: >
             ./gradlew build
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
-            "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
+            "-Porg.gradle.java.installations.paths=${TEST_JAVA_PATH}"
             "-Porg.gradle.java.installations.auto-download=false"
         env:
+          TEST_JAVA_PATH: ${{ steps.setup-java-test.outputs.path }}
           # JMH-based tests run only if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
@@ -121,6 +127,8 @@ jobs:
           - 25 # renovate(graal-java-version)
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: graalvm/setup-graalvm@5298d94fb55a4f185c602eeac5de1b553882abe2 # v1.6.4
         with:
           java-version: ${{ matrix.test-graal-version }}
