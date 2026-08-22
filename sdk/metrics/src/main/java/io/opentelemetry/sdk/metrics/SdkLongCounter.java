@@ -29,7 +29,7 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
   SdkLongCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor);
+    super(descriptor, sdkMeter);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
@@ -49,7 +49,7 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
   @Override
   public void add(long increment, Attributes attributes) {
-    add(increment, attributes, Context.current());
+    add(increment, attributes, currentOrRootContext());
   }
 
   @Override
