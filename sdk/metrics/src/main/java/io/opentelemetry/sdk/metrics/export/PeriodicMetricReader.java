@@ -264,6 +264,10 @@ public final class PeriodicMetricReader implements MetricReader {
         return result;
       }
 
+      if (result.isDone()) {
+        return result;
+      }
+
       try {
         CompletableResultCode timeoutResult = new CompletableResultCode();
 

@@ -32,7 +32,7 @@ public final class PeriodicMetricReaderBuilder {
 
   private long intervalNanos = TimeUnit.MINUTES.toNanos(DEFAULT_SCHEDULE_DELAY_MINUTES);
 
-  private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
+  @Nullable private Long exporterTimeoutNanos;
 
   @Nullable private ScheduledExecutorService executor;
 
@@ -111,7 +111,9 @@ public final class PeriodicMetricReaderBuilder {
     return new PeriodicMetricReader(
         metricExporter,
         intervalNanos,
-        exporterTimeoutNanos,
+        exporterTimeoutNanos != null
+            ? exporterTimeoutNanos
+            : Math.min(intervalNanos, TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS)),
         executor,
         maxExportBatchSize,
         internalTelemetryVersion);

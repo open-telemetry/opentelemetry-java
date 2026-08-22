@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -799,6 +800,38 @@ class PeriodicMetricReaderTest {
     } finally {
       reader.shutdown();
     }
+  }
+
+  @Test
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  void export_alreadyCompleted_doesNotScheduleTimeout() {
+    ScheduledExecutorService mockScheduler = mock(ScheduledExecutorService.class);
+    ScheduledFuture mockFuture = mock(ScheduledFuture.class);
+    when(mockScheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any()))
+        .thenReturn(mockFuture);
+
+    MetricExporter fastExporter = mock(MetricExporter.class);
+    when(fastExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
+    when(fastExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(fastExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    when(fastExporter.getAggregationTemporality(any()))
+        .thenReturn(AggregationTemporality.CUMULATIVE);
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(fastExporter)
+            .setInterval(Duration.ofMillis(50))
+            .setExporterTimeout(Duration.ofSeconds(1))
+            .setExecutor(mockScheduler)
+            .build();
+
+    reader.register(collectionRegistration);
+
+    reader.forceFlush();
+
+    // Verify scheduleAtFixedRate was called (for periodic export)
+    verify(mockScheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
+    // Verify schedule (for timeout) was never called because the export completed synchronously
+    verify(mockScheduler, never()).schedule(any(Runnable.class), anyLong(), any());
   }
 
   @Test
