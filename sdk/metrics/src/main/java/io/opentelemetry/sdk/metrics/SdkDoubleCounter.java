@@ -28,7 +28,7 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
 
   SdkDoubleCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor, sdkMeter);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }

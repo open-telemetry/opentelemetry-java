@@ -23,7 +23,7 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
 
   SdkDoubleGauge(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor, sdkMeter);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }

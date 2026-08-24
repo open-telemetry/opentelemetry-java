@@ -403,6 +403,16 @@ final class SdkMeter implements Meter {
       }
       return false;
     }
+
+    @Override
+    public boolean usesContext() {
+      for (WriteableMetricStorage storage : storages) {
+        if (storage.usesContext()) {
+          return true;
+        }
+      }
+      return false;
+    }
   }
 
   private static class MultiBoundStorageHandle implements BoundStorageHandle {

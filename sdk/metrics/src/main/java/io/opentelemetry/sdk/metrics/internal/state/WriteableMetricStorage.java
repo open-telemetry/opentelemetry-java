@@ -35,4 +35,9 @@ public interface WriteableMetricStorage {
    * otherwise (i.e. noop / empty metric storage is installed).
    */
   boolean isEnabled();
+
+  /** Returns {@code true} if the record-path {@link Context} may affect this storage's output. */
+  default boolean usesContext() {
+    return true;
+  }
 }

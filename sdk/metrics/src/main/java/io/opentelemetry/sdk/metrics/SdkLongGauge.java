@@ -22,7 +22,7 @@ class SdkLongGauge extends AbstractInstrument implements LongGauge {
   final WriteableMetricStorage storage;
 
   SdkLongGauge(InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor, sdkMeter);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }

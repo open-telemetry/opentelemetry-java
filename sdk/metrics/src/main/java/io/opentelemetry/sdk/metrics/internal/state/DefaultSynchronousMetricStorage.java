@@ -86,6 +86,11 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
   }
 
   @Override
+  public boolean usesContext() {
+    return attributesProcessor.usesContext();
+  }
+
+  @Override
   public void recordLong(long value, Attributes attributes, Context context) {
     if (!enabled) {
       return;

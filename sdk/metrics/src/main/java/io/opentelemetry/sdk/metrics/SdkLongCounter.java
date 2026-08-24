@@ -29,7 +29,7 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
   SdkLongCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor, sdkMeter);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }

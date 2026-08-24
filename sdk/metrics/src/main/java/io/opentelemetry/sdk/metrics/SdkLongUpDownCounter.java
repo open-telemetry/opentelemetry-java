@@ -23,7 +23,7 @@ class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCount
 
   SdkLongUpDownCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor, sdkMeter);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }

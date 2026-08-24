@@ -7,17 +7,27 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import javax.annotation.Nullable;
 
 abstract class AbstractInstrument {
 
   private final InstrumentDescriptor descriptor;
-  final boolean exemplarsAlwaysOff;
+
+  /**
+   * True when the record-path {@link Context} has no observable effect for this instrument, so
+   * parameterless record overloads may substitute {@link Context#root()} for {@link
+   * Context#current()} and skip a thread-local lookup. Both potential consumers must be inactive:
+   * the exemplar filter (disabled meter-wide) and every backing storage's {@link
+   * io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor} (e.g. baggage append).
+   */
+  private final boolean canUseRootContext;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
-  AbstractInstrument(InstrumentDescriptor descriptor, SdkMeter sdkMeter) {
+  AbstractInstrument(
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     this.descriptor = descriptor;
-    this.exemplarsAlwaysOff = sdkMeter.isExemplarsAlwaysOff();
+    this.canUseRootContext = sdkMeter.isExemplarsAlwaysOff() && !storage.usesContext();
   }
 
   final InstrumentDescriptor getDescriptor() {
@@ -25,13 +35,12 @@ abstract class AbstractInstrument {
   }
 
   /**
-   * Returns {@link Context#current()}, or {@link Context#root()} when exemplars are known-off and
-   * the caller doesn't otherwise care about propagating a specific context. Used by parameterless
-   * record overloads on synchronous instruments to skip a thread-local lookup when the resulting
-   * context is only consulted by the exemplar path.
+   * Returns {@link Context#current()}, or {@link Context#root()} when the current context can have
+   * no observable effect on this instrument's outputs (see {@link #canUseRootContext}). Used by
+   * parameterless record overloads on synchronous instruments to skip a thread-local lookup.
    */
   final Context currentOrRootContext() {
-    return exemplarsAlwaysOff ? Context.root() : Context.current();
+    return canUseRootContext ? Context.root() : Context.current();
   }
 
   @Override

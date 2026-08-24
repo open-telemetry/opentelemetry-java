@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AbstractInstrument}. */
@@ -24,6 +25,7 @@ class AbstractInstrumentTest {
           Advice.empty());
 
   private static final SdkMeter SDK_METER = mock(SdkMeter.class);
+  private static final WriteableMetricStorage STORAGE = mock(WriteableMetricStorage.class);
 
   @Test
   void getValues() {
@@ -40,7 +42,7 @@ class AbstractInstrumentTest {
 
   private static final class TestInstrument extends AbstractInstrument {
     TestInstrument(InstrumentDescriptor descriptor) {
-      super(descriptor, SDK_METER);
+      super(descriptor, SDK_METER, STORAGE);
     }
   }
 }

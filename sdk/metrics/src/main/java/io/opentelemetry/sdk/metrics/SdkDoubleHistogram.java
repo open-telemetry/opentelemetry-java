@@ -28,7 +28,7 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
 
   SdkDoubleHistogram(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor, sdkMeter);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
