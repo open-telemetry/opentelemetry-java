@@ -15,6 +15,13 @@ otelJava.osgiServiceLoaderProvides.set(listOf(
 // (org.jspecify.annotations is pulled in by OkHttp's Kotlin-compiled types, not this bundle's code.)
 otelJava.osgiUnversionedOptionalPackages.set(listOf("okhttp3", "okio", "org.jspecify.annotations"))
 
+tasks.withType<Test>().configureEach {
+  systemProperty(
+    "java.security.properties",
+    file("src/test/resources/enable-legacy-tls.security").absolutePath
+  )
+}
+
 dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
