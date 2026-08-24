@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.processcontext;
 
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.processcontext.data.ProcessContextData;
+import java.io.IOException;
 
 /**
  * Exposes process context information to external readers using the shared memory mechanism
@@ -21,6 +23,7 @@ public interface ProcessContextPublisher {
    * Called to publish a {@code ProcessContextData}s.
    *
    * @param processContextData the process Resource descriptor and optional additional metadata.
+   * @param clock the time source for the publication.
    */
-  void publish(ProcessContextData processContextData) throws Throwable;
+  void publish(ProcessContextData processContextData, Clock clock) throws IOException;
 }

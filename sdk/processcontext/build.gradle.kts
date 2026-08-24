@@ -16,6 +16,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
 
+  testImplementation(project(":sdk:testing"))
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("com.google.protobuf:protobuf-java-util")
 }

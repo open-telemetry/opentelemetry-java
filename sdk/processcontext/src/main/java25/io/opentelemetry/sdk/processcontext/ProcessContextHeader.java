@@ -12,8 +12,17 @@ import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 
+/**
+ * Provides a typesafe overlay on a region of memory, with layout conforming to the process context
+ * header specification provided in OTEP-4719.
+ *
+ * <p>This class is not threadsafe and must be externally synchronized.
+ *
+ * @see <a
+ *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/profiles/4719-process-ctx.md">OTEP
+ *     4719</a>
+ */
 final class ProcessContextHeader {
 
   private static final byte[] OTEL_CTX_SIGNATURE = "OTEL_CTX".getBytes(StandardCharsets.UTF_8);
@@ -50,6 +59,11 @@ final class ProcessContextHeader {
 
   private final MemorySegment memorySegment;
 
+  /**
+   * Wraps the given region of memory.
+   *
+   * @param memorySegment the underlying memory.
+   */
   ProcessContextHeader(MemorySegment memorySegment) {
     this.memorySegment = memorySegment;
   }
@@ -59,8 +73,16 @@ final class ProcessContextHeader {
     return memorySegment;
   }
 
-  // https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/profiles/4719-process-ctx.md#publication-protocol
-  void publish(MemorySegment payload) {
+  /**
+   * Runs the header-specific steps of the publication protocol.
+   *
+   * @param payload the memory holding the serialized payload information.
+   * @param now the timestamp to publish.
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/profiles/4719-process-ctx.md#publication-protocol">OTEP
+   *     4719 publication protocol</a>
+   */
+  void publish(MemorySegment payload, long now) {
 
     // spec: publication step 7. Write header fields: Populate signature, version, payload_size,
     // payload but not yet
@@ -78,11 +100,19 @@ final class ProcessContextHeader {
     // spec: publication step 9. Write timestamp: Write monotonic_published_at_ns last. This field
     // is used to detect
     // that the context is ready for use by the reader.
-    publishCurrentTimestamp();
+    publishTimestamp(now);
   }
 
-  // https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/profiles/4719-process-ctx.md#updating-protocol
-  void update(MemorySegment payload) {
+  /**
+   * Runs the header-specific steps of the updating protocol.
+   *
+   * @param payload the memory holding the serialized payload information.
+   * @param now the timestamp to publish.
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/profiles/4719-process-ctx.md##updating-protocol">OTEP
+   *     4719 updating protocol</a>
+   */
+  void update(MemorySegment payload, long now) {
 
     // spec: updating step 2. Signal update start: Write 0 to the monotonic_published_at_ns field.
     // This signals to
@@ -107,7 +137,7 @@ final class ProcessContextHeader {
     // spec: updating step 6. Signal update complete: Write the new timestamp to
     // monotonic_published_at_ns; this
     // is an aligned 64-bit write and thus expected to be atomic.
-    publishCurrentTimestamp();
+    publishTimestamp(now);
   }
 
   private void publishPayload(MemorySegment payload) {
@@ -115,9 +145,7 @@ final class ProcessContextHeader {
     PAYLOAD_ADDRESS_HANDLE.set(memorySegment, payload);
   }
 
-  private void publishCurrentTimestamp() {
-    Instant now = Instant.now();
-    long publishedAtNs = now.getEpochSecond() * 1_000_000_000L + now.getNano();
-    TIMESTAMP_HANDLE.set(memorySegment, publishedAtNs);
+  private void publishTimestamp(long now) {
+    TIMESTAMP_HANDLE.set(memorySegment, now);
   }
 }
