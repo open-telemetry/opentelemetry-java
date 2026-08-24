@@ -21,7 +21,7 @@ class ModelJacksonRoundTripTest {
 
   @Test
   void deserializesThroughBuilderWithSnakeCaseNames() throws Exception {
-    // @JsonProperty is on the getter and withX, not the field, so Jackson binds through the
+    // @JsonProperty is on the getter and setX, not the field, so Jackson binds through the
     // builder using the snake_case name.
     BatchSpanProcessorModel model = new BatchSpanProcessorModel().setScheduleDelay(5000);
 
