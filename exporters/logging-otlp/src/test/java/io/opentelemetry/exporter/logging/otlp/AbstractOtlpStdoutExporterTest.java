@@ -302,7 +302,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
         .isEqualTo(MemoryMode.REUSABLE_DATA);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Each test subclass selects a provider that creates T.
   protected T exporterFromComponentProvider(DeclarativeConfigProperties properties) {
     return (T)
         StreamSupport.stream(
@@ -317,7 +317,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
             .create(properties);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // Each test subclass selects a provider that creates T.
   protected T exporterFromProvider(ConfigProperties config) {
     Object provider = loadProvider(config);
 
