@@ -56,8 +56,6 @@ public class ProfilesDictionaryCompositor {
     locationTable.putIfAbsent(
         LocationData.create(0, 0, Collections.emptyList(), Collections.emptyList()));
     functionTable.putIfAbsent(FunctionData.create(0, 0, 0, 0));
-    // TODO this is, strictly speaking, probably not profile spec compliant at present.
-    // The spec uses "" but the Id encoders don't like that. The alpha spec may need revision...
     linkTable.putIfAbsent(LinkData.create(TraceId.getInvalid(), SpanId.getInvalid()));
     stringTable.putIfAbsent("");
     attributeTable.putIfAbsent(KeyValueAndUnitData.create(0, Value.of(""), 0));
