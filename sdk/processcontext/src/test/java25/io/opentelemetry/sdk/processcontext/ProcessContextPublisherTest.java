@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.processcontext;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.processcontext.data.ProcessContextData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
@@ -22,9 +22,9 @@ import org.junit.jupiter.api.Test;
 class ProcessContextPublisherTest {
 
   @Test
-  void publicationTest() throws Throwable {
+  void publication() throws Throwable {
 
-    assertFalse(containsMappingWith("OTEL_CTX"));
+    assertThat(containsMappingWith("OTEL_CTX")).isFalse();
 
     ProcessContextData processContextData =
         ProcessContextData.create(
@@ -32,9 +32,9 @@ class ProcessContextPublisherTest {
             Attributes.of(AttributeKey.stringKey("foo2"), "bar2"));
 
     ProcessContextPublisher processContextPublisher = new DefaultProcessContextPublisher();
-    processContextPublisher.publish(processContextData);
+    processContextPublisher.publish(processContextData, TestClock.create());
 
-    assertTrue(containsMappingWith("OTEL_CTX"));
+    assertThat(containsMappingWith("OTEL_CTX")).isTrue();
   }
 
   private static boolean containsMappingWith(String value) throws IOException {

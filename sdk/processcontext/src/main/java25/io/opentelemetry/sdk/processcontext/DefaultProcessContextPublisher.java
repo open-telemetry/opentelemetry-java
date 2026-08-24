@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.processcontext;
 
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.export.MessageWriter;
 import io.opentelemetry.sdk.processcontext.data.ProcessContextData;
 import java.io.ByteArrayOutputStream;
@@ -117,29 +118,34 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
 
   @Override
   @SuppressWarnings({"unused", "NullAway"})
-  public void publish(ProcessContextData processContextData) throws Throwable {
+  public synchronized void publish(ProcessContextData processContextData, Clock clock)
+      throws IOException {
 
     Arena prevPayloadArena = null;
 
     if (header == null) {
 
-      // first time - follow 'publication' steps
-      mapping = initializeMapping(); // spec: publication steps 1-5
-      header = new ProcessContextHeader(mapping);
-      // spec publication step 6 (equiv updating step 1). Encode payload
-      payloadArena = Arena.ofConfined();
-      MemorySegment payload = encode(payloadArena, processContextData);
-      header.publish(payload); // spec: publication steps 7-9
-      initializeName(); // spec: publication step 10.
+      try {
+        // first time - follow 'publication' steps
+        mapping = initializeMapping(); // spec: publication steps 1-5
+        header = new ProcessContextHeader(mapping);
+        // spec publication step 6 (equiv updating step 1). Encode payload
+        payloadArena = Arena.ofShared();
+        MemorySegment payload = encode(payloadArena, processContextData);
+        header.publish(payload, clock.now()); // spec: publication steps 7-9
+        initializeName(); // spec: publication step 10.
+      } catch (Throwable t) {
+        throw new IOException(t);
+      }
 
     } else {
 
       // already published - follow 'updating' steps
       prevPayloadArena = payloadArena;
       // spec updating step 1. Encode payload
-      payloadArena = Arena.ofConfined();
+      payloadArena = Arena.ofShared();
       MemorySegment payload = encode(payloadArena, processContextData);
-      header.update(payload); // spec: updating steps 2-6
+      header.update(payload, clock.now()); // spec: updating steps 2-6
       prevPayloadArena.close(); // free old payload memory
     }
   }

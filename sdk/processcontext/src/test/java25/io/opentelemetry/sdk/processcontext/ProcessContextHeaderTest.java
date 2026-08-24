@@ -5,57 +5,65 @@
 
 package io.opentelemetry.sdk.processcontext;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.testing.time.TestClock;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 class ProcessContextHeaderTest {
 
   @Test
-  void testEmptyHeader() {
+  void emptyHeader() {
     try (Arena arena = Arena.ofConfined()) {
       ProcessContextHeader processContextHeader =
           new ProcessContextHeader(arena.allocate(ProcessContextHeader.byteSize()));
       byte[] content = processContextHeader.getMemorySegment().toArray(ValueLayout.JAVA_BYTE);
-      assertArrayEquals(new byte[32], content);
+      assertThat(content).isEqualTo(new byte[32]);
     }
   }
 
   @Test
-  void testHeaderPublication() {
+  void headerPublication() {
     try (Arena arena = Arena.ofConfined()) {
       ProcessContextHeader processContextHeader =
           new ProcessContextHeader(arena.allocate(ProcessContextHeader.byteSize()));
 
+      TestClock clock = TestClock.create();
+
       MemorySegment payloadA = arena.allocate(20);
-      processContextHeader.publish(payloadA); // initial publication
-      validateContent(processContextHeader.getMemorySegment(), payloadA);
+      processContextHeader.publish(payloadA, clock.now()); // initial publication
+      validateContent(processContextHeader.getMemorySegment(), payloadA, clock.now());
+
+      clock.advance(Duration.ofSeconds(1));
 
       MemorySegment payloadB = arena.allocate(30);
-      processContextHeader.publish(payloadB); // update publication
-      validateContent(processContextHeader.getMemorySegment(), payloadB);
+      processContextHeader.publish(payloadB, clock.now()); // update publication
+      validateContent(processContextHeader.getMemorySegment(), payloadB, clock.now());
     }
   }
 
-  private static void validateContent(MemorySegment published, MemorySegment payload) {
+  private static void validateContent(MemorySegment published, MemorySegment payload, long now) {
     byte[] actualSignature = published.asSlice(0, 8).toArray(ValueLayout.JAVA_BYTE);
-    assertArrayEquals("OTEL_CTX".getBytes(StandardCharsets.UTF_8), actualSignature);
+    assertThat(actualSignature).isEqualTo("OTEL_CTX".getBytes(StandardCharsets.UTF_8));
 
-    assertEquals(ByteOrder.nativeOrder(), ValueLayout.JAVA_INT.order());
+    assertThat(ValueLayout.JAVA_INT.order()).isEqualTo(ByteOrder.nativeOrder());
 
     int actualVersion = published.get(ValueLayout.JAVA_INT, 8);
-    assertEquals(2, actualVersion);
+    assertThat(actualVersion).isEqualTo(2);
 
     int actualPayloadSize = published.get(ValueLayout.JAVA_INT, 12);
-    assertEquals(payload.byteSize(), actualPayloadSize);
+    assertThat(actualPayloadSize).isEqualTo(payload.byteSize());
+
+    long actualTimestamp = published.get(ValueLayout.JAVA_LONG, 16);
+    assertThat(actualTimestamp).isEqualTo(now);
 
     long actualAddress = published.get(ValueLayout.ADDRESS, 24).address();
-    assertEquals(payload.address(), actualAddress);
+    assertThat(actualAddress).isEqualTo(payload.address());
   }
 }
