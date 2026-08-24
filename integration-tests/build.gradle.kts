@@ -16,3 +16,8 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-params")
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }
+
+// Skip ossIndexAudit on test module
+tasks.named("ossIndexAudit") {
+  enabled = false
+}
