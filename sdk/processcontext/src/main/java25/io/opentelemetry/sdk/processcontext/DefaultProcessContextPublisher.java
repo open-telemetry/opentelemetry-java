@@ -123,9 +123,10 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
 
     Arena prevPayloadArena = null;
 
-    if (header == null) {
+    try {
 
-      try {
+      if (header == null) {
+
         // first time - follow 'publication' steps
         mapping = initializeMapping(); // spec: publication steps 1-5
         header = new ProcessContextHeader(mapping);
@@ -133,20 +134,22 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
         payloadArena = Arena.ofShared();
         MemorySegment payload = encode(payloadArena, processContextData);
         header.publish(payload, clock.now()); // spec: publication steps 7-9
-        initializeName(); // spec: publication step 10.
-      } catch (Throwable t) {
-        throw new IOException(t);
+        nameMapping(); // spec: publication step 10.
+
+      } else {
+
+        // already published - follow 'updating' steps
+        prevPayloadArena = payloadArena;
+        // spec updating step 1. Encode payload
+        payloadArena = Arena.ofShared();
+        MemorySegment payload = encode(payloadArena, processContextData);
+        header.update(payload, clock.now()); // spec: updating steps 2-6
+        prevPayloadArena.close(); // free old payload memory
+        nameMapping(); // spec: updating step 7.
       }
 
-    } else {
-
-      // already published - follow 'updating' steps
-      prevPayloadArena = payloadArena;
-      // spec updating step 1. Encode payload
-      payloadArena = Arena.ofShared();
-      MemorySegment payload = encode(payloadArena, processContextData);
-      header.update(payload, clock.now()); // spec: updating steps 2-6
-      prevPayloadArena.close(); // free old payload memory
+    } catch (Throwable t) {
+      throw new IOException(t);
     }
   }
 
@@ -157,8 +160,9 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
 
     // spec: publication step 2a. Allocate new memfd and size it: Create a new memfd using
     // memfd_create("OTEL_CTX", MFD_CLOEXEC | MFD_ALLOW_SEALING | MFD_NOEXEC_SEAL)
-    // note that we don't fallback to retry without MFD_ALLOW_SEALING, because the panama API
-    // doesn't give us a good way of determining the cause of failure.
+    // TODO fallback retry without MFD_NOEXEC_SEAL for pre-6.3 platforms,
+    //  probably requires Linker.Option.captureCallState for checking failure cause,
+    //  though we could just do it blind...
     int fd = -1;
     try (Arena arena = Arena.ofConfined()) {
       MemorySegment nameSegment = arena.allocateFrom(OTEL_NAME);
@@ -222,9 +226,10 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
     return mapping;
   }
 
-  private void initializeName() throws Throwable {
-    // spec: publication step 10. Name mapping: Use prctl(PR_SET_VMA, PR_SET_VMA_ANON_NAME, ...,
-    // "OTEL_CTX") to name the mapping. This step should be done unconditionally, although naming
+  private void nameMapping() throws Throwable {
+    // spec: publication step 10. and updating protocol step 7: Name mapping
+    // Use prctl(PR_SET_VMA, PR_SET_VMA_ANON_NAME, ...,"OTEL_CTX") to name the mapping.
+    // This step should be done unconditionally, although naming
     // mappings is not always supported by the kernel.
     try (Arena arena = Arena.ofConfined()) {
       MemorySegment nameSegment = arena.allocateFrom(OTEL_NAME);
