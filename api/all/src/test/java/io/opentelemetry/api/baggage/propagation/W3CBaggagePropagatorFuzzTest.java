@@ -117,17 +117,13 @@ class W3CBaggagePropagatorFuzzTest {
     }
   }
 
-  /**
-   * Generates opaque metadata that is safe to round-trip without percent-encoding. Excludes {@code
-   * ','} which is the W3C list-member separator and would split the header on extract.
-   */
   public static class MetadataGenerator extends AbstractStringGenerator {
 
     @Override
     protected int nextCodePoint(SourceOfRandomness random) {
       while (true) {
         char c = random.nextChar(' ', '~');
-        if (c != ',') {
+        if (c != '"' && c != ',' && c != '\\') {
           return c;
         }
       }
@@ -135,7 +131,11 @@ class W3CBaggagePropagatorFuzzTest {
 
     @Override
     protected boolean codePointInRange(int codePoint) {
-      return codePoint >= ' ' && codePoint <= '~' && codePoint != ',';
+      return codePoint >= ' '
+          && codePoint <= '~'
+          && codePoint != '"'
+          && codePoint != ','
+          && codePoint != '\\';
     }
   }
 

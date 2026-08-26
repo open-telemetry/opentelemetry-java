@@ -77,12 +77,6 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
             return;
           }
           String encodedValue = encodeValue(baggageEntry.getValue());
-          // OTel metadata is an opaque string (baggage API Set Value / Propagation): append as-is
-          // so W3C property structure (keys, '=', OWS) is preserved. Do not percent-encode the
-          // whole blob - that would break property key-value form (see #6771). W3C requires
-          // percent-encoding of list-member values and of property *values* only
-          // (https://w3c.github.io/baggage/#property); callers must supply wire-correct metadata
-          // because OTel does not parse property structure.
           String metadataValue = baggageEntry.getMetadata().getValue();
           String metadata =
               (metadataValue != null && !metadataValue.isEmpty()) ? metadataValue : null;
@@ -118,7 +112,6 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
    * Returns the length of the serialized entry as it would appear in the baggage header, including
    * the trailing comma used by the trailing-comma pattern in {@link #baggageToString}. The length
    * accounts for {@code "key=encodedValue,"} plus {@code ";metadata"} when metadata is present.
-   * Metadata is treated as an opaque properties blob and is not percent-encoded as a unit.
    */
   private static int encodedEntryLength(
       String key, String encodedValue, @Nullable String metadata) {
@@ -183,7 +176,9 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   private static boolean baggageIsInvalid(String key, BaggageEntry baggageEntry) {
-    return !isValidBaggageKey(key) || !isValidBaggageValue(baggageEntry.getValue());
+    return !isValidBaggageKey(key)
+        || !isValidBaggageValue(baggageEntry.getValue())
+        || !isValidBaggageMetadata(baggageEntry.getMetadata().getValue());
   }
 
   /**
@@ -204,6 +199,29 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
    */
   private static boolean isValidBaggageValue(String value) {
     return value != null;
+  }
+
+  /**
+   * Determines whether the given {@code String} is valid W3C baggage metadata.
+   *
+   * @param metadata the metadata to be validated.
+   * @return whether the metadata is valid.
+   */
+  private static boolean isValidBaggageMetadata(@Nullable String metadata) {
+    if (metadata == null || metadata.isEmpty()) {
+      return true;
+    }
+    for (int i = 0; i < metadata.length(); i++) {
+      if (!isValidMetadataChar(metadata.charAt(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // tchar / baggage-octet / OWS / '=' / ';'
+  private static boolean isValidMetadataChar(char c) {
+    return c == '\t' || (c >= ' ' && c <= '~' && c != '"' && c != ',' && c != '\\');
   }
 
   @Override

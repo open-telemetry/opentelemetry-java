@@ -476,7 +476,6 @@ class W3CBaggagePropagatorTest {
         Arguments.argumentSet(
             "multiple invalid entries",
             "bad1=va%lue,key1=value1,bad2=value%GG,encoded=value%202,bad3=value;meta=%GG",
-            // metadata is not percent-decoded, so "meta=%GG" is kept as an opaque string
             Baggage.builder()
                 .put("key1", "value1")
                 .put("encoded", "value 2")
@@ -630,13 +629,11 @@ class W3CBaggagePropagatorTest {
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(
                 "baggage",
-                // Values are percent-encoded; metadata is left opaque (not percent-encoded).
                 "meta=meta-value;somemetadata; someother=foo,needsEncoding=blah%20blah%20blah,nometa=nometa-value"));
   }
 
   @Test
   void inject_doesNotPercentEncodeMetadata() {
-    // Regression for #6771: W3C property key-value shape (spaces, '=', tabs) must survive inject.
     Baggage baggage =
         Baggage.builder()
             .put("SomeKey", "SomeValue", BaggageEntryMetadata.create("ValueProp \t = \t PropVal"))
@@ -648,9 +645,42 @@ class W3CBaggagePropagatorTest {
             singletonMap("baggage", "SomeKey=SomeValue;ValueProp \t = \t PropVal"));
   }
 
+  @ParameterizedTest
+  @MethodSource
+  void inject_invalidMetadata_skipsEntry(String metadata) {
+    Baggage baggage =
+        Baggage.builder()
+            .put("keep", "yes")
+            .put("drop", "no", BaggageEntryMetadata.create(metadata))
+            .build();
+    Map<String, String> carrier = new HashMap<>();
+    W3CBaggagePropagator.getInstance().inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier).containsExactlyInAnyOrderEntriesOf(singletonMap("baggage", "keep=yes"));
+  }
+
+  static Stream<Arguments> inject_invalidMetadata_skipsEntry() {
+    return Stream.of(
+        Arguments.argumentSet("comma", "a,b"),
+        Arguments.argumentSet("dquote", "a\"b"),
+        Arguments.argumentSet("backslash", "a\\b"),
+        Arguments.argumentSet("cr", "a\rb"),
+        Arguments.argumentSet("lf", "a\nb"),
+        Arguments.argumentSet("nul", "a\0b"),
+        Arguments.argumentSet("del", "a\u007fb"),
+        Arguments.argumentSet("non-ascii", "caf\u00e9"),
+        Arguments.argumentSet("obs-text", "a\u0080b"));
+  }
+
+  @Test
+  void inject_invalidMetadataOnly_omitsHeader() {
+    Baggage baggage = Baggage.builder().put("k", "v", BaggageEntryMetadata.create("a,b")).build();
+    Map<String, String> carrier = new HashMap<>();
+    W3CBaggagePropagator.getInstance().inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier).isEmpty();
+  }
+
   @Test
   void extract_metadataNotPercentDecoded() {
-    // Metadata containing percent sequences must be kept as-is (opaque string).
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Context result =
         propagator.extract(
