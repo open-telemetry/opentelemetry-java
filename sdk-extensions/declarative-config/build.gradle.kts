@@ -12,6 +12,7 @@ plugins {
 
 description = "OpenTelemetry SDK Declarative Config"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
@@ -107,8 +108,12 @@ val syncPojoModelsToSrc = tasks.register("syncPojoModelsToSrc") {
   val modelSrcDir = File(projectDir, "src/main/java")
   doLast {
     val modelDir = File(modelSrcDir, modelPackage.replace('.', '/'))
-    // Delete first so schema type removals don't leave stale classes.
-    modelDir.deleteRecursively()
+    // Delete only @Generated files so hand-written files (ModelMapper, ExtensionPropertyUtil)
+    // in model.internal survive the regeneration cycle.
+    modelDir.walkTopDown()
+      .filter { it.isFile && it.extension == "java" }
+      .filter { it.readText().contains("@Generated(") }
+      .forEach { it.delete() }
     DeclarativeConfigPojoGenerator(schemaFile, modelSrcDir, modelPackage).generate()
   }
 }

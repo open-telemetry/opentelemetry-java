@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SeverityNumber
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfigModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerConfiguratorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalLoggerMatcherAndConfigModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LoggerProviderModelAccessor;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.common.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.LogLimits;
@@ -81,32 +82,31 @@ class LoggerProviderFactoryTest {
             "full configuration",
             LoggerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
-                new LoggerProviderModel()
-                    .withLimits(
-                        new LogRecordLimitsModel()
-                            .withAttributeCountLimit(1)
-                            .withAttributeValueLengthLimit(2))
-                    .withProcessors(
-                        Collections.singletonList(
-                            new LogRecordProcessorModel()
-                                .withBatch(
-                                    new BatchLogRecordProcessorModel()
-                                        .withExporter(
-                                            new LogRecordExporterModel()
-                                                .withOtlpHttp(new OtlpHttpExporterModel())))))
-                    .withLoggerConfiguratorDevelopment(
-                        new ExperimentalLoggerConfiguratorModel()
-                            .withDefaultConfig(
-                                new ExperimentalLoggerConfigModel().withEnabled(false))
-                            .withLoggers(
-                                Collections.singletonList(
-                                    new ExperimentalLoggerMatcherAndConfigModel()
-                                        .withName("foo")
-                                        .withConfig(
-                                            new ExperimentalLoggerConfigModel()
-                                                .withEnabled(true)
-                                                .withTraceBased(true)
-                                                .withMinimumSeverity(SeverityNumberModel.INFO)))))),
+                LoggerProviderModelAccessor.withLoggerConfigurator(
+                    new LoggerProviderModel()
+                        .withLimits(
+                            new LogRecordLimitsModel()
+                                .withAttributeCountLimit(1)
+                                .withAttributeValueLengthLimit(2))
+                        .withProcessors(
+                            Collections.singletonList(
+                                new LogRecordProcessorModel()
+                                    .withBatch(
+                                        new BatchLogRecordProcessorModel()
+                                            .withExporter(
+                                                new LogRecordExporterModel()
+                                                    .withOtlpHttp(new OtlpHttpExporterModel()))))),
+                    new ExperimentalLoggerConfiguratorModel()
+                        .withDefaultConfig(new ExperimentalLoggerConfigModel().withEnabled(false))
+                        .withLoggers(
+                            Collections.singletonList(
+                                new ExperimentalLoggerMatcherAndConfigModel()
+                                    .withName("foo")
+                                    .withConfig(
+                                        new ExperimentalLoggerConfigModel()
+                                            .withEnabled(true)
+                                            .withTraceBased(true)
+                                            .withMinimumSeverity(SeverityNumberModel.INFO)))))),
             setLoggerConfigurator(
                     SdkLoggerProvider.builder(),
                     ScopeConfigurator.<LoggerConfig>builder()

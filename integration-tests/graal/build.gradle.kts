@@ -7,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry Graal Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.graal.integration.tests")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiEnabled.set(false)
 otelJava.minJavaVersionSupported.set(JavaVersion.VERSION_17)
 

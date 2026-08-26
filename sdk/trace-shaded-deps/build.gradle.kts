@@ -8,6 +8,7 @@ plugins {
 
 description = "Internal use only - shaded dependencies of OpenTelemetry SDK for Tracing"
 otelJava.moduleName.set("io.opentelemetry.sdk.trace.internal")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiEnabled.set(false)
 
 dependencies {

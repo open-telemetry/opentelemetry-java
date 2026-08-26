@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.TraceIdRatioBasedSamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalComposableSamplerModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalProbabilitySamplerModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.SamplerModelAccessor;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.ComposableSampler;
 import io.opentelemetry.sdk.extension.incubator.trace.samplers.CompositeSampler;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
@@ -43,12 +45,16 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
     if (model.getParentBased() != null) {
       return createParedBasedSampler(model.getParentBased(), context);
     }
-    if (model.getProbabilityDevelopment() != null) {
-      return createProbabilitySampler(model.getProbabilityDevelopment());
+    ExperimentalProbabilitySamplerModel probabilityDevelopment =
+        SamplerModelAccessor.getProbability(model);
+    if (probabilityDevelopment != null) {
+      return createProbabilitySampler(probabilityDevelopment);
     }
-    if (model.getCompositeDevelopment() != null) {
+    ExperimentalComposableSamplerModel compositeDevelopment =
+        SamplerModelAccessor.getComposite(model);
+    if (compositeDevelopment != null) {
       return CompositeSampler.wrap(
-          ComposableSamplerFactory.getInstance().create(model.getCompositeDevelopment(), context));
+          ComposableSamplerFactory.getInstance().create(compositeDevelopment, context));
     }
 
     return context.loadComponent(Sampler.class, samplerKeyValue);

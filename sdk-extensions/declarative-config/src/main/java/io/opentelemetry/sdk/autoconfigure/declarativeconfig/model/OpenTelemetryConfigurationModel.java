@@ -5,12 +5,25 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.ATTRIBUTE_LIMITS;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.DISABLED;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.DISTRIBUTION;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.FILE_FORMAT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.LOGGER_PROVIDER;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.LOG_LEVEL;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.METER_PROVIDER;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.PROPAGATOR;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.RESOURCE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OpenTelemetryConfigurationModel.TRACER_PROVIDER;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.OpenTelemetryConfigurationModelAccessor.EXPERIMENTAL_PROPERTIES;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalInstrumentationModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
@@ -18,20 +31,48 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-  "file_format",
-  "disabled",
-  "log_level",
-  "attribute_limits",
-  "logger_provider",
-  "meter_provider",
-  "propagator",
-  "tracer_provider",
-  "resource",
-  "instrumentation/development",
-  "distribution"
+  FILE_FORMAT,
+  DISABLED,
+  LOG_LEVEL,
+  ATTRIBUTE_LIMITS,
+  LOGGER_PROVIDER,
+  METER_PROVIDER,
+  PROPAGATOR,
+  TRACER_PROVIDER,
+  RESOURCE,
+  DISTRIBUTION
 })
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class OpenTelemetryConfigurationModel {
+
+  static final String FILE_FORMAT = "file_format";
+  static final String DISABLED = "disabled";
+  static final String LOG_LEVEL = "log_level";
+  static final String ATTRIBUTE_LIMITS = "attribute_limits";
+  static final String LOGGER_PROVIDER = "logger_provider";
+  static final String METER_PROVIDER = "meter_provider";
+  static final String PROPAGATOR = "propagator";
+  static final String TRACER_PROVIDER = "tracer_provider";
+  static final String RESOURCE = "resource";
+  static final String DISTRIBUTION = "distribution";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(FILE_FORMAT, String.class);
+    STABLE_PROPERTIES.put(DISABLED, Boolean.class);
+    STABLE_PROPERTIES.put(LOG_LEVEL, SeverityNumberModel.class);
+    STABLE_PROPERTIES.put(ATTRIBUTE_LIMITS, AttributeLimitsModel.class);
+    STABLE_PROPERTIES.put(LOGGER_PROVIDER, LoggerProviderModel.class);
+    STABLE_PROPERTIES.put(METER_PROVIDER, MeterProviderModel.class);
+    STABLE_PROPERTIES.put(PROPAGATOR, PropagatorModel.class);
+    STABLE_PROPERTIES.put(TRACER_PROVIDER, TracerProviderModel.class);
+    STABLE_PROPERTIES.put(RESOURCE, ResourceModel.class);
+    STABLE_PROPERTIES.put(DISTRIBUTION, DistributionModel.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = true;
 
   @Nullable private String fileFormat;
   @Nullable private Boolean disabled;
@@ -42,9 +83,8 @@ public class OpenTelemetryConfigurationModel {
   @Nullable private PropagatorModel propagator;
   @Nullable private TracerProviderModel tracerProvider;
   @Nullable private ResourceModel resource;
-  @Nullable private ExperimentalInstrumentationModel instrumentationDevelopment;
   @Nullable private DistributionModel distribution;
-  private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * The file format version.
@@ -60,13 +100,16 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>Property is required and must be non-null.
    */
-  @JsonProperty("file_format")
+  @JsonProperty(FILE_FORMAT)
   @Nullable
   public String getFileFormat() {
+    if (fileFormat == null) {
+      return ExtensionPropertyUtil.getGraduated(FILE_FORMAT, extensionProperties, String.class);
+    }
     return fileFormat;
   }
 
-  @JsonProperty("file_format")
+  @JsonProperty(FILE_FORMAT)
   public OpenTelemetryConfigurationModel withFileFormat(String fileFormat) {
     this.fileFormat = fileFormat;
     return this;
@@ -77,13 +120,16 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted or null, false is used.
    */
-  @JsonProperty("disabled")
+  @JsonProperty(DISABLED)
   @Nullable
   public Boolean getDisabled() {
+    if (disabled == null) {
+      return ExtensionPropertyUtil.getGraduated(DISABLED, extensionProperties, Boolean.class);
+    }
     return disabled;
   }
 
-  @JsonProperty("disabled")
+  @JsonProperty(DISABLED)
   public OpenTelemetryConfigurationModel withDisabled(Boolean disabled) {
     this.disabled = disabled;
     return this;
@@ -144,13 +190,17 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted, INFO is used.
    */
-  @JsonProperty("log_level")
+  @JsonProperty(LOG_LEVEL)
   @Nullable
   public SeverityNumberModel getLogLevel() {
+    if (logLevel == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          LOG_LEVEL, extensionProperties, SeverityNumberModel.class);
+    }
     return logLevel;
   }
 
-  @JsonProperty("log_level")
+  @JsonProperty(LOG_LEVEL)
   public OpenTelemetryConfigurationModel withLogLevel(SeverityNumberModel logLevel) {
     this.logLevel = logLevel;
     return this;
@@ -161,13 +211,17 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted, default values as described in AttributeLimits are used.
    */
-  @JsonProperty("attribute_limits")
+  @JsonProperty(ATTRIBUTE_LIMITS)
   @Nullable
   public AttributeLimitsModel getAttributeLimits() {
+    if (attributeLimits == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ATTRIBUTE_LIMITS, extensionProperties, AttributeLimitsModel.class);
+    }
     return attributeLimits;
   }
 
-  @JsonProperty("attribute_limits")
+  @JsonProperty(ATTRIBUTE_LIMITS)
   public OpenTelemetryConfigurationModel withAttributeLimits(AttributeLimitsModel attributeLimits) {
     this.attributeLimits = attributeLimits;
     return this;
@@ -178,13 +232,17 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted, a noop logger provider is used.
    */
-  @JsonProperty("logger_provider")
+  @JsonProperty(LOGGER_PROVIDER)
   @Nullable
   public LoggerProviderModel getLoggerProvider() {
+    if (loggerProvider == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          LOGGER_PROVIDER, extensionProperties, LoggerProviderModel.class);
+    }
     return loggerProvider;
   }
 
-  @JsonProperty("logger_provider")
+  @JsonProperty(LOGGER_PROVIDER)
   public OpenTelemetryConfigurationModel withLoggerProvider(LoggerProviderModel loggerProvider) {
     this.loggerProvider = loggerProvider;
     return this;
@@ -195,13 +253,17 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted, a noop meter provider is used.
    */
-  @JsonProperty("meter_provider")
+  @JsonProperty(METER_PROVIDER)
   @Nullable
   public MeterProviderModel getMeterProvider() {
+    if (meterProvider == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          METER_PROVIDER, extensionProperties, MeterProviderModel.class);
+    }
     return meterProvider;
   }
 
-  @JsonProperty("meter_provider")
+  @JsonProperty(METER_PROVIDER)
   public OpenTelemetryConfigurationModel withMeterProvider(MeterProviderModel meterProvider) {
     this.meterProvider = meterProvider;
     return this;
@@ -212,13 +274,17 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted, a noop propagator is used.
    */
-  @JsonProperty("propagator")
+  @JsonProperty(PROPAGATOR)
   @Nullable
   public PropagatorModel getPropagator() {
+    if (propagator == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          PROPAGATOR, extensionProperties, PropagatorModel.class);
+    }
     return propagator;
   }
 
-  @JsonProperty("propagator")
+  @JsonProperty(PROPAGATOR)
   public OpenTelemetryConfigurationModel withPropagator(PropagatorModel propagator) {
     this.propagator = propagator;
     return this;
@@ -229,13 +295,17 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted, a noop tracer provider is used.
    */
-  @JsonProperty("tracer_provider")
+  @JsonProperty(TRACER_PROVIDER)
   @Nullable
   public TracerProviderModel getTracerProvider() {
+    if (tracerProvider == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          TRACER_PROVIDER, extensionProperties, TracerProviderModel.class);
+    }
     return tracerProvider;
   }
 
-  @JsonProperty("tracer_provider")
+  @JsonProperty(TRACER_PROVIDER)
   public OpenTelemetryConfigurationModel withTracerProvider(TracerProviderModel tracerProvider) {
     this.tracerProvider = tracerProvider;
     return this;
@@ -246,33 +316,18 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted, the default resource is used.
    */
-  @JsonProperty("resource")
+  @JsonProperty(RESOURCE)
   @Nullable
   public ResourceModel getResource() {
+    if (resource == null) {
+      return ExtensionPropertyUtil.getGraduated(RESOURCE, extensionProperties, ResourceModel.class);
+    }
     return resource;
   }
 
-  @JsonProperty("resource")
+  @JsonProperty(RESOURCE)
   public OpenTelemetryConfigurationModel withResource(ResourceModel resource) {
     this.resource = resource;
-    return this;
-  }
-
-  /**
-   * Configure instrumentation.
-   *
-   * <p>If omitted, instrumentation defaults are used.
-   */
-  @JsonProperty("instrumentation/development")
-  @Nullable
-  public ExperimentalInstrumentationModel getInstrumentationDevelopment() {
-    return instrumentationDevelopment;
-  }
-
-  @JsonProperty("instrumentation/development")
-  public OpenTelemetryConfigurationModel withInstrumentationDevelopment(
-      ExperimentalInstrumentationModel instrumentationDevelopment) {
-    this.instrumentationDevelopment = instrumentationDevelopment;
     return this;
   }
 
@@ -287,26 +342,37 @@ public class OpenTelemetryConfigurationModel {
    *
    * <p>If omitted, distribution defaults are used.
    */
-  @JsonProperty("distribution")
+  @JsonProperty(DISTRIBUTION)
   @Nullable
   public DistributionModel getDistribution() {
+    if (distribution == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          DISTRIBUTION, extensionProperties, DistributionModel.class);
+    }
     return distribution;
   }
 
-  @JsonProperty("distribution")
+  @JsonProperty(DISTRIBUTION)
   public OpenTelemetryConfigurationModel withDistribution(DistributionModel distribution) {
     this.distribution = distribution;
     return this;
   }
 
   @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return this.additionalProperties;
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
   }
 
   @JsonAnySetter
-  public OpenTelemetryConfigurationModel withAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
+  public OpenTelemetryConfigurationModel withExtensionProperty(
+      String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        EXPERIMENTAL_PROPERTIES,
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -331,12 +397,10 @@ public class OpenTelemetryConfigurationModel {
         + tracerProvider
         + ", resource="
         + resource
-        + ", instrumentationDevelopment="
-        + instrumentationDevelopment
         + ", distribution="
         + distribution
-        + ", additionalProperties="
-        + additionalProperties
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -344,29 +408,27 @@ public class OpenTelemetryConfigurationModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.fileFormat == null) ? 0 : this.fileFormat.hashCode();
+    h ^= (this.getFileFormat() == null) ? 0 : this.getFileFormat().hashCode();
     h *= 1000003;
-    h ^= (this.disabled == null) ? 0 : this.disabled.hashCode();
+    h ^= (this.getDisabled() == null) ? 0 : this.getDisabled().hashCode();
     h *= 1000003;
-    h ^= (this.logLevel == null) ? 0 : this.logLevel.hashCode();
+    h ^= (this.getLogLevel() == null) ? 0 : this.getLogLevel().hashCode();
     h *= 1000003;
-    h ^= (this.attributeLimits == null) ? 0 : this.attributeLimits.hashCode();
+    h ^= (this.getAttributeLimits() == null) ? 0 : this.getAttributeLimits().hashCode();
     h *= 1000003;
-    h ^= (this.loggerProvider == null) ? 0 : this.loggerProvider.hashCode();
+    h ^= (this.getLoggerProvider() == null) ? 0 : this.getLoggerProvider().hashCode();
     h *= 1000003;
-    h ^= (this.meterProvider == null) ? 0 : this.meterProvider.hashCode();
+    h ^= (this.getMeterProvider() == null) ? 0 : this.getMeterProvider().hashCode();
     h *= 1000003;
-    h ^= (this.propagator == null) ? 0 : this.propagator.hashCode();
+    h ^= (this.getPropagator() == null) ? 0 : this.getPropagator().hashCode();
     h *= 1000003;
-    h ^= (this.tracerProvider == null) ? 0 : this.tracerProvider.hashCode();
+    h ^= (this.getTracerProvider() == null) ? 0 : this.getTracerProvider().hashCode();
     h *= 1000003;
-    h ^= (this.resource == null) ? 0 : this.resource.hashCode();
+    h ^= (this.getResource() == null) ? 0 : this.getResource().hashCode();
     h *= 1000003;
-    h ^= (this.instrumentationDevelopment == null) ? 0 : this.instrumentationDevelopment.hashCode();
+    h ^= (this.getDistribution() == null) ? 0 : this.getDistribution().hashCode();
     h *= 1000003;
-    h ^= (this.distribution == null) ? 0 : this.distribution.hashCode();
-    h *= 1000003;
-    h ^= (this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode();
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -377,36 +439,39 @@ public class OpenTelemetryConfigurationModel {
     }
     if (o instanceof OpenTelemetryConfigurationModel) {
       OpenTelemetryConfigurationModel that = (OpenTelemetryConfigurationModel) o;
-      return (this.fileFormat == null
-              ? that.fileFormat == null
-              : this.fileFormat.equals(that.fileFormat))
-          && (this.disabled == null ? that.disabled == null : this.disabled.equals(that.disabled))
-          && (this.logLevel == null ? that.logLevel == null : this.logLevel.equals(that.logLevel))
-          && (this.attributeLimits == null
-              ? that.attributeLimits == null
-              : this.attributeLimits.equals(that.attributeLimits))
-          && (this.loggerProvider == null
-              ? that.loggerProvider == null
-              : this.loggerProvider.equals(that.loggerProvider))
-          && (this.meterProvider == null
-              ? that.meterProvider == null
-              : this.meterProvider.equals(that.meterProvider))
-          && (this.propagator == null
-              ? that.propagator == null
-              : this.propagator.equals(that.propagator))
-          && (this.tracerProvider == null
-              ? that.tracerProvider == null
-              : this.tracerProvider.equals(that.tracerProvider))
-          && (this.resource == null ? that.resource == null : this.resource.equals(that.resource))
-          && (this.instrumentationDevelopment == null
-              ? that.instrumentationDevelopment == null
-              : this.instrumentationDevelopment.equals(that.instrumentationDevelopment))
-          && (this.distribution == null
-              ? that.distribution == null
-              : this.distribution.equals(that.distribution))
-          && (this.additionalProperties == null
-              ? that.additionalProperties == null
-              : this.additionalProperties.equals(that.additionalProperties));
+      return (this.getFileFormat() == null
+              ? that.getFileFormat() == null
+              : this.getFileFormat().equals(that.getFileFormat()))
+          && (this.getDisabled() == null
+              ? that.getDisabled() == null
+              : this.getDisabled().equals(that.getDisabled()))
+          && (this.getLogLevel() == null
+              ? that.getLogLevel() == null
+              : this.getLogLevel().equals(that.getLogLevel()))
+          && (this.getAttributeLimits() == null
+              ? that.getAttributeLimits() == null
+              : this.getAttributeLimits().equals(that.getAttributeLimits()))
+          && (this.getLoggerProvider() == null
+              ? that.getLoggerProvider() == null
+              : this.getLoggerProvider().equals(that.getLoggerProvider()))
+          && (this.getMeterProvider() == null
+              ? that.getMeterProvider() == null
+              : this.getMeterProvider().equals(that.getMeterProvider()))
+          && (this.getPropagator() == null
+              ? that.getPropagator() == null
+              : this.getPropagator().equals(that.getPropagator()))
+          && (this.getTracerProvider() == null
+              ? that.getTracerProvider() == null
+              : this.getTracerProvider().equals(that.getTracerProvider()))
+          && (this.getResource() == null
+              ? that.getResource() == null
+              : this.getResource().equals(that.getResource()))
+          && (this.getDistribution() == null
+              ? that.getDistribution() == null
+              : this.getDistribution().equals(that.getDistribution()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
   }

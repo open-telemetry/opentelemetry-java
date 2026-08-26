@@ -16,11 +16,13 @@ import org.junit.jupiter.api.Test;
 /**
  * Guards the experimental/stable package boundary for the generated model types.
  *
- * <p>Experimental (unstable) types must live in {@code MODEL_PACKAGE.internal} (exempt from the
- * stability guarantees in {@code VERSIONING.md}) and stable types in {@code MODEL_PACKAGE}. The
- * generator enforces this by routing types whose name starts with {@code Experimental} into the
- * internal sub-package. This test fails if a schema update or rename ever breaks that invariant
- * &mdash; e.g. leaking a mutable experimental type into the stable public API.
+ * <p>Experimental (unstable) model types must live in {@code MODEL_PACKAGE.internal} and stable
+ * model types in {@code MODEL_PACKAGE}. The generator routes types whose name starts with {@code
+ * Experimental} to the internal sub-package. {@code *ModelAccessor} classes also live in {@code
+ * MODEL_PACKAGE.internal}; they provide typed access to experimental properties on stable classes
+ * and are exempt from the {@code Experimental} prefix requirement. This test fails if a schema
+ * update or rename ever breaks the invariant &mdash; e.g. leaking a mutable experimental type into
+ * the stable public API.
  */
 class ModelPackageBoundaryTest {
 
@@ -51,10 +53,15 @@ class ModelPackageBoundaryTest {
             clazz -> {
               boolean inInternal = clazz.getPackage().getName().equals(INTERNAL_PACKAGE);
               boolean experimental = clazz.getSimpleName().startsWith(EXPERIMENTAL_PREFIX);
-              assertThat(experimental)
+              // Internal utility classes are exempt from the Experimental prefix requirement.
+              boolean isInfrastructure =
+                  clazz.getSimpleName().endsWith("Accessor")
+                      || clazz.getSimpleName().equals("ModelMapper")
+                      || clazz.getSimpleName().equals("ExtensionPropertyUtil");
+              assertThat(experimental || isInfrastructure)
                   .as(
-                      "%s: experimental types (name starts with %s) must live in %s, all other "
-                          + "types in %s",
+                      "%s: experimental types (name starts with %s) and internal infrastructure "
+                          + "classes must live in %s, all other types in %s",
                       clazz.getName(), EXPERIMENTAL_PREFIX, INTERNAL_PACKAGE, MODEL_PACKAGE)
                   .isEqualTo(inInternal);
             });

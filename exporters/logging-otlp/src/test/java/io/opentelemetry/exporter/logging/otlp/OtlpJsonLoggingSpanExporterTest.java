@@ -64,4 +64,10 @@ class OtlpJsonLoggingSpanExporterTest {
     assertThat(exporter.shutdown().isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(OtlpJsonLoggingSpanExporter.create().toString())
+        .isEqualTo("OtlpJsonLoggingSpanExporter{}");
+  }
 }

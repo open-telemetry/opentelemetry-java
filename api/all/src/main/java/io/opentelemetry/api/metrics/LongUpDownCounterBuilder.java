@@ -33,7 +33,7 @@ public interface LongUpDownCounterBuilder {
    */
   LongUpDownCounterBuilder setUnit(String unit);
 
-  /** Sets the Counter for recording {@code double} values. */
+  /** Sets the UpDownCounter for recording {@code double} values. */
   DoubleUpDownCounterBuilder ofDoubles();
 
   /**

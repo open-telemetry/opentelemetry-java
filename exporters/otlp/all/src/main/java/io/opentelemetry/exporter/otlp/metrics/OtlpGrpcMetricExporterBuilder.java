@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -354,6 +355,23 @@ public final class OtlpGrpcMetricExporterBuilder {
   public OtlpGrpcMetricExporterBuilder setExecutorService(ExecutorService executorService) {
     requireNonNull(executorService, "executorService");
     delegate.setExecutorService(executorService);
+    return this;
+  }
+
+  /**
+   * Sets the TLS protocol versions to enable when connecting to an HTTPS endpoint. By default, OTLP
+   * exporters use the sender implementation's default protocol versions. Omit this call to use that
+   * default.
+   *
+   * <p>Protocol names follow the JSSE convention: {@code "TLSv1.2"}, {@code "TLSv1.3"}, etc.
+   *
+   * <p>Note: enabling legacy protocol versions (TLSv1, TLSv1.1) also requires removing them from
+   * the JVM's {@code jdk.tls.disabledAlgorithms} security property.
+   */
+  public OtlpGrpcMetricExporterBuilder setEnabledProtocols(List<String> enabledProtocols) {
+    requireNonNull(enabledProtocols, "enabledProtocols");
+    checkArgument(!enabledProtocols.isEmpty(), "enabledProtocols must not be empty");
+    delegate.setEnabledProtocols(enabledProtocols);
     return this;
   }
 

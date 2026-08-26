@@ -106,7 +106,7 @@ class PropagatorFactoryTest {
             new PropagatorModel()
                 .withComposite(
                     Collections.singletonList(
-                        new TextMapPropagatorModel().withAdditionalProperty("test", null))),
+                        new TextMapPropagatorModel().withExtensionProperty("test", null))),
             ContextPropagators.create(
                 TextMapPropagator.composite(
                     new TextMapPropagatorComponentProvider.TestTextMapPropagator(

@@ -100,7 +100,7 @@ public abstract class AbstractOpenTelemetryTest {
     assertThat(GlobalOpenTelemetry.isSet()).isFalse();
     assertThat(GlobalOpenTelemetry.getOrNoop()).isSameAs(OpenTelemetry.noop());
 
-    // Calling GlobalOpenTelemetry.get() has the side affect of setting GlobalOpenTelemetry to an
+    // Calling GlobalOpenTelemetry.get() has the side effect of setting GlobalOpenTelemetry to an
     // (obfuscated) noop.
     // Call GlobalOpenTelemetry.get() using a utility method so we can later assert it was
     // responsible for setting GlobalOpenTelemetry.
