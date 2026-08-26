@@ -768,17 +768,37 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
-  void defaultBehavior_applies30SecondTimeout() throws Exception {
-    // This test verifies that by default, a 30-second timeout is applied
-    // We test this by having an exporter that takes less than 30 seconds
+  void defaultTimeout_defaultsToInterval() throws Exception {
+    // This test verifies that by default, the timeout equals the configured interval
+    // We test this by having an exporter that takes less than the interval
     // and ensuring it completes successfully
-    DelayingMetricExporter delayingExporter = new DelayingMetricExporter(100); // 100ms delay
+    DelayingMetricExporter delayingExporter = new DelayingMetricExporter(25); // 25ms delay
     PeriodicMetricReader reader =
         PeriodicMetricReader.builder(delayingExporter).setInterval(Duration.ofMillis(50)).build();
 
     reader.register(collectionRegistration);
     try {
-      // Wait for an export to complete - should succeed since 100ms < 30s
+      // Wait for an export to complete - should succeed since 25ms < 50ms interval
+      assertThat(delayingExporter.waitForExport()).isTrue();
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void explicitTimeout_preservedWithLargeInterval() throws Exception {
+    // Test that explicit timeout is preserved even with a large interval (5 minutes)
+    DelayingMetricExporter delayingExporter = new DelayingMetricExporter(25); // 25ms delay
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(delayingExporter)
+            .setInterval(Duration.ofMinutes(5)) // Large interval
+            .setExporterTimeout(Duration.ofSeconds(1)) // Explicit small timeout
+            .build();
+
+    reader.register(collectionRegistration);
+    try {
+      // Force a flush to trigger export - should succeed since 25ms < 1s timeout
+      assertThat(reader.forceFlush().join(5, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(delayingExporter.waitForExport()).isTrue();
     } finally {
       reader.shutdown();

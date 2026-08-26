@@ -24,7 +24,6 @@ import javax.annotation.Nullable;
 public final class PeriodicMetricReaderBuilder {
 
   static final long DEFAULT_SCHEDULE_DELAY_MINUTES = 1;
-  static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
 
   private final MetricExporter metricExporter;
 
@@ -61,8 +60,10 @@ public final class PeriodicMetricReaderBuilder {
   }
 
   /**
-   * Sets the timeout for the underlying exporter. If unset, defaults to {@value
-   * DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
+   * Sets the timeout for the underlying exporter. If unset, defaults to the configured interval.
+   *
+   * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
+   * individual export(batch) invocation, not the aggregate export cycle.
    */
   public PeriodicMetricReaderBuilder setExporterTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -72,8 +73,10 @@ public final class PeriodicMetricReaderBuilder {
   }
 
   /**
-   * Sets the timeout for the underlying exporter. If unset, defaults to {@value
-   * DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
+   * Sets the timeout for the underlying exporter. If unset, defaults to the configured interval.
+   *
+   * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
+   * individual export(batch) invocation, not the aggregate export cycle.
    */
   public PeriodicMetricReaderBuilder setExporterTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -111,9 +114,7 @@ public final class PeriodicMetricReaderBuilder {
     return new PeriodicMetricReader(
         metricExporter,
         intervalNanos,
-        exporterTimeoutNanos != null
-            ? exporterTimeoutNanos
-            : Math.min(intervalNanos, TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS)),
+        exporterTimeoutNanos != null ? exporterTimeoutNanos : intervalNanos,
         executor,
         maxExportBatchSize,
         internalTelemetryVersion);
