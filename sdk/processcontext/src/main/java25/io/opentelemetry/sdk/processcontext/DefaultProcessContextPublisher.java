@@ -13,10 +13,13 @@ import java.io.IOException;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
+import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.StructLayout;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.VarHandle;
 import javax.annotation.Nullable;
 
 @SuppressWarnings({"restricted", "ThrowSpecificExceptions"})
@@ -35,11 +38,16 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
   private static final int MFD_CLOEXEC = 0x0001;
   private static final int MFD_ALLOW_SEALING = 0x0002;
   private static final int MFD_NOEXEC_SEAL = 0x0008;
+  private static final int EINVAL = 22;
 
   private static final long MAPPING_SIZE = ProcessContextHeader.byteSize();
 
   private static final Linker LINKER = Linker.nativeLinker();
   private static final SymbolLookup LIBC = LINKER.defaultLookup();
+
+  private static final Linker.Option ERRNO_LINKER_OPTION;
+  private static final StructLayout ERRNO_STATE_LAYOUT;
+  private static final VarHandle ERRNO_HANDLE;
 
   private static final MethodHandle MMAP;
   private static final MethodHandle MUNMAP;
@@ -51,6 +59,13 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
 
   static {
     try {
+
+      // note that whilst all these libc functions support errno,
+      // we care about it only on memfd_create
+      ERRNO_LINKER_OPTION = Linker.Option.captureCallState("errno");
+      ERRNO_STATE_LAYOUT = Linker.Option.captureStateLayout();
+      ERRNO_HANDLE = ERRNO_STATE_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("errno"));
+
       MMAP =
           LINKER.downcallHandle(
               LIBC.find("mmap").orElseThrow(),
@@ -95,7 +110,8 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
               LIBC.find("memfd_create").orElseThrow(),
               // int memfd_create(const char *name, unsigned int flags)
               FunctionDescriptor.of(
-                  ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT));
+                  ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT),
+              ERRNO_LINKER_OPTION);
       FTRUNCATE =
           LINKER.downcallHandle(
               LIBC.find("ftruncate").orElseThrow(),
@@ -160,15 +176,22 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
 
     // spec: publication step 2a. Allocate new memfd and size it: Create a new memfd using
     // memfd_create("OTEL_CTX", MFD_CLOEXEC | MFD_ALLOW_SEALING | MFD_NOEXEC_SEAL)
-    // TODO fallback retry without MFD_NOEXEC_SEAL for pre-6.3 platforms,
-    //  probably requires Linker.Option.captureCallState for checking failure cause,
-    //  though we could just do it blind...
     int fd = -1;
     try (Arena arena = Arena.ofConfined()) {
       MemorySegment nameSegment = arena.allocateFrom(OTEL_NAME);
+      MemorySegment errnoSegment = arena.allocate(ERRNO_STATE_LAYOUT);
+
       fd =
           (Integer)
-              MEMFD_CREATE.invoke(nameSegment, MFD_CLOEXEC | MFD_ALLOW_SEALING | MFD_NOEXEC_SEAL);
+              MEMFD_CREATE.invoke(
+                  errnoSegment, nameSegment, MFD_CLOEXEC | MFD_ALLOW_SEALING | MFD_NOEXEC_SEAL);
+
+      if (fd < 0 && ((int) ERRNO_HANDLE.get(errnoSegment, 0) == EINVAL)) {
+        // spec: publication step 2a. MFD_NOEXEC_SEAL is only on 6.3+, fallback for older kernels:
+        fd =
+            (Integer)
+                MEMFD_CREATE.invoke(errnoSegment, nameSegment, MFD_CLOEXEC | MFD_ALLOW_SEALING);
+      }
     }
 
     if (fd >= 0) {
