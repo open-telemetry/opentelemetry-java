@@ -44,7 +44,7 @@ public final class OutputStreamConfigUtil {
     if (outputStream == null) {
       return;
     }
-    if (STDOUT.equalsIgnoreCase(outputStream)) {
+    if (STDOUT.equals(outputStream)) {
       outputStreamConsumer.accept(System.out);
       return;
     }
@@ -67,16 +67,22 @@ public final class OutputStreamConfigUtil {
     try {
       uri = new URI(outputStream);
     } catch (URISyntaxException e) {
-      throw new ConfigurationException("Unrecognized output_stream: " + outputStream, e);
+      throw new ConfigurationException(unrecognized(outputStream), e);
     }
-    if (!FILE_SCHEME.equalsIgnoreCase(uri.getScheme())) {
-      throw new ConfigurationException("Unrecognized output_stream: " + outputStream);
+    if (!FILE_SCHEME.equals(uri.getScheme())) {
+      throw new ConfigurationException(unrecognized(outputStream));
     }
     try {
       return Paths.get(uri);
     } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-      throw new ConfigurationException("Unrecognized output_stream: " + outputStream, e);
+      throw new ConfigurationException(unrecognized(outputStream), e);
     }
+  }
+
+  private static String unrecognized(String outputStream) {
+    return "Unrecognized output_stream: "
+        + outputStream
+        + ". Expected \"stdout\" or a file:// URI.";
   }
 
   private OutputStreamConfigUtil() {}

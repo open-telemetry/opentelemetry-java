@@ -31,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
@@ -304,16 +303,10 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
         .isEqualTo(MemoryMode.REUSABLE_DATA);
   }
 
-  static Stream<Arguments> outputStreamStdoutTestCases() {
-    return Stream.of(
-        Arguments.argumentSet("stdout", "stdout"), Arguments.argumentSet("upper case", "STDOUT"));
-  }
-
-  @ParameterizedTest
-  @MethodSource("outputStreamStdoutTestCases")
-  void componentProviderConfigOutputStreamStdout(String value) {
+  @Test
+  void componentProviderConfigOutputStreamStdout() {
     DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
-    when(properties.getString("output_stream")).thenReturn(value);
+    when(properties.getString("output_stream")).thenReturn("stdout");
 
     assertThat(exporterFromComponentProvider(properties))
         .extracting("jsonWriter")
@@ -323,22 +316,16 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   static Stream<Arguments> outputStreamFileTestCases() {
     return Stream.of(
-        Arguments.argumentSet("file uri", "test.jsonl", (UnaryOperator<String>) uri -> uri),
-        Arguments.argumentSet(
-            "authority-less file uri with upper case scheme",
-            "test.jsonl",
-            (UnaryOperator<String>) uri -> uri.replaceFirst("^file://", "FILE:")),
-        Arguments.argumentSet(
-            "missing parent directory", "missing/test.jsonl", (UnaryOperator<String>) uri -> uri));
+        Arguments.argumentSet("file uri", "test.jsonl"),
+        Arguments.argumentSet("missing parent directory", "missing/test.jsonl"));
   }
 
   @ParameterizedTest
   @MethodSource("outputStreamFileTestCases")
-  void componentProviderConfigOutputStreamFile(String relativePath, UnaryOperator<String> uriForm)
-      throws Exception {
+  void componentProviderConfigOutputStreamFile(String relativePath) throws Exception {
     Path file = tempDir.resolve(relativePath);
     DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
-    when(properties.getString("output_stream")).thenReturn(uriForm.apply(file.toUri().toString()));
+    when(properties.getString("output_stream")).thenReturn(file.toUri().toString());
 
     T exporter = exporterFromComponentProvider(properties);
     testDataExporter.export(exporter);
@@ -362,6 +349,8 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   static Stream<Arguments> outputStreamUnrecognizedTestCases() {
     return Stream.of(
         Arguments.argumentSet("no scheme", "not-a-stream"),
+        Arguments.argumentSet("upper case stdout", "STDOUT"),
+        Arguments.argumentSet("upper case file scheme", "FILE:///test.jsonl"),
         Arguments.argumentSet("unsupported scheme", "http://example.com/traces.jsonl"),
         Arguments.argumentSet("relative file uri", "file://traces.jsonl"),
         Arguments.argumentSet("malformed file uri", "file:///with space.jsonl"));
@@ -375,7 +364,8 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
     assertThatExceptionOfType(ConfigurationException.class)
         .isThrownBy(() -> exporterFromComponentProvider(properties))
-        .withMessage("Unrecognized output_stream: " + value);
+        .withMessage(
+            "Unrecognized output_stream: " + value + ". Expected \"stdout\" or a file:// URI.");
   }
 
   @Test
