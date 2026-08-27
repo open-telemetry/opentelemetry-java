@@ -47,13 +47,13 @@ public class PrometheusComponentProvider implements ComponentProvider {
       prometheusBuilder.setHost(host);
     }
 
-    Boolean withoutTargetInfo = config.getBoolean("target_info_enabled/development");
-    if (withoutTargetInfo != null) {
-      prometheusBuilder.setTargetInfoMetricEnabled(!withoutTargetInfo);
+    Boolean targetInfoEnabled = config.getBoolean("target_info_enabled/development");
+    if (targetInfoEnabled != null) {
+      prometheusBuilder.setTargetInfoMetricEnabled(targetInfoEnabled);
     }
-    Boolean withoutScopeInfo = config.getBoolean("scope_info_enabled");
-    if (withoutScopeInfo != null) {
-      prometheusBuilder.setOtelScopeLabelsEnabled(!withoutScopeInfo);
+    Boolean scopeInfoEnabled = config.getBoolean("scope_info_enabled");
+    if (scopeInfoEnabled != null) {
+      prometheusBuilder.setOtelScopeLabelsEnabled(scopeInfoEnabled);
     }
     String translationStrategy = config.getString("translation_strategy");
     if (translationStrategy != null) {
