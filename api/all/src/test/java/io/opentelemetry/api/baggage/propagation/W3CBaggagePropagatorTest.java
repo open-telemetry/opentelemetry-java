@@ -667,7 +667,7 @@ class W3CBaggagePropagatorTest {
         Arguments.argumentSet("lf", "a\nb"),
         Arguments.argumentSet("nul", "a\0b"),
         Arguments.argumentSet("del", "a\u007fb"),
-        Arguments.argumentSet("non-ascii", "caf\u00e9"),
+        Arguments.argumentSet("non-ascii", "café"),
         Arguments.argumentSet("obs-text", "a\u0080b"));
   }
 
