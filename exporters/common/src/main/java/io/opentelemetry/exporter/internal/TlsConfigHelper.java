@@ -45,6 +45,9 @@ public class TlsConfigHelper {
    * @param trustedCertsPem Certificate in PEM format.
    */
   public void setTrustManagerFromCerts(byte[] trustedCertsPem) {
+    if (sslContext != null) {
+      throw new IllegalStateException("sslContext has been previously configured");
+    }
     if (trustManager != null) {
       throw new IllegalStateException("trustManager has been previously configured");
     }
