@@ -48,6 +48,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private final long intervalNanos;
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
+  private final long shutdownTimeoutMillis;
   private final Object lock = new Object();
   private final InternalTelemetryVersion internalTelemetryVersion;
 
@@ -74,13 +75,15 @@ public final class PeriodicMetricReader implements MetricReader {
       long intervalNanos,
       ScheduledExecutorService scheduler,
       int maxExportBatchSize,
-      InternalTelemetryVersion internalTelemetryVersion) {
+      InternalTelemetryVersion internalTelemetryVersion,
+      long shutdownTimeoutMillis) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
     this.maxExportBatchSize = maxExportBatchSize;
     this.scheduled = new Scheduled();
     this.internalTelemetryVersion = internalTelemetryVersion;
+    this.shutdownTimeoutMillis = shutdownTimeoutMillis;
   }
 
   @Override
@@ -133,12 +136,12 @@ public final class PeriodicMetricReader implements MetricReader {
     }
     scheduler.shutdown();
     try {
-      scheduler.awaitTermination(5, TimeUnit.SECONDS);
+      scheduler.awaitTermination(shutdownTimeoutMillis, TimeUnit.MILLISECONDS);
       // Wait for any in-flight export to complete before performing the final collection.
       // Without this, doRun() sees exportAvailable=false and drops the final metrics.
-      scheduled.flushInProgress.join(5, TimeUnit.SECONDS);
+      scheduled.flushInProgress.join(shutdownTimeoutMillis, TimeUnit.MILLISECONDS);
       CompletableResultCode flushResult = scheduled.doRun();
-      flushResult.join(5, TimeUnit.SECONDS);
+      flushResult.join(shutdownTimeoutMillis, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       // force a shutdown if the export hasn't finished.
       scheduler.shutdownNow();

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### SDK
+
+#### Metrics
+
+* Add `PeriodicMetricReaderBuilder.setShutdownTimeout` to configure the previously hardcoded
+  shutdown wait time. Default is kept as 5s.
+  ([#8756](https://github.com/open-telemetry/opentelemetry-java/pull/8756))
+
 ## Version 1.65.0 (2026-08-07)
 
 **NOTE:** The `opentelemetry-exporter-zipkin` artifact has stopped being published. It was
