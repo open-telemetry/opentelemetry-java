@@ -6,6 +6,8 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,6 +19,7 @@ import io.opentelemetry.sdk.common.export.MessageWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
+import java.security.Security;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
@@ -27,6 +30,8 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -303,6 +308,61 @@ class OkHttpGrpcSenderTest {
     assertTrue(
         shutdownResult.join(10, TimeUnit.SECONDS).isSuccess(),
         "Shutdown should succeed even when interrupted");
+  }
+
+  @Test
+  void constructor_usesDefaultTrustManagerWhenTrustManagerIsNull() throws Exception {
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(null, null, null);
+
+    assertThatCode(
+            () ->
+                new OkHttpGrpcSender(
+                    "https://localhost",
+                    null,
+                    Duration.ofSeconds(10),
+                    Duration.ofSeconds(10),
+                    Collections::emptyMap,
+                    null,
+                    sslContext,
+                    null,
+                    null,
+                    Long.MAX_VALUE,
+                    null))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void constructor_wrapsDefaultTrustManagerFailure() throws Exception {
+    String originalAlgorithm = Security.getProperty("ssl.TrustManagerFactory.algorithm");
+
+    try {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", "invalid");
+
+      SSLContext sslContext = SSLContext.getInstance("TLS");
+      sslContext.init(null, null, null);
+
+      assertThatThrownBy(
+              () ->
+                  new OkHttpGrpcSender(
+                      "https://localhost",
+                      null,
+                      Duration.ofSeconds(10),
+                      Duration.ofSeconds(10),
+                      Collections::emptyMap,
+                      null,
+                      sslContext,
+                      null,
+                      null,
+                      Long.MAX_VALUE,
+                      null))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessage("Unable to initialize default trust manager")
+          .hasCauseInstanceOf(SSLException.class);
+
+    } finally {
+      Security.setProperty("ssl.TrustManagerFactory.algorithm", originalAlgorithm);
+    }
   }
 
   /** Simple test marshaler for testing purposes. */
