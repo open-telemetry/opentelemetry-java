@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -16,6 +17,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.impl.InstrumentationUtil;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.HttpResponse;
 import io.opentelemetry.sdk.common.export.MessageWriter;
@@ -40,6 +43,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -389,6 +393,54 @@ class JdkHttpSenderTest {
     assertThat(errorRef.get()).isNotNull();
     assertThat(errorRef.get()).isInstanceOf(RejectedExecutionException.class);
     assertThat(responseRef.get()).isNull();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void send_suppressesInstrumentation() throws Exception {
+    java.net.http.HttpResponse<InputStream> mockJdkResponse =
+        mock(java.net.http.HttpResponse.class);
+    when(mockJdkResponse.statusCode()).thenReturn(200);
+    when(mockJdkResponse.body()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(mockJdkResponse.headers())
+        .thenReturn(HttpHeaders.of(Collections.emptyMap(), (a, b) -> true));
+
+    AtomicBoolean suppressed = new AtomicBoolean(false);
+    doAnswer(
+            invocation -> {
+              suppressed.set(InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
+              return mockJdkResponse;
+            })
+        .when(mockHttpClient)
+        .send(any(), any());
+
+    // Context.taskWrapping stands in for the java agent's executor instrumentation, which
+    // propagates the calling thread's context to the thread the request is sent on.
+    ExecutorService executor = Context.taskWrapping(Executors.newSingleThreadExecutor());
+    JdkHttpSender testSender =
+        new JdkHttpSender(
+            mockHttpClient,
+            URI.create("http://localhost"),
+            "text/plain",
+            null,
+            Duration.ofSeconds(10),
+            Collections::emptyMap,
+            null,
+            executor,
+            Long.MAX_VALUE);
+
+    try {
+      CountDownLatch latch = new CountDownLatch(1);
+
+      testSender.send(
+          new NoOpRequestBodyWriter(), response -> latch.countDown(), error -> latch.countDown());
+
+      assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
+      assertThat(suppressed.get()).isTrue();
+    } finally {
+      testSender.shutdown();
+      executor.shutdownNow();
+    }
   }
 
   private static class NoOpRequestBodyWriter implements MessageWriter {
