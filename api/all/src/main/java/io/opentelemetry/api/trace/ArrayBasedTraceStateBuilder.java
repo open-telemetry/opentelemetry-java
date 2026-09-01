@@ -92,8 +92,13 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
     }
     for (int i = 0; i < reversedEntries.size(); i += 2) {
       if (reversedEntries.get(i).equals(key)) {
-        reversedEntries.set(i + 1, null);
-        numEntries--;
+        // Only account for the removal if the entry is still present. A repeated remove of an
+        // already-removed key must be a no-op, mirroring the guard in put(); otherwise numEntries
+        // is decremented twice and build() drops unrelated entries or emits a null-valued entry.
+        if (reversedEntries.get(i + 1) != null) {
+          reversedEntries.set(i + 1, null);
+          numEntries--;
+        }
         return this;
       }
     }

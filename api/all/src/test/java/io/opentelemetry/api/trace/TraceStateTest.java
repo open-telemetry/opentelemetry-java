@@ -304,6 +304,40 @@ class TraceStateTest {
   }
 
   @Test
+  void removeAlreadyRemovedKeyKeepsOtherEntries() {
+    TraceState state =
+        TraceState.builder()
+            .put("a", "1")
+            .put("b", "2")
+            .remove("a")
+            .remove("a") // removing an already-removed key must be a no-op
+            .build();
+    assertThat(state.get("b")).isEqualTo("2");
+    assertThat(state.size()).isEqualTo(1);
+  }
+
+  @Test
+  void removeAlreadyRemovedKeyDoesNotProduceNullValue() {
+    TraceState state = TraceState.builder().put("a", "1").remove("a").remove("a").build();
+    assertThat(state.isEmpty()).isTrue();
+    assertThat(state.get("a")).isNull();
+  }
+
+  @Test
+  void removeAlreadyRemovedKeyWithMultipleEntriesDoesNotThrow() {
+    assertThatCode(
+            () ->
+                TraceState.builder()
+                    .put("a", "1")
+                    .put("b", "2")
+                    .put("c", "3")
+                    .remove("a")
+                    .remove("a")
+                    .build())
+        .doesNotThrowAnyException();
+  }
+
+  @Test
   void addAndRemoveEntry() {
     assertThat(
             TraceState.builder()
