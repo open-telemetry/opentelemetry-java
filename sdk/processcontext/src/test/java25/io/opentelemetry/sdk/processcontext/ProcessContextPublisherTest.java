@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 class ProcessContextPublisherTest {
 
   @Test
-  void publication() throws Throwable {
+  void lifecycle() throws Throwable {
 
     assertThat(containsMappingWith("OTEL_CTX")).isFalse();
 
@@ -32,9 +32,12 @@ class ProcessContextPublisherTest {
             Attributes.of(AttributeKey.stringKey("foo2"), "bar2"));
 
     ProcessContextPublisher processContextPublisher = new DefaultProcessContextPublisher();
-    processContextPublisher.publish(processContextData, TestClock.create());
 
+    processContextPublisher.publish(processContextData, TestClock.create());
     assertThat(containsMappingWith("OTEL_CTX")).isTrue();
+
+    processContextPublisher.close();
+    assertThat(containsMappingWith("OTEL_CTX")).isFalse();
   }
 
   private static boolean containsMappingWith(String value) throws IOException {

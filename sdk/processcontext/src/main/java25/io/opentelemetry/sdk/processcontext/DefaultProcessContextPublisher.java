@@ -30,14 +30,14 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
   // System constants
   private static final int PROT_READ = 0x1;
   private static final int PROT_WRITE = 0x2;
-  private static final int MAP_PRIVATE = 0x02;
+  private static final int MAP_PRIVATE = 0x2;
   private static final int MAP_ANONYMOUS = 0x20;
   private static final int MADV_DONTFORK = 0x10;
   private static final int PR_SET_VMA = 0x53564d41;
   private static final int PR_SET_VMA_ANON_NAME = 0;
   private static final int MFD_CLOEXEC = 0x0001;
-  private static final int MFD_ALLOW_SEALING = 0x0002;
-  private static final int MFD_NOEXEC_SEAL = 0x0008;
+  private static final int MFD_ALLOW_SEALING = 0x2;
+  private static final int MFD_NOEXEC_SEAL = 0x8;
   private static final int EINVAL = 22;
 
   private static final long MAPPING_SIZE = ProcessContextHeader.byteSize();
@@ -164,6 +164,21 @@ public class DefaultProcessContextPublisher implements ProcessContextPublisher {
         nameMapping(); // spec: updating step 7.
       }
 
+    } catch (Throwable t) {
+      throw new IOException(t);
+    }
+  }
+
+  @Override
+  public synchronized void close() throws IOException {
+    try {
+      if (header != null) {
+        MUNMAP.invoke(mapping, MAPPING_SIZE);
+        payloadArena.close();
+        // allow reopening:
+        header = null;
+        mapping = null;
+      }
     } catch (Throwable t) {
       throw new IOException(t);
     }
