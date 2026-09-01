@@ -17,7 +17,7 @@ import java.io.IOException;
  *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/profiles/4719-process-ctx.md">OTEP
  *     4719</a>
  */
-public interface ProcessContextPublisher {
+public interface ProcessContextPublisher extends AutoCloseable {
 
   /**
    * Called to publish a {@code ProcessContextData}s.
