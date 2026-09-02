@@ -88,6 +88,9 @@ class OkHttpGrpcSenderTest {
     sender.send(new TestMessageWriter(), responseRef::set, errorRef::set);
 
     assertThat(errorRef.get()).isNotNull();
+    // OkHttp wraps RejectedExecutionException in InterruptedIOException with message "executor
+    // rejected"
+    assertThat(errorRef.get()).hasMessageContaining("executor rejected");
     assertThat(responseRef.get()).isNull();
   }
 
