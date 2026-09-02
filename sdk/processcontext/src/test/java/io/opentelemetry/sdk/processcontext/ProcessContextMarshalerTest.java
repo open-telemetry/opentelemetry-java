@@ -37,7 +37,7 @@ class ProcessContextMarshalerTest {
     assertThat(roundTripResult).isEqualTo(builderResult);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // use of Builder API
   private static <T extends Message> T parse(T prototype, Marshaler marshaler) {
     byte[] serialized = toByteArray(marshaler);
     T result;
