@@ -45,6 +45,20 @@ final class JsonEncoding {
     }
   }
 
+  static void appendAttributes(StringBuilder sb, List<Object> data) {
+    sb.append('{');
+    for (int i = 0; i < data.size(); i += 2) {
+      if (i > 0) {
+        sb.append(',');
+      }
+      AttributeKey<?> key = (AttributeKey<?>) data.get(i);
+      appendString(sb, key.getKey());
+      sb.append(':');
+      append(sb, ArrayBackedAttributes.asValue(key.getType(), data.get(i + 1)));
+    }
+    sb.append('}');
+  }
+
   private static void appendString(StringBuilder sb, String value) {
     sb.append('"');
     for (int i = 0; i < value.length(); i++) {

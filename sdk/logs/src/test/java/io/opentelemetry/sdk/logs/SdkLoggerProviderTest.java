@@ -347,7 +347,7 @@ class SdkLoggerProviderTest {
         .isEqualTo(
             "SdkLoggerProvider{"
                 + "clock=SystemClock{}, "
-                + "resource=Resource{schemaUrl=null, attributes={key=\"value\"}}, "
+                + "resource=Resource{schemaUrl=null, attributes={\"key\":\"value\"}}, "
                 + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
                 + "logRecordProcessor=MockLogRecordProcessor, "
                 + "loggerConfigurator=ScopeConfiguratorImpl{conditions=[]}"

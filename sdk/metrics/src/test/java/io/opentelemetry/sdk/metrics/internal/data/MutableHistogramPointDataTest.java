@@ -58,7 +58,7 @@ public class MutableHistogramPointDataTest {
         .isEqualTo(
             "MutableHistogramPointData{startEpochNanos=10, "
                 + "epochNanos=20, "
-                + "attributes={foo=\"bar\"}, "
+                + "attributes={\"foo\":\"bar\"}, "
                 + "sum=2.0, "
                 + "count=550, "
                 + "hasMin=true, "

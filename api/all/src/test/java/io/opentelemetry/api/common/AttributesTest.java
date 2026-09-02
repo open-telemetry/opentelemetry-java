@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -815,8 +816,38 @@ class AttributesTest {
 
     assertThat(attributes.toString())
         .isEqualTo(
-            "{error=true, http.response_size=100, "
-                + "otel.status_code=\"OK\", process.cpu_consumed=33.44, success=\"true\"}");
+            "{\"error\":true,\"http.response_size\":100,"
+                + "\"otel.status_code\":\"OK\",\"process.cpu_consumed\":33.44,"
+                + "\"success\":\"true\"}");
+  }
+
+  @Test
+  void attributesToStringComplexValues() {
+    Attributes attributes =
+        Attributes.builder()
+            .put(valueKey("bytes"), Value.of("hello world".getBytes(StandardCharsets.UTF_8)))
+            .put("colors", "red", "blue")
+            .put(valueKey("empty"), Value.empty())
+            .put(doubleKey("infinity"), Double.POSITIVE_INFINITY)
+            .put(
+                valueKey("nested"),
+                Value.of(
+                    KeyValue.of("array", Value.of(Value.of("red"), Value.of("blue"))),
+                    KeyValue.of("boolean", Value.of(true))))
+            .build();
+
+    assertThat(attributes.toString())
+        .isEqualTo(
+            "{\"bytes\":\"aGVsbG8gd29ybGQ=\",\"colors\":[\"red\",\"blue\"],"
+                + "\"empty\":null,\"infinity\":\"Infinity\","
+                + "\"nested\":{\"array\":[\"red\",\"blue\"],\"boolean\":true}}");
+  }
+
+  @Test
+  void attributesToStringEscapesKeysAndValues() {
+    Attributes attributes = Attributes.of(stringKey("a\"key\n"), "a \\ value\t");
+
+    assertThat(attributes.toString()).isEqualTo("{\"a\\\"key\\n\":\"a \\\\ value\\t\"}");
   }
 
   @Test

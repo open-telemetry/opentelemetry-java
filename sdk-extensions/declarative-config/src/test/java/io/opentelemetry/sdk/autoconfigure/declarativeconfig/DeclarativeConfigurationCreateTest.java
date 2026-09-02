@@ -186,12 +186,12 @@ class DeclarativeConfigurationCreateTest {
     assertThat(sdk.toString())
         .contains(
             "resource=Resource{schemaUrl=null, attributes={"
-                + "color=\"blue\", "
-                + "foo=\"bar\", "
-                + "service.name=\"unknown_service:java\", "
-                + "telemetry.sdk.language=\"java\", "
-                + "telemetry.sdk.name=\"opentelemetry\", "
-                + "telemetry.sdk.version=\"");
+                + "\"color\":\"blue\","
+                + "\"foo\":\"bar\","
+                + "\"service.name\":\"unknown_service:java\","
+                + "\"telemetry.sdk.language\":\"java\","
+                + "\"telemetry.sdk.name\":\"opentelemetry\","
+                + "\"telemetry.sdk.version\":\"");
   }
 
   @Test
