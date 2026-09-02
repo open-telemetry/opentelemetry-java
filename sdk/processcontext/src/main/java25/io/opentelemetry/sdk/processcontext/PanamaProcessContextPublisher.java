@@ -23,7 +23,7 @@ import java.lang.invoke.VarHandle;
 import javax.annotation.Nullable;
 
 @SuppressWarnings({"restricted", "ThrowSpecificExceptions"})
-public class DefaultProcessContextPublisher implements ProcessContextPublisher {
+final class PanamaProcessContextPublisher implements ProcessContextPublisher {
 
   private static final String OTEL_NAME = "OTEL_CTX";
 

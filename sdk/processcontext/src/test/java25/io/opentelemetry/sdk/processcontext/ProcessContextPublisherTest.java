@@ -31,7 +31,7 @@ class ProcessContextPublisherTest {
             Resource.create(Attributes.of(AttributeKey.stringKey("foo1"), "bar1")),
             Attributes.of(AttributeKey.stringKey("foo2"), "bar2"));
 
-    ProcessContextPublisher processContextPublisher = new DefaultProcessContextPublisher();
+    ProcessContextPublisher processContextPublisher = new PanamaProcessContextPublisher();
 
     processContextPublisher.publish(processContextData, TestClock.create());
     assertThat(containsMappingWith("OTEL_CTX")).isTrue();
