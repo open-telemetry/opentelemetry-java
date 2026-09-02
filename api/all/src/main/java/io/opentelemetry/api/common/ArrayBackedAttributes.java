@@ -117,8 +117,6 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     return null;
   }
 
-  // This method must return a non-null Value because every AttributeType has a Value
-  // representation and callers invoke it only for an existing, non-null attribute.
   @SuppressWarnings("unchecked")
   static Value<?> asValue(AttributeType type, Object value) {
     switch (type) {
@@ -162,6 +160,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
         // Already a Value
         return (Value<?>) value;
     }
+    // Every AttributeType must have a non-null Value representation.
     throw new IllegalStateException("Unknown attribute type: " + type);
   }
 
