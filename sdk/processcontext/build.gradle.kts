@@ -23,7 +23,7 @@ dependencies {
 
 java {
   sourceSets {
-    create("java25") {
+    create("Java25") {
       java {
         srcDir("src/main/java25")
       }
@@ -35,27 +35,45 @@ java {
   }
 }
 
+tasks.named<JavaCompile>("compileJava") {
+  options.release.set(8)
+}
+
+tasks.named<JavaCompile>("compileJava25Java") {
+  options.release.set(25)
+}
+
 testing {
   sourceSets {
-    create("java25test") {
+    create("Java25Test") {
       java {
         srcDir("src/test/java25")
       }
       compileClasspath += sourceSets.test.get().output + sourceSets.test.get().compileClasspath
-      compileClasspath += sourceSets.main.get().output + sourceSets["java25"].output
+      compileClasspath += sourceSets.main.get().output + sourceSets["Java25"].output
     }
   }
 }
 
-tasks.withType<JavaCompile> {
+tasks.named<JavaCompile>("compileJava") {
+  options.release.set(8)
+}
+
+tasks.named<JavaCompile>("compileJava25TestJava") {
   options.release.set(25)
+}
+
+// only test on java 25+
+val testJavaVersion = project.findProperty("testJavaVersion") as String?
+tasks.test {
+  enabled = (testJavaVersion != null && Integer.valueOf(testJavaVersion) >= 25)
 }
 
 tasks.named<Jar>("jar") {
   manifest {
     attributes["Multi-Release"] = "true"
   }
-  from(sourceSets.named("java25").get().output) {
+  from(sourceSets.named("Java25").get().output) {
     into("META-INF/versions/25")
   }
 }
