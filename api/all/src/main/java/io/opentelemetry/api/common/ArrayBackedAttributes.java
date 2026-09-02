@@ -43,6 +43,13 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     return new ArrayBackedAttributesBuilder(new ArrayList<>(data()));
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    JsonEncoding.appendAttributes(sb, data());
+    return sb.toString();
+  }
+
   @SuppressWarnings("unchecked") // safe cast: values are stored internally keyed by AttributeKey<T>
   @Override
   @Nullable
@@ -111,8 +118,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
   }
 
   @SuppressWarnings("unchecked")
-  @Nullable
-  private static Value<?> asValue(AttributeType type, Object value) {
+  static Value<?> asValue(AttributeType type, Object value) {
     switch (type) {
       case STRING:
         return Value.of((String) value);
@@ -154,8 +160,8 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
         // Already a Value
         return (Value<?>) value;
     }
-    // Should not reach here
-    return null;
+    // Every AttributeType must have a non-null Value representation.
+    throw new IllegalStateException("Unknown attribute type: " + type);
   }
 
   static Attributes sortAndFilterToAttributes(Object... data) {

@@ -29,7 +29,7 @@ class ComposableAnnotatingSamplerTest {
     assertThat(
             ComposableSampler.annotating(ComposableSampler.alwaysOn(), ATTRIBUTES).getDescription())
         .isEqualTo(
-            "ComposableAnnotatingSampler{ComposableAlwaysOnSampler,{http.route=\"/bear\", size=100}}");
+            "ComposableAnnotatingSampler{ComposableAlwaysOnSampler,{\"http.route\":\"/bear\",\"size\":100}}");
   }
 
   @Test

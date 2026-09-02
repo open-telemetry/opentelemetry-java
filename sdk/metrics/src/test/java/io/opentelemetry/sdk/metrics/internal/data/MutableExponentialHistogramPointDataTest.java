@@ -66,7 +66,7 @@ class MutableExponentialHistogramPointDataTest {
     assertThat(pointData.toString())
         .isEqualTo(
             "MutableExponentialHistogramPointData{startEpochNanos=10, epochNanos=20, "
-                + "attributes={foo=\"bar\"}, scale=1, sum=2.0, count=43, zeroCount=10, hasMin=true, "
+                + "attributes={\"foo\":\"bar\"}, scale=1, sum=2.0, count=43, zeroCount=10, hasMin=true, "
                 + "min=100.0, hasMax=true, max=1000.0, "
                 + "positiveBuckets=MutableExponentialHistogramBuckets{scale=1, offset=2, "
                 + "bucketCounts=[1, 2, 3], totalCount=3}, "

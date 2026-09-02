@@ -64,7 +64,7 @@ class AttributesProcessorTest {
         AttributesProcessor.append(Attributes.builder().put("key", "value").build());
 
     assertThat(processor.toString())
-        .isEqualTo("AppendingAttributesProcessor{additionalAttributes={key=\"value\"}}");
+        .isEqualTo("AppendingAttributesProcessor{additionalAttributes={\"key\":\"value\"}}");
   }
 
   @Test
@@ -141,7 +141,7 @@ class AttributesProcessorTest {
         .isEqualTo(
             "JoinedAttributesProcessor{processors=["
                 + "BaggageAppendingAttributesProcessor{nameFilter=IncludeExcludePredicate{globMatchingEnabled=false, included=[keep]}}, "
-                + "AppendingAttributesProcessor{additionalAttributes={key=\"value\"}}"
+                + "AppendingAttributesProcessor{additionalAttributes={\"key\":\"value\"}}"
                 + "]}");
   }
 }

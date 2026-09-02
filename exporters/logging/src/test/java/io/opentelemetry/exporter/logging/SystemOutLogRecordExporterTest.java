@@ -48,9 +48,10 @@ class SystemOutLogRecordExporterTest {
     assertThat(output.toString())
         .isEqualTo(
             "1970-08-07T10:00:00Z ERROR3 'message' : 00000000000000010000000000000002 0000000000000003 "
-                + "[scopeInfo: logTest:1.0] {amount=1, bytes=ValueBytes{AQID}, cheese=\"cheddar\", "
-                + "empty=ValueEmpty{}, heterogeneousArray=ValueArray{[\"string\",123]}, "
-                + "map=KeyValueList{{\"nested\":\"value\"}}}");
+                + "[scopeInfo: logTest:1.0] {\"amount\":1,\"bytes\":\"AQID\","
+                + "\"cheese\":\"cheddar\",\"empty\":null,"
+                + "\"heterogeneousArray\":[\"string\",123],"
+                + "\"map\":{\"nested\":\"value\"}}");
   }
 
   @Test
