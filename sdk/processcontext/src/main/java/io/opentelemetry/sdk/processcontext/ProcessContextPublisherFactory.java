@@ -26,7 +26,8 @@ public class ProcessContextPublisherFactory {
     // The publisher uses linux specific syscalls via panama FFM, requiring a sufficiently recent
     // JDK.
     boolean available =
-        "Linux".equals(System.getProperty("os.name")) && Runtime.version().feature() >= 25;
+        System.getProperty("os.name").equalsIgnoreCase("Linux")
+            && Integer.parseInt(System.getProperty("java.specification.version")) >= 25;
 
     // off by default until it's considered stable.
     boolean enabled =
