@@ -41,17 +41,23 @@ class ResourceConfigurationTest {
         "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
     props.put("otel.resource.disabled-keys", "drink");
 
-    assertThat(
-            ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(props, componentLoader),
-                SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
-                (r, c) -> r))
-        .isEqualTo(
-            Resource.getDefault().toBuilder()
-                .put(stringKey("service.name"), "test-service")
-                .put("food", "cheesecake")
-                .put("shape", "square")
-                .build());
+    Resource result =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(props, componentLoader),
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    // Verify expected attributes are present
+    assertThat(result.getAttribute(stringKey("service.name"))).isEqualTo("test-service");
+    assertThat(result.getAttribute(stringKey("food"))).isEqualTo("cheesecake");
+    assertThat(result.getAttribute(stringKey("shape"))).isEqualTo("square");
+    // Verify disabled attribute is not present
+    assertThat(result.getAttribute(stringKey("drink"))).isNull();
+    // Verify telemetry SDK attributes are present
+    assertThat(result.getAttribute(stringKey("telemetry.sdk.language"))).isEqualTo("java");
+    assertThat(result.getAttribute(stringKey("telemetry.sdk.name"))).isEqualTo("opentelemetry");
+    // Verify service.instance.id is now added by default via ServiceInstanceIdResourceProvider
+    assertThat(result.getAttribute(stringKey("service.instance.id"))).isNotNull();
   }
 
   @ParameterizedTest
