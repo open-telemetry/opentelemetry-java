@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.incubator.resources;
+package io.opentelemetry.sdk.autoconfigure.resources;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +23,6 @@ class ServiceInstanceIdResourceProviderTest {
 
   @ParameterizedTest
   @MethodSource("createResourceTestCases")
-  @SuppressWarnings("OtelDeprecatedApiUsage")
   void createResource(String expectedValue, Map<String, String> attributes) {
     ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
     DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());

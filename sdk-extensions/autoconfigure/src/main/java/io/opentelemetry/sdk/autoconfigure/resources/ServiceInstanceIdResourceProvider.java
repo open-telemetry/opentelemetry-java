@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.incubator.resources;
+package io.opentelemetry.sdk.autoconfigure.resources;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -18,11 +18,12 @@ import java.util.UUID;
  * ConditionalResourceProvider} rather than a plain {@link ResourceProvider} because it depends on
  * the attributes discovered by the other providers.
  *
- * @deprecated Use {@link
- *     io.opentelemetry.sdk.autoconfigure.resources.ServiceInstanceIdResourceProvider} instead. This
- *     class will be removed in a future release.
+ * <p>This provider generates a random UUID for {@code service.instance.id} if not already set by
+ * the user or another resource provider. The value is stable across calls to this provider within
+ * the same JVM instance.
+ *
+ * @since 1.47.0
  */
-@Deprecated
 public final class ServiceInstanceIdResourceProvider implements ConditionalResourceProvider {
 
   public static final AttributeKey<String> SERVICE_INSTANCE_ID =

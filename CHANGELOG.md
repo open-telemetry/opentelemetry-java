@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Extensions
+
+* Stabilize `ServiceInstanceIdResourceProvider` by moving from incubator to autoconfigure module
+  ([#8410](https://github.com/open-telemetry/opentelemetry-java/issues/8410))
+
 ## Version 1.65.0 (2026-08-07)
 
 **NOTE:** The `opentelemetry-exporter-zipkin` artifact has stopped being published. It was
