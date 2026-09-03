@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 public final class PeriodicMetricReaderBuilder {
 
   static final long DEFAULT_SCHEDULE_DELAY_MINUTES = 1;
+  static final long DEFAULT_SHUTDOWN_TIMEOUT_MILLIS = 5000;
 
   private final MetricExporter metricExporter;
 
@@ -34,6 +35,8 @@ public final class PeriodicMetricReaderBuilder {
   @Nullable private ScheduledExecutorService executor;
 
   private int maxExportBatchSize;
+
+  private long shutdownTimeoutMillis = DEFAULT_SHUTDOWN_TIMEOUT_MILLIS;
 
   PeriodicMetricReaderBuilder(MetricExporter metricExporter) {
     this.metricExporter = metricExporter;
@@ -78,6 +81,30 @@ public final class PeriodicMetricReaderBuilder {
     return this;
   }
 
+  /**
+   * Sets the maximum time to wait for shutdown to complete. This timeout is applied independently
+   * to each phase of the shutdown sequence (awaiting executor termination, joining any in-flight
+   * export, and joining the final export), so shutdown may take up to three times this value. If
+   * unset, defaults to {@value DEFAULT_SHUTDOWN_TIMEOUT_MILLIS}ms per phase.
+   */
+  public PeriodicMetricReaderBuilder setShutdownTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout > 0, "timeout must be positive");
+    shutdownTimeoutMillis = unit.toMillis(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for shutdown to complete. This timeout is applied independently
+   * to each phase of the shutdown sequence (awaiting executor termination, joining any in-flight
+   * export, and joining the final export), so shutdown may take up to three times this value. If
+   * unset, defaults to {@value DEFAULT_SHUTDOWN_TIMEOUT_MILLIS}ms per phase.
+   */
+  public PeriodicMetricReaderBuilder setShutdownTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setShutdownTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
+  }
+
   /** Build a {@link PeriodicMetricReader} with the configuration of this builder. */
   public PeriodicMetricReader build() {
     ScheduledExecutorService executor = this.executor;
@@ -86,7 +113,12 @@ public final class PeriodicMetricReaderBuilder {
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
     return new PeriodicMetricReader(
-        metricExporter, intervalNanos, executor, maxExportBatchSize, internalTelemetryVersion);
+        metricExporter,
+        intervalNanos,
+        executor,
+        maxExportBatchSize,
+        internalTelemetryVersion,
+        shutdownTimeoutMillis);
   }
 
   /**
