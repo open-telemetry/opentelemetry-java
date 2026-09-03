@@ -10,12 +10,13 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.internal.OpenTelemetrySdkBuilderUtil;
-import io.opentelemetry.sdk.internal.SdkConfigProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.annotation.Nullable;
 
 /** A builder for configuring an {@link OpenTelemetrySdk}. */
@@ -28,16 +29,28 @@ public final class OpenTelemetrySdkBuilder {
   @Nullable private Object configProvider;
 
   private static final boolean INCUBATOR_AVAILABLE;
+  @Nullable private static final Method CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD;
 
   static {
     boolean incubatorAvailable = false;
+    Method createExtendedOpenTelemetrySdk = null;
     try {
       Class.forName("io.opentelemetry.api.incubator.ExtendedOpenTelemetry");
+      createExtendedOpenTelemetrySdk =
+          Class.forName("io.opentelemetry.sdk.IncubatingUtil")
+              .getDeclaredMethod(
+                  "createExtendedOpenTelemetrySdk", OpenTelemetrySdk.class, Object.class);
       incubatorAvailable = true;
     } catch (ClassNotFoundException e) {
       // Not available
+    } catch (NoSuchMethodException e) {
+      throw new IllegalStateException(
+          "IncubatingUtil.createExtendedOpenTelemetrySdk could not be found."
+              + " This is a bug in OpenTelemetry.",
+          e);
     }
     INCUBATOR_AVAILABLE = incubatorAvailable;
+    CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD = createExtendedOpenTelemetrySdk;
   }
 
   /**
@@ -89,12 +102,16 @@ public final class OpenTelemetrySdkBuilder {
   }
 
   /**
-   * Sets the {@link SdkConfigProvider} to use.
+   * Sets the SDK config provider to use.
    *
    * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * OpenTelemetrySdkBuilderUtil#setConfigProvider(OpenTelemetrySdkBuilder, SdkConfigProvider)}.
+   * OpenTelemetrySdkBuilderUtil#setConfigProvider(OpenTelemetrySdkBuilder,
+   * io.opentelemetry.sdk.internal.SdkConfigProvider)}.
+   *
+   * <p>The parameter type is {@link Object} to avoid introducing another direct incubator-linked
+   * method signature in the path Groovy eagerly inspects.
    */
-  OpenTelemetrySdkBuilder setConfigProvider(SdkConfigProvider configProvider) {
+  OpenTelemetrySdkBuilder setConfigProvider(Object configProvider) {
     this.configProvider = requireNonNull(configProvider);
     return this;
   }
@@ -143,7 +160,49 @@ public final class OpenTelemetrySdkBuilder {
     OpenTelemetrySdk openTelemetrySdk =
         new OpenTelemetrySdk(tracerProvider, meterProvider, loggerProvider, propagators);
     return INCUBATOR_AVAILABLE
-        ? IncubatingUtil.createExtendedOpenTelemetrySdk(openTelemetrySdk, configProvider)
+        ? createExtendedOpenTelemetrySdk(openTelemetrySdk, configProvider)
         : openTelemetrySdk;
+  }
+
+  private static OpenTelemetrySdk createExtendedOpenTelemetrySdk(
+      OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
+    return createExtendedOpenTelemetrySdk(
+        openTelemetrySdk,
+        configProvider,
+        requireNonNull(CREATE_EXTENDED_OPEN_TELEMETRY_SDK_METHOD));
+  }
+
+  static OpenTelemetrySdk createExtendedOpenTelemetrySdk(
+      OpenTelemetrySdk openTelemetrySdk,
+      @Nullable Object configProvider,
+      Method createExtendedOpenTelemetrySdkMethod) {
+    try {
+      return (OpenTelemetrySdk)
+          createExtendedOpenTelemetrySdkMethod.invoke(null, openTelemetrySdk, configProvider);
+    } catch (IllegalAccessException e) {
+      throw new IllegalStateException(
+          "IncubatingUtil.createExtendedOpenTelemetrySdk could not be invoked."
+              + " This is a bug in OpenTelemetry.",
+          e);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException(
+          "IncubatingUtil.createExtendedOpenTelemetrySdk could not be called with the expected"
+              + " arguments. This is a bug in OpenTelemetry.",
+          e);
+    } catch (InvocationTargetException e) {
+      Throwable cause = e.getTargetException();
+      // Preserve the original application behavior rather than wrapping runtime failures emitted
+      // by the incubator path in a reflective InvocationTargetException.
+      if (cause instanceof RuntimeException) {
+        throw (RuntimeException) cause;
+      }
+      if (cause instanceof Error) {
+        throw (Error) cause;
+      }
+      throw new IllegalStateException(
+          "IncubatingUtil.createExtendedOpenTelemetrySdk failed."
+              + " This is a bug in OpenTelemetry.",
+          cause);
+    }
   }
 }
