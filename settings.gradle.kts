@@ -74,7 +74,7 @@ include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")
 include(":animal-sniffer-signature")
 
-val develocityServer = "https://develocity.opentelemetry.io"
+val develocityServer = "https://community.develocity.cloud"
 val isCI = System.getenv("CI") != null
 val develocityAccessKey = System.getenv("DEVELOCITY_ACCESS_KEY") ?: ""
 val disableRemoteBuildCache = System.getenv("DISABLE_REMOTE_BUILD_CACHE") != null
@@ -86,6 +86,7 @@ val shouldDisableLocalBuildCache =
 develocity {
   if (develocityAccessKey.isNotEmpty()) {
     server = develocityServer
+    projectId = "OpenTelemetry"
   }
 
   buildScan {
