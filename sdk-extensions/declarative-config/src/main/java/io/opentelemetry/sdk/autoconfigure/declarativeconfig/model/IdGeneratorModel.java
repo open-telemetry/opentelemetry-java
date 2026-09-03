@@ -55,7 +55,7 @@ public class IdGeneratorModel {
   }
 
   @JsonProperty(RANDOM)
-  public IdGeneratorModel withRandom(RandomIdGeneratorModel random) {
+  public IdGeneratorModel setRandom(RandomIdGeneratorModel random) {
     this.random = random;
     return this;
   }
@@ -66,7 +66,7 @@ public class IdGeneratorModel {
   }
 
   @JsonAnySetter
-  public IdGeneratorModel withExtensionProperty(String name, @Nullable Object value) {
+  public IdGeneratorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

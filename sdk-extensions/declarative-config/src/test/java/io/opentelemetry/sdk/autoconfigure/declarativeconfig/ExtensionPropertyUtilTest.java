@@ -123,7 +123,7 @@ class ExtensionPropertyUtilTest {
   @Test
   void stableGetter_returnsGraduatedValue_fromExtensionPropertiesFallback() {
     LoggerProviderModel model = new LoggerProviderModel();
-    model.withExtensionProperty("limits/development", new LinkedHashMap<>());
+    model.setExtensionProperty("limits/development", new LinkedHashMap<>());
 
     assertThat(model.getLimits()).isNotNull().isInstanceOf(LogRecordLimitsModel.class);
   }
@@ -132,9 +132,9 @@ class ExtensionPropertyUtilTest {
   void graduatedValue_isEqualToDirectlySetValue() {
     LogRecordLimitsModel limits = new LogRecordLimitsModel();
 
-    LoggerProviderModel viaStableSetter = new LoggerProviderModel().withLimits(limits);
+    LoggerProviderModel viaStableSetter = new LoggerProviderModel().setLimits(limits);
     LoggerProviderModel viaGraduatedKey = new LoggerProviderModel();
-    viaGraduatedKey.withExtensionProperty("limits/development", limits);
+    viaGraduatedKey.setExtensionProperty("limits/development", limits);
 
     assertThat(viaStableSetter.getLimits()).isEqualTo(viaGraduatedKey.getLimits());
     assertThat(viaStableSetter).isEqualTo(viaGraduatedKey);

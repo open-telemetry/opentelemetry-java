@@ -43,7 +43,7 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   @JsonProperty("host")
-  public ExperimentalPrometheusMetricExporterModel withHost(String host) {
+  public ExperimentalPrometheusMetricExporterModel setHost(String host) {
     this.host = host;
     return this;
   }
@@ -60,7 +60,7 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   @JsonProperty("port")
-  public ExperimentalPrometheusMetricExporterModel withPort(Integer port) {
+  public ExperimentalPrometheusMetricExporterModel setPort(Integer port) {
     this.port = port;
     return this;
   }
@@ -77,7 +77,7 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   @JsonProperty("scope_info_enabled")
-  public ExperimentalPrometheusMetricExporterModel withScopeInfoEnabled(Boolean scopeInfoEnabled) {
+  public ExperimentalPrometheusMetricExporterModel setScopeInfoEnabled(Boolean scopeInfoEnabled) {
     this.scopeInfoEnabled = scopeInfoEnabled;
     return this;
   }
@@ -94,7 +94,7 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   @JsonProperty("target_info_enabled/development")
-  public ExperimentalPrometheusMetricExporterModel withTargetInfoEnabledDevelopment(
+  public ExperimentalPrometheusMetricExporterModel setTargetInfoEnabledDevelopment(
       Boolean targetInfoEnabledDevelopment) {
     this.targetInfoEnabledDevelopment = targetInfoEnabledDevelopment;
     return this;
@@ -113,7 +113,7 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   @JsonProperty("resource_constant_labels")
-  public ExperimentalPrometheusMetricExporterModel withResourceConstantLabels(
+  public ExperimentalPrometheusMetricExporterModel setResourceConstantLabels(
       IncludeExcludeModel resourceConstantLabels) {
     this.resourceConstantLabels = resourceConstantLabels;
     return this;
@@ -146,7 +146,7 @@ public class ExperimentalPrometheusMetricExporterModel {
   }
 
   @JsonProperty("translation_strategy")
-  public ExperimentalPrometheusMetricExporterModel withTranslationStrategy(
+  public ExperimentalPrometheusMetricExporterModel setTranslationStrategy(
       ExperimentalPrometheusTranslationStrategyModel translationStrategy) {
     this.translationStrategy = translationStrategy;
     return this;

@@ -55,7 +55,7 @@ public class MetricProducerModel {
   }
 
   @JsonProperty(OPENCENSUS)
-  public MetricProducerModel withOpencensus(OpenCensusMetricProducerModel opencensus) {
+  public MetricProducerModel setOpencensus(OpenCensusMetricProducerModel opencensus) {
     this.opencensus = opencensus;
     return this;
   }
@@ -66,7 +66,7 @@ public class MetricProducerModel {
   }
 
   @JsonAnySetter
-  public MetricProducerModel withExtensionProperty(String name, @Nullable Object value) {
+  public MetricProducerModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

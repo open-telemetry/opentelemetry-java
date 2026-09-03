@@ -33,7 +33,7 @@ public class ExperimentalJaegerRemoteSamplerModel {
   }
 
   @JsonProperty("endpoint")
-  public ExperimentalJaegerRemoteSamplerModel withEndpoint(String endpoint) {
+  public ExperimentalJaegerRemoteSamplerModel setEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
@@ -50,7 +50,7 @@ public class ExperimentalJaegerRemoteSamplerModel {
   }
 
   @JsonProperty("interval")
-  public ExperimentalJaegerRemoteSamplerModel withInterval(Integer interval) {
+  public ExperimentalJaegerRemoteSamplerModel setInterval(Integer interval) {
     this.interval = interval;
     return this;
   }
@@ -67,7 +67,7 @@ public class ExperimentalJaegerRemoteSamplerModel {
   }
 
   @JsonProperty("initial_sampler")
-  public ExperimentalJaegerRemoteSamplerModel withInitialSampler(SamplerModel initialSampler) {
+  public ExperimentalJaegerRemoteSamplerModel setInitialSampler(SamplerModel initialSampler) {
     this.initialSampler = initialSampler;
     return this;
   }

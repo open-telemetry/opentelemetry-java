@@ -27,7 +27,7 @@ public class ExperimentalComposableSamplerPropertyModel {
   }
 
   @JsonAnySetter
-  public ExperimentalComposableSamplerPropertyModel withAdditionalProperty(
+  public ExperimentalComposableSamplerPropertyModel setAdditionalProperty(
       String name, Object value) {
     this.additionalProperties.put(name, value);
     return this;

@@ -31,7 +31,7 @@ public class DistributionModel {
   }
 
   @JsonAnySetter
-  public DistributionModel withExtensionProperty(String name, @Nullable Object value) {
+  public DistributionModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -81,7 +81,7 @@ public class ViewSelectorModel {
   }
 
   @JsonProperty(INSTRUMENT_NAME)
-  public ViewSelectorModel withInstrumentName(String instrumentName) {
+  public ViewSelectorModel setInstrumentName(String instrumentName) {
     this.instrumentName = instrumentName;
     return this;
   }
@@ -118,7 +118,7 @@ public class ViewSelectorModel {
   }
 
   @JsonProperty(INSTRUMENT_TYPE)
-  public ViewSelectorModel withInstrumentType(InstrumentTypeModel instrumentType) {
+  public ViewSelectorModel setInstrumentType(InstrumentTypeModel instrumentType) {
     this.instrumentType = instrumentType;
     return this;
   }
@@ -138,7 +138,7 @@ public class ViewSelectorModel {
   }
 
   @JsonProperty(UNIT)
-  public ViewSelectorModel withUnit(String unit) {
+  public ViewSelectorModel setUnit(String unit) {
     this.unit = unit;
     return this;
   }
@@ -158,7 +158,7 @@ public class ViewSelectorModel {
   }
 
   @JsonProperty(METER_NAME)
-  public ViewSelectorModel withMeterName(String meterName) {
+  public ViewSelectorModel setMeterName(String meterName) {
     this.meterName = meterName;
     return this;
   }
@@ -178,7 +178,7 @@ public class ViewSelectorModel {
   }
 
   @JsonProperty(METER_VERSION)
-  public ViewSelectorModel withMeterVersion(String meterVersion) {
+  public ViewSelectorModel setMeterVersion(String meterVersion) {
     this.meterVersion = meterVersion;
     return this;
   }
@@ -199,7 +199,7 @@ public class ViewSelectorModel {
   }
 
   @JsonProperty(METER_SCHEMA_URL)
-  public ViewSelectorModel withMeterSchemaUrl(String meterSchemaUrl) {
+  public ViewSelectorModel setMeterSchemaUrl(String meterSchemaUrl) {
     this.meterSchemaUrl = meterSchemaUrl;
     return this;
   }
@@ -210,7 +210,7 @@ public class ViewSelectorModel {
   }
 
   @JsonAnySetter
-  public ViewSelectorModel withExtensionProperty(String name, @Nullable Object value) {
+  public ViewSelectorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

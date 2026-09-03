@@ -45,7 +45,7 @@ public class IncludeExcludeModel {
   }
 
   @JsonProperty(INCLUDED)
-  public IncludeExcludeModel withIncluded(List<String> included) {
+  public IncludeExcludeModel setIncluded(List<String> included) {
     this.included = included;
     return this;
   }
@@ -70,7 +70,7 @@ public class IncludeExcludeModel {
   }
 
   @JsonProperty(EXCLUDED)
-  public IncludeExcludeModel withExcluded(List<String> excluded) {
+  public IncludeExcludeModel setExcluded(List<String> excluded) {
     this.excluded = excluded;
     return this;
   }

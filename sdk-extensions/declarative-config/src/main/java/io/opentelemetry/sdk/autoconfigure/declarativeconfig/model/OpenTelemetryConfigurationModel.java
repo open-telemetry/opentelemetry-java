@@ -110,7 +110,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(FILE_FORMAT)
-  public OpenTelemetryConfigurationModel withFileFormat(String fileFormat) {
+  public OpenTelemetryConfigurationModel setFileFormat(String fileFormat) {
     this.fileFormat = fileFormat;
     return this;
   }
@@ -130,7 +130,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(DISABLED)
-  public OpenTelemetryConfigurationModel withDisabled(Boolean disabled) {
+  public OpenTelemetryConfigurationModel setDisabled(Boolean disabled) {
     this.disabled = disabled;
     return this;
   }
@@ -201,7 +201,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(LOG_LEVEL)
-  public OpenTelemetryConfigurationModel withLogLevel(SeverityNumberModel logLevel) {
+  public OpenTelemetryConfigurationModel setLogLevel(SeverityNumberModel logLevel) {
     this.logLevel = logLevel;
     return this;
   }
@@ -222,7 +222,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(ATTRIBUTE_LIMITS)
-  public OpenTelemetryConfigurationModel withAttributeLimits(AttributeLimitsModel attributeLimits) {
+  public OpenTelemetryConfigurationModel setAttributeLimits(AttributeLimitsModel attributeLimits) {
     this.attributeLimits = attributeLimits;
     return this;
   }
@@ -243,7 +243,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(LOGGER_PROVIDER)
-  public OpenTelemetryConfigurationModel withLoggerProvider(LoggerProviderModel loggerProvider) {
+  public OpenTelemetryConfigurationModel setLoggerProvider(LoggerProviderModel loggerProvider) {
     this.loggerProvider = loggerProvider;
     return this;
   }
@@ -264,7 +264,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(METER_PROVIDER)
-  public OpenTelemetryConfigurationModel withMeterProvider(MeterProviderModel meterProvider) {
+  public OpenTelemetryConfigurationModel setMeterProvider(MeterProviderModel meterProvider) {
     this.meterProvider = meterProvider;
     return this;
   }
@@ -285,7 +285,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(PROPAGATOR)
-  public OpenTelemetryConfigurationModel withPropagator(PropagatorModel propagator) {
+  public OpenTelemetryConfigurationModel setPropagator(PropagatorModel propagator) {
     this.propagator = propagator;
     return this;
   }
@@ -306,7 +306,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(TRACER_PROVIDER)
-  public OpenTelemetryConfigurationModel withTracerProvider(TracerProviderModel tracerProvider) {
+  public OpenTelemetryConfigurationModel setTracerProvider(TracerProviderModel tracerProvider) {
     this.tracerProvider = tracerProvider;
     return this;
   }
@@ -326,7 +326,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(RESOURCE)
-  public OpenTelemetryConfigurationModel withResource(ResourceModel resource) {
+  public OpenTelemetryConfigurationModel setResource(ResourceModel resource) {
     this.resource = resource;
     return this;
   }
@@ -353,7 +353,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonProperty(DISTRIBUTION)
-  public OpenTelemetryConfigurationModel withDistribution(DistributionModel distribution) {
+  public OpenTelemetryConfigurationModel setDistribution(DistributionModel distribution) {
     this.distribution = distribution;
     return this;
   }
@@ -364,8 +364,7 @@ public class OpenTelemetryConfigurationModel {
   }
 
   @JsonAnySetter
-  public OpenTelemetryConfigurationModel withExtensionProperty(
-      String name, @Nullable Object value) {
+  public OpenTelemetryConfigurationModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -33,7 +33,7 @@ public class ExperimentalMeterConfiguratorModel {
   }
 
   @JsonProperty("default_config")
-  public ExperimentalMeterConfiguratorModel withDefaultConfig(
+  public ExperimentalMeterConfiguratorModel setDefaultConfig(
       ExperimentalMeterConfigModel defaultConfig) {
     this.defaultConfig = defaultConfig;
     return this;
@@ -51,7 +51,7 @@ public class ExperimentalMeterConfiguratorModel {
   }
 
   @JsonProperty("meters")
-  public ExperimentalMeterConfiguratorModel withMeters(
+  public ExperimentalMeterConfiguratorModel setMeters(
       List<ExperimentalMeterMatcherAndConfigModel> meters) {
     this.meters = meters;
     return this;

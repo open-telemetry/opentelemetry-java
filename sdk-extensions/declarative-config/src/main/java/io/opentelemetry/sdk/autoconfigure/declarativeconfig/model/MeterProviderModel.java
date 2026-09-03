@@ -58,7 +58,7 @@ public class MeterProviderModel {
   }
 
   @JsonProperty(READERS)
-  public MeterProviderModel withReaders(List<MetricReaderModel> readers) {
+  public MeterProviderModel setReaders(List<MetricReaderModel> readers) {
     this.readers = readers;
     return this;
   }
@@ -78,7 +78,7 @@ public class MeterProviderModel {
   }
 
   @JsonProperty(VIEWS)
-  public MeterProviderModel withViews(List<ViewModel> views) {
+  public MeterProviderModel setViews(List<ViewModel> views) {
     this.views = views;
     return this;
   }
@@ -108,7 +108,7 @@ public class MeterProviderModel {
   }
 
   @JsonProperty(EXEMPLAR_FILTER)
-  public MeterProviderModel withExemplarFilter(ExemplarFilterModel exemplarFilter) {
+  public MeterProviderModel setExemplarFilter(ExemplarFilterModel exemplarFilter) {
     this.exemplarFilter = exemplarFilter;
     return this;
   }
@@ -119,7 +119,7 @@ public class MeterProviderModel {
   }
 
   @JsonAnySetter
-  public MeterProviderModel withExtensionProperty(String name, @Nullable Object value) {
+  public MeterProviderModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

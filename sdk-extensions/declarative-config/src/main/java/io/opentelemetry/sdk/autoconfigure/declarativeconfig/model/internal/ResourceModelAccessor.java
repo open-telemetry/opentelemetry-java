@@ -38,10 +38,10 @@ public final class ResourceModelAccessor {
         DETECTION, model.getExtensionProperties(), ExperimentalResourceDetectionModel.class);
   }
 
-  public static ResourceModel withDetection(
+  public static ResourceModel setDetection(
       ResourceModel model, ExperimentalResourceDetectionModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(DETECTION, value);
+    model.setExtensionProperty(DETECTION, value);
     return model;
   }
 }

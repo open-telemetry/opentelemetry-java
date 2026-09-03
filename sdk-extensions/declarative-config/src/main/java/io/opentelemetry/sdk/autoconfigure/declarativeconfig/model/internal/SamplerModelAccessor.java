@@ -42,10 +42,10 @@ public final class SamplerModelAccessor {
         COMPOSITE, model.getExtensionProperties(), ExperimentalComposableSamplerModel.class);
   }
 
-  public static SamplerModel withComposite(
+  public static SamplerModel setComposite(
       SamplerModel model, ExperimentalComposableSamplerModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(COMPOSITE, value);
+    model.setExtensionProperty(COMPOSITE, value);
     return model;
   }
 
@@ -55,10 +55,10 @@ public final class SamplerModelAccessor {
         JAEGER_REMOTE, model.getExtensionProperties(), ExperimentalJaegerRemoteSamplerModel.class);
   }
 
-  public static SamplerModel withJaegerRemote(
+  public static SamplerModel setJaegerRemote(
       SamplerModel model, ExperimentalJaegerRemoteSamplerModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(JAEGER_REMOTE, value);
+    model.setExtensionProperty(JAEGER_REMOTE, value);
     return model;
   }
 
@@ -68,10 +68,10 @@ public final class SamplerModelAccessor {
         PROBABILITY, model.getExtensionProperties(), ExperimentalProbabilitySamplerModel.class);
   }
 
-  public static SamplerModel withProbability(
+  public static SamplerModel setProbability(
       SamplerModel model, ExperimentalProbabilitySamplerModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(PROBABILITY, value);
+    model.setExtensionProperty(PROBABILITY, value);
     return model;
   }
 }

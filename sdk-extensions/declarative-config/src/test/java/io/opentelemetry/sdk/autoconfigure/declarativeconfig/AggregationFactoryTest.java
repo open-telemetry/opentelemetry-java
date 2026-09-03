@@ -37,28 +37,26 @@ class AggregationFactoryTest {
     return Stream.of(
         Arguments.argumentSet("default", new AggregationModel(), Aggregation.defaultAggregation()),
         Arguments.argumentSet(
-            "drop",
-            new AggregationModel().withDrop(new DropAggregationModel()),
-            Aggregation.drop()),
+            "drop", new AggregationModel().setDrop(new DropAggregationModel()), Aggregation.drop()),
         Arguments.argumentSet(
-            "sum", new AggregationModel().withSum(new SumAggregationModel()), Aggregation.sum()),
+            "sum", new AggregationModel().setSum(new SumAggregationModel()), Aggregation.sum()),
         Arguments.argumentSet(
             "last_Value",
-            new AggregationModel().withLastValue(new LastValueAggregationModel()),
+            new AggregationModel().setLastValue(new LastValueAggregationModel()),
             Aggregation.lastValue()),
         Arguments.argumentSet(
             "base2_exponential_bucket_histogram defaults",
             new AggregationModel()
-                .withBase2ExponentialBucketHistogram(
+                .setBase2ExponentialBucketHistogram(
                     new Base2ExponentialBucketHistogramAggregationModel()),
             Aggregation.base2ExponentialBucketHistogram()),
         Arguments.argumentSet(
             "base2_exponential_bucket_histogram with options",
             new AggregationModel()
-                .withBase2ExponentialBucketHistogram(
+                .setBase2ExponentialBucketHistogram(
                     new Base2ExponentialBucketHistogramAggregationModel()
-                        .withMaxSize(2)
-                        .withMaxScale(2)),
+                        .setMaxSize(2)
+                        .setMaxScale(2)),
             Aggregation.base2ExponentialBucketHistogram(
                 Base2ExponentialHistogramOptions.builder()
                     .setMaxBuckets(2)
@@ -67,15 +65,15 @@ class AggregationFactoryTest {
         Arguments.argumentSet(
             "explicit_bucket_histogram null boundaries",
             new AggregationModel()
-                .withExplicitBucketHistogram(
-                    new ExplicitBucketHistogramAggregationModel().withBoundaries(null)),
+                .setExplicitBucketHistogram(
+                    new ExplicitBucketHistogramAggregationModel().setBoundaries(null)),
             Aggregation.explicitBucketHistogram()),
         Arguments.argumentSet(
             "explicit_bucket_histogram with boundaries",
             new AggregationModel()
-                .withExplicitBucketHistogram(
+                .setExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
-                        .withBoundaries(Arrays.asList(1.0, 2.0))),
+                        .setBoundaries(Arrays.asList(1.0, 2.0))),
             Aggregation.explicitBucketHistogram(
                 ExplicitBucketHistogramOptions.builder()
                     .setBucketBoundaries(Arrays.asList(1.0, 2.0))
@@ -83,10 +81,10 @@ class AggregationFactoryTest {
         Arguments.argumentSet(
             "explicit_bucket_histogram record_min_max true",
             new AggregationModel()
-                .withExplicitBucketHistogram(
+                .setExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
-                        .withBoundaries(Arrays.asList(1.0, 2.0))
-                        .withRecordMinMax(true)),
+                        .setBoundaries(Arrays.asList(1.0, 2.0))
+                        .setRecordMinMax(true)),
             Aggregation.explicitBucketHistogram(
                 ExplicitBucketHistogramOptions.builder()
                     .setBucketBoundaries(Arrays.asList(1.0, 2.0))
@@ -95,10 +93,10 @@ class AggregationFactoryTest {
         Arguments.argumentSet(
             "explicit_bucket_histogram record_min_max false",
             new AggregationModel()
-                .withExplicitBucketHistogram(
+                .setExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
-                        .withBoundaries(Arrays.asList(1.0, 2.0))
-                        .withRecordMinMax(false)),
+                        .setBoundaries(Arrays.asList(1.0, 2.0))
+                        .setRecordMinMax(false)),
             Aggregation.explicitBucketHistogram(
                 ExplicitBucketHistogramOptions.builder()
                     .setBucketBoundaries(Arrays.asList(1.0, 2.0))
@@ -107,20 +105,20 @@ class AggregationFactoryTest {
         Arguments.argumentSet(
             "explicit_bucket_histogram null boundaries record_min_max false",
             new AggregationModel()
-                .withExplicitBucketHistogram(
+                .setExplicitBucketHistogram(
                     new ExplicitBucketHistogramAggregationModel()
-                        .withBoundaries(null)
-                        .withRecordMinMax(false)),
+                        .setBoundaries(null)
+                        .setRecordMinMax(false)),
             Aggregation.explicitBucketHistogram(
                 ExplicitBucketHistogramOptions.builder().setRecordMinMax(false).build())),
         Arguments.argumentSet(
             "base2_exponential_bucket_histogram record_min_max true",
             new AggregationModel()
-                .withBase2ExponentialBucketHistogram(
+                .setBase2ExponentialBucketHistogram(
                     new Base2ExponentialBucketHistogramAggregationModel()
-                        .withMaxSize(2)
-                        .withMaxScale(2)
-                        .withRecordMinMax(true)),
+                        .setMaxSize(2)
+                        .setMaxScale(2)
+                        .setRecordMinMax(true)),
             Aggregation.base2ExponentialBucketHistogram(
                 Base2ExponentialHistogramOptions.builder()
                     .setMaxBuckets(2)
@@ -130,11 +128,11 @@ class AggregationFactoryTest {
         Arguments.argumentSet(
             "base2_exponential_bucket_histogram record_min_max false",
             new AggregationModel()
-                .withBase2ExponentialBucketHistogram(
+                .setBase2ExponentialBucketHistogram(
                     new Base2ExponentialBucketHistogramAggregationModel()
-                        .withMaxSize(2)
-                        .withMaxScale(2)
-                        .withRecordMinMax(false)),
+                        .setMaxSize(2)
+                        .setMaxScale(2)
+                        .setRecordMinMax(false)),
             Aggregation.base2ExponentialBucketHistogram(
                 Base2ExponentialHistogramOptions.builder()
                     .setMaxBuckets(2)

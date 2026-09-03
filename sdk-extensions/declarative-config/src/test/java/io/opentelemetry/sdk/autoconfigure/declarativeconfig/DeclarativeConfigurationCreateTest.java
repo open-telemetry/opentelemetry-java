@@ -170,12 +170,12 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void create_ModelCustomizer() {
     OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
-    model.withFileFormat("1.1");
-    model.withTracerProvider(
+    model.setFileFormat("1.1");
+    model.setTracerProvider(
         new TracerProviderModel()
-            .withProcessors(
+            .setProcessors(
                 Collections.singletonList(
-                    new SpanProcessorModel().withExtensionProperty("test", null))));
+                    new SpanProcessorModel().setExtensionProperty("test", null))));
     ExtendedOpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
                 model,
