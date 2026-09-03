@@ -18,8 +18,9 @@ import java.util.UUID;
  * ConditionalResourceProvider} rather than a plain {@link ResourceProvider} because it depends on
  * the attributes discovered by the other providers.
  *
- * @deprecated Use {@link io.opentelemetry.sdk.autoconfigure.resources.ServiceInstanceIdResourceProvider}
- *     instead. This class will be removed in a future release.
+ * @deprecated Use {@link
+ *     io.opentelemetry.sdk.autoconfigure.resources.ServiceInstanceIdResourceProvider} instead. This
+ *     class will be removed in a future release.
  */
 @Deprecated
 public final class ServiceInstanceIdResourceProvider implements ConditionalResourceProvider {
