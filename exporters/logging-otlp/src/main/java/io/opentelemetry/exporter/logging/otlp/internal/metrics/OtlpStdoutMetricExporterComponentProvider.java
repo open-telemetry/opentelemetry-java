@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.logging.otlp.internal.metrics;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
+import io.opentelemetry.exporter.logging.otlp.internal.OutputStreamConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
@@ -36,6 +37,7 @@ public final class OtlpStdoutMetricExporterComponentProvider implements Componen
         config, builder::setAggregationTemporalitySelector);
     IncubatingExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
         config, builder::setDefaultAggregationSelector);
+    OutputStreamConfigUtil.configureOutputStream(config, builder::setOutput);
     return builder.build();
   }
 }
