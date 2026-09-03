@@ -163,6 +163,8 @@ class MetricReaderFactoryTest {
         PrometheusHttpServer.builder()
             .setHost("localhost")
             .setPort(prom2Port)
+            .setOtelScopeLabelsEnabled(false)
+            .setTargetInfoMetricEnabled(false)
             .setTranslationStrategy(TranslationStrategy.UNDERSCORE_ESCAPING_WITHOUT_SUFFIXES)
             .setAllowedResourceAttributesFilter(
                 IncludeExcludePredicate.createPatternMatching(
