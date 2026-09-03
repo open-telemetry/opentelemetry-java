@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
+import io.opentelemetry.api.impl.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.Compressor;
@@ -169,24 +170,27 @@ public final class JdkHttpSender implements HttpSender {
   public void send(
       MessageWriter messageWriter, Consumer<HttpResponse> onResponse, Consumer<Throwable> onError) {
     try {
-      CompletableFuture<HttpResponse> unused =
-          CompletableFuture.supplyAsync(
-                  () -> {
-                    try {
-                      return sendInternal(messageWriter);
-                    } catch (IOException e) {
-                      throw new UncheckedIOException(e);
-                    }
-                  },
-                  executorService)
-              .whenComplete(
-                  (httpResponse, throwable) -> {
-                    if (throwable != null) {
-                      onError.accept(throwable);
-                      return;
-                    }
-                    onResponse.accept(httpResponse);
-                  });
+      InstrumentationUtil.suppressInstrumentation(
+          () -> {
+            CompletableFuture<HttpResponse> unused =
+                CompletableFuture.supplyAsync(
+                        () -> {
+                          try {
+                            return sendInternal(messageWriter);
+                          } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                          }
+                        },
+                        executorService)
+                    .whenComplete(
+                        (httpResponse, throwable) -> {
+                          if (throwable != null) {
+                            onError.accept(throwable);
+                            return;
+                          }
+                          onResponse.accept(httpResponse);
+                        });
+          });
     } catch (RejectedExecutionException e) {
       onError.accept(e);
     }
