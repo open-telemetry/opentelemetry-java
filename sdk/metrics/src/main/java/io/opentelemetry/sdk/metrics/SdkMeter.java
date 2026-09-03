@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.exemplar.AlwaysOffExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.AsynchronousMetricStorage;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
@@ -88,6 +89,16 @@ final class SdkMeter implements Meter {
 
   private final MeterProviderSharedState meterProviderSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+
+  /**
+   * Returns true if the meter provider's exemplar filter samples nothing. Callers can use this to
+   * skip {@link io.opentelemetry.context.Context#current()} lookups on record paths that only need
+   * the current context to derive an exemplar span context.
+   */
+  boolean isExemplarsAlwaysOff() {
+    return meterProviderSharedState.getExemplarFilter() instanceof AlwaysOffExemplarFilter;
+  }
+
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
 
   private volatile boolean meterEnabled;
@@ -387,6 +398,16 @@ final class SdkMeter implements Meter {
     public boolean isEnabled() {
       for (WriteableMetricStorage storage : storages) {
         if (storage.isEnabled()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public boolean usesContext() {
+      for (WriteableMetricStorage storage : storages) {
+        if (storage.usesContext()) {
           return true;
         }
       }

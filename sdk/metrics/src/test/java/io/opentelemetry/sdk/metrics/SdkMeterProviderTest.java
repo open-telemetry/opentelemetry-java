@@ -753,6 +753,48 @@ class SdkMeterProviderTest {
   }
 
   @Test
+  void viewSdk_capturesBaggageFromContext_exemplarsAlwaysOff() {
+    // The record-path Context feeds the view's AttributesProcessor (baggage append here) in
+    // addition to the exemplar path. Disabling exemplars must not cause the parameterless
+    // record overload to substitute Context.root() when the view still needs the current
+    // context, otherwise the implicit-context measurement would land in a different series.
+    InstrumentSelector selector =
+        InstrumentSelector.builder().setType(InstrumentType.COUNTER).setName("test").build();
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    ViewBuilder viewBuilder = View.builder().setAggregation(Aggregation.sum());
+    SdkMeterProviderUtil.appendAllBaggageAttributes(viewBuilder);
+    SdkMeterProvider provider =
+        sdkMeterProviderBuilder
+            .setExemplarFilter(ExemplarFilter.alwaysOff())
+            .registerMetricReader(reader)
+            .registerView(selector, viewBuilder.build())
+            .build();
+    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    Baggage baggage = Baggage.builder().put("baggage", "value").build();
+    Context context = Context.root().with(baggage);
+    LongCounter counter = meter.counterBuilder("test").build();
+
+    counter.add(1, Attributes.empty(), context);
+    try (Scope ignored = context.makeCurrent()) {
+      counter.add(1, Attributes.empty());
+    }
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("test")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .hasPointsSatisfying(
+                                    point ->
+                                        point
+                                            .hasAttributes(attributeEntry("baggage", "value"))
+                                            .hasValue(2))));
+  }
+
+  @Test
   void sdkMeterProvider_supportsMultipleReadersCumulative() {
     InMemoryMetricReader reader1 = InMemoryMetricReader.create();
     InMemoryMetricReader reader2 = InMemoryMetricReader.create();
