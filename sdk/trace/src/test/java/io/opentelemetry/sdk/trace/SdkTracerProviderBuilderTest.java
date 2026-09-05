@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,26 @@ public class SdkTracerProviderBuilderTest {
     assertThat(sdkTracerProvider)
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("resource", Resource.getDefault().merge(customResource));
+  }
+
+  @Test
+  void setDefaultTracerConfig_disabled() {
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder().setDefaultTracerConfig(TracerConfig.disabled()).build();
+
+    SdkTracer tracer = (SdkTracer) sdkTracerProvider.get("test");
+
+    assertThat(tracer.isEnabled()).isFalse();
+  }
+
+  @Test
+  void setDefaultTracerConfig_enabled() {
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder().setDefaultTracerConfig(TracerConfig.enabled()).build();
+
+    SdkTracer tracer = (SdkTracer) sdkTracerProvider.get("test");
+
+    assertThat(tracer.isEnabled()).isTrue();
   }
 
   @Test

@@ -127,7 +127,7 @@ public final class OpenTelemetrySdkBuilder {
   public OpenTelemetrySdk build() {
     SdkTracerProvider tracerProvider = this.tracerProvider;
     if (tracerProvider == null) {
-      tracerProvider = SdkTracerProvider.builder().build();
+      tracerProvider = SdkTracerProvider.noop();
     }
 
     SdkMeterProvider meterProvider = this.meterProvider;

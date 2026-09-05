@@ -46,6 +46,10 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     return new SdkTracerProviderBuilder();
   }
 
+  public static SdkTracerProvider noop() {
+    return builder().setDefaultTracerConfig(TracerConfig.disabled()).build();
+  }
+
   @SuppressWarnings("NonApiType")
   SdkTracerProvider(
       Clock clock,
