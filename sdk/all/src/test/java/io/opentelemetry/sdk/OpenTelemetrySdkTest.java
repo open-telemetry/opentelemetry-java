@@ -18,6 +18,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
@@ -108,6 +109,11 @@ class OpenTelemetrySdkTest {
             obfuscatedTracerProvider ->
                 assertThat(obfuscatedTracerProvider.unobfuscate())
                     .isInstanceOf(SdkTracerProvider.class));
+
+    Span span = openTelemetry.getTracer("test").spanBuilder("test-span").startSpan();
+
+    assertThat(span.isRecording()).isFalse();
+
     assertThat(openTelemetry.getMeterProvider())
         .isInstanceOfSatisfying(
             OpenTelemetrySdk.ObfuscatedMeterProvider.class,

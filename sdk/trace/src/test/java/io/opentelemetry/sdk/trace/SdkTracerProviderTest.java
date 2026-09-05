@@ -146,6 +146,16 @@ class SdkTracerProviderTest {
   }
 
   @Test
+  void noop() {
+    SdkTracerProvider tracerProvider = SdkTracerProvider.noop();
+
+    SdkTracer tracer = (SdkTracer) tracerProvider.get("test");
+
+    assertThat(tracer.isEnabled()).isFalse();
+    assertThat(tracer.spanBuilder("test").startSpan().isRecording()).isFalse();
+  }
+
+  @Test
   void getSameInstanceForSameName_WithoutVersion() {
     assertThat(tracerProvider.get("test")).isSameAs(tracerProvider.get("test"));
     assertThat(tracerProvider.get("test"))

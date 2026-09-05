@@ -219,6 +219,12 @@ public final class SdkTracerProviderBuilder {
     return this;
   }
 
+  SdkTracerProviderBuilder setDefaultTracerConfig(TracerConfig tracerConfig) {
+    this.tracerConfiguratorBuilder =
+        TracerConfig.configuratorBuilder().addCondition(scope -> true, tracerConfig);
+    return this;
+  }
+
   /**
    * Sets the exception attribute resolver, which resolves {@code exception.*} attributes when
    * {@link Span#recordException(Throwable)} is called.

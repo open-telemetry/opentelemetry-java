@@ -5,3 +5,6 @@ Comparing source compatibility of opentelemetry-sdk-trace-1.66.0-SNAPSHOT.jar ag
 	+++  NEW INTERFACE: java.lang.AutoCloseable
 	+++  NEW METHOD: PUBLIC(+) void close()
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.SdkTracerProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.SdkTracerProvider noop()

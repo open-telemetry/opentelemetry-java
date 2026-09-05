@@ -9,6 +9,7 @@ import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.domain.PackageMatcher;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
@@ -60,6 +61,9 @@ class SdkDesignTest {
     return new DescribedPredicate<JavaMethod>("implement or override a method") {
       @Override
       public boolean test(JavaMethod input) {
+        if (input.getModifiers().contains(JavaModifier.STATIC)) {
+          return false;
+        }
         List<JavaClass> params = input.getRawParameterTypes();
         Class<?>[] paramsType = new Class<?>[params.size()];
         for (int i = 0, n = params.size(); i < n; i++) {
