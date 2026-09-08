@@ -75,8 +75,8 @@ public final class HttpExporter {
 
     httpSender.send(
         messageWriter,
-        httpResponse -> onResponse(result, metricRecording, httpResponse),
-        throwable -> onError(result, metricRecording, throwable));
+        httpResponse -> onResponse(result, metricRecording, httpResponse, numItems),
+        throwable -> onError(result, metricRecording, throwable, numItems));
 
     return result;
   }
@@ -84,7 +84,8 @@ public final class HttpExporter {
   private void onResponse(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
-      HttpResponse httpResponse) {
+      HttpResponse httpResponse,
+      int numItems) {
     int statusCode = httpResponse.getStatusCode();
 
     metricRecording.setHttpStatusCode(statusCode);
@@ -104,8 +105,10 @@ public final class HttpExporter {
     logger.log(
         Level.WARNING,
         "Failed to export "
+            + numItems
+            + " "
             + type
-            + "s. Server responded with HTTP status code "
+            + "(s). Server responded with HTTP status code "
             + statusCode
             + ". Error message: "
             + status);
@@ -116,10 +119,13 @@ public final class HttpExporter {
   private void onError(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
-      Throwable e) {
+      Throwable e,
+      int numItems) {
     metricRecording.finishFailed(e);
     logger.log(
-        Level.SEVERE, "Failed to export " + type + "s. The request could not be executed.", e);
+        Level.SEVERE,
+        "Failed to export " + numItems + " " + type + "(s). The request could not be executed.",
+        e);
     result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
   }
 
