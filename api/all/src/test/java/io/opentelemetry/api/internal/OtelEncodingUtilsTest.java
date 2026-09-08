@@ -66,6 +66,19 @@ class OtelEncodingUtilsTest {
   }
 
   @Test
+  void isValidBase16Character_doesNotThrowForAnyChar() {
+    // Regression test: VALID_HEX must be indexable by every possible char value,
+    // including Character.MAX_VALUE, without throwing ArrayIndexOutOfBoundsException.
+    assertThat(OtelEncodingUtils.isValidBase16Character(Character.MAX_VALUE)).isFalse();
+    for (int c = 0; c <= Character.MAX_VALUE; c++) {
+      boolean expected = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+      assertThat(OtelEncodingUtils.isValidBase16Character((char) c))
+          .as("char 0x%04x", c)
+          .isEqualTo(expected);
+    }
+  }
+
+  @Test
   void longFromBase16String() {
     assertThat(OtelEncodingUtils.longFromBase16String(CharBuffer.wrap(FIRST_CHAR_ARRAY), 0))
         .isEqualTo(FIRST_LONG);
