@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Test;
 
-
 class BoundInstrumentBaggageTest {
 
   private static ExtendedLongCounter counterWithBaggageView(InMemoryMetricReader reader) {
