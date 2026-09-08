@@ -137,9 +137,7 @@ public final class GrpcExporter {
         e);
     if (logger.isLoggable(Level.FINEST)) {
       logger.log(
-          Level.FINEST,
-          "Failed to export " + numItems + " " + type + "(s). Details follow:",
-          e);
+          Level.FINEST, "Failed to export " + numItems + " " + type + "(s). Details follow:", e);
     }
     result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
   }
