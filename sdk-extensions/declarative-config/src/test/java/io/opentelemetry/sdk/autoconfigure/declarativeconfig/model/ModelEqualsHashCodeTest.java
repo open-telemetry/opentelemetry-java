@@ -49,17 +49,17 @@ class ModelEqualsHashCodeTest {
         .withPrefabValues(
             SamplerModel.class,
             new SamplerModel(),
-            new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
+            new SamplerModel().setAlwaysOn(new AlwaysOnSamplerModel()))
         .withPrefabValues(
             ExperimentalComposableSamplerModel.class,
             new ExperimentalComposableSamplerModel(),
             new ExperimentalComposableSamplerModel()
-                .withAlwaysOff(new ExperimentalComposableAlwaysOffSamplerModel()))
+                .setAlwaysOff(new ExperimentalComposableAlwaysOffSamplerModel()))
         .withPrefabValues(
             ExperimentalComposableParentThresholdSamplerModel.class,
             new ExperimentalComposableParentThresholdSamplerModel(),
             new ExperimentalComposableParentThresholdSamplerModel()
-                .withRoot(new ExperimentalComposableSamplerModel()))
+                .setRoot(new ExperimentalComposableSamplerModel()))
         .verify();
   }
 

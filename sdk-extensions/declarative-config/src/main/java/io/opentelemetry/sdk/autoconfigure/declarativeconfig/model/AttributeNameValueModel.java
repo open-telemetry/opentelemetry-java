@@ -62,7 +62,7 @@ public class AttributeNameValueModel {
   }
 
   @JsonProperty(NAME)
-  public AttributeNameValueModel withName(String name) {
+  public AttributeNameValueModel setName(String name) {
     this.name = name;
     return this;
   }
@@ -84,7 +84,7 @@ public class AttributeNameValueModel {
   }
 
   @JsonProperty(VALUE)
-  public AttributeNameValueModel withValue(Object value) {
+  public AttributeNameValueModel setValue(Object value) {
     this.value = value;
     return this;
   }
@@ -123,7 +123,7 @@ public class AttributeNameValueModel {
   }
 
   @JsonProperty(TYPE)
-  public AttributeNameValueModel withType(AttributeTypeModel type) {
+  public AttributeNameValueModel setType(AttributeTypeModel type) {
     this.type = type;
     return this;
   }
@@ -134,7 +134,7 @@ public class AttributeNameValueModel {
   }
 
   @JsonAnySetter
-  public AttributeNameValueModel withExtensionProperty(String name, @Nullable Object value) {
+  public AttributeNameValueModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

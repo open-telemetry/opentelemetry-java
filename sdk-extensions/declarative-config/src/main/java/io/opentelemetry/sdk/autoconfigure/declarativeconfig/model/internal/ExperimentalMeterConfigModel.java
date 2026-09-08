@@ -30,7 +30,7 @@ public class ExperimentalMeterConfigModel {
   }
 
   @JsonProperty("enabled")
-  public ExperimentalMeterConfigModel withEnabled(Boolean enabled) {
+  public ExperimentalMeterConfigModel setEnabled(Boolean enabled) {
     this.enabled = enabled;
     return this;
   }

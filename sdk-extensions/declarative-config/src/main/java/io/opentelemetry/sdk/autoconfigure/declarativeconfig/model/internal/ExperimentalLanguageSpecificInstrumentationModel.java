@@ -30,7 +30,7 @@ public class ExperimentalLanguageSpecificInstrumentationModel {
   }
 
   @JsonAnySetter
-  public ExperimentalLanguageSpecificInstrumentationModel withAdditionalProperty(
+  public ExperimentalLanguageSpecificInstrumentationModel setAdditionalProperty(
       String name, ExperimentalLanguageSpecificInstrumentationPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

@@ -84,33 +84,33 @@ class TracerProviderFactoryTest {
             "full configuration",
             TracerProviderAndAttributeLimits.create(
                 new AttributeLimitsModel(),
-                TracerProviderModelAccessor.withTracerConfigurator(
+                TracerProviderModelAccessor.setTracerConfigurator(
                     new TracerProviderModel()
-                        .withLimits(
+                        .setLimits(
                             new SpanLimitsModel()
-                                .withAttributeCountLimit(1)
-                                .withAttributeValueLengthLimit(2)
-                                .withEventCountLimit(3)
-                                .withLinkCountLimit(4)
-                                .withEventAttributeCountLimit(5)
-                                .withLinkAttributeCountLimit(6))
-                        .withSampler(new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
-                        .withProcessors(
+                                .setAttributeCountLimit(1)
+                                .setAttributeValueLengthLimit(2)
+                                .setEventCountLimit(3)
+                                .setLinkCountLimit(4)
+                                .setEventAttributeCountLimit(5)
+                                .setLinkAttributeCountLimit(6))
+                        .setSampler(new SamplerModel().setAlwaysOn(new AlwaysOnSamplerModel()))
+                        .setProcessors(
                             Collections.singletonList(
                                 new SpanProcessorModel()
-                                    .withBatch(
+                                    .setBatch(
                                         new BatchSpanProcessorModel()
-                                            .withExporter(
+                                            .setExporter(
                                                 new SpanExporterModel()
-                                                    .withOtlpHttp(new OtlpHttpExporterModel()))))),
+                                                    .setOtlpHttp(new OtlpHttpExporterModel()))))),
                     new ExperimentalTracerConfiguratorModel()
-                        .withDefaultConfig(new ExperimentalTracerConfigModel().withEnabled(false))
-                        .withTracers(
+                        .setDefaultConfig(new ExperimentalTracerConfigModel().setEnabled(false))
+                        .setTracers(
                             Collections.singletonList(
                                 new ExperimentalTracerMatcherAndConfigModel()
-                                    .withName("foo")
-                                    .withConfig(
-                                        new ExperimentalTracerConfigModel().withEnabled(true)))))),
+                                    .setName("foo")
+                                    .setConfig(
+                                        new ExperimentalTracerConfigModel().setEnabled(true)))))),
             addTracerConfigurator(
                     SdkTracerProvider.builder(),
                     ScopeConfigurator.<TracerConfig>builder()

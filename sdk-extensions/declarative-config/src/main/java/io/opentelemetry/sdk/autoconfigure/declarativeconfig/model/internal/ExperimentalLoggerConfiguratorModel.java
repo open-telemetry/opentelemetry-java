@@ -33,7 +33,7 @@ public class ExperimentalLoggerConfiguratorModel {
   }
 
   @JsonProperty("default_config")
-  public ExperimentalLoggerConfiguratorModel withDefaultConfig(
+  public ExperimentalLoggerConfiguratorModel setDefaultConfig(
       ExperimentalLoggerConfigModel defaultConfig) {
     this.defaultConfig = defaultConfig;
     return this;
@@ -51,7 +51,7 @@ public class ExperimentalLoggerConfiguratorModel {
   }
 
   @JsonProperty("loggers")
-  public ExperimentalLoggerConfiguratorModel withLoggers(
+  public ExperimentalLoggerConfiguratorModel setLoggers(
       List<ExperimentalLoggerMatcherAndConfigModel> loggers) {
     this.loggers = loggers;
     return this;

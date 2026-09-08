@@ -30,7 +30,7 @@ public class ExperimentalComposableParentThresholdSamplerModel {
   }
 
   @JsonProperty("root")
-  public ExperimentalComposableParentThresholdSamplerModel withRoot(
+  public ExperimentalComposableParentThresholdSamplerModel setRoot(
       ExperimentalComposableSamplerModel root) {
     this.root = root;
     return this;

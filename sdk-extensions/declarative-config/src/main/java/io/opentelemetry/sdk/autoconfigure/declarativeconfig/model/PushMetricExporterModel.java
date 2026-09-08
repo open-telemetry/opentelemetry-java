@@ -63,7 +63,7 @@ public class PushMetricExporterModel {
   }
 
   @JsonProperty(OTLP_HTTP)
-  public PushMetricExporterModel withOtlpHttp(OtlpHttpMetricExporterModel otlpHttp) {
+  public PushMetricExporterModel setOtlpHttp(OtlpHttpMetricExporterModel otlpHttp) {
     this.otlpHttp = otlpHttp;
     return this;
   }
@@ -84,7 +84,7 @@ public class PushMetricExporterModel {
   }
 
   @JsonProperty(OTLP_GRPC)
-  public PushMetricExporterModel withOtlpGrpc(OtlpGrpcMetricExporterModel otlpGrpc) {
+  public PushMetricExporterModel setOtlpGrpc(OtlpGrpcMetricExporterModel otlpGrpc) {
     this.otlpGrpc = otlpGrpc;
     return this;
   }
@@ -105,7 +105,7 @@ public class PushMetricExporterModel {
   }
 
   @JsonProperty(CONSOLE)
-  public PushMetricExporterModel withConsole(ConsoleMetricExporterModel console) {
+  public PushMetricExporterModel setConsole(ConsoleMetricExporterModel console) {
     this.console = console;
     return this;
   }
@@ -116,7 +116,7 @@ public class PushMetricExporterModel {
   }
 
   @JsonAnySetter
-  public PushMetricExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public PushMetricExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

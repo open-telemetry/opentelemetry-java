@@ -33,7 +33,7 @@ public class PullMetricExporterModel {
   }
 
   @JsonAnySetter
-  public PullMetricExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public PullMetricExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

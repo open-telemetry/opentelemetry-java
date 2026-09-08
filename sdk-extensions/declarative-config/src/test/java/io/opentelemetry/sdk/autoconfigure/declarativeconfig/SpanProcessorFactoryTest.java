@@ -58,23 +58,23 @@ class SpanProcessorFactoryTest {
         Arguments.argumentSet(
             "batch default",
             new SpanProcessorModel()
-                .withBatch(
+                .setBatch(
                     new BatchSpanProcessorModel()
-                        .withExporter(
-                            new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))),
+                        .setExporter(
+                            new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))),
             BatchSpanProcessor.builder(
                     OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
                 .build()),
         Arguments.argumentSet(
             "batch with options",
             new SpanProcessorModel()
-                .withBatch(
+                .setBatch(
                     new BatchSpanProcessorModel()
-                        .withExporter(
-                            new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))
-                        .withScheduleDelay(1)
-                        .withMaxExportBatchSize(2)
-                        .withExportTimeout(3)),
+                        .setExporter(
+                            new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))
+                        .setScheduleDelay(1)
+                        .setMaxExportBatchSize(2)
+                        .setExportTimeout(3)),
             BatchSpanProcessor.builder(
                     OtlpHttpSpanExporter.builder().setComponentLoader(context).build())
                 .setScheduleDelay(Duration.ofMillis(1))
@@ -84,10 +84,10 @@ class SpanProcessorFactoryTest {
         Arguments.argumentSet(
             "simple",
             new SpanProcessorModel()
-                .withSimple(
+                .setSimple(
                     new SimpleSpanProcessorModel()
-                        .withExporter(
-                            new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))),
+                        .setExporter(
+                            new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))),
             SimpleSpanProcessor.create(
                 OtlpHttpSpanExporter.builder().setComponentLoader(context).build())));
   }
@@ -104,16 +104,16 @@ class SpanProcessorFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "batch missing exporter",
-            new SpanProcessorModel().withBatch(new BatchSpanProcessorModel()),
+            new SpanProcessorModel().setBatch(new BatchSpanProcessorModel()),
             "batch span processor exporter is required but is null"),
         Arguments.argumentSet(
             "simple missing exporter",
-            new SpanProcessorModel().withSimple(new SimpleSpanProcessorModel()),
+            new SpanProcessorModel().setSimple(new SimpleSpanProcessorModel()),
             "simple span processor exporter is required but is null"),
         Arguments.argumentSet(
             "unknown component provider",
             new SpanProcessorModel()
-                .withExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
+                .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.trace.SpanProcessor with name \"unknown_key\"."));
   }
 
@@ -123,7 +123,7 @@ class SpanProcessorFactoryTest {
         SpanProcessorFactory.getInstance()
             .create(
                 new SpanProcessorModel()
-                    .withExtensionProperty("test", Collections.singletonMap("key1", "value1")),
+                    .setExtensionProperty("test", Collections.singletonMap("key1", "value1")),
                 context);
     assertThat(spanProcessor).isInstanceOf(SpanProcessorComponentProvider.TestSpanProcessor.class);
     assertThat(

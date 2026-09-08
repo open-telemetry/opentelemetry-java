@@ -84,7 +84,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
-  public SpanLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
+  public SpanLimitsModel setAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
     return this;
   }
@@ -107,7 +107,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(ATTRIBUTE_COUNT_LIMIT)
-  public SpanLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
+  public SpanLimitsModel setAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
     return this;
   }
@@ -130,7 +130,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(EVENT_COUNT_LIMIT)
-  public SpanLimitsModel withEventCountLimit(Integer eventCountLimit) {
+  public SpanLimitsModel setEventCountLimit(Integer eventCountLimit) {
     this.eventCountLimit = eventCountLimit;
     return this;
   }
@@ -153,7 +153,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(LINK_COUNT_LIMIT)
-  public SpanLimitsModel withLinkCountLimit(Integer linkCountLimit) {
+  public SpanLimitsModel setLinkCountLimit(Integer linkCountLimit) {
     this.linkCountLimit = linkCountLimit;
     return this;
   }
@@ -176,7 +176,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(EVENT_ATTRIBUTE_COUNT_LIMIT)
-  public SpanLimitsModel withEventAttributeCountLimit(Integer eventAttributeCountLimit) {
+  public SpanLimitsModel setEventAttributeCountLimit(Integer eventAttributeCountLimit) {
     this.eventAttributeCountLimit = eventAttributeCountLimit;
     return this;
   }
@@ -199,7 +199,7 @@ public class SpanLimitsModel {
   }
 
   @JsonProperty(LINK_ATTRIBUTE_COUNT_LIMIT)
-  public SpanLimitsModel withLinkAttributeCountLimit(Integer linkAttributeCountLimit) {
+  public SpanLimitsModel setLinkAttributeCountLimit(Integer linkAttributeCountLimit) {
     this.linkAttributeCountLimit = linkAttributeCountLimit;
     return this;
   }
@@ -210,7 +210,7 @@ public class SpanLimitsModel {
   }
 
   @JsonAnySetter
-  public SpanLimitsModel withExtensionProperty(String name, @Nullable Object value) {
+  public SpanLimitsModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

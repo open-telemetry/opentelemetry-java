@@ -59,7 +59,7 @@ public class MetricReaderModel {
   }
 
   @JsonProperty(PERIODIC)
-  public MetricReaderModel withPeriodic(PeriodicMetricReaderModel periodic) {
+  public MetricReaderModel setPeriodic(PeriodicMetricReaderModel periodic) {
     this.periodic = periodic;
     return this;
   }
@@ -80,7 +80,7 @@ public class MetricReaderModel {
   }
 
   @JsonProperty(PULL)
-  public MetricReaderModel withPull(PullMetricReaderModel pull) {
+  public MetricReaderModel setPull(PullMetricReaderModel pull) {
     this.pull = pull;
     return this;
   }
@@ -91,7 +91,7 @@ public class MetricReaderModel {
   }
 
   @JsonAnySetter
-  public MetricReaderModel withExtensionProperty(String name, @Nullable Object value) {
+  public MetricReaderModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

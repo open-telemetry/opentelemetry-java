@@ -54,7 +54,7 @@ public class TraceIdRatioBasedSamplerModel {
   }
 
   @JsonProperty(RATIO)
-  public TraceIdRatioBasedSamplerModel withRatio(Double ratio) {
+  public TraceIdRatioBasedSamplerModel setRatio(Double ratio) {
     this.ratio = ratio;
     return this;
   }
@@ -65,7 +65,7 @@ public class TraceIdRatioBasedSamplerModel {
   }
 
   @JsonAnySetter
-  public TraceIdRatioBasedSamplerModel withExtensionProperty(String name, @Nullable Object value) {
+  public TraceIdRatioBasedSamplerModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

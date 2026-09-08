@@ -97,7 +97,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(ENDPOINT)
-  public OtlpHttpMetricExporterModel withEndpoint(String endpoint) {
+  public OtlpHttpMetricExporterModel setEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
@@ -117,7 +117,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(TLS)
-  public OtlpHttpMetricExporterModel withTls(HttpTlsModel tls) {
+  public OtlpHttpMetricExporterModel setTls(HttpTlsModel tls) {
     this.tls = tls;
     return this;
   }
@@ -136,7 +136,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(HEADERS)
-  public OtlpHttpMetricExporterModel withHeaders(List<NameStringValuePairModel> headers) {
+  public OtlpHttpMetricExporterModel setHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
   }
@@ -161,7 +161,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(HEADERS_LIST)
-  public OtlpHttpMetricExporterModel withHeadersList(String headersList) {
+  public OtlpHttpMetricExporterModel setHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
   }
@@ -183,7 +183,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(COMPRESSION)
-  public OtlpHttpMetricExporterModel withCompression(String compression) {
+  public OtlpHttpMetricExporterModel setCompression(String compression) {
     this.compression = compression;
     return this;
   }
@@ -205,7 +205,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(TIMEOUT)
-  public OtlpHttpMetricExporterModel withTimeout(Integer timeout) {
+  public OtlpHttpMetricExporterModel setTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
@@ -234,7 +234,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(ENCODING)
-  public OtlpHttpMetricExporterModel withEncoding(OtlpHttpEncodingModel encoding) {
+  public OtlpHttpMetricExporterModel setEncoding(OtlpHttpEncodingModel encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -265,7 +265,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(TEMPORALITY_PREFERENCE)
-  public OtlpHttpMetricExporterModel withTemporalityPreference(
+  public OtlpHttpMetricExporterModel setTemporalityPreference(
       ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
@@ -297,7 +297,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonProperty(DEFAULT_HISTOGRAM_AGGREGATION)
-  public OtlpHttpMetricExporterModel withDefaultHistogramAggregation(
+  public OtlpHttpMetricExporterModel setDefaultHistogramAggregation(
       ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
     return this;
@@ -309,7 +309,7 @@ public class OtlpHttpMetricExporterModel {
   }
 
   @JsonAnySetter
-  public OtlpHttpMetricExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public OtlpHttpMetricExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

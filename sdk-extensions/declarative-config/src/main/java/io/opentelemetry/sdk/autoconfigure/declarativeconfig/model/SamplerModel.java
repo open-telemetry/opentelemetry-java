@@ -67,7 +67,7 @@ public class SamplerModel {
   }
 
   @JsonProperty(ALWAYS_OFF)
-  public SamplerModel withAlwaysOff(AlwaysOffSamplerModel alwaysOff) {
+  public SamplerModel setAlwaysOff(AlwaysOffSamplerModel alwaysOff) {
     this.alwaysOff = alwaysOff;
     return this;
   }
@@ -88,7 +88,7 @@ public class SamplerModel {
   }
 
   @JsonProperty(ALWAYS_ON)
-  public SamplerModel withAlwaysOn(AlwaysOnSamplerModel alwaysOn) {
+  public SamplerModel setAlwaysOn(AlwaysOnSamplerModel alwaysOn) {
     this.alwaysOn = alwaysOn;
     return this;
   }
@@ -109,7 +109,7 @@ public class SamplerModel {
   }
 
   @JsonProperty(PARENT_BASED)
-  public SamplerModel withParentBased(ParentBasedSamplerModel parentBased) {
+  public SamplerModel setParentBased(ParentBasedSamplerModel parentBased) {
     this.parentBased = parentBased;
     return this;
   }
@@ -130,7 +130,7 @@ public class SamplerModel {
   }
 
   @JsonProperty(TRACE_ID_RATIO_BASED)
-  public SamplerModel withTraceIdRatioBased(TraceIdRatioBasedSamplerModel traceIdRatioBased) {
+  public SamplerModel setTraceIdRatioBased(TraceIdRatioBasedSamplerModel traceIdRatioBased) {
     this.traceIdRatioBased = traceIdRatioBased;
     return this;
   }
@@ -141,7 +141,7 @@ public class SamplerModel {
   }
 
   @JsonAnySetter
-  public SamplerModel withExtensionProperty(String name, @Nullable Object value) {
+  public SamplerModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -38,10 +38,10 @@ public final class SpanExporterModelAccessor {
         OTLP_FILE, model.getExtensionProperties(), ExperimentalOtlpFileExporterModel.class);
   }
 
-  public static SpanExporterModel withOtlpFile(
+  public static SpanExporterModel setOtlpFile(
       SpanExporterModel model, ExperimentalOtlpFileExporterModel value) {
     requireNonNull(value, "value");
-    model.withExtensionProperty(OTLP_FILE, value);
+    model.setExtensionProperty(OTLP_FILE, value);
     return model;
   }
 }

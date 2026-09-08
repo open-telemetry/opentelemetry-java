@@ -60,7 +60,7 @@ public class ResourceModel {
   }
 
   @JsonProperty(ATTRIBUTES)
-  public ResourceModel withAttributes(List<AttributeNameValueModel> attributes) {
+  public ResourceModel setAttributes(List<AttributeNameValueModel> attributes) {
     this.attributes = attributes;
     return this;
   }
@@ -80,7 +80,7 @@ public class ResourceModel {
   }
 
   @JsonProperty(SCHEMA_URL)
-  public ResourceModel withSchemaUrl(String schemaUrl) {
+  public ResourceModel setSchemaUrl(String schemaUrl) {
     this.schemaUrl = schemaUrl;
     return this;
   }
@@ -106,7 +106,7 @@ public class ResourceModel {
   }
 
   @JsonProperty(ATTRIBUTES_LIST)
-  public ResourceModel withAttributesList(String attributesList) {
+  public ResourceModel setAttributesList(String attributesList) {
     this.attributesList = attributesList;
     return this;
   }
@@ -117,7 +117,7 @@ public class ResourceModel {
   }
 
   @JsonAnySetter
-  public ResourceModel withExtensionProperty(String name, @Nullable Object value) {
+  public ResourceModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

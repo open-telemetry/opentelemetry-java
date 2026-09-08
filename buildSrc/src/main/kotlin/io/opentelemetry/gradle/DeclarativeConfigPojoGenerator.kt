@@ -100,7 +100,7 @@ class DeclarativeConfigPojoGenerator(
 
   /**
    * The base name used to build getter/builder names. Strips the leading underscore from
-   * "_default" so the methods are "getDefault"/"withDefault", not "get_default".
+   * "_default" so the methods are "getDefault"/"setDefault", not "get_default".
    */
   private fun baseNameFor(jsonKey: String): String {
     val field = fieldName(jsonKey)
@@ -111,7 +111,7 @@ class DeclarativeConfigPojoGenerator(
     "get${baseNameFor(jsonKey).replaceFirstChar { it.uppercase() }}"
 
   private fun builderName(jsonKey: String) =
-    "with${baseNameFor(jsonKey).replaceFirstChar { it.uppercase() }}"
+    "set${baseNameFor(jsonKey).replaceFirstChar { it.uppercase() }}"
 
   // ── Type resolution ──────────────────────────────────────────────────────────
 
@@ -465,7 +465,7 @@ class DeclarativeConfigPojoGenerator(
       append("  @JsonAnyGetter\n")
       append("  public $additionalPropsType getAdditionalProperties() {\n    return this.additionalProperties;\n  }\n\n")
       append("  @JsonAnySetter\n")
-      append("  public $className withAdditionalProperty(String name, $apValueType value) {\n")
+      append("  public $className setAdditionalProperty(String name, $apValueType value) {\n")
       append("    this.additionalProperties.put(name, value);\n    return this;\n  }\n\n")
     }
 
@@ -479,7 +479,7 @@ class DeclarativeConfigPojoGenerator(
       }
       append("  }\n\n")
       append("  @JsonAnySetter\n")
-      append("  public $className withExtensionProperty(String name, @Nullable Object value) {\n")
+      append("  public $className setExtensionProperty(String name, @Nullable Object value) {\n")
       append("    ExtensionPropertyUtil.handleAnySetter(\n")
       val experimentalPropsArg = if (expProps.isNotEmpty()) "EXPERIMENTAL_PROPERTIES" else "Collections.emptyMap()"
       val stablePropsArg = if (stableObjectProps.isNotEmpty()) "STABLE_PROPERTIES" else "Collections.emptyMap()"
@@ -591,7 +591,7 @@ class DeclarativeConfigPojoGenerator(
       append("  public static $stableClassName ${p.builder}(\n")
       append("      $stableClassName model, ${p.typeExpr} value) {\n")
       append("    requireNonNull(value, \"value\");\n")
-      append("    model.withExtensionProperty(${p.constName}, value);\n")
+      append("    model.setExtensionProperty(${p.constName}, value);\n")
       append("    return model;\n")
       append("  }\n\n")
     }
@@ -618,7 +618,7 @@ class DeclarativeConfigPojoGenerator(
     append("  @JsonAnyGetter\n")
     append("  public Map<String, Object> getAdditionalProperties() {\n    return this.additionalProperties;\n  }\n\n")
     append("  @JsonAnySetter\n")
-    append("  public $className withAdditionalProperty(String name, Object value) {\n")
+    append("  public $className setAdditionalProperty(String name, Object value) {\n")
     append("    this.additionalProperties.put(name, value);\n    return this;\n  }\n\n")
     appendToString(className, listOf("additionalProperties"))
     append("\n")

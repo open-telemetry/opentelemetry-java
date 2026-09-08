@@ -62,7 +62,7 @@ public class Base2ExponentialBucketHistogramAggregationModel {
   }
 
   @JsonProperty(MAX_SCALE)
-  public Base2ExponentialBucketHistogramAggregationModel withMaxScale(Integer maxScale) {
+  public Base2ExponentialBucketHistogramAggregationModel setMaxScale(Integer maxScale) {
     this.maxScale = maxScale;
     return this;
   }
@@ -83,7 +83,7 @@ public class Base2ExponentialBucketHistogramAggregationModel {
   }
 
   @JsonProperty(MAX_SIZE)
-  public Base2ExponentialBucketHistogramAggregationModel withMaxSize(Integer maxSize) {
+  public Base2ExponentialBucketHistogramAggregationModel setMaxSize(Integer maxSize) {
     this.maxSize = maxSize;
     return this;
   }
@@ -103,7 +103,7 @@ public class Base2ExponentialBucketHistogramAggregationModel {
   }
 
   @JsonProperty(RECORD_MIN_MAX)
-  public Base2ExponentialBucketHistogramAggregationModel withRecordMinMax(Boolean recordMinMax) {
+  public Base2ExponentialBucketHistogramAggregationModel setRecordMinMax(Boolean recordMinMax) {
     this.recordMinMax = recordMinMax;
     return this;
   }
@@ -114,7 +114,7 @@ public class Base2ExponentialBucketHistogramAggregationModel {
   }
 
   @JsonAnySetter
-  public Base2ExponentialBucketHistogramAggregationModel withExtensionProperty(
+  public Base2ExponentialBucketHistogramAggregationModel setExtensionProperty(
       String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,

@@ -55,7 +55,7 @@ public class SimpleSpanProcessorModel {
   }
 
   @JsonProperty(EXPORTER)
-  public SimpleSpanProcessorModel withExporter(SpanExporterModel exporter) {
+  public SimpleSpanProcessorModel setExporter(SpanExporterModel exporter) {
     this.exporter = exporter;
     return this;
   }
@@ -66,7 +66,7 @@ public class SimpleSpanProcessorModel {
   }
 
   @JsonAnySetter
-  public SimpleSpanProcessorModel withExtensionProperty(String name, @Nullable Object value) {
+  public SimpleSpanProcessorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

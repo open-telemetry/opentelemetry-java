@@ -59,7 +59,7 @@ public class LogRecordProcessorModel {
   }
 
   @JsonProperty(BATCH)
-  public LogRecordProcessorModel withBatch(BatchLogRecordProcessorModel batch) {
+  public LogRecordProcessorModel setBatch(BatchLogRecordProcessorModel batch) {
     this.batch = batch;
     return this;
   }
@@ -80,7 +80,7 @@ public class LogRecordProcessorModel {
   }
 
   @JsonProperty(SIMPLE)
-  public LogRecordProcessorModel withSimple(SimpleLogRecordProcessorModel simple) {
+  public LogRecordProcessorModel setSimple(SimpleLogRecordProcessorModel simple) {
     this.simple = simple;
     return this;
   }
@@ -91,7 +91,7 @@ public class LogRecordProcessorModel {
   }
 
   @JsonAnySetter
-  public LogRecordProcessorModel withExtensionProperty(String name, @Nullable Object value) {
+  public LogRecordProcessorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

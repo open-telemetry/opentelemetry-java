@@ -56,7 +56,7 @@ public class ExplicitBucketHistogramAggregationModel {
   }
 
   @JsonProperty(BOUNDARIES)
-  public ExplicitBucketHistogramAggregationModel withBoundaries(List<Double> boundaries) {
+  public ExplicitBucketHistogramAggregationModel setBoundaries(List<Double> boundaries) {
     this.boundaries = boundaries;
     return this;
   }
@@ -76,7 +76,7 @@ public class ExplicitBucketHistogramAggregationModel {
   }
 
   @JsonProperty(RECORD_MIN_MAX)
-  public ExplicitBucketHistogramAggregationModel withRecordMinMax(Boolean recordMinMax) {
+  public ExplicitBucketHistogramAggregationModel setRecordMinMax(Boolean recordMinMax) {
     this.recordMinMax = recordMinMax;
     return this;
   }
@@ -87,7 +87,7 @@ public class ExplicitBucketHistogramAggregationModel {
   }
 
   @JsonAnySetter
-  public ExplicitBucketHistogramAggregationModel withExtensionProperty(
+  public ExplicitBucketHistogramAggregationModel setExtensionProperty(
       String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,

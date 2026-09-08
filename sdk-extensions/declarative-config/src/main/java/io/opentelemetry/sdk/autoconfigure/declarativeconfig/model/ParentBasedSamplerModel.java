@@ -76,7 +76,7 @@ public class ParentBasedSamplerModel {
   }
 
   @JsonProperty(ROOT)
-  public ParentBasedSamplerModel withRoot(SamplerModel root) {
+  public ParentBasedSamplerModel setRoot(SamplerModel root) {
     this.root = root;
     return this;
   }
@@ -97,7 +97,7 @@ public class ParentBasedSamplerModel {
   }
 
   @JsonProperty(REMOTE_PARENT_SAMPLED)
-  public ParentBasedSamplerModel withRemoteParentSampled(SamplerModel remoteParentSampled) {
+  public ParentBasedSamplerModel setRemoteParentSampled(SamplerModel remoteParentSampled) {
     this.remoteParentSampled = remoteParentSampled;
     return this;
   }
@@ -118,7 +118,7 @@ public class ParentBasedSamplerModel {
   }
 
   @JsonProperty(REMOTE_PARENT_NOT_SAMPLED)
-  public ParentBasedSamplerModel withRemoteParentNotSampled(SamplerModel remoteParentNotSampled) {
+  public ParentBasedSamplerModel setRemoteParentNotSampled(SamplerModel remoteParentNotSampled) {
     this.remoteParentNotSampled = remoteParentNotSampled;
     return this;
   }
@@ -139,7 +139,7 @@ public class ParentBasedSamplerModel {
   }
 
   @JsonProperty(LOCAL_PARENT_SAMPLED)
-  public ParentBasedSamplerModel withLocalParentSampled(SamplerModel localParentSampled) {
+  public ParentBasedSamplerModel setLocalParentSampled(SamplerModel localParentSampled) {
     this.localParentSampled = localParentSampled;
     return this;
   }
@@ -160,7 +160,7 @@ public class ParentBasedSamplerModel {
   }
 
   @JsonProperty(LOCAL_PARENT_NOT_SAMPLED)
-  public ParentBasedSamplerModel withLocalParentNotSampled(SamplerModel localParentNotSampled) {
+  public ParentBasedSamplerModel setLocalParentNotSampled(SamplerModel localParentNotSampled) {
     this.localParentNotSampled = localParentNotSampled;
     return this;
   }
@@ -171,7 +171,7 @@ public class ParentBasedSamplerModel {
   }
 
   @JsonAnySetter
-  public ParentBasedSamplerModel withExtensionProperty(String name, @Nullable Object value) {
+  public ParentBasedSamplerModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

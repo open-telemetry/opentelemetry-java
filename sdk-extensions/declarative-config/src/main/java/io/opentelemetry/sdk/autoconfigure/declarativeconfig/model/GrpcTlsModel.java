@@ -68,7 +68,7 @@ public class GrpcTlsModel {
   }
 
   @JsonProperty(CA_FILE)
-  public GrpcTlsModel withCaFile(String caFile) {
+  public GrpcTlsModel setCaFile(String caFile) {
     this.caFile = caFile;
     return this;
   }
@@ -91,7 +91,7 @@ public class GrpcTlsModel {
   }
 
   @JsonProperty(KEY_FILE)
-  public GrpcTlsModel withKeyFile(String keyFile) {
+  public GrpcTlsModel setKeyFile(String keyFile) {
     this.keyFile = keyFile;
     return this;
   }
@@ -114,7 +114,7 @@ public class GrpcTlsModel {
   }
 
   @JsonProperty(CERT_FILE)
-  public GrpcTlsModel withCertFile(String certFile) {
+  public GrpcTlsModel setCertFile(String certFile) {
     this.certFile = certFile;
     return this;
   }
@@ -137,7 +137,7 @@ public class GrpcTlsModel {
   }
 
   @JsonProperty(INSECURE)
-  public GrpcTlsModel withInsecure(Boolean insecure) {
+  public GrpcTlsModel setInsecure(Boolean insecure) {
     this.insecure = insecure;
     return this;
   }
@@ -148,7 +148,7 @@ public class GrpcTlsModel {
   }
 
   @JsonAnySetter
-  public GrpcTlsModel withExtensionProperty(String name, @Nullable Object value) {
+  public GrpcTlsModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -70,7 +70,7 @@ public class ViewStreamModel {
   }
 
   @JsonProperty(NAME)
-  public ViewStreamModel withName(String name) {
+  public ViewStreamModel setName(String name) {
     this.name = name;
     return this;
   }
@@ -90,7 +90,7 @@ public class ViewStreamModel {
   }
 
   @JsonProperty(DESCRIPTION)
-  public ViewStreamModel withDescription(String description) {
+  public ViewStreamModel setDescription(String description) {
     this.description = description;
     return this;
   }
@@ -111,7 +111,7 @@ public class ViewStreamModel {
   }
 
   @JsonProperty(AGGREGATION)
-  public ViewStreamModel withAggregation(AggregationModel aggregation) {
+  public ViewStreamModel setAggregation(AggregationModel aggregation) {
     this.aggregation = aggregation;
     return this;
   }
@@ -132,7 +132,7 @@ public class ViewStreamModel {
   }
 
   @JsonProperty(AGGREGATION_CARDINALITY_LIMIT)
-  public ViewStreamModel withAggregationCardinalityLimit(Integer aggregationCardinalityLimit) {
+  public ViewStreamModel setAggregationCardinalityLimit(Integer aggregationCardinalityLimit) {
     this.aggregationCardinalityLimit = aggregationCardinalityLimit;
     return this;
   }
@@ -153,7 +153,7 @@ public class ViewStreamModel {
   }
 
   @JsonProperty(ATTRIBUTE_KEYS)
-  public ViewStreamModel withAttributeKeys(IncludeExcludeModel attributeKeys) {
+  public ViewStreamModel setAttributeKeys(IncludeExcludeModel attributeKeys) {
     this.attributeKeys = attributeKeys;
     return this;
   }
@@ -164,7 +164,7 @@ public class ViewStreamModel {
   }
 
   @JsonAnySetter
-  public ViewStreamModel withExtensionProperty(String name, @Nullable Object value) {
+  public ViewStreamModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

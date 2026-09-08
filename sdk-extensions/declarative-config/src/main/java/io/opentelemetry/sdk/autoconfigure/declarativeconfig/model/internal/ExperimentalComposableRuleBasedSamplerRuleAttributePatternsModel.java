@@ -33,7 +33,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
   }
 
   @JsonProperty("key")
-  public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel withKey(String key) {
+  public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel setKey(String key) {
     this.key = key;
     return this;
   }
@@ -57,7 +57,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
   }
 
   @JsonProperty("included")
-  public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel withIncluded(
+  public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel setIncluded(
       List<String> included) {
     this.included = included;
     return this;
@@ -83,7 +83,7 @@ public class ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel {
   }
 
   @JsonProperty("excluded")
-  public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel withExcluded(
+  public ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel setExcluded(
       List<String> excluded) {
     this.excluded = excluded;
     return this;

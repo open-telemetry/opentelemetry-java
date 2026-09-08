@@ -32,7 +32,7 @@ public class ExperimentalOtlpFileExporterModel {
   }
 
   @JsonProperty("output_stream")
-  public ExperimentalOtlpFileExporterModel withOutputStream(String outputStream) {
+  public ExperimentalOtlpFileExporterModel setOutputStream(String outputStream) {
     this.outputStream = outputStream;
     return this;
   }

@@ -33,7 +33,7 @@ public class ExperimentalSemconvConfigModel {
   }
 
   @JsonProperty("version")
-  public ExperimentalSemconvConfigModel withVersion(Integer version) {
+  public ExperimentalSemconvConfigModel setVersion(Integer version) {
     this.version = version;
     return this;
   }
@@ -51,7 +51,7 @@ public class ExperimentalSemconvConfigModel {
   }
 
   @JsonProperty("experimental")
-  public ExperimentalSemconvConfigModel withExperimental(Boolean experimental) {
+  public ExperimentalSemconvConfigModel setExperimental(Boolean experimental) {
     this.experimental = experimental;
     return this;
   }
@@ -76,7 +76,7 @@ public class ExperimentalSemconvConfigModel {
   }
 
   @JsonProperty("dual_emit")
-  public ExperimentalSemconvConfigModel withDualEmit(Boolean dualEmit) {
+  public ExperimentalSemconvConfigModel setDualEmit(Boolean dualEmit) {
     this.dualEmit = dualEmit;
     return this;
   }

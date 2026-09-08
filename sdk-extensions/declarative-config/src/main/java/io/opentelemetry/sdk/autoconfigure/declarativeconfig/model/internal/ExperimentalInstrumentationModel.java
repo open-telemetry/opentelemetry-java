@@ -46,7 +46,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("general")
-  public ExperimentalInstrumentationModel withGeneral(
+  public ExperimentalInstrumentationModel setGeneral(
       ExperimentalGeneralInstrumentationModel general) {
     this.general = general;
     return this;
@@ -64,7 +64,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("cpp")
-  public ExperimentalInstrumentationModel withCpp(
+  public ExperimentalInstrumentationModel setCpp(
       ExperimentalLanguageSpecificInstrumentationModel cpp) {
     this.cpp = cpp;
     return this;
@@ -85,7 +85,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("dotnet")
-  public ExperimentalInstrumentationModel withDotnet(
+  public ExperimentalInstrumentationModel setDotnet(
       ExperimentalLanguageSpecificInstrumentationModel dotnet) {
     this.dotnet = dotnet;
     return this;
@@ -106,7 +106,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("erlang")
-  public ExperimentalInstrumentationModel withErlang(
+  public ExperimentalInstrumentationModel setErlang(
       ExperimentalLanguageSpecificInstrumentationModel erlang) {
     this.erlang = erlang;
     return this;
@@ -127,7 +127,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("go")
-  public ExperimentalInstrumentationModel withGo(
+  public ExperimentalInstrumentationModel setGo(
       ExperimentalLanguageSpecificInstrumentationModel go) {
     this.go = go;
     return this;
@@ -148,7 +148,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("java")
-  public ExperimentalInstrumentationModel withJava(
+  public ExperimentalInstrumentationModel setJava(
       ExperimentalLanguageSpecificInstrumentationModel java) {
     this.java = java;
     return this;
@@ -169,7 +169,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("js")
-  public ExperimentalInstrumentationModel withJs(
+  public ExperimentalInstrumentationModel setJs(
       ExperimentalLanguageSpecificInstrumentationModel js) {
     this.js = js;
     return this;
@@ -190,7 +190,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("php")
-  public ExperimentalInstrumentationModel withPhp(
+  public ExperimentalInstrumentationModel setPhp(
       ExperimentalLanguageSpecificInstrumentationModel php) {
     this.php = php;
     return this;
@@ -211,7 +211,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("python")
-  public ExperimentalInstrumentationModel withPython(
+  public ExperimentalInstrumentationModel setPython(
       ExperimentalLanguageSpecificInstrumentationModel python) {
     this.python = python;
     return this;
@@ -232,7 +232,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("ruby")
-  public ExperimentalInstrumentationModel withRuby(
+  public ExperimentalInstrumentationModel setRuby(
       ExperimentalLanguageSpecificInstrumentationModel ruby) {
     this.ruby = ruby;
     return this;
@@ -253,7 +253,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("rust")
-  public ExperimentalInstrumentationModel withRust(
+  public ExperimentalInstrumentationModel setRust(
       ExperimentalLanguageSpecificInstrumentationModel rust) {
     this.rust = rust;
     return this;
@@ -274,7 +274,7 @@ public class ExperimentalInstrumentationModel {
   }
 
   @JsonProperty("swift")
-  public ExperimentalInstrumentationModel withSwift(
+  public ExperimentalInstrumentationModel setSwift(
       ExperimentalLanguageSpecificInstrumentationModel swift) {
     this.swift = swift;
     return this;

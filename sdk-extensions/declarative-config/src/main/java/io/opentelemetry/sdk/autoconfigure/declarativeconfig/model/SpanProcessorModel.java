@@ -59,7 +59,7 @@ public class SpanProcessorModel {
   }
 
   @JsonProperty(BATCH)
-  public SpanProcessorModel withBatch(BatchSpanProcessorModel batch) {
+  public SpanProcessorModel setBatch(BatchSpanProcessorModel batch) {
     this.batch = batch;
     return this;
   }
@@ -80,7 +80,7 @@ public class SpanProcessorModel {
   }
 
   @JsonProperty(SIMPLE)
-  public SpanProcessorModel withSimple(SimpleSpanProcessorModel simple) {
+  public SpanProcessorModel setSimple(SimpleSpanProcessorModel simple) {
     this.simple = simple;
     return this;
   }
@@ -91,7 +91,7 @@ public class SpanProcessorModel {
   }
 
   @JsonAnySetter
-  public SpanProcessorModel withExtensionProperty(String name, @Nullable Object value) {
+  public SpanProcessorModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

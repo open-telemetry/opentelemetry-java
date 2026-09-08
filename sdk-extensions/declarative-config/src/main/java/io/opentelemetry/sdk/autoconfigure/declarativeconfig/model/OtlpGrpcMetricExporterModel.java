@@ -92,7 +92,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(ENDPOINT)
-  public OtlpGrpcMetricExporterModel withEndpoint(String endpoint) {
+  public OtlpGrpcMetricExporterModel setEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
@@ -112,7 +112,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(TLS)
-  public OtlpGrpcMetricExporterModel withTls(GrpcTlsModel tls) {
+  public OtlpGrpcMetricExporterModel setTls(GrpcTlsModel tls) {
     this.tls = tls;
     return this;
   }
@@ -131,7 +131,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(HEADERS)
-  public OtlpGrpcMetricExporterModel withHeaders(List<NameStringValuePairModel> headers) {
+  public OtlpGrpcMetricExporterModel setHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
   }
@@ -156,7 +156,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(HEADERS_LIST)
-  public OtlpGrpcMetricExporterModel withHeadersList(String headersList) {
+  public OtlpGrpcMetricExporterModel setHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
   }
@@ -178,7 +178,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(COMPRESSION)
-  public OtlpGrpcMetricExporterModel withCompression(String compression) {
+  public OtlpGrpcMetricExporterModel setCompression(String compression) {
     this.compression = compression;
     return this;
   }
@@ -200,7 +200,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(TIMEOUT)
-  public OtlpGrpcMetricExporterModel withTimeout(Integer timeout) {
+  public OtlpGrpcMetricExporterModel setTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
@@ -231,7 +231,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(TEMPORALITY_PREFERENCE)
-  public OtlpGrpcMetricExporterModel withTemporalityPreference(
+  public OtlpGrpcMetricExporterModel setTemporalityPreference(
       ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
@@ -263,7 +263,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonProperty(DEFAULT_HISTOGRAM_AGGREGATION)
-  public OtlpGrpcMetricExporterModel withDefaultHistogramAggregation(
+  public OtlpGrpcMetricExporterModel setDefaultHistogramAggregation(
       ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
     return this;
@@ -275,7 +275,7 @@ public class OtlpGrpcMetricExporterModel {
   }
 
   @JsonAnySetter
-  public OtlpGrpcMetricExporterModel withExtensionProperty(String name, @Nullable Object value) {
+  public OtlpGrpcMetricExporterModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

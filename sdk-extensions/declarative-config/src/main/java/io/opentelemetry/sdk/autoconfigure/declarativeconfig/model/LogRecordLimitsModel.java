@@ -61,7 +61,7 @@ public class LogRecordLimitsModel {
   }
 
   @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
-  public LogRecordLimitsModel withAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
+  public LogRecordLimitsModel setAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
     return this;
   }
@@ -84,7 +84,7 @@ public class LogRecordLimitsModel {
   }
 
   @JsonProperty(ATTRIBUTE_COUNT_LIMIT)
-  public LogRecordLimitsModel withAttributeCountLimit(Integer attributeCountLimit) {
+  public LogRecordLimitsModel setAttributeCountLimit(Integer attributeCountLimit) {
     this.attributeCountLimit = attributeCountLimit;
     return this;
   }
@@ -95,7 +95,7 @@ public class LogRecordLimitsModel {
   }
 
   @JsonAnySetter
-  public LogRecordLimitsModel withExtensionProperty(String name, @Nullable Object value) {
+  public LogRecordLimitsModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

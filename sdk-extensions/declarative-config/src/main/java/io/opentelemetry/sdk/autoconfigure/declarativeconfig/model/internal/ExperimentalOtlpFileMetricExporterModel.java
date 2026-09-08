@@ -36,7 +36,7 @@ public class ExperimentalOtlpFileMetricExporterModel {
   }
 
   @JsonProperty("output_stream")
-  public ExperimentalOtlpFileMetricExporterModel withOutputStream(String outputStream) {
+  public ExperimentalOtlpFileMetricExporterModel setOutputStream(String outputStream) {
     this.outputStream = outputStream;
     return this;
   }
@@ -63,7 +63,7 @@ public class ExperimentalOtlpFileMetricExporterModel {
   }
 
   @JsonProperty("temporality_preference")
-  public ExperimentalOtlpFileMetricExporterModel withTemporalityPreference(
+  public ExperimentalOtlpFileMetricExporterModel setTemporalityPreference(
       ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
@@ -89,7 +89,7 @@ public class ExperimentalOtlpFileMetricExporterModel {
   }
 
   @JsonProperty("default_histogram_aggregation")
-  public ExperimentalOtlpFileMetricExporterModel withDefaultHistogramAggregation(
+  public ExperimentalOtlpFileMetricExporterModel setDefaultHistogramAggregation(
       ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
     return this;

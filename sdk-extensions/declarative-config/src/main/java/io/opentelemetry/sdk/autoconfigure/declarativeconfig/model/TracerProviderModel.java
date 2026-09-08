@@ -63,7 +63,7 @@ public class TracerProviderModel {
   }
 
   @JsonProperty(PROCESSORS)
-  public TracerProviderModel withProcessors(List<SpanProcessorModel> processors) {
+  public TracerProviderModel setProcessors(List<SpanProcessorModel> processors) {
     this.processors = processors;
     return this;
   }
@@ -83,7 +83,7 @@ public class TracerProviderModel {
   }
 
   @JsonProperty(LIMITS)
-  public TracerProviderModel withLimits(SpanLimitsModel limits) {
+  public TracerProviderModel setLimits(SpanLimitsModel limits) {
     this.limits = limits;
     return this;
   }
@@ -103,7 +103,7 @@ public class TracerProviderModel {
   }
 
   @JsonProperty(SAMPLER)
-  public TracerProviderModel withSampler(SamplerModel sampler) {
+  public TracerProviderModel setSampler(SamplerModel sampler) {
     this.sampler = sampler;
     return this;
   }
@@ -124,7 +124,7 @@ public class TracerProviderModel {
   }
 
   @JsonProperty(ID_GENERATOR)
-  public TracerProviderModel withIdGenerator(IdGeneratorModel idGenerator) {
+  public TracerProviderModel setIdGenerator(IdGeneratorModel idGenerator) {
     this.idGenerator = idGenerator;
     return this;
   }
@@ -135,7 +135,7 @@ public class TracerProviderModel {
   }
 
   @JsonAnySetter
-  public TracerProviderModel withExtensionProperty(String name, @Nullable Object value) {
+  public TracerProviderModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,

@@ -34,12 +34,12 @@ class InstrumentSelectorFactoryTest {
             InstrumentSelectorFactory.getInstance()
                 .create(
                     new ViewSelectorModel()
-                        .withInstrumentName("instrument-name")
-                        .withInstrumentType(InstrumentTypeModel.COUNTER)
-                        .withUnit("ms")
-                        .withMeterName("meter-name")
-                        .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
-                        .withMeterVersion("1.0.0"),
+                        .setInstrumentName("instrument-name")
+                        .setInstrumentType(InstrumentTypeModel.COUNTER)
+                        .setUnit("ms")
+                        .setMeterName("meter-name")
+                        .setMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
+                        .setMeterVersion("1.0.0"),
                     mock(DeclarativeConfigContext.class)))
         .isEqualTo(
             InstrumentSelector.builder()
