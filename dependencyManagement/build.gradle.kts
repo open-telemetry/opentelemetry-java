@@ -13,7 +13,7 @@ val errorProneVersion = "2.50.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.18"
+val slf4jVersion = "2.0.19"
 val opencensusVersion = "0.31.1"
 val prometheusServerVersion = "1.8.0"
 val armeriaVersion = "1.41.1"
@@ -31,7 +31,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:33.7.1-jre",
   "com.google.protobuf:protobuf-bom:4.36.1",
   "com.squareup.okhttp3:okhttp-bom:$okhttpVersion",
-  "com.squareup.okio:okio-bom:3.18.1", // applies to transitive dependencies of okhttp
+  "com.squareup.okio:okio-bom:3.18.2", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.84.0",
   "io.netty:netty-bom:4.2.17.Final",
   "org.assertj:assertj-bom:3.27.7",
@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.75.0",
+  "com.google.api.grpc:proto-google-common-protos:2.76.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
