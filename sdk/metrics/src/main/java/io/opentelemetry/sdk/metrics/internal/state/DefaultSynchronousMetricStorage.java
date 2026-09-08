@@ -127,6 +127,37 @@ public abstract class DefaultSynchronousMetricStorage<T extends PointData>
 
   abstract void doRecordDouble(double value, Attributes attributes, Context context);
 
+  /**
+   * Returns a deferred bound handle for use when the view's {@link AttributesProcessor} derives
+   * (part of) its output from {@link Context} (see {@link AttributesProcessor#usesContext()}).
+   * {@code attributes} is stored as-is; every {@link BoundStorageHandle#recordLong}/{@link
+   * BoundStorageHandle#recordDouble} call forwards straight back through this storage's own {@link
+   * #recordLong}/{@link #recordDouble}, so attribute processing and series resolution happen fresh
+   * on every measurement, using the {@link Context} supplied to that call — the same path an
+   * unbound {@code counter.add(value, attributes, context)} call takes.
+   */
+  final BoundStorageHandle lateBoundHandle(Attributes attributes) {
+    return new LateBoundStorageHandle(attributes);
+  }
+
+  private final class LateBoundStorageHandle implements BoundStorageHandle {
+    private final Attributes attributes;
+
+    LateBoundStorageHandle(Attributes attributes) {
+      this.attributes = attributes;
+    }
+
+    @Override
+    public void recordLong(long value, Context context) {
+      DefaultSynchronousMetricStorage.this.recordLong(value, attributes, context);
+    }
+
+    @Override
+    public void recordDouble(double value, Context context) {
+      DefaultSynchronousMetricStorage.this.recordDouble(value, attributes, context);
+    }
+  }
+
   @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;

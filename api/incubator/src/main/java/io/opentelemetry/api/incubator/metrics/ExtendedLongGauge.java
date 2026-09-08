@@ -18,6 +18,10 @@ public interface ExtendedLongGauge extends LongGauge {
    * <p>Binding resolves the underlying timeseries once, eliminating the per-recording attribute
    * processing and map lookup performed by {@link #set(long, Attributes)}. Prefer this when the set
    * of attribute combinations is known ahead of time and the same series is recorded to repeatedly.
+   *
+   * <p>If the metric's view derives attributes from context (e.g. baggage), this optimization does
+   * not apply: each record call performs the same attribute processing and lookup as an unbound
+   * recording.
    */
   BoundLongGauge bind(Attributes attributes);
 

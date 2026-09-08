@@ -12,6 +12,8 @@ import io.opentelemetry.api.incubator.metrics.BoundLongCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -68,5 +70,45 @@ class BoundInstrumentExemplarTest {
                                                             Attributes.builder()
                                                                 .put("drop", "first")
                                                                 .build())))));
+  }
+
+  /**
+   * Control for the context-deferred bind path exercised by {@code BoundInstrumentBaggageTest}: for
+   * a view whose {@code AttributesProcessor} does not use context, binding must still resolve the
+   * series eagerly, at bind() time, not on the first record call.
+   */
+  @Test
+  void cumulative_nonContextView_bindResolvesSeriesEagerly() {
+    TestClock clock = TestClock.create();
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder()
+            .setClock(clock)
+            .registerView(
+                InstrumentSelector.builder().setName("test-counter").build(),
+                View.builder().setAttributeFilter(Collections.singleton("keep")).build())
+            .registerMetricReader(reader)
+            .build();
+    Meter meter = meterProvider.get(BoundInstrumentExemplarTest.class.getName());
+    ExtendedLongCounter counter =
+        (ExtendedLongCounter) meter.counterBuilder("test-counter").build();
+
+    long bindEpochNanos = clock.now();
+    BoundLongCounter bound = counter.bind(Attributes.builder().put("keep", "k").build());
+    clock.advance(Duration.ofSeconds(5));
+    bound.add(1);
+
+    // The cumulative aggregator's creation time (used as the point's start time) is stamped when
+    // the series is resolved. If it matches bind time rather than the later add() time, the series
+    // was resolved eagerly at bind(), confirming the fast path wasn't silently deferred.
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .hasPointsSatisfying(
+                                    point -> point.hasStartEpochNanos(bindEpochNanos))));
   }
 }

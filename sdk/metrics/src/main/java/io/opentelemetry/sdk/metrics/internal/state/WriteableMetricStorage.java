@@ -24,9 +24,16 @@ public interface WriteableMetricStorage {
   void recordDouble(double value, Attributes attributes, Context context);
 
   /**
-   * Binds the given {@code attributes}, returning a {@link BoundStorageHandle} that records to the
-   * corresponding timeseries directly. The series is resolved once here, so subsequent records via
-   * the returned handle skip per-recording attribute processing and series lookup.
+   * Binds the given {@code attributes}, returning a {@link BoundStorageHandle} that records
+   * directly to the corresponding timeseries.
+   *
+   * <p>When the view's {@link
+   * io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor#usesContext()} is false, the
+   * series is resolved once here, and subsequent records via the returned handle skip per-recording
+   * attribute processing and series lookup. Otherwise (e.g. a baggage-derived view), the series
+   * cannot be fixed at bind time: the returned handle re-runs attribute processing and series
+   * resolution on every record call, using the {@link Context} supplied to that call, same as an
+   * unbound {@link #recordLong}/{@link #recordDouble} call.
    */
   BoundStorageHandle bind(Attributes attributes);
 

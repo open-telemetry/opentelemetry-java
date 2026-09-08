@@ -40,9 +40,16 @@ public abstract class AttributesProcessor {
   public abstract Attributes process(Attributes incoming, Context context);
 
   /**
-   * If true, this ensures the `Context` argument of the attributes processor is always accurate.
-   * This will prevents bound instruments from pre-locking their metric-attributes and defer until
-   * context is available.
+   * Returns true if this processor derives (part of) its output from the {@link Context} argument
+   * to {@link #process}, e.g. by reading {@link Baggage}, as opposed to using only the incoming
+   * {@code Attributes}.
+   *
+   * <p>Bound instruments ({@link
+   * io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage#bind}) use this to decide
+   * whether a series can be resolved once at bind time: when true, the metric-attributes cannot be
+   * pinned ahead of time because they depend on {@link Context} that is only available at each
+   * individual recording, so binding must defer attribute processing and series resolution to every
+   * record call instead.
    */
   public abstract boolean usesContext();
 

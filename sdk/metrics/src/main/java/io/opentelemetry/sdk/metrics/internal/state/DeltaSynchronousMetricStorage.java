@@ -163,6 +163,12 @@ class DeltaSynchronousMetricStorage<T extends PointData>
 
   @Override
   public BoundStorageHandle bind(Attributes attributes) {
+    Objects.requireNonNull(attributes, "attributes");
+    if (attributesProcessor.usesContext()) {
+      // See CumulativeSynchronousMetricStorage.bind() for rationale: a context-using view (e.g.
+      // baggage) cannot have its series fixed at bind time.
+      return lateBoundHandle(attributes);
+    }
     Attributes processed = attributesProcessor.process(attributes, Context.current());
     return new DeltaBoundHandle<>(bindHandle(processed), attributes);
   }

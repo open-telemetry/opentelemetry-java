@@ -59,6 +59,14 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
 
   @Override
   public BoundStorageHandle bind(Attributes attributes) {
+    Objects.requireNonNull(attributes, "attributes");
+    if (attributesProcessor.usesContext()) {
+      // The view derives (part of) the series identity from the record-time Context (e.g.
+      // baggage), which isn't known yet. Defer attribute processing and series resolution to each
+      // recordLong/recordDouble call instead of fixing them to whatever Context happens to be
+      // current now.
+      return lateBoundHandle(attributes);
+    }
     // Cumulative handles are stable for the instrument's lifetime (the map is never swapped and
     // handles are never reset/pooled), so resolve the handle once here and record straight onto it.
     AggregatorHandle<T> handle = getAggregatorHandle(attributes, Context.current());
