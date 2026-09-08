@@ -151,6 +151,10 @@ class Parser {
       LOGGER.log(Level.WARNING, "Skipping invalid baggage member", e);
       return;
     }
+    if (!W3CBaggagePropagator.isValidBaggageMetadata(metadataValue)) {
+      LOGGER.log(Level.WARNING, "Skipping baggage member with invalid metadata");
+      return;
+    }
     BaggageEntryMetadata baggageEntryMetadata =
         metadataValue != null
             ? BaggageEntryMetadata.create(metadataValue)

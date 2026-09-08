@@ -480,7 +480,15 @@ class W3CBaggagePropagatorTest {
                 .put("key1", "value1")
                 .put("encoded", "value 2")
                 .put("bad3", "value", BaggageEntryMetadata.create("meta=%GG"))
-                .build()));
+                .build()),
+        Arguments.argumentSet(
+            "invalid metadata charset drops entry",
+            "key1=value1,bad=value;meta\u0001evil,key2=value2",
+            Baggage.builder().put("key1", "value1").put("key2", "value2").build()),
+        Arguments.argumentSet(
+            "invalid metadata charset at end drops entry",
+            "key1=value1,bad=value;meta\u0001evil",
+            Baggage.builder().put("key1", "value1").build()));
   }
 
   @Test
@@ -611,6 +619,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(W3CBaggagePropagator.class)
   void inject() {
     Baggage baggage =
         Baggage.builder()
@@ -647,6 +656,7 @@ class W3CBaggagePropagatorTest {
 
   @ParameterizedTest
   @MethodSource
+  @SuppressLogger(W3CBaggagePropagator.class)
   void inject_invalidMetadata_skipsEntry(String metadata) {
     Baggage baggage =
         Baggage.builder()
@@ -672,6 +682,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(W3CBaggagePropagator.class)
   void inject_invalidMetadataOnly_omitsHeader() {
     Baggage baggage = Baggage.builder().put("k", "v", BaggageEntryMetadata.create("a,b")).build();
     Map<String, String> carrier = new HashMap<>();

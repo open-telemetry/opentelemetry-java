@@ -9,7 +9,6 @@ import static java.util.Collections.singletonList;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
-import io.opentelemetry.api.baggage.BaggageEntry;
 import io.opentelemetry.api.internal.PercentEscaper;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
@@ -19,6 +18,7 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -70,7 +70,16 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     int[] entryCount = {0};
     baggage.forEach(
         (key, baggageEntry) -> {
-          if (baggageIsInvalid(key, baggageEntry)) {
+          if (!isValidBaggageKey(key)) {
+            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid key");
+            return;
+          }
+          if (!isValidBaggageValue(baggageEntry.getValue())) {
+            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid value");
+            return;
+          }
+          if (!isValidBaggageMetadata(baggageEntry.getMetadata().getValue())) {
+            LOGGER.log(Level.WARNING, "Skipping baggage entry with invalid metadata");
             return;
           }
           if (entryCount[0] >= MAX_BAGGAGE_ENTRIES) {
@@ -175,12 +184,6 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     return new Parser(baggageHeader, maxEntries).parseInto(baggageBuilder);
   }
 
-  private static boolean baggageIsInvalid(String key, BaggageEntry baggageEntry) {
-    return !isValidBaggageKey(key)
-        || !isValidBaggageValue(baggageEntry.getValue())
-        || !isValidBaggageMetadata(baggageEntry.getMetadata().getValue());
-  }
-
   /**
    * Determines whether the given {@code String} is a valid entry key.
    *
@@ -207,7 +210,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
    * @param metadata the metadata to be validated.
    * @return whether the metadata is valid.
    */
-  private static boolean isValidBaggageMetadata(@Nullable String metadata) {
+  static boolean isValidBaggageMetadata(@Nullable String metadata) {
     if (metadata == null || metadata.isEmpty()) {
       return true;
     }
@@ -219,7 +222,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     return true;
   }
 
-  // tchar / baggage-octet / OWS / '=' / ';'
+  // tab or printable ASCII except " , \
   private static boolean isValidMetadataChar(char c) {
     return c == '\t' || (c >= ' ' && c <= '~' && c != '"' && c != ',' && c != '\\');
   }
