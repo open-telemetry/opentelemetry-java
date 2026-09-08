@@ -217,8 +217,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
     private CompletableResultCode exportMetrics(Collection<MetricData> metricData) {
       if (maxExportBatchSize == 0) {
-        CompletableResultCode result = exporter.export(metricData);
-        return applyTimeout(result);
+        return exporter.export(metricData);
       }
       Collection<Collection<MetricData>> batches =
           MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize);
@@ -232,15 +231,14 @@ public final class PeriodicMetricReader implements MetricReader {
               while (batchIterator.hasNext()) {
                 Collection<MetricData> currentBatch = batchIterator.next();
                 CompletableResultCode currentResult = exporter.export(currentBatch);
-                CompletableResultCode timeoutResult = applyTimeout(currentResult);
-                if (timeoutResult.isDone()) {
-                  if (!timeoutResult.isSuccess()) {
+                if (currentResult.isDone()) {
+                  if (!currentResult.isSuccess()) {
                     anyFailed.set(true);
                   }
                 } else {
-                  timeoutResult.whenComplete(
+                  currentResult.whenComplete(
                       () -> {
-                        if (!timeoutResult.isSuccess()) {
+                        if (!currentResult.isSuccess()) {
                           anyFailed.set(true);
                         }
                         this.run();
@@ -332,13 +330,19 @@ public final class PeriodicMetricReader implements MetricReader {
             exportAvailable.set(true);
             flushResult.succeed();
           } else {
-            CompletableResultCode result = exportMetrics(metricData);
-            result.whenComplete(
+            CompletableResultCode rawResult = exportMetrics(metricData);
+            CompletableResultCode timeoutResult = applyTimeout(rawResult);
+            // Use raw result for backpressure to prevent concurrent exports
+            rawResult.whenComplete(
                 () -> {
-                  if (!result.isSuccess()) {
+                  exportAvailable.set(true);
+                });
+            // Use timeout result for reporting to caller
+            timeoutResult.whenComplete(
+                () -> {
+                  if (!timeoutResult.isSuccess()) {
                     logger.log(Level.WARNING, "Exporter failed");
                   }
-                  exportAvailable.set(true);
                   flushResult.succeed();
                 });
           }

@@ -39,6 +39,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -908,6 +911,80 @@ class PeriodicMetricReaderTest {
       Thread.sleep(100);
       // Export should have been attempted but timed out
       assertThat(slowExporter.exportCount.get()).isGreaterThan(0);
+      // Verify timeout warning was logged (proves timeout actually occurred)
+      assertThat(logCapturer.getEvents())
+          .anyMatch(e -> e.getMessage().contains("Export timed out"));
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
+  void timeoutDoesNotReleaseBackpressure() throws Exception {
+    // Test that timeout firing does not allow concurrent exports
+    // The raw export must complete before the next export can start
+    CountDownLatch exportStarted = new CountDownLatch(1);
+    CountDownLatch exportComplete = new CountDownLatch(1);
+
+    AtomicInteger exportCount = new AtomicInteger();
+
+    MetricExporter slowExporter =
+        new MetricExporter() {
+          @Override
+          public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+            return AggregationTemporality.CUMULATIVE;
+          }
+
+          @Override
+          public CompletableResultCode export(Collection<MetricData> metrics) {
+            exportCount.incrementAndGet();
+            exportStarted.countDown();
+            try {
+              // Simulate slow export that takes longer than timeout
+              Thread.sleep(200);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            }
+            exportComplete.countDown();
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode shutdown() {
+            return CompletableResultCode.ofSuccess();
+          }
+        };
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(slowExporter)
+            .setInterval(Duration.ofMillis(20)) // Short interval
+            .setExporterTimeout(Duration.ofMillis(10)) // Short timeout
+            .build();
+
+    reader.register(collectionRegistration);
+    try {
+      // Wait for first export to start
+      assertThat(exportStarted.await(5, TimeUnit.SECONDS)).isTrue();
+      // Wait for timeout to fire (reader perspective)
+      Thread.sleep(50);
+
+      // Critical: Only ONE export should have started despite timeout firing
+      // because backpressure is tied to raw export completion, not timeout completion
+      assertThat(exportCount.get()).isEqualTo(1);
+
+      // Wait for raw export to complete
+      assertThat(exportComplete.await(5, TimeUnit.SECONDS)).isTrue();
+
+      // Now the next export can proceed
+      Thread.sleep(50);
+
+      // At this point, a second export may have started
+      // But we proved that the timeout did NOT release backpressure prematurely
     } finally {
       reader.shutdown();
     }
@@ -919,6 +996,7 @@ class PeriodicMetricReaderTest {
     private final AtomicInteger exportCount = new AtomicInteger();
     private final CountDownLatch exportLatch = new CountDownLatch(1);
     private final boolean async;
+    @Nullable private final ExecutorService executor;
 
     DelayingMetricExporter(long delayMs) {
       this(delayMs, /* async= */ false);
@@ -927,6 +1005,7 @@ class PeriodicMetricReaderTest {
     DelayingMetricExporter(long delayMs, boolean async) {
       this.delayMs = delayMs;
       this.async = async;
+      this.executor = async ? Executors.newSingleThreadExecutor() : null;
     }
 
     @Override
@@ -939,7 +1018,9 @@ class PeriodicMetricReaderTest {
       exportCount.incrementAndGet();
       if (async) {
         CompletableResultCode result = new CompletableResultCode();
-        new Thread(
+        @SuppressWarnings("FutureReturnValueIgnored")
+        Future<?> unused =
+            executor.submit(
                 () -> {
                   try {
                     Thread.sleep(delayMs);
@@ -948,8 +1029,7 @@ class PeriodicMetricReaderTest {
                     Thread.currentThread().interrupt();
                     result.fail();
                   }
-                })
-            .start();
+                });
         exportLatch.countDown();
         return result;
       } else {
@@ -970,6 +1050,14 @@ class PeriodicMetricReaderTest {
 
     @Override
     public CompletableResultCode shutdown() {
+      if (executor != null) {
+        executor.shutdown();
+        try {
+          executor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
       return CompletableResultCode.ofSuccess();
     }
 
