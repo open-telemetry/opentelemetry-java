@@ -40,8 +40,6 @@ class PrometheusUnitsHelper {
     initUnit("GiBy", "gibibytes", "gibibyte");
     initUnit("TiBy", "tebibytes", "tebibyte");
     initUnit("kBy", "kilobytes", "kilobyte");
-    // Upper case K is kelvin in UCUM, but keep it as an alias for existing users.
-    initUnit("KBy", "kilobytes", "kilobyte");
     initUnit("MBy", "megabytes", "megabyte");
     initUnit("GBy", "gigabytes", "gigabyte");
     initUnit("TBy", "terabytes", "terabyte");

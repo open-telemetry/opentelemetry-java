@@ -56,7 +56,7 @@ class PrometheusUnitsHelperTest {
   private static Stream<Arguments> providePrometheusOTelUnitEquivalentPairs() {
     return Stream.of(
         Arguments.argumentSet("bytes", "By", "bytes"),
-        Arguments.argumentSet("kilobytes", "KBy", "kilobytes"),
+        Arguments.argumentSet("upper case KBy not converted", "KBy", "KBy"),
         Arguments.argumentSet("kilobytes lowercase k", "kBy", "kilobytes"),
         Arguments.argumentSet("megabytes", "MBy", "megabytes"),
         Arguments.argumentSet("gigabytes", "GBy", "gigabytes"),
