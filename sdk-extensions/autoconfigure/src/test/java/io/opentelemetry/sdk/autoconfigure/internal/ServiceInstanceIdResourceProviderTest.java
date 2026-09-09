@@ -18,11 +18,11 @@ class ServiceInstanceIdResourceProviderTest {
   void createResource_generatesStableValue() {
     ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
     DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
-    
+
     // Multiple calls should return the same value
     Resource resource1 = provider.createResource(config);
     Resource resource2 = provider.createResource(config);
-    
+
     assertThat(resource1.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID))
         .isNotNull();
     assertThat(resource2.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID))
@@ -34,13 +34,13 @@ class ServiceInstanceIdResourceProviderTest {
     ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
     DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
     Resource existing = Resource.empty();
-    
+
     assertThat(provider.shouldApply(config, existing)).isTrue();
-    
+
     Resource withId = existing.toBuilder()
         .put(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID, "custom")
         .build();
-    
+
     assertThat(provider.shouldApply(config, withId)).isFalse();
   }
 
