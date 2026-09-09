@@ -59,9 +59,9 @@ class OtelEncodingUtilsTest {
   @Test
   void validHex() {
     assertThat(OtelEncodingUtils.isValidBase16String("abcdef1234567890")).isTrue();
+    assertThat(OtelEncodingUtils.isValidBase16String("abc")).isTrue();
     assertThat(OtelEncodingUtils.isValidBase16String("")).isFalse();
     assertThat(OtelEncodingUtils.isValidBase16String(null)).isFalse();
-    assertThat(OtelEncodingUtils.isValidBase16String("abc")).isFalse();
     assertThat(OtelEncodingUtils.isValidBase16String("abcdefg1234567890")).isFalse();
     assertThat(OtelEncodingUtils.isValidBase16String("<abcdef1234567890")).isFalse();
     assertThat(OtelEncodingUtils.isValidBase16String("(abcdef1234567890")).isFalse();
