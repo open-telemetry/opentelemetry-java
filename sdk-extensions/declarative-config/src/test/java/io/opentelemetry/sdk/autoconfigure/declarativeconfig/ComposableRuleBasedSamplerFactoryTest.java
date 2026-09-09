@@ -263,6 +263,7 @@ class ComposableRuleBasedSamplerFactoryTest {
   private static final SpanKind sk = CLIENT;
   private static final AttributeKey<String> HTTP_ROUTE = AttributeKey.stringKey("http.route");
   private static final AttributeKey<String> HTTP_PATH = AttributeKey.stringKey("http.path");
+  private static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");
 
   @ParameterizedTest
   @MethodSource("declarativeConfigSamplingPredicateArgs")
@@ -304,6 +305,24 @@ class ComposableRuleBasedSamplerFactoryTest {
             null, null, Collections.singleton(ExperimentalSpanParentModel.NONE), null);
     DeclarativeConfigSamplingPredicate spanKindMatcher =
         new DeclarativeConfigSamplingPredicate(null, null, null, Collections.singleton(CLIENT));
+    DeclarativeConfigSamplingPredicate numberValuesMatcher =
+        new DeclarativeConfigSamplingPredicate(
+            new AttributeMatcher(
+                "server.port",
+                IncludeExcludePredicate.createExactMatching(
+                    Collections.singletonList("8081"), null)),
+            null,
+            null,
+            null);
+    DeclarativeConfigSamplingPredicate numberPatternsMatcher =
+        new DeclarativeConfigSamplingPredicate(
+            null,
+            new AttributeMatcher(
+                "server.port",
+                IncludeExcludePredicate.createPatternMatching(
+                    Collections.singletonList("808*"), null)),
+            null,
+            null);
     DeclarativeConfigSamplingPredicate multiMatcher =
         new DeclarativeConfigSamplingPredicate(
             new AttributeMatcher(
@@ -435,6 +454,41 @@ class ComposableRuleBasedSamplerFactoryTest {
             noParent,
             CONSUMER,
             Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "numberValuesMatcher matching port",
+            numberValuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT, 8081L),
+            true),
+        Arguments.argumentSet(
+            "numberValuesMatcher non matching port",
+            numberValuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT, 8080L),
+            false),
+        Arguments.argumentSet(
+            "numberValuesMatcher empty no match",
+            numberValuesMatcher,
+            noParent,
+            sk,
+            Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "numberPatternsMatcher matching port",
+            numberPatternsMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT, 8081L),
+            true),
+        Arguments.argumentSet(
+            "numberPatternsMatcher non matching port",
+            numberPatternsMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT, 9090L),
             false),
         Arguments.argumentSet(
             "multiMatcher all conditions match",
