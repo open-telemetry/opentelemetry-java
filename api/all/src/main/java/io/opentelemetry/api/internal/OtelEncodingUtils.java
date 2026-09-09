@@ -143,6 +143,9 @@ public final class OtelEncodingUtils {
 
   /** Returns whether the {@link CharSequence} is a valid hex string. */
   public static boolean isValidBase16String(CharSequence value) {
+    if (value == null || value.length() == 0 || value.length() % 2 != 0) {
+      return false;
+    }
     int len = value.length();
     for (int i = 0; i < len; i++) {
       char b = value.charAt(i);
