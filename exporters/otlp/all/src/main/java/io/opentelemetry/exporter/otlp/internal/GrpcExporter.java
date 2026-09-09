@@ -101,31 +101,25 @@ public final class GrpcExporter {
         logger.log(
             Level.SEVERE,
             "Failed to export "
+                + numItems
+                + " "
                 + type
                 + "s. Server is UNAVAILABLE. "
                 + "Make sure your collector is running and reachable from this network. "
                 + "Full error message:"
-                + grpcResponse.getStatusDescription()
-                + ". Failed to export "
-                + numItems
-                + " "
-                + type
-                + "(s).");
+                + grpcResponse.getStatusDescription());
         break;
       default:
         logger.log(
             Level.WARNING,
             "Failed to export "
+                + numItems
+                + " "
                 + type
                 + "s. Server responded with gRPC status code "
                 + statusCode.getValue()
                 + ". Error message: "
-                + grpcResponse.getStatusDescription()
-                + ". Failed to export "
-                + numItems
-                + " "
-                + type
-                + "(s).");
+                + grpcResponse.getStatusDescription());
         break;
     }
     result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
@@ -139,25 +133,11 @@ public final class GrpcExporter {
     metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,
-        "Failed to export "
-            + type
-            + "s. The request could not be executed. Failed to export "
-            + numItems
-            + " "
-            + type
-            + "(s).",
+        "Failed to export " + numItems + " " + type + "s. The request could not be executed.",
         e);
     if (logger.isLoggable(Level.FINEST)) {
       logger.log(
-          Level.FINEST,
-          "Failed to export "
-              + type
-              + "s. Failed to export "
-              + numItems
-              + " "
-              + type
-              + "(s). Details follow:",
-          e);
+          Level.FINEST, "Failed to export " + numItems + " " + type + "s. Details follow:", e);
     }
     result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
   }

@@ -105,16 +105,13 @@ public final class HttpExporter {
     logger.log(
         Level.WARNING,
         "Failed to export "
+            + numItems
+            + " "
             + type
             + "s. Server responded with HTTP status code "
             + statusCode
             + ". Error message: "
-            + status
-            + ". Failed to export "
-            + numItems
-            + " "
-            + type
-            + "(s).");
+            + status);
 
     result.failExceptionally(FailedExportException.httpFailedWithResponse(httpResponse));
   }
@@ -127,13 +124,7 @@ public final class HttpExporter {
     metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,
-        "Failed to export "
-            + type
-            + "s. The request could not be executed. Failed to export "
-            + numItems
-            + " "
-            + type
-            + "(s).",
+        "Failed to export " + numItems + " " + type + "s. The request could not be executed.",
         e);
     result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
   }
