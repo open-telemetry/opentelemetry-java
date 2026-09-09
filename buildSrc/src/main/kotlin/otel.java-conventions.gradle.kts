@@ -353,8 +353,10 @@ testing {
           // To remove these warnings, we attach the byte-buddy-agent used by mockito directly.
           val mockitoAgent: FileCollection = mockitoAgent
           doFirst {
+            // -Xshare:off: the agent appends to the bootstrap classpath, which disables CDS and
+            // causes a warning in every test process without it.
             val mockitoAgentJar = mockitoAgent.files.single { it.name.contains("byte-buddy-agent")}
-            jvmArgs("-javaagent:${mockitoAgentJar}")
+            jvmArgs("-Xshare:off", "-javaagent:${mockitoAgentJar}")
           }
         }
       }
