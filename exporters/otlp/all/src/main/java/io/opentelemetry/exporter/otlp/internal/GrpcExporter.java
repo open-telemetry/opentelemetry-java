@@ -69,7 +69,7 @@ public final class GrpcExporter {
     grpcSender.send(
         exportRequest.toBinaryMessageWriter(),
         grpcResponse -> onResponse(result, metricRecording, grpcResponse, numItems),
-        throwable -> onError(result, metricRecording, throwable, numItems));
+        throwable -> onError(result, metricRecording, numItems, throwable));
 
     return result;
   }
@@ -101,25 +101,31 @@ public final class GrpcExporter {
         logger.log(
             Level.SEVERE,
             "Failed to export "
+                + type
+                + "s. Server is UNAVAILABLE. "
+                + "Make sure your collector is running and reachable from this network. "
+                + "Full error message:"
+                + grpcResponse.getStatusDescription()
+                + ". Failed to export "
                 + numItems
                 + " "
                 + type
-                + "(s). Server is UNAVAILABLE. "
-                + "Make sure your collector is running and reachable from this network. "
-                + "Full error message:"
-                + grpcResponse.getStatusDescription());
+                + "(s).");
         break;
       default:
         logger.log(
             Level.WARNING,
             "Failed to export "
+                + type
+                + "s. Server responded with gRPC status code "
+                + statusCode.getValue()
+                + ". Error message: "
+                + grpcResponse.getStatusDescription()
+                + ". Failed to export "
                 + numItems
                 + " "
                 + type
-                + "(s). Server responded with gRPC status code "
-                + statusCode.getValue()
-                + ". Error message: "
-                + grpcResponse.getStatusDescription());
+                + "(s).");
         break;
     }
     result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
@@ -128,16 +134,30 @@ public final class GrpcExporter {
   private void onError(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
-      Throwable e,
-      int numItems) {
+      int numItems,
+      Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,
-        "Failed to export " + numItems + " " + type + "(s). The request could not be executed.",
+        "Failed to export "
+            + type
+            + "s. The request could not be executed. Failed to export "
+            + numItems
+            + " "
+            + type
+            + "(s).",
         e);
     if (logger.isLoggable(Level.FINEST)) {
       logger.log(
-          Level.FINEST, "Failed to export " + numItems + " " + type + "(s). Details follow:", e);
+          Level.FINEST,
+          "Failed to export "
+              + type
+              + "s. Failed to export "
+              + numItems
+              + " "
+              + type
+              + "(s). Details follow:",
+          e);
     }
     result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
   }

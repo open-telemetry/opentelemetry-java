@@ -76,7 +76,7 @@ public final class HttpExporter {
     httpSender.send(
         messageWriter,
         httpResponse -> onResponse(result, metricRecording, httpResponse, numItems),
-        throwable -> onError(result, metricRecording, throwable, numItems));
+        throwable -> onError(result, metricRecording, numItems, throwable));
 
     return result;
   }
@@ -105,13 +105,16 @@ public final class HttpExporter {
     logger.log(
         Level.WARNING,
         "Failed to export "
+            + type
+            + "s. Server responded with HTTP status code "
+            + statusCode
+            + ". Error message: "
+            + status
+            + ". Failed to export "
             + numItems
             + " "
             + type
-            + "(s). Server responded with HTTP status code "
-            + statusCode
-            + ". Error message: "
-            + status);
+            + "(s).");
 
     result.failExceptionally(FailedExportException.httpFailedWithResponse(httpResponse));
   }
@@ -119,12 +122,18 @@ public final class HttpExporter {
   private void onError(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
-      Throwable e,
-      int numItems) {
+      int numItems,
+      Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,
-        "Failed to export " + numItems + " " + type + "(s). The request could not be executed.",
+        "Failed to export "
+            + type
+            + "s. The request could not be executed. Failed to export "
+            + numItems
+            + " "
+            + type
+            + "(s).",
         e);
     result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
   }
