@@ -48,7 +48,7 @@ final class ExtendedSdkDoubleUpDownCounter extends SdkDoubleUpDownCounter
 
   @Override
   public void add(double value) {
-    add(value, Context.current());
+    add(value, currentOrRootContext());
   }
 
   @Override

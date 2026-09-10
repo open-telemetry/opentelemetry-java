@@ -54,9 +54,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -121,35 +123,7 @@ class SynchronousInstrumentStressTest {
       MemoryMode memoryMode,
       InstrumentValueType instrumentValueType,
       boolean bound) {
-    // Initialize metric SDK
-    DefaultAggregationSelector aggregationSelector =
-        DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);
-    InMemoryMetricReader reader =
-        InMemoryMetricReader.builder()
-            .setDefaultAggregationSelector(aggregationSelector)
-            .setAggregationTemporalitySelector(unused -> aggregationTemporality)
-            .setMemoryMode(memoryMode)
-            .build();
-    SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(reader).build();
-    cleanup.addCloseable(meterProvider);
-    Meter meter = meterProvider.get("test");
-    List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
-    Collections.shuffle(attributes);
-    // When unbound, record through `instrument`, looking up the series by attributes on each call.
-    // When bound, bind one instrument per series up front and record straight to those (no
-    // per-record attribute lookup) — the record loop below forks accordingly.
-    Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
-    List<BoundInstrument> boundInstruments = new ArrayList<>();
-    if (bound) {
-      for (Attributes attr : attributes) {
-        boundInstruments.add(getBoundInstrument(meter, instrumentType, instrumentValueType, attr));
-      }
-    }
-
-    // Define list of measurements to record
-    // Later, we'll assert that the data collected matches these measurements, with no lost writes,
-    // partial writes, duplicate writes, etc.
+    // Define list of measurements to record. Shuffled 0..1999.
     int measurementCount = 2000;
     List<Long> measurements = new ArrayList<>();
     for (int i = 0; i < measurementCount; i++) {
@@ -157,62 +131,16 @@ class SynchronousInstrumentStressTest {
     }
     Collections.shuffle(measurements);
 
-    // Define recording threads
+    List<MetricData> collectedMetrics =
+        runStressLoop(
+            aggregationTemporality,
+            instrumentType,
+            aggregation,
+            memoryMode,
+            instrumentValueType,
+            bound,
+            measurements);
     int threadCount = 4;
-    List<Thread> recordThreads = new ArrayList<>();
-    CountDownLatch latch = new CountDownLatch(threadCount);
-    CountDownLatch startSignal = new CountDownLatch(1);
-    for (int i = 0; i < threadCount; i++) {
-      recordThreads.add(
-          new Thread(
-              () -> {
-                Uninterruptibles.awaitUninterruptibly(startSignal);
-                if (bound) {
-                  for (Long measurement : measurements) {
-                    for (BoundInstrument boundInstrument : boundInstruments) {
-                      boundInstrument.record(measurement);
-                    }
-                    Thread.yield();
-                  }
-                } else {
-                  for (Long measurement : measurements) {
-                    for (Attributes attr : attributes) {
-                      instrument.record(measurement, attr);
-                    }
-                    Thread.yield();
-                  }
-                }
-                latch.countDown();
-              }));
-    }
-
-    // Define collecting thread
-    // NOTE: collect makes a copy of MetricData because REUSABLE_DATA mode reuses MetricData
-    List<MetricData> collectedMetrics = new ArrayList<>();
-    Thread collectThread =
-        new Thread(
-            () -> {
-              Uninterruptibles.awaitUninterruptibly(startSignal);
-              while (latch.getCount() != 0) {
-                Thread.yield();
-                collectedMetrics.addAll(
-                    reader.collectAllMetrics().stream()
-                        .map(SynchronousInstrumentStressTest::copy)
-                        .collect(toList()));
-              }
-              collectedMetrics.addAll(
-                  reader.collectAllMetrics().stream()
-                      .map(SynchronousInstrumentStressTest::copy)
-                      .collect(toList()));
-            });
-
-    // Start all the threads, then release the start signal so they begin simultaneously
-    collectThread.start();
-    recordThreads.forEach(Thread::start);
-    startSignal.countDown();
-
-    // Wait for the collect thread to end, which collects until the record threads are done
-    Uninterruptibles.joinUninterruptibly(collectThread);
 
     // Assert collected data is consistent with recorded measurements by independently computing the
     // expected aggregated value and comparing to the actual results.
@@ -326,6 +254,239 @@ class SynchronousInstrumentStressTest {
     } else {
       throw new IllegalArgumentException();
     }
+  }
+
+  /**
+   * Complements {@link #stressTest} by asserting that no <em>interim</em> collected snapshot ever
+   * shows a partial write — e.g., a histogram with {@code sum} disagreeing with the sum of its
+   * bucket counts, indicating the collector observed a recorder mid-write.
+   *
+   * <p>Every recorder records a uniform value of 1, so the assertions are checkable per snapshot
+   * without knowing which specific observations completed at snapshot time: for any histogram
+   * point, {@code sum == count * 1}, and the sum of bucket counts equals {@code count}.
+   *
+   * <p>Assertions run after the stress phase completes, so the collector loop is never slowed down.
+   * Scoped to histogram aggregations — the invariant is trivial for scalar aggregations
+   * (sum/last-value), which don't span multiple mutable fields per record.
+   */
+  @ParameterizedTest
+  @MethodSource("stressTestArgs")
+  @Timeout(value = 10, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  void partialWriteStressTest(
+      AggregationTemporality aggregationTemporality,
+      InstrumentType instrumentType,
+      Aggregation aggregation,
+      MemoryMode memoryMode,
+      InstrumentValueType instrumentValueType,
+      boolean bound) {
+    for (int repetition = 0; repetition < STRESS_TEST_REPETITIONS; repetition++) {
+      partialWriteStressTestOnce(
+          aggregationTemporality,
+          instrumentType,
+          aggregation,
+          memoryMode,
+          instrumentValueType,
+          bound);
+    }
+  }
+
+  @SuppressWarnings("ReferenceEquality")
+  private void partialWriteStressTestOnce(
+      AggregationTemporality aggregationTemporality,
+      InstrumentType instrumentType,
+      Aggregation aggregation,
+      MemoryMode memoryMode,
+      InstrumentValueType instrumentValueType,
+      boolean bound) {
+    // Uniform value of 1 so that at any interim snapshot: sum == count.
+    int measurementCount = 2000;
+    List<Long> measurements = new ArrayList<>(measurementCount);
+    for (int i = 0; i < measurementCount; i++) {
+      measurements.add(1L);
+    }
+
+    List<MetricData> collectedMetrics =
+        runStressLoop(
+            aggregationTemporality,
+            instrumentType,
+            aggregation,
+            memoryMode,
+            instrumentValueType,
+            bound,
+            measurements);
+
+    // Assert every collected point is internally consistent (no partial writes visible). Scalar
+    // aggregators can't produce partial writes structurally, but we still exercise them for
+    // general concurrent-path regression coverage with light per-type invariants.
+    if (aggregation == Aggregation.explicitBucketHistogram()) {
+      collectedMetrics.stream()
+          .flatMap(m -> m.getHistogramData().getPoints().stream())
+          .forEach(
+              p -> {
+                long bucketSum = p.getCounts().stream().reduce(0L, Long::sum);
+                assertThat(p.getCount()).as("count == sum of bucket counts").isEqualTo(bucketSum);
+                assertThat(p.getSum())
+                    .as("sum == count (uniform value=1)")
+                    .isEqualTo((double) p.getCount());
+                if (p.getCount() > 0) {
+                  assertThat(p.hasMin()).isTrue();
+                  assertThat(p.getMin()).as("min == 1 (uniform value)").isEqualTo(1.0);
+                  assertThat(p.hasMax()).isTrue();
+                  assertThat(p.getMax()).as("max == 1 (uniform value)").isEqualTo(1.0);
+                }
+              });
+    } else if (aggregation == Aggregation.base2ExponentialBucketHistogram()) {
+      collectedMetrics.stream()
+          .flatMap(m -> m.getExponentialHistogramData().getPoints().stream())
+          .forEach(
+              p -> {
+                long positiveBucketSum =
+                    p.getPositiveBuckets().getBucketCounts().stream().reduce(0L, Long::sum);
+                long negativeBucketSum =
+                    p.getNegativeBuckets().getBucketCounts().stream().reduce(0L, Long::sum);
+                assertThat(p.getCount())
+                    .as("count == pos + neg + zero bucket counts")
+                    .isEqualTo(positiveBucketSum + negativeBucketSum + p.getZeroCount());
+                assertThat(p.getSum())
+                    .as("sum == count (uniform value=1)")
+                    .isEqualTo((double) p.getCount());
+                if (p.getCount() > 0) {
+                  assertThat(p.hasMin()).isTrue();
+                  assertThat(p.getMin()).as("min == 1 (uniform value)").isEqualTo(1.0);
+                  assertThat(p.hasMax()).isTrue();
+                  assertThat(p.getMax()).as("max == 1 (uniform value)").isEqualTo(1.0);
+                }
+              });
+    } else if (aggregation == Aggregation.sum()) {
+      // Uniform value=1 adds only. Sum should be a non-negative whole number.
+      if (instrumentValueType == InstrumentValueType.DOUBLE) {
+        collectedMetrics.stream()
+            .flatMap(m -> m.getDoubleSumData().getPoints().stream())
+            .forEach(
+                p -> {
+                  assertThat(p.getValue()).as("sum non-negative").isGreaterThanOrEqualTo(0.0);
+                  assertThat(p.getValue())
+                      .as("sum is integral")
+                      .isEqualTo(Math.floor(p.getValue()));
+                });
+      } else {
+        collectedMetrics.stream()
+            .flatMap(m -> m.getLongSumData().getPoints().stream())
+            .forEach(
+                p -> assertThat(p.getValue()).as("sum non-negative").isGreaterThanOrEqualTo(0L));
+      }
+    } else if (aggregation == Aggregation.lastValue()) {
+      // Every observation is 1; any non-empty snapshot's value must be 1.
+      if (instrumentValueType == InstrumentValueType.DOUBLE) {
+        collectedMetrics.stream()
+            .flatMap(m -> m.getDoubleGaugeData().getPoints().stream())
+            .forEach(p -> assertThat(p.getValue()).as("last-value == 1").isEqualTo(1.0));
+      } else {
+        collectedMetrics.stream()
+            .flatMap(m -> m.getLongGaugeData().getPoints().stream())
+            .forEach(p -> assertThat(p.getValue()).as("last-value == 1").isEqualTo(1L));
+      }
+    } else {
+      throw new IllegalArgumentException("Unexpected aggregation: " + aggregation);
+    }
+  }
+
+  /**
+   * Runs a record/collect stress loop and returns the collected metric snapshots. Each of the 4
+   * recording threads iterates {@code measurements}, and for each measurement records it against
+   * every attribute (or, when {@code bound}, every pre-bound instrument). The collector thread
+   * continuously calls {@code collectAllMetrics} until recorders complete, then does one final
+   * collect. Copies are taken of each collected {@link MetricData} because {@code REUSABLE_DATA}
+   * mode reuses instances across collects.
+   */
+  @SuppressWarnings("ThreadPriorityCheck")
+  private List<MetricData> runStressLoop(
+      AggregationTemporality aggregationTemporality,
+      InstrumentType instrumentType,
+      Aggregation aggregation,
+      MemoryMode memoryMode,
+      InstrumentValueType instrumentValueType,
+      boolean bound,
+      List<Long> measurements) {
+    DefaultAggregationSelector aggregationSelector =
+        DefaultAggregationSelector.getDefault().with(instrumentType, aggregation);
+    InMemoryMetricReader reader =
+        InMemoryMetricReader.builder()
+            .setDefaultAggregationSelector(aggregationSelector)
+            .setAggregationTemporalitySelector(unused -> aggregationTemporality)
+            .setMemoryMode(memoryMode)
+            .build();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(reader).build();
+    cleanup.addCloseable(meterProvider);
+    Meter meter = meterProvider.get("test");
+    List<Attributes> attributes = Arrays.asList(ATTR_1, ATTR_2, ATTR_3, ATTR_4);
+    Collections.shuffle(attributes);
+    // When unbound, record through `instrument`, looking up the series by attributes on each call.
+    // When bound, bind one instrument per series up front and record straight to those (no
+    // per-record attribute lookup) — the record loop below forks accordingly.
+    Instrument instrument = getInstrument(meter, instrumentType, instrumentValueType);
+    List<BoundInstrument> boundInstruments = new ArrayList<>();
+    if (bound) {
+      for (Attributes attr : attributes) {
+        boundInstruments.add(getBoundInstrument(meter, instrumentType, instrumentValueType, attr));
+      }
+    }
+
+    int threadCount = 4;
+    List<Thread> recordThreads = new ArrayList<>();
+    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch startSignal = new CountDownLatch(1);
+    for (int i = 0; i < threadCount; i++) {
+      recordThreads.add(
+          new Thread(
+              () -> {
+                Uninterruptibles.awaitUninterruptibly(startSignal);
+                if (bound) {
+                  for (Long measurement : measurements) {
+                    for (BoundInstrument boundInstrument : boundInstruments) {
+                      boundInstrument.record(measurement);
+                    }
+                    Thread.yield();
+                  }
+                } else {
+                  for (Long measurement : measurements) {
+                    for (Attributes attr : attributes) {
+                      instrument.record(measurement, attr);
+                    }
+                    Thread.yield();
+                  }
+                }
+                latch.countDown();
+              }));
+    }
+
+    List<MetricData> collectedMetrics = new ArrayList<>();
+    Thread collectThread =
+        new Thread(
+            () -> {
+              Uninterruptibles.awaitUninterruptibly(startSignal);
+              while (latch.getCount() != 0) {
+                Thread.yield();
+                collectedMetrics.addAll(
+                    reader.collectAllMetrics().stream()
+                        .map(SynchronousInstrumentStressTest::copy)
+                        .collect(toList()));
+              }
+              collectedMetrics.addAll(
+                  reader.collectAllMetrics().stream()
+                      .map(SynchronousInstrumentStressTest::copy)
+                      .collect(toList()));
+            });
+
+    // Start all the threads, then release the start signal so they begin simultaneously
+    collectThread.start();
+    recordThreads.forEach(Thread::start);
+    startSignal.countDown();
+
+    // Wait for the collect thread to end, which collects until the record threads are done
+    Uninterruptibles.joinUninterruptibly(collectThread);
+    return collectedMetrics;
   }
 
   private static Stream<Arguments> stressTestArgs() {

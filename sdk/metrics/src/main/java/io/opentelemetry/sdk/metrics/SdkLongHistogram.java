@@ -29,7 +29,7 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
 
   SdkLongHistogram(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
@@ -49,7 +49,7 @@ class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
 
   @Override
   public void record(long value, Attributes attributes) {
-    record(value, attributes, Context.current());
+    record(value, attributes, currentOrRootContext());
   }
 
   @Override

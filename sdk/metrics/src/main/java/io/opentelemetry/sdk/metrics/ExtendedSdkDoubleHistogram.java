@@ -48,7 +48,7 @@ final class ExtendedSdkDoubleHistogram extends SdkDoubleHistogram
 
   @Override
   public void record(double value) {
-    record(value, Context.current());
+    record(value, currentOrRootContext());
   }
 
   @Override
