@@ -611,7 +611,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
     LoggingEvent log =
         logs.assertContains(
-            "Failed to export "
+            "Failed to export 1 "
                 + type
                 + "s. Server responded with HTTP status code 500. Error message:");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);

@@ -68,8 +68,8 @@ public final class GrpcExporter {
 
     grpcSender.send(
         exportRequest.toBinaryMessageWriter(),
-        grpcResponse -> onResponse(result, metricRecording, grpcResponse),
-        throwable -> onError(result, metricRecording, throwable));
+        grpcResponse -> onResponse(result, metricRecording, grpcResponse, numItems),
+        throwable -> onError(result, metricRecording, numItems, throwable));
 
     return result;
   }
@@ -77,7 +77,8 @@ public final class GrpcExporter {
   private void onResponse(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
-      GrpcResponse grpcResponse) {
+      GrpcResponse grpcResponse,
+      int numItems) {
     GrpcStatusCode statusCode = grpcResponse.getStatusCode();
 
     metricRecording.setGrpcStatusCode(statusCode);
@@ -100,6 +101,8 @@ public final class GrpcExporter {
         logger.log(
             Level.SEVERE,
             "Failed to export "
+                + numItems
+                + " "
                 + type
                 + "s. Server is UNAVAILABLE. "
                 + "Make sure your collector is running and reachable from this network. "
@@ -110,6 +113,8 @@ public final class GrpcExporter {
         logger.log(
             Level.WARNING,
             "Failed to export "
+                + numItems
+                + " "
                 + type
                 + "s. Server responded with gRPC status code "
                 + statusCode.getValue()
@@ -123,12 +128,16 @@ public final class GrpcExporter {
   private void onError(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
+      int numItems,
       Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
-        Level.SEVERE, "Failed to export " + type + "s. The request could not be executed.", e);
+        Level.SEVERE,
+        "Failed to export " + numItems + " " + type + "s. The request could not be executed.",
+        e);
     if (logger.isLoggable(Level.FINEST)) {
-      logger.log(Level.FINEST, "Failed to export " + type + "s. Details follow:", e);
+      logger.log(
+          Level.FINEST, "Failed to export " + numItems + " " + type + "s. Details follow:", e);
     }
     result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
   }

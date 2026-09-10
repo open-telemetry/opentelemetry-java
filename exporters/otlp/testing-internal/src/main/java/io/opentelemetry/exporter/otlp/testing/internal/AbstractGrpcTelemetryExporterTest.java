@@ -826,7 +826,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
       LoggingEvent log =
           logs.assertContains(
-              "Failed to export "
+              "Failed to export 1 "
                   + type
                   + "s. Server responded with gRPC status code 13. Error message:");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
@@ -870,7 +870,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .isFalse();
       LoggingEvent log =
           logs.assertContains(
-              "Failed to export "
+              "Failed to export 1 "
                   + type
                   + "s. Server responded with gRPC status code 8. Error message: out of quota");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
@@ -891,7 +891,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .isFalse();
       LoggingEvent log =
           logs.assertContains(
-              "Failed to export "
+              "Failed to export 1 "
                   + type
                   + "s. Server responded with gRPC status code 5. Error message: クマ🐻");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
@@ -912,7 +912,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .isFalse();
       LoggingEvent log =
           logs.assertContains(
-              "Failed to export "
+              "Failed to export 1 "
                   + type
                   + "s. Server is UNAVAILABLE. "
                   + "Make sure your collector is running and reachable from this network.");
