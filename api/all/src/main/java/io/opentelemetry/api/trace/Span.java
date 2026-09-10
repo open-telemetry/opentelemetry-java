@@ -101,6 +101,10 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setAttribute(String key, @Nullable String value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(AttributeKey.stringKey(key), value);
   }
 
@@ -116,6 +120,10 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setAttribute(String key, long value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(AttributeKey.longKey(key), value);
   }
 
@@ -131,6 +139,10 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setAttribute(String key, double value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(AttributeKey.doubleKey(key), value);
   }
 
@@ -146,6 +158,10 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setAttribute(String key, boolean value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(AttributeKey.booleanKey(key), value);
   }
 
@@ -166,6 +182,14 @@ public interface Span extends ImplicitContextKeyed {
    * @since 1.63.0
    */
   default Span setAttribute(String key, Value<?> value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+      return this;
+    }
+    if (value == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "value");
+      return this;
+    }
     return setAttribute(AttributeKey.valueKey(key), value);
   }
 
@@ -190,6 +214,10 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setAttribute(AttributeKey<Long> key, int value) {
+    if (key == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAttribute", "key");
+      return this;
+    }
     return setAttribute(key, (long) value);
   }
 
@@ -203,7 +231,11 @@ public interface Span extends ImplicitContextKeyed {
    */
   @SuppressWarnings("unchecked")
   default Span setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setAllAttributes", "attributes");
+      return this;
+    }
+    if (attributes.isEmpty()) {
       return this;
     }
     attributes.forEach(
@@ -218,6 +250,10 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span addEvent(String name) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
+      return this;
+    }
     return addEvent(name, Attributes.empty());
   }
 
@@ -236,6 +272,14 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span addEvent(String name, long timestamp, TimeUnit unit) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
+      return this;
+    }
+    if (unit == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "unit");
+      return this;
+    }
     return addEvent(name, Attributes.empty(), timestamp, unit);
   }
 
@@ -253,7 +297,12 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span addEvent(String name, Instant timestamp) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
+      return this;
+    }
     if (timestamp == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "timestamp");
       return addEvent(name);
     }
     return addEvent(
@@ -305,7 +354,16 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span addEvent(String name, Attributes attributes, Instant timestamp) {
+    if (name == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "name");
+      return this;
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "attributes");
+      return this;
+    }
     if (timestamp == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addEvent", "timestamp");
       return addEvent(name, attributes);
     }
     return addEvent(
@@ -328,6 +386,10 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setStatus(StatusCode statusCode) {
+    if (statusCode == null) {
+      ApiUsageLogger.logNullParam(Span.class, "setStatus", "statusCode");
+      return this;
+    }
     return setStatus(statusCode, "");
   }
 
@@ -357,6 +419,10 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span recordException(Throwable exception) {
+    if (exception == null) {
+      ApiUsageLogger.logNullParam(Span.class, "recordException", "exception");
+      return this;
+    }
     return recordException(exception, Attributes.empty());
   }
 
@@ -400,6 +466,10 @@ public interface Span extends ImplicitContextKeyed {
    * @since 1.37.0
    */
   default Span addLink(SpanContext spanContext) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addLink", "spanContext");
+      return this;
+    }
     return addLink(spanContext, Attributes.empty());
   }
 
@@ -422,6 +492,14 @@ public interface Span extends ImplicitContextKeyed {
    * @since 1.37.0
    */
   default Span addLink(SpanContext spanContext, Attributes attributes) {
+    if (spanContext == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addLink", "spanContext");
+      return this;
+    }
+    if (attributes == null) {
+      ApiUsageLogger.logNullParam(Span.class, "addLink", "attributes");
+      return this;
+    }
     return this;
   }
 
@@ -462,6 +540,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   default void end(Instant timestamp) {
     if (timestamp == null) {
+      ApiUsageLogger.logNullParam(Span.class, "end", "timestamp");
       end();
       return;
     }
@@ -485,6 +564,10 @@ public interface Span extends ImplicitContextKeyed {
 
   @Override
   default Context storeInContext(Context context) {
+    if (context == null) {
+      ApiUsageLogger.logNullParam(Span.class, "storeInContext", "context");
+      return Context.root();
+    }
     return context.with(SpanContextKey.KEY, this);
   }
 }
