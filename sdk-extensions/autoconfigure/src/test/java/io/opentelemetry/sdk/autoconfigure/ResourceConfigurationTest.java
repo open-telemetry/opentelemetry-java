@@ -40,6 +40,9 @@ class ResourceConfigurationTest {
     props.put(
         "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
     props.put("otel.resource.disabled-keys", "drink");
+    props.put(
+        "otel.java.disabled.resource.providers",
+        "io.opentelemetry.sdk.autoconfigure.resources.ServiceInstanceIdResourceProvider");
 
     assertThat(
             ResourceConfiguration.configureResource(

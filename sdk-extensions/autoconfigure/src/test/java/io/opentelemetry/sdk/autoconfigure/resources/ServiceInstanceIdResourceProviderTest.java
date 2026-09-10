@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.internal;
+package io.opentelemetry.sdk.autoconfigure.resources;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,8 +38,7 @@ class ServiceInstanceIdResourceProviderTest {
     assertThat(provider.shouldApply(config, existing)).isTrue();
 
     Resource withId =
-        existing
-            .toBuilder()
+        existing.toBuilder()
             .put(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID, "custom")
             .build();
 
