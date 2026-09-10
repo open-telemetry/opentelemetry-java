@@ -30,22 +30,6 @@ class ServiceInstanceIdResourceProviderTest {
   }
 
   @Test
-  void shouldApply_returnsFalseWhenAlreadySet() {
-    ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
-    DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
-    Resource existing = Resource.empty();
-
-    assertThat(provider.shouldApply(config, existing)).isTrue();
-
-    Resource withId =
-        existing.toBuilder()
-            .put(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID, "custom")
-            .build();
-
-    assertThat(provider.shouldApply(config, withId)).isFalse();
-  }
-
-  @Test
   void order_returnsMaxValue() {
     ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
     assertThat(provider.order()).isEqualTo(Integer.MAX_VALUE);

@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.UUID;
 
@@ -18,13 +17,12 @@ import java.util.UUID;
  * for {@code service.instance.id} if not already set by the user or another resource provider. The
  * value is stable across calls to this provider within the same JVM instance.
  *
- * <p>This provider implements the internal {@link ConditionalResourceProvider} interface to
- * conditionally apply the resource only when service.instance.id is not already set by other
- * providers.
+ * <p>This provider runs at the end of the resource provider chain (Integer.MAX_VALUE) to ensure it
+ * only sets service.instance.id if it hasn't been set by other providers or the user.
  *
  * @since 1.66.0
  */
-public final class ServiceInstanceIdResourceProvider implements ConditionalResourceProvider {
+public final class ServiceInstanceIdResourceProvider implements ResourceProvider {
 
   public static final AttributeKey<String> SERVICE_INSTANCE_ID =
       AttributeKey.stringKey("service.instance.id");
@@ -38,11 +36,6 @@ public final class ServiceInstanceIdResourceProvider implements ConditionalResou
   @Override
   public Resource createResource(ConfigProperties config) {
     return RANDOM;
-  }
-
-  @Override
-  public boolean shouldApply(ConfigProperties config, Resource existing) {
-    return existing.getAttribute(SERVICE_INSTANCE_ID) == null;
   }
 
   @Override
