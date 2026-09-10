@@ -1,2 +1,10 @@
 Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-1.66.0-SNAPSHOT.jar against opentelemetry-sdk-extension-autoconfigure-1.64.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.autoconfigure.resources.ServiceInstanceIdResourceProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.Ordered
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.AttributeKey<java.lang.String> SERVICE_INSTANCE_ID
+	+++  NEW CONSTRUCTOR: PUBLIC(+) ServiceInstanceIdResourceProvider()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource createResource(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) int order()

@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,9 @@ class ResourceConfigurationTest {
     props.put(
         "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
     props.put("otel.resource.disabled-keys", "drink");
+    props.put(
+        "otel.java.disabled.resource.providers",
+        "io.opentelemetry.sdk.autoconfigure.resources.ServiceInstanceIdResourceProvider");
 
     assertThat(
             ResourceConfiguration.configureResource(
@@ -52,6 +56,91 @@ class ResourceConfigurationTest {
                 .put("food", "cheesecake")
                 .put("shape", "square")
                 .build());
+  }
+
+  @Test
+  void serviceInstanceIdAddedByDefault() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+
+    Resource result =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(props, componentLoader),
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    // Verify service.instance.id is added by default via ServiceInstanceIdResourceProvider
+    assertThat(result.getAttribute(stringKey("service.instance.id"))).isNotNull();
+  }
+
+  @Test
+  void explicitServiceInstanceIdIsPreserved() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+    props.put("otel.resource.attributes", "service.instance.id=my-custom-id-123");
+
+    Resource result =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(props, componentLoader),
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    // Verify explicit service.instance.id is preserved and not overwritten
+    assertThat(result.getAttribute(stringKey("service.instance.id"))).isEqualTo("my-custom-id-123");
+  }
+
+  @Test
+  void serviceInstanceIdIsValidUUID() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+
+    Resource result =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(props, componentLoader),
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    String serviceInstanceId = result.getAttribute(stringKey("service.instance.id"));
+    assertThat(serviceInstanceId).isNotNull();
+    // Verify it's a valid UUID format
+    assertThat(UUID.fromString(serviceInstanceId)).isNotNull();
+  }
+
+  @Test
+  void existingResourceAttributesPreserved() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+    props.put("otel.resource.attributes", "custom.key=custom.value");
+
+    Resource result =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(props, componentLoader),
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    // Verify existing attributes are preserved
+    assertThat(result.getAttribute(stringKey("service.name"))).isEqualTo("test-service");
+    assertThat(result.getAttribute(stringKey("custom.key"))).isEqualTo("custom.value");
+    // Verify service.instance.id is added
+    assertThat(result.getAttribute(stringKey("service.instance.id"))).isNotNull();
+  }
+
+  @Test
+  void serviceInstanceIdDisabledWhenProviderDisabled() {
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+    props.put(
+        "otel.java.disabled.resource.providers",
+        "io.opentelemetry.sdk.autoconfigure.resources.ServiceInstanceIdResourceProvider");
+
+    Resource result =
+        ResourceConfiguration.configureResource(
+            DefaultConfigProperties.create(props, componentLoader),
+            SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+            (r, c) -> r);
+
+    // Verify service.instance.id is NOT added when provider is disabled
+    assertThat(result.getAttribute(stringKey("service.instance.id"))).isNull();
   }
 
   @ParameterizedTest
