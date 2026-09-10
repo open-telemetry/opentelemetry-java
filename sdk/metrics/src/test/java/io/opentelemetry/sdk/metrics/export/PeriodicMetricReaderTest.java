@@ -470,6 +470,79 @@ class PeriodicMetricReaderTest {
     assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setExecutor(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("executor");
+    assertThatThrownBy(
+            () -> PeriodicMetricReader.builder(metricExporter).setShutdownTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(
+            () ->
+                PeriodicMetricReader.builder(metricExporter)
+                    .setShutdownTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be positive");
+    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setShutdownTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+  }
+
+  @Test
+  @Timeout(10)
+  @SuppressLogger(PeriodicMetricReader.class)
+  void shutdown_respectsConfiguredWaitTime() throws Exception {
+    CompletableResultCode neverCompletes = new CompletableResultCode();
+    CountDownLatch exportStarted = new CountDownLatch(1);
+
+    MetricExporter blockingExporter =
+        new MetricExporter() {
+          @Override
+          public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+            return AggregationTemporality.CUMULATIVE;
+          }
+
+          @Override
+          public CompletableResultCode export(Collection<MetricData> metrics) {
+            exportStarted.countDown();
+            return neverCompletes;
+          }
+
+          @Override
+          public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+          }
+
+          @Override
+          public CompletableResultCode shutdown() {
+            return CompletableResultCode.ofSuccess();
+          }
+        };
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(blockingExporter)
+            .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+            .setShutdownTimeout(Duration.ofMillis(100))
+            .build();
+    reader.register(collectionRegistration);
+
+    // Start an export that never completes so shutdown() has to wait on it.
+    reader.forceFlush();
+    assertThat(exportStarted.await(5, TimeUnit.SECONDS)).isTrue();
+
+    // shutdown() must give up after the configured 100ms per phase, well before the
+    // 5s-per-phase default would elapse.
+    CountDownLatch shutdownDone = new CountDownLatch(1);
+    Thread shutdownThread =
+        new Thread(
+            () -> {
+              reader.shutdown();
+              shutdownDone.countDown();
+            });
+    shutdownThread.setDaemon(true);
+    shutdownThread.start();
+
+    assertThat(shutdownDone.await(3, TimeUnit.SECONDS)).isTrue();
+
+    // Release the hanging export so the test thread does not leak a pending result.
+    neverCompletes.succeed();
   }
 
   @Test
