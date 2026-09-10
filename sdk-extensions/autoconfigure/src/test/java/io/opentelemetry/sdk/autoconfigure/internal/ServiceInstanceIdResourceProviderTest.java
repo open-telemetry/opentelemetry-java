@@ -37,9 +37,11 @@ class ServiceInstanceIdResourceProviderTest {
 
     assertThat(provider.shouldApply(config, existing)).isTrue();
 
-    Resource withId = existing.toBuilder()
-        .put(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID, "custom")
-        .build();
+    Resource withId =
+        existing
+            .toBuilder()
+            .put(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID, "custom")
+            .build();
 
     assertThat(provider.shouldApply(config, withId)).isFalse();
   }

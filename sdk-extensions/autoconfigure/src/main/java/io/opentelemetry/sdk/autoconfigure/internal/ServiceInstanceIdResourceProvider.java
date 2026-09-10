@@ -14,9 +14,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.UUID;
 
 /**
- * A {@link ResourceProvider} for {@code service.instance.id}. This provider generates a random
- * UUID for {@code service.instance.id} if not already set by the user or another resource provider.
- * The value is stable across calls to this provider within the same JVM instance.
+ * A {@link ResourceProvider} for {@code service.instance.id}. This provider generates a random UUID
+ * for {@code service.instance.id} if not already set by the user or another resource provider. The
+ * value is stable across calls to this provider within the same JVM instance.
  *
  * <p>This provider implements the internal {@link ConditionalResourceProvider} interface to
  * conditionally apply the resource only when service.instance.id is not already set by other
