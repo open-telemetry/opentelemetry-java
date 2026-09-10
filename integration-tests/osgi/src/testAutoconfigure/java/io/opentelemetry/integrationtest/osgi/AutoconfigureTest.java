@@ -63,8 +63,7 @@ public class AutoconfigureTest {
     resource =
         resource.merge(
             Resource.create(
-                Attributes.of(
-                    AttributeKey.stringKey("test.customizer"), "test-osgi-customizer")));
+                Attributes.of(AttributeKey.stringKey("test.customizer"), "test-osgi-customizer")));
     OpenTelemetrySdk expected =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
