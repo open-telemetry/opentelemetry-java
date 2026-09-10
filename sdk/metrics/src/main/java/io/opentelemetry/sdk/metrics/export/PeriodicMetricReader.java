@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +47,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   private final MetricExporter exporter;
   private final long intervalNanos;
+  private final long exporterTimeoutNanos;
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
   private final Object lock = new Object();
@@ -72,11 +74,13 @@ public final class PeriodicMetricReader implements MetricReader {
   PeriodicMetricReader(
       MetricExporter exporter,
       long intervalNanos,
+      long exporterTimeoutNanos,
       ScheduledExecutorService scheduler,
       int maxExportBatchSize,
       InternalTelemetryVersion internalTelemetryVersion) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
+    this.exporterTimeoutNanos = exporterTimeoutNanos;
     this.scheduler = scheduler;
     this.maxExportBatchSize = maxExportBatchSize;
     this.scheduled = new Scheduled();
@@ -253,6 +257,45 @@ public final class PeriodicMetricReader implements MetricReader {
       return sequentialResult;
     }
 
+    private CompletableResultCode applyTimeout(CompletableResultCode result) {
+      if (exporterTimeoutNanos == Long.MAX_VALUE) {
+        return result;
+      }
+
+      if (result.isDone()) {
+        return result;
+      }
+
+      try {
+        CompletableResultCode timeoutResult = new CompletableResultCode();
+
+        ScheduledFuture<?> timeoutFuture =
+            scheduler.schedule(
+                () -> {
+                  logger.log(
+                      Level.WARNING, "Export timed out after " + exporterTimeoutNanos + "ns");
+                  timeoutResult.fail();
+                },
+                exporterTimeoutNanos,
+                TimeUnit.NANOSECONDS);
+
+        result.whenComplete(
+            () -> {
+              timeoutFuture.cancel(false);
+              if (result.isSuccess()) {
+                timeoutResult.succeed();
+              } else {
+                timeoutResult.fail();
+              }
+            });
+
+        return timeoutResult;
+      } catch (RejectedExecutionException e) {
+        // Scheduler is shutting down, return original result without timeout enforcement
+        return result;
+      }
+    }
+
     void setMeterProvider(MeterProvider meterProvider) {
       instrumentation = new MetricReaderInstrumentation(COMPONENT_ID, meterProvider);
     }
@@ -287,13 +330,19 @@ public final class PeriodicMetricReader implements MetricReader {
             exportAvailable.set(true);
             flushResult.succeed();
           } else {
-            CompletableResultCode result = exportMetrics(metricData);
-            result.whenComplete(
+            CompletableResultCode rawResult = exportMetrics(metricData);
+            CompletableResultCode timeoutResult = applyTimeout(rawResult);
+            // Use raw result for backpressure to prevent concurrent exports
+            rawResult.whenComplete(
                 () -> {
-                  if (!result.isSuccess()) {
+                  exportAvailable.set(true);
+                });
+            // Use timeout result for reporting to caller
+            timeoutResult.whenComplete(
+                () -> {
+                  if (!timeoutResult.isSuccess()) {
                     logger.log(Level.WARNING, "Exporter failed");
                   }
-                  exportAvailable.set(true);
                   flushResult.succeed();
                 });
           }
