@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.test.junit5.context.BundleContextExtension;
@@ -37,21 +39,32 @@ public class AutoconfigureTest {
 
   @Test
   void autoConfiguredSdkInitializes() {
+    AtomicReference<Resource> autoConfiguredResource = new AtomicReference<>();
     AutoConfiguredOpenTelemetrySdk autoConfigured =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(AutoconfigureTest::config)
+            .addResourceCustomizer(
+                (resource, config) -> {
+                  autoConfiguredResource.set(resource);
+                  return resource;
+                })
             .build();
 
     // The component loader autoconfigure uses: autoconfigure bundle's classloader.
     ComponentLoader autoConfigureLoader =
         ComponentLoader.forClassLoader(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
 
-    Resource resource =
-        Resource.getDefault()
-            .merge(
-                Resource.create(
-                    Attributes.of(
-                        AttributeKey.stringKey("test.customizer"), "test-osgi-customizer")));
+    Resource resource = autoConfiguredResource.get();
+    assertThat(resource).isNotNull();
+    String serviceInstanceId = resource.getAttribute(AttributeKey.stringKey("service.instance.id"));
+    assertThat(serviceInstanceId).isNotNull().isNotEmpty();
+    assertThat(UUID.fromString(serviceInstanceId)).isNotNull();
+
+    resource =
+        resource.merge(
+            Resource.create(
+                Attributes.of(
+                    AttributeKey.stringKey("test.customizer"), "test-osgi-customizer")));
     OpenTelemetrySdk expected =
         OpenTelemetrySdk.builder()
             .setTracerProvider(

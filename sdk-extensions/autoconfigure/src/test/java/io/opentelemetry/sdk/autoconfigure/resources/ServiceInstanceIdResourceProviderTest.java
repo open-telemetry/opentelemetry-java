@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ServiceInstanceIdResourceProviderTest {
@@ -27,6 +28,20 @@ class ServiceInstanceIdResourceProviderTest {
         .isNotNull();
     assertThat(resource2.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID))
         .isEqualTo(resource1.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID));
+  }
+
+  @Test
+  void createResource_generatesValidUUID() {
+    ServiceInstanceIdResourceProvider provider = new ServiceInstanceIdResourceProvider();
+    DefaultConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
+
+    Resource resource = provider.createResource(config);
+
+    String serviceInstanceId =
+        resource.getAttribute(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID);
+    assertThat(serviceInstanceId).isNotNull();
+    // Verify it's a valid UUID format
+    assertThat(UUID.fromString(serviceInstanceId)).isNotNull();
   }
 
   @Test
