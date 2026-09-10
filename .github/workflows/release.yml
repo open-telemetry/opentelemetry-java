@@ -208,7 +208,21 @@ jobs:
           PRIOR_VERSION: ${{ needs.release.outputs.prior-version }}
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
         run: |
-          ./gradlew japicmp -PapiBaseVersion=$PRIOR_VERSION -PapiNewVersion=$VERSION
+          # Retry to tolerate Maven Central per-artifact indexing lag: the earlier
+          # wait step only polls opentelemetry-api, but this task resolves every
+          # published module at $VERSION and will fail if any sibling artifact has
+          # not yet propagated.
+          for attempt in 1 2 3 4 5; do
+            if ./gradlew japicmp --refresh-dependencies -PapiBaseVersion=$PRIOR_VERSION -PapiNewVersion=$VERSION; then
+              break
+            fi
+            if [ $attempt -eq 5 ]; then
+              echo "japicmp failed after 5 attempts"
+              exit 1
+            fi
+            echo "japicmp attempt $attempt failed, retrying in 60s"
+            sleep 60
+          done
           # Pin the apidiff baseline to the just-released version.
           sed -i "s/^val apidiffBaselineVersion = .*/val apidiffBaselineVersion = \"$VERSION\"/" version.gradle.kts
           ./gradlew --refresh-dependencies japicmp
