@@ -86,9 +86,6 @@ tasks {
         disable("AddNullMarkedToPackageInfo")
         disable("AddNullMarkedToClass")
 
-        // This check causes too many changes to be introduced at once to be manageable.
-        disable("SuppressWarningsWithoutExplanation")
-
         if ((name.contains("Jmh") || name.contains("Test") || project.name.contains("testing-internal")) && !project.name.equals("custom-checks")) {
           // Allow underscore in test-type method names
           disable("MemberName")

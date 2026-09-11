@@ -9,6 +9,7 @@ plugins {
 
 description = "OpenTelemetry SDK Metrics"
 otelJava.moduleName.set("io.opentelemetry.sdk.metrics")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.api.incubator"))
 
 dependencies {

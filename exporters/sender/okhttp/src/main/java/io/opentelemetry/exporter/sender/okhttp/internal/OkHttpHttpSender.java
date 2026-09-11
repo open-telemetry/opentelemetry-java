@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +44,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.TlsVersion;
 import okio.Buffer;
 import okio.BufferedSink;
 import okio.GzipSource;
@@ -81,7 +83,8 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
-      long maxResponseBodySize) {
+      long maxResponseBodySize,
+      @Nullable List<String> enabledProtocols) {
     int callTimeoutMillis = (int) Math.min(timeout.toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis = (int) Math.min(connectTimeout.toMillis(), Integer.MAX_VALUE);
 
@@ -105,23 +108,35 @@ public final class OkHttpHttpSender implements HttpSender {
     }
 
     if (retryPolicy != null) {
-      builder.addInterceptor(new RetryInterceptor(retryPolicy, OkHttpHttpSender::isRetryable));
+      builder.addInterceptor(
+          new RetryInterceptor(
+              retryPolicy, OkHttpHttpSender::isRetryable, OkHttpHttpSender::retryDelayNanos));
     }
 
     boolean isPlainHttp = endpoint.getScheme().equals("http");
     if (isPlainHttp) {
       builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
-    } else if (sslContext != null) {
-      X509TrustManager effectiveTrustManager = trustManager;
-
-      if (effectiveTrustManager == null) {
-        try {
-          effectiveTrustManager = TlsUtil.defaultTrustManager();
-        } catch (SSLException e) {
-          throw new IllegalStateException("Unable to initialize default trust manager", e);
+    } else {
+      if (sslContext != null) {
+        X509TrustManager effectiveTrustManager = trustManager;
+        if (effectiveTrustManager == null) {
+          try {
+            effectiveTrustManager = TlsUtil.defaultTrustManager();
+          } catch (SSLException e) {
+            throw new IllegalStateException("Unable to initialize default trust manager", e);
+          }
         }
+        builder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
       }
-      builder.sslSocketFactory(sslContext.getSocketFactory(), effectiveTrustManager);
+      if (enabledProtocols != null && !enabledProtocols.isEmpty()) {
+        TlsVersion[] versions =
+            enabledProtocols.stream().map(TlsVersion::forJavaName).toArray(TlsVersion[]::new);
+        builder.connectionSpecs(
+            Collections.singletonList(
+                new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+                    .tlsVersions(versions)
+                    .build()));
+      }
     }
 
     this.client = builder.build();
@@ -130,6 +145,10 @@ public final class OkHttpHttpSender implements HttpSender {
     this.compressor = compressor;
     this.headerSupplier = headerSupplier;
     this.maxResponseBodySize = maxResponseBodySize;
+  }
+
+  private static OptionalLong retryDelayNanos(Response response) {
+    return RetryUtil.retryAfterNanos(response.header("Retry-After"));
   }
 
   @Override

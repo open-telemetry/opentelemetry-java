@@ -4,6 +4,7 @@ plugins {
 
 description = "Performance Testing Harness"
 otelJava.moduleName.set("io.opentelemetry.perf-harness")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiEnabled.set(false)
 
 dependencies {

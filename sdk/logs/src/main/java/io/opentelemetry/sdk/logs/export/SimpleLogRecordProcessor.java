@@ -85,11 +85,19 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
 
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
+    if (isShutdown.get()) {
+      logProcessorInstrumentation.dropLogsAlreadyShutdown(1);
+      return;
+    }
+
     try {
       List<LogRecordData> logs = Collections.singletonList(logRecord.toLogRecordData());
       CompletableResultCode result;
 
       synchronized (exporterLock) {
+        // We always increment for every export invocation, so we increment before the export call
+        // to make sure thrown errors don't affect it.
+        logProcessorInstrumentation.finishLogs(1);
         result = logRecordExporter.export(logs);
       }
 
@@ -97,16 +105,9 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
       result.whenComplete(
           () -> {
             pendingExports.remove(result);
-            String error = null;
             if (!result.isSuccess()) {
               logger.log(Level.FINE, "Exporter failed");
-              if (result.getFailureThrowable() != null) {
-                error = result.getFailureThrowable().getClass().getName();
-              } else {
-                error = "export_failed";
-              }
             }
-            logProcessorInstrumentation.finishLogs(1, error);
           });
     } catch (RuntimeException e) {
       logger.log(Level.WARNING, "Exporter threw an Exception", e);

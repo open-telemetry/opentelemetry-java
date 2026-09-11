@@ -23,7 +23,7 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
 
   SdkDoubleUpDownCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
@@ -40,7 +40,7 @@ class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownC
 
   @Override
   public void add(double increment, Attributes attributes) {
-    add(increment, attributes, Context.current());
+    add(increment, attributes, currentOrRootContext());
   }
 
   @Override

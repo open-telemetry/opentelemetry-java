@@ -443,6 +443,26 @@ class JaegerPropagatorTest {
         .isEqualTo(Baggage.empty());
   }
 
+  @ParameterizedTest
+  @MethodSource
+  void extract_baggageOnly_withHeader_invalid_keepsExistingBaggage(String headerValue) {
+    Baggage existingBaggage = Baggage.builder().put("user", "alice").build();
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, headerValue);
+
+    Context context = Context.root().with(existingBaggage);
+    assertThat(fromContext(jaegerPropagator.extract(context, carrier, getter)))
+        .isEqualTo(existingBaggage);
+  }
+
+  static Stream<Arguments> extract_baggageOnly_withHeader_invalid_keepsExistingBaggage() {
+    return Stream.of(
+        Arguments.argumentSet("no separator", "nometa+novalue"),
+        Arguments.argumentSet("empty value", "user="),
+        Arguments.argumentSet("empty header", ""),
+        Arguments.argumentSet("too many separators", "a=b=c"));
+  }
+
   @Test
   void extract_baggageOnly_withHeader_andPrefix() {
     Map<String, String> carrier = new LinkedHashMap<>();
@@ -529,12 +549,44 @@ class JaegerPropagatorTest {
     headerCarrier.put(BAGGAGE_HEADER, jaegerHeader.toString());
     Map<String, String> bigValueCarrier = new LinkedHashMap<>();
     bigValueCarrier.put(BAGGAGE_PREFIX + "k", fillChars('v', 8192));
+    // 64 malformed tokens exhaust the per-header parse budget, so the trailing valid entry is not
+    // extracted. With 63, the budget still has room for it.
+    Map<String, String> malformedCarrier = new LinkedHashMap<>();
+    malformedCarrier.put(BAGGAGE_HEADER, malformedTokens(64) + "k0=v0");
+    Map<String, String> malformedUnderLimitCarrier = new LinkedHashMap<>();
+    malformedUnderLimitCarrier.put(BAGGAGE_HEADER, malformedTokens(63) + "k0=v0");
+    // Malformed tokens consume the per-header token budget, not the remaining entry budget, so the
+    // trailing valid entry still fills the last of the 64 entry slots.
+    Map<String, String> prefixThenMalformedCarrier = new LinkedHashMap<>();
+    for (int i = 0; i < 63; i++) {
+      prefixThenMalformedCarrier.put(BAGGAGE_PREFIX + "k" + i, "v" + i);
+    }
+    prefixThenMalformedCarrier.put(BAGGAGE_HEADER, malformedTokens(1) + "k63=v63");
     return Stream.of(
         Arguments.argumentSet(
             "65 prefix keys truncated to 64", prefixCarrier, baggageWithEntries(0, 64)),
         Arguments.argumentSet(
             "65 header entries truncated to 64", headerCarrier, baggageWithEntries(0, 64)),
-        Arguments.argumentSet("large value exceeds byte limit", bigValueCarrier, Baggage.empty()));
+        Arguments.argumentSet("large value exceeds byte limit", bigValueCarrier, Baggage.empty()),
+        Arguments.argumentSet(
+            "64 malformed tokens exhaust the token budget", malformedCarrier, Baggage.empty()),
+        Arguments.argumentSet(
+            "63 malformed tokens leave room for one entry",
+            malformedUnderLimitCarrier,
+            baggageWithEntries(0, 1)),
+        Arguments.argumentSet(
+            "malformed token does not consume the remaining entry budget",
+            prefixThenMalformedCarrier,
+            baggageWithEntries(0, 64)));
+  }
+
+  /** Returns {@code count} malformed (no {@code =}) comma-terminated baggage tokens. */
+  private static String malformedTokens(int count) {
+    StringBuilder header = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      header.append("malformed").append(i).append(",");
+    }
+    return header.toString();
   }
 
   /**

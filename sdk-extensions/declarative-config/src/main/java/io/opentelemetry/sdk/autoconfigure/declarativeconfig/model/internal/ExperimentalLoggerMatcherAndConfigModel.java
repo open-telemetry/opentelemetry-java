@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"name", "config"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalLoggerMatcherAndConfigModel {
 
   @Nullable private String name;
@@ -36,7 +36,7 @@ public class ExperimentalLoggerMatcherAndConfigModel {
   }
 
   @JsonProperty("name")
-  public ExperimentalLoggerMatcherAndConfigModel withName(String name) {
+  public ExperimentalLoggerMatcherAndConfigModel setName(String name) {
     this.name = name;
     return this;
   }
@@ -53,7 +53,7 @@ public class ExperimentalLoggerMatcherAndConfigModel {
   }
 
   @JsonProperty("config")
-  public ExperimentalLoggerMatcherAndConfigModel withConfig(ExperimentalLoggerConfigModel config) {
+  public ExperimentalLoggerMatcherAndConfigModel setConfig(ExperimentalLoggerConfigModel config) {
     this.config = config;
     return this;
   }

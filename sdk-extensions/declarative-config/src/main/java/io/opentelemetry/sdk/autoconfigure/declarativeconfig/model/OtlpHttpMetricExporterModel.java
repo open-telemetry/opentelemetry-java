@@ -5,12 +5,25 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.COMPRESSION;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.DEFAULT_HISTOGRAM_AGGREGATION;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.ENCODING;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.ENDPOINT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.HEADERS;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.HEADERS_LIST;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.TEMPORALITY_PREFERENCE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.TIMEOUT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpMetricExporterModel.TLS;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
@@ -18,18 +31,45 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-  "endpoint",
-  "tls",
-  "headers",
-  "headers_list",
-  "compression",
-  "timeout",
-  "encoding",
-  "temporality_preference",
-  "default_histogram_aggregation"
+  ENDPOINT,
+  TLS,
+  HEADERS,
+  HEADERS_LIST,
+  COMPRESSION,
+  TIMEOUT,
+  ENCODING,
+  TEMPORALITY_PREFERENCE,
+  DEFAULT_HISTOGRAM_AGGREGATION
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class OtlpHttpMetricExporterModel {
+
+  static final String ENDPOINT = "endpoint";
+  static final String TLS = "tls";
+  static final String HEADERS = "headers";
+  static final String HEADERS_LIST = "headers_list";
+  static final String COMPRESSION = "compression";
+  static final String TIMEOUT = "timeout";
+  static final String ENCODING = "encoding";
+  static final String TEMPORALITY_PREFERENCE = "temporality_preference";
+  static final String DEFAULT_HISTOGRAM_AGGREGATION = "default_histogram_aggregation";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(ENDPOINT, String.class);
+    STABLE_PROPERTIES.put(TLS, HttpTlsModel.class);
+    STABLE_PROPERTIES.put(HEADERS_LIST, String.class);
+    STABLE_PROPERTIES.put(COMPRESSION, String.class);
+    STABLE_PROPERTIES.put(TIMEOUT, Integer.class);
+    STABLE_PROPERTIES.put(ENCODING, OtlpHttpEncodingModel.class);
+    STABLE_PROPERTIES.put(TEMPORALITY_PREFERENCE, ExporterTemporalityPreferenceModel.class);
+    STABLE_PROPERTIES.put(
+        DEFAULT_HISTOGRAM_AGGREGATION, ExporterDefaultHistogramAggregationModel.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
   @Nullable private String endpoint;
   @Nullable private HttpTlsModel tls;
@@ -37,26 +77,27 @@ public class OtlpHttpMetricExporterModel {
   @Nullable private String headersList;
   @Nullable private String compression;
   @Nullable private Integer timeout;
-  @Nullable private OtlpHttpExporterModel.OtlpHttpEncoding encoding;
-  @Nullable private OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference;
-
-  @Nullable
-  private OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
-      defaultHistogramAggregation;
+  @Nullable private OtlpHttpEncodingModel encoding;
+  @Nullable private ExporterTemporalityPreferenceModel temporalityPreference;
+  @Nullable private ExporterDefaultHistogramAggregationModel defaultHistogramAggregation;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure endpoint.
    *
    * <p>If omitted or null, http://localhost:4318/v1/metrics is used.
    */
-  @JsonProperty("endpoint")
+  @JsonProperty(ENDPOINT)
   @Nullable
   public String getEndpoint() {
+    if (endpoint == null) {
+      return ExtensionPropertyUtil.getGraduated(ENDPOINT, extensionProperties, String.class);
+    }
     return endpoint;
   }
 
-  @JsonProperty("endpoint")
-  public OtlpHttpMetricExporterModel withEndpoint(String endpoint) {
+  @JsonProperty(ENDPOINT)
+  public OtlpHttpMetricExporterModel setEndpoint(String endpoint) {
     this.endpoint = endpoint;
     return this;
   }
@@ -66,14 +107,17 @@ public class OtlpHttpMetricExporterModel {
    *
    * <p>If omitted, system default TLS settings are used.
    */
-  @JsonProperty("tls")
+  @JsonProperty(TLS)
   @Nullable
   public HttpTlsModel getTls() {
+    if (tls == null) {
+      return ExtensionPropertyUtil.getGraduated(TLS, extensionProperties, HttpTlsModel.class);
+    }
     return tls;
   }
 
-  @JsonProperty("tls")
-  public OtlpHttpMetricExporterModel withTls(HttpTlsModel tls) {
+  @JsonProperty(TLS)
+  public OtlpHttpMetricExporterModel setTls(HttpTlsModel tls) {
     this.tls = tls;
     return this;
   }
@@ -85,14 +129,14 @@ public class OtlpHttpMetricExporterModel {
    *
    * <p>If omitted, no headers are added.
    */
-  @JsonProperty("headers")
+  @JsonProperty(HEADERS)
   @Nullable
   public List<NameStringValuePairModel> getHeaders() {
     return headers;
   }
 
-  @JsonProperty("headers")
-  public OtlpHttpMetricExporterModel withHeaders(List<NameStringValuePairModel> headers) {
+  @JsonProperty(HEADERS)
+  public OtlpHttpMetricExporterModel setHeaders(List<NameStringValuePairModel> headers) {
     this.headers = headers;
     return this;
   }
@@ -107,14 +151,17 @@ public class OtlpHttpMetricExporterModel {
    *
    * <p>If omitted or null, no headers are added.
    */
-  @JsonProperty("headers_list")
+  @JsonProperty(HEADERS_LIST)
   @Nullable
   public String getHeadersList() {
+    if (headersList == null) {
+      return ExtensionPropertyUtil.getGraduated(HEADERS_LIST, extensionProperties, String.class);
+    }
     return headersList;
   }
 
-  @JsonProperty("headers_list")
-  public OtlpHttpMetricExporterModel withHeadersList(String headersList) {
+  @JsonProperty(HEADERS_LIST)
+  public OtlpHttpMetricExporterModel setHeadersList(String headersList) {
     this.headersList = headersList;
     return this;
   }
@@ -126,14 +173,17 @@ public class OtlpHttpMetricExporterModel {
    *
    * <p>If omitted or null, none is used.
    */
-  @JsonProperty("compression")
+  @JsonProperty(COMPRESSION)
   @Nullable
   public String getCompression() {
+    if (compression == null) {
+      return ExtensionPropertyUtil.getGraduated(COMPRESSION, extensionProperties, String.class);
+    }
     return compression;
   }
 
-  @JsonProperty("compression")
-  public OtlpHttpMetricExporterModel withCompression(String compression) {
+  @JsonProperty(COMPRESSION)
+  public OtlpHttpMetricExporterModel setCompression(String compression) {
     this.compression = compression;
     return this;
   }
@@ -145,14 +195,17 @@ public class OtlpHttpMetricExporterModel {
    *
    * <p>If omitted or null, 10000 is used.
    */
-  @JsonProperty("timeout")
+  @JsonProperty(TIMEOUT)
   @Nullable
   public Integer getTimeout() {
+    if (timeout == null) {
+      return ExtensionPropertyUtil.getGraduated(TIMEOUT, extensionProperties, Integer.class);
+    }
     return timeout;
   }
 
-  @JsonProperty("timeout")
-  public OtlpHttpMetricExporterModel withTimeout(Integer timeout) {
+  @JsonProperty(TIMEOUT)
+  public OtlpHttpMetricExporterModel setTimeout(Integer timeout) {
     this.timeout = timeout;
     return this;
   }
@@ -170,14 +223,18 @@ public class OtlpHttpMetricExporterModel {
    *
    * <p>If omitted, protobuf is used.
    */
-  @JsonProperty("encoding")
+  @JsonProperty(ENCODING)
   @Nullable
-  public OtlpHttpExporterModel.OtlpHttpEncoding getEncoding() {
+  public OtlpHttpEncodingModel getEncoding() {
+    if (encoding == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ENCODING, extensionProperties, OtlpHttpEncodingModel.class);
+    }
     return encoding;
   }
 
-  @JsonProperty("encoding")
-  public OtlpHttpMetricExporterModel withEncoding(OtlpHttpExporterModel.OtlpHttpEncoding encoding) {
+  @JsonProperty(ENCODING)
+  public OtlpHttpMetricExporterModel setEncoding(OtlpHttpEncodingModel encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -197,15 +254,19 @@ public class OtlpHttpMetricExporterModel {
    *
    * <p>If omitted, cumulative is used.
    */
-  @JsonProperty("temporality_preference")
+  @JsonProperty(TEMPORALITY_PREFERENCE)
   @Nullable
-  public OtlpHttpMetricExporterModel.ExporterTemporalityPreference getTemporalityPreference() {
+  public ExporterTemporalityPreferenceModel getTemporalityPreference() {
+    if (temporalityPreference == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          TEMPORALITY_PREFERENCE, extensionProperties, ExporterTemporalityPreferenceModel.class);
+    }
     return temporalityPreference;
   }
 
-  @JsonProperty("temporality_preference")
-  public OtlpHttpMetricExporterModel withTemporalityPreference(
-      OtlpHttpMetricExporterModel.ExporterTemporalityPreference temporalityPreference) {
+  @JsonProperty(TEMPORALITY_PREFERENCE)
+  public OtlpHttpMetricExporterModel setTemporalityPreference(
+      ExporterTemporalityPreferenceModel temporalityPreference) {
     this.temporalityPreference = temporalityPreference;
     return this;
   }
@@ -223,17 +284,39 @@ public class OtlpHttpMetricExporterModel {
    *
    * <p>If omitted, explicit_bucket_histogram is used.
    */
-  @JsonProperty("default_histogram_aggregation")
+  @JsonProperty(DEFAULT_HISTOGRAM_AGGREGATION)
   @Nullable
-  public OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
-      getDefaultHistogramAggregation() {
+  public ExporterDefaultHistogramAggregationModel getDefaultHistogramAggregation() {
+    if (defaultHistogramAggregation == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          DEFAULT_HISTOGRAM_AGGREGATION,
+          extensionProperties,
+          ExporterDefaultHistogramAggregationModel.class);
+    }
     return defaultHistogramAggregation;
   }
 
-  @JsonProperty("default_histogram_aggregation")
-  public OtlpHttpMetricExporterModel withDefaultHistogramAggregation(
-      OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation defaultHistogramAggregation) {
+  @JsonProperty(DEFAULT_HISTOGRAM_AGGREGATION)
+  public OtlpHttpMetricExporterModel setDefaultHistogramAggregation(
+      ExporterDefaultHistogramAggregationModel defaultHistogramAggregation) {
     this.defaultHistogramAggregation = defaultHistogramAggregation;
+    return this;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
+  }
+
+  @JsonAnySetter
+  public OtlpHttpMetricExporterModel setExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -258,6 +341,8 @@ public class OtlpHttpMetricExporterModel {
         + temporalityPreference
         + ", defaultHistogramAggregation="
         + defaultHistogramAggregation
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -265,26 +350,28 @@ public class OtlpHttpMetricExporterModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.endpoint == null) ? 0 : this.endpoint.hashCode();
+    h ^= (this.getEndpoint() == null) ? 0 : this.getEndpoint().hashCode();
     h *= 1000003;
-    h ^= (this.tls == null) ? 0 : this.tls.hashCode();
+    h ^= (this.getTls() == null) ? 0 : this.getTls().hashCode();
     h *= 1000003;
     h ^= (this.headers == null) ? 0 : this.headers.hashCode();
     h *= 1000003;
-    h ^= (this.headersList == null) ? 0 : this.headersList.hashCode();
+    h ^= (this.getHeadersList() == null) ? 0 : this.getHeadersList().hashCode();
     h *= 1000003;
-    h ^= (this.compression == null) ? 0 : this.compression.hashCode();
+    h ^= (this.getCompression() == null) ? 0 : this.getCompression().hashCode();
     h *= 1000003;
-    h ^= (this.timeout == null) ? 0 : this.timeout.hashCode();
+    h ^= (this.getTimeout() == null) ? 0 : this.getTimeout().hashCode();
     h *= 1000003;
-    h ^= (this.encoding == null) ? 0 : this.encoding.hashCode();
+    h ^= (this.getEncoding() == null) ? 0 : this.getEncoding().hashCode();
     h *= 1000003;
-    h ^= (this.temporalityPreference == null) ? 0 : this.temporalityPreference.hashCode();
+    h ^= (this.getTemporalityPreference() == null) ? 0 : this.getTemporalityPreference().hashCode();
     h *= 1000003;
     h ^=
-        (this.defaultHistogramAggregation == null)
+        (this.getDefaultHistogramAggregation() == null)
             ? 0
-            : this.defaultHistogramAggregation.hashCode();
+            : this.getDefaultHistogramAggregation().hashCode();
+    h *= 1000003;
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -295,109 +382,33 @@ public class OtlpHttpMetricExporterModel {
     }
     if (o instanceof OtlpHttpMetricExporterModel) {
       OtlpHttpMetricExporterModel that = (OtlpHttpMetricExporterModel) o;
-      return (this.endpoint == null ? that.endpoint == null : this.endpoint.equals(that.endpoint))
-          && (this.tls == null ? that.tls == null : this.tls.equals(that.tls))
+      return (this.getEndpoint() == null
+              ? that.getEndpoint() == null
+              : this.getEndpoint().equals(that.getEndpoint()))
+          && (this.getTls() == null ? that.getTls() == null : this.getTls().equals(that.getTls()))
           && (this.headers == null ? that.headers == null : this.headers.equals(that.headers))
-          && (this.headersList == null
-              ? that.headersList == null
-              : this.headersList.equals(that.headersList))
-          && (this.compression == null
-              ? that.compression == null
-              : this.compression.equals(that.compression))
-          && (this.timeout == null ? that.timeout == null : this.timeout.equals(that.timeout))
-          && (this.encoding == null ? that.encoding == null : this.encoding.equals(that.encoding))
-          && (this.temporalityPreference == null
-              ? that.temporalityPreference == null
-              : this.temporalityPreference.equals(that.temporalityPreference))
-          && (this.defaultHistogramAggregation == null
-              ? that.defaultHistogramAggregation == null
-              : this.defaultHistogramAggregation.equals(that.defaultHistogramAggregation));
+          && (this.getHeadersList() == null
+              ? that.getHeadersList() == null
+              : this.getHeadersList().equals(that.getHeadersList()))
+          && (this.getCompression() == null
+              ? that.getCompression() == null
+              : this.getCompression().equals(that.getCompression()))
+          && (this.getTimeout() == null
+              ? that.getTimeout() == null
+              : this.getTimeout().equals(that.getTimeout()))
+          && (this.getEncoding() == null
+              ? that.getEncoding() == null
+              : this.getEncoding().equals(that.getEncoding()))
+          && (this.getTemporalityPreference() == null
+              ? that.getTemporalityPreference() == null
+              : this.getTemporalityPreference().equals(that.getTemporalityPreference()))
+          && (this.getDefaultHistogramAggregation() == null
+              ? that.getDefaultHistogramAggregation() == null
+              : this.getDefaultHistogramAggregation().equals(that.getDefaultHistogramAggregation()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum ExporterDefaultHistogramAggregation {
-    EXPLICIT_BUCKET_HISTOGRAM("explicit_bucket_histogram"),
-    BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM("base2_exponential_bucket_histogram");
-    private final String value;
-    private static final Map<
-            String, OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation>
-        CONSTANTS =
-            new HashMap<String, OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation>();
-
-    static {
-      for (OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    ExporterDefaultHistogramAggregation(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation fromValue(
-        String value) {
-      OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation constant =
-          CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum ExporterTemporalityPreference {
-    CUMULATIVE("cumulative"),
-    DELTA("delta"),
-    LOW_MEMORY("low_memory");
-    private final String value;
-    private static final Map<String, OtlpHttpMetricExporterModel.ExporterTemporalityPreference>
-        CONSTANTS =
-            new HashMap<String, OtlpHttpMetricExporterModel.ExporterTemporalityPreference>();
-
-    static {
-      for (OtlpHttpMetricExporterModel.ExporterTemporalityPreference c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    ExporterTemporalityPreference(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static OtlpHttpMetricExporterModel.ExporterTemporalityPreference fromValue(
-        String value) {
-      OtlpHttpMetricExporterModel.ExporterTemporalityPreference constant = CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
   }
 }

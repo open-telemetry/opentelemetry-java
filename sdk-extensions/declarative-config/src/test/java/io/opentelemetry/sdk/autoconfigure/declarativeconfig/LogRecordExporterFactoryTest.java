@@ -22,17 +22,18 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ConsoleExporte
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.GrpcTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.HttpTlsModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.NameStringValuePairModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LogRecordExporterModelAccessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -94,27 +95,25 @@ class LogRecordExporterFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "otlp_http default",
-            new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
+            new LogRecordExporterModel().setOtlpHttp(new OtlpHttpExporterModel()),
             OtlpHttpLogRecordExporter.getDefault().toBuilder().setComponentLoader(context).build()),
         Arguments.argumentSet(
             "otlp_http with options",
             new LogRecordExporterModel()
-                .withOtlpHttp(
+                .setOtlpHttp(
                     new OtlpHttpExporterModel()
-                        .withEndpoint("http://example:4318/v1/logs")
-                        .withHeaders(
+                        .setEndpoint("http://example:4318/v1/logs")
+                        .setHeaders(
                             Arrays.asList(
-                                new NameStringValuePairModel().withName("key1").withValue("value1"),
-                                new NameStringValuePairModel()
-                                    .withName("key2")
-                                    .withValue("value2")))
-                        .withCompression("gzip")
-                        .withTimeout(15_000)
-                        .withTls(
+                                new NameStringValuePairModel().setName("key1").setValue("value1"),
+                                new NameStringValuePairModel().setName("key2").setValue("value2")))
+                        .setCompression("gzip")
+                        .setTimeout(15_000)
+                        .setTls(
                             new HttpTlsModel()
-                                .withCaFile(certificatePath)
-                                .withKeyFile(clientKeyPath)
-                                .withCertFile(clientCertificatePath))),
+                                .setCaFile(certificatePath)
+                                .setKeyFile(clientKeyPath)
+                                .setCertFile(clientCertificatePath))),
             OtlpHttpLogRecordExporter.builder()
                 .setEndpoint("http://example:4318/v1/logs")
                 .addHeader("key1", "value1")
@@ -125,27 +124,25 @@ class LogRecordExporterFactoryTest {
                 .build()),
         Arguments.argumentSet(
             "otlp_grpc default",
-            new LogRecordExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()),
+            new LogRecordExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()),
             OtlpGrpcLogRecordExporter.getDefault().toBuilder().setComponentLoader(context).build()),
         Arguments.argumentSet(
             "otlp_grpc with options",
             new LogRecordExporterModel()
-                .withOtlpGrpc(
+                .setOtlpGrpc(
                     new OtlpGrpcExporterModel()
-                        .withEndpoint("http://example:4317")
-                        .withHeaders(
+                        .setEndpoint("http://example:4317")
+                        .setHeaders(
                             Arrays.asList(
-                                new NameStringValuePairModel().withName("key1").withValue("value1"),
-                                new NameStringValuePairModel()
-                                    .withName("key2")
-                                    .withValue("value2")))
-                        .withCompression("gzip")
-                        .withTimeout(15_000)
-                        .withTls(
+                                new NameStringValuePairModel().setName("key1").setValue("value1"),
+                                new NameStringValuePairModel().setName("key2").setValue("value2")))
+                        .setCompression("gzip")
+                        .setTimeout(15_000)
+                        .setTls(
                             new GrpcTlsModel()
-                                .withCaFile(certificatePath)
-                                .withKeyFile(clientKeyPath)
-                                .withCertFile(clientCertificatePath))),
+                                .setCaFile(certificatePath)
+                                .setKeyFile(clientKeyPath)
+                                .setCertFile(clientCertificatePath))),
             OtlpGrpcLogRecordExporter.builder()
                 .setEndpoint("http://example:4317")
                 .addHeader("key1", "value1")
@@ -156,8 +153,8 @@ class LogRecordExporterFactoryTest {
                 .build()),
         Arguments.argumentSet(
             "otlp_file/development",
-            new LogRecordExporterModel()
-                .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
+            LogRecordExporterModelAccessor.setOtlpFile(
+                new LogRecordExporterModel(), new ExperimentalOtlpFileExporterModel()),
             OtlpStdoutLogRecordExporter.builder().build()));
   }
 
@@ -174,9 +171,7 @@ class LogRecordExporterFactoryTest {
         Arguments.argumentSet(
             "unknown component provider",
             new LogRecordExporterModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new LogRecordExporterPropertyModel().withAdditionalProperty("key1", "value1")),
+                .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"unknown_key\"."));
   }
 
@@ -186,10 +181,7 @@ class LogRecordExporterFactoryTest {
         LogRecordExporterFactory.getInstance()
             .create(
                 new LogRecordExporterModel()
-                    .withAdditionalProperty(
-                        "test",
-                        new LogRecordExporterPropertyModel()
-                            .withAdditionalProperty("key1", "value1")),
+                    .setExtensionProperty("test", Collections.singletonMap("key1", "value1")),
                 context);
     assertThat(logRecordExporter)
         .isInstanceOf(LogRecordExporterComponentProvider.TestLogRecordExporter.class);
@@ -209,7 +201,7 @@ class LogRecordExporterFactoryTest {
 
     LogRecordExporter result =
         LogRecordExporterFactory.getInstance()
-            .create(new LogRecordExporterModel().withConsole(new ConsoleExporterModel()), context);
+            .create(new LogRecordExporterModel().setConsole(new ConsoleExporterModel()), context);
     cleanup.addCloseable(result);
 
     assertThat(result).isInstanceOf(SystemOutLogRecordExporter.class);
@@ -227,8 +219,7 @@ class LogRecordExporterFactoryTest {
 
     LogRecordExporter result =
         LogRecordExporterFactory.getInstance()
-            .create(
-                new LogRecordExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()), context);
+            .create(new LogRecordExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()), context);
     cleanup.addCloseable(result);
 
     assertThat(result).isInstanceOf(OtlpGrpcLogRecordExporter.class);
@@ -250,7 +241,7 @@ class LogRecordExporterFactoryTest {
 
     LogRecordExporter result =
         LogRecordExporterFactory.getInstance()
-            .create(new LogRecordExporterModel().withConsole(new ConsoleExporterModel()), context);
+            .create(new LogRecordExporterModel().setConsole(new ConsoleExporterModel()), context);
     cleanup.addCloseable(result);
 
     assertThat(callCount.get()).isEqualTo(0);
@@ -267,7 +258,7 @@ class LogRecordExporterFactoryTest {
             () ->
                 LogRecordExporterFactory.getInstance()
                     .create(
-                        new LogRecordExporterModel().withConsole(new ConsoleExporterModel()),
+                        new LogRecordExporterModel().setConsole(new ConsoleExporterModel()),
                         context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for LogRecordExporter: console");

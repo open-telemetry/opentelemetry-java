@@ -476,7 +476,19 @@ class W3CBaggagePropagatorTest {
         Arguments.argumentSet(
             "multiple invalid entries",
             "bad1=va%lue,key1=value1,bad2=value%GG,encoded=value%202,bad3=value;meta=%GG",
-            Baggage.builder().put("key1", "value1").put("encoded", "value 2").build()));
+            Baggage.builder()
+                .put("key1", "value1")
+                .put("encoded", "value 2")
+                .put("bad3", "value", BaggageEntryMetadata.create("meta=%GG"))
+                .build()),
+        Arguments.argumentSet(
+            "invalid metadata charset drops entry",
+            "key1=value1,bad=value;meta\u0001evil,key2=value2",
+            Baggage.builder().put("key1", "value1").put("key2", "value2").build()),
+        Arguments.argumentSet(
+            "invalid metadata charset at end drops entry",
+            "key1=value1,bad=value;meta\u0001evil",
+            Baggage.builder().put("key1", "value1").build()));
   }
 
   @Test
@@ -607,6 +619,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  @SuppressLogger(W3CBaggagePropagator.class)
   void inject() {
     Baggage baggage =
         Baggage.builder()
@@ -625,7 +638,90 @@ class W3CBaggagePropagatorTest {
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(
                 "baggage",
-                "meta=meta-value;somemetadata%3B%20someother%3Dfoo,needsEncoding=blah%20blah%20blah,nometa=nometa-value"));
+                "meta=meta-value;somemetadata; someother=foo,needsEncoding=blah%20blah%20blah,nometa=nometa-value"));
+  }
+
+  @Test
+  void inject_doesNotPercentEncodeMetadata() {
+    Baggage baggage =
+        Baggage.builder()
+            .put("SomeKey", "SomeValue", BaggageEntryMetadata.create("ValueProp \t = \t PropVal"))
+            .build();
+    Map<String, String> carrier = new HashMap<>();
+    W3CBaggagePropagator.getInstance().inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier)
+        .containsExactlyInAnyOrderEntriesOf(
+            singletonMap("baggage", "SomeKey=SomeValue;ValueProp \t = \t PropVal"));
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  @SuppressLogger(W3CBaggagePropagator.class)
+  void inject_invalidMetadata_skipsEntry(String metadata) {
+    Baggage baggage =
+        Baggage.builder()
+            .put("keep", "yes")
+            .put("drop", "no", BaggageEntryMetadata.create(metadata))
+            .build();
+    Map<String, String> carrier = new HashMap<>();
+    W3CBaggagePropagator.getInstance().inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier).containsExactlyInAnyOrderEntriesOf(singletonMap("baggage", "keep=yes"));
+  }
+
+  static Stream<Arguments> inject_invalidMetadata_skipsEntry() {
+    return Stream.of(
+        Arguments.argumentSet("comma", "a,b"),
+        Arguments.argumentSet("dquote", "a\"b"),
+        Arguments.argumentSet("backslash", "a\\b"),
+        Arguments.argumentSet("cr", "a\rb"),
+        Arguments.argumentSet("lf", "a\nb"),
+        Arguments.argumentSet("nul", "a\0b"),
+        Arguments.argumentSet("del", "a\u007fb"),
+        Arguments.argumentSet("non-ascii", "café"),
+        Arguments.argumentSet("obs-text", "a\u0080b"));
+  }
+
+  @Test
+  @SuppressLogger(W3CBaggagePropagator.class)
+  void inject_invalidMetadataOnly_omitsHeader() {
+    Baggage baggage = Baggage.builder().put("k", "v", BaggageEntryMetadata.create("a,b")).build();
+    Map<String, String> carrier = new HashMap<>();
+    W3CBaggagePropagator.getInstance().inject(Context.root().with(baggage), carrier, Map::put);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void extract_metadataNotPercentDecoded() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    Context result =
+        propagator.extract(
+            Context.root(),
+            ImmutableMap.of("baggage", "SomeKey=SomeValue;ValueProp%20%09%20%3D%20%09%20PropVal"),
+            getter);
+
+    assertThat(Baggage.fromContext(result))
+        .isEqualTo(
+            Baggage.builder()
+                .put(
+                    "SomeKey",
+                    "SomeValue",
+                    BaggageEntryMetadata.create("ValueProp%20%09%20%3D%20%09%20PropVal"))
+                .build());
+  }
+
+  @Test
+  void roundTrip_metadataPreservedOpaque() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    Baggage baggage =
+        Baggage.builder()
+            .put("SomeKey", "SomeValue", BaggageEntryMetadata.create("ValueProp \t = \t PropVal"))
+            .build();
+    Map<String, String> carrier = new HashMap<>();
+    propagator.inject(baggage.storeInContext(Context.root()), carrier, Map::put);
+    assertThat(carrier.get("baggage")).isEqualTo("SomeKey=SomeValue;ValueProp \t = \t PropVal");
+
+    Baggage extracted = Baggage.fromContext(propagator.extract(Context.root(), carrier, getter));
+    assertThat(extracted).isEqualTo(baggage);
   }
 
   @Test

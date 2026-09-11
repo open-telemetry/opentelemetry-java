@@ -4,6 +4,7 @@ plugins {
 
 description = "OpenTelemetry Exporter Testing (Internal)"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.testing.internal")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 dependencies {
   api(project(":exporters:otlp:common"))

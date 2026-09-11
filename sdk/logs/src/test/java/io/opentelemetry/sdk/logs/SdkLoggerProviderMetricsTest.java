@@ -46,12 +46,11 @@ class SdkLoggerProviderMetricsTest {
         SdkMeterProvider.builder().registerMetricReader(metricReader).build();
 
     InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
-    LoggerProvider loggerProvider =
+    SimpleLogRecordProcessor processor =
+        SimpleLogRecordProcessor.builder(exporter).setMeterProvider(() -> meterProvider).build();
+    SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
-            .addLogRecordProcessor(
-                SimpleLogRecordProcessor.builder(exporter)
-                    .setMeterProvider(() -> meterProvider)
-                    .build())
+            .addLogRecordProcessor(processor)
             .setMeterProvider(() -> meterProvider)
             .build();
 
@@ -102,6 +101,42 @@ class SdkLoggerProviderMetricsTest {
                                                 "simple_log_processor/0",
                                                 OTEL_COMPONENT_TYPE,
                                                 "simple_log_processor")))));
+
+    // Logs rejected after the call to shutdown, regardless of completion so no join.
+    processor.shutdown();
+    logger.logRecordBuilder().emit();
+
+    assertThat(metricReader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.log.created")
+                    .hasLongSumSatisfying(
+                        s -> s.hasPointsSatisfying(p -> p.hasValue(3).hasAttributes())),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.log.processed")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(2)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "simple_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "simple_log_processor")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "simple_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "simple_log_processor",
+                                                ERROR_TYPE,
+                                                "already_shutdown")))));
   }
 
   @Test
@@ -134,11 +169,12 @@ class SdkLoggerProviderMetricsTest {
     // Will immediately be processed.
     logger.logRecordBuilder().emit();
     Thread.sleep(500); // give time to start processing a batch of size 1
-    // We haven't completed the export so this span is queued.
+    // We haven't completed the export so this log is queued.
     logger.logRecordBuilder().emit();
-    // Queue is full, this span is dropped.
+    // Queue is full, this log is dropped.
     logger.logRecordBuilder().emit();
 
+    // Export hasn't finished but processed metric is incremented
     assertThat(metricReader.collectAllMetrics())
         .satisfiesExactlyInAnyOrder(
             m ->
@@ -175,6 +211,14 @@ class SdkLoggerProviderMetricsTest {
                     .hasLongSumSatisfying(
                         s ->
                             s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_log_processor")),
                                 p ->
                                     p.hasValue(1)
                                         .hasAttributes(
@@ -232,23 +276,13 @@ class SdkLoggerProviderMetricsTest {
                         s ->
                             s.hasPointsSatisfying(
                                 p ->
-                                    p.hasValue(1)
+                                    p.hasValue(2)
                                         .hasAttributes(
                                             Attributes.of(
                                                 OTEL_COMPONENT_NAME,
                                                 "batching_log_processor/0",
                                                 OTEL_COMPONENT_TYPE,
                                                 "batching_log_processor")),
-                                p ->
-                                    p.hasValue(1)
-                                        .hasAttributes(
-                                            Attributes.of(
-                                                OTEL_COMPONENT_NAME,
-                                                "batching_log_processor/0",
-                                                OTEL_COMPONENT_TYPE,
-                                                "batching_log_processor",
-                                                ERROR_TYPE,
-                                                "export_failed")),
                                 p ->
                                     p.hasValue(1)
                                         .hasAttributes(
@@ -266,7 +300,79 @@ class SdkLoggerProviderMetricsTest {
                         s -> s.hasPointsSatisfying(p -> p.hasValue(3).hasAttributes())));
 
     lenient().when(mockExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    // Logs rejected after the call to shutdown, regardless of completion so no join.
     processor.shutdown();
+
+    logger.logRecordBuilder().emit();
+    assertThat(metricReader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.log.queue.capacity")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_log_processor")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.log.queue.size")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(0)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_log_processor")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.processor.log.processed")
+                    .hasLongSumSatisfying(
+                        s ->
+                            s.hasPointsSatisfying(
+                                p ->
+                                    p.hasValue(2)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_log_processor")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_log_processor",
+                                                ERROR_TYPE,
+                                                "already_shutdown")),
+                                p ->
+                                    p.hasValue(1)
+                                        .hasAttributes(
+                                            Attributes.of(
+                                                OTEL_COMPONENT_NAME,
+                                                "batching_log_processor/0",
+                                                OTEL_COMPONENT_TYPE,
+                                                "batching_log_processor",
+                                                ERROR_TYPE,
+                                                "queue_full")))),
+            m ->
+                assertThat(m)
+                    .hasName("otel.sdk.log.created")
+                    .hasLongSumSatisfying(
+                        s -> s.hasPointsSatisfying(p -> p.hasValue(4).hasAttributes())));
   }
 
   @Test
@@ -305,9 +411,7 @@ class SdkLoggerProviderMetricsTest {
                                                 OTEL_COMPONENT_NAME,
                                                 "simple_log_processor/0",
                                                 OTEL_COMPONENT_TYPE,
-                                                "simple_log_processor",
-                                                ERROR_TYPE,
-                                                "export_failed")))),
+                                                "simple_log_processor")))),
             m ->
                 assertThat(m)
                     .hasName("otel.sdk.log.created")

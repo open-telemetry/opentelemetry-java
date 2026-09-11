@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalResourceDetectorPropertyModel {
 
   private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
@@ -27,7 +27,7 @@ public class ExperimentalResourceDetectorPropertyModel {
   }
 
   @JsonAnySetter
-  public ExperimentalResourceDetectorPropertyModel withAdditionalProperty(
+  public ExperimentalResourceDetectorPropertyModel setAdditionalProperty(
       String name, Object value) {
     this.additionalProperties.put(name, value);
     return this;

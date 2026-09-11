@@ -8,6 +8,7 @@ apply<OtelVersionClassPlugin>()
 
 description = "OpenTelemetry OpenTracing Bridge"
 otelJava.moduleName.set("io.opentelemetry.opentracingshim")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 dependencies {
   api(project(":api:all"))

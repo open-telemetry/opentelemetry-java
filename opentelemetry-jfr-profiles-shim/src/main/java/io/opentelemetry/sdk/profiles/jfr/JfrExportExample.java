@@ -76,11 +76,14 @@ public class JfrExportExample {
             .setSchemaUrl("http://url")
             .build();
 
+    int sampleStringIndex = converter.getProfilesDictionaryCompositor().putIfAbsent("samples");
+    int countStringIndex = converter.getProfilesDictionaryCompositor().putIfAbsent("count");
+
     return ProfileData.create(
         Resource.create(Attributes.empty()),
         scopeInfo,
         converter.getProfilesDictionaryCompositor().getProfileDictionaryData(),
-        ValueTypeData.create(0, 0),
+        ValueTypeData.create(sampleStringIndex, countStringIndex),
         converter.getSamples(),
         0,
         0,

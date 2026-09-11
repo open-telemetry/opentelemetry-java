@@ -26,21 +26,17 @@ import javax.annotation.concurrent.Immutable;
  * <p>To register the default B3 propagator, which injects a single header, use:
  *
  * <pre>{@code
- * OpenTelemetry.setPropagators(
- *   DefaultContextPropagators
- *     .builder()
- *     .addTextMapPropagator(B3Propagator.injectingSingleHeader())
- *     .build());
+ * OpenTelemetrySdk.builder()
+ *     .setPropagators(ContextPropagators.create(B3Propagator.injectingSingleHeader()))
+ *     .build();
  * }</pre>
  *
  * <p>To register a B3 propagator that injects multiple headers, use:
  *
  * <pre>{@code
- * OpenTelemetry.setPropagators(
- *   DefaultContextPropagators
- *     .builder()
- *     .addTextMapPropagator(B3Propagator.injectingMultiHeaders())
- *     .build());
+ * OpenTelemetrySdk.builder()
+ *     .setPropagators(ContextPropagators.create(B3Propagator.injectingMultiHeaders()))
+ *     .build();
  * }</pre>
  */
 @Immutable

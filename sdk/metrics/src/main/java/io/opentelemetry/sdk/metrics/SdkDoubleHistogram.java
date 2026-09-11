@@ -28,7 +28,7 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
 
   SdkDoubleHistogram(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
@@ -40,12 +40,7 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
 
   @Override
   public void record(double value, Attributes attributes, Context context) {
-    if (value < 0) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Histograms can only record non-negative values. Instrument "
-              + getDescriptor().getName()
-              + " has recorded a negative value.");
+    if (!validateNonNegative(value)) {
       return;
     }
     storage.recordDouble(value, attributes, context);
@@ -53,12 +48,28 @@ class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
 
   @Override
   public void record(double value, Attributes attributes) {
-    record(value, attributes, Context.current());
+    record(value, attributes, currentOrRootContext());
   }
 
   @Override
   public void record(double value) {
     record(value, Attributes.empty());
+  }
+
+  /**
+   * Returns true if {@code value} is non-negative, otherwise logs a warning and returns false.
+   * Shared by the unbound and bound ({@link ExtendedSdkDoubleHistogram}) record paths.
+   */
+  boolean validateNonNegative(double value) {
+    if (value < 0) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Histograms can only record non-negative values. Instrument "
+              + getDescriptor().getName()
+              + " has recorded a negative value.");
+      return false;
+    }
+    return true;
   }
 
   static class SdkDoubleHistogramBuilder implements DoubleHistogramBuilder {

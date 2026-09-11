@@ -26,8 +26,8 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.NameStringValu
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SpanExporterPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalOtlpFileExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.SpanExporterModelAccessor;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -97,27 +98,25 @@ class SpanExporterFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "otlp_http default",
-            new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
+            new SpanExporterModel().setOtlpHttp(new OtlpHttpExporterModel()),
             OtlpHttpSpanExporter.getDefault().toBuilder().setComponentLoader(context).build()),
         Arguments.argumentSet(
             "otlp_http with options",
             new SpanExporterModel()
-                .withOtlpHttp(
+                .setOtlpHttp(
                     new OtlpHttpExporterModel()
-                        .withEndpoint("http://example:4318/v1/traces")
-                        .withHeaders(
+                        .setEndpoint("http://example:4318/v1/traces")
+                        .setHeaders(
                             Arrays.asList(
-                                new NameStringValuePairModel().withName("key1").withValue("value1"),
-                                new NameStringValuePairModel()
-                                    .withName("key2")
-                                    .withValue("value2")))
-                        .withCompression("gzip")
-                        .withTimeout(15_000)
-                        .withTls(
+                                new NameStringValuePairModel().setName("key1").setValue("value1"),
+                                new NameStringValuePairModel().setName("key2").setValue("value2")))
+                        .setCompression("gzip")
+                        .setTimeout(15_000)
+                        .setTls(
                             new HttpTlsModel()
-                                .withCaFile(certificatePath)
-                                .withKeyFile(clientKeyPath)
-                                .withCertFile(clientCertificatePath))),
+                                .setCaFile(certificatePath)
+                                .setKeyFile(clientKeyPath)
+                                .setCertFile(clientCertificatePath))),
             OtlpHttpSpanExporter.builder()
                 .setEndpoint("http://example:4318/v1/traces")
                 .addHeader("key1", "value1")
@@ -128,27 +127,25 @@ class SpanExporterFactoryTest {
                 .build()),
         Arguments.argumentSet(
             "otlp_grpc default",
-            new SpanExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()),
+            new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()),
             OtlpGrpcSpanExporter.getDefault().toBuilder().setComponentLoader(context).build()),
         Arguments.argumentSet(
             "otlp_grpc with options",
             new SpanExporterModel()
-                .withOtlpGrpc(
+                .setOtlpGrpc(
                     new OtlpGrpcExporterModel()
-                        .withEndpoint("http://example:4317")
-                        .withHeaders(
+                        .setEndpoint("http://example:4317")
+                        .setHeaders(
                             Arrays.asList(
-                                new NameStringValuePairModel().withName("key1").withValue("value1"),
-                                new NameStringValuePairModel()
-                                    .withName("key2")
-                                    .withValue("value2")))
-                        .withCompression("gzip")
-                        .withTimeout(15_000)
-                        .withTls(
+                                new NameStringValuePairModel().setName("key1").setValue("value1"),
+                                new NameStringValuePairModel().setName("key2").setValue("value2")))
+                        .setCompression("gzip")
+                        .setTimeout(15_000)
+                        .setTls(
                             new GrpcTlsModel()
-                                .withCaFile(certificatePath)
-                                .withKeyFile(clientKeyPath)
-                                .withCertFile(clientCertificatePath))),
+                                .setCaFile(certificatePath)
+                                .setKeyFile(clientKeyPath)
+                                .setCertFile(clientCertificatePath))),
             OtlpGrpcSpanExporter.builder()
                 .setEndpoint("http://example:4317")
                 .addHeader("key1", "value1")
@@ -159,12 +156,12 @@ class SpanExporterFactoryTest {
                 .build()),
         Arguments.argumentSet(
             "console",
-            new SpanExporterModel().withConsole(new ConsoleExporterModel()),
+            new SpanExporterModel().setConsole(new ConsoleExporterModel()),
             LoggingSpanExporter.create()),
         Arguments.argumentSet(
             "otlp_file/development",
-            new SpanExporterModel()
-                .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
+            SpanExporterModelAccessor.setOtlpFile(
+                new SpanExporterModel(), new ExperimentalOtlpFileExporterModel()),
             OtlpStdoutSpanExporter.builder().build()));
   }
 
@@ -181,9 +178,7 @@ class SpanExporterFactoryTest {
         Arguments.argumentSet(
             "unknown component provider",
             new SpanExporterModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new SpanExporterPropertyModel().withAdditionalProperty("key1", "value1")),
+                .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\"."));
   }
 
@@ -193,9 +188,7 @@ class SpanExporterFactoryTest {
         SpanExporterFactory.getInstance()
             .create(
                 new SpanExporterModel()
-                    .withAdditionalProperty(
-                        "test",
-                        new SpanExporterPropertyModel().withAdditionalProperty("key1", "value1")),
+                    .setExtensionProperty("test", Collections.singletonMap("key1", "value1")),
                 context);
     assertThat(spanExporter).isInstanceOf(SpanExporterComponentProvider.TestSpanExporter.class);
     assertThat(
@@ -216,7 +209,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter result =
         SpanExporterFactory.getInstance()
-            .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
+            .create(new SpanExporterModel().setConsole(new ConsoleExporterModel()), context);
     cleanup.addCloseable(result);
 
     assertThat(result.toString()).contains("LoggingSpanExporter");
@@ -234,7 +227,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter result =
         SpanExporterFactory.getInstance()
-            .create(new SpanExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()), context);
+            .create(new SpanExporterModel().setOtlpGrpc(new OtlpGrpcExporterModel()), context);
     cleanup.addCloseable(result);
 
     assertThat(result).isInstanceOf(OtlpGrpcSpanExporter.class);
@@ -256,7 +249,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter result =
         SpanExporterFactory.getInstance()
-            .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
+            .create(new SpanExporterModel().setConsole(new ConsoleExporterModel()), context);
     cleanup.addCloseable(result);
 
     assertThat(callCount.get()).isEqualTo(0);
@@ -273,7 +266,7 @@ class SpanExporterFactoryTest {
             () ->
                 SpanExporterFactory.getInstance()
                     .create(
-                        new SpanExporterModel().withConsole(new ConsoleExporterModel()), context))
+                        new SpanExporterModel().setConsole(new ConsoleExporterModel()), context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining("Customizer returned null for SpanExporter: console");
   }

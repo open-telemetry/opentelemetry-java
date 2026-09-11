@@ -275,6 +275,9 @@ public final class PeriodicMetricReader implements MetricReader {
           Collection<MetricData> metricData;
           try {
             metricData = collectionRegistration.collectAllMetrics();
+          } catch (Throwable t) {
+            error = t.getClass().getName();
+            throw t;
           } finally {
             long durationNanos = CLOCK.nanoTime() - startNanoTime;
             instrumentation.recordCollection(durationNanos / 1_000_000_000.0, error);

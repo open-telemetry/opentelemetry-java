@@ -7,11 +7,20 @@ package io.opentelemetry.api.baggage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
 
+@SuppressLogger(loggerName = "io.opentelemetry.usage")
 class BaggageContextTest {
+
+  @RegisterExtension
+  LogCapturer logCapturer =
+      LogCapturer.create().captureForLogger("io.opentelemetry.usage", Level.TRACE);
 
   @Test
   void testGetCurrentBaggage_Default() {
@@ -40,6 +49,20 @@ class BaggageContextTest {
     Baggage baggage = Baggage.empty();
     Context context = Context.root().with(baggage);
     assertThat(Baggage.fromContext(context)).isSameAs(baggage);
+  }
+
+  @Test
+  void fromContext_null() {
+    Baggage result = Baggage.fromContext(null);
+    assertThat(result).isEqualTo(Baggage.empty());
+    logCapturer.assertContains("context is null");
+  }
+
+  @Test
+  void fromContextOrNull_null() {
+    Baggage result = Baggage.fromContextOrNull(null);
+    assertThat(result).isNull();
+    logCapturer.assertContains("context is null");
   }
 
   @Test

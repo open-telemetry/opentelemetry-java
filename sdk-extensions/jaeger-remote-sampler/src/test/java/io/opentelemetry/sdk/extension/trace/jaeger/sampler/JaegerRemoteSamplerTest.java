@@ -284,7 +284,8 @@ class JaegerRemoteSamplerTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription())
-          .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+          .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}")
+          .contains("endpoint=" + server.httpUri(), "pollingIntervalMs=1000");
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -301,7 +302,8 @@ class JaegerRemoteSamplerTest {
             .build()) {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
-      assertThat(sampler.getDescription()).startsWith("JaegerRemoteSampler{AlwaysOnSampler}");
+      assertThat(sampler.getDescription())
+          .startsWith("JaegerRemoteSampler{sampler=AlwaysOnSampler");
     }
   }
 
@@ -400,7 +402,7 @@ class JaegerRemoteSamplerTest {
               () -> {
                 assertThat(sampler.getDescription())
                     .startsWith(
-                        "JaegerRemoteSampler{ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
+                        "JaegerRemoteSampler{sampler=ParentBased{root:PerOperationSampler{default=TraceIdRatioBased{0.550000}, perOperation={foo=TraceIdRatioBased{0.900000}, bar=TraceIdRatioBased{0.700000}}}");
                 assertThat(sampler.getDescription()).contains("bar");
               });
     }
@@ -419,7 +421,7 @@ class JaegerRemoteSamplerTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription())
-          .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+          .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
           .untilAsserted(
@@ -444,7 +446,7 @@ class JaegerRemoteSamplerTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription())
-          .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+          .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
           .untilAsserted(
@@ -468,7 +470,7 @@ class JaegerRemoteSamplerTest {
       assertThat(sampler).extracting("grpcSender").isInstanceOf(OkHttpGrpcSender.class);
 
       assertThat(sampler.getDescription())
-          .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
+          .startsWith("JaegerRemoteSampler{sampler=ParentBased{root:TraceIdRatioBased{0.001000}");
 
       await()
           .untilAsserted(

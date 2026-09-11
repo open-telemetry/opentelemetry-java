@@ -24,6 +24,7 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
 import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpPrincipal;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
@@ -755,6 +756,9 @@ class PrometheusHttpServerTest {
         };
     builder.setAuthenticator(authenticator);
 
+    HttpHandler defaultHandler = exchange -> {};
+    builder.setDefaultHandler(defaultHandler);
+
     PrometheusHttpServer httpServer = builder.build();
     PrometheusHttpServerBuilder fromOriginalBuilder = httpServer.toBuilder();
     httpServer.close();
@@ -765,6 +769,7 @@ class PrometheusHttpServerTest {
         .hasFieldOrPropertyWithValue("executor", executor)
         .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry)
         .hasFieldOrPropertyWithValue("authenticator", authenticator)
+        .hasFieldOrPropertyWithValue("defaultHandler", defaultHandler)
         .extracting("metricReaderBuilder")
         .usingRecursiveComparison()
         .isEqualTo(

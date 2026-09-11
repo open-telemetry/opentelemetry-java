@@ -43,16 +43,18 @@ final class LegacyLogRecordProcessorInstrumentation implements LogRecordProcesso
   }
 
   @Override
-  public void dropLogs(int count) {
+  public void dropLogsQueueFull(int count) {
     processedLogs().add(count, droppedAttrs);
   }
 
   @Override
-  public void finishLogs(int count, @Nullable String error) {
-    // Legacy metrics only record when no error.
-    if (error == null) {
-      processedLogs().add(count, standardAttrs);
-    }
+  public void dropLogsAlreadyShutdown(int count) {
+    // Legacy did not record this metric.
+  }
+
+  @Override
+  public void finishLogs(int count) {
+    processedLogs().add(count, standardAttrs);
   }
 
   @Override

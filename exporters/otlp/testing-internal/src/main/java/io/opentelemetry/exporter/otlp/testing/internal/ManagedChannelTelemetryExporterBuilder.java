@@ -212,6 +212,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setEnabledProtocols(List<String> enabledProtocols) {
+    delegate.setEnabledProtocols(enabledProtocols);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
     delegate.setMeterProvider(meterProviderSupplier);

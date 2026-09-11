@@ -161,16 +161,17 @@ class ConfigPropertiesTest {
   void invalidMap() {
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,b"))
+                DefaultConfigProperties.createFromMap(
+                        Collections.singletonMap("map", "authorization=Bearer s3cr3t,malformed"))
                     .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid map property: map=a=1,b");
+        .hasMessage("Invalid map property: map");
     assertThatThrownBy(
             () ->
                 DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,=b"))
                     .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid map property: map=a=1,=b");
+        .hasMessage("Invalid map property: map");
   }
 
   @Test

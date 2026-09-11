@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"semconv"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalGenAiInstrumentationModel {
 
   @Nullable private ExperimentalSemconvConfigModel semconv;
@@ -36,7 +36,7 @@ public class ExperimentalGenAiInstrumentationModel {
   }
 
   @JsonProperty("semconv")
-  public ExperimentalGenAiInstrumentationModel withSemconv(ExperimentalSemconvConfigModel semconv) {
+  public ExperimentalGenAiInstrumentationModel setSemconv(ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;
     return this;
   }

@@ -8,6 +8,7 @@ plugins {
 
 description = "OpenTelemetry OSGi Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.integration.tests.osgi")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 // For similar test examples see:
 // https://github.com/micrometer-metrics/micrometer/tree/main/micrometer-osgi-test

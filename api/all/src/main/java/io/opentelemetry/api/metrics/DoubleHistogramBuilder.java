@@ -48,7 +48,7 @@ public interface DoubleHistogramBuilder {
     return this;
   }
 
-  /** Sets the Counter for recording {@code long} values. */
+  /** Sets the Histogram for recording {@code long} values. */
   LongHistogramBuilder ofLongs();
 
   /**

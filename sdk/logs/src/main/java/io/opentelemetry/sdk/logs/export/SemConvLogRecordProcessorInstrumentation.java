@@ -27,7 +27,8 @@ final class SemConvLogRecordProcessorInstrumentation implements LogRecordProcess
 
   private final Supplier<MeterProvider> meterProvider;
   private final Attributes standardAttrs;
-  private final Attributes droppedAttrs;
+  private final Attributes queueFullAttrs;
+  private final Attributes shutdownAttrs;
 
   @Nullable private Meter meter;
   @Nullable private volatile LongCounter processedLogs;
@@ -42,7 +43,7 @@ final class SemConvLogRecordProcessorInstrumentation implements LogRecordProcess
             componentId.getTypeName(),
             SemConvAttributes.OTEL_COMPONENT_NAME,
             componentId.getComponentName());
-    droppedAttrs =
+    queueFullAttrs =
         Attributes.of(
             SemConvAttributes.OTEL_COMPONENT_TYPE,
             componentId.getTypeName(),
@@ -50,23 +51,29 @@ final class SemConvLogRecordProcessorInstrumentation implements LogRecordProcess
             componentId.getComponentName(),
             SemConvAttributes.ERROR_TYPE,
             "queue_full");
+    shutdownAttrs =
+        Attributes.of(
+            SemConvAttributes.OTEL_COMPONENT_TYPE,
+            componentId.getTypeName(),
+            SemConvAttributes.OTEL_COMPONENT_NAME,
+            componentId.getComponentName(),
+            SemConvAttributes.ERROR_TYPE,
+            "already_shutdown");
   }
 
   @Override
-  public void dropLogs(int count) {
-    processedLogs().add(count, droppedAttrs);
+  public void dropLogsQueueFull(int count) {
+    processedLogs().add(count, queueFullAttrs);
   }
 
   @Override
-  public void finishLogs(int count, @Nullable String error) {
-    if (error == null) {
-      processedLogs().add(count, standardAttrs);
-      return;
-    }
+  public void dropLogsAlreadyShutdown(int count) {
+    processedLogs().add(count, shutdownAttrs);
+  }
 
-    Attributes attributes =
-        standardAttrs.toBuilder().put(SemConvAttributes.ERROR_TYPE, error).build();
-    processedLogs().add(count, attributes);
+  @Override
+  public void finishLogs(int count) {
+    processedLogs().add(count, standardAttrs);
   }
 
   @Override
