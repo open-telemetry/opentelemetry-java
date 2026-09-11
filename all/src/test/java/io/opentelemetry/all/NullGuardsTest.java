@@ -28,11 +28,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -61,16 +61,15 @@ import org.objectweb.asm.tree.VarInsnNode;
  *       to {@code RUNTIME}, everything else to {@code FAIL_FAST}.
  *   <li>Structural override: any method that overrides or implements a method declared on a
  *       supertype whose package starts with {@code io.opentelemetry.api.} or {@code
- *       io.opentelemetry.context.} is classified {@code RUNTIME}. This picks up SDK
- *       implementations of runtime API types ({@code SdkSpan}, {@code SdkLongCounter}, ...)
- *       without an enumeration.
+ *       io.opentelemetry.context.} is classified {@code RUNTIME}. This picks up SDK implementations
+ *       of runtime API types ({@code SdkSpan}, {@code SdkLongCounter}, ...) without an enumeration.
  *   <li>Explicit per-method overrides in {@link #METHOD_STYLE_OVERRIDES} handle the small set of
  *       config-time methods on runtime-artifact classes (e.g. {@code GlobalOpenTelemetry.set}).
  * </ol>
  *
  * <p>Detection is intentionally lenient: it looks for the guard pattern anywhere in the method
- * body, not just at the top. This trades a small false-negative rate for far fewer false
- * positives while a module is being brought into compliance.
+ * body, not just at the top. This trades a small false-negative rate for far fewer false positives
+ * while a module is being brought into compliance.
  */
 @SuppressLogger(NullGuardsTest.class)
 class NullGuardsTest {
@@ -83,15 +82,15 @@ class NullGuardsTest {
   private static final String OBJECT_INTERNAL_NAME = Type.getInternalName(Object.class);
 
   /**
-   * Runtime API scope: the artifacts and packages that constitute the runtime instrumentation
-   * API. Keys are artifact base names; values are the corresponding base packages. Both are
-   * matched as "equal-to or has-{@code -} / has-{@code .} suffix", so {@code opentelemetry-api}
-   * covers {@code opentelemetry-api-incubator} and {@code io.opentelemetry.api} covers
-   * {@code io.opentelemetry.api.trace} etc.
+   * Runtime API scope: the artifacts and packages that constitute the runtime instrumentation API.
+   * Keys are artifact base names; values are the corresponding base packages. Both are matched as
+   * "equal-to or has-{@code -} / has-{@code .} suffix", so {@code opentelemetry-api} covers {@code
+   * opentelemetry-api-incubator} and {@code io.opentelemetry.api} covers {@code
+   * io.opentelemetry.api.trace} etc.
    *
    * <p>Methods in these artifacts, and methods anywhere that override methods declared in these
-   * packages, default to {@code RUNTIME} null-guard semantics. Everything else defaults to
-   * {@code FAIL_FAST}.
+   * packages, default to {@code RUNTIME} null-guard semantics. Everything else defaults to {@code
+   * FAIL_FAST}.
    */
   private static final Map<String, String> RUNTIME_SCOPE =
       Map.of(
@@ -131,6 +130,7 @@ class NullGuardsTest {
    */
   private static final Set<String> exemptions =
       Set.of(
+          "opentelemetry-api",
           "opentelemetry-api-incubator",
           "opentelemetry-context",
           "opentelemetry-common",
@@ -268,8 +268,8 @@ class NullGuardsTest {
   }
 
   /**
-   * True iff {@code method} overrides or implements a method with the same name+descriptor
-   * declared on any supertype whose package is under {@code io.opentelemetry.api.} or {@code
+   * True iff {@code method} overrides or implements a method with the same name+descriptor declared
+   * on any supertype whose package is under {@code io.opentelemetry.api.} or {@code
    * io.opentelemetry.context.}. Static and private methods cannot override.
    */
   private static boolean overridesRuntimeApiMethod(ClassNode cls, MethodNode method) {
@@ -280,8 +280,7 @@ class NullGuardsTest {
       return false;
     }
     return anySupertypeMatches(
-        cls,
-        sup -> isRuntimeApiPackage(sup.name) && declaresMethod(sup, method.name, method.desc));
+        cls, sup -> isRuntimeApiPackage(sup.name) && declaresMethod(sup, method.name, method.desc));
   }
 
   /**
@@ -346,10 +345,9 @@ class NullGuardsTest {
 
   /**
    * True iff a caller in another package can dispatch to this method via some publicly-visible
-   * reference type. Either (a) the declaring class is itself public, or (b) the method overrides
-   * a method declared on a public supertype in a non-internal {@code io.opentelemetry.*} package
-   * (typical for package-private SDK impls of API interfaces like {@code SdkSpan implements
-   * Span}).
+   * reference type. Either (a) the declaring class is itself public, or (b) the method overrides a
+   * method declared on a public supertype in a non-internal {@code io.opentelemetry.*} package
+   * (typical for package-private SDK impls of API interfaces like {@code SdkSpan implements Span}).
    */
   private static boolean isMethodPubliclyReachable(ClassNode cls, MethodNode method) {
     if ((method.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) == 0) {
@@ -412,7 +410,7 @@ class NullGuardsTest {
 
       if (nullable) {
         if (requireNonNullGuard) {
-          report.accept("@Nullable parameter is guarded with Objects.requireNonNull");
+          report.accept("@Nullable but guarded with requireNonNull (contradicts contract)");
         }
         continue;
       }
@@ -420,19 +418,15 @@ class NullGuardsTest {
       boolean hasAnyGuard = requireNonNullGuard || apiUsageLoggerGuard;
       if (!hasAnyGuard) {
         report.accept(
-            "missing null guard ("
-                + (style == GuardStyle.RUNTIME
-                    ? "expected ApiUsageLogger.logNullParam"
-                    : "expected Objects.requireNonNull")
-                + ")");
+            style == GuardStyle.RUNTIME
+                ? "missing ApiUsageLogger.logNullParam guard"
+                : "missing Objects.requireNonNull guard");
         continue;
       }
       if (style == GuardStyle.RUNTIME && requireNonNullGuard && !apiUsageLoggerGuard) {
-        report.accept(
-            "runtime API uses Objects.requireNonNull; expected ApiUsageLogger.logNullParam");
+        report.accept("wrong style: uses requireNonNull; expected ApiUsageLogger.logNullParam");
       } else if (style == GuardStyle.FAIL_FAST && apiUsageLoggerGuard && !requireNonNullGuard) {
-        report.accept(
-            "fail-fast API uses ApiUsageLogger; expected Objects.requireNonNull");
+        report.accept("wrong style: uses ApiUsageLogger; expected Objects.requireNonNull");
       }
     }
   }
@@ -495,8 +489,8 @@ class NullGuardsTest {
 
     /**
      * True iff the method contains {@code if (paramSlot == null) { ... ApiUsageLogger.log*(...);
-     * ...; return; }}: an {@code IFNONNULL} on the param whose fall-through branch contains
-     * a call to {@code ApiUsageLogger} before the jump target.
+     * ...; return; }}: an {@code IFNONNULL} on the param whose fall-through branch contains a call
+     * to {@code ApiUsageLogger} before the jump target.
      */
     static boolean hasApiUsageLoggerGuard(MethodNode method, int paramSlot) {
       for (AbstractInsnNode insn = method.instructions.getFirst();
@@ -569,15 +563,44 @@ class NullGuardsTest {
       for (Finding f : e.getValue()) {
         sb.append("    ")
             .append(f.methodName)
-            .append(f.methodDesc)
-            .append(" [param #")
+            .append(prettyParams(f.methodDesc))
+            .append(" param #")
             .append(f.paramIndex)
-            .append("] ")
+            .append(" (")
+            .append(prettyParamType(f.methodDesc, f.paramIndex))
+            .append("): ")
             .append(f.message)
             .append('\n');
       }
     }
     return sb.toString();
+  }
+
+  private static String prettyParams(String methodDesc) {
+    Type[] argTypes = Type.getArgumentTypes(methodDesc);
+    StringBuilder sb = new StringBuilder("(");
+    for (int i = 0; i < argTypes.length; i++) {
+      if (i > 0) {
+        sb.append(", ");
+      }
+      sb.append(simpleTypeName(argTypes[i]));
+    }
+    return sb.append(')').toString();
+  }
+
+  private static String prettyParamType(String methodDesc, int paramIndex) {
+    Type[] argTypes = Type.getArgumentTypes(methodDesc);
+    if (paramIndex < 0 || paramIndex >= argTypes.length) {
+      return "?";
+    }
+    return simpleTypeName(argTypes[paramIndex]);
+  }
+
+  private static String simpleTypeName(Type type) {
+    String name = type.getClassName();
+    int lastDot =
+        name.lastIndexOf('.', name.endsWith("[]") ? name.length() - 3 : name.length() - 1);
+    return lastDot < 0 ? name : name.substring(lastDot + 1);
   }
 
   private static String packageOf(String internalName) {

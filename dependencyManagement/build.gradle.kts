@@ -9,6 +9,7 @@ rootProject.extra["versions"] = dependencyVersions
 
 
 val autoValueVersion = "1.11.1"
+val asmVersion = "9.10.1"
 val errorProneVersion = "2.50.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
@@ -64,6 +65,8 @@ val DEPENDENCIES = listOf(
   "org.openjdk.jmh:jmh-core:${jmhVersion}",
   "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
   "org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}",
+  "org.ow2.asm:asm:${asmVersion}",
+  "org.ow2.asm:asm-tree:${asmVersion}",
   "org.mockito:mockito-core:${mockitoVersion}",
   "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
   "org.slf4j:slf4j-simple:${slf4jVersion}",
