@@ -136,9 +136,9 @@ class OpenTelemetryConfigurationFactoryTest {
         Arguments.argumentSet("1.0-rc.2 valid", "1.0-rc.2", true),
         Arguments.argumentSet("1.0-rc.3 valid", "1.0-rc.3", true),
         Arguments.argumentSet("1.0 valid", "1.0", true),
+        Arguments.argumentSet("1.1 valid", "1.1", true),
         Arguments.argumentSet("1.2 valid", "1.2", true),
-        Arguments.argumentSet("1.12 valid", "1.12", true),
-        Arguments.argumentSet("1.1 valid", "1.1", true));
+        Arguments.argumentSet("1.12 valid", "1.12", true));
   }
 
   @Test
@@ -152,13 +152,13 @@ class OpenTelemetryConfigurationFactoryTest {
     cleanup.addCloseable(sdk);
 
     logCapturer.assertContains(
-        "Configuration file_format '1.0-rc.3' does not exactly match expected version '1.1'");
+        "Configuration file_format '1.0-rc.3' does not exactly match expected version '1.2'");
   }
 
   @Test
   void create_FileFormatExactMatch_NoWarning() {
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().setFileFormat("1.1");
+        new OpenTelemetryConfigurationModel().setFileFormat("1.2");
 
     ExtendedOpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance().create(model, context).getSdk();
@@ -171,7 +171,7 @@ class OpenTelemetryConfigurationFactoryTest {
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
-        new OpenTelemetryConfigurationModel().setFileFormat("1.1");
+        new OpenTelemetryConfigurationModel().setFileFormat("1.2");
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdkBuilderUtil.setConfigProvider(
                 OpenTelemetrySdk.builder(),
@@ -192,7 +192,7 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .setFileFormat("1.1")
+            .setFileFormat("1.2")
             .setDisabled(true)
             // Logger provider configuration should be ignored since SDK is disabled
             .setLoggerProvider(
@@ -235,7 +235,7 @@ class OpenTelemetryConfigurationFactoryTest {
 
     OpenTelemetryConfigurationModel model =
         new OpenTelemetryConfigurationModel()
-            .setFileFormat("1.1")
+            .setFileFormat("1.2")
             .setPropagator(
                 new PropagatorModel().setCompositeList("tracecontext,baggage,b3multi,b3"))
             .setResource(
