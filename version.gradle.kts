@@ -1,5 +1,5 @@
 val snapshot = true
-val apidiffBaselineVersion = "1.64.0"
+val apidiffBaselineVersion = "1.65.0"
 
 allprojects {
   var ver = "1.66.0"
