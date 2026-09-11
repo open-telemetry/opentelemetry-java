@@ -1,4 +1,4 @@
-val snapshot = true
+val snapshot = false
 val apidiffBaselineVersion = "1.65.0"
 
 allprojects {
