@@ -49,7 +49,7 @@ dependencies {
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:5.1.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:3.2.0")
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.10")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.20")
   implementation("org.sonatype.gradle.plugins:scan-gradle-plugin:4.0.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
 }
