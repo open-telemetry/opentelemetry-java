@@ -51,7 +51,7 @@ tasks {
   withType(KotlinJvmCompile::class) {
     compilerOptions {
       jvmTarget.set(JvmTarget.JVM_1_8)
-      apiVersion.set(KotlinVersion.KOTLIN_2_1)
+      apiVersion.set(KotlinVersion.KOTLIN_2_2)
     }
   }
 
