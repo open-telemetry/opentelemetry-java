@@ -343,6 +343,10 @@ testing {
           systemProperty("java.util.logging.config.class", "io.opentelemetry.internal.testing.slf4j.JulBridgeInitializer")
           systemProperty("org.slf4j.simpleLogger.log.io.micrometer.core.instrument.MeterRegistry", "error")
           systemProperty("org.slf4j.simpleLogger.log.tc", "error")
+          // Silence ApiUsageLogger output in tests. Includes the one-shot WARNING that fires on
+          // first misuse plus the per-event FINEST logs. Tests that intentionally exercise API
+          // misuse can re-enable this logger locally with @SuppressLogger or a Handler override.
+          systemProperty("org.slf4j.simpleLogger.log.io.opentelemetry.usage", "off")
 
           // Starting in java 21, dynamically attaching agents triggers warnings. Mockito depends on
           // agents to redefine classes. Hence, on java 21+ we get warnings of the form:
