@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.66.0 (2026-09-11)
+
 ### API
 
 * Fix `Baggage.fromContext()` and `Baggage.fromContextOrNull()` to handle a `null` context
