@@ -5,8 +5,7 @@
 
 package io.opentelemetry.context.propagation;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.context.propagation.internal.ExtendedTextMapGetter;
@@ -17,6 +16,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation")
 class TextMapGetterTest {
 
   final TextMapGetter<Void> nullGet =
@@ -51,9 +51,12 @@ class TextMapGetterTest {
     TextMapGetter<Void> getter = (carrier, key) -> "value";
 
     assertThat(getter.get(null, "key")).isEqualTo("value");
-    assertThatThrownBy(() -> getter.keys(null))
-        .isInstanceOf(UnsupportedOperationException.class)
-        .hasMessage("keys() is not implemented");
+    assertThat(getter.keys(null)).isEmpty();
+  }
+
+  @Test
+  void keysOverrideIsPreserved() {
+    assertThat(nullGet.keys(null)).containsExactly("key");
   }
 
   @Test
