@@ -130,7 +130,7 @@ class DeclarativeConfigurationCreateTest {
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
     String yaml =
-        "file_format: \"1.1\"\n"
+        "file_format: \"1.2\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -157,7 +157,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void parseAndCreate_EmptyComponentProviderConfig() {
     String yaml =
-        "file_format: \"1.1\"\n"
+        "file_format: \"1.2\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - test:\n"
@@ -175,7 +175,7 @@ class DeclarativeConfigurationCreateTest {
   @Test
   void create_ModelCustomizer() {
     OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
-    model.setFileFormat("1.1");
+    model.setFileFormat("1.2");
     model.setTracerProvider(
         new TracerProviderModel()
             .setProcessors(

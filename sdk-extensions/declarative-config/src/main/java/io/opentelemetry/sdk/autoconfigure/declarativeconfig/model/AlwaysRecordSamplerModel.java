@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
-import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.MetricProducerModel.OPENCENSUS;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AlwaysRecordSamplerModel.ROOT;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -21,52 +21,45 @@ import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({OPENCENSUS})
+@JsonPropertyOrder({ROOT})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
-public class MetricProducerModel {
+public class AlwaysRecordSamplerModel {
 
-  static final String OPENCENSUS = "opencensus";
+  static final String ROOT = "root";
 
   private static final Map<String, Class<?>> STABLE_PROPERTIES;
 
   static {
     STABLE_PROPERTIES = new HashMap<>();
-    STABLE_PROPERTIES.put(OPENCENSUS, OpenCensusMetricProducerModel.class);
+    STABLE_PROPERTIES.put(ROOT, SamplerModel.class);
   }
 
-  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = true;
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
-  @Nullable private OpenCensusMetricProducerModel opencensus;
+  @Nullable private SamplerModel root;
   private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
-   * Configure metric producer to be opencensus.
+   * Configure the wrapped sampler which provides the original sampling
    *
-   * <p>**Deprecated** as of v1.2.0, may be removed in v2.0.0. The OpenCensus
+   * <p>decision that AlwaysRecord modifies. DROP decisions are converted
    *
-   * <p>compatibility specification it relies on was deprecated in
+   * <p>to RECORD_ONLY, allowing processors to see all spans without sending them to exporters.
    *
-   * <p>https://github.com/open-telemetry/opentelemetry-specification/pull/5138.
-   *
-   * <p>SDKs MAY continue to support this entry for backwards compatibility;
-   *
-   * <p>new configurations SHOULD NOT use it.
-   *
-   * <p>If omitted, ignore.
+   * <p>Property is required and must be non-null.
    */
-  @JsonProperty(OPENCENSUS)
+  @JsonProperty(ROOT)
   @Nullable
-  public OpenCensusMetricProducerModel getOpencensus() {
-    if (opencensus == null) {
-      return ExtensionPropertyUtil.getGraduated(
-          OPENCENSUS, extensionProperties, OpenCensusMetricProducerModel.class);
+  public SamplerModel getRoot() {
+    if (root == null) {
+      return ExtensionPropertyUtil.getGraduated(ROOT, extensionProperties, SamplerModel.class);
     }
-    return opencensus;
+    return root;
   }
 
-  @JsonProperty(OPENCENSUS)
-  public MetricProducerModel setOpencensus(OpenCensusMetricProducerModel opencensus) {
-    this.opencensus = opencensus;
+  @JsonProperty(ROOT)
+  public AlwaysRecordSamplerModel setRoot(SamplerModel root) {
+    this.root = root;
     return this;
   }
 
@@ -76,7 +69,7 @@ public class MetricProducerModel {
   }
 
   @JsonAnySetter
-  public MetricProducerModel setExtensionProperty(String name, @Nullable Object value) {
+  public AlwaysRecordSamplerModel setExtensionProperty(String name, @Nullable Object value) {
     ExtensionPropertyUtil.handleAnySetter(
         name,
         value,
@@ -89,9 +82,9 @@ public class MetricProducerModel {
 
   @Override
   public String toString() {
-    return "MetricProducerModel{"
-        + "opencensus="
-        + opencensus
+    return "AlwaysRecordSamplerModel{"
+        + "root="
+        + root
         + ", extensionProperties="
         + extensionProperties
         + "}";
@@ -101,7 +94,7 @@ public class MetricProducerModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.getOpencensus() == null) ? 0 : this.getOpencensus().hashCode();
+    h ^= (this.getRoot() == null) ? 0 : this.getRoot().hashCode();
     h *= 1000003;
     h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
@@ -112,11 +105,11 @@ public class MetricProducerModel {
     if (o == this) {
       return true;
     }
-    if (o instanceof MetricProducerModel) {
-      MetricProducerModel that = (MetricProducerModel) o;
-      return (this.getOpencensus() == null
-              ? that.getOpencensus() == null
-              : this.getOpencensus().equals(that.getOpencensus()))
+    if (o instanceof AlwaysRecordSamplerModel) {
+      AlwaysRecordSamplerModel that = (AlwaysRecordSamplerModel) o;
+      return (this.getRoot() == null
+              ? that.getRoot() == null
+              : this.getRoot().equals(that.getRoot()))
           && (this.getExtensionProperties() == null
               ? that.getExtensionProperties() == null
               : this.getExtensionProperties().equals(that.getExtensionProperties()));
