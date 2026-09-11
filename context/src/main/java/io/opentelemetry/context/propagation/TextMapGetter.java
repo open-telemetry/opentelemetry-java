@@ -26,8 +26,7 @@ public interface TextMapGetter<C> {
    *
    * @param carrier carrier of propagation fields, such as an http request.
    * @deprecated Use {@link #get(Object, String)} or {@link #getAll(Object, String)} to read known
-   *     propagation fields instead. Propagators that require key enumeration must use a getter that
-   *     overrides this method.
+   *     propagation fields instead. Enumerating all keys is discouraged. 
    * @since 0.10.0
    */
   @Deprecated
