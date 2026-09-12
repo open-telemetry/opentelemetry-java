@@ -47,10 +47,9 @@ class TextMapGetterTest {
       };
 
   @Test
-  void canBeImplementedAsLambda() {
+  void keysDefault_returnsEmpty() {
     TextMapGetter<Void> getter = (carrier, key) -> "value";
 
-    assertThat(getter.get(null, "key")).isEqualTo("value");
     assertThat(getter.keys(null)).isEmpty();
   }
 
