@@ -85,14 +85,21 @@ public final class JavaDocsCrawler {
       throws IOException, InterruptedException {
     Map<?, ?> map = queryMavenCentral(client, group, MAX_ROWS);
 
-    Integer numFound =
+    // a 200 response without numFound means the endpoint changed shape; failing here keeps that
+    // from silently disabling the completeness check below
+    int numFound =
         Optional.ofNullable(map)
             .map(mavenResult -> (Map<?, ?>) mavenResult.get("response"))
             .map(response -> (Integer) response.get("numFound"))
-            .orElse(null);
+            .orElseThrow(
+                () ->
+                    new IOException(
+                        "Maven Central response for group "
+                            + group
+                            + " did not contain response.numFound"));
 
     List<Artifact> artifacts = convertToArtifacts(map);
-    if (numFound != null && artifacts.size() < numFound) {
+    if (artifacts.size() < numFound) {
       throw new IOException(
           String.format(
               Locale.ROOT,
