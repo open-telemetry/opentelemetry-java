@@ -132,4 +132,22 @@ class OpenTelemetryTextFormatImplTest {
     SpanContext extractedSpanContext = textFormatImpl.extract(carrier, GETTER);
     assertThat(extractedSpanContext).isEqualTo(SPAN_CONTEXT);
   }
+
+  @Test
+  void testExtractWithW3cDropsMultiTenantTracestateKeys() {
+    OpenTelemetryTextFormatImpl textFormatImpl =
+        new OpenTelemetryTextFormatImpl(W3CTraceContextPropagator.getInstance());
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put("traceparent", "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01");
+    carrier.put("tracestate", "fw529a3039@dt=fw4,congo=t61rcWkgMzE");
+
+    SpanContext extractedSpanContext = textFormatImpl.extract(carrier, GETTER);
+
+    assertThat(extractedSpanContext.getTraceId().toLowerBase16())
+        .isEqualTo("0af7651916cd43dd8448eb211c80319c");
+    assertThat(extractedSpanContext.getSpanId().toLowerBase16()).isEqualTo("b7ad6b7169203331");
+    assertThat(extractedSpanContext.getTraceOptions().isSampled()).isTrue();
+    assertThat(extractedSpanContext.getTracestate().getEntries()).hasSize(1);
+    assertThat(extractedSpanContext.getTracestate().get("congo")).isEqualTo("t61rcWkgMzE");
+  }
 }
