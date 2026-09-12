@@ -94,6 +94,30 @@ class JavaDocsCrawlerTest {
   }
 
   @Test
+  void testGetArtifactsFailsWithoutNumFound() throws IOException, InterruptedException {
+    String response =
+        """
+            {
+              "response": {
+                "docs": [
+                  {"g": "group", "a": "artifact1", "latestVersion": "1.0"}
+                ]
+              }
+            }
+        """;
+
+    when(mockMavenCentralRequest1.body()).thenReturn(response);
+    when(mockMavenCentralRequest1.statusCode()).thenReturn(200);
+
+    when(mockClient.send(any(), any())).thenReturn(mockMavenCentralRequest1);
+
+    assertThatThrownBy(() -> JavaDocsCrawler.getArtifacts(mockClient, "io.opentelemetry"))
+        .isInstanceOf(IOException.class)
+        .hasMessageContaining("numFound")
+        .hasMessageContaining("io.opentelemetry");
+  }
+
+  @Test
   void testCrawler() throws IOException, InterruptedException {
     Artifact artifact = new Artifact("io.opentelemetry", "opentelemetry-context", "1.49.0");
     ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
