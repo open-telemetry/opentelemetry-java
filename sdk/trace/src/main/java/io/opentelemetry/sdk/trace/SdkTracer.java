@@ -68,7 +68,7 @@ class SdkTracer implements Tracer {
     if (spanName == null || spanName.trim().isEmpty()) {
       spanName = FALLBACK_SPAN_NAME;
     }
-    if (sharedState.hasBeenShutdown()) {
+    if (sharedState.hasBeenShutdown() || sharedState.hasNoSpanProcessor()) {
       return NOOP_TRACER.spanBuilder(spanName);
     }
     return INCUBATOR_AVAILABLE
