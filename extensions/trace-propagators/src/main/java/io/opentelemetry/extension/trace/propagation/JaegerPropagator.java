@@ -249,6 +249,7 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   @Nullable
+  @SuppressWarnings("deprecation") // Legacy baggage headers require key enumeration.
   private static <C> Baggage getBaggageFromHeader(@Nullable C carrier, TextMapGetter<C> getter) {
     BaggageBuilder builder = null;
     int entriesAdded = 0;
