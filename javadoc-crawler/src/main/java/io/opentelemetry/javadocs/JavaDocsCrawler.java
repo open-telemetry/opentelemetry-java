@@ -40,9 +40,11 @@ public final class JavaDocsCrawler {
           "io.opentelemetry.proto", "1.10.0");
 
   private static final String MAVEN_CENTRAL_BASE_URL =
-      "https://search.maven.org/solrsearch/select?q=g:";
+      "https://central.sonatype.com/solrsearch/select?q=g:";
   private static final String JAVA_DOCS_BASE_URL = "https://javadoc.io/doc/";
-  private static final int PAGE_SIZE = 20;
+  // Every group is fetched in a single request, so no paging parameter is sent. The largest group
+  // currently holds fewer than 200 artifacts and getArtifacts fails if the response is incomplete.
+  private static final int MAX_ROWS = 500;
   private static final int THROTTLE_MS = 500;
 
   // visible for testing
@@ -81,30 +83,33 @@ public final class JavaDocsCrawler {
 
   static List<Artifact> getArtifacts(HttpClient client, String group)
       throws IOException, InterruptedException {
-    int start = 0;
-    Integer numFound;
-    List<Artifact> result = new ArrayList<>();
+    Map<?, ?> map = queryMavenCentral(client, group, MAX_ROWS);
 
-    do {
-      if (start != 0) {
-        Thread.sleep(THROTTLE_MS); // try not to DDoS the site, it gets knocked over easily
-      }
+    // a 200 response without numFound means the endpoint changed shape; failing here keeps that
+    // from silently disabling the completeness check below
+    int numFound =
+        Optional.ofNullable(map)
+            .map(mavenResult -> (Map<?, ?>) mavenResult.get("response"))
+            .map(response -> (Integer) response.get("numFound"))
+            .orElseThrow(
+                () ->
+                    new IOException(
+                        "Maven Central response for group "
+                            + group
+                            + " did not contain response.numFound"));
 
-      Map<?, ?> map = queryMavenCentral(client, group, start);
+    List<Artifact> artifacts = convertToArtifacts(map);
+    if (artifacts.size() < numFound) {
+      throw new IOException(
+          String.format(
+              Locale.ROOT,
+              "Received %d of %d artifacts for group %s, raise MAX_ROWS",
+              artifacts.size(),
+              numFound,
+              group));
+    }
 
-      numFound =
-          Optional.ofNullable(map)
-              .map(mavenResult -> (Map<?, ?>) mavenResult.get("response"))
-              .map(response -> (Integer) response.get("numFound"))
-              .orElse(null);
-
-      List<Artifact> artifacts = convertToArtifacts(map);
-      result.addAll(artifacts);
-
-      start += PAGE_SIZE;
-    } while (numFound != null && start < numFound);
-
-    return result;
+    return artifacts;
   }
 
   private static List<Artifact> convertToArtifacts(Map<?, ?> map) {
@@ -127,17 +132,12 @@ public final class JavaDocsCrawler {
         .orElseGet(ArrayList::new);
   }
 
-  private static Map<?, ?> queryMavenCentral(HttpClient client, String group, int start)
+  private static Map<?, ?> queryMavenCentral(HttpClient client, String group, int rows)
       throws IOException, InterruptedException {
     URI uri =
         URI.create(
             String.format(
-                Locale.ROOT,
-                "%s%s&rows=%d&start=%d&wt=json",
-                MAVEN_CENTRAL_BASE_URL,
-                group,
-                PAGE_SIZE,
-                start));
+                Locale.ROOT, "%s%s&rows=%d&wt=json", MAVEN_CENTRAL_BASE_URL, group, rows));
 
     HttpRequest request = HttpRequest.newBuilder(uri).GET().build();
 
