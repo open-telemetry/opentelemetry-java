@@ -31,9 +31,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -493,6 +495,25 @@ class JaegerPropagatorTest {
                 .put("nometa", "nometa-value")
                 .put("meta", "meta-value")
                 .build());
+  }
+
+  @Test
+  @Timeout(value = 1, unit = TimeUnit.SECONDS)
+  void extract_baggageHeader_largeInputIsBounded() {
+    // Parsing an oversized jaeger-baggage header must not allocate proportionally
+    // to the input.
+    StringBuilder header = new StringBuilder(4_000_000);
+    for (int i = 0; i < 1_000_000; i++) {
+      header.append("a=b,");
+    }
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(BAGGAGE_HEADER, header.toString());
+
+    // Only the first accepted entry is retained (all keys are "a"); the parse must stop well
+    // before the end of the header.
+    Baggage extracted = fromContext(jaegerPropagator.extract(Context.root(), carrier, getter));
+    assertThat(extracted.size()).isEqualTo(1);
+    assertThat(extracted.getEntryValue("a")).isEqualTo("b");
   }
 
   @Test
