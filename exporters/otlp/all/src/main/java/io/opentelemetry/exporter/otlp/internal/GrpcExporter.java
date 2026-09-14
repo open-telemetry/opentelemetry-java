@@ -99,7 +99,7 @@ public final class GrpcExporter {
         break;
       case UNAVAILABLE:
         logger.log(
-            Level.SEVERE,
+            levelOnFailure(Level.SEVERE),
             "Failed to export "
                 + numItems
                 + " "
@@ -111,7 +111,7 @@ public final class GrpcExporter {
         break;
       default:
         logger.log(
-            Level.WARNING,
+            levelOnFailure(Level.WARNING),
             "Failed to export "
                 + numItems
                 + " "
@@ -132,7 +132,7 @@ public final class GrpcExporter {
       Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
-        Level.SEVERE,
+        levelOnFailure(Level.SEVERE),
         "Failed to export " + numItems + " " + type + "s. The request could not be executed.",
         e);
     if (logger.isLoggable(Level.FINEST)) {
@@ -140,6 +140,12 @@ public final class GrpcExporter {
           Level.FINEST, "Failed to export " + numItems + " " + type + "s. Details follow:", e);
     }
     result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
+  }
+
+  // Failures after shutdown are typically caused by in-flight requests being cancelled by
+  // shutdown() and are not actionable, so demote them to FINE.
+  private Level levelOnFailure(Level defaultLevel) {
+    return isShutdown.get() ? Level.FINE : defaultLevel;
   }
 
   public CompletableResultCode shutdown() {
