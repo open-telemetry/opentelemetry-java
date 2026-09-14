@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
@@ -64,6 +65,7 @@ class SdkMeterProviderMetricsTest {
   }
 
   @Test
+  @SuppressLogger(PeriodicMetricReader.class)
   void collectionFailureIsRecordedWithErrorType() {
     InMemoryMetricExporter metricExporter = InMemoryMetricExporter.create();
     AtomicBoolean shouldFail = new AtomicBoolean(true);
