@@ -44,7 +44,8 @@ public final class W3CTraceContextEncoding {
     // array before the length check. Requesting MAX_MEMBERS + 2 lets us reliably detect overflow
     // without materializing every list-member.
     String[] listMembers =
-        TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceStateHeader, TRACESTATE_MAX_MEMBERS + 2);
+        TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(
+            traceStateHeader, TRACESTATE_MAX_MEMBERS + 2);
     checkArgument(
         listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");
     // Iterate in reverse order because when call builder set the elements is added in the

@@ -393,7 +393,8 @@ public final class JaegerPropagator implements TextMapPropagator {
 
   private static void logMalformed(String header, int start, int end) {
     if (logger.isLoggable(Level.FINE)) {
-      logger.fine("malformed token in " + BAGGAGE_HEADER + " header: " + header.substring(start, end));
+      logger.fine(
+          "malformed token in " + BAGGAGE_HEADER + " header: " + header.substring(start, end));
     }
   }
 
