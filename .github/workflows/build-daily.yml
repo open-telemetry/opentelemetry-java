@@ -12,7 +12,7 @@ permissions:
 jobs:
   link-check:
     if: github.repository == 'open-telemetry/opentelemetry-java'
-    uses: ./.github/workflows/reusable-link-check.yml
+    uses: $/.github/workflows/reusable-link-check.yml
 
   publish-snapshots:
     if: github.repository == 'open-telemetry/opentelemetry-java'
