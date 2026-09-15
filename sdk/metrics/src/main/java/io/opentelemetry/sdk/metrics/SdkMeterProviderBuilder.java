@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilterInternal;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesFilters;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -122,7 +123,7 @@ public final class SdkMeterProviderBuilder {
         RegisteredView.create(
             selector,
             view,
-            view.getAttributesProcessor(),
+            AttributesFilters.byKeyName(view.getAttributeFilter()),
             view.getCardinalityLimit(),
             SourceInfo.fromCurrentStack()));
     return this;

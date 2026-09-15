@@ -19,12 +19,12 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 
 class CumulativeSynchronousMetricStorage<T extends PointData>
@@ -38,30 +38,30 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
   CumulativeSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      AttributesProcessor attributesProcessor,
+      UnaryOperator<Attributes> attributesFilter,
       Clock clock,
       int maxCardinality,
       boolean enabled,
       MemoryMode memoryMode) {
-    super(metricDescriptor, aggregator, attributesProcessor, clock, maxCardinality, enabled);
+    super(metricDescriptor, aggregator, attributesFilter, clock, maxCardinality, enabled);
     this.memoryMode = memoryMode;
   }
 
   @Override
   void doRecordLong(long value, Attributes attributes, Context context) {
-    getAggregatorHandle(attributes, context).recordLong(value, attributes, context);
+    getAggregatorHandle(attributes).recordLong(value, attributes, context);
   }
 
   @Override
   void doRecordDouble(double value, Attributes attributes, Context context) {
-    getAggregatorHandle(attributes, context).recordDouble(value, attributes, context);
+    getAggregatorHandle(attributes).recordDouble(value, attributes, context);
   }
 
   @Override
   public BoundStorageHandle bind(Attributes attributes) {
     // Cumulative handles are stable for the instrument's lifetime (the map is never swapped and
     // handles are never reset/pooled), so resolve the handle once here and record straight onto it.
-    AggregatorHandle<T> handle = getAggregatorHandle(attributes, Context.current());
+    AggregatorHandle<T> handle = getAggregatorHandle(attributes);
     return new CumulativeBoundHandle(handle, attributes);
   }
 
@@ -93,9 +93,9 @@ class CumulativeSynchronousMetricStorage<T extends PointData>
     }
   }
 
-  private AggregatorHandle<T> getAggregatorHandle(Attributes attributes, Context context) {
+  private AggregatorHandle<T> getAggregatorHandle(Attributes attributes) {
     Objects.requireNonNull(attributes, "attributes");
-    attributes = attributesProcessor.process(attributes, context);
+    attributes = attributesFilter.apply(attributes);
     AggregatorHandle<T> handle = aggregatorHandles.get(attributes);
     if (handle != null) {
       return handle;
