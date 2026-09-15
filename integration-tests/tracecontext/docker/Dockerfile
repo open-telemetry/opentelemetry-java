@@ -1,4 +1,4 @@
-FROM python:3.14.7@sha256:8edbf9e42c7fb168b9c523718ed907117e6d2e60f5889c0c499bbda3a787da53 AS build
+FROM python:3.14.7@sha256:e06cc1111ed84189e91866447f562b89faadbfbbb9937cd67e6bf4172cdb45df AS build
 
 # Main branch SHA as of April-1-2021
 ARG TRACECONTEXT_GIT_TAG="dcd3ad9b7d6ac36f70ff3739874b73c11b0302a1"

@@ -13,7 +13,7 @@ jobs:
     name: Benchmark SDK
     runs-on: oracle-bare-metal-64cpu-1024gb-x86-64-ubuntu-24
     container:
-      image: ubuntu:26.04@sha256:2260313b31c8c011cd2eebe728008efac1b3982be73eb71348ea2648d2c0e09b
+      image: ubuntu:26.04@sha256:513c074113a871b51a8d16ab445c88779d6452d937a164fb5cc479f32668a41d
     timeout-minutes: 20 # since there is only a single bare metal runner across all repos
     strategy:
       fail-fast: false
@@ -49,7 +49,7 @@ jobs:
           java -jar libs/opentelemetry-sdk-trace-*-jmh.jar -rf json SpanBenchmark SpanPipelineBenchmark ExporterBenchmark
 
       - name: Store benchmark results
-        uses: benchmark-action/github-action-benchmark@52576c92bccf6ac60c8223ec7eb2565637cae9ba # v1.22.1
+        uses: benchmark-action/github-action-benchmark@4322e5726e6334590d251fc4f92bec0efafc45dc # v1.22.2
         with:
           tool: 'jmh'
           output-file-path: sdk/trace/build/jmh-result.json
