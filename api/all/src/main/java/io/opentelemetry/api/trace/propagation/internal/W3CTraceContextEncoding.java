@@ -40,7 +40,12 @@ public final class W3CTraceContextEncoding {
    */
   public static TraceState decodeTraceState(String traceStateHeader) {
     TraceStateBuilder traceStateBuilder = TraceState.builder();
-    String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceStateHeader);
+    // Bound the split so a malicious header cannot force allocation of an arbitrarily large token
+    // array before the length check. Requesting MAX_MEMBERS + 2 lets us reliably detect overflow
+    // without materializing every list-member.
+    String[] listMembers =
+        TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(
+            traceStateHeader, TRACESTATE_MAX_MEMBERS + 2);
     checkArgument(
         listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");
     // Iterate in reverse order because when call builder set the elements is added in the
