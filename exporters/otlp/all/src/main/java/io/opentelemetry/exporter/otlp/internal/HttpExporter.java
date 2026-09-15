@@ -103,7 +103,7 @@ public final class HttpExporter {
     String status = extractErrorStatus(httpResponse.getStatusMessage(), body);
 
     logger.log(
-        Level.WARNING,
+        levelOnFailure(Level.WARNING),
         "Failed to export "
             + numItems
             + " "
@@ -116,6 +116,12 @@ public final class HttpExporter {
     result.failExceptionally(FailedExportException.httpFailedWithResponse(httpResponse));
   }
 
+  // Failures after shutdown are typically caused by in-flight requests being cancelled by
+  // shutdown() and are not actionable, so demote them to FINE.
+  private Level levelOnFailure(Level defaultLevel) {
+    return isShutdown.get() ? Level.FINE : defaultLevel;
+  }
+
   private void onError(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
@@ -123,7 +129,7 @@ public final class HttpExporter {
       Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
-        Level.SEVERE,
+        levelOnFailure(Level.SEVERE),
         "Failed to export " + numItems + " " + type + "s. The request could not be executed.",
         e);
     result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
