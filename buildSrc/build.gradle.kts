@@ -38,7 +38,7 @@ dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.11.1")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:8.10.2")
-  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.5.0")
+  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.5.1")
   implementation("com.fasterxml.jackson.core:jackson-databind:2.22.2")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
@@ -50,6 +50,6 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:5.1.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:3.2.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.10")
-  implementation("org.sonatype.gradle.plugins:scan-gradle-plugin:4.0.0")
+  implementation("org.sonatype.gradle.plugins:scan-gradle-plugin:4.1.0-02")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
 }
