@@ -52,7 +52,7 @@ final class TracerSharedState {
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.tracerInstrumentation = tracerInstrumentation;
-    this.noSpanProcessor = spanProcessors.isEmpty();
+    this.noSpanProcessor = activeSpanProcessor instanceof NoopSpanProcessor;
   }
 
   Clock getClock() {

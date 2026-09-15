@@ -17,6 +17,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
 import java.math.BigInteger;
@@ -32,7 +34,11 @@ import org.junit.jupiter.api.Test;
 
 class SpanShimTest {
 
-  private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
+  private final SdkTracerProvider tracerSdkFactory =
+      SdkTracerProvider.builder()
+          .addSpanProcessor(
+              SimpleSpanProcessor.create(SpanExporter.noop())) // Use a real SDK span for testing.
+          .build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private Span span;
 

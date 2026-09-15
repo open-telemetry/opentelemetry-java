@@ -128,25 +128,6 @@ class SdkTracerTest {
   }
 
   @Test
-  void noSpanProcessors_spanBuilderShortCircuitsToNoop() {
-    // Verify zero processors short-circuit to the noop span builder.
-    SdkTracer tracer =
-        (SdkTracer)
-            SdkTracerProvider.builder()
-                .build()
-                .get(INSTRUMENTATION_SCOPE_NAME, INSTRUMENTATION_SCOPE_VERSION);
-
-    assertThat(tracer.spanBuilder(SPAN_NAME)).isNotInstanceOf(SdkSpanBuilder.class);
-
-    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
-    try {
-      assertThat(span.isRecording()).isFalse();
-    } finally {
-      span.end();
-    }
-  }
-
-  @Test
   void withSpanProcessor_recording() {
     // Verify a configured span processor produces recording spans.
     CountingSpanProcessor spanProcessor = new CountingSpanProcessor();

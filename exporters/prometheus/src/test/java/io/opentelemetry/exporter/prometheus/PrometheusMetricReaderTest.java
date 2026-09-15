@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.prometheus.metrics.expositionformats.OpenMetricsTextFormatWriter;
 import io.prometheus.metrics.expositionformats.PrometheusProtobufWriter;
 import io.prometheus.metrics.model.snapshots.HistogramSnapshot;
@@ -78,7 +80,12 @@ class PrometheusMetricReaderTest {
             .meterBuilder("test")
             .build();
     this.tracer =
-        SdkTracerProvider.builder().setClock(testClock).build().tracerBuilder("test").build();
+        SdkTracerProvider.builder()
+            .setClock(testClock)
+            .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop()))
+            .build()
+            .tracerBuilder("test")
+            .build();
   }
 
   @Test

@@ -6,6 +6,8 @@
 package io.opentelemetry.api.incubator.propagation;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.trace.Span;
@@ -19,6 +21,8 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -35,7 +39,10 @@ class ExtendedContextPropagatorsUsageTest {
 
     // Setup SdkTracerProvider
     SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build();
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+            .setSampler(Sampler.alwaysOn())
+            .build();
 
     // Get a Tracer for a scope
     Tracer tracer = tracerProvider.get("org.foo.my-scope");

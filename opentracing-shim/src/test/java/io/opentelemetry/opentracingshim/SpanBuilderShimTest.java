@@ -26,6 +26,8 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentracing.References;
@@ -39,7 +41,11 @@ import org.junit.jupiter.api.Test;
 
 class SpanBuilderShimTest {
 
-  private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
+  private final SdkTracerProvider tracerSdkFactory =
+      SdkTracerProvider.builder()
+          .addSpanProcessor(
+              SimpleSpanProcessor.create(SpanExporter.noop())) // Use a real SDK span for testing.
+          .build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
 
   private static final String SPAN_NAME = "Span";
@@ -426,7 +432,10 @@ class SpanBuilderShimTest {
   @Test
   void setAttributes_beforeSpanStart() {
     SdkTracerProvider tracerSdkFactory =
-        SdkTracerProvider.builder().setSampler(SamplingPrioritySampler.INSTANCE).build();
+        SdkTracerProvider.builder()
+            .setSampler(SamplingPrioritySampler.INSTANCE)
+            .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop()))
+            .build();
     Tracer tracer = tracerSdkFactory.get("SpanShimTest");
 
     SpanBuilderShim spanBuilder1 = new SpanBuilderShim(tracer, SPAN_NAME);
