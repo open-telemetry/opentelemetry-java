@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel.ALWAYS_OFF;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel.ALWAYS_ON;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel.ALWAYS_RECORD;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel.PARENT_BASED;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SamplerModel.TRACE_ID_RATIO_BASED;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.SamplerModelAccessor.EXPERIMENTAL_PROPERTIES;
@@ -24,12 +25,13 @@ import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ALWAYS_OFF, ALWAYS_ON, PARENT_BASED, TRACE_ID_RATIO_BASED})
+@JsonPropertyOrder({ALWAYS_OFF, ALWAYS_ON, ALWAYS_RECORD, PARENT_BASED, TRACE_ID_RATIO_BASED})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class SamplerModel {
 
   static final String ALWAYS_OFF = "always_off";
   static final String ALWAYS_ON = "always_on";
+  static final String ALWAYS_RECORD = "always_record";
   static final String PARENT_BASED = "parent_based";
   static final String TRACE_ID_RATIO_BASED = "trace_id_ratio_based";
 
@@ -39,6 +41,7 @@ public class SamplerModel {
     STABLE_PROPERTIES = new HashMap<>();
     STABLE_PROPERTIES.put(ALWAYS_OFF, AlwaysOffSamplerModel.class);
     STABLE_PROPERTIES.put(ALWAYS_ON, AlwaysOnSamplerModel.class);
+    STABLE_PROPERTIES.put(ALWAYS_RECORD, AlwaysRecordSamplerModel.class);
     STABLE_PROPERTIES.put(PARENT_BASED, ParentBasedSamplerModel.class);
     STABLE_PROPERTIES.put(TRACE_ID_RATIO_BASED, TraceIdRatioBasedSamplerModel.class);
   }
@@ -47,6 +50,7 @@ public class SamplerModel {
 
   @Nullable private AlwaysOffSamplerModel alwaysOff;
   @Nullable private AlwaysOnSamplerModel alwaysOn;
+  @Nullable private AlwaysRecordSamplerModel alwaysRecord;
   @Nullable private ParentBasedSamplerModel parentBased;
   @Nullable private TraceIdRatioBasedSamplerModel traceIdRatioBased;
   private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
@@ -90,6 +94,27 @@ public class SamplerModel {
   @JsonProperty(ALWAYS_ON)
   public SamplerModel setAlwaysOn(AlwaysOnSamplerModel alwaysOn) {
     this.alwaysOn = alwaysOn;
+    return this;
+  }
+
+  /**
+   * Configure sampler to be always_record.
+   *
+   * <p>If omitted, ignore.
+   */
+  @JsonProperty(ALWAYS_RECORD)
+  @Nullable
+  public AlwaysRecordSamplerModel getAlwaysRecord() {
+    if (alwaysRecord == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ALWAYS_RECORD, extensionProperties, AlwaysRecordSamplerModel.class);
+    }
+    return alwaysRecord;
+  }
+
+  @JsonProperty(ALWAYS_RECORD)
+  public SamplerModel setAlwaysRecord(AlwaysRecordSamplerModel alwaysRecord) {
+    this.alwaysRecord = alwaysRecord;
     return this;
   }
 
@@ -159,6 +184,8 @@ public class SamplerModel {
         + alwaysOff
         + ", alwaysOn="
         + alwaysOn
+        + ", alwaysRecord="
+        + alwaysRecord
         + ", parentBased="
         + parentBased
         + ", traceIdRatioBased="
@@ -175,6 +202,8 @@ public class SamplerModel {
     h ^= (this.getAlwaysOff() == null) ? 0 : this.getAlwaysOff().hashCode();
     h *= 1000003;
     h ^= (this.getAlwaysOn() == null) ? 0 : this.getAlwaysOn().hashCode();
+    h *= 1000003;
+    h ^= (this.getAlwaysRecord() == null) ? 0 : this.getAlwaysRecord().hashCode();
     h *= 1000003;
     h ^= (this.getParentBased() == null) ? 0 : this.getParentBased().hashCode();
     h *= 1000003;
@@ -197,6 +226,9 @@ public class SamplerModel {
           && (this.getAlwaysOn() == null
               ? that.getAlwaysOn() == null
               : this.getAlwaysOn().equals(that.getAlwaysOn()))
+          && (this.getAlwaysRecord() == null
+              ? that.getAlwaysRecord() == null
+              : this.getAlwaysRecord().equals(that.getAlwaysRecord()))
           && (this.getParentBased() == null
               ? that.getParentBased() == null
               : this.getParentBased().equals(that.getParentBased()))

@@ -9,6 +9,8 @@ import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrp
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel.ENDPOINT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel.HEADERS;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel.HEADERS_LIST;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel.MAX_REQUEST_SIZE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel.MAX_RESPONSE_SIZE;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel.TIMEOUT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpGrpcExporterModel.TLS;
 
@@ -27,7 +29,16 @@ import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ENDPOINT, TLS, HEADERS, HEADERS_LIST, COMPRESSION, TIMEOUT})
+@JsonPropertyOrder({
+  ENDPOINT,
+  TLS,
+  HEADERS,
+  HEADERS_LIST,
+  COMPRESSION,
+  MAX_REQUEST_SIZE,
+  MAX_RESPONSE_SIZE,
+  TIMEOUT
+})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class OtlpGrpcExporterModel {
 
@@ -36,6 +47,8 @@ public class OtlpGrpcExporterModel {
   static final String HEADERS = "headers";
   static final String HEADERS_LIST = "headers_list";
   static final String COMPRESSION = "compression";
+  static final String MAX_REQUEST_SIZE = "max_request_size";
+  static final String MAX_RESPONSE_SIZE = "max_response_size";
   static final String TIMEOUT = "timeout";
 
   private static final Map<String, Class<?>> STABLE_PROPERTIES;
@@ -46,6 +59,8 @@ public class OtlpGrpcExporterModel {
     STABLE_PROPERTIES.put(TLS, GrpcTlsModel.class);
     STABLE_PROPERTIES.put(HEADERS_LIST, String.class);
     STABLE_PROPERTIES.put(COMPRESSION, String.class);
+    STABLE_PROPERTIES.put(MAX_REQUEST_SIZE, Integer.class);
+    STABLE_PROPERTIES.put(MAX_RESPONSE_SIZE, Integer.class);
     STABLE_PROPERTIES.put(TIMEOUT, Integer.class);
   }
 
@@ -56,6 +71,8 @@ public class OtlpGrpcExporterModel {
   @Nullable private List<NameStringValuePairModel> headers;
   @Nullable private String headersList;
   @Nullable private String compression;
+  @Nullable private Integer maxRequestSize;
+  @Nullable private Integer maxResponseSize;
   @Nullable private Integer timeout;
   private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
@@ -166,6 +183,53 @@ public class OtlpGrpcExporterModel {
   }
 
   /**
+   * Configure the maximum size of each export request message in bytes, before compression.
+   *
+   * <p>Value must be non-negative. A value of 0 indicates no limit (infinity) and is not
+   * recommended.
+   *
+   * <p>If omitted or null, 67108864 (64 MiB) is used.
+   */
+  @JsonProperty(MAX_REQUEST_SIZE)
+  @Nullable
+  public Integer getMaxRequestSize() {
+    if (maxRequestSize == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          MAX_REQUEST_SIZE, extensionProperties, Integer.class);
+    }
+    return maxRequestSize;
+  }
+
+  @JsonProperty(MAX_REQUEST_SIZE)
+  public OtlpGrpcExporterModel setMaxRequestSize(Integer maxRequestSize) {
+    this.maxRequestSize = maxRequestSize;
+    return this;
+  }
+
+  /**
+   * Configure the maximum size of each export response in bytes, after decompression.
+   *
+   * <p>Value must be positive.
+   *
+   * <p>If omitted or null, 4194304 (4 MiB) is used.
+   */
+  @JsonProperty(MAX_RESPONSE_SIZE)
+  @Nullable
+  public Integer getMaxResponseSize() {
+    if (maxResponseSize == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          MAX_RESPONSE_SIZE, extensionProperties, Integer.class);
+    }
+    return maxResponseSize;
+  }
+
+  @JsonProperty(MAX_RESPONSE_SIZE)
+  public OtlpGrpcExporterModel setMaxResponseSize(Integer maxResponseSize) {
+    this.maxResponseSize = maxResponseSize;
+    return this;
+  }
+
+  /**
    * Configure max time (in milliseconds) to wait for each export.
    *
    * <p>Value must be non-negative. A value of 0 indicates no limit (infinity).
@@ -217,6 +281,10 @@ public class OtlpGrpcExporterModel {
         + headersList
         + ", compression="
         + compression
+        + ", maxRequestSize="
+        + maxRequestSize
+        + ", maxResponseSize="
+        + maxResponseSize
         + ", timeout="
         + timeout
         + ", extensionProperties="
@@ -237,6 +305,10 @@ public class OtlpGrpcExporterModel {
     h ^= (this.getHeadersList() == null) ? 0 : this.getHeadersList().hashCode();
     h *= 1000003;
     h ^= (this.getCompression() == null) ? 0 : this.getCompression().hashCode();
+    h *= 1000003;
+    h ^= (this.getMaxRequestSize() == null) ? 0 : this.getMaxRequestSize().hashCode();
+    h *= 1000003;
+    h ^= (this.getMaxResponseSize() == null) ? 0 : this.getMaxResponseSize().hashCode();
     h *= 1000003;
     h ^= (this.getTimeout() == null) ? 0 : this.getTimeout().hashCode();
     h *= 1000003;
@@ -262,6 +334,12 @@ public class OtlpGrpcExporterModel {
           && (this.getCompression() == null
               ? that.getCompression() == null
               : this.getCompression().equals(that.getCompression()))
+          && (this.getMaxRequestSize() == null
+              ? that.getMaxRequestSize() == null
+              : this.getMaxRequestSize().equals(that.getMaxRequestSize()))
+          && (this.getMaxResponseSize() == null
+              ? that.getMaxResponseSize() == null
+              : this.getMaxResponseSize().equals(that.getMaxResponseSize()))
           && (this.getTimeout() == null
               ? that.getTimeout() == null
               : this.getTimeout().equals(that.getTimeout()))
