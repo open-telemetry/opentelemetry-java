@@ -17,7 +17,7 @@ There are 2 ways to expose an OpenTracing tracer:
     ```
 2. From a specific `TracerProvider`, text map propagator (`TextMapPropagator`), and http propagator (`TextMapPropagator`):
     ```java
-    Tracer tracer = OpenTracingShim.createTracerShim(openTelemetry, textMapPropagator, httpPropagator);
+    Tracer tracer = OpenTracingShim.createTracerShim(tracerProvider, textMapPropagator, httpPropagator);
     ```
 
 Optionally register the tracer as the OpenTracing GlobalTracer:
