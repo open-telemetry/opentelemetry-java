@@ -219,7 +219,8 @@ class SdkSpanBuilderTest {
     try {
       assertThat(span.toSpanData().getLinks())
           .containsExactly(LinkData.create(sampledSpanContext, Attributes.empty()));
-      // Use a different sampledSpanContext to ensure no logic that avoids duplicate links makes this test to pass.
+      // Use a different sampledSpanContext to ensure no logic that avoids duplicate links makes
+      // this test to pass.
       spanBuilder.addLink(
           SpanContext.create(
               "00000000000004d20000000000001a85",
