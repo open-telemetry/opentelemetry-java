@@ -36,7 +36,8 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager,
       @Nullable ExecutorService executorService,
-      long maxResponseBodySize) {
+      long maxResponseBodySize,
+      @Nullable List<String> enabledProtocols) {
     return new AutoValue_ImmutableHttpSenderConfig(
         endpoint,
         contentType,
@@ -49,9 +50,14 @@ abstract class ImmutableHttpSenderConfig implements HttpSenderConfig {
         sslContext,
         trustManager,
         executorService,
-        maxResponseBodySize);
+        maxResponseBodySize,
+        enabledProtocols);
   }
 
   @Override
   public abstract long getMaxResponseBodySize();
+
+  @Override
+  @Nullable
+  public abstract List<String> getEnabledProtocols();
 }

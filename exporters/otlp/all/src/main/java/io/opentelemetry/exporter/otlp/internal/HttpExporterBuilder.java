@@ -71,6 +71,7 @@ public final class HttpExporterBuilder {
       ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
   private long maxRequestBodySize = DEFAULT_MAX_REQUEST_BODY_SIZE;
+  @Nullable private List<String> enabledProtocols;
 
   public HttpExporterBuilder(
       StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
@@ -174,6 +175,11 @@ public final class HttpExporterBuilder {
     return this;
   }
 
+  public HttpExporterBuilder setEnabledProtocols(@Nullable List<String> enabledProtocols) {
+    this.enabledProtocols = enabledProtocols;
+    return this;
+  }
+
   public HttpExporterBuilder exportAsJson() {
     this.exportAsJson = true;
     exporterType = mapToJsonTypeIfPossible(exporterType);
@@ -212,6 +218,7 @@ public final class HttpExporterBuilder {
     copy.proxyOptions = proxyOptions;
     copy.componentLoader = componentLoader;
     copy.maxRequestBodySize = maxRequestBodySize;
+    copy.enabledProtocols = enabledProtocols;
     return copy;
   }
 
@@ -255,7 +262,8 @@ public final class HttpExporterBuilder {
                 executorService,
                 // 4mb to align with spec guidance - even though we don't do anything with the
                 // response today, we will so better to have future-looking memory profile
-                4 * 1024L * 1024L));
+                4 * 1024L * 1024L,
+                enabledProtocols));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter(
@@ -290,6 +298,9 @@ public final class HttpExporterBuilder {
     joiner.add("headers=" + headersJoiner);
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
+    }
+    if (enabledProtocols != null) {
+      joiner.add("enabledProtocols=" + enabledProtocols);
     }
     joiner.add("componentLoader=" + componentLoader);
     if (executorService != null) {

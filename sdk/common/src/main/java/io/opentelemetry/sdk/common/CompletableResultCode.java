@@ -8,12 +8,15 @@ package io.opentelemetry.sdk.common;
 import io.opentelemetry.api.internal.GuardedBy;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -24,6 +27,9 @@ import javax.annotation.Nullable;
  * convey a result at a later time. CompletableResultCode facilitates this.
  */
 public final class CompletableResultCode {
+
+  private static final Logger logger = Logger.getLogger(CompletableResultCode.class.getName());
+
   /** Returns a {@link CompletableResultCode} that has been completed successfully. */
   public static CompletableResultCode ofSuccess() {
     return SUCCESS;
@@ -100,15 +106,7 @@ public final class CompletableResultCode {
 
   /** Complete this {@link CompletableResultCode} successfully if it is not already completed. */
   public CompletableResultCode succeed() {
-    synchronized (lock) {
-      if (succeeded == null) {
-        succeeded = true;
-        for (Runnable action : completionActions) {
-          action.run();
-        }
-      }
-    }
-    return this;
+    return complete(/* success= */ true, /* throwable= */ null);
   }
 
   /**
@@ -131,16 +129,47 @@ public final class CompletableResultCode {
   }
 
   private CompletableResultCode failInternal(@Nullable Throwable throwable) {
+    return complete(/* success= */ false, throwable);
+  }
+
+  private CompletableResultCode complete(boolean success, @Nullable Throwable throwable) {
+    List<Runnable> actions = null;
     synchronized (lock) {
       if (succeeded == null) {
-        succeeded = false;
-        this.throwable = throwable;
-        for (Runnable action : completionActions) {
-          action.run();
+        succeeded = success;
+        if (!success) {
+          this.throwable = throwable;
+        }
+        if (!completionActions.isEmpty()) {
+          actions = new ArrayList<>(completionActions);
+          completionActions.clear();
         }
       }
     }
+    // Completion actions run without the lock held. Running them under the lock lets an action
+    // which completes another result deadlock through lock inversion.
+    if (actions != null) {
+      runActions(actions);
+    }
     return this;
+  }
+
+  private static void runActions(List<Runnable> actions) {
+    RuntimeException firstException = null;
+    for (Runnable action : actions) {
+      try {
+        action.run();
+      } catch (RuntimeException e) {
+        // Continue executing the remaining actions, so ofAll is not blocked from completing.
+        logger.log(Level.WARNING, "Exception thrown by completion action.", e);
+        if (firstException == null) {
+          firstException = e;
+        }
+      }
+    }
+    if (firstException != null) {
+      throw firstException;
+    }
   }
 
   /**
@@ -173,7 +202,10 @@ public final class CompletableResultCode {
   }
 
   /**
-   * Perform an action on completion. Actions are guaranteed to be called only once.
+   * Perform an action on completion. Actions are guaranteed to be called only once. Actions are not
+   * invoked while internal locks are held. Every action runs even if an earlier one throws a {@link
+   * RuntimeException}. Each exception is logged, and the first one is rethrown after all the
+   * actions have executed.
    *
    * @param action the action to perform
    * @return this completable result so that it may be further composed
@@ -188,7 +220,7 @@ public final class CompletableResultCode {
       }
     }
     if (runNow) {
-      action.run();
+      runActions(Collections.singletonList(action));
     }
     return this;
   }

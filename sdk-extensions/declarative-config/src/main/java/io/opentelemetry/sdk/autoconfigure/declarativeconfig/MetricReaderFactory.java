@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PeriodicMetric
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.PeriodicMetricReaderModelAccessor;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -74,9 +75,9 @@ final class MetricReaderFactory
         cardinalityLimitSelector =
             CardinalityLimitsFactory.getInstance().create(model.getCardinalityLimits(), context);
       }
-      if (model.getMaxExportBatchSizeDevelopment() != null) {
-        SdkMeterProviderUtil.setMaxExportBatchSize(
-            builder, model.getMaxExportBatchSizeDevelopment());
+      Integer maxExportBatchSize = PeriodicMetricReaderModelAccessor.getMaxExportBatchSize(model);
+      if (maxExportBatchSize != null) {
+        SdkMeterProviderUtil.setMaxExportBatchSize(builder, maxExportBatchSize);
       }
 
       MetricReader reader = context.addCloseable(builder.build());

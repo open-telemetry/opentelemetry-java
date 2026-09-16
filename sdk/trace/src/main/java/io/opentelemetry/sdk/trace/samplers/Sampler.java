@@ -129,6 +129,7 @@ public interface Sampler extends Closeable {
    * <p>This method is called when the {@code SdkTracerProvider} is shut down.
    *
    * @return a {@link CompletableResultCode} which is completed when shutdown is finished.
+   * @since 1.65.0
    */
   default CompletableResultCode shutdown() {
     return CompletableResultCode.ofSuccess();

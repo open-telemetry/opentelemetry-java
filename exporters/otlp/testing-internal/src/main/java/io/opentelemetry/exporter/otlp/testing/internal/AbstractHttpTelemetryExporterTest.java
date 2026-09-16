@@ -425,6 +425,35 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void enabledProtocols() throws Exception {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri() + path)
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    }
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void enabledProtocols_restrictedProtocolsFail() throws Exception {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri() + path)
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setEnabledProtocols(Collections.singletonList("TLSv1.1"))
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    }
+  }
+
+  @Test
   @SuppressLogger(HttpExporter.class)
   void tls_untrusted() {
     try (TelemetryExporter<T> exporter =
@@ -583,7 +612,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
     LoggingEvent log =
         logs.assertContains(
-            "Failed to export "
+            "Failed to export 1 "
                 + type
                 + "s. Server responded with HTTP status code 500. Error message:");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
@@ -730,6 +759,69 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThat(attempts).hasValue(2);
   }
 
+  @Test
+  void retryableError_retryAfterHonored() {
+    addHttpResponse(502, "0");
+
+    // Configure a large enough initial backoff so the elapsed time proves Retry-After is honored
+    // instead of waiting for the retry policy delay.
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .setRetryPolicy(
+                RetryPolicy.builder()
+                    .setMaxAttempts(2)
+                    .setInitialBackoff(Duration.ofSeconds(1))
+                    .setMaxBackoff(Duration.ofSeconds(1))
+                    .build())
+            .build()) {
+      long startTimeNanos = System.nanoTime();
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .isSuccess())
+          .isTrue();
+      long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
+
+      assertThat(attempts).hasValue(2);
+      assertThat(elapsedMillis).isLessThan(750L);
+    }
+  }
+
+  @Test
+  void retryableError_malformedRetryAfterFallsBack() {
+    addHttpResponse(503, "not-a-retry-after");
+
+    // Configure a large enough initial backoff so the elapsed time proves we fell back to the
+    // retry policy rather than the (malformed) Retry-After header.
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .setRetryPolicy(
+                RetryPolicy.builder()
+                    .setMaxAttempts(2)
+                    .setInitialBackoff(Duration.ofMillis(300))
+                    .setMaxBackoff(Duration.ofMillis(300))
+                    .build())
+            .build()) {
+      long startTimeNanos = System.nanoTime();
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .isSuccess())
+          .isTrue();
+      long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
+
+      assertThat(attempts).hasValue(2);
+      // The malformed Retry-After header should be ignored, so the retry must wait at least a
+      // noticeable portion of the configured 300ms backoff. Keep a generous upper bound to avoid
+      // flaking in slow CI environments.
+      assertThat(elapsedMillis).isBetween(100L, 2_000L);
+    }
+  }
+
   @ParameterizedTest
   @SuppressLogger(HttpExporter.class)
   @ValueSource(ints = {400, 401, 403, 500, 501})
@@ -857,6 +949,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> exporterBuilder().setTrustedCertificates(certificate.certificate().getEncoded()))
         .doesNotThrowAnyException();
+
+    assertThatCode(() -> exporterBuilder().setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3")))
+        .doesNotThrowAnyException();
   }
 
   private void buildAndShutdown(TelemetryExporterBuilder<T> builder) {
@@ -915,14 +1010,20 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compressionMethod. Compression method must be \"none\" or one of:"
-                + " [base64,gzip]");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxRequestBodySizeBytes must be positive");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(-1))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxRequestBodySizeBytes must be positive");
+
+    assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("enabledProtocols");
+    assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(Collections.emptyList()))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("enabledProtocols must not be empty");
   }
 
   @Test
@@ -964,6 +1065,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
             .setComponentLoader(ComponentLoader.forClassLoader(new ClassLoader() {}))
             .build()) {
       Object unwrapped = exporter.unwrap();
@@ -1070,6 +1172,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
             .build()) {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
@@ -1091,7 +1194,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + ".*maxRequestBodySize="
                   + HttpExporterBuilder.DEFAULT_MAX_REQUEST_BODY_SIZE
                   + ".*" // Maybe additional signal specific fields
-                  + "\\}");
+                  + "\\}")
+          .contains("enabledProtocols=[TLSv1.2, TLSv1.3]");
     }
   }
 
@@ -1237,6 +1341,14 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   private static void addHttpResponse(int code) {
     httpErrors.add(HttpResponse.of(code));
+  }
+
+  private static void addHttpResponse(int code, String retryAfter) {
+    httpErrors.add(
+        HttpResponse.of(
+            ResponseHeaders.builder(HttpStatus.valueOf(code))
+                .add("Retry-After", retryAfter)
+                .build()));
   }
 
   private static void addHttpResponse(int code, AbstractMessageLite<?, ?> bodyMessage) {

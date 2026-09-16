@@ -107,6 +107,6 @@ public final class LoggingMetricExporter implements MetricExporter {
 
   @Override
   public String toString() {
-    return "LoggingMetricExporter{}";
+    return "LoggingMetricExporter{aggregationTemporality=" + aggregationTemporality + "}";
   }
 }

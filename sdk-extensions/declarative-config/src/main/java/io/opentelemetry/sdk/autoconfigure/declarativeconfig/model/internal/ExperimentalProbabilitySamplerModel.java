@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"ratio"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalProbabilitySamplerModel {
 
   @Nullable private Double ratio;
@@ -30,7 +30,7 @@ public class ExperimentalProbabilitySamplerModel {
   }
 
   @JsonProperty("ratio")
-  public ExperimentalProbabilitySamplerModel withRatio(Double ratio) {
+  public ExperimentalProbabilitySamplerModel setRatio(Double ratio) {
     this.ratio = ratio;
     return this;
   }

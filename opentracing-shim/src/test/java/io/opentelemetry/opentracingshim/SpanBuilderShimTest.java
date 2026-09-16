@@ -19,8 +19,10 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -31,6 +33,7 @@ import io.opentracing.noop.NoopSpan;
 import io.opentracing.tag.Tags;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -223,6 +226,50 @@ class SpanBuilderShimTest {
         assertThat("value1").isEqualTo(childSpan.getBaggageItem("key1"));
         assertThat(getBaggageMap(parentSpan.context().baggageItems()))
             .isEqualTo(getBaggageMap(childSpan.context().baggageItems()));
+      } finally {
+        childSpan.finish();
+      }
+    } finally {
+      parentSpan.finish();
+    }
+  }
+
+  @Test
+  void baggage_explicitParent_inParentContext() {
+    AtomicReference<Baggage> parentContextBaggage = new AtomicReference<>();
+    SdkTracerProvider tracerSdkFactory =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                new SpanProcessor() {
+                  @Override
+                  public void onStart(Context parentContext, ReadWriteSpan span) {
+                    parentContextBaggage.set(Baggage.fromContext(parentContext));
+                  }
+
+                  @Override
+                  public boolean isStartRequired() {
+                    return true;
+                  }
+
+                  @Override
+                  public void onEnd(ReadableSpan span) {}
+
+                  @Override
+                  public boolean isEndRequired() {
+                    return false;
+                  }
+                })
+            .build();
+    Tracer tracer = tracerSdkFactory.get("SpanShimTest");
+
+    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).start();
+    try {
+      parentSpan.setBaggageItem("key1", "value1");
+
+      SpanShim childSpan =
+          (SpanShim) new SpanBuilderShim(tracer, SPAN_NAME).asChildOf(parentSpan).start();
+      try {
+        assertThat(parentContextBaggage.get().getEntryValue("key1")).isEqualTo("value1");
       } finally {
         childSpan.finish();
       }

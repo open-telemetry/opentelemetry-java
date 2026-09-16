@@ -29,7 +29,7 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
   SdkLongCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
@@ -41,12 +41,7 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
   @Override
   public void add(long increment, Attributes attributes, Context context) {
-    if (increment < 0) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Counters can only increase. Instrument "
-              + getDescriptor().getName()
-              + " has recorded a negative value.");
+    if (!validateNonNegative(increment)) {
       return;
     }
     storage.recordLong(increment, attributes, context);
@@ -54,12 +49,28 @@ class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
   @Override
   public void add(long increment, Attributes attributes) {
-    add(increment, attributes, Context.current());
+    add(increment, attributes, currentOrRootContext());
   }
 
   @Override
   public void add(long increment) {
     add(increment, Attributes.empty());
+  }
+
+  /**
+   * Returns true if {@code increment} is non-negative, otherwise logs a warning and returns false.
+   * Shared by the unbound and bound ({@link ExtendedSdkLongCounter}) record paths.
+   */
+  boolean validateNonNegative(long increment) {
+    if (increment < 0) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Counters can only increase. Instrument "
+              + getDescriptor().getName()
+              + " has recorded a negative value.");
+      return false;
+    }
+    return true;
   }
 
   static class SdkLongCounterBuilder implements LongCounterBuilder {

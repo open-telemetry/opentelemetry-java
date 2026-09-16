@@ -70,6 +70,7 @@ public class GrpcExporterBuilder {
       ComponentLoader.forClassLoader(GrpcExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
   private long maxRequestMessageSize = DEFAULT_MAX_REQUEST_MESSAGE_SIZE;
+  @Nullable private List<String> enabledProtocols;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
@@ -177,6 +178,11 @@ public class GrpcExporterBuilder {
     return this;
   }
 
+  public GrpcExporterBuilder setEnabledProtocols(@Nullable List<String> enabledProtocols) {
+    this.enabledProtocols = enabledProtocols;
+    return this;
+  }
+
   @SuppressWarnings("BuilderReturnThis")
   public GrpcExporterBuilder copy() {
     GrpcExporterBuilder copy =
@@ -197,6 +203,7 @@ public class GrpcExporterBuilder {
     copy.grpcChannel = grpcChannel;
     copy.componentLoader = componentLoader;
     copy.maxRequestMessageSize = maxRequestMessageSize;
+    copy.enabledProtocols = enabledProtocols;
     return copy;
   }
 
@@ -240,7 +247,8 @@ public class GrpcExporterBuilder {
                 grpcChannel,
                 // 4mb to align with spec guidance - even though we don't do anything with the
                 // response today, we will so better to have future-looking memory profile
-                4 * 1024L * 1024L));
+                4 * 1024L * 1024L,
+                enabledProtocols));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter(
@@ -273,6 +281,9 @@ public class GrpcExporterBuilder {
     joiner.add("headers=" + headersJoiner);
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
+    }
+    if (enabledProtocols != null) {
+      joiner.add("enabledProtocols=" + enabledProtocols);
     }
     if (grpcChannel != null) {
       joiner.add("grpcChannel=" + grpcChannel);

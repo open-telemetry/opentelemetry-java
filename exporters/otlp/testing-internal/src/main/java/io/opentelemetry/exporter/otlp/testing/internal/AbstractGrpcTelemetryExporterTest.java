@@ -637,6 +637,40 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void enabledProtocols() throws Exception {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri().toString())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    }
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void enabledProtocols_restrictedProtocolsFail() throws Exception {
+    assumeThat(System.getProperty("io.opentelemetry.sdk.common.export.GrpcSenderProvider"))
+        .as("enabledProtocols is not supported by UpstreamGrpcSenderProvider")
+        .isNotEqualTo(
+            "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider");
+
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri().toString())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setEnabledProtocols(Collections.singletonList("TLSv1.1"))
+            .build()) {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    }
+  }
+
+  @Test
   @SuppressLogger(GrpcExporter.class)
   void tls_untrusted() {
     try (TelemetryExporter<T> exporter =
@@ -793,7 +827,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
       LoggingEvent log =
           logs.assertContains(
-              "Failed to export "
+              "Failed to export 1 "
                   + type
                   + "s. Server responded with gRPC status code 13. Error message:");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
@@ -837,7 +871,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .isFalse();
       LoggingEvent log =
           logs.assertContains(
-              "Failed to export "
+              "Failed to export 1 "
                   + type
                   + "s. Server responded with gRPC status code 8. Error message: out of quota");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
@@ -858,7 +892,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .isFalse();
       LoggingEvent log =
           logs.assertContains(
-              "Failed to export "
+              "Failed to export 1 "
                   + type
                   + "s. Server responded with gRPC status code 5. Error message: クマ🐻");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
@@ -879,7 +913,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .isFalse();
       LoggingEvent log =
           logs.assertContains(
-              "Failed to export "
+              "Failed to export 1 "
                   + type
                   + "s. Server is UNAVAILABLE. "
                   + "Make sure your collector is running and reachable from this network.");
@@ -1081,6 +1115,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> exporterBuilder().setTrustedCertificates(certificate.certificate().getEncoded()))
         .doesNotThrowAnyException();
+
+    assertThatCode(() -> exporterBuilder().setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3")))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -1170,14 +1207,20 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compressionMethod. Compression method must be \"none\" or one of:"
-                + " [base64,gzip]");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxRequestMessageSizeBytes must be positive");
     assertThatThrownBy(() -> exporterBuilder().setMaxRequestSize(-1))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxRequestMessageSizeBytes must be positive");
+
+    assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("enabledProtocols");
+    assertThatThrownBy(() -> exporterBuilder().setEnabledProtocols(Collections.emptyList()))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("enabledProtocols must not be empty");
   }
 
   @Test
@@ -1218,6 +1261,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
             .build()) {
       Object unwrapped = exporter.unwrap();
       Field builderField = unwrapped.getClass().getDeclaredField("builder");
@@ -1292,6 +1336,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
+            .setEnabledProtocols(Arrays.asList("TLSv1.2", "TLSv1.3"))
             .build(); ) {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
@@ -1312,7 +1357,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + ".*maxRequestMessageSize="
                   + GrpcExporterBuilder.DEFAULT_MAX_REQUEST_MESSAGE_SIZE
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
-                  + "\\}");
+                  + "\\}")
+          .contains("enabledProtocols=[TLSv1.2, TLSv1.3]");
     }
   }
 

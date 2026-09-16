@@ -38,7 +38,26 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
   public void recordDouble(double value, Attributes attributes, Context context) {}
 
   @Override
+  public BoundStorageHandle bind(Attributes attributes) {
+    return NOOP_BOUND_HANDLE;
+  }
+
+  private static final BoundStorageHandle NOOP_BOUND_HANDLE =
+      new BoundStorageHandle() {
+        @Override
+        public void recordLong(long value, Context context) {}
+
+        @Override
+        public void recordDouble(double value, Context context) {}
+      };
+
+  @Override
   public boolean isEnabled() {
+    return false;
+  }
+
+  @Override
+  public boolean usesContext() {
     return false;
   }
 

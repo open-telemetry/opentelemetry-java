@@ -1,0 +1,234 @@
+<application>
+  <component name="ToolWindowLayout"><![CDATA[{
+  "activeLayoutName": "tripple",
+  "layouts": {
+    "Custom": {
+      "v2": [
+        {
+          "id": "Project",
+          "order": 0,
+          "contentUiType": "COMBO",
+          "weight": 0.25
+        },
+        {
+          "id": "Commit",
+          "order": 1,
+          "weight": 0.25
+        },
+        {
+          "id": "Structure",
+          "order": 2,
+          "weight": 0.25,
+          "isSplit": true
+        },
+        {
+          "id": "Version Control",
+          "order": 0,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Problems",
+          "order": 1,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Problems View",
+          "order": 2,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Terminal",
+          "order": 3,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Services",
+          "order": 4,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Notifications",
+          "order": 0,
+          "anchor": "RIGHT",
+          "contentUiType": "COMBO",
+          "weight": 0.25
+        },
+        {
+          "id": "AIAssistant",
+          "order": 1,
+          "anchor": "RIGHT",
+          "weight": 0.25
+        },
+        {
+          "id": "Database",
+          "order": 2,
+          "anchor": "RIGHT",
+          "weight": 0.25
+        },
+        {
+          "id": "Gradle",
+          "order": 3,
+          "anchor": "RIGHT",
+          "weight": 0.25
+        },
+        {
+          "id": "Maven",
+          "order": 4,
+          "anchor": "RIGHT",
+          "weight": 0.25
+        }
+      ]
+    },
+    "tripple": {
+      "v2": [
+        {
+          "id": "Commit",
+          "order": 0,
+          "weight": 0.25
+        },
+        {
+          "id": "Terminal",
+          "order": 1,
+          "isActiveOnStart": true,
+          "isVisible": true,
+          "weight": 0.2555934,
+          "sideWeight": 0.58630466,
+          "isSplit": true
+        },
+        {
+          "id": "Structure",
+          "order": 2,
+          "weight": 0.25,
+          "isSplit": true
+        },
+        {
+          "id": "Pull Requests",
+          "order": 3
+        },
+        {
+          "id": "Project",
+          "order": 4,
+          "contentUiType": "COMBO",
+          "isVisible": true,
+          "weight": 0.2555934,
+          "sideWeight": 0.4136953
+        },
+        {
+          "id": "Problems",
+          "order": 0,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Problems View",
+          "order": 1,
+          "anchor": "BOTTOM",
+          "isShowStripeButton": false,
+          "weight": 0.33028167
+        },
+        {
+          "id": "Services",
+          "order": 2,
+          "anchor": "BOTTOM",
+          "isShowStripeButton": false,
+          "weight": 0.33028167
+        },
+        {
+          "id": "Language Servers",
+          "order": 3,
+          "anchor": "BOTTOM",
+          "isShowStripeButton": false,
+          "weight": 0.33028167
+        },
+        {
+          "id": "Build",
+          "order": 4,
+          "anchor": "BOTTOM",
+          "weight": 0.33028167
+        },
+        {
+          "id": "Run",
+          "order": 5,
+          "anchor": "BOTTOM",
+          "isShowStripeButton": false,
+          "weight": 0.33028167
+        },
+        {
+          "id": "Debug",
+          "order": 6,
+          "anchor": "BOTTOM",
+          "isShowStripeButton": false,
+          "weight": 0.33028167
+        },
+        {
+          "id": "Notifications",
+          "order": 0,
+          "anchor": "RIGHT",
+          "contentUiType": "COMBO",
+          "weight": 0.25
+        },
+        {
+          "id": "AIAssistant",
+          "order": 1,
+          "anchor": "RIGHT",
+          "weight": 0.25
+        },
+        {
+          "id": "Database",
+          "order": 2,
+          "anchor": "RIGHT",
+          "weight": 0.32994792
+        },
+        {
+          "id": "Gradle",
+          "order": 3,
+          "anchor": "RIGHT",
+          "weight": 0.37877604,
+          "sideWeight": 0.50024104
+        },
+        {
+          "id": "Maven",
+          "order": 4,
+          "anchor": "RIGHT",
+          "weight": 0.25
+        },
+        {
+          "id": "documentation.v2",
+          "order": 5,
+          "anchor": "RIGHT",
+          "weight": 0.32994792,
+          "isSplit": true
+        },
+        {
+          "id": "Version Control",
+          "order": 6,
+          "anchor": "RIGHT",
+          "floatingBounds": [
+            3976,
+            -487,
+            1920,
+            2130
+          ],
+          "isActiveOnStart": true,
+          "isVisible": true,
+          "weight": 0.28720817,
+          "sideWeight": 0.4997589,
+          "isSplit": true
+        },
+        {
+          "id": "Find",
+          "order": 7,
+          "anchor": "RIGHT",
+          "weight": 0.37877604,
+          "isSplit": true
+        }
+      ],
+      "unifiedWeights": {
+        "top": 0.33,
+        "left": 0.2555934,
+        "bottom": 0.3021418,
+        "right": 0.28720817
+      }
+    }
+  }
+}]]></component>
+</application>

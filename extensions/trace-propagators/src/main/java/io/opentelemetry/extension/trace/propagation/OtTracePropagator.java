@@ -109,6 +109,7 @@ public final class OtTracePropagator implements TextMapPropagator {
   }
 
   @Override
+  @SuppressWarnings("deprecation") // Legacy baggage headers require key enumeration.
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
       return Context.root();
@@ -146,7 +147,8 @@ public final class OtTracePropagator implements TextMapPropagator {
           break;
         }
         String lowercaseKey = key.toLowerCase(Locale.ROOT);
-        if (!lowercaseKey.startsWith(PREFIX_BAGGAGE_HEADER)) {
+        if (!lowercaseKey.startsWith(PREFIX_BAGGAGE_HEADER)
+            || lowercaseKey.length() == PREFIX_BAGGAGE_HEADER.length()) {
           continue;
         }
         String value = getter.get(carrier, key);

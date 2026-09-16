@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeTypeModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,28 +39,28 @@ class AttributeListFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "null value",
-            Collections.singletonList(new AttributeNameValueModel().withName("key")),
+            Collections.singletonList(new AttributeNameValueModel().setName("key")),
             "attribute value is required but is null"),
         Arguments.argumentSet(
             "wrong type string",
             Collections.singletonList(
-                new AttributeNameValueModel().withName("key").withValue(new Object())),
+                new AttributeNameValueModel().setName("key").setValue(new Object())),
             "Error processing attribute with name \"key\": value did not match type STRING"),
         Arguments.argumentSet(
             "wrong type int list",
             Collections.singletonList(
                 new AttributeNameValueModel()
-                    .withName("key")
-                    .withType(AttributeNameValueModel.AttributeType.INT)
-                    .withValue(Arrays.asList(1L, 1))),
+                    .setName("key")
+                    .setType(AttributeTypeModel.INT)
+                    .setValue(Arrays.asList(1L, 1))),
             "Error processing attribute with name \"key\": value did not match type INT"),
         Arguments.argumentSet(
             "wrong type int boolean",
             Collections.singletonList(
                 new AttributeNameValueModel()
-                    .withName("key")
-                    .withType(AttributeNameValueModel.AttributeType.INT)
-                    .withValue(true)),
+                    .setName("key")
+                    .setType(AttributeTypeModel.INT)
+                    .setValue(true)),
             "Error processing attribute with name \"key\": value did not match type INT"));
   }
 
@@ -86,56 +87,56 @@ class AttributeListFactoryTest {
                 .create(
                     Arrays.asList(
                         new AttributeNameValueModel()
-                            .withName("service.name")
-                            .withValue("my-service"),
+                            .setName("service.name")
+                            .setValue("my-service"),
                         new AttributeNameValueModel()
-                            .withName("strKey")
-                            .withValue("val")
-                            .withType(AttributeNameValueModel.AttributeType.STRING),
+                            .setName("strKey")
+                            .setValue("val")
+                            .setType(AttributeTypeModel.STRING),
                         new AttributeNameValueModel()
-                            .withName("longKey")
-                            .withValue(1L)
-                            .withType(AttributeNameValueModel.AttributeType.INT),
+                            .setName("longKey")
+                            .setValue(1L)
+                            .setType(AttributeTypeModel.INT),
                         new AttributeNameValueModel()
-                            .withName("intKey")
-                            .withValue(2)
-                            .withType(AttributeNameValueModel.AttributeType.INT),
+                            .setName("intKey")
+                            .setValue(2)
+                            .setType(AttributeTypeModel.INT),
                         new AttributeNameValueModel()
-                            .withName("doubleKey")
-                            .withValue(1.0d)
-                            .withType(AttributeNameValueModel.AttributeType.DOUBLE),
+                            .setName("doubleKey")
+                            .setValue(1.0d)
+                            .setType(AttributeTypeModel.DOUBLE),
                         new AttributeNameValueModel()
-                            .withName("floatKey")
-                            .withValue(2.0f)
-                            .withType(AttributeNameValueModel.AttributeType.DOUBLE),
+                            .setName("floatKey")
+                            .setValue(2.0f)
+                            .setType(AttributeTypeModel.DOUBLE),
                         new AttributeNameValueModel()
-                            .withName("boolKey")
-                            .withValue(true)
-                            .withType(AttributeNameValueModel.AttributeType.BOOL),
+                            .setName("boolKey")
+                            .setValue(true)
+                            .setType(AttributeTypeModel.BOOL),
                         new AttributeNameValueModel()
-                            .withName("strArrKey")
-                            .withValue(Arrays.asList("val1", "val2"))
-                            .withType(AttributeNameValueModel.AttributeType.STRING_ARRAY),
+                            .setName("strArrKey")
+                            .setValue(Arrays.asList("val1", "val2"))
+                            .setType(AttributeTypeModel.STRING_ARRAY),
                         new AttributeNameValueModel()
-                            .withName("longArrKey")
-                            .withValue(Arrays.asList(1L, 2L))
-                            .withType(AttributeNameValueModel.AttributeType.INT_ARRAY),
+                            .setName("longArrKey")
+                            .setValue(Arrays.asList(1L, 2L))
+                            .setType(AttributeTypeModel.INT_ARRAY),
                         new AttributeNameValueModel()
-                            .withName("intArrKey")
-                            .withValue(Arrays.asList(1, 2))
-                            .withType(AttributeNameValueModel.AttributeType.INT_ARRAY),
+                            .setName("intArrKey")
+                            .setValue(Arrays.asList(1, 2))
+                            .setType(AttributeTypeModel.INT_ARRAY),
                         new AttributeNameValueModel()
-                            .withName("doubleArrKey")
-                            .withValue(Arrays.asList(1.0d, 2.0d))
-                            .withType(AttributeNameValueModel.AttributeType.DOUBLE_ARRAY),
+                            .setName("doubleArrKey")
+                            .setValue(Arrays.asList(1.0d, 2.0d))
+                            .setType(AttributeTypeModel.DOUBLE_ARRAY),
                         new AttributeNameValueModel()
-                            .withName("floatArrKey")
-                            .withValue(Arrays.asList(1.0f, 2.0f))
-                            .withType(AttributeNameValueModel.AttributeType.DOUBLE_ARRAY),
+                            .setName("floatArrKey")
+                            .setValue(Arrays.asList(1.0f, 2.0f))
+                            .setType(AttributeTypeModel.DOUBLE_ARRAY),
                         new AttributeNameValueModel()
-                            .withName("boolArrKey")
-                            .withValue(Arrays.asList(true, false))
-                            .withType(AttributeNameValueModel.AttributeType.BOOL_ARRAY)),
+                            .setName("boolArrKey")
+                            .setValue(Arrays.asList(true, false))
+                            .setType(AttributeTypeModel.BOOL_ARRAY)),
                     mock(DeclarativeConfigContext.class)))
         .isEqualTo(expectedAttributes);
   }

@@ -32,6 +32,7 @@ public final class AttributeUtil {
    * with the limits applied. {@code countLimit} limits the number of unique attribute keys. {@code
    * lengthLimit} limits the length of attribute string and string list values.
    */
+  // Attributes guarantees matching key/value types, and length limiting preserves value types.
   @SuppressWarnings({"unchecked", "rawtypes"})
   public static Attributes applyAttributesLimit(
       Attributes attributes, int countLimit, int lengthLimit) {
@@ -78,10 +79,12 @@ public final class AttributeUtil {
       ByteBuffer buffer = (ByteBuffer) value.getValue();
       return buffer.remaining() <= lengthLimit;
     } else if (type == ValueType.ARRAY) {
+      // ValueType.ARRAY guarantees a List<Value<?>>.
       @SuppressWarnings("unchecked")
       List<Value<?>> array = (List<Value<?>>) value.getValue();
       return allMatch(array, element -> isValidLengthValue(element, lengthLimit));
     } else if (type == ValueType.KEY_VALUE_LIST) {
+      // ValueType.KEY_VALUE_LIST guarantees a List<KeyValue>.
       @SuppressWarnings("unchecked")
       List<KeyValue> kvList = (List<KeyValue>) value.getValue();
       return allMatch(kvList, kv -> isValidLengthValue(kv.getValue(), lengthLimit));
@@ -135,6 +138,7 @@ public final class AttributeUtil {
     return value;
   }
 
+  // The ValueType checks below ensure the list casts match Value.getValue()'s contract.
   @SuppressWarnings("unchecked")
   private static Value<?> applyValueLengthLimit(Value<?> value, int lengthLimit) {
     ValueType type = value.getType();

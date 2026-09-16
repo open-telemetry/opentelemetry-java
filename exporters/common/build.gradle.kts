@@ -7,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry Exporter Common"
 otelJava.moduleName.set("io.opentelemetry.exporter.internal")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("com.google.common.io", "io.opentelemetry.api.incubator.config", "io.opentelemetry.sdk.autoconfigure.spi"))
 // sun.misc, io.grpc, and org.jspecify are not OSGi bundles and have no package versioning; must use unversioned optional.
 otelJava.osgiUnversionedOptionalPackages.set(listOf("sun.misc", "io.grpc", "org.jspecify.annotations"))

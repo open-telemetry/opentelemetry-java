@@ -16,15 +16,16 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.component.LogRecordP
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorModel;
-import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorPropertyModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExperimentalEventToSpanEventBridgeLogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LogRecordProcessorModelAccessor;
 import io.opentelemetry.sdk.extension.incubator.logs.EventToSpanEventBridge;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -59,24 +60,23 @@ class LogRecordProcessorFactoryTest {
         Arguments.argumentSet(
             "batch otlp_http defaults",
             new LogRecordProcessorModel()
-                .withBatch(
+                .setBatch(
                     new BatchLogRecordProcessorModel()
-                        .withExporter(
-                            new LogRecordExporterModel()
-                                .withOtlpHttp(new OtlpHttpExporterModel()))),
+                        .setExporter(
+                            new LogRecordExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))),
             BatchLogRecordProcessor.builder(
                     OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
                 .build()),
         Arguments.argumentSet(
             "batch otlp_http with options",
             new LogRecordProcessorModel()
-                .withBatch(
+                .setBatch(
                     new BatchLogRecordProcessorModel()
-                        .withExporter(
-                            new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))
-                        .withScheduleDelay(1)
-                        .withMaxExportBatchSize(2)
-                        .withExportTimeout(3)),
+                        .setExporter(
+                            new LogRecordExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))
+                        .setScheduleDelay(1)
+                        .setMaxExportBatchSize(2)
+                        .setExportTimeout(3)),
             BatchLogRecordProcessor.builder(
                     OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())
                 .setScheduleDelay(Duration.ofMillis(1))
@@ -86,23 +86,21 @@ class LogRecordProcessorFactoryTest {
         Arguments.argumentSet(
             "simple otlp_http",
             new LogRecordProcessorModel()
-                .withSimple(
+                .setSimple(
                     new SimpleLogRecordProcessorModel()
-                        .withExporter(
-                            new LogRecordExporterModel()
-                                .withOtlpHttp(new OtlpHttpExporterModel()))),
+                        .setExporter(
+                            new LogRecordExporterModel().setOtlpHttp(new OtlpHttpExporterModel()))),
             SimpleLogRecordProcessor.create(
                 OtlpHttpLogRecordExporter.builder().setComponentLoader(context).build())),
         Arguments.argumentSet(
             "event_to_span_event_bridge/development",
-            new LogRecordProcessorModel()
-                .withEventToSpanEventBridgeDevelopment(
-                    new ExperimentalEventToSpanEventBridgeLogRecordProcessorModel()),
+            LogRecordProcessorModelAccessor.setEventToSpanEventBridge(
+                new LogRecordProcessorModel(),
+                new ExperimentalEventToSpanEventBridgeLogRecordProcessorModel()),
             EventToSpanEventBridge.create()),
         Arguments.argumentSet(
             "spi test processor",
-            new LogRecordProcessorModel()
-                .withAdditionalProperty("test", new LogRecordProcessorPropertyModel()),
+            new LogRecordProcessorModel().setExtensionProperty("test", null),
             LogRecordProcessorComponentProvider.TestLogRecordProcessor.create()));
   }
 
@@ -118,18 +116,16 @@ class LogRecordProcessorFactoryTest {
     return Stream.of(
         Arguments.argumentSet(
             "batch missing exporter",
-            new LogRecordProcessorModel().withBatch(new BatchLogRecordProcessorModel()),
+            new LogRecordProcessorModel().setBatch(new BatchLogRecordProcessorModel()),
             "batch log record processor exporter is required but is null"),
         Arguments.argumentSet(
             "simple missing exporter",
-            new LogRecordProcessorModel().withSimple(new SimpleLogRecordProcessorModel()),
+            new LogRecordProcessorModel().setSimple(new SimpleLogRecordProcessorModel()),
             "simple log record processor exporter is required but is null"),
         Arguments.argumentSet(
             "unknown component provider",
             new LogRecordProcessorModel()
-                .withAdditionalProperty(
-                    "unknown_key",
-                    new LogRecordProcessorPropertyModel().withAdditionalProperty("key1", "value1")),
+                .setExtensionProperty("unknown_key", Collections.singletonMap("key1", "value1")),
             "No component provider detected for io.opentelemetry.sdk.logs.LogRecordProcessor with name \"unknown_key\"."));
   }
 }

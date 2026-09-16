@@ -51,16 +51,18 @@ final class LegacySpanProcessorInstrumentation implements SpanProcessorInstrumen
   }
 
   @Override
-  public void dropSpans(int count) {
+  public void dropSpansQueueFull(int count) {
     processedSpans().add(count, droppedAttrs);
   }
 
   @Override
-  public void finishSpans(int count, @Nullable String error) {
-    // Legacy metrics only record when no error.
-    if (error == null) {
-      processedSpans().add(count, standardAttrs);
-    }
+  public void dropSpansAlreadyShutdown(int count) {
+    // Legacy did not record this metric.
+  }
+
+  @Override
+  public void finishSpans(int count) {
+    processedSpans().add(count, standardAttrs);
   }
 
   @Override

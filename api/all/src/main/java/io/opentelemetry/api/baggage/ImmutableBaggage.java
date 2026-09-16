@@ -69,7 +69,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
 
     @Override
     public BaggageBuilder put(String key, String value, BaggageEntryMetadata entryMetadata) {
-      if ((key == null) || (value == null) || (entryMetadata == null)) {
+      if ((key == null) || key.isEmpty() || (value == null) || (entryMetadata == null)) {
         return this;
       }
       data.add(key);

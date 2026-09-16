@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"rules"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalComposableRuleBasedSamplerModel {
 
   @Nullable private List<ExperimentalComposableRuleBasedSamplerRuleModel> rules;
@@ -38,7 +38,7 @@ public class ExperimentalComposableRuleBasedSamplerModel {
   }
 
   @JsonProperty("rules")
-  public ExperimentalComposableRuleBasedSamplerModel withRules(
+  public ExperimentalComposableRuleBasedSamplerModel setRules(
       List<ExperimentalComposableRuleBasedSamplerRuleModel> rules) {
     this.rules = rules;
     return this;

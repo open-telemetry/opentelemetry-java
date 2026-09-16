@@ -36,8 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -47,6 +50,8 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public final class UpstreamGrpcSender implements GrpcSender {
+
+  private static final Logger logger = Logger.getLogger(UpstreamGrpcSender.class.getName());
 
   private static final MethodDescriptor.Marshaller<MessageWriter> REQUEST_MARSHALER =
       new MethodDescriptor.Marshaller<MessageWriter>() {
@@ -231,8 +236,35 @@ public final class UpstreamGrpcSender implements GrpcSender {
   @Override
   public CompletableResultCode shutdown() {
     if (shutdownChannel) {
+      // Use shutdownNow() to cancel in flight calls immediately
       channel.shutdownNow();
+
+      // Wait for the channel to terminate in a background thread
+      CompletableResultCode result = new CompletableResultCode();
+      Thread terminationThread =
+          new Thread(
+              () -> {
+                try {
+                  // Wait up to 5 seconds for the channel to terminate
+                  // Even if timeout occurs, we succeed since these are daemon threads
+                  boolean terminated = channel.awaitTermination(5, TimeUnit.SECONDS);
+                  if (!terminated) {
+                    logger.log(
+                        Level.WARNING,
+                        "Channel did not terminate within 5 seconds, proceeding with shutdown since threads are daemon threads.");
+                  }
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                } finally {
+                  result.succeed();
+                }
+              },
+              "grpc-shutdown");
+      terminationThread.setDaemon(true);
+      terminationThread.start();
+      return result;
     }
+
     return CompletableResultCode.ofSuccess();
   }
 }

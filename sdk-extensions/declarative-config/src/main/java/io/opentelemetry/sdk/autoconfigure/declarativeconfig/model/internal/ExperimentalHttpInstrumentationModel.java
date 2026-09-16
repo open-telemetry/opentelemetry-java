@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"semconv", "client", "server"})
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ExperimentalHttpInstrumentationModel {
 
   @Nullable private ExperimentalSemconvConfigModel semconv;
@@ -39,7 +39,7 @@ public class ExperimentalHttpInstrumentationModel {
   }
 
   @JsonProperty("semconv")
-  public ExperimentalHttpInstrumentationModel withSemconv(ExperimentalSemconvConfigModel semconv) {
+  public ExperimentalHttpInstrumentationModel setSemconv(ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;
     return this;
   }
@@ -56,7 +56,7 @@ public class ExperimentalHttpInstrumentationModel {
   }
 
   @JsonProperty("client")
-  public ExperimentalHttpInstrumentationModel withClient(
+  public ExperimentalHttpInstrumentationModel setClient(
       ExperimentalHttpClientInstrumentationModel client) {
     this.client = client;
     return this;
@@ -74,7 +74,7 @@ public class ExperimentalHttpInstrumentationModel {
   }
 
   @JsonProperty("server")
-  public ExperimentalHttpInstrumentationModel withServer(
+  public ExperimentalHttpInstrumentationModel setServer(
       ExperimentalHttpServerInstrumentationModel server) {
     this.server = server;
     return this;

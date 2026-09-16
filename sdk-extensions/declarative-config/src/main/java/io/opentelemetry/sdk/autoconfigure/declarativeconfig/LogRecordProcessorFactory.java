@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.BatchLogRecord
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.LogRecordProcessorModel;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.SimpleLogRecordProcessorModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.LogRecordProcessorModelAccessor;
 import io.opentelemetry.sdk.extension.incubator.logs.EventToSpanEventBridge;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
@@ -43,7 +44,7 @@ final class LogRecordProcessorFactory
     if (model.getSimple() != null) {
       return createSimpleLogRecordProcessor(model.getSimple(), context);
     }
-    if (model.getEventToSpanEventBridgeDevelopment() != null) {
+    if (LogRecordProcessorModelAccessor.getEventToSpanEventBridge(model) != null) {
       return EventToSpanEventBridge.create();
     }
 

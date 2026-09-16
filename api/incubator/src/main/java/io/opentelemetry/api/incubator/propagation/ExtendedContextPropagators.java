@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
  * Utility class to simplify context propagation.
  *
  * <p>The <a
- * href="https://github.com/open-telemetry/opentelemetry-java-contrib/blob/main/extended-tracer/README.md">README</a>
+ * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/api/incubator#extended-contextpropagator-apis">README</a>
  * explains the use cases in more detail.
  */
 public final class ExtendedContextPropagators {

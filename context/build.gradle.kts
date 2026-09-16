@@ -8,6 +8,7 @@ plugins {
 
 description = "OpenTelemetry Context (Incubator)"
 otelJava.moduleName.set("io.opentelemetry.context")
+otelJava.requireSuppressWarningsExplanation.set(false)
 
 dependencies {
   api(project(":common"))

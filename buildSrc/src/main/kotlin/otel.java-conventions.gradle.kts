@@ -1,4 +1,6 @@
 import io.opentelemetry.gradle.OtelJavaExtension
+import net.ltgt.gradle.errorprone.CheckSeverity
+import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.JavaVersion
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
@@ -44,7 +46,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "13.8.0"
+  toolVersion = "14.1.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -62,6 +64,13 @@ val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersi
 tasks {
   withType<JavaCompile>().configureEach {
     with(options) {
+      errorprone.check(
+        "SuppressWarningsWithoutExplanation",
+        otelJava.requireSuppressWarningsExplanation.map {
+          if (it) CheckSeverity.ERROR else CheckSeverity.OFF
+        },
+      )
+
       release.set(otelJava.minJavaVersionSupported.map { it.majorVersion.toInt() })
 
       if (name != "jmhCompileGeneratedClasses") {
@@ -344,8 +353,10 @@ testing {
           // To remove these warnings, we attach the byte-buddy-agent used by mockito directly.
           val mockitoAgent: FileCollection = mockitoAgent
           doFirst {
+            // -Xshare:off: the agent appends to the bootstrap classpath, which disables CDS and
+            // causes a warning in every test process without it.
             val mockitoAgentJar = mockitoAgent.files.single { it.name.contains("byte-buddy-agent")}
-            jvmArgs("-javaagent:${mockitoAgentJar}")
+            jvmArgs("-Xshare:off", "-javaagent:${mockitoAgentJar}")
           }
         }
       }

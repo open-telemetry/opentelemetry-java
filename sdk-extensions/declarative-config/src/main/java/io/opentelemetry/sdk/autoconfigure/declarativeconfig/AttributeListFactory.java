@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeTypeModel;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -40,9 +41,9 @@ final class AttributeListFactory implements Factory<List<AttributeNameValueModel
       AttributeNameValueModel nameValueModel, AttributesBuilder builder) {
     String name = FileConfigUtil.requireNonNull(nameValueModel.getName(), "attribute name");
     Object value = FileConfigUtil.requireNonNull(nameValueModel.getValue(), "attribute value");
-    AttributeNameValueModel.AttributeType type = nameValueModel.getType();
+    AttributeTypeModel type = nameValueModel.getType();
     if (type == null) {
-      type = AttributeNameValueModel.AttributeType.STRING;
+      type = AttributeTypeModel.STRING;
     }
     switch (type) {
       case STRING:

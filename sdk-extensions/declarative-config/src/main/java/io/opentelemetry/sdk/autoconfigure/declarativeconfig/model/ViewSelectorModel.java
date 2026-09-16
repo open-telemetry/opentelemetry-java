@@ -5,48 +5,83 @@
 
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel.INSTRUMENT_NAME;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel.INSTRUMENT_TYPE;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel.METER_NAME;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel.METER_SCHEMA_URL;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel.METER_VERSION;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.ViewSelectorModel.UNIT;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
+import io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.internal.ExtensionPropertyUtil;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-  "instrument_name",
-  "instrument_type",
-  "unit",
-  "meter_name",
-  "meter_version",
-  "meter_schema_url"
+  INSTRUMENT_NAME,
+  INSTRUMENT_TYPE,
+  UNIT,
+  METER_NAME,
+  METER_VERSION,
+  METER_SCHEMA_URL
 })
-@Generated("jsonschema2pojo")
+@Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class ViewSelectorModel {
 
+  static final String INSTRUMENT_NAME = "instrument_name";
+  static final String INSTRUMENT_TYPE = "instrument_type";
+  static final String UNIT = "unit";
+  static final String METER_NAME = "meter_name";
+  static final String METER_VERSION = "meter_version";
+  static final String METER_SCHEMA_URL = "meter_schema_url";
+
+  private static final Map<String, Class<?>> STABLE_PROPERTIES;
+
+  static {
+    STABLE_PROPERTIES = new HashMap<>();
+    STABLE_PROPERTIES.put(INSTRUMENT_NAME, String.class);
+    STABLE_PROPERTIES.put(INSTRUMENT_TYPE, InstrumentTypeModel.class);
+    STABLE_PROPERTIES.put(UNIT, String.class);
+    STABLE_PROPERTIES.put(METER_NAME, String.class);
+    STABLE_PROPERTIES.put(METER_VERSION, String.class);
+    STABLE_PROPERTIES.put(METER_SCHEMA_URL, String.class);
+  }
+
+  private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
+
   @Nullable private String instrumentName;
-  @Nullable private ViewSelectorModel.InstrumentType instrumentType;
+  @Nullable private InstrumentTypeModel instrumentType;
   @Nullable private String unit;
   @Nullable private String meterName;
   @Nullable private String meterVersion;
   @Nullable private String meterSchemaUrl;
+  private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
   /**
    * Configure instrument name selection criteria.
    *
    * <p>If omitted or null, all instrument names match.
    */
-  @JsonProperty("instrument_name")
+  @JsonProperty(INSTRUMENT_NAME)
   @Nullable
   public String getInstrumentName() {
+    if (instrumentName == null) {
+      return ExtensionPropertyUtil.getGraduated(INSTRUMENT_NAME, extensionProperties, String.class);
+    }
     return instrumentName;
   }
 
-  @JsonProperty("instrument_name")
-  public ViewSelectorModel withInstrumentName(String instrumentName) {
+  @JsonProperty(INSTRUMENT_NAME)
+  public ViewSelectorModel setInstrumentName(String instrumentName) {
     this.instrumentName = instrumentName;
     return this;
   }
@@ -72,14 +107,18 @@ public class ViewSelectorModel {
    *
    * <p>If omitted, all instrument types match.
    */
-  @JsonProperty("instrument_type")
+  @JsonProperty(INSTRUMENT_TYPE)
   @Nullable
-  public ViewSelectorModel.InstrumentType getInstrumentType() {
+  public InstrumentTypeModel getInstrumentType() {
+    if (instrumentType == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          INSTRUMENT_TYPE, extensionProperties, InstrumentTypeModel.class);
+    }
     return instrumentType;
   }
 
-  @JsonProperty("instrument_type")
-  public ViewSelectorModel withInstrumentType(ViewSelectorModel.InstrumentType instrumentType) {
+  @JsonProperty(INSTRUMENT_TYPE)
+  public ViewSelectorModel setInstrumentType(InstrumentTypeModel instrumentType) {
     this.instrumentType = instrumentType;
     return this;
   }
@@ -89,14 +128,17 @@ public class ViewSelectorModel {
    *
    * <p>If omitted or null, all instrument units match.
    */
-  @JsonProperty("unit")
+  @JsonProperty(UNIT)
   @Nullable
   public String getUnit() {
+    if (unit == null) {
+      return ExtensionPropertyUtil.getGraduated(UNIT, extensionProperties, String.class);
+    }
     return unit;
   }
 
-  @JsonProperty("unit")
-  public ViewSelectorModel withUnit(String unit) {
+  @JsonProperty(UNIT)
+  public ViewSelectorModel setUnit(String unit) {
     this.unit = unit;
     return this;
   }
@@ -106,14 +148,17 @@ public class ViewSelectorModel {
    *
    * <p>If omitted or null, all meter names match.
    */
-  @JsonProperty("meter_name")
+  @JsonProperty(METER_NAME)
   @Nullable
   public String getMeterName() {
+    if (meterName == null) {
+      return ExtensionPropertyUtil.getGraduated(METER_NAME, extensionProperties, String.class);
+    }
     return meterName;
   }
 
-  @JsonProperty("meter_name")
-  public ViewSelectorModel withMeterName(String meterName) {
+  @JsonProperty(METER_NAME)
+  public ViewSelectorModel setMeterName(String meterName) {
     this.meterName = meterName;
     return this;
   }
@@ -123,14 +168,17 @@ public class ViewSelectorModel {
    *
    * <p>If omitted or null, all meter versions match.
    */
-  @JsonProperty("meter_version")
+  @JsonProperty(METER_VERSION)
   @Nullable
   public String getMeterVersion() {
+    if (meterVersion == null) {
+      return ExtensionPropertyUtil.getGraduated(METER_VERSION, extensionProperties, String.class);
+    }
     return meterVersion;
   }
 
-  @JsonProperty("meter_version")
-  public ViewSelectorModel withMeterVersion(String meterVersion) {
+  @JsonProperty(METER_VERSION)
+  public ViewSelectorModel setMeterVersion(String meterVersion) {
     this.meterVersion = meterVersion;
     return this;
   }
@@ -140,15 +188,36 @@ public class ViewSelectorModel {
    *
    * <p>If omitted or null, all meter schema URLs match.
    */
-  @JsonProperty("meter_schema_url")
+  @JsonProperty(METER_SCHEMA_URL)
   @Nullable
   public String getMeterSchemaUrl() {
+    if (meterSchemaUrl == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          METER_SCHEMA_URL, extensionProperties, String.class);
+    }
     return meterSchemaUrl;
   }
 
-  @JsonProperty("meter_schema_url")
-  public ViewSelectorModel withMeterSchemaUrl(String meterSchemaUrl) {
+  @JsonProperty(METER_SCHEMA_URL)
+  public ViewSelectorModel setMeterSchemaUrl(String meterSchemaUrl) {
     this.meterSchemaUrl = meterSchemaUrl;
+    return this;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getExtensionProperties() {
+    return ExtensionPropertyUtil.filterSerializable(extensionProperties, STABLE_PROPERTIES);
+  }
+
+  @JsonAnySetter
+  public ViewSelectorModel setExtensionProperty(String name, @Nullable Object value) {
+    ExtensionPropertyUtil.handleAnySetter(
+        name,
+        value,
+        extensionProperties,
+        Collections.emptyMap(),
+        STABLE_PROPERTIES,
+        ALLOWS_ADDITIONAL_PROPERTIES);
     return this;
   }
 
@@ -167,6 +236,8 @@ public class ViewSelectorModel {
         + meterVersion
         + ", meterSchemaUrl="
         + meterSchemaUrl
+        + ", extensionProperties="
+        + extensionProperties
         + "}";
   }
 
@@ -174,17 +245,19 @@ public class ViewSelectorModel {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (this.instrumentName == null) ? 0 : this.instrumentName.hashCode();
+    h ^= (this.getInstrumentName() == null) ? 0 : this.getInstrumentName().hashCode();
     h *= 1000003;
-    h ^= (this.instrumentType == null) ? 0 : this.instrumentType.hashCode();
+    h ^= (this.getInstrumentType() == null) ? 0 : this.getInstrumentType().hashCode();
     h *= 1000003;
-    h ^= (this.unit == null) ? 0 : this.unit.hashCode();
+    h ^= (this.getUnit() == null) ? 0 : this.getUnit().hashCode();
     h *= 1000003;
-    h ^= (this.meterName == null) ? 0 : this.meterName.hashCode();
+    h ^= (this.getMeterName() == null) ? 0 : this.getMeterName().hashCode();
     h *= 1000003;
-    h ^= (this.meterVersion == null) ? 0 : this.meterVersion.hashCode();
+    h ^= (this.getMeterVersion() == null) ? 0 : this.getMeterVersion().hashCode();
     h *= 1000003;
-    h ^= (this.meterSchemaUrl == null) ? 0 : this.meterSchemaUrl.hashCode();
+    h ^= (this.getMeterSchemaUrl() == null) ? 0 : this.getMeterSchemaUrl().hashCode();
+    h *= 1000003;
+    h ^= (this.getExtensionProperties() == null) ? 0 : this.getExtensionProperties().hashCode();
     return h;
   }
 
@@ -195,67 +268,28 @@ public class ViewSelectorModel {
     }
     if (o instanceof ViewSelectorModel) {
       ViewSelectorModel that = (ViewSelectorModel) o;
-      return (this.instrumentName == null
-              ? that.instrumentName == null
-              : this.instrumentName.equals(that.instrumentName))
-          && (this.instrumentType == null
-              ? that.instrumentType == null
-              : this.instrumentType.equals(that.instrumentType))
-          && (this.unit == null ? that.unit == null : this.unit.equals(that.unit))
-          && (this.meterName == null
-              ? that.meterName == null
-              : this.meterName.equals(that.meterName))
-          && (this.meterVersion == null
-              ? that.meterVersion == null
-              : this.meterVersion.equals(that.meterVersion))
-          && (this.meterSchemaUrl == null
-              ? that.meterSchemaUrl == null
-              : this.meterSchemaUrl.equals(that.meterSchemaUrl));
+      return (this.getInstrumentName() == null
+              ? that.getInstrumentName() == null
+              : this.getInstrumentName().equals(that.getInstrumentName()))
+          && (this.getInstrumentType() == null
+              ? that.getInstrumentType() == null
+              : this.getInstrumentType().equals(that.getInstrumentType()))
+          && (this.getUnit() == null
+              ? that.getUnit() == null
+              : this.getUnit().equals(that.getUnit()))
+          && (this.getMeterName() == null
+              ? that.getMeterName() == null
+              : this.getMeterName().equals(that.getMeterName()))
+          && (this.getMeterVersion() == null
+              ? that.getMeterVersion() == null
+              : this.getMeterVersion().equals(that.getMeterVersion()))
+          && (this.getMeterSchemaUrl() == null
+              ? that.getMeterSchemaUrl() == null
+              : this.getMeterSchemaUrl().equals(that.getMeterSchemaUrl()))
+          && (this.getExtensionProperties() == null
+              ? that.getExtensionProperties() == null
+              : this.getExtensionProperties().equals(that.getExtensionProperties()));
     }
     return false;
-  }
-
-  @Generated("jsonschema2pojo")
-  public enum InstrumentType {
-    COUNTER("counter"),
-    GAUGE("gauge"),
-    HISTOGRAM("histogram"),
-    OBSERVABLE_COUNTER("observable_counter"),
-    OBSERVABLE_GAUGE("observable_gauge"),
-    OBSERVABLE_UP_DOWN_COUNTER("observable_up_down_counter"),
-    UP_DOWN_COUNTER("up_down_counter");
-    private final String value;
-    private static final Map<String, ViewSelectorModel.InstrumentType> CONSTANTS =
-        new HashMap<String, ViewSelectorModel.InstrumentType>();
-
-    static {
-      for (ViewSelectorModel.InstrumentType c : values()) {
-        CONSTANTS.put(c.value, c);
-      }
-    }
-
-    InstrumentType(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return this.value;
-    }
-
-    @JsonValue
-    public String value() {
-      return this.value;
-    }
-
-    @JsonCreator
-    public static ViewSelectorModel.InstrumentType fromValue(String value) {
-      ViewSelectorModel.InstrumentType constant = CONSTANTS.get(value);
-      if (constant == null) {
-        throw new IllegalArgumentException(value);
-      } else {
-        return constant;
-      }
-    }
   }
 }

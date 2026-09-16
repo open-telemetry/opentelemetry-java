@@ -1,0 +1,4 @@
+# Removes TLSv1 and TLSv1.1 from jdk.tls.disabledAlgorithms so that OkHttpHttpSenderTest
+# can negotiate TLSv1.1. Applied at JVM bootstrap via -Djava.security.properties.
+jdk.tls.disabledAlgorithms=SSLv3, RC4, DES, MD5withRSA, DH keySize < 1024, \
+    EC keySize < 224, 3DES_EDE_CBC, anon, NULL, include jdk.disabled.namedCurves

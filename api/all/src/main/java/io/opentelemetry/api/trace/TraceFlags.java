@@ -71,7 +71,7 @@ public interface TraceFlags {
    * Returns {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code
    * false}.
    *
-   * @return {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code *
+   * @return {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code
    *     false}.
    */
   boolean isSampled();
@@ -92,7 +92,7 @@ public interface TraceFlags {
   /**
    * Returns the lowercase hex (base16) representation of this {@link TraceFlags}.
    *
-   * @return the byte representation of the {@link TraceFlags}.
+   * @return the lowercase hex (base16) representation of the {@link TraceFlags}.
    */
   String asHex();
 

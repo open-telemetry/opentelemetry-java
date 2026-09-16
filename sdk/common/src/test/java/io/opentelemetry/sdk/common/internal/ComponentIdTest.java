@@ -43,8 +43,5 @@ class ComponentIdTest {
     // assertThat(ComponentId.StandardType.OTLP_HTTP_JSON_METRIC_EXPORTER.value)
     //
     // .isEqualTo(OtelIncubatingAttributes.OtelComponentTypeIncubatingValues.OTLP_HTTP_JSON_METRIC_EXPORTER);
-    // assertThat(ComponentId.StandardType.ZIPKIN_HTTP_SPAN_EXPORTER.value)
-    //
-    // .isEqualTo(OtelIncubatingAttributes.OtelComponentTypeIncubatingValues.ZIPKIN_HTTP_SPAN_EXPORTER);
   }
 }
