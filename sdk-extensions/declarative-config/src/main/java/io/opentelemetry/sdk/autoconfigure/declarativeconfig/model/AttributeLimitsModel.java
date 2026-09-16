@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.declarativeconfig.model;
 
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel.ATTRIBUTE_COUNT_LIMIT;
+import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel.ATTRIBUTE_VALUE_DEPTH_LIMIT;
 import static io.opentelemetry.sdk.autoconfigure.declarativeconfig.model.AttributeLimitsModel.ATTRIBUTE_VALUE_LENGTH_LIMIT;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -22,11 +23,16 @@ import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ATTRIBUTE_VALUE_LENGTH_LIMIT, ATTRIBUTE_COUNT_LIMIT})
+@JsonPropertyOrder({
+  ATTRIBUTE_VALUE_LENGTH_LIMIT,
+  ATTRIBUTE_VALUE_DEPTH_LIMIT,
+  ATTRIBUTE_COUNT_LIMIT
+})
 @Generated("io.opentelemetry.gradle.DeclarativeConfigPojoGenerator")
 public class AttributeLimitsModel {
 
   static final String ATTRIBUTE_VALUE_LENGTH_LIMIT = "attribute_value_length_limit";
+  static final String ATTRIBUTE_VALUE_DEPTH_LIMIT = "attribute_value_depth_limit";
   static final String ATTRIBUTE_COUNT_LIMIT = "attribute_count_limit";
 
   private static final Map<String, Class<?>> STABLE_PROPERTIES;
@@ -34,12 +40,14 @@ public class AttributeLimitsModel {
   static {
     STABLE_PROPERTIES = new HashMap<>();
     STABLE_PROPERTIES.put(ATTRIBUTE_VALUE_LENGTH_LIMIT, Integer.class);
+    STABLE_PROPERTIES.put(ATTRIBUTE_VALUE_DEPTH_LIMIT, Integer.class);
     STABLE_PROPERTIES.put(ATTRIBUTE_COUNT_LIMIT, Integer.class);
   }
 
   private static final boolean ALLOWS_ADDITIONAL_PROPERTIES = false;
 
   @Nullable private Integer attributeValueLengthLimit;
+  @Nullable private Integer attributeValueDepthLimit;
   @Nullable private Integer attributeCountLimit;
   private Map<String, Object> extensionProperties = new LinkedHashMap<String, Object>();
 
@@ -63,6 +71,34 @@ public class AttributeLimitsModel {
   @JsonProperty(ATTRIBUTE_VALUE_LENGTH_LIMIT)
   public AttributeLimitsModel setAttributeValueLengthLimit(Integer attributeValueLengthLimit) {
     this.attributeValueLengthLimit = attributeValueLengthLimit;
+    return this;
+  }
+
+  /**
+   * Configure the maximum attribute value depth for nested array and map values.
+   *
+   * <p>Depth starts at 1 for the top-level attribute value and increments when descending into
+   * array elements or map values.
+   *
+   * <p>Array or map values deeper than the limit are replaced with an empty value.
+   *
+   * <p>Value must be positive.
+   *
+   * <p>If omitted or null, 64 is used.
+   */
+  @JsonProperty(ATTRIBUTE_VALUE_DEPTH_LIMIT)
+  @Nullable
+  public Integer getAttributeValueDepthLimit() {
+    if (attributeValueDepthLimit == null) {
+      return ExtensionPropertyUtil.getGraduated(
+          ATTRIBUTE_VALUE_DEPTH_LIMIT, extensionProperties, Integer.class);
+    }
+    return attributeValueDepthLimit;
+  }
+
+  @JsonProperty(ATTRIBUTE_VALUE_DEPTH_LIMIT)
+  public AttributeLimitsModel setAttributeValueDepthLimit(Integer attributeValueDepthLimit) {
+    this.attributeValueDepthLimit = attributeValueDepthLimit;
     return this;
   }
 
@@ -111,6 +147,8 @@ public class AttributeLimitsModel {
     return "AttributeLimitsModel{"
         + "attributeValueLengthLimit="
         + attributeValueLengthLimit
+        + ", attributeValueDepthLimit="
+        + attributeValueDepthLimit
         + ", attributeCountLimit="
         + attributeCountLimit
         + ", extensionProperties="
@@ -126,6 +164,11 @@ public class AttributeLimitsModel {
         (this.getAttributeValueLengthLimit() == null)
             ? 0
             : this.getAttributeValueLengthLimit().hashCode();
+    h *= 1000003;
+    h ^=
+        (this.getAttributeValueDepthLimit() == null)
+            ? 0
+            : this.getAttributeValueDepthLimit().hashCode();
     h *= 1000003;
     h ^= (this.getAttributeCountLimit() == null) ? 0 : this.getAttributeCountLimit().hashCode();
     h *= 1000003;
@@ -143,6 +186,9 @@ public class AttributeLimitsModel {
       return (this.getAttributeValueLengthLimit() == null
               ? that.getAttributeValueLengthLimit() == null
               : this.getAttributeValueLengthLimit().equals(that.getAttributeValueLengthLimit()))
+          && (this.getAttributeValueDepthLimit() == null
+              ? that.getAttributeValueDepthLimit() == null
+              : this.getAttributeValueDepthLimit().equals(that.getAttributeValueDepthLimit()))
           && (this.getAttributeCountLimit() == null
               ? that.getAttributeCountLimit() == null
               : this.getAttributeCountLimit().equals(that.getAttributeCountLimit()))
