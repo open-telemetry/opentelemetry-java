@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.internal.ComponentId;
+import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -18,8 +19,8 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -48,15 +49,29 @@ public final class PeriodicMetricReader implements MetricReader {
   private final MetricExporter exporter;
   private final long intervalNanos;
   private final long exporterTimeoutNanos;
-  private final ScheduledExecutorService scheduler;
-  private final Scheduled scheduled;
-  private final Object lock = new Object();
+  private final int maxExportBatchSize;
   private final InternalTelemetryVersion internalTelemetryVersion;
 
-  private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
+  // Fires periodic tick signals. Does not run the actual export.
+  private final ScheduledExecutorService scheduler;
+  // Owns the export loop. Reads Signals from the queue and processes them sequentially.
+  private final Thread worker;
+  private final BlockingQueue<Signal> signals = new LinkedBlockingQueue<>();
 
+  // True while a periodic tick is queued or being processed. Guards against multiple ticks
+  // stacking up if the exporter is slower than the interval; matches the pre-refactor behavior of
+  // dropping ticks while an export is in flight (no catch-up).
+  private final AtomicBoolean tickPending = new AtomicBoolean(false);
+
+  private final AtomicBoolean started = new AtomicBoolean(false);
+  private final AtomicBoolean shutdown = new AtomicBoolean(false);
+  private final Object startLock = new Object();
+
+  private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
-  private final int maxExportBatchSize;
+
+  private volatile MetricReaderInstrumentation instrumentation =
+      new MetricReaderInstrumentation(COMPONENT_ID, MeterProvider.noop());
 
   /**
    * Returns a new {@link PeriodicMetricReader} which exports to the {@code exporter} once every
@@ -83,8 +98,9 @@ public final class PeriodicMetricReader implements MetricReader {
     this.exporterTimeoutNanos = exporterTimeoutNanos;
     this.scheduler = scheduler;
     this.maxExportBatchSize = maxExportBatchSize;
-    this.scheduled = new Scheduled();
     this.internalTelemetryVersion = internalTelemetryVersion;
+    this.worker =
+        new DaemonThreadFactory("PeriodicMetricReader-worker").newThread(this::workerLoop);
   }
 
   @Override
@@ -105,23 +121,26 @@ public final class PeriodicMetricReader implements MetricReader {
   /**
    * Forces a flush of all metrics.
    *
-   * <p>If an export is already in progress, the flush will be skipped and the returned result will
-   * be completed exceptionally with an {@link IllegalStateException}. Callers can inspect the cause
-   * via {@link CompletableResultCode#getFailureThrowable()}.
+   * <p>If an export is already in progress, the flush will be queued behind it and completed when
+   * the requested cycle finishes.
    */
   @Override
   public CompletableResultCode forceFlush() {
+    if (shutdown.get()) {
+      return CompletableResultCode.ofSuccess();
+    }
+    CompletableResultCode collectExport = new CompletableResultCode();
+    signals.offer(new Signal(collectExport, /* poison= */ false));
     CompletableResultCode result = new CompletableResultCode();
-    CompletableResultCode doRunResult = scheduled.doRun();
-    doRunResult.whenComplete(
+    collectExport.whenComplete(
         () -> {
           CompletableResultCode flushResult = exporter.flush();
           flushResult.whenComplete(
               () -> {
-                if (doRunResult.isSuccess() && flushResult.isSuccess()) {
+                if (collectExport.isSuccess() && flushResult.isSuccess()) {
                   result.succeed();
                 } else {
-                  result.failExceptionally(new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
+                  result.fail();
                 }
               });
         });
@@ -130,35 +149,46 @@ public final class PeriodicMetricReader implements MetricReader {
 
   @Override
   public CompletableResultCode shutdown() {
-    CompletableResultCode result = new CompletableResultCode();
-    ScheduledFuture<?> scheduledFuture = this.scheduledFuture;
-    if (scheduledFuture != null) {
-      scheduledFuture.cancel(false);
+    if (!shutdown.compareAndSet(false, true)) {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    ScheduledFuture<?> future = this.scheduledFuture;
+    if (future != null) {
+      future.cancel(false);
     }
     scheduler.shutdown();
+
+    // Final flush + poison. Worker drains the flush signal, completes it, then exits on POISON.
+    CompletableResultCode finalFlush = new CompletableResultCode();
+    signals.offer(new Signal(finalFlush, /* poison= */ false));
+    signals.offer(Signal.POISON);
+
+    // Block until the worker drains the final flush and terminates. This preserves the
+    // pre-refactor semantic that shutdown() does not return until the final export has completed.
+    finalFlush.join(5, TimeUnit.SECONDS);
+    try {
+      worker.join(TimeUnit.SECONDS.toMillis(5));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
-      // Wait for any in-flight export to complete before performing the final collection.
-      // Without this, doRun() sees exportAvailable=false and drops the final metrics.
-      scheduled.flushInProgress.join(5, TimeUnit.SECONDS);
-      CompletableResultCode flushResult = scheduled.doRun();
-      flushResult.join(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
-      // force a shutdown if the export hasn't finished.
       scheduler.shutdownNow();
-      // reset the interrupted status
       Thread.currentThread().interrupt();
-    } finally {
-      CompletableResultCode shutdownResult = scheduled.shutdown();
-      shutdownResult.whenComplete(
-          () -> {
-            if (!shutdownResult.isSuccess()) {
-              result.fail();
-            } else {
-              result.succeed();
-            }
-          });
     }
+
+    CompletableResultCode result = new CompletableResultCode();
+    CompletableResultCode exporterShutdown = exporter.shutdown();
+    exporterShutdown.whenComplete(
+        () -> {
+          if (finalFlush.isSuccess() && exporterShutdown.isSuccess()) {
+            result.succeed();
+          } else {
+            result.fail();
+          }
+        });
     return result;
   }
 
@@ -175,7 +205,7 @@ public final class PeriodicMetricReader implements MetricReader {
   @SuppressWarnings("UnusedMethod")
   private void setMeterProvider(MeterProvider meterProvider) {
     if (internalTelemetryVersion != InternalTelemetryVersion.LEGACY) {
-      scheduled.setMeterProvider(meterProvider);
+      instrumentation = new MetricReaderInstrumentation(COMPONENT_ID, meterProvider);
     }
   }
 
@@ -191,175 +221,138 @@ public final class PeriodicMetricReader implements MetricReader {
         + '}';
   }
 
-  void start() {
-    synchronized (lock) {
-      if (scheduledFuture != null) {
+  private void start() {
+    synchronized (startLock) {
+      if (!started.compareAndSet(false, true)) {
         return;
       }
+      worker.start();
       scheduledFuture =
           scheduler.scheduleAtFixedRate(
-              scheduled, intervalNanos, intervalNanos, TimeUnit.NANOSECONDS);
+              this::offerTick, intervalNanos, intervalNanos, TimeUnit.NANOSECONDS);
     }
   }
 
-  private static final String EXPORT_IN_PROGRESS_MESSAGE =
-      "Export is already in progress, skipping flush";
-
-  private final class Scheduled implements Runnable {
-
-    private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
-    private volatile CompletableResultCode flushInProgress = CompletableResultCode.ofSuccess();
-
-    private MetricReaderInstrumentation instrumentation =
-        new MetricReaderInstrumentation(COMPONENT_ID, MeterProvider.noop());
-
-    private Scheduled() {}
-
-    private CompletableResultCode exportMetrics(Collection<MetricData> metricData) {
-      if (maxExportBatchSize == 0) {
-        return exporter.export(metricData);
-      }
-      Collection<Collection<MetricData>> batches =
-          MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize);
-      CompletableResultCode sequentialResult = new CompletableResultCode();
-      AtomicBoolean anyFailed = new AtomicBoolean(false);
-      Iterator<Collection<MetricData>> batchIterator = batches.iterator();
-      Runnable exportNext =
-          new Runnable() {
-            @Override
-            public void run() {
-              while (batchIterator.hasNext()) {
-                Collection<MetricData> currentBatch = batchIterator.next();
-                CompletableResultCode currentResult = exporter.export(currentBatch);
-                if (currentResult.isDone()) {
-                  if (!currentResult.isSuccess()) {
-                    anyFailed.set(true);
-                  }
-                } else {
-                  currentResult.whenComplete(
-                      () -> {
-                        if (!currentResult.isSuccess()) {
-                          anyFailed.set(true);
-                        }
-                        this.run();
-                      });
-                  return;
-                }
-              }
-              if (anyFailed.get()) {
-                sequentialResult.fail();
-              } else {
-                sequentialResult.succeed();
-              }
-            }
-          };
-      exportNext.run();
-      return sequentialResult;
+  private void offerTick() {
+    // Coalesce: only enqueue a tick if none is currently pending or being processed. Matches the
+    // prior behavior of dropping ticks while an export is in flight.
+    if (tickPending.compareAndSet(false, true)) {
+      signals.offer(Signal.TICK);
     }
+  }
 
-    private CompletableResultCode applyTimeout(CompletableResultCode result) {
-      if (exporterTimeoutNanos == Long.MAX_VALUE) {
-        return result;
-      }
-
-      if (result.isDone()) {
-        return result;
-      }
-
+  private void workerLoop() {
+    while (true) {
+      Signal signal;
       try {
-        CompletableResultCode timeoutResult = new CompletableResultCode();
-
-        ScheduledFuture<?> timeoutFuture =
-            scheduler.schedule(
-                () -> {
-                  logger.log(
-                      Level.WARNING, "Export timed out after " + exporterTimeoutNanos + "ns");
-                  timeoutResult.fail();
-                },
-                exporterTimeoutNanos,
-                TimeUnit.NANOSECONDS);
-
-        result.whenComplete(
-            () -> {
-              timeoutFuture.cancel(false);
-              if (result.isSuccess()) {
-                timeoutResult.succeed();
-              } else {
-                timeoutResult.fail();
-              }
-            });
-
-        return timeoutResult;
-      } catch (RejectedExecutionException e) {
-        // Scheduler is shutting down, return original result without timeout enforcement
-        return result;
+        signal = signals.take();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return;
       }
-    }
-
-    void setMeterProvider(MeterProvider meterProvider) {
-      instrumentation = new MetricReaderInstrumentation(COMPONENT_ID, meterProvider);
-    }
-
-    @Override
-    public void run() {
-      // Ignore the CompletableResultCode from doRun() in order to keep run()
-      // asynchronous
-      doRun();
-    }
-
-    // Runs a collect + export cycle.
-    CompletableResultCode doRun() {
-      CompletableResultCode flushResult = new CompletableResultCode();
-      if (exportAvailable.compareAndSet(true, false)) {
-        flushInProgress = flushResult;
-        try {
-          long startNanoTime = CLOCK.nanoTime();
-          String error = null;
-          Collection<MetricData> metricData;
-          try {
-            metricData = collectionRegistration.collectAllMetrics();
-          } catch (Throwable t) {
-            error = t.getClass().getName();
-            throw t;
-          } finally {
-            long durationNanos = CLOCK.nanoTime() - startNanoTime;
-            instrumentation.recordCollection(durationNanos / 1_000_000_000.0, error);
-          }
-          if (metricData.isEmpty()) {
-            logger.log(Level.FINE, "No metric data to export - skipping export.");
-            exportAvailable.set(true);
-            flushResult.succeed();
+      if (signal.poison) {
+        return;
+      }
+      try {
+        boolean success = runCycle();
+        if (signal.flushResult != null) {
+          if (success) {
+            signal.flushResult.succeed();
           } else {
-            CompletableResultCode rawResult = exportMetrics(metricData);
-            CompletableResultCode timeoutResult = applyTimeout(rawResult);
-            // Use raw result for backpressure to prevent concurrent exports
-            rawResult.whenComplete(
-                () -> {
-                  exportAvailable.set(true);
-                });
-            // Use timeout result for reporting to caller
-            timeoutResult.whenComplete(
-                () -> {
-                  if (!timeoutResult.isSuccess()) {
-                    logger.log(Level.WARNING, "Exporter failed");
-                  }
-                  flushResult.succeed();
-                });
+            signal.flushResult.fail();
           }
-        } catch (Throwable t) {
-          exportAvailable.set(true);
-          logger.log(Level.WARNING, "Exporter threw an Exception", t);
-          flushResult.fail();
         }
-      } else {
-        logger.log(Level.FINE, EXPORT_IN_PROGRESS_MESSAGE);
-        flushResult.failExceptionally(new IllegalStateException(EXPORT_IN_PROGRESS_MESSAGE));
+      } finally {
+        if (signal.isTick) {
+          tickPending.set(false);
+        }
       }
-      return flushResult;
+    }
+  }
+
+  /** Collect + export one cycle. Returns true iff collection and all batches succeeded. */
+  private boolean runCycle() {
+    long startNanoTime = CLOCK.nanoTime();
+    String error = null;
+    Collection<MetricData> metricData;
+    try {
+      metricData = collectionRegistration.collectAllMetrics();
+    } catch (Throwable t) {
+      error = t.getClass().getName();
+      logger.log(Level.WARNING, "Exception thrown by the metric collection", t);
+      return false;
+    } finally {
+      long durationNanos = CLOCK.nanoTime() - startNanoTime;
+      instrumentation.recordCollection(durationNanos / 1_000_000_000.0, error);
     }
 
-    CompletableResultCode shutdown() {
-      return exporter.shutdown();
+    if (metricData.isEmpty()) {
+      logger.log(Level.FINE, "No metric data to export - skipping export.");
+      return true;
+    }
+
+    try {
+      return doExport(metricData);
+    } catch (Throwable t) {
+      logger.log(Level.WARNING, "Exporter threw an Exception", t);
+      return false;
+    }
+  }
+
+  private boolean doExport(Collection<MetricData> metricData) {
+    if (maxExportBatchSize == 0) {
+      return exportOne(metricData);
+    }
+    boolean anyFailed = false;
+    for (Collection<MetricData> batch :
+        MetricExportBatcher.batchMetrics(metricData, maxExportBatchSize)) {
+      if (!exportOne(batch)) {
+        anyFailed = true;
+      }
+    }
+    return !anyFailed;
+  }
+
+  private boolean exportOne(Collection<MetricData> batch) {
+    CompletableResultCode result = exporter.export(batch);
+    // Block until the exporter completes or the timeout elapses. Safe because the worker thread
+    // is dedicated to exports; no scheduler thread is held while we wait.
+    result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+    boolean timedOut = !result.isDone();
+    if (timedOut) {
+      logger.log(Level.WARNING, "Exporter timed out");
+      // The exporter cannot be cancelled. Wait for actual completion before allowing another
+      // export to prevent concurrent exporter invocations (spec requirement).
+      result.join(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+      return false;
+    }
+    if (!result.isSuccess()) {
+      logger.log(Level.WARNING, "Exporter failed");
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Worker signal types: periodic tick (from the scheduler), flush request (from forceFlush or
+   * final flush on shutdown), and poison pill (from shutdown to terminate the worker).
+   */
+  private static final class Signal {
+    static final Signal TICK = new Signal(null, /* poison= */ false, /* isTick= */ true);
+    static final Signal POISON = new Signal(null, /* poison= */ true, /* isTick= */ false);
+
+    @Nullable final CompletableResultCode flushResult;
+    final boolean poison;
+    final boolean isTick;
+
+    private Signal(@Nullable CompletableResultCode flushResult, boolean poison, boolean isTick) {
+      this.flushResult = flushResult;
+      this.poison = poison;
+      this.isTick = isTick;
+    }
+
+    Signal(@Nullable CompletableResultCode flushResult, boolean poison) {
+      this(flushResult, poison, /* isTick= */ false);
     }
   }
 }

@@ -60,7 +60,8 @@ public final class PeriodicMetricReaderBuilder {
   }
 
   /**
-   * Sets the timeout for the underlying exporter. If unset, defaults to the configured interval.
+   * Sets the maximum time an export will be allowed to run before being reported as failed. If
+   * unset, defaults to the configured interval. A timeout of {@code 0} disables the timeout.
    *
    * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
    * individual export(batch) invocation, not the aggregate export cycle.
@@ -73,7 +74,9 @@ public final class PeriodicMetricReaderBuilder {
   }
 
   /**
-   * Sets the timeout for the underlying exporter. If unset, defaults to the configured interval.
+   * Sets the maximum time an export will be allowed to run before being reported as failed. If
+   * unset, defaults to the configured interval. A {@link Duration#ZERO zero} timeout disables the
+   * timeout.
    *
    * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
    * individual export(batch) invocation, not the aggregate export cycle.
@@ -109,7 +112,7 @@ public final class PeriodicMetricReaderBuilder {
     ScheduledExecutorService executor = this.executor;
     if (executor == null) {
       executor =
-          Executors.newScheduledThreadPool(2, new DaemonThreadFactory("PeriodicMetricReader"));
+          Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
     return new PeriodicMetricReader(
         metricExporter,
@@ -120,7 +123,11 @@ public final class PeriodicMetricReaderBuilder {
         internalTelemetryVersion);
   }
 
-  /** Sets the internal telemetry version used to control self-observability metrics. */
+  /**
+   * Sets the internal telemetry version used to control self-observability metrics.
+   *
+   * @since 1.65.0
+   */
   public PeriodicMetricReaderBuilder setInternalTelemetryVersion(InternalTelemetryVersion version) {
     requireNonNull(version, "version");
     this.internalTelemetryVersion = version;
