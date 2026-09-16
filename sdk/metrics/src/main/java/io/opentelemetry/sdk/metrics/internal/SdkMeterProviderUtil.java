@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
@@ -72,21 +71,6 @@ public final class SdkMeterProviderUtil {
           "Error calling addMeterConfiguratorCondition on SdkMeterProviderBuilder", e);
     }
     return sdkMeterProviderBuilder;
-  }
-
-  /** Reflectively set the max export batch size for the {@link SdkMeterProviderBuilder}. */
-  public static PeriodicMetricReaderBuilder setMaxExportBatchSize(
-      PeriodicMetricReaderBuilder periodicMetricReaderBuilder, int maxExportBatchSize) {
-    try {
-      Method method =
-          PeriodicMetricReaderBuilder.class.getDeclaredMethod("setMaxExportBatchSize", int.class);
-      method.setAccessible(true);
-      method.invoke(periodicMetricReaderBuilder, maxExportBatchSize);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling setMaxExportBatchSize on PeriodicMetricReaderBuilder", e);
-    }
-    return periodicMetricReaderBuilder;
   }
 
   /** Reflectively reset the {@link SdkMeterProvider}, clearing all registered instruments. */
