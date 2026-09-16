@@ -219,8 +219,7 @@ class SdkSpanBuilderTest {
     try {
       assertThat(span.toSpanData().getLinks())
           .containsExactly(LinkData.create(sampledSpanContext, Attributes.empty()));
-      // Use a different sampledSpanContext to ensure no logic that avoids duplicate
-      // links makes
+      // Use a different sampledSpanContext to ensure no logic that avoids duplicate links makes
       // this test to pass.
       spanBuilder.addLink(
           SpanContext.create(
@@ -1022,12 +1021,9 @@ class SdkSpanBuilderTest {
             .setSampler(mockSampler)
             .build();
 
-    // setNoParent() explicitly sets parentContext to Context.root(), exercising the
-    // singleton path.
-    // Start two spans and assert the sampler received the exact same Context
-    // instance both times,
-    // proving the pre-built singleton is reused rather than a new object allocated
-    // each call.
+    // setNoParent() explicitly sets parentContext to Context.root(), exercising the singleton path.
+    // Start two spans and assert the sampler received the exact same Context instance both times,
+    // proving the pre-built singleton is reused rather than a new object allocated each call.
     provider.get("test").spanBuilder(SPAN_NAME).setNoParent().startSpan().end();
     provider.get("test").spanBuilder(SPAN_NAME).setNoParent().startSpan().end();
 
@@ -1114,11 +1110,9 @@ class SdkSpanBuilderTest {
     assertThat(SdkSpanBuilder.isRecording(SamplingDecision.RECORD_AND_SAMPLE)).isTrue();
   }
 
-  // SpanData is very commonly used in unit tests, we want the toString to make
-  // sure it's relatively
+  // SpanData is very commonly used in unit tests, we want the toString to make sure it's relatively
   // easy to understand failure messages.
-  // TODO(anuraaga): Currently it isn't - we even return the same (or maybe
-  // incorrect?) stuff twice.
+  // TODO(anuraaga): Currently it isn't - we even return the same (or maybe incorrect?) stuff twice.
   // Improve the toString.
   @Test
   void spanDataToString() {
@@ -1207,10 +1201,8 @@ class SdkSpanBuilderTest {
 
   @Test
   void setAttribute_sameKeyDifferentType_lastValueWins() {
-    // Regression test for
-    // https://github.com/open-telemetry/opentelemetry-java/issues/7897
-    // Setting the same string key with different types must overwrite, not
-    // accumulate.
+    // Regression test for https://github.com/open-telemetry/opentelemetry-java/issues/7897
+    // Setting the same string key with different types must overwrite, not accumulate.
     SdkSpan span =
         (SdkSpan)
             sdkTracer
