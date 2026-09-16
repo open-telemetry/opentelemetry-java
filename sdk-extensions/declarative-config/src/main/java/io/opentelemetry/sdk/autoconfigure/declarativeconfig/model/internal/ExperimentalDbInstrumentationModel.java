@@ -36,7 +36,7 @@ public class ExperimentalDbInstrumentationModel {
   }
 
   @JsonProperty("semconv")
-  public ExperimentalDbInstrumentationModel withSemconv(ExperimentalSemconvConfigModel semconv) {
+  public ExperimentalDbInstrumentationModel setSemconv(ExperimentalSemconvConfigModel semconv) {
     this.semconv = semconv;
     return this;
   }

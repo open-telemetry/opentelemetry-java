@@ -36,7 +36,7 @@ public class ExperimentalMeterMatcherAndConfigModel {
   }
 
   @JsonProperty("name")
-  public ExperimentalMeterMatcherAndConfigModel withName(String name) {
+  public ExperimentalMeterMatcherAndConfigModel setName(String name) {
     this.name = name;
     return this;
   }
@@ -53,7 +53,7 @@ public class ExperimentalMeterMatcherAndConfigModel {
   }
 
   @JsonProperty("config")
-  public ExperimentalMeterMatcherAndConfigModel withConfig(ExperimentalMeterConfigModel config) {
+  public ExperimentalMeterMatcherAndConfigModel setConfig(ExperimentalMeterConfigModel config) {
     this.config = config;
     return this;
   }

@@ -38,7 +38,7 @@ public class ExperimentalComposableRuleBasedSamplerModel {
   }
 
   @JsonProperty("rules")
-  public ExperimentalComposableRuleBasedSamplerModel withRules(
+  public ExperimentalComposableRuleBasedSamplerModel setRules(
       List<ExperimentalComposableRuleBasedSamplerRuleModel> rules) {
     this.rules = rules;
     return this;

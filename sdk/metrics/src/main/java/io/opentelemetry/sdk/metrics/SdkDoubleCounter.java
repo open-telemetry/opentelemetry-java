@@ -28,7 +28,7 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
 
   SdkDoubleCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
-    super(descriptor);
+    super(descriptor, sdkMeter, storage);
     this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
@@ -48,7 +48,7 @@ class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
 
   @Override
   public void add(double increment, Attributes attributes) {
-    add(increment, attributes, Context.current());
+    add(increment, attributes, currentOrRootContext());
   }
 
   @Override

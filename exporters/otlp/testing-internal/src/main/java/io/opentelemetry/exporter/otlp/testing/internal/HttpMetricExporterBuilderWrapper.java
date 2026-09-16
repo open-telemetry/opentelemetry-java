@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -131,6 +132,12 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   @Override
   public TelemetryExporterBuilder<MetricData> setExecutorService(ExecutorService executorService) {
     builder.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setEnabledProtocols(List<String> enabledProtocols) {
+    builder.setEnabledProtocols(enabledProtocols);
     return this;
   }
 

@@ -33,7 +33,7 @@ public class ExperimentalResourceDetectionModel {
   }
 
   @JsonProperty("attributes")
-  public ExperimentalResourceDetectionModel withAttributes(IncludeExcludeModel attributes) {
+  public ExperimentalResourceDetectionModel setAttributes(IncludeExcludeModel attributes) {
     this.attributes = attributes;
     return this;
   }
@@ -53,7 +53,7 @@ public class ExperimentalResourceDetectionModel {
   }
 
   @JsonProperty("detectors")
-  public ExperimentalResourceDetectionModel withDetectors(
+  public ExperimentalResourceDetectionModel setDetectors(
       List<ExperimentalResourceDetectorModel> detectors) {
     this.detectors = detectors;
     return this;

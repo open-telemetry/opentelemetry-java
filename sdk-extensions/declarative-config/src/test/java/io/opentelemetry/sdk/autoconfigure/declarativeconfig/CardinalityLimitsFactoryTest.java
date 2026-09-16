@@ -39,7 +39,7 @@ class CardinalityLimitsFactoryTest {
             CardinalityLimitSelector.defaultCardinalityLimitSelector()),
         Arguments.argumentSet(
             "default and counter",
-            new CardinalityLimitsModel().withDefault(10).withCounter(1),
+            new CardinalityLimitsModel().setDefault(10).setCounter(1),
             (CardinalityLimitSelector)
                 instrumentType -> {
                   if (instrumentType == InstrumentType.COUNTER) {
@@ -50,13 +50,13 @@ class CardinalityLimitsFactoryTest {
         Arguments.argumentSet(
             "all instrument types",
             new CardinalityLimitsModel()
-                .withCounter(1)
-                .withUpDownCounter(2)
-                .withHistogram(3)
-                .withObservableCounter(4)
-                .withObservableUpDownCounter(5)
-                .withObservableGauge(6)
-                .withGauge(7),
+                .setCounter(1)
+                .setUpDownCounter(2)
+                .setHistogram(3)
+                .setObservableCounter(4)
+                .setObservableUpDownCounter(5)
+                .setObservableGauge(6)
+                .setGauge(7),
             (CardinalityLimitSelector)
                 instrumentType -> {
                   switch (instrumentType) {

@@ -75,8 +75,8 @@ public final class HttpExporter {
 
     httpSender.send(
         messageWriter,
-        httpResponse -> onResponse(result, metricRecording, httpResponse),
-        throwable -> onError(result, metricRecording, throwable));
+        httpResponse -> onResponse(result, metricRecording, httpResponse, numItems),
+        throwable -> onError(result, metricRecording, numItems, throwable));
 
     return result;
   }
@@ -84,7 +84,8 @@ public final class HttpExporter {
   private void onResponse(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
-      HttpResponse httpResponse) {
+      HttpResponse httpResponse,
+      int numItems) {
     int statusCode = httpResponse.getStatusCode();
 
     metricRecording.setHttpStatusCode(statusCode);
@@ -102,8 +103,10 @@ public final class HttpExporter {
     String status = extractErrorStatus(httpResponse.getStatusMessage(), body);
 
     logger.log(
-        Level.WARNING,
+        levelOnFailure(Level.WARNING),
         "Failed to export "
+            + numItems
+            + " "
             + type
             + "s. Server responded with HTTP status code "
             + statusCode
@@ -113,13 +116,22 @@ public final class HttpExporter {
     result.failExceptionally(FailedExportException.httpFailedWithResponse(httpResponse));
   }
 
+  // Failures after shutdown are typically caused by in-flight requests being cancelled by
+  // shutdown() and are not actionable, so demote them to FINE.
+  private Level levelOnFailure(Level defaultLevel) {
+    return isShutdown.get() ? Level.FINE : defaultLevel;
+  }
+
   private void onError(
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
+      int numItems,
       Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
-        Level.SEVERE, "Failed to export " + type + "s. The request could not be executed.", e);
+        levelOnFailure(Level.SEVERE),
+        "Failed to export " + numItems + " " + type + "s. The request could not be executed.",
+        e);
     result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
   }
 

@@ -54,7 +54,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   private final boolean exportUnsampledSpans;
   private final Worker worker;
-  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
    * Returns a new {@link BatchSpanProcessor} with default configuration which batches spans
@@ -130,9 +129,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-    if (isShutdown.getAndSet(true)) {
-      return CompletableResultCode.ofSuccess();
-    }
     return worker.shutdown();
   }
 
@@ -200,6 +196,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final AtomicInteger spansNeeded = new AtomicInteger(Integer.MAX_VALUE);
     private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
+    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
     private final long maxQueueSize;
@@ -229,9 +226,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     private void addSpan(ReadableSpan span) {
+      if (isShutdown.get()) {
+        spanProcessorInstrumentation.dropSpansAlreadyShutdown(1);
+        return;
+      }
       spanProcessorInstrumentation.buildQueueMetricsOnce(maxQueueSize, queue::size);
       if (!queue.offer(span)) {
-        spanProcessorInstrumentation.dropSpans(1);
+        spanProcessorInstrumentation.dropSpansQueueFull(1);
         droppedSpanCount.incrementAndGet();
       } else {
         if (queueSize.incrementAndGet() >= spansNeeded.get()) {
@@ -298,6 +299,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
     }
 
     private CompletableResultCode shutdown() {
+      if (isShutdown.getAndSet(true)) {
+        return CompletableResultCode.ofSuccess();
+      }
       CompletableResultCode result = new CompletableResultCode();
 
       CompletableResultCode flushResult = forceFlush();
@@ -348,24 +352,19 @@ public final class BatchSpanProcessor implements SpanProcessor {
                 + ")");
       }
 
-      String error = null;
       try {
+        // We always increment for every export invocation, so we increment before the export call
+        // to make sure thrown errors don't affect it.
+        spanProcessorInstrumentation.finishSpans(batch.size());
         CompletableResultCode result = spanExporter.export(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (!result.isSuccess()) {
           logger.log(Level.FINE, "Exporter failed");
-          if (result.getFailureThrowable() != null) {
-            error = result.getFailureThrowable().getClass().getName();
-          } else {
-            error = "export_failed";
-          }
         }
       } catch (Throwable t) {
         ThrowableUtil.propagateIfFatal(t);
         logger.log(Level.WARNING, "Exporter threw an Exception", t);
-        error = t.getClass().getName();
       } finally {
-        spanProcessorInstrumentation.finishSpans(batch.size(), error);
         batch.clear();
       }
     }

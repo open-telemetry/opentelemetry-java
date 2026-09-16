@@ -12,6 +12,7 @@ plugins {
 
 description = "OpenTelemetry SDK Declarative Config"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.declarativeconfig")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiOptionalPackages.set(listOf("io.opentelemetry.sdk.autoconfigure.spi"))
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider",
@@ -58,7 +59,7 @@ dependencies {
 // The generated POJOs are committed to src/main/java and are NOT regenerated as part of the normal build.
 // To regenerate (e.g. after a schema update), run: ./gradlew :sdk-extensions:declarative-config:syncPojoModelsToSrc
 
-val configurationTag = "1.1.0"
+val configurationTag = "1.2.0"
 val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
@@ -107,8 +108,12 @@ val syncPojoModelsToSrc = tasks.register("syncPojoModelsToSrc") {
   val modelSrcDir = File(projectDir, "src/main/java")
   doLast {
     val modelDir = File(modelSrcDir, modelPackage.replace('.', '/'))
-    // Delete first so schema type removals don't leave stale classes.
-    modelDir.deleteRecursively()
+    // Delete only @Generated files so hand-written files (ModelMapper, ExtensionPropertyUtil)
+    // in model.internal survive the regeneration cycle.
+    modelDir.walkTopDown()
+      .filter { it.isFile && it.extension == "java" }
+      .filter { it.readText().contains("@Generated(") }
+      .forEach { it.delete() }
     DeclarativeConfigPojoGenerator(schemaFile, modelSrcDir, modelPackage).generate()
   }
 }

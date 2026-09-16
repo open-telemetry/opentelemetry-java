@@ -70,7 +70,7 @@ public final class TraceId {
    * given bytes representation, or {@link #getInvalid()} if input is {@code null} or the given byte
    * array is too short.
    *
-   * <p>It converts the first 26 bytes of the given byte array.
+   * <p>It converts the first 16 bytes of the given byte array.
    *
    * @param traceIdBytes the bytes (16-byte array) representation of the {@code TraceId}.
    * @return the lowercase hex (base16) representation of the {@code TraceId}.
@@ -86,7 +86,7 @@ public final class TraceId {
   }
 
   /**
-   * Returns the bytes (16-byte array) representation of the {@code TraceId} converted from the
+   * Returns the lowercase hex (base16) representation of the {@code TraceId} converted from the
    * given two {@code long} values representing the lower and higher parts.
    *
    * <p>There is no restriction on the specified values, other than the already established validity

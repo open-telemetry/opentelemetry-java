@@ -19,6 +19,7 @@ import java.util.Collections;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // testing deprecated shim API
 class OpenCensusMetricsTest {
   private static final StatsRecorder STATS_RECORDER = Stats.getStatsRecorder();
 

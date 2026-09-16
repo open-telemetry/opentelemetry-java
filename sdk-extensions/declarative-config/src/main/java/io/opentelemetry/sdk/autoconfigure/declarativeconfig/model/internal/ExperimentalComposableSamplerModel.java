@@ -40,7 +40,7 @@ public class ExperimentalComposableSamplerModel {
   }
 
   @JsonProperty("always_off")
-  public ExperimentalComposableSamplerModel withAlwaysOff(
+  public ExperimentalComposableSamplerModel setAlwaysOff(
       ExperimentalComposableAlwaysOffSamplerModel alwaysOff) {
     this.alwaysOff = alwaysOff;
     return this;
@@ -58,7 +58,7 @@ public class ExperimentalComposableSamplerModel {
   }
 
   @JsonProperty("always_on")
-  public ExperimentalComposableSamplerModel withAlwaysOn(
+  public ExperimentalComposableSamplerModel setAlwaysOn(
       ExperimentalComposableAlwaysOnSamplerModel alwaysOn) {
     this.alwaysOn = alwaysOn;
     return this;
@@ -76,7 +76,7 @@ public class ExperimentalComposableSamplerModel {
   }
 
   @JsonProperty("parent_threshold")
-  public ExperimentalComposableSamplerModel withParentThreshold(
+  public ExperimentalComposableSamplerModel setParentThreshold(
       ExperimentalComposableParentThresholdSamplerModel parentThreshold) {
     this.parentThreshold = parentThreshold;
     return this;
@@ -94,7 +94,7 @@ public class ExperimentalComposableSamplerModel {
   }
 
   @JsonProperty("probability")
-  public ExperimentalComposableSamplerModel withProbability(
+  public ExperimentalComposableSamplerModel setProbability(
       ExperimentalComposableProbabilitySamplerModel probability) {
     this.probability = probability;
     return this;
@@ -112,7 +112,7 @@ public class ExperimentalComposableSamplerModel {
   }
 
   @JsonProperty("rule_based")
-  public ExperimentalComposableSamplerModel withRuleBased(
+  public ExperimentalComposableSamplerModel setRuleBased(
       ExperimentalComposableRuleBasedSamplerModel ruleBased) {
     this.ruleBased = ruleBased;
     return this;
@@ -124,7 +124,7 @@ public class ExperimentalComposableSamplerModel {
   }
 
   @JsonAnySetter
-  public ExperimentalComposableSamplerModel withAdditionalProperty(
+  public ExperimentalComposableSamplerModel setAdditionalProperty(
       String name, ExperimentalComposableSamplerPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

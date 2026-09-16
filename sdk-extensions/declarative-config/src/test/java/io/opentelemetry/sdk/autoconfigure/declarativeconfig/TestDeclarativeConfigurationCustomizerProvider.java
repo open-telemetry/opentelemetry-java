@@ -21,23 +21,23 @@ public class TestDeclarativeConfigurationCustomizerProvider
           ResourceModel resource = model.getResource();
           if (resource == null) {
             resource = new ResourceModel();
-            model.withResource(resource);
+            model.setResource(resource);
           }
           List<AttributeNameValueModel> attributes = resource.getAttributes();
           if (attributes == null) {
             attributes = new ArrayList<>();
-            resource.withAttributes(attributes);
+            resource.setAttributes(attributes);
           }
           attributes.add(
               new AttributeNameValueModel()
-                  .withName("foo")
-                  .withType(AttributeTypeModel.STRING)
-                  .withValue("bar"));
+                  .setName("foo")
+                  .setType(AttributeTypeModel.STRING)
+                  .setValue("bar"));
           attributes.add(
               new AttributeNameValueModel()
-                  .withName("color")
-                  .withType(AttributeTypeModel.STRING)
-                  .withValue("blue"));
+                  .setName("color")
+                  .setType(AttributeTypeModel.STRING)
+                  .setValue("blue"));
           return model;
         });
   }

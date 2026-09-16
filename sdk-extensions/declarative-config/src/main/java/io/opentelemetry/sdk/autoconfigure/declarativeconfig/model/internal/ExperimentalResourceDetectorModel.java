@@ -39,7 +39,7 @@ public class ExperimentalResourceDetectorModel {
   }
 
   @JsonProperty("container")
-  public ExperimentalResourceDetectorModel withContainer(
+  public ExperimentalResourceDetectorModel setContainer(
       ExperimentalContainerResourceDetectorModel container) {
     this.container = container;
     return this;
@@ -57,7 +57,7 @@ public class ExperimentalResourceDetectorModel {
   }
 
   @JsonProperty("host")
-  public ExperimentalResourceDetectorModel withHost(ExperimentalHostResourceDetectorModel host) {
+  public ExperimentalResourceDetectorModel setHost(ExperimentalHostResourceDetectorModel host) {
     this.host = host;
     return this;
   }
@@ -74,7 +74,7 @@ public class ExperimentalResourceDetectorModel {
   }
 
   @JsonProperty("process")
-  public ExperimentalResourceDetectorModel withProcess(
+  public ExperimentalResourceDetectorModel setProcess(
       ExperimentalProcessResourceDetectorModel process) {
     this.process = process;
     return this;
@@ -93,7 +93,7 @@ public class ExperimentalResourceDetectorModel {
   }
 
   @JsonProperty("service")
-  public ExperimentalResourceDetectorModel withService(
+  public ExperimentalResourceDetectorModel setService(
       ExperimentalServiceResourceDetectorModel service) {
     this.service = service;
     return this;
@@ -105,7 +105,7 @@ public class ExperimentalResourceDetectorModel {
   }
 
   @JsonAnySetter
-  public ExperimentalResourceDetectorModel withAdditionalProperty(
+  public ExperimentalResourceDetectorModel setAdditionalProperty(
       String name, ExperimentalResourceDetectorPropertyModel value) {
     this.additionalProperties.put(name, value);
     return this;

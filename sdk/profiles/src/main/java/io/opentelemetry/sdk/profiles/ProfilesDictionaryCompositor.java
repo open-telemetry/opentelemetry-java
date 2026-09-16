@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.profiles;
 
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.profiles.data.FunctionData;
 import io.opentelemetry.sdk.profiles.data.KeyValueAndUnitData;
 import io.opentelemetry.sdk.profiles.data.LinkData;
@@ -54,7 +56,7 @@ public class ProfilesDictionaryCompositor {
     locationTable.putIfAbsent(
         LocationData.create(0, 0, Collections.emptyList(), Collections.emptyList()));
     functionTable.putIfAbsent(FunctionData.create(0, 0, 0, 0));
-    linkTable.putIfAbsent(LinkData.create("", ""));
+    linkTable.putIfAbsent(LinkData.create(TraceId.getInvalid(), SpanId.getInvalid()));
     stringTable.putIfAbsent("");
     attributeTable.putIfAbsent(KeyValueAndUnitData.create(0, Value.of(""), 0));
     stackTable.putIfAbsent(StackData.create(Collections.emptyList()));

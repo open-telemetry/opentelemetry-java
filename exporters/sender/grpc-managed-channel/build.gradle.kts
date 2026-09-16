@@ -7,6 +7,7 @@ plugins {
 
 description = "OpenTelemetry gRPC Upstream Sender"
 otelJava.moduleName.set("io.opentelemetry.exporter.sender.grpc.managedchannel.internal")
+otelJava.requireSuppressWarningsExplanation.set(false)
 otelJava.osgiServiceLoaderProvides.set(listOf(
   "io.opentelemetry.sdk.common.export.GrpcSenderProvider",
 ))

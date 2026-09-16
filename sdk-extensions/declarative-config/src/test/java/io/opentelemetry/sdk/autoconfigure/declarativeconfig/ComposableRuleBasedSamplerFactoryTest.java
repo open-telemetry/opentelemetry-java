@@ -74,63 +74,63 @@ class ComposableRuleBasedSamplerFactoryTest {
         Arguments.argumentSet(
             "attribute_patterns included empty",
             new ExperimentalComposableRuleBasedSamplerModel()
-                .withRules(
+                .setRules(
                     Collections.singletonList(
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withAttributePatterns(
+                            .setAttributePatterns(
                                 new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
-                                    .withKey("http.path")
-                                    .withIncluded(Collections.emptyList())
-                                    .withExcluded(null))
-                            .withSampler(
+                                    .setKey("http.path")
+                                    .setIncluded(Collections.emptyList())
+                                    .setExcluded(null))
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withAlwaysOn(
+                                    .setAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
             "included must not be empty"),
         Arguments.argumentSet(
             "attribute_patterns excluded empty",
             new ExperimentalComposableRuleBasedSamplerModel()
-                .withRules(
+                .setRules(
                     Collections.singletonList(
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withAttributePatterns(
+                            .setAttributePatterns(
                                 new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
-                                    .withKey("http.path")
-                                    .withIncluded(null)
-                                    .withExcluded(Collections.emptyList()))
-                            .withSampler(
+                                    .setKey("http.path")
+                                    .setIncluded(null)
+                                    .setExcluded(Collections.emptyList()))
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withAlwaysOn(
+                                    .setAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
             "excluded must not be empty"),
         Arguments.argumentSet(
             "attribute_values null values",
             new ExperimentalComposableRuleBasedSamplerModel()
-                .withRules(
+                .setRules(
                     Collections.singletonList(
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withAttributeValues(
+                            .setAttributeValues(
                                 new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
-                                    .withKey("http.route")
-                                    .withValues(null))
-                            .withSampler(
+                                    .setKey("http.route")
+                                    .setValues(null))
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withAlwaysOn(
+                                    .setAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
             ".values is required and must be non-empty"),
         Arguments.argumentSet(
             "attribute_values empty values",
             new ExperimentalComposableRuleBasedSamplerModel()
-                .withRules(
+                .setRules(
                     Collections.singletonList(
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withAttributeValues(
+                            .setAttributeValues(
                                 new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
-                                    .withKey("http.route")
-                                    .withValues(Collections.emptyList()))
-                            .withSampler(
+                                    .setKey("http.route")
+                                    .setValues(Collections.emptyList()))
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withAlwaysOn(
+                                    .setAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
             ".values is required and must be non-empty"));
   }
@@ -145,16 +145,16 @@ class ComposableRuleBasedSamplerFactoryTest {
         Arguments.argumentSet(
             "attribute_patterns included only",
             new ExperimentalComposableRuleBasedSamplerModel()
-                .withRules(
+                .setRules(
                     Collections.singletonList(
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withAttributePatterns(
+                            .setAttributePatterns(
                                 new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
-                                    .withKey("http.path")
-                                    .withIncluded(Collections.singletonList("/internal/*")))
-                            .withSampler(
+                                    .setKey("http.path")
+                                    .setIncluded(Collections.singletonList("/internal/*")))
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withAlwaysOn(
+                                    .setAlwaysOn(
                                         new ExperimentalComposableAlwaysOnSamplerModel())))),
             ComposableSampler.ruleBasedBuilder()
                 .add(
@@ -171,41 +171,40 @@ class ComposableRuleBasedSamplerFactoryTest {
         Arguments.argumentSet(
             "full example",
             new ExperimentalComposableRuleBasedSamplerModel()
-                .withRules(
+                .setRules(
                     Arrays.asList(
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withAttributeValues(
+                            .setAttributeValues(
                                 new ExperimentalComposableRuleBasedSamplerRuleAttributeValuesModel()
-                                    .withKey("http.route")
-                                    .withValues(Arrays.asList("/healthz", "/livez")))
-                            .withSampler(
+                                    .setKey("http.route")
+                                    .setValues(Arrays.asList("/healthz", "/livez")))
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withAlwaysOff(
+                                    .setAlwaysOff(
                                         new ExperimentalComposableAlwaysOffSamplerModel())),
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withAttributePatterns(
+                            .setAttributePatterns(
                                 new ExperimentalComposableRuleBasedSamplerRuleAttributePatternsModel()
-                                    .withKey("http.path")
-                                    .withIncluded(Collections.singletonList("/internal/*"))
-                                    .withExcluded(Collections.singletonList("/internal/special/*")))
-                            .withSampler(
+                                    .setKey("http.path")
+                                    .setIncluded(Collections.singletonList("/internal/*"))
+                                    .setExcluded(Collections.singletonList("/internal/special/*")))
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withAlwaysOn(
-                                        new ExperimentalComposableAlwaysOnSamplerModel())),
+                                    .setAlwaysOn(new ExperimentalComposableAlwaysOnSamplerModel())),
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withParent(Collections.singletonList(ExperimentalSpanParentModel.NONE))
-                            .withSpanKinds(Collections.singletonList(SpanKindModel.CLIENT))
-                            .withSampler(
+                            .setParent(Collections.singletonList(ExperimentalSpanParentModel.NONE))
+                            .setSpanKinds(Collections.singletonList(SpanKindModel.CLIENT))
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withProbability(
+                                    .setProbability(
                                         new ExperimentalComposableProbabilitySamplerModel()
-                                            .withRatio(0.05))),
+                                            .setRatio(0.05))),
                         new ExperimentalComposableRuleBasedSamplerRuleModel()
-                            .withSampler(
+                            .setSampler(
                                 new ExperimentalComposableSamplerModel()
-                                    .withProbability(
+                                    .setProbability(
                                         new ExperimentalComposableProbabilitySamplerModel()
-                                            .withRatio(0.05))))),
+                                            .setRatio(0.05))))),
             ComposableSampler.ruleBasedBuilder()
                 .add(
                     new DeclarativeConfigSamplingPredicate(
@@ -264,6 +263,7 @@ class ComposableRuleBasedSamplerFactoryTest {
   private static final SpanKind sk = CLIENT;
   private static final AttributeKey<String> HTTP_ROUTE = AttributeKey.stringKey("http.route");
   private static final AttributeKey<String> HTTP_PATH = AttributeKey.stringKey("http.path");
+  private static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");
 
   @ParameterizedTest
   @MethodSource("declarativeConfigSamplingPredicateArgs")
@@ -305,6 +305,24 @@ class ComposableRuleBasedSamplerFactoryTest {
             null, null, Collections.singleton(ExperimentalSpanParentModel.NONE), null);
     DeclarativeConfigSamplingPredicate spanKindMatcher =
         new DeclarativeConfigSamplingPredicate(null, null, null, Collections.singleton(CLIENT));
+    DeclarativeConfigSamplingPredicate numberValuesMatcher =
+        new DeclarativeConfigSamplingPredicate(
+            new AttributeMatcher(
+                "server.port",
+                IncludeExcludePredicate.createExactMatching(
+                    Collections.singletonList("8081"), null)),
+            null,
+            null,
+            null);
+    DeclarativeConfigSamplingPredicate numberPatternsMatcher =
+        new DeclarativeConfigSamplingPredicate(
+            null,
+            new AttributeMatcher(
+                "server.port",
+                IncludeExcludePredicate.createPatternMatching(
+                    Collections.singletonList("808*"), null)),
+            null,
+            null);
     DeclarativeConfigSamplingPredicate multiMatcher =
         new DeclarativeConfigSamplingPredicate(
             new AttributeMatcher(
@@ -436,6 +454,41 @@ class ComposableRuleBasedSamplerFactoryTest {
             noParent,
             CONSUMER,
             Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "numberValuesMatcher matching port",
+            numberValuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT, 8081L),
+            true),
+        Arguments.argumentSet(
+            "numberValuesMatcher non matching port",
+            numberValuesMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT, 8080L),
+            false),
+        Arguments.argumentSet(
+            "numberValuesMatcher empty no match",
+            numberValuesMatcher,
+            noParent,
+            sk,
+            Attributes.empty(),
+            false),
+        Arguments.argumentSet(
+            "numberPatternsMatcher matching port",
+            numberPatternsMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT, 8081L),
+            true),
+        Arguments.argumentSet(
+            "numberPatternsMatcher non matching port",
+            numberPatternsMatcher,
+            noParent,
+            sk,
+            Attributes.of(SERVER_PORT, 9090L),
             false),
         Arguments.argumentSet(
             "multiMatcher all conditions match",

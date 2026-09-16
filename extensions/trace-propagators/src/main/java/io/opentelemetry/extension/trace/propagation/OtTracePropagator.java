@@ -109,6 +109,7 @@ public final class OtTracePropagator implements TextMapPropagator {
   }
 
   @Override
+  @SuppressWarnings("deprecation") // Legacy baggage headers require key enumeration.
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
       return Context.root();

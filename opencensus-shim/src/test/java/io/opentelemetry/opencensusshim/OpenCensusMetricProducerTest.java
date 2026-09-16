@@ -30,6 +30,7 @@ import java.util.Random;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // testing deprecated shim API
 class OpenCensusMetricProducerTest {
   private final MetricProducer openCensusMetrics = OpenCensusMetricProducer.create();
 

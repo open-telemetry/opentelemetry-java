@@ -43,7 +43,7 @@ public final class OtelEncodingUtils {
   }
 
   private static boolean[] buildValidHexArray() {
-    boolean[] validHex = new boolean[Character.MAX_VALUE];
+    boolean[] validHex = new boolean[Character.MAX_VALUE + 1];
     // Use the fact that the default initial boolean value is false
     // and only explicitly init the values between the extreme HEX values
     // This minimized impact during process startup esp. on mobile.
