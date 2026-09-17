@@ -31,6 +31,18 @@ import org.assertj.core.api.ObjectAssert;
  * Entry point for assertion methods for OpenTelemetry types. To use type-specific assertions,
  * static import any {@code assertThat} method in this class instead of {@code
  * Assertions.assertThat}.
+ *
+ * <p>Note: This class extends {@link Assertions}, which brings in AssertJ's generic {@code
+ * assertThat(T)} method. This causes ambiguity when using static imports alongside other assertion
+ * libraries like Truth. To avoid ambiguity, use a non-static import for this class and reference
+ * methods explicitly:
+ *
+ * <pre>{@code
+ * import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
+ *
+ * // Use explicit class reference instead of static import
+ * OpenTelemetryAssertions.assertThat(spanData).hasName("my-span");
+ * }</pre>
  */
 public final class OpenTelemetryAssertions extends Assertions {
 
