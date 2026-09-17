@@ -31,6 +31,8 @@ public final class PeriodicMetricReaderBuilder {
 
   private long intervalNanos = TimeUnit.MINUTES.toNanos(DEFAULT_SCHEDULE_DELAY_MINUTES);
 
+  @Nullable private Long exporterTimeoutNanos;
+
   @Nullable private ScheduledExecutorService executor;
 
   private int maxExportBatchSize;
@@ -55,6 +57,33 @@ public final class PeriodicMetricReaderBuilder {
   public PeriodicMetricReaderBuilder setInterval(Duration interval) {
     requireNonNull(interval, "interval");
     return setInterval(interval.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
+   * Sets the maximum time an export will be allowed to run before being reported as failed. If
+   * unset, defaults to the configured interval. A timeout of {@code 0} disables the timeout.
+   *
+   * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
+   * individual export(batch) invocation, not the aggregate export cycle.
+   */
+  public PeriodicMetricReaderBuilder setExporterTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    exporterTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time an export will be allowed to run before being reported as failed. If
+   * unset, defaults to the configured interval. A {@link Duration#ZERO zero} timeout disables the
+   * timeout.
+   *
+   * <p>When {@link #setMaxExportBatchSize(int)} is configured, the timeout applies to each
+   * individual export(batch) invocation, not the aggregate export cycle.
+   */
+  public PeriodicMetricReaderBuilder setExporterTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setExporterTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /** Sets the {@link ScheduledExecutorService} to schedule reads on. */
@@ -86,7 +115,12 @@ public final class PeriodicMetricReaderBuilder {
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
     return new PeriodicMetricReader(
-        metricExporter, intervalNanos, executor, maxExportBatchSize, internalTelemetryVersion);
+        metricExporter,
+        intervalNanos,
+        exporterTimeoutNanos != null ? exporterTimeoutNanos : intervalNanos,
+        executor,
+        maxExportBatchSize,
+        internalTelemetryVersion);
   }
 
   /**
