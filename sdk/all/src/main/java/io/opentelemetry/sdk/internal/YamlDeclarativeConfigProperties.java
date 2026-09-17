@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.declarativeconfig;
+package io.opentelemetry.sdk.internal;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -25,16 +25,13 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
- * Implementation of {@link DeclarativeConfigProperties} which uses a file configuration model as a
- * source.
+ * Implementation of {@link DeclarativeConfigProperties} backed by a parsed YAML/JSON map.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  *
  * @see #getStructured(String) Accessing nested maps
  * @see #getStructuredList(String) Accessing lists of maps
- * @see DeclarativeConfiguration#toConfigProperties(Object, ComponentLoader) Converting
- *     configuration model to properties
  */
 public final class YamlDeclarativeConfigProperties implements DeclarativeConfigProperties {
 
@@ -70,8 +67,6 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
    * <p>{@code properties} is expected to be the output of YAML parsing (i.e. with Jackson {@code
    * com.fasterxml.jackson.databind.ObjectMapper}), and have values which are scalars, lists of
    * scalars, lists of maps, and maps.
-   *
-   * @see DeclarativeConfiguration#toConfigProperties(Object)
    */
   @SuppressWarnings("unchecked")
   public static YamlDeclarativeConfigProperties create(
