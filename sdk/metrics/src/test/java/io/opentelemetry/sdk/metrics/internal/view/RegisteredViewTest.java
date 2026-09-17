@@ -33,14 +33,14 @@ class RegisteredViewTest {
                         .setDescription("description")
                         .setAggregation(Aggregation.sum())
                         .build(),
-                    AttributesProcessor.noop(),
+                    AttributesFilters.ALLOW_ALL,
                     MetricStorage.DEFAULT_MAX_CARDINALITY,
                     SourceInfo.fromCurrentStack())
                 .toString())
-        .isEqualTo(
+        .startsWith(
             "RegisteredView{"
                 + "instrumentSelector=InstrumentSelector{instrumentType=COUNTER, instrumentName=name, meterName=meter-name, meterVersion=meter-version, meterSchemaUrl=meter-schema-url}, "
-                + "view=View{name=name, description=description, aggregation=SumAggregation, attributesProcessor=NoopAttributesProcessor{}, cardinalityLimit=2000}"
-                + "}");
+                + "view=View{name=name, description=description, aggregation=SumAggregation, attributeFilter=")
+        .endsWith(", cardinalityLimit=2000}}");
   }
 }

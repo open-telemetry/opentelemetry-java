@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -32,10 +32,9 @@ public abstract class View {
       @Nullable String name,
       @Nullable String description,
       Aggregation aggregation,
-      AttributesProcessor attributesProcessor,
+      Predicate<String> attributeFilter,
       int cardinalityLimit) {
-    return new AutoValue_View(
-        name, description, aggregation, attributesProcessor, cardinalityLimit);
+    return new AutoValue_View(name, description, aggregation, attributeFilter, cardinalityLimit);
   }
 
   View() {}
@@ -57,8 +56,11 @@ public abstract class View {
   /** Returns the aggregation of the resulting metric. */
   public abstract Aggregation getAggregation();
 
-  /** Returns the attribute processor used for this view. */
-  abstract AttributesProcessor getAttributesProcessor();
+  /**
+   * Returns the attribute key filter for this view. Attribute keys for which the predicate returns
+   * {@code false} are dropped from recorded measurements.
+   */
+  public abstract Predicate<String> getAttributeFilter();
 
   /**
    * Returns the cardinality limit for this view.
@@ -77,7 +79,7 @@ public abstract class View {
       joiner.add("description=" + getDescription());
     }
     joiner.add("aggregation=" + getAggregation());
-    joiner.add("attributesProcessor=" + getAttributesProcessor());
+    joiner.add("attributeFilter=" + getAttributeFilter());
     joiner.add("cardinalityLimit=" + getCardinalityLimit());
     return joiner.toString();
   }
