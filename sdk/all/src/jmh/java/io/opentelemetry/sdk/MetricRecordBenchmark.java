@@ -120,7 +120,7 @@ public class MetricRecordBenchmark {
 
     // Whether to record through bound instruments (Extended*#bind(Attributes)), which resolve the
     // timeseries once up front, or unbound instruments, which look up the timeseries by Attributes
-    // on every record. Uncomment to evaluate.
+    // on every record.
     @Param({"false", "true"})
     boolean bound;
 
