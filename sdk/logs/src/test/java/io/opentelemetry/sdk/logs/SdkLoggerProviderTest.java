@@ -227,6 +227,12 @@ class SdkLoggerProviderTest {
   }
 
   @Test
+  void get_NoProcessor_UsesNoop() {
+    assertThat(SdkLoggerProvider.builder().build().get("test"))
+        .isSameAs(LoggerProvider.noop().get("test"));
+  }
+
+  @Test
   void loggerBuilder_WithLogRecordProcessor() {
     Resource resource = Resource.builder().put("r1", "v1").build();
     AtomicReference<LogRecordData> logRecordData = new AtomicReference<>();
