@@ -1100,6 +1100,21 @@ class SdkSpanTest {
   }
 
   @Test
+  void overwritingAttribute_doesNotCountAsDropped() {
+    SdkSpan span = createTestRootSpan();
+    try {
+      span.setAttribute(stringKey("key"), "first");
+      span.setAttribute(stringKey("key"), "second");
+      SpanData spanData = span.toSpanData();
+      assertThat(spanData.getAttributes().size()).isEqualTo(1);
+      assertThat(spanData.getAttributes().get(stringKey("key"))).isEqualTo("second");
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(1);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
   void endWithTimestamp_numeric() {
     SdkSpan span1 = createTestRootSpan();
     span1.end(10, TimeUnit.NANOSECONDS);
