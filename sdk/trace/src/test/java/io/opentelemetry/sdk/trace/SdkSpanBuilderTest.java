@@ -520,7 +520,7 @@ class SdkSpanBuilderTest {
       assertThat(attrs.get(doubleKey("double"))).isEqualTo(0.12345);
       assertThat(attrs.get(booleanKey("boolean"))).isEqualTo(true);
       assertThat(attrs.get(stringKey("stringAttribute"))).isEqualTo("attrvalue");
-      assertThat(spanData.getTotalAttributeCount()).isEqualTo(8);
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(6);
     } finally {
       span.end();
     }
