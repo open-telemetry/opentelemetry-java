@@ -52,6 +52,9 @@ final class TracerSharedState {
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.tracerInstrumentation = tracerInstrumentation;
+    // Note: This relies on SpanProcessor.composite(..) returning NoopSpanProcessor unwrapped
+    // when given an empty list. If SpanProcessor.composite(..) behavior changes, this instanceof
+    // check must change too
     this.noSpanProcessor = activeSpanProcessor instanceof NoopSpanProcessor;
   }
 

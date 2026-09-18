@@ -43,8 +43,7 @@ class SpanBuilderShimTest {
 
   private final SdkTracerProvider tracerSdkFactory =
       SdkTracerProvider.builder()
-          .addSpanProcessor(
-              SimpleSpanProcessor.create(SpanExporter.noop())) // Use a real SDK span for testing.
+          .addSpanProcessor(SimpleSpanProcessor.create(SpanExporter.noop()))
           .build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
 
