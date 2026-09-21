@@ -63,6 +63,7 @@ public final class OtlpDeclarativeConfigUtil {
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
       Consumer<MemoryMode> setMemoryMode,
+      Consumer<Long> setMaxRequestSize,
       boolean isHttpProtobuf,
       Consumer<InternalTelemetryVersion> internalTelemetryVersionConsumer,
       Runnable setNoopMeterProvider) {
@@ -106,6 +107,11 @@ public final class OtlpDeclarativeConfigUtil {
     Integer timeoutMs = config.getInt("timeout");
     if (timeoutMs != null) {
       setTimeout.accept(Duration.ofMillis(timeoutMs));
+    }
+
+    Integer maxRequestSize = config.getInt("max_request_size");
+    if (maxRequestSize != null) {
+      setMaxRequestSize.accept(maxRequestSize.longValue());
     }
 
     DeclarativeConfigProperties tls =
